@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { buildRelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
 
@@ -29,22 +29,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
     }
 
-    const store = getStore();
-    const pace = (store.childPaceProfiles ?? []).find((p) => p.childId === childId);
+    const [childPaceProfilesList, debriefRecordsList, educationRecordsList, familyTimeSessionsList, incidentsList, keyWorkingSessionsList, lacReviewsList, missingEpisodesList, positiveAchievementsList, returnInterviewsList] = await Promise.all([
+      dal.childPaceProfiles.findAll(),
+      dal.debriefRecords.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.returnInterviews.findAll(),
+    ]);
+    const pace = (childPaceProfilesList ?? []).find((p) => p.childId === childId);
 
     const timeline = buildRelationalTimeline({
       childId,
       childName: getYPName(childId),
       now: new Date().toISOString(),
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      debriefRecords: store.debriefRecords ?? [],
-      incidents: store.incidents ?? [],
-      familyTimeSessions: store.familyTimeSessions ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      educationRecords: store.educationRecords ?? [],
-      lacReviews: store.lacReviews ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      debriefRecords: debriefRecordsList ?? [],
+      incidents: incidentsList ?? [],
+      familyTimeSessions: familyTimeSessionsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      lacReviews: lacReviewsList ?? [],
       trustedAdults: pace?.trustedAdults ?? [],
       staffName: getStaffName,
     });

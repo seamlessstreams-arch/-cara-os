@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import { buildOutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 
@@ -32,22 +32,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
     }
 
-    const store = getStore();
-    const pace = (store.childPaceProfiles ?? []).find((p) => p.childId === childId);
+    const [childPaceProfilesList, educationRecordsList, familyTimeSessionsList, incidentsList, keyWorkingSessionsList, lacReviewsList, missingEpisodesList, positiveAchievementsList, returnInterviewsList] = await Promise.all([
+      dal.childPaceProfiles.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.returnInterviews.findAll(),
+    ]);
+    const pace = (childPaceProfilesList ?? []).find((p) => p.childId === childId);
 
     const outcome = buildOutcomeIntelligence({
       childId,
       childName: getYPName(childId),
       now: new Date().toISOString(),
       windowDays: windowDays && !Number.isNaN(windowDays) ? windowDays : undefined,
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      incidents: store.incidents ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      educationRecords: store.educationRecords ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      familyTimeSessions: store.familyTimeSessions ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      lacReviews: store.lacReviews ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      incidents: incidentsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      familyTimeSessions: familyTimeSessionsList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      lacReviews: lacReviewsList ?? [],
       trustedAdults: pace?.trustedAdults ?? [],
     });
 

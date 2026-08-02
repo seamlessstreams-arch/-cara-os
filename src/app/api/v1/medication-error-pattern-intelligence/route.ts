@@ -14,13 +14,13 @@
 //   (d) broke recurring patterns rather than repeating the same mistakes
 //
 // All deterministic. No LLM calls.
-// Sources: store.medicationErrors, store.youngPeople
+// Sources: medicationErrorsList, youngPeopleList
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type { MedicationError } from "@/types/extended";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -121,16 +121,19 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [medicationErrorsList, youngPeopleList] = await Promise.all([
+      dal.medicationErrors.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
   const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;
 
-  const errors = ((store.medicationErrors ?? []) as unknown) as MedicationError[];
+  const errors = ((medicationErrorsList ?? []) as unknown) as MedicationError[];
 
   const currentChildren = youngPeople.filter((yp) => yp.status === "current");
 

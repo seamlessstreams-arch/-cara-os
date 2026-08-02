@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeOutcomesProgress,
   type ChildInput,
@@ -18,16 +18,20 @@ import {
 } from "@/lib/engines/outcomes-progress-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [outcomeReviewsList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.outcomeReviews.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map outcome targets ──────────────────────────────────────────────────
-  const targets: OutcomeTargetInput[] = store.outcomeTargets.map((t) => ({
+  const targets: OutcomeTargetInput[] = outcomeTargetsList.map((t) => ({
     id: t.id,
     child_id: t.child_id,
     domain: t.domain,
@@ -43,7 +47,7 @@ export async function GET() {
   }));
 
   // ── Map outcome reviews ──────────────────────────────────────────────────
-  const reviews: OutcomeReviewInput[] = store.outcomeReviews.map((r) => ({
+  const reviews: OutcomeReviewInput[] = outcomeReviewsList.map((r) => ({
     id: r.id,
     target_id: r.target_id,
     child_id: r.child_id,

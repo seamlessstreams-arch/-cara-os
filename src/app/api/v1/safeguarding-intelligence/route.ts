@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeSafeguardingIntelligence,
   type IncidentInput,
@@ -20,10 +20,17 @@ import {
 } from "@/lib/engines/safeguarding-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [incidentsList, missingEpisodesList, notifiableEventsList, restraintsList, riskAssessmentsList, youngPeopleList] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.notifiableEvents.findAll(),
+      dal.restraints.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map incidents ─────────────────────────────────────────────────────
-  const incidents: IncidentInput[] = store.incidents.map((i) => ({
+  const incidents: IncidentInput[] = incidentsList.map((i) => ({
     id: i.id,
     child_id: i.child_id,
     date: i.date,
@@ -35,7 +42,7 @@ export async function GET() {
   }));
 
   // ── Map missing episodes ──────────────────────────────────────────────
-  const missingEpisodes: MissingEpisodeInput[] = store.missingEpisodes.map((m) => ({
+  const missingEpisodes: MissingEpisodeInput[] = missingEpisodesList.map((m) => ({
     id: m.id,
     child_id: m.child_id,
     date_missing: m.date_missing,
@@ -46,7 +53,7 @@ export async function GET() {
   }));
 
   // ── Map restraints ────────────────────────────────────────────────────
-  const restraints: RestraintInput[] = store.restraints.map((r) => ({
+  const restraints: RestraintInput[] = restraintsList.map((r) => ({
     id: r.id,
     child_id: r.child_id,
     date: r.date,
@@ -61,7 +68,7 @@ export async function GET() {
   }));
 
   // ── Map risk assessments ──────────────────────────────────────────────
-  const riskAssessments: RiskAssessmentInput[] = store.riskAssessments.map((ra) => ({
+  const riskAssessments: RiskAssessmentInput[] = riskAssessmentsList.map((ra) => ({
     id: ra.id,
     child_id: ra.child_id,
     domain: ra.domain,
@@ -74,7 +81,7 @@ export async function GET() {
   }));
 
   // ── Map notifiable events ─────────────────────────────────────────────
-  const notifiableEvents: NotifiableEventInput[] = store.notifiableEvents.map((ne) => ({
+  const notifiableEvents: NotifiableEventInput[] = notifiableEventsList.map((ne) => ({
     id: ne.id,
     date: ne.date,
     event_type: ne.event_type,
@@ -83,7 +90,7 @@ export async function GET() {
   }));
 
   // ── Build child name lookup ───────────────────────────────────────────
-  const children: ChildRef[] = store.youngPeople.map((yp) => ({
+  const children: ChildRef[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));

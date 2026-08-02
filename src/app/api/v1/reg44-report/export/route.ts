@@ -12,7 +12,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { localMonthKey } from "@/lib/utils";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
@@ -36,7 +37,10 @@ export async function GET(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const store = getStore();
+    const [buildingChecksList, ypFeedbackList] = await Promise.all([
+      dal.buildingChecks.findAll(),
+      dal.ypFeedback.findAll(),
+    ]);
     const { searchParams } = new URL(req.url);
     const homeId = searchParams.get("home_id") || "home_oak";
     const format = (searchParams.get("format") || "html").toLowerCase();
@@ -51,12 +55,12 @@ export async function GET(req: NextRequest) {
       restraints: (pack.restraints ?? []).map((r) => ({ id: String(r.id), childDebriefed: !!r.child_debriefed, hasDebriefRecord: false, date: day(r.date ?? r.created_at) })),
       missingEpisodes: (pack.missing_episodes ?? []).map((m) => ({ id: String(m.id), hasReturnInterview: !!m.return_interview_completed, date: day(m.date_missing) })),
       keywork: (pack.keywork_sessions ?? []).map((k) => ({ id: String(k.id), childVoice: String(k.child_voice ?? ""), date: day(k.date) })),
-      childVoice: (store.ypFeedback ?? []).filter((f: { date?: string }) => inMonth(day(f.date))).map((f) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) })),
+      childVoice: (ypFeedbackList ?? []).filter((f: { date?: string }) => inMonth(day(f.date))).map((f) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) })),
       complaints: (pack.complaints ?? []).map((c) => ({ id: String(c.id), resolved: !!c.date_resolved, date: day(c.complaint_date) })),
       educationRecords: 0, healthRecords: 0, achievementRecords: 0, carePlanRecords: 0, childrenSpokenTo: 0,
     };
     const assessment = assessReg44QualityStandards(input);
-    const buildingChecks = ((store.buildingChecks ?? []) as unknown as Array<Record<string, unknown>>).filter((c) => c.home_id === homeId || !c.home_id).map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
+    const buildingChecks = ((buildingChecksList ?? []) as unknown as Array<Record<string, unknown>>).filter((c) => c.home_id === homeId || !c.home_id).map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
     const bs = buildReg44BuildingSafety(buildingChecks, asOf);
 
     // Anonymise child voice to initials (never names in the export).

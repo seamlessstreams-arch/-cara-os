@@ -10,17 +10,21 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeAllMatches, computeValuesMatch, MATCH_DISCLAIMER,
   type EmployerValuesProfile, type CandidateValuesProfile,
 } from "@/lib/engines/values-match-engine";
 
 export async function GET(req: Request) {
-  const store = getStore() as any;
-  const employer: EmployerValuesProfile | undefined = (store.employerValuesProfiles ?? [])[0];
-  const candidates: CandidateValuesProfile[] = store.candidateValuesProfiles ?? [];
-  const profiles: any[] = store.candidateProfiles ?? [];
+  const [candidateProfilesList, candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
+      dal.candidateProfiles.findAll(),
+      dal.candidateValuesProfiles.findAll(),
+      dal.employerValuesProfiles.findAll(),
+    ]);
+  const employer: EmployerValuesProfile | undefined = (employerValuesProfilesList ?? [])[0];
+  const candidates: CandidateValuesProfile[] = candidateValuesProfilesList ?? [];
+  const profiles: any[] = candidateProfilesList ?? [];
 
   if (!employer) {
     return NextResponse.json({ data: { employer: null, matches: [], disclaimer: MATCH_DISCLAIMER } });

@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeReg44Intelligence,
   type VisitInput,
@@ -17,14 +17,17 @@ import {
 } from "@/lib/engines/reg44-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [reg44VisitReportsList, youngPeopleList] = await Promise.all([
+      dal.reg44VisitReports.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map Reg 44 visit reports ────────────────────────────────────────────────
-  const visits: VisitInput[] = store.reg44VisitReports.map((v) => {
+  const visits: VisitInput[] = reg44VisitReportsList.map((v) => {
     // Parse children_spoken count from "3/3" format
     const spokenParts = (v.children_spoken ?? "0/0").split("/");
     const childrenSpoken = parseInt(spokenParts[0], 10) || 0;
-    const childrenTotal = parseInt(spokenParts[1], 10) || store.youngPeople.length;
+    const childrenTotal = parseInt(spokenParts[1], 10) || youngPeopleList.length;
 
     // Parse duration from "4 hours" format
     const durationMatch = (v.duration ?? "").match(/(\d+\.?\d*)/);

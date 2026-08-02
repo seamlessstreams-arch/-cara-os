@@ -970,6 +970,288 @@ export const dal = {
     },
     async findById(id: string) { return getStore().caraRecordingReviews.find((r) => r.id === id) ?? null; },
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DEMO-ONLY extensions — batch 2 (2026-08-02). Unlocks ~77 more raw-store
+  // routes for DAL migration. Same demo-only pattern — reads always in-memory
+  // until a Supabase table lands.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  leaveRequests: {
+    async findAll(filters?: { staff_id?: string; status?: string }) {
+      let list = getStore().leaveRequests;
+      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
+      if (filters?.status) list = list.filter((r) => r.status === filters.status);
+      return list;
+    },
+    async findById(id: string) { return getStore().leaveRequests.find((r) => r.id === id) ?? null; },
+  },
+
+  ypFeedback: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.ypFeedback.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.ypFeedback.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.ypFeedback.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.ypFeedback.create(data); },
+  },
+
+  healthAssessments: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.healthAssessments.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.healthAssessments.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.healthAssessments.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.healthAssessments.create(data); },
+  },
+
+  notifiableEvents: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.notifiableEvents.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.notifiableEvents.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.notifiableEvents.create(data); },
+  },
+
+  employerValuesProfiles: {
+    async findAll() { return getStore().employerValuesProfiles; },
+    async findById(id: string) { return getStore().employerValuesProfiles.find((r) => r.id === id) ?? null; },
+  },
+
+  reg44VisitReports: {
+    async findAll(filters?: { home_id?: string }) {
+      let list = db.reg44VisitReports.findAll();
+      if (filters?.home_id) list = list.filter((r) => r.home_id === filters.home_id);
+      return list;
+    },
+    async findById(id: string) { return db.reg44VisitReports.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.reg44VisitReports.create(data); },
+  },
+
+  mentalHealthCheckIns: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.mentalHealthCheckIns.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.mentalHealthCheckIns.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.mentalHealthCheckIns.create(data); },
+  },
+
+  childPaceProfiles: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.childPaceProfiles.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.childId === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.childPaceProfiles.findByChild(childId) ?? null; },
+  },
+
+  complaints: {
+    async findAll(filters?: { status?: string }) {
+      let list = getStore().complaints;
+      if (filters?.status) list = list.filter((r) => r.status === filters.status);
+      return list;
+    },
+    async findById(id: string) { return getStore().complaints.find((r) => r.id === id) ?? null; },
+  },
+
+  welfareChecks: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.welfareChecks.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.welfareChecks.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.welfareChecks.create(data); },
+  },
+
+  medicationErrors: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.medicationErrors.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.medicationErrors.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.medicationErrors.create(data); },
+  },
+
+  outcomeReviews: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.outcomeReviews.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.outcomeReviews.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.outcomeReviews.create(data); },
+  },
+
+  advocacyRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.advocacyRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.advocacyRecords.findById(id) ?? null; },
+  },
+
+  qaAuditRecords: {
+    async findAll() { return db.qaAuditRecords.getAll(); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.qaAuditRecords.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.qaAuditRecords.update(id, data); },
+  },
+
+  candidateValuesProfiles: {
+    async findAll(filters?: { candidate_id?: string }) {
+      let list = getStore().candidateValuesProfiles;
+      if (filters?.candidate_id) list = list.filter((r) => r.candidate_id === filters.candidate_id);
+      return list;
+    },
+    async findById(id: string) { return getStore().candidateValuesProfiles.find((r) => r.id === id) ?? null; },
+  },
+
+  appointments: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.appointments.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.appointments.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.appointments.create(data); },
+  },
+
+  staffSicknessRecords: {
+    async findAll(filters?: { staff_id?: string }) {
+      let list = db.staffSicknessRecords.getAll();
+      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
+      return list;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.staffSicknessRecords.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.staffSicknessRecords.update(id, data); },
+  },
+
+  complaintOutcomeRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.complaintOutcomeRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.complaintOutcomeRecords.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.complaintOutcomeRecords.findByChild(childId); },
+  },
+
+  exploitationScreenings: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.exploitationScreenings.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.exploitationScreenings.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.exploitationScreenings.create(data); },
+  },
+
+  independenceSkillsRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.independenceSkillsRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.independenceSkillsRecords.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.independenceSkillsRecords.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.independenceSkillsRecords.create(data); },
+  },
+
+  postIncidentReflections: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.postIncidentReflections.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.postIncidentReflections.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.postIncidentReflections.findByChild(childId); },
+    async findByIncident(incidentId: string) { return db.postIncidentReflections.findByIncident(incidentId) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async append(r: any) { return db.postIncidentReflections.append(r); },
+  },
+
+  dentalRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.dentalRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.dentalRecords.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.dentalRecords.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.dentalRecords.create(data); },
+  },
+
+  behaviourSupportPlans: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.behaviourSupportPlans.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.behaviourSupportPlans.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.behaviourSupportPlans.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.behaviourSupportPlans.create(data); },
+  },
+
+  carePlans: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = getStore().carePlans;
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return getStore().carePlans.find((r) => r.id === id) ?? null; },
+  },
+
+  camhsReferrals: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.camhsReferrals.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.camhsReferrals.findById(id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.camhsReferrals.create(data); },
+  },
+
+  inductionRecords: {
+    async findAll(filters?: { overall_status?: string }) {
+      let list = db.inductionRecords.findAll();
+      if (filters?.overall_status) list = list.filter((r) => r.overall_status === filters.overall_status);
+      return list;
+    },
+    async findByStaff(staffId: string) { return db.inductionRecords.findByStaff(staffId) ?? null; },
+    async findByStatus(status: string) { return db.inductionRecords.findByStatus(status); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.inductionRecords.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.inductionRecords.update(id, data); },
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildHomeOutcomeOverview } from "@/lib/outcome-intelligence/home-outcome-overview";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +18,23 @@ export async function GET(req: NextRequest) {
     const windowParam = searchParams.get("window_days") ?? searchParams.get("windowDays");
     const windowDays = windowParam ? Number(windowParam) : undefined;
 
-    const store = getStore();
+    const [childPaceProfilesList, educationRecordsList, familyTimeSessionsList, incidentsList, keyWorkingSessionsList, lacReviewsList, missingEpisodesList, positiveAchievementsList, returnInterviewsList, youngPeopleList] = await Promise.all([
+      dal.childPaceProfiles.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.returnInterviews.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const paceByChild = new Map(
-      (store.childPaceProfiles ?? []).map((p) => [p.childId, p.trustedAdults ?? []]),
+      (childPaceProfilesList ?? []).map((p) => [p.childId, p.trustedAdults ?? []]),
     );
 
-    const children = (store.youngPeople ?? [])
+    const children = (youngPeopleList ?? [])
       .filter((yp) => yp.status === "current")
       .map((yp) => ({
         id: yp.id,
@@ -35,14 +46,14 @@ export async function GET(req: NextRequest) {
       now: new Date().toISOString(),
       windowDays: windowDays && !Number.isNaN(windowDays) ? windowDays : undefined,
       children,
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      incidents: store.incidents ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      educationRecords: store.educationRecords ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      familyTimeSessions: store.familyTimeSessions ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      lacReviews: store.lacReviews ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      incidents: incidentsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      familyTimeSessions: familyTimeSessionsList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      lacReviews: lacReviewsList ?? [],
     });
 
     return NextResponse.json({

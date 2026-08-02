@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import { buildEmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
 
@@ -28,16 +28,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
     }
 
-    const store = getStore();
-    const pace = (store.childPaceProfiles ?? []).find((p) => p.childId === childId);
+    const [behaviourLogList, childPaceProfilesList, incidentsList, keyWorkingSessionsList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.childPaceProfiles.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+    ]);
+    const pace = (childPaceProfilesList ?? []).find((p) => p.childId === childId);
 
     const analysis = buildEmotionalSafetyAnalysis({
       childId,
       childName: getYPName(childId),
       now: new Date().toISOString(),
-      behaviourLog: store.behaviourLog ?? [],
-      incidents: store.incidents ?? [],
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
+      behaviourLog: behaviourLogList ?? [],
+      incidents: incidentsList ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
       knownTriggers: pace?.knownTriggers ?? [],
       calmingApproaches: pace?.calmingApproaches ?? [],
     });

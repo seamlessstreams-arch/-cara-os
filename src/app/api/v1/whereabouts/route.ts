@@ -7,7 +7,7 @@
 // from today's schedule + live missing status, not a physical sign-out register
 // (the response carries that caveat in `as_of_note`).
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeInOutBoard,
   type WhereaboutsYoungPerson,
@@ -19,10 +19,15 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const store = getStore() as any;
+  const [appointmentsList, familyTimeSessionsList, missingEpisodesList, youngPeopleList] = await Promise.all([
+      dal.appointments.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   const board = computeInOutBoard({
-    youngPeople: (store.youngPeople ?? []).map(
+    youngPeople: (youngPeopleList ?? []).map(
       (y: any): WhereaboutsYoungPerson => ({
         id: String(y.id),
         first_name: String(y.first_name ?? ""),
@@ -30,7 +35,7 @@ export async function GET() {
         status: y.status,
       }),
     ),
-    appointments: (store.appointments ?? []).map(
+    appointments: (appointmentsList ?? []).map(
       (a: any): WhereaboutsAppointment => ({
         child_id: String(a.child_id ?? ""),
         date: String(a.date ?? ""),
@@ -40,7 +45,7 @@ export async function GET() {
         status: a.status,
       }),
     ),
-    familyTime: (store.familyTimeSessions ?? []).map(
+    familyTime: (familyTimeSessionsList ?? []).map(
       (f: any): WhereaboutsFamilyTime => ({
         child_id: String(f.child_id ?? ""),
         date: String(f.date ?? ""),
@@ -49,7 +54,7 @@ export async function GET() {
         location: f.location,
       }),
     ),
-    missing: (store.missingEpisodes ?? []).map(
+    missing: (missingEpisodesList ?? []).map(
       (m: any): WhereaboutsMissing => ({
         child_id: String(m.child_id ?? ""),
         date_missing: String(m.date_missing ?? ""),

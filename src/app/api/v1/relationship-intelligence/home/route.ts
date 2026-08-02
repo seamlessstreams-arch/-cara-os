@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { buildHomeRelationshipOverview } from "@/lib/relationship-intelligence/home-overview";
 
@@ -14,12 +14,25 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(_req: NextRequest) {
   try {
-    const store = getStore();
+    const [behaviourLogList, childPaceProfilesList, debriefRecordsList, educationRecordsList, familyTimeSessionsList, incidentsList, keyWorkingSessionsList, lacReviewsList, missingEpisodesList, positiveAchievementsList, returnInterviewsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.childPaceProfiles.findAll(),
+      dal.debriefRecords.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.returnInterviews.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const paceByChild = new Map(
-      (store.childPaceProfiles ?? []).map((p) => [p.childId, p]),
+      (childPaceProfilesList ?? []).map((p) => [p.childId, p]),
     );
 
-    const children = (store.youngPeople ?? []).map((yp) => {
+    const children = (youngPeopleList ?? []).map((yp) => {
       const pace = paceByChild.get(yp.id);
       return {
         childId: yp.id,
@@ -34,16 +47,16 @@ export async function GET(_req: NextRequest) {
       children,
       now: new Date().toISOString(),
       staffName: getStaffName,
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      debriefRecords: store.debriefRecords ?? [],
-      incidents: store.incidents ?? [],
-      familyTimeSessions: store.familyTimeSessions ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      educationRecords: store.educationRecords ?? [],
-      lacReviews: store.lacReviews ?? [],
-      behaviourLog: store.behaviourLog ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      debriefRecords: debriefRecordsList ?? [],
+      incidents: incidentsList ?? [],
+      familyTimeSessions: familyTimeSessionsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      lacReviews: lacReviewsList ?? [],
+      behaviourLog: behaviourLogList ?? [],
     });
 
     return NextResponse.json({

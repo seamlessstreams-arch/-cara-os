@@ -14,7 +14,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildPriority,
   type PriorityIncidentInput,
@@ -31,9 +31,21 @@ import type { KeyWorkerLink } from "@/lib/child-priority/child-priority-engine";
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, complaintsList, educationRecordsList, incidentsList, keyWorkingSessionsList, medicationErrorsList, missingEpisodesList, restraintsList, sanctionRewardsList, staffList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.complaints.findAll(),
+      dal.educationRecords.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.medicationErrors.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.restraints.findAll(),
+      dal.sanctionRewards.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const children: ChildInput[] = ((store.youngPeople ?? []) as any[])
+  const children: ChildInput[] = ((youngPeopleList ?? []) as any[])
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({
       id: yp.id,
@@ -44,7 +56,7 @@ export async function GET() {
       risk_flags: Array.isArray(yp.risk_flags) ? yp.risk_flags : [],
     }));
 
-  const incidents: PriorityIncidentInput[] = ((store.incidents ?? []) as any[])
+  const incidents: PriorityIncidentInput[] = ((incidentsList ?? []) as any[])
     .filter((i: any) => i.child_id)
     .map((i: any) => ({
       child_id: i.child_id,
@@ -53,7 +65,7 @@ export async function GET() {
       severity: i.severity ?? "low",
     }));
 
-  const complaints: ComplaintCorrInput[] = ((store.complaints ?? []) as any[])
+  const complaints: ComplaintCorrInput[] = ((complaintsList ?? []) as any[])
     .filter((c: any) => c.child_id)
     .map((c: any) => ({
       child_id: c.child_id,
@@ -63,7 +75,7 @@ export async function GET() {
       status: c.status ?? "received",
     }));
 
-  const medicationErrors: PriorityMedErrorInput[] = ((store.medicationErrors ?? []) as any[])
+  const medicationErrors: PriorityMedErrorInput[] = ((medicationErrorsList ?? []) as any[])
     .filter((e: any) => e.child_id)
     .map((e: any) => ({
       child_id: e.child_id,
@@ -71,43 +83,43 @@ export async function GET() {
       severity: e.severity ?? "no_harm",
     }));
 
-  const missingEpisodes: MissingInput[] = ((store.missingEpisodes ?? []) as any[]).map((m: any) => ({
+  const missingEpisodes: MissingInput[] = ((missingEpisodesList ?? []) as any[]).map((m: any) => ({
     child_id: m.child_id ?? "",
     date_missing: d(m.date_missing ?? m.created_at),
     risk_level: m.risk_level ?? "low",
     return_interview_completed: !!m.return_interview_completed,
   }));
-  const restraints: RestraintInput[] = ((store.restraints ?? []) as any[]).map((r: any) => ({
+  const restraints: RestraintInput[] = ((restraintsList ?? []) as any[]).map((r: any) => ({
     child_id: r.child_id ?? "", date: d(r.date ?? r.created_at),
   }));
-  const sanctions: SanctionInput[] = ((store.sanctionRewards ?? []) as any[]).map((s: any) => ({
+  const sanctions: SanctionInput[] = ((sanctionRewardsList ?? []) as any[]).map((s: any) => ({
     child_id: s.child_id ?? "", date: d(s.date ?? s.created_at),
     direction: s.direction ?? "sanction", proportionate: s.proportionate !== false,
   }));
-  const behaviour: BehaviourInput[] = ((store.behaviourLog ?? []) as any[]).map((b: any) => ({
+  const behaviour: BehaviourInput[] = ((behaviourLogList ?? []) as any[]).map((b: any) => ({
     child_id: b.child_id ?? "", date: d(b.date ?? b.created_at),
     direction: b.direction ?? "concern", intensity: b.intensity ?? "low",
   }));
-  const education: EducationInput[] = ((store.educationRecords ?? []) as any[]).map((e: any) => ({
+  const education: EducationInput[] = ((educationRecordsList ?? []) as any[]).map((e: any) => ({
     child_id: e.child_id ?? "", date: d(e.date ?? e.created_at),
     attendance_status: e.attendance_status ?? null,
   }));
-  const keyworking: KeyworkingInput[] = ((store.keyWorkingSessions ?? []) as any[]).map((k: any) => ({
+  const keyworking: KeyworkingInput[] = ((keyWorkingSessionsList ?? []) as any[]).map((k: any) => ({
     child_id: k.child_id ?? "", date: d(k.date ?? k.created_at),
     mood_before: typeof k.mood_before === "number" ? k.mood_before : 3,
     mood_after: typeof k.mood_after === "number" ? k.mood_after : 3,
   }));
 
   // ── Relational-continuity inputs (4th stream) ──────────────────────────
-  const staff: ContinuityStaffInput[] = ((store.staff ?? []) as any[]).map((s: any) => ({
+  const staff: ContinuityStaffInput[] = ((staffList ?? []) as any[]).map((s: any) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
     active: s.is_active ?? (s.employment_status ? s.employment_status === "active" : true),
   }));
-  const keyWorkingSessions: ContinuitySessionInput[] = ((store.keyWorkingSessions ?? []) as any[])
+  const keyWorkingSessions: ContinuitySessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
     .filter((k: any) => k.child_id && k.staff_id)
     .map((k: any) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
-  const keyWorkers: KeyWorkerLink[] = ((store.youngPeople ?? []) as any[])
+  const keyWorkers: KeyWorkerLink[] = ((youngPeopleList ?? []) as any[])
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({ child_id: yp.id, key_worker_id: yp.key_worker_id ?? null, secondary_worker_id: yp.secondary_worker_id ?? null }));
 

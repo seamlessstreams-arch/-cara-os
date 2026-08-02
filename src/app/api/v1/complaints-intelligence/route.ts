@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeComplaintsIntelligence,
   type ComplaintInput,
@@ -17,9 +17,13 @@ import {
 } from "@/lib/engines/complaints-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [complaintOutcomeRecordsList, staffList, youngPeopleList] = await Promise.all([
+      dal.complaintOutcomeRecords.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const complaints: ComplaintInput[] = (store.complaintOutcomeRecords ?? []).map((c: any) => ({
+  const complaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c: any) => ({
     id: c.id,
     complaint_date: typeof c.complaint_date === "string" ? c.complaint_date.slice(0, 10) : c.complaint_date,
     complainant: c.complainant,
@@ -38,12 +42,12 @@ export async function GET() {
     ofsted_notified: c.ofsted_notified ?? false,
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

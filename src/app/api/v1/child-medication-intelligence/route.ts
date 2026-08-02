@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildMedication,
   type MedicationInput,
@@ -30,18 +30,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [medicationAdministrationsList, medicationErrorsList, medicationsList, youngPeopleList] = await Promise.all([
+      dal.medicationAdministrations.findAll(),
+      dal.medicationErrors.findAll(),
+      dal.medications.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
   const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
 
   // ── Medications ────────────────────────────────────────────────────────
-  const medications: MedicationInput[] = ((store.medications ?? []) as any[])
+  const medications: MedicationInput[] = ((medicationsList ?? []) as any[])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
@@ -57,7 +62,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Administrations ────────────────────────────────────────────────────
-  const administrations: AdministrationInput[] = ((store.medicationAdministrations ?? []) as any[])
+  const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[])
     .filter((a: any) => a.child_id === childId)
     .map((a: any) => ({
       id: a.id,
@@ -74,7 +79,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Medication Errors ──────────────────────────────────────────────────
-  const errors: MedErrorInput[] = ((store.medicationErrors ?? []) as any[])
+  const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[])
     .filter((e: any) => e.child_id === childId)
     .map((e: any) => ({
       id: e.id,

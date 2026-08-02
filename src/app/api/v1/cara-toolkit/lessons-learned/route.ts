@@ -11,7 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   LessonsLearnedAnalysis,
@@ -73,13 +73,18 @@ function childInitials(yp: any): string {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [incidentsList, reflectiveSupervisionsList, reg44VisitReportsList, youngPeopleList] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.reflectiveSupervisions.findAll(),
+      dal.reg44VisitReports.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const incidents       = (store.incidents as any[]) ?? [];
-  const reg44Reports    = (store.reg44VisitReports as any[]) ?? [];
-  const supervisions    = (store.reflectiveSupervisions as any[]) ?? [];
-  const youngPeople     = (store.youngPeople as any[]) ?? [];
+  const incidents       = (incidentsList as any[]) ?? [];
+  const reg44Reports    = (reg44VisitReportsList as any[]) ?? [];
+  const supervisions    = (reflectiveSupervisionsList as any[]) ?? [];
+  const youngPeople     = (youngPeopleList as any[]) ?? [];
 
   const ypMap = new Map(youngPeople.map((yp: any) => [yp.id, yp]));
 

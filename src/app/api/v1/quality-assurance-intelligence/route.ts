@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeQualityAssuranceIntelligence,
   type QAAuditInput,
@@ -18,10 +18,13 @@ import {
 } from "@/lib/engines/quality-assurance-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [qaAuditRecordsList, staffList] = await Promise.all([
+      dal.qaAuditRecords.findAll(),
+      dal.staff.findAll(),
+    ]);
 
   // ── Map QA audit records ──────────────────────────────────────────────
-  const audits: QAAuditInput[] = (store.qaAuditRecords ?? []).map((r: any) => ({
+  const audits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r: any) => ({
     id: r.id,
     title: r.title ?? "Untitled Audit",
     date: r.date ?? "",
@@ -45,7 +48,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

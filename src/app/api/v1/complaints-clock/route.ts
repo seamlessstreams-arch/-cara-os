@@ -4,24 +4,27 @@
 //
 // Per-complaint countdown to the statutory acknowledgement + response deadlines,
 // with breach / at-risk flags. CHR 2015 Reg 39 — complaints handled within
-// timescales. Reads store.complaints (the lifecycle Complaint records, which carry
+// timescales. Reads complaintsList (the lifecycle Complaint records, which carry
 // pre-computed acknowledgement_due / response_due dates).
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import { computeComplaintsClock, type ComplaintInput } from "@/lib/engines/complaints-clock-engine";
 
 const CLOSED_STATUSES = new Set(["closed", "resolved", "withdrawn", "not_upheld_closed"]);
 
 export async function GET() {
-  const store = getStore();
+  const [complaintsList, youngPeopleList] = await Promise.all([
+      dal.complaints.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const yp = (store.youngPeople ?? []) as any[];
+  const yp = (youngPeopleList ?? []) as any[];
   const childName = (id?: string | null): string | undefined => {
     if (!id) return undefined;
     const c = yp.find((c) => c.id === id);
@@ -30,7 +33,7 @@ export async function GET() {
   const staff = (id?: string | null): string | undefined => (id ? getStaffName(id) : undefined);
   const iso = (v: any): string | undefined => (v ? String(v).slice(0, 10) : undefined);
 
-  const complaints: ComplaintInput[] = ((store.complaints ?? []) as any[]).map((c: any) => ({
+  const complaints: ComplaintInput[] = ((complaintsList ?? []) as any[]).map((c: any) => ({
     id: String(c.id ?? ""),
     reference: String(c.reference ?? c.id ?? ""),
     child_id: c.child_id ?? undefined,

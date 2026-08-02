@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeNotifiableEventsIntelligence,
   type NotifiableEventInput,
@@ -17,9 +17,13 @@ import {
 } from "@/lib/engines/notifiable-events-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [notifiableEventsList, staffList, youngPeopleList] = await Promise.all([
+      dal.notifiableEvents.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const events: NotifiableEventInput[] = (store.notifiableEvents ?? []).map((e: any) => ({
+  const events: NotifiableEventInput[] = (notifiableEventsList ?? []).map((e: any) => ({
     id: e.id,
     date: typeof e.date === "string" ? e.date.slice(0, 10) : e.date,
     event_type: e.event_type,
@@ -34,12 +38,12 @@ export async function GET() {
     lesson_learned: e.lesson_learned ?? "",
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

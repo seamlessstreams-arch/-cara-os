@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below, formatRate, meanOf, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
 import type {
   QualityDimension,
@@ -24,25 +24,36 @@ function signal(score: number | null): SignalColour {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [dailyLogList, debriefRecordsList, incidentsList, keyWorkingSessionsList, reflectiveSupervisionsList, reg44VisitReportsList, riskAssessmentsList, staffList, trainingRecordsList, youngPeopleList] = await Promise.all([
+      dal.dailyLog.findAll(),
+      dal.debriefRecords.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.reflectiveSupervisions.findAll(),
+      dal.reg44VisitReports.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.staff.findAll(),
+      dal.trainingRecords.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
   const thirtyAgo = new Date(new Date().getTime() - 30 * 86_400_000).toISOString().slice(0, 10);
   const ninetyAgo = new Date(new Date().getTime() - 90 * 86_400_000).toISOString().slice(0, 10);
 
-  const youngPeople = (store.youngPeople as any[]) ?? [];
+  const youngPeople = (youngPeopleList as any[]) ?? [];
   const activeChildren = youngPeople.filter(
     (y: any) => y.status !== "moved_on" && y.status !== "discharged"
   );
 
-  const incidents = (store.incidents as any[]) ?? [];
-  const keyWorkingSessions = (store.keyWorkingSessions as any[]) ?? [];
-  const dailyLog = (store.dailyLog as any[]) ?? [];
-  const reflectiveSupervisions = (store.reflectiveSupervisions as any[]) ?? [];
-  const reg44 = (store.reg44VisitReports as any[]) ?? [];
-  const riskAssessments = (store.riskAssessments as any[]) ?? [];
-  const trainingRecords = (store.trainingRecords as any[]) ?? [];
-  const staff = (store.staff as any[]) ?? [];
-  const debriefs = (store.debriefRecords as any[]) ?? [];
+  const incidents = (incidentsList as any[]) ?? [];
+  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
+  const dailyLog = (dailyLogList as any[]) ?? [];
+  const reflectiveSupervisions = (reflectiveSupervisionsList as any[]) ?? [];
+  const reg44 = (reg44VisitReportsList as any[]) ?? [];
+  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
+  const trainingRecords = (trainingRecordsList as any[]) ?? [];
+  const staff = (staffList as any[]) ?? [];
+  const debriefs = (debriefRecordsList as any[]) ?? [];
 
   // ── Dimension 1: Quality of relationships ────────────────────────────────
   const recentKeyWork = keyWorkingSessions.filter((k: any) => (k.date ?? "") >= thirtyAgo).length;

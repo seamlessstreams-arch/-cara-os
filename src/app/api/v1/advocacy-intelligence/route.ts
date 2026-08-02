@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeAdvocacyIntelligence,
   type AdvocacyInput,
@@ -19,9 +19,13 @@ import {
 } from "@/lib/engines/advocacy-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [advocacyRecordsList, staffList, youngPeopleList] = await Promise.all([
+      dal.advocacyRecords.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const referrals: AdvocacyInput[] = (store.advocacyRecords ?? []).map((r: any) => {
+  const referrals: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r: any) => {
     const visits: { date: string; summary: string; outcome: string }[] = r.visits ?? [];
     const lastVisit = visits.length > 0
       ? visits.reduce((latest, v) => (v.date > latest ? v.date : latest), visits[0].date)
@@ -49,12 +53,12 @@ export async function GET() {
     };
   });
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

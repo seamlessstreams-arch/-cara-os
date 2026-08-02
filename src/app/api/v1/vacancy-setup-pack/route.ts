@@ -5,7 +5,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildVacancySetupPack } from "@/lib/engines/vacancy-setup-engine";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const today = new Date().toISOString().slice(0, 10);
-  const store = getStore();
+  const employerValuesProfilesList = await dal.employerValuesProfiles.findAll();
   const vacancies = db.vacancies.findAll();
   if (vacancies.length === 0) {
     return NextResponse.json({ data: { vacancies: [], pack: null } });
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
   const requestedId = req.nextUrl.searchParams.get("vacancyId");
   const vacancy = (requestedId && vacancies.find((v) => v.id === requestedId)) || vacancies[0];
 
-  const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
+  const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
   const staff = db.staff.findAll().map((s) => ({ id: s.id, full_name: s.full_name }));
 
   const pack = buildVacancySetupPack({

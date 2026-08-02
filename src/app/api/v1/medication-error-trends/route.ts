@@ -14,7 +14,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeMedicationErrorTrends,
   type MedErrorInput,
@@ -24,15 +24,19 @@ import {
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const [medicationAdministrationsList, medicationErrorsList, youngPeopleList] = await Promise.all([
+      dal.medicationAdministrations.findAll(),
+      dal.medicationErrors.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // Resolve child display names.
   const nameById = new Map<string, string>();
-  for (const yp of (store.youngPeople ?? []) as any[]) {
+  for (const yp of (youngPeopleList ?? []) as any[]) {
     nameById.set(yp.id, yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id);
   }
 
-  const errors: MedErrorInput[] = ((store.medicationErrors ?? []) as any[]).map((e: any) => ({
+  const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[]).map((e: any) => ({
     id: e.id,
     child_id: e.child_id ?? "",
     child_name: nameById.get(e.child_id) ?? e.child_id ?? "Unknown",
@@ -50,7 +54,7 @@ export async function GET() {
     status: e.status ?? "reported",
   }));
 
-  const administrations: AdministrationInput[] = ((store.medicationAdministrations ?? []) as any[]).map((a: any) => ({
+  const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[]).map((a: any) => ({
     date: d(a.scheduled_time ?? a.actual_time ?? a.created_at),
     status: a.status ?? "",
   }));

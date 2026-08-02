@@ -10,19 +10,23 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildInterviewPack, INTERVIEW_ROLES } from "@/lib/engines/interview-pack-engine";
 import { computeValuesMatch, type EmployerValuesProfile, type CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 
 export async function GET(req: Request) {
-  const store = getStore() as any;
+  const [candidateProfilesList, candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
+      dal.candidateProfiles.findAll(),
+      dal.candidateValuesProfiles.findAll(),
+      dal.employerValuesProfiles.findAll(),
+    ]);
   const url = new URL(req.url);
   const role = url.searchParams.get("role") || INTERVIEW_ROLES[0].key;
   const candidateId = url.searchParams.get("candidateId");
 
-  const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
-  const candidates: CandidateValuesProfile[] = store.candidateValuesProfiles ?? [];
-  const profiles: any[] = store.candidateProfiles ?? [];
+  const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
+  const candidates: CandidateValuesProfile[] = candidateValuesProfilesList ?? [];
+  const profiles: any[] = candidateProfilesList ?? [];
   const nameFor = (cid: string) => {
     const c = candidates.find((x) => x.candidate_id === cid);
     if (c?.candidate_name) return c.candidate_name;

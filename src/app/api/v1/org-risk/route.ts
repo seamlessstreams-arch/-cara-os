@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildOrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
 
 export const dynamic = "force-dynamic";
@@ -15,16 +15,24 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const store = getStore();
+    const [complaintsList, incidentsList, leaveRequestsList, missingEpisodesList, staffList, supervisionsList, trainingRecordsList] = await Promise.all([
+      dal.complaints.findAll(),
+      dal.incidents.findAll(),
+      dal.leaveRequests.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.staff.findAll(),
+      dal.supervisions.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
     const dashboard = buildOrgRiskDashboard({
       now: new Date().toISOString(),
-      staff: store.staff ?? [],
-      supervisions: store.supervisions ?? [],
-      trainingRecords: store.trainingRecords ?? [],
-      incidents: store.incidents ?? [],
-      missing: store.missingEpisodes ?? [],
-      complaints: (store.complaints ?? []) as { date?: string; created_at?: string }[],
-      leave: store.leaveRequests ?? [],
+      staff: staffList ?? [],
+      supervisions: supervisionsList ?? [],
+      trainingRecords: trainingRecordsList ?? [],
+      incidents: incidentsList ?? [],
+      missing: missingEpisodesList ?? [],
+      complaints: (complaintsList ?? []) as { date?: string; created_at?: string }[],
+      leave: leaveRequestsList ?? [],
     });
     return NextResponse.json({ data: dashboard });
   } catch (error: unknown) {

@@ -14,7 +14,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeComplaintsIncidentCorrelation,
   type ChildRef,
@@ -25,14 +25,18 @@ import {
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const [complaintsList, incidentsList, youngPeopleList] = await Promise.all([
+      dal.complaints.findAll(),
+      dal.incidents.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const children: ChildRef[] = ((store.youngPeople ?? []) as any[]).map((yp: any) => ({
+  const children: ChildRef[] = ((youngPeopleList ?? []) as any[]).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
   }));
 
-  const complaints: ComplaintCorrInput[] = ((store.complaints ?? []) as any[])
+  const complaints: ComplaintCorrInput[] = ((complaintsList ?? []) as any[])
     .filter((c: any) => c.child_id)
     .map((c: any) => ({
       child_id: c.child_id,
@@ -42,7 +46,7 @@ export async function GET() {
       status: c.status ?? "received",
     }));
 
-  const incidents: IncidentCorrInput[] = ((store.incidents ?? []) as any[])
+  const incidents: IncidentCorrInput[] = ((incidentsList ?? []) as any[])
     .filter((i: any) => i.child_id)
     .map((i: any) => ({
       child_id: i.child_id,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChild360,
   type Child360Input,
@@ -10,7 +10,25 @@ import { buildCpie360Spine } from "@/lib/cpie/child-360-spine";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const store = getStore();
+  const [appointmentsList, behaviourLogList, careFormsList, chronologyList, dailyLogList, educationRecordsList, familyTimeSessionsList, incidentsList, keyWorkingSessionsList, medicationAdministrationsList, medicationsList, missingEpisodesList, outcomeReviewsList, outcomeTargetsList, riskAssessmentsList, staffList, youngPeopleList] = await Promise.all([
+      dal.appointments.findAll(),
+      dal.behaviourLog.findAll(),
+      dal.careForms.findAll(),
+      dal.chronology.findAll(),
+      dal.dailyLog.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.medicationAdministrations.findAll(),
+      dal.medications.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.outcomeReviews.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const childId = req.nextUrl.searchParams.get("childId");
 
   const identity = await getRequestIdentity(req);
@@ -21,14 +39,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "childId query parameter required" }, { status: 400 });
   }
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const incidents = store.incidents
+  const incidents = incidentsList
     .filter((i) => i.child_id === childId)
     .map((i) => ({
       id: i.id,
@@ -40,7 +58,7 @@ export async function GET(req: NextRequest) {
       outcome: i.outcome,
     }));
 
-  const daily_logs = store.dailyLog
+  const daily_logs = dailyLogList
     .filter((l) => l.child_id === childId)
     .map((l) => ({
       date: l.date.slice(0, 10),
@@ -50,7 +68,7 @@ export async function GET(req: NextRequest) {
       content: l.content,
     }));
 
-  const medications = store.medications
+  const medications = medicationsList
     .filter((m) => m.child_id === childId)
     .map((m) => ({
       name: m.name,
@@ -62,7 +80,7 @@ export async function GET(req: NextRequest) {
       end_date: m.end_date?.slice(0, 10) ?? null,
     }));
 
-  const medication_administrations = store.medicationAdministrations
+  const medication_administrations = medicationAdministrationsList
     .filter((a) => a.child_id === childId)
     .map((a) => ({
       scheduled_time: a.scheduled_time,
@@ -70,7 +88,7 @@ export async function GET(req: NextRequest) {
       medication_id: a.medication_id,
     }));
 
-  const missing_episodes = store.missingEpisodes
+  const missing_episodes = missingEpisodesList
     .filter((m) => m.child_id === childId)
     .map((m) => ({
       date_missing: m.date_missing.slice(0, 10),
@@ -81,7 +99,7 @@ export async function GET(req: NextRequest) {
       status: m.status,
     }));
 
-  const risk_assessments = store.riskAssessments
+  const risk_assessments = riskAssessmentsList
     .filter((r) => r.child_id === childId)
     .map((r) => ({
       domain: r.domain,
@@ -98,7 +116,7 @@ export async function GET(req: NextRequest) {
   // undefined, so the engine's keywork_sessions_30d was ALWAYS 0 and
   // last_keywork_date always null for every child. A stored session is a
   // session that took place, so it maps to a completed one on its date.
-  const keywork_sessions = store.keyWorkingSessions
+  const keywork_sessions = keyWorkingSessionsList
     .filter((k) => k.child_id === childId)
     .map((k) => ({
       theme: k.topics.join(", ") || k.type,
@@ -108,7 +126,7 @@ export async function GET(req: NextRequest) {
       completed_at: k.date.slice(0, 10),
     }));
 
-  const outcome_targets = store.outcomeTargets
+  const outcome_targets = outcomeTargetsList
     .filter((t) => t.child_id === childId)
     .map((t) => ({
       domain: t.domain,
@@ -121,7 +139,7 @@ export async function GET(req: NextRequest) {
       review_date: t.review_date.slice(0, 10),
     }));
 
-  const outcome_reviews = store.outcomeReviews
+  const outcome_reviews = outcomeReviewsList
     .filter((r) => r.child_id === childId)
     .map((r) => ({
       target_id: r.target_id,
@@ -132,7 +150,7 @@ export async function GET(req: NextRequest) {
       yp_participated: r.yp_participated,
     }));
 
-  const contact_logs = store.familyTimeSessions
+  const contact_logs = familyTimeSessionsList
     .filter((f) => f.child_id === childId)
     .map((f) => ({
       date: f.date.slice(0, 10),
@@ -141,7 +159,7 @@ export async function GET(req: NextRequest) {
       yp_voice: f.child_voice_after || null,
     }));
 
-  const education_records = store.educationRecords
+  const education_records = educationRecordsList
     .filter((r) => r.child_id === childId)
     .map((r: any) => ({
       record_type: r.record_type,
@@ -151,7 +169,7 @@ export async function GET(req: NextRequest) {
       status: r.status ?? "",
     }));
 
-  const care_forms = store.careForms
+  const care_forms = careFormsList
     .filter((f) => f.linked_child_id === childId)
     .map((f) => ({
       form_type: f.form_type,
@@ -160,7 +178,7 @@ export async function GET(req: NextRequest) {
       created_at: f.created_at.slice(0, 10),
     }));
 
-  const behaviour_logs = store.behaviourLog
+  const behaviour_logs = behaviourLogList
     .filter((b) => b.child_id === childId)
     .map((b) => ({
       date: b.date.slice(0, 10),
@@ -171,7 +189,7 @@ export async function GET(req: NextRequest) {
       consequence: b.consequence,
     }));
 
-  const appointments = store.appointments
+  const appointments = appointmentsList
     .filter((a) => a.child_id === childId)
     .map((a) => ({
       date: a.date.slice(0, 10),
@@ -183,7 +201,7 @@ export async function GET(req: NextRequest) {
 
   // ChronologyEntry records significance/title, not severity/summary — the
   // old reads were undefined for every entry.
-  const chronology_entries = store.chronology
+  const chronology_entries = chronologyList
     .filter((c) => c.child_id === childId)
     .map((c) => ({
       date: c.date.slice(0, 10),
@@ -193,7 +211,7 @@ export async function GET(req: NextRequest) {
     }));
 
   const staffNameMap: Record<string, string> = {};
-  for (const s of store.staff) {
+  for (const s of staffList) {
     staffNameMap[s.id] = s.full_name || `${s.first_name} ${s.last_name}`;
   }
 

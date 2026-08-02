@@ -2,7 +2,7 @@
 // One staff member's consolidated compliance + absence picture, reusing the
 // home-level engines scoped to a single person. Deterministic.
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeStaffCompliance } from "@/lib/engines/staff-compliance-engine";
 import { computeWorkforceAbsence } from "@/lib/engines/workforce-absence-engine";
 
@@ -12,10 +12,14 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
-  const store = getStore() as any;
+  const [staffList, staffSicknessRecordsList, trainingRecordsList] = await Promise.all([
+      dal.staff.findAll(),
+      dal.staffSicknessRecords.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const s = (store.staff ?? []).find((m: any) => String(m.id) === String(id));
+  const s = (staffList ?? []).find((m: any) => String(m.id) === String(id));
   if (!s) return NextResponse.json({ error: "Staff member not found" }, { status: 404 });
 
   const staffLite = [{
@@ -35,7 +39,7 @@ export async function GET(_req: Request, { params }: Params) {
   const compliance = computeStaffCompliance({
     today,
     staff: staffLite,
-    training: (store.trainingRecords ?? [])
+    training: (trainingRecordsList ?? [])
       .filter((t: any) => String(t.staff_id) === String(id))
       .map((t: any) => ({
         staff_id: String(t.staff_id),
@@ -50,7 +54,7 @@ export async function GET(_req: Request, { params }: Params) {
   const absence = computeWorkforceAbsence({
     today,
     staff: staffLite.map((x) => ({ id: x.id, full_name: x.full_name })),
-    records: (store.staffSicknessRecords ?? [])
+    records: (staffSicknessRecordsList ?? [])
       .filter((r: any) => String(r.staff_id) === String(id))
       .map((r: any) => ({
         staff_id: String(r.staff_id),

@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildVoiceParticipation,
   type ChildInfo,
@@ -34,11 +34,17 @@ function mapParticipation(storeValue: string): ParticipationType {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [advocacyRecordsList, keyWorkingSessionsList, lacReviewsList, youngPeopleList, ypFeedbackList] = await Promise.all([
+      dal.advocacyRecords.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.youngPeople.findAll(),
+      dal.ypFeedback.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Children ───────────────────────────────────────────────────────────
-  const children: ChildInfo[] = (store.youngPeople ?? [])
+  const children: ChildInfo[] = (youngPeopleList ?? [])
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({
       id: yp.id,
@@ -46,7 +52,7 @@ export async function GET() {
     }));
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
-  const lac_reviews: LacReviewInput[] = (store.lacReviews ?? []).map((r: any) => ({
+  const lac_reviews: LacReviewInput[] = (lacReviewsList ?? []).map((r: any) => ({
     id: r.id,
     child_id: r.child_id,
     date: typeof r.date === "string" ? r.date.slice(0, 10) : r.date,
@@ -56,7 +62,7 @@ export async function GET() {
   }));
 
   // ── Advocacy Records ───────────────────────────────────────────────────
-  const advocacy_records: AdvocacyInput[] = (store.advocacyRecords ?? []).map((r: any) => {
+  const advocacy_records: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r: any) => {
     const visits = Array.isArray(r.visits) ? r.visits : [];
     const privateSessions = visits.filter((v: any) => v.private_session).length;
 
@@ -73,7 +79,7 @@ export async function GET() {
   });
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
-  const key_work_sessions: KeyWorkSessionInput[] = (store.keyWorkingSessions ?? []).map((k: any) => ({
+  const key_work_sessions: KeyWorkSessionInput[] = (keyWorkingSessionsList ?? []).map((k: any) => ({
     id: k.id,
     child_id: k.child_id,
     date: typeof k.date === "string" ? k.date.slice(0, 10) : k.date,
@@ -83,7 +89,7 @@ export async function GET() {
   }));
 
   // ── YP Feedback ────────────────────────────────────────────────────────
-  const feedback_entries: FeedbackEntryInput[] = (store.ypFeedback ?? []).map((f: any) => ({
+  const feedback_entries: FeedbackEntryInput[] = (ypFeedbackList ?? []).map((f: any) => ({
     id: f.id,
     child_id: f.child_id,
     date: typeof f.date === "string" ? f.date.slice(0, 10) : f.date,

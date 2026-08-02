@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildInspectionReadiness } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +15,24 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(_req: NextRequest) {
   try {
-    const store = getStore();
+    const [carePlansList, debriefRecordsList, educationRecordsList, incidentsList, keyWorkingSessionsList, lacReviewsList, missingEpisodesList, positiveAchievementsList, returnInterviewsList, riskAssessmentsList, supervisionsList, trainingRecordsList, welfareChecksList, youngPeopleList] = await Promise.all([
+      dal.carePlans.findAll(),
+      dal.debriefRecords.findAll(),
+      dal.educationRecords.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.returnInterviews.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.supervisions.findAll(),
+      dal.trainingRecords.findAll(),
+      dal.welfareChecks.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-    const children = (store.youngPeople ?? [])
+    const children = (youngPeopleList ?? [])
       .filter((yp) => yp.status === "current")
       .map((yp) => ({
         id: yp.id,
@@ -27,19 +42,19 @@ export async function GET(_req: NextRequest) {
     const readiness = buildInspectionReadiness({
       now: new Date().toISOString(),
       children,
-      incidents: store.incidents ?? [],
-      debriefRecords: store.debriefRecords ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      lacReviews: store.lacReviews ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      educationRecords: store.educationRecords ?? [],
-      riskAssessments: store.riskAssessments ?? [],
-      welfareChecks: store.welfareChecks ?? [],
-      carePlans: store.carePlans ?? [],
-      supervisions: store.supervisions ?? [],
-      trainingRecords: store.trainingRecords ?? [],
+      incidents: incidentsList ?? [],
+      debriefRecords: debriefRecordsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      lacReviews: lacReviewsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      riskAssessments: riskAssessmentsList ?? [],
+      welfareChecks: welfareChecksList ?? [],
+      carePlans: carePlansList ?? [],
+      supervisions: supervisionsList ?? [],
+      trainingRecords: trainingRecordsList ?? [],
     });
 
     return NextResponse.json({

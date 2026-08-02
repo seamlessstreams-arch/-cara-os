@@ -12,7 +12,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { INTERVIEW_ROLES } from "@/lib/engines/interview-pack-engine";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
@@ -28,9 +28,12 @@ export async function POST(req: Request) {
   const candidateId = body.candidateId ? String(body.candidateId) : null;
   const roleLabel = (INTERVIEW_ROLES.find((r) => r.key === role) ?? INTERVIEW_ROLES[0]).label;
 
-  const store = getStore() as any;
-  const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
-  const candidates: CandidateValuesProfile[] = store.candidateValuesProfiles ?? [];
+  const [candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
+      dal.candidateValuesProfiles.findAll(),
+      dal.employerValuesProfiles.findAll(),
+    ]);
+  const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
+  const candidates: CandidateValuesProfile[] = candidateValuesProfilesList ?? [];
   const cand = candidateId ? candidates.find((c) => c.candidate_id === candidateId) : null;
 
   const facts: string[] = [`Role: ${roleLabel}.`];

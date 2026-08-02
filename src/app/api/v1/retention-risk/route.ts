@@ -11,7 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeRetentionRisk, type StaffSignalsInput } from "@/lib/engines/retention-risk-engine";
 
@@ -38,23 +38,31 @@ function withinDays(dateStr: any, n: number, today: string): boolean {
 }
 
 export async function GET() {
-  const store = getStore() as any;
+  const [incidentsList, leaveList, leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.leave.findAll(),
+      dal.leaveRequests.findAll(),
+      dal.reflectiveSupervisions.findAll(),
+      dal.shifts.findAll(),
+      dal.staff.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const allStaff: any[] = store.staff ?? [];
+  const allStaff: any[] = staffList ?? [];
   const staff: StaffLite[] = allStaff
     .filter((s) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
     .map((s) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
 
   // 1. supervision status + wellbeing/confidence (reuse slice 3 engine)
-  const supRecords: ReflectiveSupervisionRecord[] = store.reflectiveSupervisions ?? [];
+  const supRecords: ReflectiveSupervisionRecord[] = reflectiveSupervisionsList ?? [];
   const supOverview = computeSupervisionOverview({ records: supRecords, staff, today });
   const supByStaff = new Map(supOverview.by_staff.map((s) => [s.staff_id, s]));
 
-  const training: any[] = store.trainingRecords ?? [];
-  const incidents: any[] = store.incidents ?? [];
-  const shifts: any[] = store.shifts ?? [];
-  const leave: any[] = store.leaveRequests ?? store.leave ?? [];
+  const training: any[] = trainingRecordsList ?? [];
+  const incidents: any[] = incidentsList ?? [];
+  const shifts: any[] = shiftsList ?? [];
+  const leave: any[] = leaveRequestsList ?? leaveList ?? [];
 
   const signals: StaffSignalsInput[] = staff.map((s) => {
     const sup = supByStaff.get(s.id);
