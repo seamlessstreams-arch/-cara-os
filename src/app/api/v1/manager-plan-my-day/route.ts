@@ -4,7 +4,7 @@
 // An optional AI narrative sits on top; the plan stands alone without it.
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
 import { computeManagerPlanDay, type PlanMyDayInput, type ManagerPlanDayResult } from "@/lib/engines/manager-plan-my-day-engine";
 import { parsePlanNotes } from "@/lib/plan/plan-notes";
@@ -14,15 +14,23 @@ export const dynamic = "force-dynamic";
 
 const FIXED_EXCLUDE = new Set(["task", "training", "shift"]);
 
-/** Assemble the engine input from the live store + today's calendar feed. */
-function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInput {
-  const store = getStore();
+/** Assemble the engine input from the DAL + today's calendar feed. */
+async function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): Promise<PlanMyDayInput> {
+  const [youngPeopleList, staffList, tasksList, incidentsList, supervisionsList, trainingRecordsList, keyWorkingSessionsList] = await Promise.all([
+    dal.youngPeople.findAll(),
+    dal.staff.findAll(),
+    dal.tasks.findAll(),
+    dal.incidents.findAll(),
+    dal.supervisions.findAll(),
+    dal.trainingRecords.findAll(),
+    dal.keyWorkingSessions.findAll(),
+  ]);
   const nowDate = new Date();
   const today = nowDate.toISOString().slice(0, 10);
   const now = nowDate.toISOString();
 
-  const ypById = new Map(store.youngPeople.map((y) => [y.id, y.preferred_name || y.first_name || "Unknown"]));
-  const staffById = new Map(store.staff.map((s) => [s.id, s.full_name || `${s.first_name} ${s.last_name}`.trim()]));
+  const ypById = new Map((youngPeopleList ?? []).map((y) => [y.id, y.preferred_name || y.first_name || "Unknown"]));
+  const staffById = new Map((staffList ?? []).map((s) => [s.id, s.full_name || `${s.first_name} ${s.last_name}`.trim()]));
 
   // ── Fixed commitments: today's calendar minus task/training/shift noise ──
   const feed = getCalendarFeed({ from: today, to: today });
@@ -39,7 +47,7 @@ function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInp
       href: i.editable ? `/calendar?event=${i.source_id}` : i.href,
     }));
 
-  const tasks = store.tasks.map((t) => ({
+  const tasks = (tasksList ?? []).map((t) => ({
     id: t.id,
     title: t.title,
     due_date: t.due_date,
@@ -48,7 +56,7 @@ function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInp
     child_name: t.linked_child_id ? ypById.get(t.linked_child_id) ?? null : null,
   }));
 
-  const incidents = store.incidents.map((i) => ({
+  const incidents = (incidentsList ?? []).map((i) => ({
     id: i.id,
     child_name: i.child_id ? ypById.get(i.child_id) ?? null : null,
     type: i.type,
@@ -59,13 +67,13 @@ function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInp
     status: i.status,
   }));
 
-  const supervisions = store.supervisions.map((s) => ({
+  const supervisions = (supervisionsList ?? []).map((s) => ({
     staff_name: staffById.get(s.staff_id) ?? null,
     scheduled_date: s.scheduled_date,
     status: s.status,
   }));
 
-  const training = store.trainingRecords.map((t) => ({
+  const training = (trainingRecordsList ?? []).map((t) => ({
     staff_name: staffById.get(t.staff_id) ?? null,
     course_name: t.course_name,
     expiry_date: t.expiry_date,
@@ -74,12 +82,12 @@ function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInp
 
   // ── Key-working gaps: last session per active child ──
   const lastByChild = new Map<string, string>();
-  for (const s of store.keyWorkingSessions) {
+  for (const s of (keyWorkingSessionsList ?? [])) {
     const cur = lastByChild.get(s.child_id);
     if (!cur || s.date > cur) lastByChild.set(s.child_id, s.date);
   }
   const todayMs = Date.parse(`${today}T00:00:00`);
-  const keyworkGaps = store.youngPeople
+  const keyworkGaps = (youngPeopleList ?? [])
     .filter((y) => y.status === "current")
     .map((y) => {
       const last = lastByChild.get(y.id) ?? null;
@@ -112,7 +120,7 @@ async function attachNarrative(plan: ManagerPlanDayResult): Promise<void> {
 }
 
 export async function GET() {
-  const plan = computeManagerPlanDay(gatherPlanInput([]));
+  const plan = computeManagerPlanDay(await gatherPlanInput([]));
   await attachNarrative(plan);
   return NextResponse.json({ data: plan });
 }
@@ -131,7 +139,7 @@ export async function POST(req: Request) {
   } catch {
     addedItems = [];
   }
-  const plan = computeManagerPlanDay(gatherPlanInput(addedItems));
+  const plan = computeManagerPlanDay(await gatherPlanInput(addedItems));
   await attachNarrative(plan);
   return NextResponse.json({ data: plan });
 }

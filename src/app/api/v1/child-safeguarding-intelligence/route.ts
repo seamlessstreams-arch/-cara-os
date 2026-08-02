@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildSafeguarding,
   type RiskAssessmentInput,
@@ -35,17 +35,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [youngPeopleList, riskAssessmentsList, incidentsList, missingEpisodesList, restraintsList] = await Promise.all([
+    dal.youngPeople.findAll(),
+    dal.riskAssessments.findAll(),
+    dal.incidents.findAll(),
+    dal.missingEpisodes.findAll(),
+    dal.restraints.findAll(),
+  ]);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   const childName = (child?.name ?? `${child?.first_name ?? ""} ${child?.last_name ?? ""}`.trim()) || childId;
   const childAge = child?.age ?? 15;
 
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Risk Assessments ───────────────────────────────────────────────────
-  const risk_assessments: RiskAssessmentInput[] = (store.riskAssessments ?? [])
+  const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -69,7 +75,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Incidents ──────────────────────────────────────────────────────────
-  const incidents: IncidentInput[] = (store.incidents ?? [])
+  const incidents: IncidentInput[] = (incidentsList ?? [])
     .filter((i: any) => {
       const yp = i.young_person_id ?? i.child_id;
       if (yp === childId) return true;
@@ -86,7 +92,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Missing Episodes ───────────────────────────────────────────────────
-  const missing_episodes: MissingEpisodeInput[] = (store.missingEpisodes ?? [])
+  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
@@ -100,7 +106,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Restraints ─────────────────────────────────────────────────────────
-  const restraints: RestraintInput[] = (store.restraints ?? [])
+  const restraints: RestraintInput[] = (restraintsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -115,22 +121,12 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Contextual Markers ─────────────────────────────────────────────────
-  // Check for contextual safeguarding records if available; otherwise derive from risk assessments
+  // Derived from exploitation-type risk assessments. (An earlier
+  // `store.contextualSafeguarding` branch here was a phantom-collection read
+  // that never fired — the actual store field is `contextualSafeguardingRisks`
+  // and no consumer wired it; removed with the DAL migration.)
   const contextual_markers: ContextualMarkerInput[] = [];
-  if (Array.isArray((store as any).contextualSafeguarding)) {
-    (store as any).contextualSafeguarding
-      .filter((c: any) => c.child_id === childId)
-      .forEach((c: any) => {
-        contextual_markers.push({
-          id: c.id,
-          domain: c.domain ?? c.type ?? "unknown",
-          risk_level: c.risk_level ?? "medium",
-          date_identified: typeof c.date_identified === "string" ? c.date_identified.slice(0, 10) : (c.date ?? today).toString().slice(0, 10),
-          status: c.status ?? "active",
-        });
-      });
-  }
-  // Also add exploitation-type risk assessments as contextual markers
+  // Add exploitation-type risk assessments as contextual markers
   risk_assessments
     .filter((ra) => ["exploitation", "county_lines", "gangs", "radicalisation"].includes(ra.domain) && ra.status === "current")
     .forEach((ra) => {
