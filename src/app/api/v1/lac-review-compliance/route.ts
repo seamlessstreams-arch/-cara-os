@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -42,11 +42,14 @@ function daysBetween(a: string, b: string): number {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [lacReviewsList, youngPeopleList] = await Promise.all([
+      dal.lacReviews.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const currentChildren = store.youngPeople.filter((yp) => yp.status === "current");
-  const allReviews = store.lacReviews;
+  const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");
+  const allReviews = lacReviewsList;
   let totalActions = 0;
   let completedActions = 0;
   let overdueActions = 0;

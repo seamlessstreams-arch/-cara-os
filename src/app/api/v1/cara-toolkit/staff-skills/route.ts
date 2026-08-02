@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   StaffSkillProfile,
@@ -17,10 +17,14 @@ function daysBetween(a: string, b: string): number {
 }
 
 export async function GET() {
-  const store = getStore();
-  const staff = (store.staff as any[]) ?? [];
-  const trainingRecords = (store.trainingRecords as any[]) ?? [];
-  const supervisions = (store.reflectiveSupervisions as any[]) ?? [];
+  const [reflectiveSupervisionsList, staffList, trainingRecordsList] = await Promise.all([
+      dal.reflectiveSupervisions.findAll(),
+      dal.staff.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
+  const staff = (staffList as any[]) ?? [];
+  const trainingRecords = (trainingRecordsList as any[]) ?? [];
+  const supervisions = (reflectiveSupervisionsList as any[]) ?? [];
   const today = new Date().toISOString().slice(0, 10);
 
   const activeStaff = staff.filter(

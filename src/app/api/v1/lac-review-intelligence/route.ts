@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeLACReviewIntelligence,
   type ChildInput,
@@ -17,17 +17,20 @@ import {
 } from "@/lib/engines/lac-review-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [lacReviewsList, youngPeopleList] = await Promise.all([
+      dal.lacReviews.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
     placement_start_date: yp.placement_start,
   }));
 
   // ── Map LAC reviews ──────────────────────────────────────────────────────
-  const reviews: LACReviewInput[] = store.lacReviews.map((r) => ({
+  const reviews: LACReviewInput[] = lacReviewsList.map((r) => ({
     id: r.id,
     child_id: r.child_id,
     date: r.date,

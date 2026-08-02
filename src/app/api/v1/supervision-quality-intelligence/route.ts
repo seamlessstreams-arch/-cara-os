@@ -22,7 +22,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -152,16 +152,19 @@ function buildPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [reflectiveSupervisionsList, staffList] = await Promise.all([
+      dal.reflectiveSupervisions.findAll(),
+      dal.staff.findAll(),
+    ]);
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
 
-  const staff = (store.staff ?? []) as Array<{
+  const staff = (staffList ?? []) as Array<{
     id: string; full_name: string; first_name: string; last_name: string;
     job_title: string; employment_status: string;
   }>;
 
-  const supervisions = (store.reflectiveSupervisions ?? []) as Array<{
+  const supervisions = (reflectiveSupervisionsList ?? []) as Array<{
     id: string;
     staff_id: string;
     staff_name?: string | null;

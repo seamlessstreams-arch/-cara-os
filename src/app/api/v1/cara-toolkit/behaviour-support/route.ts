@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type {
   BehaviourTrigger,
   BehaviourStrategy,
@@ -23,10 +23,14 @@ function topN<T extends { count: number }>(arr: T[], n = 5): T[] {
 }
 
 export async function GET() {
-  const store = getStore();
-  const behaviourLog = (store.behaviourLog as any[]) ?? [];
-  const incidents = (store.incidents as any[]) ?? [];
-  const youngPeople = (store.youngPeople as any[]) ?? [];
+  const [behaviourLogList, incidentsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+  const behaviourLog = (behaviourLogList as any[]) ?? [];
+  const incidents = (incidentsList as any[]) ?? [];
+  const youngPeople = (youngPeopleList as any[]) ?? [];
 
   // Global trigger counts
   const triggerMap = new Map<string, number>();

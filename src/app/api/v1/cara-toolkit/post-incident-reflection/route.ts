@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type { IncidentReflection, PostIncidentReflectionAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +19,12 @@ function toArray(val: unknown): string[] {
 }
 
 export async function GET() {
-  const store = getStore();
-  const incidents = (store.incidents as any[]) ?? [];
-  const debriefRecords = (store.debriefRecords as any[]) ?? [];
+  const [debriefRecordsList, incidentsList] = await Promise.all([
+      dal.debriefRecords.findAll(),
+      dal.incidents.findAll(),
+    ]);
+  const incidents = (incidentsList as any[]) ?? [];
+  const debriefRecords = (debriefRecordsList as any[]) ?? [];
   const today = new Date().toISOString().slice(0, 10);
 
   // Index debriefs by linked_incident_id

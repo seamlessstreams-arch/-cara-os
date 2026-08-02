@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeStaffChildContinuity,
   type ContinuityChildInput,
@@ -24,9 +24,13 @@ import {
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const [keyWorkingSessionsList, staffList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const children: ContinuityChildInput[] = ((store.youngPeople ?? []) as any[])
+  const children: ContinuityChildInput[] = ((youngPeopleList ?? []) as any[])
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({
       id: yp.id,
@@ -35,13 +39,13 @@ export async function GET() {
       secondary_worker_id: yp.secondary_worker_id ?? null,
     }));
 
-  const staff: ContinuityStaffInput[] = ((store.staff ?? []) as any[]).map((s: any) => ({
+  const staff: ContinuityStaffInput[] = ((staffList ?? []) as any[]).map((s: any) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
     active: s.is_active ?? (s.employment_status ? s.employment_status === "active" : true),
   }));
 
-  const sessions: ContinuitySessionInput[] = ((store.keyWorkingSessions ?? []) as any[])
+  const sessions: ContinuitySessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
     .filter((k: any) => k.child_id && k.staff_id)
     .map((k: any) => ({
       child_id: k.child_id,

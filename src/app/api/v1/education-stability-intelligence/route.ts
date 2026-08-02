@@ -4,7 +4,7 @@
 //
 // Tracks each LAC child's education stability across attendance, exclusions,
 // PEP compliance, school provision stability, and achievement markers.
-// Uses real store.educationRecords — not a phantom engine.
+// Uses real educationRecordsList — not a phantom engine.
 //
 // LAC children are 4× more likely to be excluded and 3× less likely to
 // achieve 5 GCSEs A*–C than their peers. Education is a primary life-
@@ -20,7 +20,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -125,15 +125,18 @@ function buildPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [educationRecordsList, youngPeopleList] = await Promise.all([
+      dal.educationRecords.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const cutoff6m = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;
 
-  const eduRecords = (store.educationRecords ?? []) as Array<{
+  const eduRecords = (educationRecordsList ?? []) as Array<{
     id: string;
     child_id: string;
     record_type: string;

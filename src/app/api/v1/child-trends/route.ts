@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeHomeTrends, type TrendMetricInput } from "@/lib/engines/home-trends-engine";
 
 export async function GET(request: NextRequest) {
@@ -28,8 +28,15 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
     const today = new Date().toISOString().slice(0, 10);
 
-    const store = getStore();
-    const youngPeople = (store.youngPeople ?? []) as any[];
+    const [behaviourLogList, incidentsList, missingEpisodesList, restraintsList, sanctionRewardsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.restraints.findAll(),
+      dal.sanctionRewards.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+    const youngPeople = (youngPeopleList ?? []) as any[];
     const current = youngPeople.filter((c) => c.status === "current");
     const nameOf = (c: any): string =>
       c?.preferred_name || [c?.first_name, c?.last_name].filter(Boolean).join(" ") || c?.id || "";
@@ -50,13 +57,13 @@ export async function GET(request: NextRequest) {
           .filter(Boolean);
 
       const metrics: TrendMetricInput[] = [
-        { key: "incidents", label: "Incidents", unit: "incidents", polarity: "lower_better", description: "Incidents involving this child.", dates: byChild(store.incidents as any[]) },
-        { key: "physical_interventions", label: "Physical interventions", unit: "interventions", polarity: "lower_better", description: "Restraints / holds used with this child — minimise over time.", dates: byChild(store.restraints as any[]) },
-        { key: "concerning_behaviour", label: "Concerning behaviour", unit: "incidents", polarity: "lower_better", description: "Behaviour-log entries recorded as concerning.", dates: byChild(store.behaviourLog as any[], (r) => r.direction === "concerning") },
-        { key: "positive_behaviour", label: "Positive behaviour", unit: "entries", polarity: "higher_better", description: "Behaviour-log entries recorded as positive — is this child settling?", dates: byChild(store.behaviourLog as any[], (r) => r.direction === "positive") },
-        { key: "sanctions", label: "Sanctions & consequences", unit: "sanctions", polarity: "lower_better", description: "Consequences applied to this child.", dates: byChild(store.sanctionRewards as any[], (r) => r.direction === "sanction") },
-        { key: "rewards", label: "Rewards & recognition", unit: "rewards", polarity: "higher_better", description: "Positive recognition recorded for this child.", dates: byChild(store.sanctionRewards as any[], (r) => r.direction === "reward") },
-        { key: "missing_episodes", label: "Missing-from-home episodes", unit: "episodes", polarity: "lower_better", description: "Episodes of this child being missing or away without agreement.", dates: byChild(store.missingEpisodes as any[]) },
+        { key: "incidents", label: "Incidents", unit: "incidents", polarity: "lower_better", description: "Incidents involving this child.", dates: byChild(incidentsList as any[]) },
+        { key: "physical_interventions", label: "Physical interventions", unit: "interventions", polarity: "lower_better", description: "Restraints / holds used with this child — minimise over time.", dates: byChild(restraintsList as any[]) },
+        { key: "concerning_behaviour", label: "Concerning behaviour", unit: "incidents", polarity: "lower_better", description: "Behaviour-log entries recorded as concerning.", dates: byChild(behaviourLogList as any[], (r) => r.direction === "concerning") },
+        { key: "positive_behaviour", label: "Positive behaviour", unit: "entries", polarity: "higher_better", description: "Behaviour-log entries recorded as positive — is this child settling?", dates: byChild(behaviourLogList as any[], (r) => r.direction === "positive") },
+        { key: "sanctions", label: "Sanctions & consequences", unit: "sanctions", polarity: "lower_better", description: "Consequences applied to this child.", dates: byChild(sanctionRewardsList as any[], (r) => r.direction === "sanction") },
+        { key: "rewards", label: "Rewards & recognition", unit: "rewards", polarity: "higher_better", description: "Positive recognition recorded for this child.", dates: byChild(sanctionRewardsList as any[], (r) => r.direction === "reward") },
+        { key: "missing_episodes", label: "Missing-from-home episodes", unit: "episodes", polarity: "lower_better", description: "Episodes of this child being missing or away without agreement.", dates: byChild(missingEpisodesList as any[]) },
       ];
 
       trends = computeHomeTrends({ today, metrics, weeks: 8 });

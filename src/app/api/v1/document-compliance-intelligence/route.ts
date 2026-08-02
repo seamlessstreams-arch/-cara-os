@@ -9,7 +9,6 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import {
   computeDocumentComplianceIntelligence,
@@ -29,12 +28,10 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  // documentReadReceipts has no dal accessor with findAll — it stays on the
-  // in-memory store; documents and staff route through the dual-mode dal.
-  const store = getStore();
-  const [documentRecords, staffList] = await Promise.all([
+  const [documentRecords, staffList, receipts] = await Promise.all([
     safeList(dal.documents.findAll()),
     safeList(dal.staff.findAll()),
+    safeList(dal.documentReadReceipts.findAll()),
   ]);
 
   // ── Map documents ─────────────────────────────────────────────────────
@@ -53,7 +50,7 @@ export async function GET() {
   }));
 
   // ── Map read receipts ─────────────────────────────────────────────────
-  const read_receipts: ReadReceiptInput[] = (store.documentReadReceipts ?? []).map((r: any) => ({
+  const read_receipts: ReadReceiptInput[] = (receipts ?? []).map((r: any) => ({
     id: r.id,
     document_id: r.document_id,
     staff_id: r.staff_id,

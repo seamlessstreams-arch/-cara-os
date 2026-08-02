@@ -15,7 +15,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import type { ManagerPatternInsight, PatternInsightType } from "@/lib/cara-heart/types";
 
@@ -303,12 +303,16 @@ function aggregateInsights(
 // ── GET handler ───────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore() as any;
+  const [behaviourLogList, incidentsList, missingEpisodesList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+    ]);
 
   const signals: PracticeSignal[] = [
-    ...incidentsToSignals(store.incidents ?? []),
-    ...behaviourLogToSignals(store.behaviourLog ?? []),
-    ...missingEpisodesToSignals(store.missingEpisodes ?? []),
+    ...incidentsToSignals(incidentsList ?? []),
+    ...behaviourLogToSignals(behaviourLogList ?? []),
+    ...missingEpisodesToSignals(missingEpisodesList ?? []),
   ];
 
   const allInsights: ManagerPatternInsight[] = signals.flatMap(detectPatternInsights);

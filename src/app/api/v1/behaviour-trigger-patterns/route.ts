@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeBehaviourTriggerPatterns,
   type BehaviourChildRef,
@@ -23,16 +23,19 @@ import {
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const children: BehaviourChildRef[] = ((store.youngPeople ?? []) as any[])
+  const children: BehaviourChildRef[] = ((youngPeopleList ?? []) as any[])
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({
       id: yp.id,
       name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
 
-  const entries: BehaviourEntryInput[] = ((store.behaviourLog ?? []) as any[])
+  const entries: BehaviourEntryInput[] = ((behaviourLogList ?? []) as any[])
     .filter((b: any) => b.child_id)
     .map((b: any) => ({
       child_id: b.child_id,

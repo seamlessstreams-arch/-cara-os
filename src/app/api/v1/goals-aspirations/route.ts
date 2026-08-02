@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { OUTCOME_DOMAIN_LABELS } from "@/types/extended";
 
 export async function GET() {
   try {
-    const store = getStore();
+    const [keyWorkingSessionsList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const today = new Date().toISOString().split("T")[0];
 
-    const youngPeople = (store.youngPeople as any[]) ?? [];
-    const outcomeTargets = (store.outcomeTargets as any[]) ?? [];
-    const keyWorkingSessions = (store.keyWorkingSessions as any[]) ?? [];
+    const youngPeople = (youngPeopleList as any[]) ?? [];
+    const outcomeTargets = (outcomeTargetsList as any[]) ?? [];
+    const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
 

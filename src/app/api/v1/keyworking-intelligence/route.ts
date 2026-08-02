@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeKeyworkingIntelligence,
   type ChildInput,
@@ -17,16 +17,19 @@ import {
 } from "@/lib/engines/keyworking-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [keyWorkingSessionsList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map key working sessions ─────────────────────────────────────────────
-  const sessions: KeyworkSessionInput[] = store.keyWorkingSessions.map((s) => ({
+  const sessions: KeyworkSessionInput[] = keyWorkingSessionsList.map((s) => ({
     id: s.id,
     child_id: s.child_id,
     staff_id: s.staff_id,

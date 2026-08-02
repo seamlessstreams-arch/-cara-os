@@ -22,7 +22,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -144,16 +144,20 @@ function shortAntecedent(text: string): string {
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [restraintsList, staffList, youngPeopleList] = await Promise.all([
+      dal.restraints.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const cutoff60d = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;
 
-  const restraints = (store.restraints ?? []) as Array<{
+  const restraints = (restraintsList ?? []) as Array<{
     id: string;
     date: string;
     duration: number;
@@ -169,7 +173,7 @@ export async function GET() {
     review_status: string;
   }>;
 
-  const staff = (store.staff ?? []) as Array<{
+  const staff = (staffList ?? []) as Array<{
     id: string; full_name: string; first_name: string; last_name: string; employment_status: string;
   }>;
 

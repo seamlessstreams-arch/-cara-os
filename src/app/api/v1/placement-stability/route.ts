@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computePlacementStability,
   type ChildInput,
@@ -20,10 +20,17 @@ import {
 } from "@/lib/engines/placement-stability-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [dailyLogList, incidentsList, keyWorkingSessionsList, missingEpisodesList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.dailyLog.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ──────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     first_name: yp.first_name,
     preferred_name: yp.preferred_name ?? null,
@@ -36,7 +43,7 @@ export async function GET() {
   }));
 
   // ── Map daily logs ────────────────────────────────────────────────────
-  const dailyLogs: DailyLogInput[] = store.dailyLog.map((dl) => ({
+  const dailyLogs: DailyLogInput[] = dailyLogList.map((dl) => ({
     id: dl.id,
     child_id: dl.child_id,
     date: typeof dl.date === "string" ? dl.date : dl.date,
@@ -46,7 +53,7 @@ export async function GET() {
   }));
 
   // ── Map incidents ─────────────────────────────────────────────────────
-  const incidents: IncidentInput[] = store.incidents.map((inc) => ({
+  const incidents: IncidentInput[] = incidentsList.map((inc) => ({
     id: inc.id,
     child_id: inc.child_id,
     date: inc.date,
@@ -55,7 +62,7 @@ export async function GET() {
   }));
 
   // ── Map missing episodes ──────────────────────────────────────────────
-  const missingEpisodes: MissingEpisodeInput[] = store.missingEpisodes.map((me) => ({
+  const missingEpisodes: MissingEpisodeInput[] = missingEpisodesList.map((me) => ({
     id: me.id,
     child_id: me.child_id,
     date_missing: me.date_missing,
@@ -64,7 +71,7 @@ export async function GET() {
   }));
 
   // ── Map keywork sessions ──────────────────────────────────────────────
-  const keyworkSessions: KeyworkSessionInput[] = store.keyWorkingSessions.map((kw) => ({
+  const keyworkSessions: KeyworkSessionInput[] = keyWorkingSessionsList.map((kw) => ({
     id: kw.id,
     child_id: kw.child_id,
     date: kw.date,
@@ -74,7 +81,7 @@ export async function GET() {
   }));
 
   // ── Map outcome targets ───────────────────────────────────────────────
-  const outcomeTargets: OutcomeTargetInput[] = store.outcomeTargets.map((ot) => ({
+  const outcomeTargets: OutcomeTargetInput[] = outcomeTargetsList.map((ot) => ({
     id: ot.id,
     child_id: ot.child_id,
     domain: ot.domain,

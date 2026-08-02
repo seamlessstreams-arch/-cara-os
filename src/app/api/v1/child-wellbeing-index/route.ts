@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, n));
@@ -7,7 +7,13 @@ function clamp(n: number, min = 0, max = 100): number {
 
 export async function GET() {
   try {
-    const store = getStore();
+    const [incidentsList, keyWorkingSessionsList, missingEpisodesList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
     const thirtyDaysAgo = new Date(today);
@@ -17,11 +23,11 @@ export async function GET() {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const ninetyStr = ninetyDaysAgo.toISOString().split("T")[0];
 
-    const youngPeople = (store.youngPeople as any[]) ?? [];
-    const outcomeTargets = (store.outcomeTargets as any[]) ?? [];
-    const keyWorkingSessions = (store.keyWorkingSessions as any[]) ?? [];
-    const incidents = (store.incidents as any[]) ?? [];
-    const missingEpisodes = (store.missingEpisodes as any[]) ?? [];
+    const youngPeople = (youngPeopleList as any[]) ?? [];
+    const outcomeTargets = (outcomeTargetsList as any[]) ?? [];
+    const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
+    const incidents = (incidentsList as any[]) ?? [];
+    const missingEpisodes = (missingEpisodesList as any[]) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
 

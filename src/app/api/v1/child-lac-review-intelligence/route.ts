@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildLACReview,
   type LACReviewInput,
@@ -29,18 +29,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [lacReviewsList, youngPeopleList] = await Promise.all([
+      dal.lacReviews.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
   const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
-  const reviews: LACReviewInput[] = ((store.lacReviews ?? []) as any[])
+  const reviews: LACReviewInput[] = ((lacReviewsList ?? []) as any[])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,

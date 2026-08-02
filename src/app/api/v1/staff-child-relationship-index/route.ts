@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 type RelationshipSignal = "good" | "attention" | "concern";
 
@@ -87,11 +87,15 @@ function signalInsight(
 }
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, staffList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Child & staff maps ─────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((store.staff as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s: any) => [
       s.id,
       {
         name: s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
@@ -100,13 +104,13 @@ export async function GET() {
     ])
   );
 
-  const currentChildren = ((store.youngPeople as any[]) ?? []).filter(
+  const currentChildren = ((youngPeopleList as any[]) ?? []).filter(
     (yp: any) => yp.status === "current"
   );
 
   // ── Index behaviourLog by child ────────────────────────────────────────────
   const logByChild = new Map<string, any[]>();
-  for (const b of (store.behaviourLog as any[]) ?? []) {
+  for (const b of (behaviourLogList as any[]) ?? []) {
     if (!b.child_id) continue;
     const list = logByChild.get(b.child_id) ?? [];
     list.push(b);

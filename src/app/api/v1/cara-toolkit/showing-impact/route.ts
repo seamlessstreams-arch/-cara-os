@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type {
   ChildImpactSummary,
   ShowingImpactAnalysis,
@@ -15,13 +15,20 @@ function initials(yp: any): string {
 }
 
 export async function GET() {
-  const store = getStore();
-  const youngPeople = (store.youngPeople as any[]) ?? [];
-  const keyWorkingSessions = (store.keyWorkingSessions as any[]) ?? [];
-  const incidents = (store.incidents as any[]) ?? [];
-  const dailyLog = (store.dailyLog as any[]) ?? [];
-  const riskAssessments = (store.riskAssessments as any[]) ?? [];
-  const behaviourLog = (store.behaviourLog as any[]) ?? [];
+  const [behaviourLogList, dailyLogList, incidentsList, keyWorkingSessionsList, riskAssessmentsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.dailyLog.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+  const youngPeople = (youngPeopleList as any[]) ?? [];
+  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
+  const incidents = (incidentsList as any[]) ?? [];
+  const dailyLog = (dailyLogList as any[]) ?? [];
+  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
+  const behaviourLog = (behaviourLogList as any[]) ?? [];
 
   const sixMonthsAgo = new Date(
     new Date().getTime() - 180 * 86_400_000

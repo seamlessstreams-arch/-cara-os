@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import {
   readSilentStruggle,
@@ -29,11 +29,16 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
-    const store = getStore();
+    const [dailyLogList, incidentsList, keyWorkingSessionsList, youngPeopleList] = await Promise.all([
+      dal.dailyLog.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const now = new Date().toISOString();
-    const allLogs = (store.dailyLog ?? []) as unknown as SilentStruggleLogEntry[];
-    const incidents = store.incidents ?? [];
-    const keywork = store.keyWorkingSessions ?? [];
+    const allLogs = (dailyLogList ?? []) as unknown as SilentStruggleLogEntry[];
+    const incidents = incidentsList ?? [];
+    const keywork = keyWorkingSessionsList ?? [];
 
     const readFor = (id: string, name: string) =>
       readSilentStruggle({
@@ -51,7 +56,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: readFor(childId, getYPName(childId)) });
     }
 
-    const children = (store.youngPeople ?? []).filter((yp) => yp.status === "current");
+    const children = (youngPeopleList ?? []).filter((yp) => yp.status === "current");
     const reads = children.map((yp) => readFor(yp.id, yp.preferred_name || yp.first_name || "Child"));
     return NextResponse.json({ data: buildSilentStruggleOverview(reads) });
   } catch (error: unknown) {

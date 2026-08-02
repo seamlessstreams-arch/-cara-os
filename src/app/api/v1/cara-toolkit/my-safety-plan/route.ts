@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type {
   ChildRiskDomain,
   ChildSafetyPlan,
@@ -31,10 +31,15 @@ function overallRisk(highCount: number, domains: ChildRiskDomain[]): RiskLevel {
 }
 
 export async function GET() {
-  const store = getStore();
-  const youngPeople = (store.youngPeople as any[]) ?? [];
-  const riskAssessments = (store.riskAssessments as any[]) ?? [];
-  const keyWorkingSessions = (store.keyWorkingSessions as any[]) ?? [];
+  const [keyWorkingSessionsList, riskAssessmentsList, staffList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+  const youngPeople = (youngPeopleList as any[]) ?? [];
+  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
+  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -64,7 +69,7 @@ export async function GET() {
       ).length;
       const overdueReviewCount = riskDomains.filter((d) => d.overdueReview).length;
 
-      const staffMember = (store.staff as any[])?.find(
+      const staffMember = (staffList as any[])?.find(
         (s: any) => s.id === yp.key_worker_id
       );
       const keyWorker = staffMember

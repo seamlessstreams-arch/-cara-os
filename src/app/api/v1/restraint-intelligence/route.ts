@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeRestraintIntelligence,
   type ChildInput,
@@ -17,16 +17,19 @@ import {
 } from "@/lib/engines/restraint-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [restraintsList, youngPeopleList] = await Promise.all([
+      dal.restraints.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ────────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map restraints ──────────────────────────────────────────────────────────
-  const restraints: RestraintInput[] = store.restraints.map((r) => ({
+  const restraints: RestraintInput[] = restraintsList.map((r) => ({
     id: r.id,
     date: r.date,
     start_time: r.start_time,

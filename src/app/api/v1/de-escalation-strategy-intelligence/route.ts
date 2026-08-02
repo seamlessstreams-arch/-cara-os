@@ -11,7 +11,7 @@
 //   - Is behaviour improving (last 30d vs prior 30d)?
 //
 // Unlike the engine-based behaviour-trigger-patterns route, this reads directly
-// from store.behaviourLog and produces practice-facing effectiveness signals.
+// from behaviourLogList and produces practice-facing effectiveness signals.
 //
 // Ofsted SCCIF: "Children are helped to understand their behaviour and manage
 // their emotions." CHR 2015 Reg 11 (behaviour management).
@@ -22,7 +22,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -169,20 +169,24 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, staffList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const cutoff60d = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;
 
-  const staffMembers = (store.staff ?? []) as Array<{
+  const staffMembers = (staffList ?? []) as Array<{
     id: string; full_name: string;
   }>;
 
-  const behaviourLog = (store.behaviourLog ?? []) as Array<{
+  const behaviourLog = (behaviourLogList ?? []) as Array<{
     id: string;
     child_id: string;
     date: string;

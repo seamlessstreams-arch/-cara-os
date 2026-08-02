@@ -414,6 +414,11 @@ export const dal = {
   },
 
   documentReadReceipts: {
+    async findAll() {
+      // No Supabase list query yet — always in-memory. When a query lands,
+      // swap in `if (sb()) return sq.getAllDocumentReadReceipts(c, homeId());`
+      return db.documentReadReceipts.findAll();
+    },
     async findByDocument(docId: string) {
       const c = sb();
       if (c) return sq.getDocumentReadReceipts(c, [docId]);

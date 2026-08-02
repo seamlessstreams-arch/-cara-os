@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type { YoungPerson } from "@/types";
 
 export type KeyworkSignal = "concern" | "attention" | "positive" | "strong";
@@ -97,11 +97,14 @@ function keyworkSignal(
 }
 
 export async function GET() {
-  const store = getStore();
+  const [keyWorkingSessionsList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const youngPeople = (store.youngPeople ?? []) as YoungPerson[];
-  const rawSessions = (store.keyWorkingSessions as any[]) ?? [];
+  const youngPeople = (youngPeopleList ?? []) as YoungPerson[];
+  const rawSessions = (keyWorkingSessionsList as any[]) ?? [];
 
   const ypMap = new Map(
     youngPeople.map((yp) => [yp.id, `${yp.first_name} ${yp.last_name}`.trim() || "Unknown"])

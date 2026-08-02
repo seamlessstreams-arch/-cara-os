@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 type IncidentIntensity = "low" | "medium" | "high" | "severe";
 type LinkType = "direct_trigger" | "post_contact_window";
@@ -119,12 +119,16 @@ function contactSignal(
 }
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, familyTimeSessionsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((store.youngPeople as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
       yp.id,
       `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown",
     ])
@@ -132,7 +136,7 @@ export async function GET() {
 
   // ── Index family time sessions by child ────────────────────────────────────
   const sessionsByChild = new Map<string, any[]>();
-  for (const s of (store.familyTimeSessions as any[]) ?? []) {
+  for (const s of (familyTimeSessionsList as any[]) ?? []) {
     const list = sessionsByChild.get(s.child_id) ?? [];
     list.push(s);
     sessionsByChild.set(s.child_id, list);
@@ -140,7 +144,7 @@ export async function GET() {
 
   // ── Index behaviour log by child ───────────────────────────────────────────
   const behaviourByChild = new Map<string, any[]>();
-  for (const b of (store.behaviourLog as any[]) ?? []) {
+  for (const b of (behaviourLogList as any[]) ?? []) {
     if (!b.child_id) continue;
     const list = behaviourByChild.get(b.child_id) ?? [];
     list.push(b);

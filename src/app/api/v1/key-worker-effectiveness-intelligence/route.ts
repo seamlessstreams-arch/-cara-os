@@ -20,7 +20,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -150,28 +150,33 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, keyWorkingSessionsList, staffList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const staff = (store.staff ?? []) as Array<{
+  const staff = (staffList ?? []) as Array<{
     id: string; first_name: string; last_name: string; full_name: string;
     job_title: string; employment_status: string;
   }>;
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string;
     key_worker_id: string | null; status: string;
   }>;
 
-  const sessions = (store.keyWorkingSessions ?? []) as Array<{
+  const sessions = (keyWorkingSessionsList ?? []) as Array<{
     id: string; child_id: string; staff_id: string; date: string;
     child_voice: string; mood_before: number; mood_after: number;
     follow_up: string; follow_up_completed: boolean;
     actions_agreed: string[];
   }>;
 
-  const behaviourLog = (store.behaviourLog ?? []) as Array<{
+  const behaviourLog = (behaviourLogList ?? []) as Array<{
     id: string; child_id: string; recorded_by: string; strategy_used: string; date: string;
   }>;
 

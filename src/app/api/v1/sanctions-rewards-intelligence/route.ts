@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeSanctionsRewardsIntelligence,
   type SanctionRewardInput,
@@ -18,10 +18,14 @@ import {
 } from "@/lib/engines/sanctions-rewards-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [sanctionRewardsList, staffList, youngPeopleList] = await Promise.all([
+      dal.sanctionRewards.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map sanction/reward entries ──────────────────────────────────────
-  const entries: SanctionRewardInput[] = (store.sanctionRewards ?? []).map((e: any) => ({
+  const entries: SanctionRewardInput[] = (sanctionRewardsList ?? []).map((e: any) => ({
     id: e.id,
     child_id: e.child_id,
     date: typeof e.date === "string" ? e.date.slice(0, 10) : e.date,
@@ -35,13 +39,13 @@ export async function GET() {
   }));
 
   // ── Map young people ─────────────────────────────────────────────────
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   // ── Map staff ────────────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

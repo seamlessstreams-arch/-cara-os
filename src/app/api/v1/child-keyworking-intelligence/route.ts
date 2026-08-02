@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildKeyworking,
   type KeyworkSessionInput,
@@ -28,18 +28,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [keyWorkingSessionsList, youngPeopleList] = await Promise.all([
+      dal.keyWorkingSessions.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
   const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
 
   // ── Keyworking Sessions ────────────────────────────────────────────────
-  const sessions: KeyworkSessionInput[] = ((store.keyWorkingSessions ?? []) as any[])
+  const sessions: KeyworkSessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
     .filter((s: any) => s.child_id === childId)
     .map((s: any) => ({
       id: s.id,

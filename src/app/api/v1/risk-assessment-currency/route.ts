@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -51,12 +51,15 @@ function daysBetween(from: string, to: string): number {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [riskAssessmentsList, youngPeopleList] = await Promise.all([
+      dal.riskAssessments.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const currentChildren = store.youngPeople.filter((yp) => yp.status === "current");
+  const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");
 
-  const currentAssessments = store.riskAssessments.filter((ra) => ra.status === "current");
+  const currentAssessments = riskAssessmentsList.filter((ra) => ra.status === "current");
 
   let totalOverdue = 0;
   let totalDueWithin14 = 0;

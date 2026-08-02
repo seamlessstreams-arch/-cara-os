@@ -7,7 +7,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeBehaviourIntelligence,
   type BehaviourEntryInput,
@@ -17,10 +17,16 @@ import {
 } from "@/lib/engines/behaviour-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, incidentsList, restraintsList, sanctionRewardsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.restraints.findAll(),
+      dal.sanctionRewards.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map behaviour log entries ────────────────────────────────────────
-  const behaviourEntries: BehaviourEntryInput[] = store.behaviourLog.map((e) => ({
+  const behaviourEntries: BehaviourEntryInput[] = behaviourLogList.map((e) => ({
     id: e.id,
     child_id: e.child_id,
     date: e.date,
@@ -41,7 +47,7 @@ export async function GET() {
   }));
 
   // ── Map incidents ────────────────────────────────────────────────────
-  const incidents: IncidentInput[] = store.incidents.map((i) => ({
+  const incidents: IncidentInput[] = incidentsList.map((i) => ({
     id: i.id,
     child_id: i.child_id,
     date: i.date,
@@ -56,7 +62,7 @@ export async function GET() {
   }));
 
   // ── Map restraints ───────────────────────────────────────────────────
-  const restraints: RestraintInput[] = store.restraints.map((r) => ({
+  const restraints: RestraintInput[] = restraintsList.map((r) => ({
     id: r.id,
     child_id: r.child_id,
     date: r.date,
@@ -78,7 +84,7 @@ export async function GET() {
   }));
 
   // ── Map sanctions/rewards ────────────────────────────────────────────
-  const sanctionRewards: SanctionRewardInput[] = store.sanctionRewards.map((sr) => ({
+  const sanctionRewards: SanctionRewardInput[] = sanctionRewardsList.map((sr) => ({
     id: sr.id,
     child_id: sr.child_id,
     date: sr.date,
@@ -94,7 +100,7 @@ export async function GET() {
 
   // ── Build YP name lookup ─────────────────────────────────────────────
   const ypNames = new Map(
-    store.youngPeople.map((yp) => [yp.id, yp.preferred_name || yp.first_name]),
+    youngPeopleList.map((yp) => [yp.id, yp.preferred_name || yp.first_name]),
   );
   const childNameLookup = (id: string) =>
     ypNames.get(id) ?? id.replace("yp_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

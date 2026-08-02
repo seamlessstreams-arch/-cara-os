@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildABCProfiles } from "@/lib/abc-behaviour/abc-behaviour-engine";
 import type { ABCEntryInput } from "@/lib/abc-behaviour/types";
 
@@ -18,14 +18,17 @@ export async function GET(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const store = getStore();
+    const [ypList, bhList] = await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.behaviourLog.findAll(),
+    ]);
     const asOf = new Date().toISOString().slice(0, 10);
 
-    const children = ((store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>)
+    const children = ((ypList ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((yp) => (yp.status ?? "current") === "current")
       .map((yp) => ({ id: String(yp.id), name: String(yp.preferred_name || yp.first_name || yp.full_name || yp.id) }));
 
-    const entries: ABCEntryInput[] = ((store.behaviourLog ?? []) as unknown as Array<Record<string, unknown>>)
+    const entries: ABCEntryInput[] = ((bhList ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((b) => b.child_id)
       .map((b) => ({
         childId: String(b.child_id),

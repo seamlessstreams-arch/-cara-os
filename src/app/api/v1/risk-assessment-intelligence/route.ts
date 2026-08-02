@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeRiskAssessmentIntelligence,
   type ChildInput,
@@ -22,16 +22,19 @@ import {
 } from "@/lib/engines/risk-assessment-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [riskAssessmentsList, youngPeopleList] = await Promise.all([
+      dal.riskAssessments.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ────────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name || yp.first_name,
   }));
 
   // ── Map risk assessments ────────────────────────────────────────────────────
-  const assessments: RiskAssessmentInput[] = store.riskAssessments.map((a) => {
+  const assessments: RiskAssessmentInput[] = riskAssessmentsList.map((a) => {
     const mitigations: MitigationInput[] = (a.mitigations ?? []).map((m) => ({
       strategy: m.strategy,
       responsible: m.responsible,
