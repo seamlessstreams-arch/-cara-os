@@ -10,30 +10,41 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeKeyDates } from "@/lib/engines/key-dates-engine";
 
 export const dynamic = "force-dynamic";
 
-function staffName(id: string, store: ReturnType<typeof getStore>): string {
-  const staff = (store.staff ?? []).find((s) => s.id === id);
-  if (staff) return staff.full_name ?? id;
-  return id?.replace("staff_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
-}
-
-function ypName(id: string, store: ReturnType<typeof getStore>): string {
-  const yp = (store.youngPeople ?? []).find((y) => y.id === id);
-  if (yp) {
-    return yp.preferred_name ?? yp.first_name ?? id;
-  }
-  return id?.replace("yp_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
-}
-
 export async function GET(_req: NextRequest) {
-  const store = getStore();
+  const [
+    youngPeopleList,
+    staffList,
+    trainingRecordsList,
+    supervisionsList,
+    lacReviewsList,
+    behaviourSupportPlansList,
+  ] = await Promise.all([
+    dal.youngPeople.findAll(),
+    dal.staff.findAll(),
+    dal.trainingRecords.findAll(),
+    dal.supervisions.findAll(),
+    dal.lacReviews.findAll(),
+    dal.behaviourSupportPlans.findAll(),
+  ]);
+
+  const staffName = (id: string): string => {
+    const staff = (staffList ?? []).find((s) => s.id === id);
+    if (staff) return staff.full_name ?? id;
+    return id?.replace("staff_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
+  };
+  const ypName = (id: string): string => {
+    const yp = (youngPeopleList ?? []).find((y) => y.id === id);
+    if (yp) return yp.preferred_name ?? yp.first_name ?? id;
+    return id?.replace("yp_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
+  };
 
   const result = computeKeyDates({
-    youngPeople: (store.youngPeople ?? []).map((yp) => ({
+    youngPeople: (youngPeopleList ?? []).map((yp) => ({
       id: yp.id,
       first_name: yp.first_name,
       last_name: yp.last_name,
@@ -43,7 +54,7 @@ export async function GET(_req: NextRequest) {
       status: yp.status,
     })),
 
-    staff: (store.staff ?? []).map((s) => ({
+    staff: (staffList ?? []).map((s) => ({
       id: s.id,
       full_name: s.full_name,
       first_name: s.first_name,
@@ -55,7 +66,7 @@ export async function GET(_req: NextRequest) {
       dbs_update_service: s.dbs_update_service,
     })),
 
-    trainingRecords: (store.trainingRecords ?? []).map((t) => ({
+    trainingRecords: (trainingRecordsList ?? []).map((t) => ({
       id: t.id,
       staff_id: t.staff_id,
       course_name: t.course_name,
@@ -64,7 +75,7 @@ export async function GET(_req: NextRequest) {
       is_mandatory: t.is_mandatory,
     })),
 
-    supervisions: (store.supervisions ?? []).map((s) => ({
+    supervisions: (supervisionsList ?? []).map((s) => ({
       id: s.id,
       staff_id: s.staff_id,
       type: s.type,
@@ -74,22 +85,22 @@ export async function GET(_req: NextRequest) {
       next_date: s.next_date,
     })),
 
-    lacReviews: (store.lacReviews ?? []).map((l) => ({
+    lacReviews: (lacReviewsList ?? []).map((l) => ({
       id: l.id,
       child_id: l.child_id,
       next_review_date: l.next_review_date,
       review_type: l.review_type,
     })),
 
-    behaviourSupportPlans: (store.behaviourSupportPlans ?? []).map((b) => ({
+    behaviourSupportPlans: (behaviourSupportPlansList ?? []).map((b) => ({
       id: b.id,
       child_id: b.child_id,
       review_date: b.review_date,
       status: b.status,
     })),
 
-    staffNameLookup: (id: string) => staffName(id, store),
-    ypNameLookup: (id: string) => ypName(id, store),
+    staffNameLookup: staffName,
+    ypNameLookup: ypName,
   });
 
   return NextResponse.json(result);

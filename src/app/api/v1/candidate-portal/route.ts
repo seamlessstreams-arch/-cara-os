@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeValuesMatch } from "@/lib/engines/values-match-engine";
 import type { CheckStatus, CheckType } from "@/types/recruitment";
 
@@ -89,22 +89,25 @@ function nextStepsForStage(stage: string): string[] {
 }
 
 export async function GET(req: Request) {
-  const store = getStore() as any;
   const url = new URL(req.url);
 
   // Default to first candidate for demo realism (Amara Osei)
   const candidateId = url.searchParams.get("candidateId") ?? "cand_001";
 
-  const profile = (store.candidateProfiles ?? []).find((c: any) => c.id === candidateId);
+  const profile = await dal.candidateProfiles.findById(candidateId);
   if (!profile) {
     return NextResponse.json({ ok: false, error: "Candidate not found" }, { status: 404 });
   }
 
-  const vacancy = (store.vacancies ?? []).find((v: any) => v.id === profile.vacancy_id);
+  const [vacanciesList, checks, references, employerValuesProfilesList, candidateValuesProfilesList] = await Promise.all([
+    dal.vacancies.findAll(),
+    dal.candidateChecks.findByCandidate(candidateId),
+    dal.candidateReferences.findByCandidate(candidateId),
+    dal.employerValuesProfiles.findAll(),
+    dal.candidateValuesProfiles.findAll(),
+  ]);
+  const vacancy = (vacanciesList ?? []).find((v: any) => v.id === (profile as any).vacancy_id);
   const roleApplied = vacancy?.title ?? "Residential Care Worker";
-
-  const checks = (store.candidateChecks ?? []).filter((c: any) => c.candidate_id === candidateId);
-  const references = (store.candidateReferences ?? []).filter((r: any) => r.candidate_id === candidateId);
 
   const checksSummary = checks.map((c: any) => ({
     id: c.id,
@@ -121,8 +124,8 @@ export async function GET(req: Request) {
   ).length;
 
   // Simplified values match (score + shared values only — no dimension detail)
-  const employer = (store.employerValuesProfiles ?? [])[0] ?? null;
-  const cvp = (store.candidateValuesProfiles ?? []).find((v: any) => v.candidate_id === candidateId);
+  const employer = (employerValuesProfilesList ?? [])[0] ?? null;
+  const cvp = (candidateValuesProfilesList ?? []).find((v: any) => v.candidate_id === candidateId);
   const matchSummary = employer && cvp ? (() => {
     const m = computeValuesMatch(employer, cvp);
     return {

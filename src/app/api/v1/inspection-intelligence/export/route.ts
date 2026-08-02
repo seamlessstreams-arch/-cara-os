@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildInspectionReadiness } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
 import {
   buildInspectionExportModel,
@@ -24,35 +24,67 @@ const VALID_SCOPES: ExportScope[] = ["all", "experiences_progress", "protection"
 
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
+    const [
+      home,
+      youngPeopleList,
+      incidentsList,
+      debriefRecordsList,
+      missingEpisodesList,
+      returnInterviewsList,
+      keyWorkingSessionsList,
+      lacReviewsList,
+      positiveAchievementsList,
+      educationRecordsList,
+      riskAssessmentsList,
+      welfareChecksList,
+      carePlansList,
+      supervisionsList,
+      trainingRecordsList,
+    ] = await Promise.all([
+      dal.home.get(),
+      dal.youngPeople.findAll(),
+      dal.incidents.findAll(),
+      dal.debriefRecords.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.returnInterviews.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.positiveAchievements.findAll(),
+      dal.educationRecords.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.welfareChecks.findAll(),
+      dal.carePlans.findAll(),
+      dal.supervisions.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
     const { searchParams } = new URL(req.url);
     const format = (searchParams.get("format") || "html").toLowerCase();
     const scopeParam = (searchParams.get("area") || "all") as ExportScope;
     const scope: ExportScope = VALID_SCOPES.includes(scopeParam) ? scopeParam : "all";
 
-    const children = (store.youngPeople ?? [])
-      .filter((yp) => yp.status === "current")
-      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
+    const children = (youngPeopleList ?? [])
+      .filter((yp: any) => yp.status === "current")
+      .map((yp: any) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const readiness = buildInspectionReadiness({
       now: new Date().toISOString(),
       children,
-      incidents: store.incidents ?? [],
-      debriefRecords: store.debriefRecords ?? [],
-      missingEpisodes: store.missingEpisodes ?? [],
-      returnInterviews: store.returnInterviews ?? [],
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
-      lacReviews: store.lacReviews ?? [],
-      positiveAchievements: store.positiveAchievements ?? [],
-      educationRecords: store.educationRecords ?? [],
-      riskAssessments: store.riskAssessments ?? [],
-      welfareChecks: store.welfareChecks ?? [],
-      carePlans: store.carePlans ?? [],
-      supervisions: store.supervisions ?? [],
-      trainingRecords: store.trainingRecords ?? [],
+      incidents: incidentsList ?? [],
+      debriefRecords: debriefRecordsList ?? [],
+      missingEpisodes: missingEpisodesList ?? [],
+      returnInterviews: returnInterviewsList ?? [],
+      keyWorkingSessions: keyWorkingSessionsList ?? [],
+      lacReviews: lacReviewsList ?? [],
+      positiveAchievements: positiveAchievementsList ?? [],
+      educationRecords: educationRecordsList ?? [],
+      riskAssessments: riskAssessmentsList ?? [],
+      welfareChecks: welfareChecksList ?? [],
+      carePlans: carePlansList ?? [],
+      supervisions: supervisionsList ?? [],
+      trainingRecords: trainingRecordsList ?? [],
     });
 
-    const homeName = (store.home as { name?: string } | undefined)?.name || "The home";
+    const homeName = (home as { name?: string } | null)?.name || "The home";
     const model = buildInspectionExportModel(readiness, { homeName, scope });
     const base = `inspection-evidence-${scope}-${new Date().toISOString().slice(0, 10)}`;
 

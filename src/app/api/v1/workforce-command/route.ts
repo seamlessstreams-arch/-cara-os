@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeWorkforceCommand, type WorkforceCommandInput } from "@/lib/engines/workforce-command-engine";
 
@@ -30,46 +30,54 @@ async function fetchJson(baseUrl: string, route: string): Promise<any | null> {
 }
 
 export async function GET(req: Request) {
-  const store = getStore() as any;
   const today = new Date().toISOString().slice(0, 10);
   const inDays = (d: any, n: number) => { const v = iso(d); return !!v && v >= today && (Date.parse(v) - Date.parse(today)) / 86_400_000 <= n; };
   const past = (d: any) => { const v = iso(d); return !!v && v < today; };
 
-  const allStaff: any[] = store.staff ?? [];
-  const activeStaff = allStaff.filter((s) => s.employment_status !== "left");
-  const staff: StaffLite[] = activeStaff.filter((s) => SUPERVISEE_ROLES.has(String(s.role))).map((s) => ({ id: s.id, name: staffName(s), role: s.role }));
+  const [allStaff, candidates, checks, inductions, supRecordsRaw, trainingList, tasksList] = await Promise.all([
+    dal.staff.findAll(),
+    dal.candidateProfiles.findAll(),
+    // candidateChecks has no findAll — pull per candidate.
+    (async () => {
+      const cands = await dal.candidateProfiles.findAll();
+      const nested = await Promise.all((cands ?? []).map((c: any) => dal.candidateChecks.findByCandidate(c.id)));
+      return nested.flat().filter(Boolean);
+    })(),
+    dal.inductionRecords.findAll(),
+    dal.reflectiveSupervisions.findAll(),
+    dal.trainingRecords.findAll(),
+    dal.tasks.findAll(),
+  ]);
+
+  const activeStaff = (allStaff ?? []).filter((s: any) => s.employment_status !== "left");
+  const staff: StaffLite[] = activeStaff.filter((s: any) => SUPERVISEE_ROLES.has(String(s.role))).map((s: any) => ({ id: s.id, name: staffName(s), role: s.role }));
 
   // recruitment
-  const candidates: any[] = store.candidateProfiles ?? [];
-  const appointed = candidates.filter((c) => APPOINTED_STAGES.has(String(c.current_stage)) || c.appointed === true).length;
-  const active = candidates.filter((c) => !CLOSED_STAGES.has(String(c.current_stage))).length;
+  const appointed = (candidates ?? []).filter((c: any) => APPOINTED_STAGES.has(String(c.current_stage)) || c.appointed === true).length;
+  const active = (candidates ?? []).filter((c: any) => !CLOSED_STAGES.has(String(c.current_stage))).length;
 
   // safer recruitment
-  const checks: any[] = store.candidateChecks ?? [];
-  const verified = checks.filter((c) => ["verified", "received", "override_approved", "not_required"].includes(String(c.status))).length;
+  const verified = (checks ?? []).filter((c: any) => ["verified", "received", "override_approved", "not_required"].includes(String(c.status))).length;
 
   // onboarding
-  const inductions: any[] = store.inductionRecords ?? [];
-  const indCompleted = inductions.filter((i) => String(i.overall_status) === "completed").length;
-  const indInProgress = inductions.length - indCompleted;
+  const indCompleted = (inductions ?? []).filter((i: any) => String(i.overall_status) === "completed").length;
+  const indInProgress = (inductions ?? []).length - indCompleted;
 
   // probation
-  const inProbation = activeStaff.filter((s) => s.probation_end_date && iso(s.probation_end_date)! >= today);
-  const probationDueSoon = inProbation.filter((s) => inDays(s.probation_end_date, 30)).length;
+  const inProbation = activeStaff.filter((s: any) => s.probation_end_date && iso(s.probation_end_date)! >= today);
+  const probationDueSoon = inProbation.filter((s: any) => inDays(s.probation_end_date, 30)).length;
 
   // supervision (reuse slice 3 engine)
-  const supRecords: ReflectiveSupervisionRecord[] = store.reflectiveSupervisions ?? [];
+  const supRecords: ReflectiveSupervisionRecord[] = supRecordsRaw ?? [];
   const sup = computeSupervisionOverview({ records: supRecords, staff, today });
 
   // training
-  const training: any[] = store.trainingRecords ?? [];
-  const trExpired = training.filter((t) => String(t.status) === "expired" || past(t.expiry_date)).length;
-  const trExpiring = training.filter((t) => String(t.status) !== "expired" && inDays(t.expiry_date, 30)).length;
+  const trExpired = (trainingList ?? []).filter((t: any) => String(t.status) === "expired" || past(t.expiry_date)).length;
+  const trExpiring = (trainingList ?? []).filter((t: any) => String(t.status) !== "expired" && inDays(t.expiry_date, 30)).length;
 
   // tasks
-  const tasks: any[] = store.tasks ?? [];
-  const openTasks = tasks.filter((t) => !CLOSED_TASK.has(String(t.status)));
-  const overdueTasks = openTasks.filter((t) => past(t.due_date)).length;
+  const openTasks = (tasksList ?? []).filter((t: any) => !CLOSED_TASK.has(String(t.status)));
+  const overdueTasks = openTasks.filter((t: any) => past(t.due_date)).length;
 
   // internal fetch the two heavy composites (graceful)
   const url = new URL(req.url);
@@ -80,12 +88,12 @@ export async function GET(req: Request) {
   ]);
 
   const input: WorkforceCommandInput = {
-    recruitment: { total: candidates.length, active, appointed },
-    safer_recruitment: { checks_tracked: checks.length, verified, candidates: candidates.length },
-    onboarding: { total: inductions.length, completed: indCompleted, in_progress: indInProgress },
+    recruitment: { total: (candidates ?? []).length, active, appointed },
+    safer_recruitment: { checks_tracked: (checks ?? []).length, verified, candidates: (candidates ?? []).length },
+    onboarding: { total: (inductions ?? []).length, completed: indCompleted, in_progress: indInProgress },
     probation: { in_probation: inProbation.length, due_soon: probationDueSoon },
     supervision: { rate: sup.summary.supervision_rate, current: sup.summary.current, overdue: sup.summary.overdue, due_soon: sup.summary.due_soon, total: sup.summary.total_staff, wellbeing_concerns: sup.summary.wellbeing_concerns },
-    training: { total: training.length, expired: trExpired, expiring: trExpiring },
+    training: { total: (trainingList ?? []).length, expired: trExpired, expiring: trExpiring },
     retention: retentionData?.summary ? { priority: retentionData.summary.priority, support: retentionData.summary.support, total: retentionData.summary.total } : null,
     ofsted: ofstedData?.overall ? { rating: ofstedData.overall.rating, red: ofstedData.overall.red, amber: ofstedData.overall.amber, green: ofstedData.overall.green } : null,
     tasks: { open: openTasks.length, overdue: overdueTasks },
@@ -96,8 +104,8 @@ export async function GET(req: Request) {
   // recent activity across the workforce modules (latest first)
   const recent_activity = [
     ...supRecords.map((r) => ({ kind: "supervision", label: `Reflective supervision — ${r.staff_name}`, when: iso(r.date), href: "/reflective-supervision" })),
-    ...candidates.map((c) => ({ kind: "recruitment", label: `Candidate — ${[c.first_name, c.last_name].filter(Boolean).join(" ")} (${String(c.current_stage).replace(/_/g, " ")})`, when: iso(c.updated_at) || iso(c.created_at), href: "/recruitment" })),
-    ...inductions.map((i) => ({ kind: "onboarding", label: `Induction — ${staffName(allStaff.find((s) => s.id === i.staff_id) || { id: i.staff_id })} (${String(i.overall_status).replace(/_/g, " ")})`, when: iso(i.start_date), href: "/staff-induction" })),
+    ...(candidates ?? []).map((c: any) => ({ kind: "recruitment", label: `Candidate — ${[c.first_name, c.last_name].filter(Boolean).join(" ")} (${String(c.current_stage).replace(/_/g, " ")})`, when: iso(c.updated_at) || iso(c.created_at), href: "/recruitment" })),
+    ...(inductions ?? []).map((i: any) => ({ kind: "onboarding", label: `Induction — ${staffName((allStaff ?? []).find((s: any) => s.id === i.staff_id) || { id: i.staff_id })} (${String(i.overall_status).replace(/_/g, " ")})`, when: iso(i.start_date), href: "/staff-induction" })),
   ].filter((a) => a.when).sort((a, b) => String(b.when).localeCompare(String(a.when))).slice(0, 6);
 
   return NextResponse.json({ data: { ...result, recent_activity } });

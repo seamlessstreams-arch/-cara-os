@@ -14,7 +14,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -38,17 +38,22 @@ function audit(user_id: string, note: string, child_id?: string) {
 }
 
 export async function GET() {
-  const store = getStore() as any;
-  const vacancies = ((store.vacancies ?? []) as any[]).map((v) => ({ id: v.id, title: v.title, status: v.status }));
-  const profiles: any[] = store.candidateProfiles ?? [];
-  const candidates = ((store.candidateValuesProfiles ?? []) as CandidateValuesProfile[]).map((c) => {
+  const [vacanciesList, profilesList, candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
+    dal.vacancies.findAll(),
+    dal.candidateProfiles.findAll(),
+    dal.candidateValuesProfiles.findAll(),
+    dal.employerValuesProfiles.findAll(),
+  ]);
+  const vacancies = ((vacanciesList ?? []) as any[]).map((v) => ({ id: v.id, title: v.title, status: v.status }));
+  const profiles: any[] = profilesList ?? [];
+  const candidates = ((candidateValuesProfilesList ?? []) as CandidateValuesProfile[]).map((c) => {
     const p = profiles.find((x) => x.id === c.candidate_id);
     return { id: c.candidate_id, name: c.candidate_name || (p ? [p.first_name, p.last_name].filter(Boolean).join(" ") : c.candidate_id) };
   });
   return NextResponse.json({
     data: {
       vacancies, candidates,
-      has_values_profile: !!(store.employerValuesProfiles ?? [])[0],
+      has_values_profile: !!(employerValuesProfilesList ?? [])[0],
       disclaimer: ASSISTANT_DISCLAIMER,
     },
   });
@@ -63,8 +68,12 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data as any;
-  const store = getStore() as any;
-  const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
+  const [vacanciesList, candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
+    dal.vacancies.findAll(),
+    dal.candidateValuesProfiles.findAll(),
+    dal.employerValuesProfiles.findAll(),
+  ]);
+  const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
   const tool = String(body.tool ?? "");
 
   let scaffold = "";
@@ -73,13 +82,13 @@ export async function POST(req: NextRequest) {
   let child_id: string | undefined;
 
   if (tool === "job_advert") {
-    const vacancy = ((store.vacancies ?? []) as VacancyLite[]).find((v) => v.id === String(body.vacancy_id ?? ""));
+    const vacancy = ((vacanciesList ?? []) as VacancyLite[]).find((v) => v.id === String(body.vacancy_id ?? ""));
     if (!vacancy) return NextResponse.json({ ok: false, error: "Select a vacancy first." }, { status: 400 });
     scaffold = buildJobAdvertScaffold(vacancy, employer);
     systemPrompt = ADVERT_AI_SYSTEM_PROMPT;
     auditNote = `job advert draft (vacancy=${vacancy.id})`;
   } else if (tool === "candidate_summary") {
-    const candidate = ((store.candidateValuesProfiles ?? []) as CandidateValuesProfile[]).find((c) => c.candidate_id === String(body.candidate_id ?? ""));
+    const candidate = ((candidateValuesProfilesList ?? []) as CandidateValuesProfile[]).find((c) => c.candidate_id === String(body.candidate_id ?? ""));
     if (!candidate) return NextResponse.json({ ok: false, error: "Select a candidate first." }, { status: 400 });
     if (!employer) return NextResponse.json({ ok: false, error: "Create your Employer Values Profile first — the summary is built from the values match." }, { status: 400 });
     scaffold = buildCandidateSummaryScaffold(computeValuesMatch(employer, candidate));

@@ -1,7 +1,8 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import {
@@ -13,11 +14,10 @@ import { computeSocialConvoy } from "@/lib/protective-relationships/social-convo
 
 export const dynamic = "force-dynamic";
 
-function childrenList() {
-  const store = getStore();
-  return (store.youngPeople ?? [])
-    .filter((yp) => yp.status === "current")
-    .map((yp) => ({
+function toChildrenList(youngPeopleList: unknown[]) {
+  return ((youngPeopleList ?? []) as any[])
+    .filter((yp: any) => yp.status === "current")
+    .map((yp: any) => ({
       id: yp.id,
       name: yp.preferred_name || yp.first_name || "Child",
     }));
@@ -38,7 +38,6 @@ const oneOf = <T extends string>(v: unknown, allowed: T[]): T | null =>
  */
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
     const now = new Date().toISOString();
     const childId = new URL(req.url).searchParams.get("child_id");
 
@@ -47,12 +46,19 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
+    const [youngPeopleList, incidentsList, missingEpisodesList, postIncidentReflectionsList] = await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.postIncidentReflections.findAll(),
+    ]);
+
     if (childId) {
       const entries = db.relationshipEntries.findByChild(childId);
       const analysis = analyseChildRelationships(
         entries,
-        (store.incidents ?? []).filter((i: { child_id: string }) => i.child_id === childId),
-        (store.missingEpisodes ?? []).filter((m: { child_id: string }) => m.child_id === childId),
+        (incidentsList ?? []).filter((i: any) => i.child_id === childId),
+        (missingEpisodesList ?? []).filter((m: any) => m.child_id === childId),
         now,
       );
       // Convoy view over the same records: circles + network-shape detections.
@@ -63,10 +69,10 @@ export async function GET(req: NextRequest) {
     const overview = buildRelationshipsOverview({
       now,
       entries: db.relationshipEntries.findAll(),
-      children: childrenList(),
-      reflections: store.postIncidentReflections ?? [],
-      incidents: store.incidents ?? [],
-      missing: store.missingEpisodes ?? [],
+      children: toChildrenList(youngPeopleList),
+      reflections: postIncidentReflectionsList ?? [],
+      incidents: incidentsList ?? [],
+      missing: missingEpisodesList ?? [],
     });
     return NextResponse.json({ data: overview });
   } catch (error: unknown) {

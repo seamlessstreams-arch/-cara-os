@@ -1,7 +1,8 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import {
@@ -12,11 +13,10 @@ import type { StayingSafePlan, ZonePlan } from "@/lib/staying-safe-plan/types";
 
 export const dynamic = "force-dynamic";
 
-function childrenList() {
-  const store = getStore();
-  return (store.youngPeople ?? [])
-    .filter((yp) => yp.status === "current")
-    .map((yp) => ({
+function toChildrenList(youngPeopleList: unknown[]) {
+  return ((youngPeopleList ?? []) as any[])
+    .filter((yp: any) => yp.status === "current")
+    .map((yp: any) => ({
       id: yp.id,
       name: yp.preferred_name || yp.first_name || "Child",
     }));
@@ -34,7 +34,6 @@ const zone = (v: unknown): ZonePlan => {
  */
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
     const now = new Date().toISOString();
     const childId = new URL(req.url).searchParams.get("child_id");
 
@@ -55,12 +54,18 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    const [youngPeopleList, postIncidentReflectionsList, incidentsList] = await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.postIncidentReflections.findAll(),
+      dal.incidents.findAll(),
+    ]);
+
     const overview = buildStayingSafePlanOverview({
       now,
       plans: db.stayingSafePlans.findAll(),
-      children: childrenList(),
-      reflections: store.postIncidentReflections ?? [],
-      incidents: store.incidents ?? [],
+      children: toChildrenList(youngPeopleList),
+      reflections: postIncidentReflectionsList ?? [],
+      incidents: incidentsList ?? [],
     });
     return NextResponse.json({ data: overview });
   } catch (error: unknown) {
