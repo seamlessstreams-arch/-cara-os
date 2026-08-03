@@ -11,7 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { createServerClient } from "@/lib/supabase/server";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -51,9 +51,7 @@ export async function POST(req: Request) {
   };
 
   // 1. In-memory capture — always (consistent with the rest of the demo store).
-  const store = getStore() as any;
-  store.earlyAccessRequests = store.earlyAccessRequests ?? [];
-  store.earlyAccessRequests.push(record);
+  await dal.earlyAccessRequests.create(record);
 
   // 2. Durable persistence when Supabase is configured (service-role client bypasses RLS).
   //    Non-fatal: if the table isn't migrated yet, we still accept the submission.

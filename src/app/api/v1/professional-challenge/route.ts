@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
-    const rows = (getStore().professionalChallenges ?? []).filter((c) => !childId || c.child_id === childId);
+    const rows = (await dal.professionalChallenges.findAll()).filter((c) => !childId || c.child_id === childId);
     const summary = summariseProfessionalChallenges(rows, new Date());
     return NextResponse.json({
       data: { ...summary, ladder: CHALLENGE_LADDER, writeEnabled: isFeatureEnabled("professional_challenge_write") },
@@ -71,12 +71,12 @@ export async function POST(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, String(body.child_id));
     if (denied) return denied;
 
-    const store = getStore();
+    const home = await dal.home.get();
     const now = new Date().toISOString();
     const challenge: ProfessionalChallenge = {
       id: generateId("chal"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? store.home.id ?? ""),
+      home_id: String(body.home_id ?? home?.id ?? ""),
       decision_challenged: str(body.decision_challenged).trim(),
       decision_maker_name: str(body.decision_maker_name),
       decision_maker_role: str(body.decision_maker_role),
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       created_by: identity.userId,
       updated_by: identity.userId,
     };
-    store.professionalChallenges.push(challenge);
+    await dal.professionalChallenges.create(challenge);
     return NextResponse.json({ data: challenge }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";
@@ -121,8 +121,7 @@ export async function PATCH(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const store = getStore();
-    const c = (store.professionalChallenges ?? []).find((x) => x.id === String(body.id));
+    const c = (await dal.professionalChallenges.findAll()).find((x) => x.id === String(body.id));
     if (!c) return NextResponse.json({ error: "Challenge not found" }, { status: 404 });
     const denied = assertChildHomeAccess(identity, c.child_id);
     if (denied) return denied;
