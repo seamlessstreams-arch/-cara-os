@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeLifeSkillsIntelligence,
   type IndependencePathwayInput,
@@ -18,9 +18,13 @@ import {
 } from "@/lib/engines/life-skills-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [independencePathwaysList, staffList, youngPeopleList] = await Promise.all([
+      dal.independencePathways.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const pathways: IndependencePathwayInput[] = (store.independencePathways ?? []).map((p: any) => ({
+  const pathways: IndependencePathwayInput[] = (independencePathwaysList ?? []).map((p: any) => ({
     id: p.id,
     child_id: p.child_id,
     assessed_by: p.assessed_by,
@@ -36,12 +40,12 @@ export async function GET() {
     pathway_plan_linked: p.pathway_plan_linked ?? false,
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

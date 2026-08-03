@@ -12,7 +12,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildImpact,
   type RiskAssessmentInput,
@@ -35,11 +35,27 @@ export async function GET(
   { params }: { params: Promise<{ childId: string }> },
 ) {
   const { childId } = await params;
-  const store = getStore();
+  const [advocacyRecordsList, behaviourLogList, educationRecordsList, familyTimeSessionsList, healthAssessmentsList, incidentsList, independenceSkillsRecordsList, keyWorkingSessionsList, lacReviewsList, lessonsLearnedList, missingEpisodesList, outcomeTargetsList, riskAssessmentsList, youngPeopleList, ypFeedbackList] = await Promise.all([
+      dal.advocacyRecords.findAll(),
+      dal.behaviourLog.findAll(),
+      dal.educationRecords.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.healthAssessments.findAll(),
+      dal.incidents.findAll(),
+      dal.independenceSkillsRecords.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.lacReviews.findAll(),
+      dal.lessonsLearned.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.youngPeople.findAll(),
+      dal.ypFeedback.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Find child ─────────────────────────────────────────────────────────
-  const yp = (store.youngPeople ?? []).find(
+  const yp = (youngPeopleList ?? []).find(
     (y: any) => y.id === childId,
   );
   if (!yp) {
@@ -55,7 +71,7 @@ export async function GET(
   ) || childId;
 
   // ── Risk Assessments ───────────────────────────────────────────────────
-  const risk_assessments: RiskAssessmentInput[] = (store.riskAssessments ?? [])
+  const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -73,7 +89,7 @@ export async function GET(
     }));
 
   // ── Outcome Targets ────────────────────────────────────────────────────
-  const outcome_targets: OutcomeTargetInput[] = (store.outcomeTargets ?? [])
+  const outcome_targets: OutcomeTargetInput[] = (outcomeTargetsList ?? [])
     .filter((t: any) => t.child_id === childId)
     .map((t: any) => ({
       id: t.id,
@@ -91,7 +107,7 @@ export async function GET(
     }));
 
   // ── Incidents ──────────────────────────────────────────────────────────
-  const incidents: IncidentInput[] = (store.incidents ?? [])
+  const incidents: IncidentInput[] = (incidentsList ?? [])
     .filter((i: any) => (i.child_id === childId || i.young_person_id === childId))
     .map((i: any) => ({
       id: i.id,
@@ -106,7 +122,7 @@ export async function GET(
     }));
 
   // ── Education Records ──────────────────────────────────────────────────
-  const education_records: EducationRecordInput[] = (store.educationRecords ?? [])
+  const education_records: EducationRecordInput[] = (educationRecordsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -120,7 +136,7 @@ export async function GET(
     }));
 
   // ── Health Assessments ─────────────────────────────────────────────────
-  const health_assessments: HealthAssessmentInput[] = (store.healthAssessments ?? [])
+  const health_assessments: HealthAssessmentInput[] = (healthAssessmentsList ?? [])
     .filter((h: any) => h.child_id === childId)
     .map((h: any) => ({
       id: h.id,
@@ -133,7 +149,7 @@ export async function GET(
     }));
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
-  const key_work_sessions: KeyWorkSessionInput[] = (store.keyWorkingSessions ?? [])
+  const key_work_sessions: KeyWorkSessionInput[] = (keyWorkingSessionsList ?? [])
     .filter((k: any) => k.child_id === childId)
     .map((k: any) => ({
       id: k.id,
@@ -151,7 +167,7 @@ export async function GET(
     }));
 
   // ── Family Time Sessions ───────────────────────────────────────────────
-  const family_time_sessions: FamilyTimeSessionInput[] = (store.familyTimeSessions ?? [])
+  const family_time_sessions: FamilyTimeSessionInput[] = (familyTimeSessionsList ?? [])
     .filter((f: any) => f.child_id === childId)
     .map((f: any) => ({
       id: f.id,
@@ -164,7 +180,7 @@ export async function GET(
     }));
 
   // ── Missing Episodes ───────────────────────────────────────────────────
-  const missing_episodes: MissingEpisodeInput[] = (store.missingEpisodes ?? [])
+  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
@@ -176,7 +192,7 @@ export async function GET(
     }));
 
   // ── Independence Skills ────────────────────────────────────────────────
-  const skillsRecord = (store.independenceSkillsRecords ?? []).find(
+  const skillsRecord = (independenceSkillsRecordsList ?? []).find(
     (r: any) => r.child_id === childId,
   );
   const independence_skills: IndependenceSkillInput | null = skillsRecord
@@ -199,7 +215,7 @@ export async function GET(
     : null;
 
   // ── YP Feedback ────────────────────────────────────────────────────────
-  const yp_feedback: YPFeedbackInput[] = (store.ypFeedback ?? [])
+  const yp_feedback: YPFeedbackInput[] = (ypFeedbackList ?? [])
     .filter((f: any) => f.child_id === childId)
     .map((f: any) => ({
       id: f.id,
@@ -213,7 +229,7 @@ export async function GET(
     }));
 
   // ── Behaviour Entries ──────────────────────────────────────────────────
-  const behaviour_entries: BehaviourEntryInput[] = (store.behaviourLog ?? [])
+  const behaviour_entries: BehaviourEntryInput[] = (behaviourLogList ?? [])
     .filter((b: any) => b.child_id === childId)
     .map((b: any) => ({
       id: b.id,
@@ -227,7 +243,7 @@ export async function GET(
     }));
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
-  const lac_reviews: LACReviewInput[] = (store.lacReviews ?? [])
+  const lac_reviews: LACReviewInput[] = (lacReviewsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -239,7 +255,7 @@ export async function GET(
     }));
 
   // ── Lessons Learned ────────────────────────────────────────────────────
-  const lessons_learned: LessonLearnedInput[] = (store.lessonsLearned ?? [])
+  const lessons_learned: LessonLearnedInput[] = (lessonsLearnedList ?? [])
     .filter((l: any) => !l.child_id || l.child_id === childId)
     .map((l: any) => ({
       id: l.id,
@@ -250,7 +266,7 @@ export async function GET(
     }));
 
   // ── Advocacy Records ───────────────────────────────────────────────────
-  const advocacy_records = (store.advocacyRecords ?? [])
+  const advocacy_records = (advocacyRecordsList ?? [])
     .filter((a: any) => a.child_id === childId)
     .map((a: any) => ({
       id: a.id,

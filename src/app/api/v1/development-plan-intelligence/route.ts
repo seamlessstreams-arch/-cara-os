@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -57,11 +57,14 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 export async function GET() {
-  const store = getStore();
+  const [developmentPlansList, staffList] = await Promise.all([
+      dal.developmentPlans.findAll(),
+      dal.staff.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   const staffMap = new Map<string, string>(
-    store.staff.map((s) => [s.id, `${s.first_name} ${s.last_name}`.trim()])
+    staffList.map((s) => [s.id, `${s.first_name} ${s.last_name}`.trim()])
   );
 
   const staffWithPlanIds = new Set<string>();
@@ -71,7 +74,7 @@ export async function GET() {
 
   const staffProfiles: DevPlanStaffProfile[] = [];
 
-  const activePlans = store.developmentPlans.filter(
+  const activePlans = developmentPlansList.filter(
     (p) => p.status === "active" || p.status === "draft"
   );
 
@@ -160,7 +163,7 @@ export async function GET() {
   else overallSignal = "green";
 
   const data: DevelopmentPlanIntelligenceData = {
-    totalPlans: store.developmentPlans.length,
+    totalPlans: developmentPlansList.length,
     activePlans: activePlans.length,
     staffWithPlan: staffWithPlanIds.size,
     staffWithoutPlan,

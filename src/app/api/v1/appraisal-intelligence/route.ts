@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeAppraisalIntelligence,
   type AppraisalInput,
@@ -17,10 +17,13 @@ import {
 } from "@/lib/engines/appraisal-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [appraisalsList, staffList] = await Promise.all([
+      dal.appraisals.findAll(),
+      dal.staff.findAll(),
+    ]);
 
   // ── Map appraisals ───────────────────────────────────────────────────
-  const appraisals: AppraisalInput[] = (store.appraisals ?? []).map((a: any) => ({
+  const appraisals: AppraisalInput[] = (appraisalsList ?? []).map((a: any) => ({
     id: a.id,
     staff_id: a.staff_id,
     appraisal_type: a.appraisal_type,
@@ -36,7 +39,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ─────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
     id: s.id,
     name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     is_active: s.is_active ?? true,

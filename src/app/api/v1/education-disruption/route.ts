@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import {
   readEducationDisruption,
@@ -32,10 +32,14 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
-    const store = getStore();
+    const [educationRecordsList, pepRecordsList, youngPeopleList] = await Promise.all([
+      dal.educationRecords.findAll(),
+      dal.pepRecords.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const now = new Date().toISOString();
-    const edu = (store.educationRecords ?? []) as unknown as DisruptionEducationRecord[];
-    const peps = (store.pepRecords ?? []) as unknown as DisruptionPepRecord[];
+    const edu = (educationRecordsList ?? []) as unknown as DisruptionEducationRecord[];
+    const peps = (pepRecordsList ?? []) as unknown as DisruptionPepRecord[];
 
     const readFor = (id: string, name: string) =>
       readEducationDisruption({ childId: id, childName: name, now, educationRecords: edu, pepRecords: peps });
@@ -44,7 +48,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: { ...readFor(childId, getYPName(childId)), statutoryBasis: STATUTORY_BASIS } });
     }
 
-    const children = (store.youngPeople ?? []).filter((yp) => yp.status === "current");
+    const children = (youngPeopleList ?? []).filter((yp) => yp.status === "current");
     const reads = children.map((yp) => readFor(yp.id, yp.preferred_name || yp.first_name || "Child"));
     return NextResponse.json({ data: { ...buildEducationDisruptionOverview(reads), statutoryBasis: STATUTORY_BASIS } });
   } catch (error: unknown) {

@@ -24,7 +24,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 type OutcomeDirection = string;
 type OutcomeStatus = "active" | "achieved" | "on_hold" | "revised";
@@ -152,21 +152,25 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [aspirationRecordsList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.aspirationRecords.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;
 
-  const aspirationRecords = (store.aspirationRecords ?? []) as Array<{
+  const aspirationRecords = (aspirationRecordsList ?? []) as Array<{
     id: string; child_id: string; domain: string; aspiration: string;
     child_chose: boolean; current_realism: string;
     steps_taken: string[]; steps_next: string[];
     blockers: string[]; review_date: string;
   }>;
 
-  const outcomeTargets = (store.outcomeTargets ?? []) as Array<{
+  const outcomeTargets = (outcomeTargetsList ?? []) as Array<{
     id: string; child_id: string; domain: string;
     target_description: string; status: string;
     direction: string; yp_voice: string | null;

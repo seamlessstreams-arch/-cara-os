@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -53,13 +53,16 @@ function domainSignal(pct: number): Signal {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [independencePathwaysList, youngPeopleList] = await Promise.all([
+      dal.independencePathways.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const currentChildren = store.youngPeople.filter((yp) => yp.status === "current");
+  const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");
   const childMap = new Map(currentChildren.map((yp) => [yp.id, yp.preferred_name ?? yp.first_name]));
 
-  const pathways = store.independencePathways ?? [];
+  const pathways = independencePathwaysList ?? [];
   const pathwaysByChild = new Map<string, typeof pathways[0]>();
   for (const p of pathways) {
     const existing = pathwaysByChild.get(p.child_id);

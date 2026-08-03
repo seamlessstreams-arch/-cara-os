@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeContactEngagement,
   type ChildInput,
@@ -18,16 +18,22 @@ import {
 } from "@/lib/engines/contact-engagement-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [contactPlansList, dailyLogList, familyTimeSessionsList, mentalHealthCheckInsList, youngPeopleList] = await Promise.all([
+      dal.contactPlans.findAll(),
+      dal.dailyLog.findAll(),
+      dal.familyTimeSessions.findAll(),
+      dal.mentalHealthCheckIns.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map contact plans ────────────────────────────────────────────────────
-  const contactPlans: ContactPlanInput[] = store.contactPlans.map((p) => ({
+  const contactPlans: ContactPlanInput[] = contactPlansList.map((p) => ({
     id: p.id,
     child_id: p.child_id,
     status: p.status,
@@ -37,7 +43,7 @@ export async function GET() {
   }));
 
   // ── Map family time sessions ─────────────────────────────────────────────
-  const familyTimeSessions: FamilyTimeSessionInput[] = store.familyTimeSessions.map((s) => ({
+  const familyTimeSessions: FamilyTimeSessionInput[] = familyTimeSessionsList.map((s) => ({
     id: s.id,
     child_id: s.child_id,
     date: s.date,
@@ -52,7 +58,7 @@ export async function GET() {
   }));
 
   // ── Map mood entries from daily log ──────────────────────────────────────
-  const moodEntries: MoodEntryInput[] = store.dailyLog
+  const moodEntries: MoodEntryInput[] = dailyLogList
     .filter((entry) => entry.mood_score != null && entry.mood_score > 0)
     .map((entry) => ({
       child_id: entry.child_id,
@@ -61,7 +67,7 @@ export async function GET() {
     }));
 
   // Also include mental health check-ins
-  const mentalHealthMoods: MoodEntryInput[] = store.mentalHealthCheckIns.map((mh) => ({
+  const mentalHealthMoods: MoodEntryInput[] = mentalHealthCheckInsList.map((mh) => ({
     child_id: mh.child_id,
     date: mh.date,
     mood_score: mh.mood_rating * 2, // Scale 1-5 → 2-10

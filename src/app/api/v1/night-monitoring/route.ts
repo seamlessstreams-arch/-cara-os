@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeNightMonitoring,
   type ChildInput,
@@ -18,16 +18,20 @@ import {
 } from "@/lib/engines/night-monitoring-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [welfareCheckRoundsList, welfareChecksList, youngPeopleList] = await Promise.all([
+      dal.welfareCheckRounds.findAll(),
+      dal.welfareChecks.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map welfare checks ───────────────────────────────────────────────────
-  const welfareChecks: WelfareCheckInput[] = store.welfareChecks.map((c) => ({
+  const welfareChecks: WelfareCheckInput[] = welfareChecksList.map((c) => ({
     id: c.id,
     child_id: c.child_id,
     staff_id: c.staff_id,
@@ -40,7 +44,7 @@ export async function GET() {
   }));
 
   // ── Map welfare rounds ───────────────────────────────────────────────────
-  const welfareRounds: WelfareRoundInput[] = store.welfareCheckRounds.map((r) => ({
+  const welfareRounds: WelfareRoundInput[] = welfareCheckRoundsList.map((r) => ({
     id: r.id,
     round_date: r.round_date,
     round_time: r.round_time,

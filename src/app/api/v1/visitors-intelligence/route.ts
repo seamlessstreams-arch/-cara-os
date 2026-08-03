@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeVisitorsIntelligence,
   type VisitorInput,
@@ -18,9 +18,13 @@ import {
 } from "@/lib/engines/visitors-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [staffList, visitorsList, youngPeopleList] = await Promise.all([
+      dal.staff.findAll(),
+      dal.visitors.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const visitors: VisitorInput[] = (store.visitors ?? []).map((v: any) => ({
+  const visitors: VisitorInput[] = (visitorsList ?? []).map((v: any) => ({
     id: v.id,
     date: typeof v.date === "string" ? v.date.slice(0, 10) : v.date,
     visitor_name: v.visitor_name,
@@ -36,12 +40,12 @@ export async function GET() {
     children_seen: v.children_seen ?? [],
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

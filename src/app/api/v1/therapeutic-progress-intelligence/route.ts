@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeTherapeuticProgress,
   type TherapeuticProgressInput,
@@ -27,10 +27,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [behaviourLogList, camhsReferralsList, incidentsList, keyWorkingSessionsList, mentalHealthCheckInsList, outcomeReviewsList, outcomeTargetsList, restraintsList, traumaTherapyLogsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.camhsReferrals.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.mentalHealthCheckIns.findAll(),
+      dal.outcomeReviews.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.restraints.findAll(),
+      dal.traumaTherapyLogs.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -42,7 +53,7 @@ export async function GET(request: NextRequest) {
     ?? "2025-01-01";
 
   // ── Therapy Sessions ──────────────────────────────────────────────────────
-  const therapySessions: TherapySessionInput[] = (store.traumaTherapyLogs ?? [])
+  const therapySessions: TherapySessionInput[] = (traumaTherapyLogsList ?? [])
     .filter((t: any) => t.child_id === childId)
     .map((t: any) => ({
       id: t.id,
@@ -59,7 +70,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Keywork Sessions ──────────────────────────────────────────────────────
-  const keyworkSessions: KeyworkSessionInput[] = (store.keyWorkingSessions ?? [])
+  const keyworkSessions: KeyworkSessionInput[] = (keyWorkingSessionsList ?? [])
     .filter((k: any) => k.child_id === childId)
     .map((k: any) => ({
       id: k.id,
@@ -75,7 +86,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Behaviour Entries ─────────────────────────────────────────────────────
-  const behaviourEntries: BehaviourEntryInput[] = (store.behaviourLog ?? [])
+  const behaviourEntries: BehaviourEntryInput[] = (behaviourLogList ?? [])
     .filter((b: any) => b.child_id === childId)
     .map((b: any) => ({
       date: (b.date ?? "").slice(0, 10),
@@ -87,7 +98,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Outcome Targets ───────────────────────────────────────────────────────
-  const outcomeTargets: OutcomeTargetInput[] = (store.outcomeTargets ?? [])
+  const outcomeTargets: OutcomeTargetInput[] = (outcomeTargetsList ?? [])
     .filter((t: any) => t.child_id === childId)
     .map((t: any) => ({
       id: t.id,
@@ -101,7 +112,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Outcome Reviews ───────────────────────────────────────────────────────
-  const outcomeReviews = (store.outcomeReviews ?? [])
+  const outcomeReviews = (outcomeReviewsList ?? [])
     .filter((r: any) => {
       const targetIds = outcomeTargets.map((t) => t.id);
       return targetIds.includes(r.target_id);
@@ -114,7 +125,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── CAMHS Referrals ───────────────────────────────────────────────────────
-  const camhsReferrals: CamhsReferralInput[] = (store.camhsReferrals ?? [])
+  const camhsReferrals: CamhsReferralInput[] = (camhsReferralsList ?? [])
     .filter((c: any) => c.child_id === childId)
     .map((c: any) => ({
       id: c.id,
@@ -128,7 +139,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Mental Health Check-Ins ───────────────────────────────────────────────
-  const mentalHealthCheckIns: MentalHealthCheckInInput[] = (store.mentalHealthCheckIns ?? [])
+  const mentalHealthCheckIns: MentalHealthCheckInInput[] = (mentalHealthCheckInsList ?? [])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       date: (m.date ?? m.check_date ?? "").slice(0, 10),
@@ -140,7 +151,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Incidents (child-specific) ────────────────────────────────────────────
-  const incidents: ChildIncidentInput[] = (store.incidents ?? [])
+  const incidents: ChildIncidentInput[] = (incidentsList ?? [])
     .filter((i: any) => i.child_id === childId)
     .map((i: any) => ({
       date: (i.date ?? "").slice(0, 10),
@@ -149,7 +160,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Restraint Records ─────────────────────────────────────────────────────
-  const restraintRecords: RestraintRecordInput[] = (store.restraints ?? [])
+  const restraintRecords: RestraintRecordInput[] = (restraintsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       date: (r.date ?? r.incident_date ?? "").slice(0, 10),

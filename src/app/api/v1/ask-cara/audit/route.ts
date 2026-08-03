@@ -5,7 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   if (!MANAGEMENT.has((req.headers.get("x-user-role") || "").toLowerCase())) {
     return NextResponse.json({ error: "Management access required" }, { status: 403 });
   }
-  const store = getStore();
-  const events = [...store.askCaraAuditEvents].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const askCaraAuditEventsList = await dal.askCaraAuditEvents.findAll();
+  const events = [...askCaraAuditEventsList].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
   const byIntent: Record<string, number> = {};
   for (const e of events) byIntent[e.intent] = (byIntent[e.intent] ?? 0) + 1;

@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export async function GET() {
   try {
-    const store = getStore();
+    const [welfareCheckRoundsList, welfareChecksList, youngPeopleList] = await Promise.all([
+      dal.welfareCheckRounds.findAll(),
+      dal.welfareChecks.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
     const today = new Date().toISOString().split("T")[0];
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenStr = sevenDaysAgo.toISOString().split("T")[0];
 
-    const youngPeople = (store.youngPeople as any[]) ?? [];
-    const welfareRounds = (store.welfareCheckRounds as any[]) ?? [];
-    const welfareChecks = (store.welfareChecks as any[]) ?? [];
+    const youngPeople = (youngPeopleList as any[]) ?? [];
+    const welfareRounds = (welfareCheckRoundsList as any[]) ?? [];
+    const welfareChecks = (welfareChecksList as any[]) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
     const recentRounds = welfareRounds.filter((r) => (r.round_date as string) >= sevenStr);

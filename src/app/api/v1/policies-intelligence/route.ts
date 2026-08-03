@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computePoliciesIntelligence,
   type PolicyInput,
@@ -17,9 +17,12 @@ import {
 } from "@/lib/engines/policies-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [homePoliciesList, staffList] = await Promise.all([
+      dal.homePolicies.findAll(),
+      dal.staff.findAll(),
+    ]);
 
-  const policies: PolicyInput[] = (store.homePolicies ?? []).map((p: any) => ({
+  const policies: PolicyInput[] = (homePoliciesList ?? []).map((p: any) => ({
     id: p.id,
     title: p.title,
     category: p.category,
@@ -32,7 +35,7 @@ export async function GET() {
     statutory_basis: p.statutory_basis ?? "",
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -65,14 +65,17 @@ function getRecordSignal(recordType: string, status: string): Signal {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [healthRecordEntriesList, youngPeopleList] = await Promise.all([
+      dal.healthRecordEntries.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
   const in14Days = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
 
-  const currentChildren = store.youngPeople.filter((yp) => yp.status === "current");
+  const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");
   const childMap = new Map(currentChildren.map((yp) => [yp.id, yp.preferred_name ?? yp.first_name]));
 
-  const allRecords = store.healthRecordEntries.filter((r) => childMap.has(r.child_id));
+  const allRecords = healthRecordEntriesList.filter((r) => childMap.has(r.child_id));
 
   let totalOpenConditions = 0;
   let totalAllergies = 0;

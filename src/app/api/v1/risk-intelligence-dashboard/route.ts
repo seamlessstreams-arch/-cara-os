@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeRiskIntelligenceDashboard,
   type RiskIntelligenceDashboardInput,
@@ -15,18 +15,26 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest) {
-  const store = getStore();
+  const [exploitationScreeningsList, incidentsList, missingEpisodesList, restraintsList, riskAssessmentsList, significantEventsList, youngPeopleList] = await Promise.all([
+      dal.exploitationScreenings.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.restraints.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.significantEvents.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Children ──────────────────────────────────────────────────────────
-  const children: ChildSummaryInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildSummaryInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown",
   }));
 
   // ── Risk Assessments ──────────────────────────────────────────────────
-  const risk_assessments: RiskAssessmentInput[] = (store.riskAssessments ?? []).map((ra: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === ra.child_id);
+  const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? []).map((ra: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === ra.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";
@@ -52,8 +60,8 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Exploitation Screenings ───────────────────────────────────────────
-  const exploitation_screenings: ExploitationScreeningInput[] = (store.exploitationScreenings ?? []).map((es: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === es.child_id);
+  const exploitation_screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((es: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === es.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";
@@ -74,8 +82,8 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Missing Episodes ──────────────────────────────────────────────────
-  const missing_episodes: MissingEpisodeInput[] = (store.missingEpisodes ?? []).map((m: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === m.child_id);
+  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? []).map((m: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === m.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";
@@ -93,8 +101,8 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Incidents ─────────────────────────────────────────────────────────
-  const incident_entries: IncidentInput[] = (store.incidents ?? []).map((i: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === i.child_id);
+  const incident_entries: IncidentInput[] = (incidentsList ?? []).map((i: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === i.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";
@@ -112,8 +120,8 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Restraints ────────────────────────────────────────────────────────
-  const restraint_entries: RestraintInput[] = (store.restraints ?? []).map((r: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === r.child_id);
+  const restraint_entries: RestraintInput[] = (restraintsList ?? []).map((r: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === r.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";
@@ -132,8 +140,8 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Significant Events ────────────────────────────────────────────────
-  const significant_events: SignificantEventInput[] = (store.significantEvents ?? []).map((se: any) => {
-    const child = store.youngPeople.find((yp) => yp.id === se.child_id);
+  const significant_events: SignificantEventInput[] = (significantEventsList ?? []).map((se: any) => {
+    const child = youngPeopleList.find((yp) => yp.id === se.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
       : "Unknown";

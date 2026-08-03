@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildBehaviourSafety,
   type ChildBehaviourSafetyInput,
@@ -26,10 +26,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [behaviourLogList, behaviourSupportPlansList, incidentsList, missingEpisodesList, restraintsList, sanctionRewardsList, sleepLogList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.behaviourSupportPlans.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.restraints.findAll(),
+      dal.sanctionRewards.findAll(),
+      dal.sleepLog.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -37,7 +46,7 @@ export async function GET(request: NextRequest) {
   const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || "Unknown";
 
   // ── Behaviour Entries ─────────────────────────────────────────────────
-  const behaviour_entries: BehaviourEntryInput[] = (store.behaviourLog ?? [])
+  const behaviour_entries: BehaviourEntryInput[] = (behaviourLogList ?? [])
     .filter((b: any) => b.child_id === childId)
     .map((b: any) => ({
       id: b.id,
@@ -52,7 +61,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Incidents ─────────────────────────────────────────────────────────
-  const childIncidents = (store.incidents ?? []).filter(
+  const childIncidents = (incidentsList ?? []).filter(
     (i: any) => i.young_person_id === childId || i.child_id === childId,
   );
   const incidents: IncidentInput[] = childIncidents.map((i: any) => ({
@@ -67,7 +76,7 @@ export async function GET(request: NextRequest) {
   }));
 
   // ── Restraints ────────────────────────────────────────────────────────
-  const restraints: RestraintInput[] = (store.restraints ?? [])
+  const restraints: RestraintInput[] = (restraintsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -82,7 +91,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Missing Episodes ──────────────────────────────────────────────────
-  const missing_episodes: MissingEpisodeInput[] = (store.missingEpisodes ?? [])
+  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
@@ -94,7 +103,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Sanctions / Rewards ───────────────────────────────────────────────
-  const sanctions_rewards: SanctionRewardInput[] = (store.sanctionRewards ?? [])
+  const sanctions_rewards: SanctionRewardInput[] = (sanctionRewardsList ?? [])
     .filter((sr: any) => sr.child_id === childId)
     .map((sr: any) => ({
       id: sr.id,
@@ -106,7 +115,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Sleep Entries ─────────────────────────────────────────────────────
-  const sleep_entries: SleepEntryInput[] = (store.sleepLog ?? [])
+  const sleep_entries: SleepEntryInput[] = (sleepLogList ?? [])
     .filter((s: any) => s.child_id === childId)
     .map((s: any) => ({
       id: s.id,
@@ -119,7 +128,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Behaviour Support Plan ────────────────────────────────────────────
-  const bspRecords = (store.behaviourSupportPlans ?? []).filter(
+  const bspRecords = (behaviourSupportPlansList ?? []).filter(
     (b: any) => b.child_id === childId,
   );
   let behaviour_support_plan: BehaviourSupportPlanInput | null = null;

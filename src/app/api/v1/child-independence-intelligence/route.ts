@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildIndependenceIntelligence,
   type ChildIndependenceInput,
@@ -22,10 +22,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [independenceSkillsRecordsList, pathwayPlansList, youngPeopleList] = await Promise.all([
+      dal.independenceSkillsRecords.findAll(),
+      dal.pathwayPlans.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -34,7 +38,7 @@ export async function GET(request: NextRequest) {
   const childAge = (child as any).age ?? 17;
 
   // ── Independence Skills Records ───────────────────────────────────────
-  const independence_records: IndependenceSkillsRecordInput[] = (store.independenceSkillsRecords ?? [])
+  const independence_records: IndependenceSkillsRecordInput[] = (independenceSkillsRecordsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Pathway Plan ──────────────────────────────────────────────────────
-  const ppRecords = (store.pathwayPlans ?? []).filter((p: any) => p.child_id === childId);
+  const ppRecords = (pathwayPlansList ?? []).filter((p: any) => p.child_id === childId);
   let pathway_plan: PathwayPlanInput | null = null;
   if (ppRecords.length > 0) {
     const sorted = [...ppRecords].sort(

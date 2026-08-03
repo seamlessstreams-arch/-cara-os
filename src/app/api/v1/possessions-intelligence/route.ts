@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computePossessionsIntelligence,
   type PossessionInput,
@@ -18,10 +18,14 @@ import {
 } from "@/lib/engines/possessions-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [belongingsRecordsList, staffList, youngPeopleList] = await Promise.all([
+      dal.belongingsRecords.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   const possessions: PossessionInput[] = [];
-  for (const record of store.belongingsRecords ?? []) {
+  for (const record of belongingsRecordsList ?? []) {
     for (const item of (record as any).items ?? []) {
       possessions.push({
         id: item.id,
@@ -38,12 +42,12 @@ export async function GET() {
     }
   }
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

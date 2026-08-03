@@ -12,7 +12,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeContextualSafeguardingIntelligence,
   type ExploitationScreeningInput,
@@ -22,9 +22,14 @@ import {
 } from "@/lib/engines/contextual-safeguarding-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [exploitationScreeningsList, localityRisksList, staffList, youngPeopleList] = await Promise.all([
+      dal.exploitationScreenings.findAll(),
+      dal.localityRisks.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const screenings: ExploitationScreeningInput[] = (store.exploitationScreenings ?? []).map((r: any) => ({
+  const screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((r: any) => ({
     id: r.id,
     child_id: r.child_id,
     screening_type: r.exploitation_type ?? r.screening_type ?? "cse",
@@ -37,7 +42,7 @@ export async function GET() {
     next_screening_due: typeof r.next_review_date === "string" ? r.next_review_date.slice(0, 10) : (r.next_review_date ?? ""),
   }));
 
-  const localityRisks: LocalityRiskInput[] = (store.localityRisks ?? []).map((r: any) => ({
+  const localityRisks: LocalityRiskInput[] = (localityRisksList ?? []).map((r: any) => ({
     id: r.id,
     location_name: r.location ?? r.location_name ?? "",
     location_type: mapLocationType(r.category),
@@ -47,12 +52,12 @@ export async function GET() {
     mitigations: (r.mitigations ?? []).map((m: any) => typeof m === "string" ? m : m.measure ?? ""),
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

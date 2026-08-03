@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 export type PracticeSignal = "concern" | "attention" | "good";
 
@@ -114,11 +114,15 @@ function childPracticeSignal(
 }
 
 export async function GET() {
-  const store = getStore();
+  const [caraPracticeAssessmentsList, staffList, youngPeopleList] = await Promise.all([
+      dal.caraPracticeAssessments.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((store.youngPeople as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
       yp.id,
       yp.preferred_name ??
         (`${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown"),
@@ -127,7 +131,7 @@ export async function GET() {
 
   // ── Staff name map ──────────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((store.staff as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s: any) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -135,7 +139,7 @@ export async function GET() {
 
   // ── Parse assessments ─────────────────────────────────────────────────────
   const assessmentsByChild = new Map<string, any[]>();
-  for (const a of (store.caraPracticeAssessments as any[]) ?? []) {
+  for (const a of (caraPracticeAssessmentsList as any[]) ?? []) {
     if (!a.child_id) continue;
     const list = assessmentsByChild.get(a.child_id) ?? [];
     list.push(a);

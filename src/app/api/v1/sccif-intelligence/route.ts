@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeSCCIFIntelligence,
   type SelfEvaluationAreaInput,
@@ -17,10 +17,10 @@ import {
 } from "@/lib/engines/sccif-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const selfEvaluationAreasList = await dal.selfEvaluationAreas.findAll();
 
   // ── Map self-evaluation areas from store ────────────────────────────────────
-  const areas: SelfEvaluationAreaInput[] = store.selfEvaluationAreas.map((record) => {
+  const areas: SelfEvaluationAreaInput[] = selfEvaluationAreasList.map((record) => {
     const actions: SelfEvaluationActionInput[] = (record.actions ?? []).map((a) => ({
       action: a.action,
       owner: a.owner,

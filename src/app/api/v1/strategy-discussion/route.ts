@@ -18,7 +18,7 @@ import type { NextRequest } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeStrategyDraftStatus } from "@/lib/strategy-discussion/assembly-engine";
 import {
   answerThresholdQuestion,
@@ -69,12 +69,17 @@ export async function POST(req: NextRequest) {
     if (!childId) return NextResponse.json({ error: "childId is required — the draft assembles from the child's records." }, { status: 422 });
 
     // ── Assemble snapshots from the store (last 90 days of records) ──────────
-    const store = getStore();
+    const [behaviourLogList, behaviourSupportPlansList, escalationDecisionsList, incidentsList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.behaviourSupportPlans.findAll(),
+      dal.escalationDecisions.findAll(),
+      dal.incidents.findAll(),
+    ]);
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 90);
     const cutoffIso = cutoff.toISOString().slice(0, 10);
 
-    const incidents = store.incidents
+    const incidents = incidentsList
       .filter((i) => i.child_id === childId && (i.date ?? "") >= cutoffIso)
       .map((i) => ({
         id: i.id,
@@ -85,7 +90,7 @@ export async function POST(req: NextRequest) {
         immediateAction: i.immediate_action,
       }));
 
-    const behaviourEntries = store.behaviourLog
+    const behaviourEntries = behaviourLogList
       .filter((b) => b.child_id === childId && (b.date ?? "") >= cutoffIso)
       .map((b) => ({
         id: b.id,
@@ -99,7 +104,7 @@ export async function POST(req: NextRequest) {
     // The child's own words — quoted spans the records already hold.
     const QUOTE = /(?:said|told (?:staff|us|me))[^"“]{0,40}["“]([^"”]{5,200})["”]/i;
     const childQuotes: Array<{ recordId: string; recordType: string; quote: string }> = [];
-    for (const b of store.behaviourLog) {
+    for (const b of behaviourLogList) {
       if (b.child_id !== childId) continue;
       for (const field of [b.behaviour, b.outcome, b.consequence]) {
         const m = field ? QUOTE.exec(field) : null;
@@ -107,7 +112,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const escalationDecisions = store.escalationDecisions
+    const escalationDecisions = escalationDecisionsList
       .filter((d) => d.childId === childId)
       .map((d) => ({
         id: d.id,
@@ -117,7 +122,7 @@ export async function POST(req: NextRequest) {
         concernSummary: d.concernSummary,
       }));
 
-    const currentPlans = store.behaviourSupportPlans
+    const currentPlans = behaviourSupportPlansList
       .filter((p) => p.child_id === childId && p.status === "active")
       .map((p) => ({
         id: p.id,

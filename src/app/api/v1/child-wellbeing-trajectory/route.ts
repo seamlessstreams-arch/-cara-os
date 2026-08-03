@@ -27,7 +27,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -337,30 +337,38 @@ function buildPrompt(childName: string, traj: OverallTrajectory, declining: stri
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
+  const [aspirationRecordsList, dailyLogList, incidentsList, keyWorkingSessionsList, missingEpisodesList, outcomeTargetsList, youngPeopleList] = await Promise.all([
+      dal.aspirationRecords.findAll(),
+      dal.dailyLog.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.outcomeTargets.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const now = new Date();
   const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const cutoff60d = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const youngPeople = (store.youngPeople ?? []) as Array<{
+  const youngPeople = (youngPeopleList ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string; placement_start: string;
   }>;
-  const kwSessions = (store.keyWorkingSessions ?? []) as Array<{
+  const kwSessions = (keyWorkingSessionsList ?? []) as Array<{
     child_id: string; date: string; child_voice: string; mood_before: number; mood_after: number;
   }>;
-  const incidents = ((store.incidents ?? []) as unknown) as Array<{
+  const incidents = ((incidentsList ?? []) as unknown) as Array<{
     child_id: string; date: string; incident_type: string;
   }>;
-  const missing = (store.missingEpisodes ?? []) as Array<{
+  const missing = (missingEpisodesList ?? []) as Array<{
     child_id: string; date_missing: string;
   }>;
-  const aspirations = (store.aspirationRecords ?? []) as Array<{
+  const aspirations = (aspirationRecordsList ?? []) as Array<{
     child_id: string; child_chose: boolean;
   }>;
-  const outcomes = (store.outcomeTargets ?? []) as Array<{
+  const outcomes = (outcomeTargetsList ?? []) as Array<{
     child_id: string; direction: string; status: string;
   }>;
-  const dailyLog = (store.dailyLog ?? []) as Array<{
+  const dailyLog = (dailyLogList ?? []) as Array<{
     child_id: string; date: string; mood_score: number | null; is_significant: boolean;
   }>;
 

@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeStaffDisciplinaryIntelligence,
   type DisciplinaryInput,
@@ -18,9 +18,12 @@ import {
 } from "@/lib/engines/staff-disciplinary-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [staffList, staffDisciplinaryRecordsList] = await Promise.all([
+      dal.staff.findAll(),
+      dal.staffDisciplinaryRecords.findAll(),
+    ]);
 
-  const cases: DisciplinaryInput[] = (store.staffDisciplinaryRecords ?? []).map((r: any) => ({
+  const cases: DisciplinaryInput[] = (staffDisciplinaryRecordsList ?? []).map((r: any) => ({
     id: r.id,
     staff_id: r.staff_member ?? "",
     date_raised: typeof r.date_raised === "string" ? r.date_raised.slice(0, 10) : r.date_raised,
@@ -38,7 +41,7 @@ export async function GET() {
     support_offered: r.support_offered ?? [],
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

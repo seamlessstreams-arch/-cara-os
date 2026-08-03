@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   WorkforceRiskAnalysis,
@@ -33,15 +33,22 @@ function daysBetween(a: string, b: string): number {
 }
 
 export async function GET() {
-  const store = getStore();
+  const [absenceTrackingList, leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
+      dal.absenceTracking.findAll(),
+      dal.leaveRequests.findAll(),
+      dal.reflectiveSupervisions.findAll(),
+      dal.shifts.findAll(),
+      dal.staff.findAll(),
+      dal.trainingRecords.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const staff          = (store.staff as any[]) ?? [];
-  const supervisions   = (store.reflectiveSupervisions as any[]) ?? [];
-  const training       = (store.trainingRecords as any[]) ?? [];
-  const shifts         = (store.shifts as any[]) ?? [];
-  const leaveRequests  = (store.leaveRequests as any[]) ?? [];
-  const absences       = (store.absenceTracking as any[]) ?? [];
+  const staff          = (staffList as any[]) ?? [];
+  const supervisions   = (reflectiveSupervisionsList as any[]) ?? [];
+  const training       = (trainingRecordsList as any[]) ?? [];
+  const shifts         = (shiftsList as any[]) ?? [];
+  const leaveRequests  = (leaveRequestsList as any[]) ?? [];
+  const absences       = (absenceTrackingList as any[]) ?? [];
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 

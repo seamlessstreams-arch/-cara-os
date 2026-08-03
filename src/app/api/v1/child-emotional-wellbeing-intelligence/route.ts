@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildEmotionalWellbeing,
   type MoodEntryInput,
@@ -32,18 +32,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [behaviourLogList, dailyLogList, keyWorkingSessionsList, sanctionRewardsList, therapeuticInputRecordsList, youngPeopleList] = await Promise.all([
+      dal.behaviourLog.findAll(),
+      dal.dailyLog.findAll(),
+      dal.keyWorkingSessions.findAll(),
+      dal.sanctionRewards.findAll(),
+      dal.therapeuticInputRecords.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
   const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
 
   // ── Mood Entries (from daily log) ──────────────────────────────────────
-  const mood_entries: MoodEntryInput[] = ((store.dailyLog ?? []) as any[])
+  const mood_entries: MoodEntryInput[] = ((dailyLogList ?? []) as any[])
     .filter((e: any) => e.child_id === childId)
     .map((e: any) => ({
       id: e.id,
@@ -53,7 +60,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Behaviour Entries ──────────────────────────────────────────────────
-  const behaviour_entries: BehaviourEntryInput[] = ((store.behaviourLog ?? []) as any[])
+  const behaviour_entries: BehaviourEntryInput[] = ((behaviourLogList ?? []) as any[])
     .filter((b: any) => b.child_id === childId)
     .map((b: any) => ({
       id: b.id,
@@ -65,7 +72,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Keywork Sessions ───────────────────────────────────────────────────
-  const keywork_sessions: KeyworkSessionInput[] = ((store.keyWorkingSessions ?? []) as any[])
+  const keywork_sessions: KeyworkSessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
     .filter((k: any) => k.child_id === childId)
     .map((k: any) => ({
       id: k.id,
@@ -76,7 +83,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Therapy Sessions (from therapeuticInputRecords if available) ───────
-  const therapy_sessions: TherapySessionInput[] = ((store.therapeuticInputRecords ?? []) as any[])
+  const therapy_sessions: TherapySessionInput[] = ((therapeuticInputRecordsList ?? []) as any[])
     .filter((t: any) => t.child_id === childId)
     .map((t: any) => ({
       id: t.id,
@@ -86,7 +93,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Sanctions/Rewards ──────────────────────────────────────────────────
-  const sanction_rewards: SanctionRewardInput[] = ((store.sanctionRewards ?? []) as any[])
+  const sanction_rewards: SanctionRewardInput[] = ((sanctionRewardsList ?? []) as any[])
     .filter((sr: any) => sr.child_id === childId)
     .map((sr: any) => ({
       id: sr.id,

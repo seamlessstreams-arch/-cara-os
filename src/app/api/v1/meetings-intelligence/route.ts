@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeMeetingsIntelligence,
   type HouseMeetingInput,
@@ -18,9 +18,13 @@ import {
 } from "@/lib/engines/meetings-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [houseMeetingsList, staffList, youngPeopleList] = await Promise.all([
+      dal.houseMeetings.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
-  const meetings: HouseMeetingInput[] = (store.houseMeetings ?? []).map((m: any) => ({
+  const meetings: HouseMeetingInput[] = (houseMeetingsList ?? []).map((m: any) => ({
     id: m.id,
     date: typeof m.date === "string" ? m.date.slice(0, 10) : m.date,
     meeting_type: m.meeting_type,
@@ -42,12 +46,12 @@ export async function GET() {
     duration: m.duration ?? 0,
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeLeavingCareIntelligence,
   type PathwayPlanInput,
@@ -20,10 +20,15 @@ import {
 } from "@/lib/engines/leaving-care-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [independenceSkillsRecordsList, pathwayPlansList, staffList, youngPeopleList] = await Promise.all([
+      dal.independenceSkillsRecords.findAll(),
+      dal.pathwayPlans.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map pathway plans ───────────────────────────────────────────────────────
-  const pathwayPlans: PathwayPlanInput[] = store.pathwayPlans.map((p) => ({
+  const pathwayPlans: PathwayPlanInput[] = pathwayPlansList.map((p) => ({
     id: p.id,
     child_id: p.child_id,
     status: p.status as string,
@@ -42,7 +47,7 @@ export async function GET() {
 
   // ── Map independence skills records ─────────────────────────────────────────
   const independenceSkills: IndependenceSkillInput[] = [];
-  for (const record of store.independenceSkillsRecords) {
+  for (const record of independenceSkillsRecordsList) {
     for (const skill of record.skills ?? []) {
       independenceSkills.push({
         id: skill.id,
@@ -56,14 +61,14 @@ export async function GET() {
   }
 
   // ── Map children ────────────────────────────────────────────────────────────
-  const children: ChildRef[] = store.youngPeople.map((yp) => ({
+  const children: ChildRef[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: `${yp.first_name} ${yp.last_name}`,
     date_of_birth: yp.date_of_birth,
   }));
 
   // ── Map staff ───────────────────────────────────────────────────────────────
-  const staff: StaffRef[] = store.staff
+  const staff: StaffRef[] = staffList
     .filter((s) => s.is_active)
     .map((s) => ({
       id: s.id,

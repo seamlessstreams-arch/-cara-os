@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isLiveTenant } from "@/lib/db/live-mode";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
 import type { TimeSavedSummary } from "@/types/extended";
 
@@ -25,7 +25,7 @@ const DEMO_SAVINGS = [
 ];
 
 export async function GET(_req: NextRequest) {
-  const store = getStore();
+  const timeSavedList = await dal.timeSaved.findAll();
   const today = todayStr();
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest) {
   monthAgo.setDate(monthAgo.getDate() - 30);
   const monthAgoStr = monthAgo.toISOString().slice(0, 10);
 
-  const allEntries = store.timeSaved;
+  const allEntries = timeSavedList;
   const myEntries = allEntries.filter((e) => e.staff_id === "staff_darren");
 
   const todayMinutes = myEntries

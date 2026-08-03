@@ -1252,6 +1252,247 @@ export const dal = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async update(id: string, data: any) { return db.inductionRecords.update(id, data); },
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DEMO-ONLY extensions — batch 3 (2026-08-02). Unblocks the single-gap
+  // pure-read routes. Reads always in-memory until a Supabase table lands;
+  // then swap the `if (sb())` branch in the block, routes stay unchanged.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  admissionReferrals: {
+    async findAll() { return db.admissionReferrals.getAll(); },
+  },
+
+  independencePathways: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.independencePathways.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.independencePathways.findByChild(childId); },
+  },
+
+  cornerstoneEvents: {
+    async findAll() { return db.cornerstoneEvents.findAll(); },
+  },
+
+  welfareCheckRounds: {
+    async findAll() { return db.welfareCheckRounds.findAll(); },
+  },
+
+  uploadedDocuments: {
+    async findAll() { return db.uploadedDocuments.findAll(); },
+  },
+
+  pathwayPlans: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.pathwayPlans.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.pathwayPlans.findByChild(childId); },
+  },
+
+  aspirationRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.aspirationRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.aspirationRecords.findByChild(childId); },
+  },
+
+  escalationDecisions: {
+    async findAll() { return db.escalationDecisions.findAll(); },
+  },
+
+  contactPlans: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.contactPlans.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.contactPlans.findByChild(childId); },
+  },
+
+  healthRecordEntries: {
+    async findAll() { return db.healthRecordEntries.getAll(); },
+  },
+
+  homePolicies: {
+    async findAll() { return db.homePolicies.getAll(); },
+  },
+
+  ladoReferrals: {
+    async findAll() { return db.ladoReferrals.findAll(); },
+  },
+
+  dolRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.dolRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.dolRecords.findByChild(childId); },
+  },
+
+  pepRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.pepRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.pepRecords.findByChild(childId); },
+  },
+
+  selfEvaluationAreas: {
+    async findAll() { return db.selfEvaluationAreas.findAll(); },
+  },
+
+  visitors: {
+    async findAll() { return db.visitors.findAll(); },
+  },
+
+  conditionalOffers: {
+    async findAll() { return db.conditionalOffers.findAll(); },
+  },
+
+  developmentPlans: {
+    async findAll() { return db.developmentPlans.findAll(); },
+  },
+
+  activities: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.activities.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.activities.findByChild(childId); },
+  },
+
+  audits: {
+    async findAll() { return db.audits.findAll(); },
+  },
+
+  appraisals: {
+    async findAll() { return db.appraisals.findAll(); },
+  },
+
+  whistleblowingRecords: {
+    async findAll() { return db.whistleblowingRecords.getAll(); },
+  },
+
+  contextualSafeguardingRisks: {
+    async findAll() { return db.contextualSafeguardingRisks.findAll(); },
+  },
+
+  absenceTracking: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.absenceTracking.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.absenceTracking.findByChild(childId); },
+  },
+
+  localityRisks: {
+    async findAll() { return db.localityRisks.findAll(); },
+  },
+
+  fireDrills: {
+    async findAll() { return db.fireDrills.findAll(); },
+  },
+
+  houseMeetings: {
+    async findAll() { return db.houseMeetings.findAll(); },
+  },
+
+  traumaTherapyLogs: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.traumaTherapyLogs.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.traumaTherapyLogs.findByChild(childId); },
+  },
+
+  sleepLog: {
+    async findAll() { return db.sleepLog.findAll(); },
+  },
+
+  belongingsRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.belongingsRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.belongingsRecords.findByChild(childId); },
+  },
+
+  lessonsLearned: {
+    async findAll() { return db.lessonsLearned.findAll(); },
+  },
+
+  therapeuticInputRecords: {
+    async findAll() { return db.therapeuticInputRecords.getAll(); },
+  },
+
+  significantEvents: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.significantEvents.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.significantEvents.findByChild(childId); },
+  },
+
+  staffDisciplinaryRecords: {
+    async findAll() { return db.staffDisciplinaryRecords.getAll(); },
+  },
+
+  qualityOfCareReviews: {
+    async findAll() { return db.qualityOfCareReviews.getAll(); },
+  },
+
+  disclosures: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.disclosures.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.disclosures.findByChild(childId); },
+  },
+
+  caraPracticeAssessments: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.caraPracticeAssessments.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findByChild(childId: string) { return db.caraPracticeAssessments.findByChild(childId); },
+  },
+
+  timeSaved: {
+    async findAll() { return getStore().timeSaved; },
+  },
+
+  integrityHealEvents: {
+    async findAll() { return getStore().integrityHealEvents; },
+  },
+
+  caraIncidentSessions: {
+    async findAll() { return getStore().caraIncidentSessions; },
+  },
+
+  askCaraAuditEvents: {
+    async findAll() { return getStore().askCaraAuditEvents; },
+  },
+
+  shiftPatterns: {
+    async findAll() { return getStore().shiftPatterns; },
+  },
+
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

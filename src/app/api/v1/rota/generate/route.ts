@@ -5,7 +5,8 @@
 // shifts. Already-published dates and staff on approved leave / sickness are
 // skipped so the published rota reflects who is genuinely rostered.
 import { NextResponse } from "next/server";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { planShiftGeneration } from "@/lib/rota/shift-generation";
 import type { ShiftType } from "@/lib/constants";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -17,7 +18,13 @@ function addDays(date: string, n: number): string {
 }
 
 export async function POST(req: Request) {
-  const store = getStore() as any;
+  const [leaveRequestsList, shiftPatternsList, shiftsList, staffList, staffSicknessRecordsList] = await Promise.all([
+      dal.leaveRequests.findAll(),
+      dal.shiftPatterns.findAll(),
+      dal.shifts.findAll(),
+      dal.staff.findAll(),
+      dal.staffSicknessRecords.findAll(),
+    ]);
   let body: any = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
@@ -30,7 +37,7 @@ export async function POST(req: Request) {
 
   // Existing (non-cancelled) shifts in range — don't double-book.
   const existingKeys = new Set<string>();
-  for (const s of store.shifts ?? []) {
+  for (const s of shiftsList ?? []) {
     const d = String(s.date).slice(0, 10);
     if (d >= from && d <= to && s.status !== "cancelled" && s.staff_id) existingKeys.add(`${s.staff_id}|${d}`);
   }
@@ -43,17 +50,17 @@ export async function POST(req: Request) {
     const last = !end || end > to ? to : end;
     while (d <= last) { unavailable.add(`${staffId}|${d}`); d = addDays(d, 1); }
   };
-  for (const l of store.leaveRequests ?? []) {
+  for (const l of leaveRequestsList ?? []) {
     if (l.status === "approved") mark(String(l.staff_id), String(l.start_date).slice(0, 10), String(l.end_date).slice(0, 10));
   }
-  for (const sk of store.staffSicknessRecords ?? []) {
+  for (const sk of staffSicknessRecordsList ?? []) {
     mark(String(sk.staff_id), sk.date_started ? String(sk.date_started).slice(0, 10) : "", sk.date_ended ? String(sk.date_ended).slice(0, 10) : to);
   }
 
-  const plan = planShiftGeneration({ patterns: store.shiftPatterns ?? [], range: { from, to }, existingKeys, unavailable });
+  const plan = planShiftGeneration({ patterns: shiftPatternsList ?? [], range: { from, to }, existingKeys, unavailable });
 
   const staffName = new Map<string, string>(
-    (store.staff ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (staffList ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
   const withNames = plan.candidates.map((c) => ({ ...c, staff_name: staffName.get(c.staff_id) ?? c.staff_id }));
   const byStaff = plan.by_staff.map((s) => ({ ...s, staff_name: staffName.get(s.staff_id) ?? s.staff_id })).sort((a, b) => a.staff_name.localeCompare(b.staff_name));
@@ -77,7 +84,7 @@ export async function POST(req: Request) {
         notes: "Generated from shift pattern",
         status: "scheduled",
         is_open_shift: false,
-        home_id: c.shift_type ? (store.shiftPatterns?.find((p: any) => p.id === c.pattern_id)?.home_id ?? "home_oak") : "home_oak",
+        home_id: c.shift_type ? (shiftPatternsList?.find((p: any) => p.id === c.pattern_id)?.home_id ?? "home_oak") : "home_oak",
         created_by: actor,
         updated_by: actor,
       });

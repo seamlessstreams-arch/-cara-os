@@ -12,7 +12,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeDoLIntelligence,
   type DoLRestrictionInput,
@@ -22,16 +22,20 @@ import {
 } from "@/lib/engines/dol-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [dolRecordsList, staffList, youngPeopleList] = await Promise.all([
+      dal.dolRecords.findAll(),
+      dal.staff.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
 
   // ── Map children ────────────────────────────────────────────────────────────
-  const children: ChildRef[] = store.youngPeople.map((yp) => ({
+  const children: ChildRef[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map staff ───────────────────────────────────────────────────────────────
-  const staff: StaffRef[] = store.staff.map((s) => ({
+  const staff: StaffRef[] = staffList.map((s) => ({
     id: s.id,
     name: s.first_name,
   }));
@@ -59,7 +63,7 @@ export async function GET() {
     court_pending: "active",
   };
 
-  const restrictions: DoLRestrictionInput[] = store.dolRecords.map((r) => {
+  const restrictions: DoLRestrictionInput[] = dolRecordsList.map((r) => {
     const lastReview = r.review_history.length > 0
       ? r.review_history[r.review_history.length - 1].date
       : r.date_imposed;
@@ -82,7 +86,7 @@ export async function GET() {
   });
 
   // ── Map DoL records with court authority to orders ──────────────────────────
-  const orders: DoLOrderInput[] = store.dolRecords
+  const orders: DoLOrderInput[] = dolRecordsList
     .filter((r) => r.court_authorised && r.court_ref)
     .map((r) => ({
       id: `order_${r.id}`,

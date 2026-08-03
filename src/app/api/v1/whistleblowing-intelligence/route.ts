@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeWhistleblowingIntelligence,
   type WhistleblowingInput,
@@ -17,9 +17,12 @@ import {
 } from "@/lib/engines/whistleblowing-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [staffList, whistleblowingRecordsList] = await Promise.all([
+      dal.staff.findAll(),
+      dal.whistleblowingRecords.findAll(),
+    ]);
 
-  const reports: WhistleblowingInput[] = (store.whistleblowingRecords ?? []).map((r: any) => {
+  const reports: WhistleblowingInput[] = (whistleblowingRecordsList ?? []).map((r: any) => {
     // Compute date_closed from last timeline entry for resolved/closed cases
     const isClosedStatus = r.status === "resolved" || r.status === "closed_no_action";
     let dateClosed: string | null = null;
@@ -45,7 +48,7 @@ export async function GET() {
     };
   });
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

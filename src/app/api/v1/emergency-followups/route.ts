@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   makeChildNameMatcher,
   type YoungPersonLite,
@@ -29,18 +29,25 @@ export async function GET(req: NextRequest) {
     if (denied) return denied;
   }
 
-  const store = getStore();
-  const youngPeople = store.youngPeople as unknown as (YoungPersonLite & { status?: string })[];
+  const [admissionReferralsList, healthAssessmentsList, lacReviewsList, riskAssessmentsList, welfareChecksList, youngPeopleList] = await Promise.all([
+      dal.admissionReferrals.findAll(),
+      dal.healthAssessments.findAll(),
+      dal.lacReviews.findAll(),
+      dal.riskAssessments.findAll(),
+      dal.welfareChecks.findAll(),
+      dal.youngPeople.findAll(),
+    ]);
+  const youngPeople = youngPeopleList as unknown as (YoungPersonLite & { status?: string })[];
   const markers: EmergencyMarkers = {
-    admissionReferrals: store.admissionReferrals as never,
+    admissionReferrals: admissionReferralsList as never,
     // Commissioning referrals are Supabase-backed — empty array in demo mode.
     placementReferrals: [],
   };
   const sources = {
-    riskAssessments: store.riskAssessments as unknown as DatedChildRecord[],
-    welfareChecks: store.welfareChecks as unknown as DatedChildRecord[],
-    healthAssessments: store.healthAssessments as unknown as DatedChildRecord[],
-    lacReviews: store.lacReviews as unknown as DatedChildRecord[],
+    riskAssessments: riskAssessmentsList as unknown as DatedChildRecord[],
+    welfareChecks: welfareChecksList as unknown as DatedChildRecord[],
+    healthAssessments: healthAssessmentsList as unknown as DatedChildRecord[],
+    lacReviews: lacReviewsList as unknown as DatedChildRecord[],
   };
   const now = new Date().toISOString();
 

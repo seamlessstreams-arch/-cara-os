@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeRegulatoryReportingIntelligence,
   type Reg44ReportInput,
@@ -19,10 +19,15 @@ import {
 } from "@/lib/engines/regulatory-reporting-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [notifiableEventsList, qualityOfCareReviewsList, reg44VisitReportsList, staffList] = await Promise.all([
+      dal.notifiableEvents.findAll(),
+      dal.qualityOfCareReviews.findAll(),
+      dal.reg44VisitReports.findAll(),
+      dal.staff.findAll(),
+    ]);
 
   // ── Map Reg 44 visit reports ────────────────────────────────────────────────
-  const reg44Reports: Reg44ReportInput[] = (store.reg44VisitReports ?? []).map((r: any) => {
+  const reg44Reports: Reg44ReportInput[] = (reg44VisitReportsList ?? []).map((r: any) => {
     const recommendations = r.recommendations ?? [];
     const completedCount = recommendations.filter(
       (rec: any) => rec.status === "completed"
@@ -60,7 +65,7 @@ export async function GET() {
   });
 
   // ── Map Reg 45 / Quality of Care Reviews ────────────────────────────────────
-  const reg45Reports: Reg45ReportInput[] = (store.qualityOfCareReviews ?? []).map((r: any) => {
+  const reg45Reports: Reg45ReportInput[] = (qualityOfCareReviewsList ?? []).map((r: any) => {
     // Determine status
     const status = r.status ?? (r.actions?.length > 0 ? "in_progress" : "not_started");
 
@@ -85,7 +90,7 @@ export async function GET() {
   });
 
   // ── Map Notifiable Events ───────────────────────────────────────────────────
-  const notifications: NotificationInput[] = (store.notifiableEvents ?? []).map((r: any) => {
+  const notifications: NotificationInput[] = (notifiableEventsList ?? []).map((r: any) => {
     const ofstedStatus = r.ofsted_status ?? "pending";
     const notifiedDate = r.ofsted?.notified_date ?? null;
     const notifiedWithin24h = ofstedStatus === "notified_within_24h";
@@ -112,7 +117,7 @@ export async function GET() {
   });
 
   // ── Map Staff ───────────────────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));
