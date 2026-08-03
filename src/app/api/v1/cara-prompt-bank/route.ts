@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { INCIDENT_TYPES, buildWorkflowChecklist, type PromptBankEntry } from "@/lib/cara-incident/cara-incident-engine";
 import { currentUserId, logIncidentAudit } from "@/lib/cara-incident/incident-service";
@@ -22,8 +22,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 const CATEGORIES = ["co_regulation", "deescalation", "restorative", "safeguarding", "recording", "child_voice", "manager_oversight", "staff_reflection", "compliance", "post_incident_learning"];
 
 export async function GET() {
-  const store = getStore() as any;
-  const bank: PromptBankEntry[] = store.caraPromptBank ?? [];
+  const bank: PromptBankEntry[] = await dal.caraPromptBank.findAll();
   const workflows = INCIDENT_TYPES.map((t) => ({ ...t, steps: buildWorkflowChecklist(t.key) }));
   return NextResponse.json({ data: { bank, categories: CATEGORIES, incident_types: INCIDENT_TYPES, workflows } });
 }
@@ -39,7 +38,6 @@ export async function POST(req: Request) {
   if (!prompt_text) return NextResponse.json({ ok: false, error: "Write the prompt first." }, { status: 400 });
   if (prompt_text.length > 140) return NextResponse.json({ ok: false, error: "Keep prompts short — under 140 characters, calm and scannable." }, { status: 400 });
 
-  const store = getStore() as any;
   const now = new Date().toISOString();
   const entry: PromptBankEntry = {
     id: generateId("pbc"),
@@ -53,8 +51,7 @@ export async function POST(req: Request) {
     created_at: now,
     updated_at: now,
   };
-  store.caraPromptBank = store.caraPromptBank ?? [];
-  store.caraPromptBank.push(entry);
+  await dal.caraPromptBank.create(entry);
   logIncidentAudit({ action_type: "human_edit_made", user_id: currentUserId(req), source_id: entry.id, note: `prompt-bank add category=${category}` });
   return NextResponse.json({ ok: true, data: entry }, { status: 201 });
 }
@@ -64,14 +61,13 @@ export async function PATCH(req: Request) {
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data as any;
   const id = String(body.id ?? "").trim();
-  const store = getStore() as any;
-  const bank: PromptBankEntry[] = store.caraPromptBank ?? [];
+  const bank: PromptBankEntry[] = await dal.caraPromptBank.findAll();
   const entry = bank.find((p) => p.id === id);
   if (!entry) return NextResponse.json({ ok: false, error: "Prompt not found." }, { status: 404 });
   if (!entry.custom) return NextResponse.json({ ok: false, error: "Core prompts are versioned in code and can't be edited here." }, { status: 400 });
 
   if (body.remove === true) {
-    store.caraPromptBank = bank.filter((p) => p.id !== id);
+    await dal.caraPromptBank.remove(id);
   } else if (typeof body.is_active === "boolean") {
     entry.is_active = body.is_active;
     entry.updated_at = new Date().toISOString();

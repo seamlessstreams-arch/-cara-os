@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
-    const loops = (getStore().voiceConcernLoops ?? []).filter(
+    const loops = (await dal.voiceConcernLoops.findAll()).filter(
       (l) => !childId || l.child_id === childId,
     );
     const result = computeVoiceFollowThrough(loops, new Date());
@@ -68,13 +68,13 @@ export async function POST(req: NextRequest) {
     if (identity instanceof NextResponse) return identity;
     const actor = identity.userId;
     const now = new Date().toISOString();
-    const store = getStore();
+    const [loops, home] = await Promise.all([dal.voiceConcernLoops.findAll(), dal.home.get()]);
 
     // Repeat raise: the recurrence IS the signal, so it lands on the same loop.
     if (body?.repeat_of) {
       const denied0 = assertChildHomeAccess(identity, str(body.child_id) || null);
       if (denied0) return denied0;
-      const existing = (store.voiceConcernLoops ?? []).find((l) => l.id === String(body.repeat_of));
+      const existing = loops.find((l) => l.id === String(body.repeat_of));
       if (!existing) return NextResponse.json({ error: "Loop not found" }, { status: 404 });
       existing.raised_dates = [...existing.raised_dates, now];
       existing.updated_at = now;
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     const loop: VoiceConcernLoop = {
       id: generateId("vloop"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? store.home.id ?? ""),
+      home_id: String(body.home_id ?? home?.id ?? ""),
       concern: str(body.concern).trim(),
       raised_via: str(body.raised_via) || "not recorded",
       raised_dates: [now],
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       created_by: actor,
       updated_by: actor,
     };
-    store.voiceConcernLoops.push(loop);
+    await dal.voiceConcernLoops.create(loop);
     return NextResponse.json({ data: loop }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";
@@ -136,8 +136,7 @@ export async function PATCH(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const store = getStore();
-    const loop = (store.voiceConcernLoops ?? []).find((l) => l.id === String(body.id));
+    const loop = (await dal.voiceConcernLoops.findAll()).find((l) => l.id === String(body.id));
     if (!loop) return NextResponse.json({ error: "Loop not found" }, { status: 404 });
     const denied = assertChildHomeAccess(identity, loop.child_id);
     if (denied) return denied;

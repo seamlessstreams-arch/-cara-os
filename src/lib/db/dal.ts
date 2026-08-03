@@ -1548,6 +1548,145 @@ export const dal = {
     async findAll() { return db.fireEquipmentChecks.findAll(); },
   },
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // DEMO-ONLY extensions — write-slice 2 (2026-08-03). The remaining clean
+  // WRITER routes: external-AI declarations, prompt-bank, knowledge-governance,
+  // professional-challenge, regulation-profile, post-incident reflections,
+  // voice-follow-through, early-access. Same demo-only pattern as write-slice 1:
+  // findAll returns the LIVE store array (so routes may mutate a found record in
+  // place — Object.assign / nested .push — through the same reference), and
+  // create/update/remove mirror each route's exact mutation. When a Supabase
+  // table lands, only the `if (sb())` branch in each block changes; the routes
+  // stay put. No new live persistence is gained here (routes that already had a
+  // Supabase side-channel — early-access — keep calling it directly).
+  // ─────────────────────────────────────────────────────────────────────────
+
+  externalAiDeclarations: {
+    async findAll() { return getStore().externalAiDeclarations; },
+    async findById(id: string) { return getStore().externalAiDeclarations.find((r) => r.id === id) ?? null; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(decl: any) {
+      const s = getStore() as any;
+      s.externalAiDeclarations = s.externalAiDeclarations ?? [];
+      s.externalAiDeclarations.push(decl);
+      return decl;
+    },
+    // Replace-by-id (mirrors the PATCH review mutation exactly).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, record: any) {
+      const s = getStore() as any;
+      const list = (s.externalAiDeclarations ?? []) as any[];
+      const idx = list.findIndex((d) => d.id === id);
+      if (idx !== -1) list[idx] = record;
+      return record;
+    },
+  },
+
+  caraPostIncidentReflections: {
+    async findAll() { return getStore().caraPostIncidentReflections ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(rec: any) {
+      const s = getStore() as any;
+      s.caraPostIncidentReflections = s.caraPostIncidentReflections ?? [];
+      s.caraPostIncidentReflections.push(rec);
+      return rec;
+    },
+  },
+
+  caraRestorativeConversations: {
+    async findAll() { return getStore().caraRestorativeConversations ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(rec: any) {
+      const s = getStore() as any;
+      s.caraRestorativeConversations = s.caraRestorativeConversations ?? [];
+      s.caraRestorativeConversations.push(rec);
+      return rec;
+    },
+  },
+
+  caraPromptBank: {
+    async findAll() { return getStore().caraPromptBank ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(entry: any) {
+      const s = getStore() as any;
+      s.caraPromptBank = s.caraPromptBank ?? [];
+      s.caraPromptBank.push(entry);
+      return entry;
+    },
+    async remove(id: string) {
+      const s = getStore() as any;
+      s.caraPromptBank = (s.caraPromptBank ?? []).filter((p: any) => p.id !== id);
+    },
+  },
+
+  knowledgeGovernance: {
+    async findAll() { return getStore().knowledgeGovernance ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(record: any) {
+      const s = getStore() as any;
+      s.knowledgeGovernance = s.knowledgeGovernance ?? [];
+      s.knowledgeGovernance.push(record);
+      return record;
+    },
+  },
+
+  professionalChallenges: {
+    async findAll() { return getStore().professionalChallenges ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(challenge: any) {
+      const s = getStore() as any;
+      s.professionalChallenges = s.professionalChallenges ?? [];
+      s.professionalChallenges.push(challenge);
+      return challenge;
+    },
+  },
+
+  regulationProfiles: {
+    async findAll() { return getStore().regulationProfiles ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(profile: any) {
+      const s = getStore() as any;
+      s.regulationProfiles = s.regulationProfiles ?? [];
+      s.regulationProfiles.push(profile);
+      return profile;
+    },
+  },
+
+  adultRegulationReflections: {
+    async findAll() { return getStore().adultRegulationReflections ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(reflection: any) {
+      const s = getStore() as any;
+      s.adultRegulationReflections = s.adultRegulationReflections ?? [];
+      s.adultRegulationReflections.push(reflection);
+      return reflection;
+    },
+  },
+
+  voiceConcernLoops: {
+    async findAll() { return getStore().voiceConcernLoops ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(loop: any) {
+      const s = getStore() as any;
+      s.voiceConcernLoops = s.voiceConcernLoops ?? [];
+      s.voiceConcernLoops.push(loop);
+      return loop;
+    },
+  },
+
+  earlyAccessRequests: {
+    // Phantom store field — the route lazy-creates it; cast + default here too.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async findAll() { return (getStore() as any).earlyAccessRequests ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(record: any) {
+      const s = getStore() as any;
+      s.earlyAccessRequests = s.earlyAccessRequests ?? [];
+      s.earlyAccessRequests.push(record);
+      return record;
+    },
+  },
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

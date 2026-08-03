@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import { KB_ALL_ENTRIES } from "@/lib/cara/knowledge-base";
 import {
@@ -38,7 +38,7 @@ const evidence = (v: unknown): EvidenceStatus =>
 
 export async function GET() {
   try {
-    const overlay = getStore().knowledgeGovernance ?? [];
+    const overlay = await dal.knowledgeGovernance.findAll();
     const summary = buildKnowledgeGovernance(KB_ALL_ENTRIES, overlay, new Date());
     return NextResponse.json({
       data: {
@@ -76,10 +76,10 @@ export async function PUT(req: NextRequest) {
     const invalid = validateGovernance({ evidence_status, reviewer, limitations });
     if (invalid) return NextResponse.json({ error: invalid }, { status: 422 });
 
-    const store = getStore();
+    const list = await dal.knowledgeGovernance.findAll();
     const actor = String(req.headers.get("x-user-id") ?? "staff_unknown");
     const now = new Date().toISOString();
-    const existing = (store.knowledgeGovernance ?? []).find((r) => r.entry_id === entryId);
+    const existing = list.find((r) => r.entry_id === entryId);
 
     const fields = {
       evidence_status,
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ data: existing });
     }
     const record: KnowledgeGovernanceRecord = { entry_id: entryId, version: 1, ...fields };
-    store.knowledgeGovernance.push(record);
+    await dal.knowledgeGovernance.create(record);
     return NextResponse.json({ data: record }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";

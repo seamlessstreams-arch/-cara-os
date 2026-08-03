@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { readJsonBody } from "@/lib/http/read-json";
 import { buildDeclaration, reviewDeclaration, declarationAcknowledgement, type DeclarationInput, type ReviewOutcome } from "@/lib/ask-cara/external-ai-declaration";
 
@@ -22,16 +22,15 @@ export async function POST(req: NextRequest) {
   if (!b.declarationType || !["no", "yes", "not_sure", "spelling_grammar_only"].includes(b.declarationType)) {
     return NextResponse.json({ error: "declarationType is required (no | yes | not_sure | spelling_grammar_only)" }, { status: 400 });
   }
-  const store = getStore();
-  const decl = buildDeclaration(b as DeclarationInput, { id: `ext_ai_${Date.now()}_${store.externalAiDeclarations.length}`, createdAt: new Date().toISOString() });
-  store.externalAiDeclarations.push(decl);
+  const existing = await dal.externalAiDeclarations.findAll();
+  const decl = buildDeclaration(b as DeclarationInput, { id: `ext_ai_${Date.now()}_${existing.length}`, createdAt: new Date().toISOString() });
+  await dal.externalAiDeclarations.create(decl);
   return NextResponse.json({ data: { declaration: decl, acknowledgement: declarationAcknowledgement(decl) } });
 }
 
 export async function GET(req: NextRequest) {
   if (!isManager(req)) return NextResponse.json({ error: "Management access required" }, { status: 403 });
-  const store = getStore();
-  const items = [...store.externalAiDeclarations].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const items = [...(await dal.externalAiDeclarations.findAll())].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   return NextResponse.json({
     data: {
       declarations: items,
@@ -50,14 +49,15 @@ export async function PATCH(req: NextRequest) {
   if (!jb.ok) return jb.response;
   const b = jb.data as { id?: string; reviewedBy?: string; outcome?: ReviewOutcome; notes?: string };
   if (!b.id || !b.outcome) return NextResponse.json({ error: "id and outcome are required" }, { status: 400 });
-  const store = getStore();
-  const idx = store.externalAiDeclarations.findIndex((d) => d.id === b.id);
+  const list = await dal.externalAiDeclarations.findAll();
+  const idx = list.findIndex((d) => d.id === b.id);
   if (idx === -1) return NextResponse.json({ error: "Declaration not found" }, { status: 404 });
-  store.externalAiDeclarations[idx] = reviewDeclaration(store.externalAiDeclarations[idx], {
+  const reviewed = reviewDeclaration(list[idx], {
     reviewedBy: b.reviewedBy || (req.headers.get("x-user-role") || "manager"),
     outcome: b.outcome,
     notes: b.notes,
     reviewedAt: new Date().toISOString(),
   });
-  return NextResponse.json({ data: { declaration: store.externalAiDeclarations[idx] } });
+  await dal.externalAiDeclarations.update(String(b.id), reviewed);
+  return NextResponse.json({ data: { declaration: reviewed } });
 }

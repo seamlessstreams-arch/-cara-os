@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
@@ -55,20 +55,27 @@ export async function GET(req: NextRequest) {
     if (denied) return denied;
     if (!childId) return NextResponse.json({ error: "child_id is required" }, { status: 400 });
 
-    const store = getStore();
-    const profile = (store.regulationProfiles ?? []).find((p) => p.child_id === childId) ?? null;
-    const reflections = (store.adultRegulationReflections ?? []).filter((r) => r.child_id === childId);
+    const [regProfiles, adultReflections, paceProfiles, behaviourLog, incidents, keyWorkingSessions] = await Promise.all([
+      dal.regulationProfiles.findAll(),
+      dal.adultRegulationReflections.findAll(),
+      dal.childPaceProfiles.findAll(),
+      dal.behaviourLog.findAll(),
+      dal.incidents.findAll(),
+      dal.keyWorkingSessions.findAll(),
+    ]);
+    const profile = regProfiles.find((p) => p.child_id === childId) ?? null;
+    const reflections = adultReflections.filter((r) => r.child_id === childId);
 
     // Evidence-based suggestions from the emotional-safety analysis (same input
     // assembly as /emotional-safety, so the two agree).
-    const pace = (store.childPaceProfiles ?? []).find((p) => p.childId === childId);
+    const pace = paceProfiles.find((p) => p.childId === childId);
     const analysis = buildEmotionalSafetyAnalysis({
       childId,
       childName: getYPName(childId),
       now: new Date().toISOString(),
-      behaviourLog: store.behaviourLog ?? [],
-      incidents: store.incidents ?? [],
-      keyWorkingSessions: store.keyWorkingSessions ?? [],
+      behaviourLog: behaviourLog ?? [],
+      incidents: incidents ?? [],
+      keyWorkingSessions: keyWorkingSessions ?? [],
       knownTriggers: pace?.knownTriggers ?? [],
       calmingApproaches: pace?.calmingApproaches ?? [],
     });
@@ -107,10 +114,10 @@ export async function PUT(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, String(body.child_id));
     if (denied) return denied;
 
-    const store = getStore();
+    const [regProfiles, home] = await Promise.all([dal.regulationProfiles.findAll(), dal.home.get()]);
     const now = new Date().toISOString();
     const fields = Object.fromEntries(PROFILE_FIELDS.map((f) => [f, str(body[f])])) as Record<(typeof PROFILE_FIELDS)[number], string>;
-    const existing = (store.regulationProfiles ?? []).find((p) => p.child_id === String(body.child_id));
+    const existing = regProfiles.find((p) => p.child_id === String(body.child_id));
 
     if (existing) {
       Object.assign(existing, fields, {
@@ -124,13 +131,13 @@ export async function PUT(req: NextRequest) {
     const profile: RegulationProfile = {
       id: generateId("regprof"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? store.home.id ?? ""),
+      home_id: String(body.home_id ?? home?.id ?? ""),
       ...fields,
       review_date: body.review_date ? String(body.review_date) : null,
       updated_at: now,
       updated_by: identity.userId,
     };
-    store.regulationProfiles.push(profile);
+    await dal.regulationProfiles.create(profile);
     return NextResponse.json({ data: profile }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";
@@ -156,7 +163,6 @@ export async function POST(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, String(body.child_id));
     if (denied) return denied;
 
-    const store = getStore();
     const now = new Date().toISOString();
     const reflection: AdultRegulationReflection = {
       id: generateId("arr"),
@@ -175,7 +181,7 @@ export async function POST(req: NextRequest) {
       created_at: now,
       created_by: identity.userId,
     };
-    store.adultRegulationReflections.push(reflection);
+    await dal.adultRegulationReflections.create(reflection);
     return NextResponse.json({ data: { ...reflection, read: readReflection(reflection) } }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";

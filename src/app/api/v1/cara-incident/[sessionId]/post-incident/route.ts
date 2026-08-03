@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 import { persistRestorativeConversation, persistPostIncidentReflection } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import {
@@ -31,11 +31,14 @@ import {
 import { findSession, addTimelineEntry, currentUserId, logIncidentAudit, childName } from "@/lib/cara-incident/incident-service";
 import { readJsonBody } from "@/lib/http/read-json";
 
-function recordsFor(sessionId: string) {
-  const store = getStore() as any;
+async function recordsFor(sessionId: string) {
+  const [restorativeAll, reflectionsAll] = await Promise.all([
+    dal.caraRestorativeConversations.findAll(),
+    dal.caraPostIncidentReflections.findAll(),
+  ]);
   return {
-    restorative: ((store.caraRestorativeConversations ?? []) as RestorativeConversationRecord[]).filter((r) => r.incident_session_id === sessionId),
-    reflections: ((store.caraPostIncidentReflections ?? []) as PostIncidentReflectionRecord[]).filter((r) => r.incident_session_id === sessionId),
+    restorative: (restorativeAll as RestorativeConversationRecord[]).filter((r) => r.incident_session_id === sessionId),
+    reflections: (reflectionsAll as PostIncidentReflectionRecord[]).filter((r) => r.incident_session_id === sessionId),
   };
 }
 
@@ -45,7 +48,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ sessionId: str
   if (!session) return NextResponse.json({ ok: false, error: "Session not found." }, { status: 404 });
   return NextResponse.json({
     data: {
-      ...recordsFor(sessionId),
+      ...(await recordsFor(sessionId)),
       templates: {
         restorative_questions: RESTORATIVE_QUESTIONS,
         readiness_checks: RESTORATIVE_READINESS_CHECKS,
@@ -78,7 +81,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data as any;
   const user_id = currentUserId(req);
-  const store = getStore() as any;
   const now = new Date().toISOString();
   const kind = String(body.kind ?? "");
   const s = (v: unknown) => String(v ?? "").trim();
@@ -112,8 +114,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
     const factual = buildRestorativeSummary(rec, childName(session.child_id));
     rec.ai_summary = await aiSummaryFor("restorative conversation", factual);
 
-    store.caraRestorativeConversations = store.caraRestorativeConversations ?? [];
-    store.caraRestorativeConversations.push(rec);
+    await dal.caraRestorativeConversations.create(rec);
     void persistRestorativeConversation(rec as unknown as Record<string, unknown>);
     addTimelineEntry({
       session,
@@ -156,8 +157,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
     }
     rec.ai_reflective_summary = await aiSummaryFor("post-incident reflection", buildReflectionSummary(rec));
 
-    store.caraPostIncidentReflections = store.caraPostIncidentReflections ?? [];
-    store.caraPostIncidentReflections.push(rec);
+    await dal.caraPostIncidentReflections.create(rec);
     void persistPostIncidentReflection(rec as unknown as Record<string, unknown>);
     logIncidentAudit({ action_type: "ai_suggestion_accepted", user_id, child_id: session.child_id, source_id: session.id, note: `reflection=${rec.id}`, approval_status: rec.manager_review_required ? "pending_manager_review" : "recorded" });
     return NextResponse.json({ ok: true, data: rec }, { status: 201 });
