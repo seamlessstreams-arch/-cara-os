@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
@@ -35,7 +35,15 @@ function monthWindow(month: string): { start: string; end: string; month: string
 
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
+    const [debriefRecordsList, ypFeedbackList, buildingChecksList, educationRecordsList, carePlansList, riskAssessmentsList] = await Promise.all([
+      dal.debriefRecords.findAll(),
+      dal.ypFeedback.findAll(),
+      dal.buildingChecks.findAll(),
+      dal.educationRecords.findAll(),
+      dal.carePlans.findAll(),
+      dal.riskAssessments.findAll(),
+    ]);
+
     const { searchParams } = new URL(req.url);
     const homeId = searchParams.get("home_id") || "home_oak";
     const win = monthWindow(searchParams.get("month") || "");
@@ -48,7 +56,7 @@ export async function GET(req: NextRequest) {
     const pack = generateReg44Pack(homeId, { window: { start: win.start, end: win.end } });
 
     // Restraint → debrief linkage.
-    const debriefs = (store.debriefRecords ?? []) as Array<{ linked_incident_id?: string }>;
+    const debriefs = (debriefRecordsList ?? []) as Array<{ linked_incident_id?: string }>;
     const restraints = (pack.restraints ?? []).map((r) => {
       const incId = String(r.linked_incident_id ?? "") || String(r.id ?? "").replace("rst_", "inc_");
       return { id: String(r.id), childDebriefed: !!r.child_debriefed, hasDebriefRecord: debriefs.some((d) => d.linked_incident_id === incId), date: day(r.date ?? r.created_at) };
@@ -64,7 +72,7 @@ export async function GET(req: NextRequest) {
 
     // Child voice for the month (feedback expressing wishes/feelings).
     const inMonth = (d: string) => d >= win.start && d <= win.end;
-    const childVoice = (store.ypFeedback ?? [])
+    const childVoice = (ypFeedbackList ?? [])
       .filter((f: { date?: string }) => inMonth(day(f.date)))
       .map((f) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) }));
 
@@ -83,10 +91,15 @@ export async function GET(req: NextRequest) {
       keywork,
       childVoice,
       complaints,
-      educationRecords: countInMonth((store as Record<string, unknown>).educationRecords),
-      healthRecords: countInMonth((store as Record<string, unknown>).healthAppointments) + countInMonth((store as Record<string, unknown>).medicationRecords),
-      achievementRecords: countInMonth((store as Record<string, unknown>).achievements),
-      carePlanRecords: countInMonth((store as Record<string, unknown>).carePlans) + countInMonth((store as Record<string, unknown>).riskAssessments),
+      educationRecords: countInMonth(educationRecordsList),
+      // NOTE: earlier revisions read `store.healthAppointments` and `store.medicationRecords`,
+      // both phantom collections (real names would be different). Preserving the
+      // silent-zero behaviour here — the assessment's health/achievement fields
+      // aren't wired to real counts and never have been. Fixing them is a semantic
+      // change, out of scope for the DAL migration.
+      healthRecords: 0,
+      achievementRecords: 0,
+      carePlanRecords: countInMonth(carePlansList) + countInMonth(riskAssessmentsList),
       childrenSpokenTo: Number(searchParams.get("spoken_to") ?? "0") || 0,
     };
 
@@ -111,7 +124,7 @@ export async function GET(req: NextRequest) {
     const previousRecommendations = ((pack.previous_visit?.outstanding_recommendations ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({ text: String(r.recommendation ?? ""), status: String(r.status ?? "outstanding"), priority: r.priority ? String(r.priority) : undefined }));
 
     // Section H — project the home's building checks into the Reg 44 checklist.
-    const buildingChecksInput: Reg44BuildingCheckInput[] = ((store.buildingChecks ?? []) as unknown as Array<Record<string, unknown>>)
+    const buildingChecksInput: Reg44BuildingCheckInput[] = ((buildingChecksList ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((c) => c.home_id === homeId || !c.home_id)
       .map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
     const buildingSafety = buildReg44BuildingSafety(buildingChecksInput, asOf);
