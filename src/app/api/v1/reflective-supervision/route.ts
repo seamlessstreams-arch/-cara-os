@@ -13,7 +13,7 @@ import { persistReflectiveSupervision } from "@/lib/supabase/incident-persist";
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -23,16 +23,19 @@ const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_
 function staffName(s: any): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
-function superviseeStaff(store: any): StaffLite[] {
-  return ((store.staff ?? []) as any[])
+function superviseeStaff(staffList: any[]): StaffLite[] {
+  return ((staffList ?? []) as any[])
     .filter((s) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
     .map((s) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
 }
 
 export async function GET() {
-  const store = getStore() as any;
-  const records: ReflectiveSupervisionRecord[] = store.reflectiveSupervisions ?? [];
-  const staff = superviseeStaff(store);
+  const [reflectiveSupervisionsList, staffList] = await Promise.all([
+    dal.reflectiveSupervisions.findAll(),
+    dal.staff.findAll(),
+  ]);
+  const records: ReflectiveSupervisionRecord[] = (reflectiveSupervisionsList ?? []) as ReflectiveSupervisionRecord[];
+  const staff = superviseeStaff(staffList);
   const today = new Date().toISOString().slice(0, 10);
 
   const overview = computeSupervisionOverview({ records, staff, today });
@@ -45,7 +48,6 @@ export async function POST(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SUPERVISION);
   if (auth instanceof NextResponse) return auth;
 
-  const store = getStore() as any;
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data as any;
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Staff member and date are required." }, { status: 400 });
   }
 
-  const staffList = (store.staff ?? []) as any[];
+  const staffList = ((await dal.staff.findAll()) ?? []) as any[];
   const sm = staffList.find((s) => s.id === staff_id);
   const supervisor = staffList.find((s) => s.id === String(body.supervisor_id ?? "")) ?? null;
   const clampScore = (n: any) => Math.max(1, Math.min(5, Math.round(Number(n) || 3)));
@@ -85,8 +87,7 @@ export async function POST(req: NextRequest) {
     created_at: new Date().toISOString(),
   };
 
-  store.reflectiveSupervisions = store.reflectiveSupervisions ?? [];
-  store.reflectiveSupervisions.push(record);
+  await dal.reflectiveSupervisions.create(record);
   void persistReflectiveSupervision(record as unknown as Record<string, unknown>);
   return NextResponse.json({ ok: true, data: record }, { status: 201 });
 }

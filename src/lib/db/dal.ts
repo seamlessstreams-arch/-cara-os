@@ -882,6 +882,15 @@ export const dal = {
     },
     async findById(id: string) { return getStore().reflectiveSupervisions.find((r) => r.id === id) ?? null; },
     async findByStaff(staffId: string) { return getStore().reflectiveSupervisions.filter((r) => r.staff_id === staffId); },
+    // DEMO-ONLY append (mirrors the in-memory copy). Real persistence is the
+    // persistReflectiveSupervision side-channel the route still calls.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(record: any) {
+      const s = getStore() as any;
+      s.reflectiveSupervisions = s.reflectiveSupervisions ?? [];
+      s.reflectiveSupervisions.push(record);
+      return record;
+    },
   },
 
   outcomeTargets: {
@@ -969,6 +978,16 @@ export const dal = {
       return list;
     },
     async findById(id: string) { return getStore().caraRecordingReviews.find((r) => r.id === id) ?? null; },
+    // DEMO-ONLY append (mirrors the in-memory copy the routes kept). The real
+    // Supabase persistence is a side-channel (persistRecordingReview) the routes
+    // still call directly. When a table lands, add `if (sb()) return sq...` here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(review: any) {
+      const s = getStore() as any;
+      s.caraRecordingReviews = s.caraRecordingReviews ?? [];
+      s.caraRecordingReviews.push(review);
+      return review;
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1025,6 +1044,16 @@ export const dal = {
   employerValuesProfiles: {
     async findAll() { return getStore().employerValuesProfiles; },
     async findById(id: string) { return getStore().employerValuesProfiles.find((r) => r.id === id) ?? null; },
+    // DEMO-ONLY single-profile upsert (there is one profile per home). Mirrors
+    // the route's list[0]-replace mutation exactly.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async upsert(updated: any) {
+      const s = getStore() as any;
+      const list = s.employerValuesProfiles ?? [];
+      if (list[0]) list[0] = updated; else list.push(updated);
+      s.employerValuesProfiles = list;
+      return updated;
+    },
   },
 
   reg44VisitReports: {
@@ -1490,6 +1519,25 @@ export const dal = {
 
   shiftPatterns: {
     async findAll() { return getStore().shiftPatterns; },
+    // DEMO-ONLY CRUD via whole-array replace (mirrors rota/patterns exactly).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(pattern: any) {
+      const s = getStore() as any;
+      s.shiftPatterns = [...(s.shiftPatterns ?? []), pattern];
+      return pattern;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, pattern: any) {
+      const s = getStore() as any;
+      const list = (s.shiftPatterns ?? []) as any[];
+      s.shiftPatterns = list.map((p) => (p.id === id ? pattern : p));
+      return pattern;
+    },
+    async remove(id: string) {
+      const s = getStore() as any;
+      const list = (s.shiftPatterns ?? []) as any[];
+      s.shiftPatterns = list.filter((p) => p.id !== id);
+    },
   },
 
   waterHygieneRecords: {

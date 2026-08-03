@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 import { persistRecordingReview } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { analyseRecordingQuality, RECORD_TYPES, RECORDING_DISCLAIMER } from "@/lib/cara-incident/recording-assistant-engine";
@@ -28,13 +28,16 @@ import { readJsonBody } from "@/lib/http/read-json";
 const SENSITIVE_TYPES = new Set(["incident_report", "physical_intervention", "missing_from_home", "safeguarding_update", "risk_assessment_update"]);
 
 export async function GET() {
-  const store = getStore() as any;
-  const recent = ((store.caraRecordingReviews ?? []) as CaraRecordingReview[])
+  const [caraRecordingReviewsList, youngPeopleList] = await Promise.all([
+    dal.caraRecordingReviews.findAll(),
+    dal.youngPeople.findAll(),
+  ]);
+  const recent = ((caraRecordingReviewsList ?? []) as CaraRecordingReview[])
     .slice()
     .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
     .slice(0, 10)
     .map((r) => ({ ...r, child_name: childName(r.child_id), staff_name: staffNameOf(r.user_id) }));
-  const children = ((store.youngPeople ?? []) as any[])
+  const children = ((youngPeopleList ?? []) as any[])
     .filter((c) => c.status === "current")
     .map((c) => ({ id: c.id, name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") }));
   return NextResponse.json({ data: { record_types: RECORD_TYPES, children, recent, disclaimer: RECORDING_DISCLAIMER } });
@@ -60,7 +63,6 @@ export async function POST(req: Request) {
     const final_text = String(body.final_text ?? "").trim();
     if (!final_text) return NextResponse.json({ ok: false, error: "The final record text is empty." }, { status: 400 });
 
-    const store = getStore() as any;
     const now = new Date().toISOString();
     const review: CaraRecordingReview = {
       id: generateId("arr"),
@@ -81,8 +83,7 @@ export async function POST(req: Request) {
       created_at: now,
       updated_at: now,
     };
-    store.caraRecordingReviews = store.caraRecordingReviews ?? [];
-    store.caraRecordingReviews.push(review);
+    await dal.caraRecordingReviews.create(review);
     void persistRecordingReview(review as unknown as Record<string, unknown>);
     logIncidentAudit({ action_type: "ai_suggestion_accepted", user_id, child_id, source_id: review.id, note: `recording-assistant type=${record_type}`, approval_status: manager_review_required ? "pending_manager_review" : "recorded" });
     return NextResponse.json({ ok: true, data: { review_id: review.id, manager_review_required } }, { status: 201 });

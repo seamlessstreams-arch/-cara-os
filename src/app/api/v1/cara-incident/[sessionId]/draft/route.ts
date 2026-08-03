@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 import { persistRecordingReview, persistIncidentSessionUpdate } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import {
@@ -47,7 +47,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
     const final_text = String(body.final_text ?? "").trim();
     if (!final_text) return NextResponse.json({ ok: false, error: "The final record text is empty." }, { status: 400 });
 
-    const store = getStore() as any;
     const now = new Date().toISOString();
     const review: CaraRecordingReview = {
       id: generateId("arr"),
@@ -68,8 +67,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
       created_at: now,
       updated_at: now,
     };
-    store.caraRecordingReviews = store.caraRecordingReviews ?? [];
-    store.caraRecordingReviews.push(review);
+    await dal.caraRecordingReviews.create(review);
     void persistRecordingReview(review as unknown as Record<string, unknown>);
     session.final_record_created = true;
     session.incident_status = "record_created";

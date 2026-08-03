@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -21,17 +21,16 @@ const EDITABLE: (keyof EmployerValuesProfile)[] = [
 ];
 
 export async function GET() {
-  const store = getStore() as any;
-  const profile = (store.employerValuesProfiles ?? [])[0] ?? null;
+  const list = (await dal.employerValuesProfiles.findAll()) ?? [];
+  const profile = list[0] ?? null;
   return NextResponse.json({ data: profile });
 }
 
 export async function PUT(req: Request) {
-  const store = getStore() as any;
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const list: EmployerValuesProfile[] = store.employerValuesProfiles ?? [];
+  const list: EmployerValuesProfile[] = ((await dal.employerValuesProfiles.findAll()) ?? []) as EmployerValuesProfile[];
   const existing = list[0];
 
   const patch: Record<string, unknown> = {};
@@ -45,7 +44,6 @@ export async function PUT(req: Request) {
     updated_at: new Date().toISOString(),
   } as EmployerValuesProfile;
 
-  if (existing) list[0] = updated; else list.push(updated);
-  store.employerValuesProfiles = list;
+  await dal.employerValuesProfiles.upsert(updated);
   return NextResponse.json({ data: updated });
 }

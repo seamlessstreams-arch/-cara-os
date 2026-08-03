@@ -7,7 +7,7 @@
 // deputy 2-on/4-off, waking nights, …). Patterns drive the cover view and the
 // generate-&-publish flow, so editing here flows straight through.
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { describePattern, type ShiftPattern, type ShiftPatternKind } from "@/lib/rota/shift-patterns";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -17,9 +17,9 @@ export const dynamic = "force-dynamic";
 const SHIFT_TYPES = new Set(["day", "sleep_in", "waking_night", "short", "handover", "on_call", "training_day"]);
 const TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
-function staffNameMap(store: any): Map<string, string> {
+function staffNameMap(staffList: any[]): Map<string, string> {
   return new Map<string, string>(
-    (store.staff ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (staffList ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
 }
 
@@ -28,10 +28,10 @@ function withName(p: ShiftPattern, names: Map<string, string>) {
 }
 
 /** Validate + normalise an incoming pattern body. Returns {pattern} or {error}. */
-function buildPattern(body: any, store: any, existing?: ShiftPattern): { pattern?: ShiftPattern; error?: string } {
+function buildPattern(body: any, staffList: any[], existing?: ShiftPattern): { pattern?: ShiftPattern; error?: string } {
   const staff_id = String(body.staff_id ?? existing?.staff_id ?? "");
   if (!staff_id) return { error: "A staff member is required." };
-  if (!(store.staff ?? []).some((m: any) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
+  if (!(staffList ?? []).some((m: any) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
 
   const kind: ShiftPatternKind = body.kind === "rotating" ? "rotating" : body.kind === "weekly" ? "weekly" : (existing?.kind ?? "weekly");
 
@@ -58,7 +58,7 @@ function buildPattern(body: any, store: any, existing?: ShiftPattern): { pattern
     if (!/^\d{4}-\d{2}-\d{2}$/.test(anchor_date)) return { error: "A valid cycle start date (YYYY-MM-DD) is required for a rotating pattern." };
   }
 
-  const names = staffNameMap(store);
+  const names = staffNameMap(staffList);
   const name = String(body.name ?? existing?.name ?? "").trim() || `${names.get(staff_id) ?? "Staff"} — pattern`;
   const active = typeof body.active === "boolean" ? body.active : existing?.active ?? true;
 
@@ -79,48 +79,46 @@ function buildPattern(body: any, store: any, existing?: ShiftPattern): { pattern
 }
 
 export async function GET() {
-  const store = getStore() as any;
-  const names = staffNameMap(store);
-  const patterns = (store.shiftPatterns ?? []).map((p: ShiftPattern) => withName(p, names));
-  const staff = (store.staff ?? [])
+  const [staffList, shiftPatternsList] = await Promise.all([dal.staff.findAll(), dal.shiftPatterns.findAll()]);
+  const names = staffNameMap(staffList);
+  const patterns = (shiftPatternsList ?? []).map((p: ShiftPattern) => withName(p, names));
+  const staff = (staffList ?? [])
     .map((m: any) => ({ id: String(m.id), name: names.get(String(m.id)) ?? "Unknown", role: m.role ?? null }))
     .sort((a: any, b: any) => a.name.localeCompare(b.name));
   return NextResponse.json({ data: { patterns, staff } });
 }
 
 export async function POST(req: Request) {
-  const store = getStore() as any;
+  const staffList = ((await dal.staff.findAll()) ?? []) as any[];
   let body: any = {};
   const __parsed2 = await readJsonBody(req);
   if (!__parsed2.ok) return __parsed2.response;
   try { body = __parsed2.data; } catch { body = {}; }
-  const { pattern, error } = buildPattern(body, store);
+  const { pattern, error } = buildPattern(body, staffList);
   if (error || !pattern) return NextResponse.json({ error: error ?? "Invalid pattern" }, { status: 400 });
-  store.shiftPatterns = [...(store.shiftPatterns ?? []), pattern];
-  return NextResponse.json({ data: withName(pattern, staffNameMap(store)) }, { status: 201 });
+  await dal.shiftPatterns.create(pattern);
+  return NextResponse.json({ data: withName(pattern, staffNameMap(staffList)) }, { status: 201 });
 }
 
 export async function PATCH(req: Request) {
-  const store = getStore() as any;
+  const [staffList, list] = await Promise.all([dal.staff.findAll(), dal.shiftPatterns.findAll()]) as [any[], ShiftPattern[]];
   let body: any = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
   const id = String(body.id ?? "");
-  const list: ShiftPattern[] = store.shiftPatterns ?? [];
-  const existing = list.find((p) => p.id === id);
+  const existing = (list ?? []).find((p) => p.id === id);
   if (!existing) return NextResponse.json({ error: "Pattern not found." }, { status: 404 });
-  const { pattern, error } = buildPattern(body, store, existing);
+  const { pattern, error } = buildPattern(body, staffList, existing);
   if (error || !pattern) return NextResponse.json({ error: error ?? "Invalid pattern" }, { status: 400 });
-  store.shiftPatterns = list.map((p) => (p.id === id ? pattern : p));
-  return NextResponse.json({ data: withName(pattern, staffNameMap(store)) });
+  await dal.shiftPatterns.update(id, pattern);
+  return NextResponse.json({ data: withName(pattern, staffNameMap(staffList)) });
 }
 
 export async function DELETE(req: Request) {
-  const store = getStore() as any;
   const id = new URL(req.url).searchParams.get("id") ?? "";
-  const list: ShiftPattern[] = store.shiftPatterns ?? [];
+  const list: ShiftPattern[] = ((await dal.shiftPatterns.findAll()) ?? []) as ShiftPattern[];
   if (!list.some((p) => p.id === id)) return NextResponse.json({ error: "Pattern not found." }, { status: 404 });
-  store.shiftPatterns = list.filter((p) => p.id !== id);
+  await dal.shiftPatterns.remove(id);
   return NextResponse.json({ data: { id, deleted: true } });
 }
