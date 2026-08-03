@@ -16,7 +16,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computePremisesCompliance, type ComplianceItemInput } from "@/lib/engines/premises-compliance-engine";
 
 const CAT = {
@@ -37,12 +37,17 @@ function addYearISO(d: string | null): string | null {
 }
 
 export async function GET() {
-  const store = getStore() as any;
+  const [buildingsList, buildingChecksList, fireDrillsList, maintenanceList] = await Promise.all([
+    dal.buildings.findAll(),
+    dal.buildingChecks.findAll(),
+    dal.fireDrills.findAll(),
+    dal.maintenance.findAll(),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
   const items: ComplianceItemInput[] = [];
 
   // ── 1. Certificates (from the primary building record) ───────────────────────
-  const bld = ((store.buildings ?? []) as any[])[0];
+  const bld = ((buildingsList ?? []) as any[])[0];
   if (bld) {
     items.push({
       key: "cert_gas", label: "Gas Safety Certificate", category: CAT.cert,
@@ -62,7 +67,7 @@ export async function GET() {
   // ── 2. Routine safety checks (buildingChecks — latest per check_type) ────────
   const FIRE_TYPES = new Set(["fire_alarm_test", "emergency_lighting", "fire_door_check"]);
   const byType = new Map<string, any>();
-  for (const c of (store.buildingChecks ?? []) as any[]) {
+  for (const c of (buildingChecksList ?? []) as any[]) {
     const t = String(c.check_type ?? "check");
     const prev = byType.get(t);
     if (!prev || String(c.check_date ?? "") > String(prev.check_date ?? "")) byType.set(t, c);
@@ -85,7 +90,7 @@ export async function GET() {
   }
 
   // ── 3. Drills (most recent fire drill → its next-due date) ───────────────────
-  const drills = ((store.fireDrills ?? []) as any[]).slice().sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")));
+  const drills = ((fireDrillsList ?? []) as any[]).slice().sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")));
   if (drills.length > 0) {
     const latest = drills[0];
     items.push({
@@ -98,7 +103,7 @@ export async function GET() {
 
   // ── 4. Compliance-relevant planned maintenance ───────────────────────────────
   const MAINT_CATS = new Set(["hvac", "electrical", "security", "gas"]);
-  for (const m of (store.maintenance ?? []) as any[]) {
+  for (const m of (maintenanceList ?? []) as any[]) {
     if (!MAINT_CATS.has(String(m.category ?? "").toLowerCase())) continue;
     const status = String(m.status ?? "").toLowerCase();
     items.push({
@@ -114,11 +119,15 @@ export async function GET() {
   }
 
   // ── 5. Statutory checks with NO record on file (honest Reg-31 prompts) ───────
-  const isEmpty = (key: string) => !Array.isArray(store[key]) || (store[key] as any[]).length === 0;
-  if (isEmpty("waterHygieneRecords")) {
+  const [waterHygieneRecordsList, fireEquipmentChecksList] = await Promise.all([
+    dal.waterHygieneRecords.findAll(),
+    dal.fireEquipmentChecks.findAll(),
+  ]);
+  const isEmpty = (list: unknown) => !Array.isArray(list) || list.length === 0;
+  if (isEmpty(waterHygieneRecordsList)) {
     items.push({ key: "water_hygiene", label: "Water hygiene / legionella", category: CAT.check, due_date: null, detail: "No assessment on file", source_href: "/water-hygiene" });
   }
-  if (isEmpty("fireEquipmentChecks")) {
+  if (isEmpty(fireEquipmentChecksList)) {
     items.push({ key: "fire_equipment", label: "Fire equipment servicing", category: CAT.check, due_date: null, detail: "No service record on file", source_href: "/fire-safety-equipment-checks" });
   }
 

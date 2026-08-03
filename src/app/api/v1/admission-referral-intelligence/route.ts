@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeAdmissionReferralIntelligence,
   type ReferralInput,
@@ -18,10 +18,14 @@ import {
 } from "@/lib/engines/admission-referral-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [admissionReferralsList, youngPeopleList, home] = await Promise.all([
+    dal.admissionReferrals.findAll(),
+    dal.youngPeople.findAll(),
+    dal.home.get(),
+  ]);
 
   // ── Map referrals ───────────────────────────────────────────────────────────
-  const referrals: ReferralInput[] = store.admissionReferrals.map((r) => ({
+  const referrals: ReferralInput[] = (admissionReferralsList ?? []).map((r) => ({
     id: r.id,
     child_name: r.child_name,
     age: r.age,
@@ -39,8 +43,8 @@ export async function GET() {
   }));
 
   // ── Occupancy ───────────────────────────────────────────────────────────────
-  const currentOccupancy = store.youngPeople.length;
-  const maxOccupancy = (store.home as any)?.max_beds ?? 3; // registered capacity (from the home record)
+  const currentOccupancy = (youngPeopleList ?? []).length;
+  const maxOccupancy = (home as any)?.max_beds ?? 3; // registered capacity (from the home record)
 
   // ── Run engine ──────────────────────────────────────────────────────────────
   const result = computeAdmissionReferralIntelligence({

@@ -5,7 +5,8 @@
 //          as an UploadedDocument with a full ai_result. Deterministic (no AI
 //          key needed); the actions can then be tracked as tasks.
 import { NextResponse } from "next/server";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { extractComplianceDocument } from "@/lib/compliance/document-extraction";
 import { COMPLIANCE_CATEGORIES } from "@/lib/compliance/compliance-oversight-engine";
@@ -20,9 +21,9 @@ function fileTypeOf(name?: string): DocumentIntelFileType {
   return "txt";
 }
 
-export function GET() {
-  const store = getStore() as any;
-  const docs = (store.uploadedDocuments ?? [])
+export async function GET() {
+  const uploadedDocumentsList = await dal.uploadedDocuments.findAll();
+  const docs = (uploadedDocumentsList ?? [])
     .filter((d: UploadedDocument) => d.document_category && COMPLIANCE_CATEGORIES.has(d.document_category))
     .sort((a: UploadedDocument, b: UploadedDocument) => (a.uploaded_at < b.uploaded_at ? 1 : -1))
     .map((d: UploadedDocument) => ({ ...d, category_label: d.document_category ? DOCUMENT_CATEGORY_LABELS[d.document_category] : "Document" }));

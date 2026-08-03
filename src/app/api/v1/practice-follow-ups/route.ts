@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   buildPracticeFollowUps,
   type FollowUpSourceRecord,
@@ -19,33 +19,41 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const store = getStore() as any;
+    const [youngPeopleList, incidentsList, missingEpisodesList, restraintsList, disclosuresList, complaintsList, dailyLogList] = await Promise.all([
+      dal.youngPeople.findAll(),
+      dal.incidents.findAll(),
+      dal.missingEpisodes.findAll(),
+      dal.restraints.findAll(),
+      dal.disclosures.findAll(),
+      dal.complaints.findAll(),
+      dal.dailyLog.findAll(),
+    ]);
     const now = new Date().toISOString();
     const day = (d: unknown) => String(d ?? now).slice(0, 10);
 
-    const children = (store.youngPeople ?? [])
+    const children = (youngPeopleList ?? [])
       .filter((yp: any) => yp.status === "current")
       .map((yp: any) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const records: FollowUpSourceRecord[] = [];
     const add = (r: FollowUpSourceRecord) => { if (r.source_id) records.push(r); };
 
-    for (const i of store.incidents ?? []) {
+    for (const i of incidentsList ?? []) {
       add({ event: "incident_created", source_table: "incidents", source_id: i.id, child_id: i.child_id ?? i.young_person_id ?? null, content: `${i.type ?? ""} ${i.description ?? i.summary ?? ""}`.trim(), label: `Incident — ${i.type ?? i.incident_type ?? "general"}`, date: day(i.date ?? i.incident_date ?? i.created_at) });
     }
-    for (const m of store.missingEpisodes ?? []) {
+    for (const m of missingEpisodesList ?? []) {
       add({ event: "missing_episode_created", source_table: "missing_episodes", source_id: m.id, child_id: m.child_id ?? null, content: m.circumstances ?? m.notes ?? "", label: "Missing from care episode", date: day(m.date_missing ?? m.created_at) });
     }
-    for (const r of store.restraints ?? []) {
+    for (const r of restraintsList ?? []) {
       add({ event: "restraint_recorded", source_table: "restraints", source_id: r.id, child_id: r.child_id ?? null, content: `physical intervention ${r.description ?? r.technique ?? ""}`.trim(), label: "Physical intervention / restraint", date: day(r.date ?? r.created_at) });
     }
-    for (const d of store.disclosures ?? []) {
+    for (const d of disclosuresList ?? []) {
       add({ event: "safeguarding_concern_raised", source_table: "disclosures", source_id: d.id, child_id: d.child_id ?? null, content: d.detail ?? d.description ?? "", label: "Safeguarding concern", date: day(d.date ?? d.disclosure_date ?? d.created_at) });
     }
-    for (const c of store.complaints ?? []) {
+    for (const c of complaintsList ?? []) {
       add({ event: "complaint_created", source_table: "complaints", source_id: c.id, child_id: c.child_id ?? null, content: c.summary ?? c.description ?? "", label: "Complaint", date: day(c.date ?? c.created_at) });
     }
-    for (const e of store.dailyLog ?? []) {
+    for (const e of dailyLogList ?? []) {
       add({ event: "daily_log_created", source_table: "daily_log", source_id: e.id, child_id: e.child_id ?? null, content: e.content ?? "", label: `Daily log — ${e.entry_type ?? "note"}`, date: day(e.date ?? e.created_at) });
     }
 

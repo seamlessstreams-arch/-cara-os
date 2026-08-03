@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import {
   computeChildPlacementQuality,
@@ -33,11 +33,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [youngPeopleList, dailyLogList, keyWorkingSessionsList, welfareChecksList, welfareCheckRoundsList, activitiesList] = await Promise.all([
+    dal.youngPeople.findAll(),
+    dal.dailyLog.findAll(),
+    dal.keyWorkingSessions.findAll(),
+    dal.welfareChecks.findAll(),
+    dal.welfareCheckRounds.findAll(),
+    dal.activities.findAll(),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (store.youngPeople ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -48,7 +55,7 @@ export async function GET(request: NextRequest) {
   const keyWorkerName = keyWorkerId ? getStaffName(keyWorkerId) : "Key Worker";
 
   // ── Daily Logs ─────────────────────────────────────────────────────────
-  const daily_logs: DailyLogInput[] = (store.dailyLog ?? [])
+  const daily_logs: DailyLogInput[] = (dailyLogList ?? [])
     .filter((l: any) => l.child_id === childId)
     .map((l: any) => ({
       id: l.id,
@@ -60,7 +67,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
-  const key_work_sessions: KeyWorkInput[] = (store.keyWorkingSessions ?? [])
+  const key_work_sessions: KeyWorkInput[] = (keyWorkingSessionsList ?? [])
     .filter((k: any) => k.child_id === childId)
     .map((k: any) => ({
       id: k.id,
@@ -73,8 +80,8 @@ export async function GET(request: NextRequest) {
 
   // ── Welfare Checks ─────────────────────────────────────────────────────
   const welfare_checks: WelfareCheckInput[] = [];
-  if (Array.isArray((store as any).welfareChecks)) {
-    (store as any).welfareChecks
+  if (Array.isArray(welfareChecksList)) {
+    (welfareChecksList as any[])
       .filter((w: any) => w.child_id === childId)
       .forEach((w: any) => {
         welfare_checks.push({
@@ -85,8 +92,8 @@ export async function GET(request: NextRequest) {
       });
   }
   // Also check welfare check rounds
-  if (Array.isArray((store as any).welfareCheckRounds)) {
-    (store as any).welfareCheckRounds.forEach((round: any) => {
+  if (Array.isArray(welfareCheckRoundsList)) {
+    (welfareCheckRoundsList as any[]).forEach((round: any) => {
       if (Array.isArray(round.checks)) {
         round.checks
           .filter((c: any) => c.child_id === childId)
@@ -103,8 +110,8 @@ export async function GET(request: NextRequest) {
 
   // ── Activities ─────────────────────────────────────────────────────────
   const activities: ActivityInput[] = [];
-  if (Array.isArray(store.activities)) {
-    store.activities
+  if (Array.isArray(activitiesList)) {
+    (activitiesList as any[])
       .filter((a: any) => {
         // Check if child participated
         if (Array.isArray(a.participants)) return a.participants.includes(childId);

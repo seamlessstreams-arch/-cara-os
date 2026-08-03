@@ -1492,6 +1492,13 @@ export const dal = {
     async findAll() { return getStore().shiftPatterns; },
   },
 
+  waterHygieneRecords: {
+    async findAll() { return db.waterHygieneRecords.getAll(); },
+  },
+
+  fireEquipmentChecks: {
+    async findAll() { return db.fireEquipmentChecks.findAll(); },
+  },
 
 };
 

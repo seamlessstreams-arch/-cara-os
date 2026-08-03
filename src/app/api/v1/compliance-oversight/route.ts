@@ -3,7 +3,7 @@
 // joined to the tasks created from its actions, rated and ranked — so nothing
 // rots in a folder and the panel/inspection view shows how we're doing.
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { analyseComplianceOversight, COMPLIANCE_CATEGORIES, type OversightDoc, type OversightTask } from "@/lib/compliance/compliance-oversight-engine";
 import { DOCUMENT_CATEGORY_LABELS, type UploadedDocument } from "@/types/documents";
 
@@ -13,11 +13,14 @@ function dateByLabel(doc: UploadedDocument, label: string): string | null {
   return doc.ai_result?.extracted_entities?.dates?.find((d) => d.label === label)?.value ?? null;
 }
 
-export function GET() {
-  const store = getStore() as any;
+export async function GET() {
+  const [uploadedDocumentsList, tasksList] = await Promise.all([
+    dal.uploadedDocuments.findAll(),
+    dal.tasks.findAll(),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const complianceDocs: UploadedDocument[] = (store.uploadedDocuments ?? []).filter(
+  const complianceDocs: UploadedDocument[] = (uploadedDocumentsList ?? []).filter(
     (d: UploadedDocument) => d.document_category && COMPLIANCE_CATEGORIES.has(d.document_category),
   );
   const docIds = new Set(complianceDocs.map((d) => d.id));
@@ -35,7 +38,7 @@ export function GET() {
     uploaded_at: d.uploaded_at,
   }));
 
-  const tasks: OversightTask[] = (store.tasks ?? [])
+  const tasks: OversightTask[] = (tasksList ?? [])
     .filter((t: any) => t.linked_document_id && docIds.has(t.linked_document_id))
     .map((t: any) => ({ id: t.id, linked_document_id: t.linked_document_id, status: t.status, due_date: t.due_date ?? null }));
 
