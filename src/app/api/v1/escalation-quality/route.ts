@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { assessEscalationQuality } from "@/lib/risk-escalation/escalation-quality-engine";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const result = assessEscalationQuality(getStore().escalationDecisions ?? [], new Date());
+    const result = assessEscalationQuality((await dal.escalationDecisions.findAll()) ?? [], new Date());
     return NextResponse.json({ data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";

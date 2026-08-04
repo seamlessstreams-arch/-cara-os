@@ -7,7 +7,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { INCIDENT_TYPES, INCIDENT_DISCLAIMER, type IncidentSession, type RiskLevel } from "@/lib/cara-incident/cara-incident-engine";
 import { startSession, currentUserId, childName, sessionEntries } from "@/lib/cara-incident/incident-service";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -15,8 +15,8 @@ import { readJsonBody } from "@/lib/http/read-json";
 const RISKS = new Set(["low", "medium", "high"]);
 
 export async function GET() {
-  const store = getStore() as any;
-  const sessions = ((store.caraIncidentSessions ?? []) as IncidentSession[])
+  const [sessionsList, youngPeopleList] = await Promise.all([dal.caraIncidentSessions.findAll(), dal.youngPeople.findAll()]);
+  const sessions = ((sessionsList ?? []) as IncidentSession[])
     .slice()
     .sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)))
     .map((s) => ({
@@ -25,7 +25,7 @@ export async function GET() {
       entry_count: sessionEntries(s.id).length,
       type_label: INCIDENT_TYPES.find((t) => t.key === s.incident_type)?.label ?? s.incident_type,
     }));
-  const children = ((store.youngPeople ?? []) as any[])
+  const children = ((youngPeopleList ?? []) as any[])
     .filter((c) => c.status === "current")
     .map((c) => ({ id: c.id, name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") }));
   return NextResponse.json({
@@ -45,8 +45,8 @@ export async function POST(req: Request) {
   if (!INCIDENT_TYPES.some((t) => t.key === incident_type)) {
     return NextResponse.json({ ok: false, error: "Select an incident type." }, { status: 400 });
   }
-  const store = getStore() as any;
-  if (!((store.youngPeople ?? []) as any[]).some((c) => c.id === child_id)) {
+  const youngPeopleList = await dal.youngPeople.findAll();
+  if (!((youngPeopleList ?? []) as any[]).some((c) => c.id === child_id)) {
     return NextResponse.json({ ok: false, error: "Unknown child." }, { status: 400 });
   }
 

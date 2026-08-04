@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 
 function todayStr() {
@@ -19,7 +18,6 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET(_req: NextRequest) {
-  const store = getStore();
   const today = todayStr();
 
   // Core records via the dual-mode dal — the live tenant's Postgres when
@@ -41,6 +39,8 @@ export async function GET(_req: NextRequest) {
     buildingChecks,
     vehicles,
     youngPeople,
+    contextualSafeguardingRisks,
+    medicationErrors,
   ] = await Promise.all([
     safeList(dal.tasks.findAll()),
     safeList(dal.incidents.findAll()),
@@ -54,13 +54,9 @@ export async function GET(_req: NextRequest) {
     safeList(dal.buildingChecks.findAll()),
     safeList(dal.vehicles.findAll()),
     safeList(dal.youngPeople.findAll()),
+    safeList(dal.contextualSafeguardingRisks.findAll()),
+    safeList(dal.medicationErrors.findAll()),
   ]);
-
-  // Store-only collections (no dal accessor / no live table yet): empty on a live
-  // tenant, seeded in demo. Left on getStore() so demo is unchanged and live is
-  // honestly empty until they gain a backing table.
-  const contextualSafeguardingRisks = store.contextualSafeguardingRisks ?? [];
-  const medicationErrors = store.medicationErrors ?? [];
 
   // ── Tasks ──────────────────────────────────────────────────────────────────
   const activeTasks = allTasks.filter((t) => t.status !== "completed" && t.status !== "cancelled");
