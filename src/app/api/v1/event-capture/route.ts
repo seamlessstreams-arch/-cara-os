@@ -17,14 +17,14 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { computeEventCapture } from "@/lib/event-capture/event-capture-engine";
 import { captureEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export async function GET() {
-  const events = buildLiveEventStream(getStore()).events;
+  const events = buildLiveEventStream(await loadEventStoreShape()).events;
 
   // Representative draft: a re-entry of the most recent incident (or first event),
   // which the capture preview should flag as a likely duplicate.
