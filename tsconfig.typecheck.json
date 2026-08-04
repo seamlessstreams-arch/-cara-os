@@ -1,0 +1,22 @@
+{
+  // CI "Type check" config — validates shipped/deployable app code.
+  //
+  // Inherits compilerOptions + include from tsconfig.json, but ADDS test files
+  // to the exclude list. Test files are type-heavy and are validated by the
+  // Test suite (vitest) actually running them, not by tsc — so type errors that
+  // only live in *.test.ts / __tests__ (e.g. the deliberate fab-0 number|null
+  // widening) don't belong in the deploy-code typecheck gate.
+  //
+  // NOTE: `extends` does NOT merge exclude arrays — a child's `exclude` replaces
+  // the parent's — so the parent's excludes are restated here in full.
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "e2e",
+    "playwright.config.ts",
+    "cornerstone-agent",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__tests__/**"
+  ]
+}
