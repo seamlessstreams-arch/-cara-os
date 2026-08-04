@@ -11,7 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { dal } from "@/lib/db/dal";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
@@ -33,7 +33,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  const store = getStore() as any;
+  const store = await loadEventStoreShape();
 
   const stream = buildEventStream(mapStoreToEventInput(store));
 
