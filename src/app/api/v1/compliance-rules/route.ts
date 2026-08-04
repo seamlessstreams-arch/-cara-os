@@ -17,7 +17,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { dal } from "@/lib/db/dal";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
@@ -42,7 +42,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
 export async function GET() {
-  const store = getStore();
+  const store = await loadEventStoreShape();
 
   // ── Canonical event stream (incident-derived + safeguarding/missing/etc.) ──
   const events = buildEventStream(mapStoreToEventInput(store)).events;

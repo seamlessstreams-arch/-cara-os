@@ -12,7 +12,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { dal } from "@/lib/db/dal";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { computeEventIntelligence } from "@/lib/event-intelligence/event-intelligence-engine";
@@ -30,7 +30,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  const store = getStore();
+  const store = await loadEventStoreShape();
 
   // Capture once → one canonical stream (projected ∪ captured) → analytics.
   const stream = buildLiveEventStream(store);

@@ -11,13 +11,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
 import { computeWorkflowOrchestration } from "@/lib/workflow-orchestration/workflow-orchestration-engine";
 
 export async function GET() {
-  const events = buildEventStream(mapStoreToEventInput(getStore())).events;
+  const events = buildEventStream(mapStoreToEventInput(await loadEventStoreShape())).events;
   const result = computeWorkflowOrchestration({ events });
   return NextResponse.json({ data: result });
 }
