@@ -535,7 +535,7 @@ describe("computeHomeNutritionCatering", () => {
         kitchen_hygiene_checks: [makeKitchenCheck({ overall_verdict: "fail" })],
       }));
       // high: +5, low: -5 → diff = 10
-      expect(high.nutrition_score - low.nutrition_score).toBe(10);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(10);
     });
   });
 
@@ -550,7 +550,7 @@ describe("computeHomeNutritionCatering", () => {
       const none = computeHomeNutritionCatering(baseInput({ dietary_plans: [] }));
       const full = computeHomeNutritionCatering(baseInput());
       // none: mod2=-4, mod4=+0 (no plans). full: mod2=+4, mod4=+3. diff = 8+3 = 11
-      expect(full.nutrition_score - none.nutrition_score).toBe(11);
+      expect(full.nutrition_score! - none.nutrition_score!).toBe(11);
     });
   });
 
@@ -563,7 +563,7 @@ describe("computeHomeNutritionCatering", () => {
         ],
       }));
       // high: +4, low: -4 → diff = 8
-      expect(high.nutrition_score - low.nutrition_score).toBe(8);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(8);
     });
   });
 
@@ -579,7 +579,7 @@ describe("computeHomeNutritionCatering", () => {
         ],
       }));
       // high: +3, low: -3 → diff = 6 (mod2 is same: both 100% coverage → +4)
-      expect(high.nutrition_score - low.nutrition_score).toBe(6);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(6);
     });
   });
 
@@ -593,7 +593,7 @@ describe("computeHomeNutritionCatering", () => {
         ],
       }));
       // high: +3, low: -3 → diff = 6
-      expect(high.nutrition_score - low.nutrition_score).toBe(6);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(6);
     });
   });
 
@@ -612,7 +612,7 @@ describe("computeHomeNutritionCatering", () => {
         ),
       }));
       // none: -3, some: +3 → diff = 6
-      expect(some.nutrition_score - none.nutrition_score).toBe(6);
+      expect(some.nutrition_score! - none.nutrition_score!).toBe(6);
     });
   });
 
@@ -626,7 +626,7 @@ describe("computeHomeNutritionCatering", () => {
         ],
       }));
       // high: +3, low: -3 → diff = 6
-      expect(high.nutrition_score - low.nutrition_score).toBe(6);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(6);
     });
   });
 
@@ -640,7 +640,7 @@ describe("computeHomeNutritionCatering", () => {
         ],
       }));
       // high: +3, low: -3 → diff = 6
-      expect(high.nutrition_score - low.nutrition_score).toBe(6);
+      expect(high.nutrition_score! - low.nutrition_score!).toBe(6);
     });
   });
 

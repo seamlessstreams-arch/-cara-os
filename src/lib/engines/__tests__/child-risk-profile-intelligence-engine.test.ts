@@ -258,7 +258,7 @@ describe("Child Risk Profile Intelligence Engine", () => {
         makeAssessment({ domain: "absconding", trend: "increasing", current_level: "high", previous_level: "low" }),
       ],
     }));
-    expect(reducing.management_score).toBeGreaterThan(escalating.management_score);
+    expect(reducing.management_score).toBeGreaterThan(escalating.management_score!);
   });
 
   it("boosts score for effective mitigations", () => {
@@ -280,7 +280,7 @@ describe("Child Risk Profile Intelligence Engine", () => {
         ],
       })],
     }));
-    expect(effective.management_score).toBeGreaterThan(notEffective.management_score);
+    expect(effective.management_score).toBeGreaterThan(notEffective.management_score!);
   });
 
   it("clamps score to 0-100", () => {

@@ -290,7 +290,7 @@ describe("Child Keyworking Intelligence Engine", () => {
     const lowFreq = computeChildKeyworking(baseInput({
       sessions: [makeSession({ date: daysAgo(80) })],
     }));
-    expect(highFreq.quality_score).toBeGreaterThan(lowFreq.quality_score);
+    expect(highFreq.quality_score).toBeGreaterThan(lowFreq.quality_score!);
   });
 
   it("boosts score for good mood impact", () => {
@@ -306,7 +306,7 @@ describe("Child Keyworking Intelligence Engine", () => {
         makeSession({ mood_before: 3, mood_after: 1 }),
       ],
     }));
-    expect(good.quality_score).toBeGreaterThan(bad.quality_score);
+    expect(good.quality_score).toBeGreaterThan(bad.quality_score!);
   });
 
   it("clamps score to 0-100", () => {

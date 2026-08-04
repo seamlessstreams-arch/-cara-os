@@ -301,7 +301,7 @@ describe("Risk Intelligence Dashboard Engine", () => {
     expect(result.child_profiles.length).toBe(3);
     // Alex should be highest risk (high assessment, exploitation, missing, restraints)
     expect(result.child_profiles[0].child_name).toBe("Alex");
-    expect(result.child_profiles[0].risk_score).toBeGreaterThan(result.child_profiles[1].risk_score);
+    expect(result.child_profiles[0].risk_score).toBeGreaterThan(result.child_profiles[1].risk_score!);
     expect(["critical", "elevated", "moderate", "managed", "low"]).toContain(result.child_profiles[0].risk_level);
   });
 

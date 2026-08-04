@@ -239,7 +239,7 @@ describe("mod3: building security", () => {
     const rSecure = computeHomeSleepQuality(secure);
     const rInsecure = computeHomeSleepQuality(insecure);
     // secure: 100% → +3; insecure: 50% → -3. Diff = 6
-    expect(rSecure.sleep_score - rInsecure.sleep_score).toBe(6);
+    expect(rSecure.sleep_score! - rInsecure.sleep_score!).toBe(6);
   });
 });
 
@@ -286,7 +286,7 @@ describe("mod6: disturbance response", () => {
     const rA = computeHomeSleepQuality(actioned);
     const rU = computeHomeSleepQuality(unactioned);
     // actioned: 100% → +3; unactioned: 50% → -3. Diff = 6
-    expect(rA.sleep_score - rU.sleep_score).toBe(6);
+    expect(rA.sleep_score! - rU.sleep_score!).toBe(6);
   });
 });
 
@@ -309,7 +309,7 @@ describe("mod7: staff diversity", () => {
     const rDiv = computeHomeSleepQuality(diverse);
     const rSingle = computeHomeSleepQuality(single);
     // diverse: 3 → +3; single: 1 → -1. Diff = 4
-    expect(rDiv.sleep_score - rSingle.sleep_score).toBe(4);
+    expect(rDiv.sleep_score! - rSingle.sleep_score!).toBe(4);
   });
 });
 

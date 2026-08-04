@@ -416,7 +416,7 @@ describe("computeHomeTherapeuticClimate", () => {
       const rH = computeHomeTherapeuticClimate(baseInput({ behaviour_log: high }));
       const rL = computeHomeTherapeuticClimate(baseInput({ behaviour_log: low }));
       // 80% → +5, 20% → <30 → -4 → diff 9
-      expect(rH.climate_score - rL.climate_score).toBe(9);
+      expect(rH.climate_score! - rL.climate_score!).toBe(9);
     });
 
     it("modifier 2: 0 restraints gives +4", () => {
@@ -440,7 +440,7 @@ describe("computeHomeTherapeuticClimate", () => {
       // Wait, no: none total: +4 (restraints) + +3 (debrief) + +3 (injuries) = extra +10
       // some: -3 (restraints) + +3 (debrief) + +3 (injuries) = extra +3
       // restraint-related diff = 7
-      expect(none.climate_score - some.climate_score).toBe(7);
+      expect(none.climate_score! - some.climate_score!).toBe(7);
     });
 
     it("modifier 5: 0 high severity gives +3", () => {
@@ -454,7 +454,7 @@ describe("computeHomeTherapeuticClimate", () => {
       // 1 low incident: rate 0.25 → +2, 0 high → +3
       // 2 high incidents: rate 0.5 → +2, 2 high → -2
       // incident rate same (+2). highSev: +3 vs -2 = diff 5
-      expect(rN.climate_score - rH.climate_score).toBe(5);
+      expect(rN.climate_score! - rH.climate_score!).toBe(5);
     });
   });
 

@@ -301,7 +301,7 @@ describe("Child LAC Review Intelligence Engine", () => {
         makeReview({ child_participation: "did_not_participate", child_views_recorded: false }),
       ],
     }));
-    expect(highAttend.compliance_score).toBeGreaterThan(lowAttend.compliance_score);
+    expect(highAttend.compliance_score).toBeGreaterThan(lowAttend.compliance_score!);
   });
 
   it("penalises overdue review", () => {
@@ -311,7 +311,7 @@ describe("Child LAC Review Intelligence Engine", () => {
     const overdue = computeChildLACReview(baseInput({
       reviews: [makeReview({ next_review_date: daysAgo(30) })],
     }));
-    expect(onTime.compliance_score).toBeGreaterThan(overdue.compliance_score);
+    expect(onTime.compliance_score).toBeGreaterThan(overdue.compliance_score!);
   });
 
   it("clamps score to 0-100", () => {

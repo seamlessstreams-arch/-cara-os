@@ -363,43 +363,43 @@ describe("evaluateEducationPolicy", () => {
   it("weights educationStrategy at 4 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ educationStrategy: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(4);
+    expect(full.score! - base.score!).toBe(4);
   });
 
   it("weights pepComplianceFramework at 4 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ pepComplianceFramework: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(4);
+    expect(full.score! - base.score!).toBe(4);
   });
 
   it("weights attendanceMonitoring at 4 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ attendanceMonitoring: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(4);
+    expect(full.score! - base.score!).toBe(4);
   });
 
   it("weights exclusionPrevention at 4 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ exclusionPrevention: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(4);
+    expect(full.score! - base.score!).toBe(4);
   });
 
   it("weights pupilPremiumTracking at 3 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ pupilPremiumTracking: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(3);
+    expect(full.score! - base.score!).toBe(3);
   });
 
   it("weights schoolLiaisonProtocol at 3 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ schoolLiaisonProtocol: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(3);
+    expect(full.score! - base.score!).toBe(3);
   });
 
   it("weights regularReview at 3 points", () => {
     const base = evaluateEducationPolicy(makePolicy({ regularReview: false }));
     const full = evaluateEducationPolicy(makePolicy());
-    expect(full.score - base.score).toBe(3);
+    expect(full.score! - base.score!).toBe(3);
   });
 
   it("generates strength for complete policy", () => {
@@ -676,10 +676,10 @@ describe("generateEducationIntelligence", () => {
     );
     expect(result.overallScore).toBeLessThanOrEqual(100);
     const sum = Math.round(
-      result.educationQuality.score +
-      result.educationCompliance.score +
-      result.educationPolicy.score +
-      result.staffReadiness.score,
+      result.educationQuality.score! +
+      result.educationCompliance.score! +
+      result.educationPolicy.score! +
+      result.staffReadiness.score!,
     );
     expect(result.overallScore).toBe(Math.min(100, sum));
   });

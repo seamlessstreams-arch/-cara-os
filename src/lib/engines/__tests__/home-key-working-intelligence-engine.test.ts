@@ -230,7 +230,7 @@ describe("Home Key Working Intelligence Engine", () => {
       const r = computeHomeKeyWorking(baseInput());
       expect(r.mood.sessions_with_mood).toBe(7);
       expect(r.mood.avg_mood_before).toBeGreaterThan(0);
-      expect(r.mood.avg_mood_after).toBeGreaterThan(r.mood.avg_mood_before);
+      expect(r.mood.avg_mood_after).toBeGreaterThan(r.mood.avg_mood_before!);
       expect(r.mood.avg_improvement).toBeGreaterThan(0);
     });
 
@@ -362,7 +362,7 @@ describe("Home Key Working Intelligence Engine", () => {
           makeSession({ id: "kw_2", child_id: "yp_jordan", date: "2026-04-15" }),
         ],
       });
-      expect(computeHomeKeyWorking(high).key_working_score).toBeGreaterThan(computeHomeKeyWorking(low).key_working_score);
+      expect(computeHomeKeyWorking(high).key_working_score).toBeGreaterThan(computeHomeKeyWorking(low).key_working_score!);
     });
 
     it("rewards full coverage", () => {
@@ -373,7 +373,7 @@ describe("Home Key Working Intelligence Engine", () => {
           makeSession({ id: "kw_2", child_id: "yp_alex", date: "2026-05-13" }),
         ],
       });
-      expect(computeHomeKeyWorking(full).key_working_score).toBeGreaterThan(computeHomeKeyWorking(partial).key_working_score);
+      expect(computeHomeKeyWorking(full).key_working_score).toBeGreaterThan(computeHomeKeyWorking(partial).key_working_score!);
     });
 
     it("rewards child voice recording", () => {
@@ -381,7 +381,7 @@ describe("Home Key Working Intelligence Engine", () => {
       const poor = baseInput({
         sessions: baseInput().sessions.map(s => ({ ...s, has_child_voice: false })),
       });
-      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score);
+      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score!);
     });
 
     it("rewards action follow-through", () => {
@@ -389,7 +389,7 @@ describe("Home Key Working Intelligence Engine", () => {
       const poor = baseInput({
         sessions: baseInput().sessions.map(s => ({ ...s, follow_up_completed: false })),
       });
-      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score);
+      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score!);
     });
 
     it("rewards mood improvement", () => {
@@ -397,7 +397,7 @@ describe("Home Key Working Intelligence Engine", () => {
       const poor = baseInput({
         sessions: baseInput().sessions.map(s => ({ ...s, mood_before: 3, mood_after: 2 })),
       });
-      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score);
+      expect(computeHomeKeyWorking(good).key_working_score).toBeGreaterThan(computeHomeKeyWorking(poor).key_working_score!);
     });
 
     it("clamps score to 0-100", () => {

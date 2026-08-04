@@ -354,7 +354,7 @@ describe("evaluateContactQuality", () => {
   it("calculates average mood before and after", () => {
     const result = evaluateContactQuality(OAK_HOUSE_CONTACTS);
     expect(result.averageMoodBefore).toBeGreaterThan(0);
-    expect(result.averageMoodAfter).toBeGreaterThan(result.averageMoodBefore);
+    expect(result.averageMoodAfter).toBeGreaterThan(result.averageMoodBefore!);
   });
 
   it("calculates mood uplift rate", () => {

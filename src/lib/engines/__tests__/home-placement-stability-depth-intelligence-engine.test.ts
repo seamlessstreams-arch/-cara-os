@@ -1846,7 +1846,7 @@ describe("Home Placement Stability Depth Intelligence Engine", () => {
       const withRecords = computeHomePlacementStabilityDepth(baseInput());
       const withoutRecords = computeHomePlacementStabilityDepth(baseInput({ stability_records: [] }));
       // baseInput mods 1,7,8 contribute +5+3+3 = 11
-      expect(withRecords.depth_score - withoutRecords.depth_score).toBe(11);
+      expect(withRecords.depth_score! - withoutRecords.depth_score!).toBe(11);
     });
 
     it("all collections empty except one still produces a score", () => {

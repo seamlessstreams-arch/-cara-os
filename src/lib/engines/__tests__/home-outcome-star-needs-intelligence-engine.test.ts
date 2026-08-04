@@ -275,7 +275,7 @@ describe("computeOutcomeStarNeeds", () => {
         outcome_stars: [makeOutcomeStar({ id: "os_1", child_id: "c1" })],
       }));
       // high gets +6, low gets -6 → diff = 12 (plus other modifier changes from fewer stars)
-      expect(high.outcome_score).toBeGreaterThan(low.outcome_score);
+      expect(high.outcome_score).toBeGreaterThan(low.outcome_score!);
     });
 
     it("modifier 1: coverage 70-89% gives +3", () => {
@@ -307,7 +307,7 @@ describe("computeOutcomeStarNeeds", () => {
         kpis: [],
       }));
       // Mod 2 diff: +5 vs -5 = 10
-      expect(high.outcome_score - low.outcome_score).toBe(10);
+      expect(high.outcome_score! - low.outcome_score!).toBe(10);
     });
 
     it("modifier 2: no stars gives +0", () => {
@@ -356,7 +356,7 @@ describe("computeOutcomeStarNeeds", () => {
         kpis: [],
       }));
       // Mod 3: +5 vs -5 = 10 (plus mod 2 diff from avg score change)
-      expect(allImproving.outcome_score).toBeGreaterThan(noneImproving.outcome_score);
+      expect(allImproving.outcome_score).toBeGreaterThan(noneImproving.outcome_score!);
     });
 
     it("modifier 3: no previous scores gives +1", () => {
@@ -384,7 +384,7 @@ describe("computeOutcomeStarNeeds", () => {
         ],
       }));
       // Mod 4: +4 vs -4 = 8
-      expect(full.outcome_score - none.outcome_score).toBe(8);
+      expect(full.outcome_score! - none.outcome_score!).toBe(8);
     });
 
     it("modifier 5: needs addressed >=85% gives +5", () => {
@@ -394,7 +394,7 @@ describe("computeOutcomeStarNeeds", () => {
           makeNeeds({ id: "na_1", child_id: "c1", needs_identified: 5, needs_addressed: 1 }),
         ],
       })); // 20% → -5
-      expect(high.outcome_score - low.outcome_score).toBe(10);
+      expect(high.outcome_score! - low.outcome_score!).toBe(10);
     });
 
     it("modifier 6: KPI met >=80% gives +4", () => {
@@ -407,7 +407,7 @@ describe("computeOutcomeStarNeeds", () => {
           makeKpi({ id: "kpi_4", met: false }),
         ],
       })); // 0% → -4
-      expect(high.outcome_score - low.outcome_score).toBe(8);
+      expect(high.outcome_score! - low.outcome_score!).toBe(8);
     });
 
     it("modifier 6: no KPIs gives +1", () => {

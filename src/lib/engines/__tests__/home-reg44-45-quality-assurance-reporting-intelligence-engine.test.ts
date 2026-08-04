@@ -1301,7 +1301,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       ];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: notifs }));
       const nc = r.notification_compliance_rate;
-      if (nc >= 50 && nc < 80) {
+      if (nc! >= 50 && nc! < 80) {
         expect(r.concerns.some(c => c.includes("Notification compliance"))).toBe(true);
       }
     });
@@ -1696,7 +1696,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       ];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: notifs }));
       const nc = r.notification_compliance_rate;
-      if (nc >= 50 && nc < 80) {
+      if (nc! >= 50 && nc! < 80) {
         expect(r.insights.some(i => i.severity === "warning" && i.text.includes("Notification compliance"))).toBe(true);
       }
     });

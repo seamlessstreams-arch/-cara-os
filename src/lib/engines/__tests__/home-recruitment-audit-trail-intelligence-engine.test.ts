@@ -3153,7 +3153,7 @@ describe("computeRecruitmentAuditTrail", () => {
         }),
       );
       expect(r.audit_completeness_rate).toBeLessThanOrEqual(
-        Math.min(r.notes_coverage_rate, r.state_tracking_rate),
+        Math.min(r.notes_coverage_rate!, r.state_tracking_rate!),
       );
     });
 
@@ -3174,7 +3174,7 @@ describe("computeRecruitmentAuditTrail", () => {
         }),
       );
 
-      expect(r2.audit_score).toBeGreaterThanOrEqual(r1.audit_score);
+      expect(r2.audit_score).toBeGreaterThanOrEqual(r1.audit_score!);
     });
 
     it("removing an incomplete entry does not decrease completeness rate", () => {
@@ -3196,7 +3196,7 @@ describe("computeRecruitmentAuditTrail", () => {
         }),
       );
 
-      expect(r2.audit_completeness_rate).toBeGreaterThanOrEqual(r1.audit_completeness_rate);
+      expect(r2.audit_completeness_rate).toBeGreaterThanOrEqual(r1.audit_completeness_rate!);
     });
 
     it("score is integer", () => {

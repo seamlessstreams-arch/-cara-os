@@ -431,7 +431,7 @@ describe("Home Digital Safety Intelligence Engine", () => {
         total_children: 3,
       }));
       // full: 100% → +5; partial: 67% → +0 (>=50, <75)
-      expect(full.digital_safety_score - partial.digital_safety_score).toBe(5);
+      expect(full.digital_safety_score! - partial.digital_safety_score!).toBe(5);
     });
 
     it("mod1: agreement coverage <25% gives -5", () => {
@@ -483,7 +483,7 @@ describe("Home Digital Safety Intelligence Engine", () => {
         ],
       }));
       // noOverdue mod5: +4; overdueMany: 6 overdue → -4
-      expect(noOverdue.digital_safety_score - overdueMany.digital_safety_score).toBe(8); // +4 vs -4
+      expect(noOverdue.digital_safety_score! - overdueMany.digital_safety_score!).toBe(8); // +4 vs -4
     });
 
     it("mod6: high severity incidents decrease score", () => {
@@ -497,7 +497,7 @@ describe("Home Digital Safety Intelligence Engine", () => {
           makeIncident({ id: "inc_3", severity: "high", status: "escalated", date: "2025-06-05" }),
         ],
       }));
-      expect(noHigh.digital_safety_score).toBeGreaterThan(manyHigh.digital_safety_score);
+      expect(noHigh.digital_safety_score).toBeGreaterThan(manyHigh.digital_safety_score!);
     });
 
     it("mod7: parental controls configured improves score", () => {
@@ -516,7 +516,7 @@ describe("Home Digital Safety Intelligence Engine", () => {
         ],
       }));
       // controlled: 100% → +3; noControls: 0% → -3
-      expect(controlled.digital_safety_score - noControls.digital_safety_score).toBe(6);
+      expect(controlled.digital_safety_score! - noControls.digital_safety_score!).toBe(6);
     });
 
     it("mod8: expired media consents decrease score", () => {
@@ -534,7 +534,7 @@ describe("Home Digital Safety Intelligence Engine", () => {
       }));
       // noExpired: 0 expired + 100% consent → +2
       // manyExpired: 2 expired → -2
-      expect(noExpired.digital_safety_score - manyExpired.digital_safety_score).toBe(4);
+      expect(noExpired.digital_safety_score! - manyExpired.digital_safety_score!).toBe(4);
     });
   });
 

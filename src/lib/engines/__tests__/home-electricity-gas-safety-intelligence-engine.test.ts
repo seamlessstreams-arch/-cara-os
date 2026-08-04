@@ -916,7 +916,7 @@ describe("scoring — bonuses", () => {
       pat_testing_records: [makePat()],
       child_safety_records: [],
     }));
-    expect(with100.electrical_score - without.electrical_score).toBe(4);
+    expect(with100.electrical_score! - without.electrical_score!).toBe(4);
   });
 
   it("childSafetyRate >= 80 but < 100 adds +2", () => {

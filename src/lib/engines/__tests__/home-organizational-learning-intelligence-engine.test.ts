@@ -374,7 +374,7 @@ describe("Home Organizational Learning Intelligence Engine", () => {
         ],
       }));
       // noOverdue mod4: +3; manyOverdue mod4: >2 → -3 (also mod1 changes)
-      expect(noOverdue.org_learning_score).toBeGreaterThan(manyOverdue.org_learning_score);
+      expect(noOverdue.org_learning_score).toBeGreaterThan(manyOverdue.org_learning_score!);
     });
 
     it("mod5: service improvement progress boosts score", () => {
@@ -382,7 +382,7 @@ describe("Home Organizational Learning Intelligence Engine", () => {
       const noImprovements = computeHomeOrganizationalLearning(baseInput({
         service_improvements: [],
       }));
-      expect(withImprovements.org_learning_score).toBeGreaterThan(noImprovements.org_learning_score);
+      expect(withImprovements.org_learning_score).toBeGreaterThan(noImprovements.org_learning_score!);
     });
 
     it("mod7: diverse sources gives +3", () => {
@@ -395,7 +395,7 @@ describe("Home Organizational Learning Intelligence Engine", () => {
         ],
       }));
       // 1 source → +0
-      expect(r.org_learning_score).toBeGreaterThan(singleSource.org_learning_score);
+      expect(r.org_learning_score).toBeGreaterThan(singleSource.org_learning_score!);
     });
   });
 

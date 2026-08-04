@@ -2428,7 +2428,7 @@ describe("Home Restraint Physical Intervention Intelligence Engine", () => {
         restraints: records,
       }));
       // Even with massive penalties, score should not go below 0
-      expect(result.restraint_score).toBe(Math.max(0, result.restraint_score));
+      expect(result.restraint_score).toBe(Math.max(0, result.restraint_score!));
       expect(result.restraint_score).toBeGreaterThanOrEqual(0);
     });
   });

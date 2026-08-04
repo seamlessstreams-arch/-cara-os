@@ -246,7 +246,7 @@ describe("computeChildHealthIntelligence", () => {
       health_assessments: [makeAssessment()],
     }));
     expect(withAdmins.strengths.some((s) => s.includes("compliance"))).toBe(true);
-    expect(withAdmins.health_score).toBeGreaterThan(withMedNoAdmins.health_score);
+    expect(withAdmins.health_score).toBeGreaterThan(withMedNoAdmins.health_score!);
   });
 
   it("does NOT report immunisations up to date when any are due or declined", () => {

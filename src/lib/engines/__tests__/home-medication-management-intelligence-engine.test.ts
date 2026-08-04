@@ -479,7 +479,7 @@ describe("computeHomeMedicationManagement", () => {
       // witnessing: 6 administered, 6 witnessed → 100% still +4
       // But missed 4 → mod6 refusal stays 0% → +3 still
       // diff should be at least 5 (from mod1 changing from +5 to +0)
-      expect(maxR.medication_score - r.medication_score).toBeGreaterThanOrEqual(5);
+      expect(maxR.medication_score! - r.medication_score!).toBeGreaterThanOrEqual(5);
     });
 
     it("mod3: witnessing drop lowers score", () => {
@@ -492,7 +492,7 @@ describe("computeHomeMedicationManagement", () => {
       ];
       const r = computeHomeMedicationManagement(inp);
       // witnessing 0% → -4 (was +4) = 8 point drop
-      expect(maxR.medication_score - r.medication_score).toBe(8);
+      expect(maxR.medication_score! - r.medication_score!).toBe(8);
     });
 
     it("mod4: errors lower score", () => {
@@ -505,7 +505,7 @@ describe("computeHomeMedicationManagement", () => {
       const r = computeHomeMedicationManagement(inp);
       // 2 errors, rate = round(2/11*100) = 18% → mod4 -4 (was +4), mod8: closed → +2 (still +2)
       // diff = 8
-      expect(maxR.medication_score - r.medication_score).toBe(8);
+      expect(maxR.medication_score! - r.medication_score!).toBe(8);
     });
 
     it("mod5: poor stock management lowers score", () => {
@@ -518,7 +518,7 @@ describe("computeHomeMedicationManagement", () => {
       }));
       const r = computeHomeMedicationManagement(inp);
       // stock_check_rate 0%, low stock → -3 (was +3) = 6 point drop
-      expect(maxR.medication_score - r.medication_score).toBe(6);
+      expect(maxR.medication_score! - r.medication_score!).toBe(6);
     });
 
     it("mod6: high refusal rate lowers score", () => {
@@ -536,7 +536,7 @@ describe("computeHomeMedicationManagement", () => {
       // Also: compliance (6/9)=67% → mod1 +0 (was +5) = drop 5
       // witnessing: 6 administered, 6 witnessed → 100% still +4
       // diff includes mod1 change too
-      expect(maxR.medication_score - r.medication_score).toBeGreaterThanOrEqual(6);
+      expect(maxR.medication_score! - r.medication_score!).toBeGreaterThanOrEqual(6);
     });
 
     it("mod7: poor PRN documentation lowers score", () => {
@@ -552,7 +552,7 @@ describe("computeHomeMedicationManagement", () => {
       ];
       const r = computeHomeMedicationManagement(inp);
       // PRN doc rate 0% → mod7 -3 (was +3) = 6 point drop
-      expect(maxR.medication_score - r.medication_score).toBe(6);
+      expect(maxR.medication_score! - r.medication_score!).toBe(6);
     });
 
     it("mod8: open errors lower score", () => {
@@ -565,7 +565,7 @@ describe("computeHomeMedicationManagement", () => {
       // mod8: 100% open → -2 (was +2)
       // mod4: 1 error, rate 9% → mod4 is <=10 → -2 (was +4)
       // Total diff = (4-(-2)) + (2-(-2)) = 6+4 = 10
-      expect(maxR.medication_score - r.medication_score).toBe(10);
+      expect(maxR.medication_score! - r.medication_score!).toBe(10);
     });
   });
 

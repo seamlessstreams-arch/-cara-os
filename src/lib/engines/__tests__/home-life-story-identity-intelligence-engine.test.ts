@@ -295,7 +295,7 @@ describe("Home Life Story & Identity Intelligence Engine", () => {
       const noLS = computeHomeLifeStoryIdentity(baseInput({ life_story_entries: [] }));
       // Removing life stories: loses mod1 bonus (was +5) and gets -2, net = -7
       // Also affects mod7 (one fewer voice source) and mod8 (fewer docs)
-      expect(noLS.life_story_score).toBeLessThan(full.life_story_score);
+      expect(noLS.life_story_score).toBeLessThan(full.life_story_score!);
     });
 
     it("mod3: high isolation ≥3 gives -3", () => {
@@ -307,14 +307,14 @@ describe("Home Life Story & Identity Intelligence Engine", () => {
         ],
       }));
       const clean = computeHomeLifeStoryIdentity(baseInput());
-      expect(r.life_story_score).toBeLessThan(clean.life_story_score);
+      expect(r.life_story_score).toBeLessThan(clean.life_story_score!);
     });
 
     it("mod5: no LGBTQ+ records is neutral", () => {
       const withLgbtq = computeHomeLifeStoryIdentity(baseInput());
       const noLgbtq = computeHomeLifeStoryIdentity(baseInput({ lgbtq_inclusions: [] }));
       // Removing perfect LGBTQ+: loses +3 from mod5, also loses a voice source in mod7
-      expect(noLgbtq.life_story_score).toBeLessThan(withLgbtq.life_story_score);
+      expect(noLgbtq.life_story_score).toBeLessThan(withLgbtq.life_story_score!);
       // But should still be decent because other domains are strong
       expect(noLgbtq.life_story_score).toBeGreaterThanOrEqual(65);
     });
@@ -342,7 +342,7 @@ describe("Home Life Story & Identity Intelligence Engine", () => {
       }));
       // All 6 docs stale → 100% stale → mod8 = -3 (instead of +3, net -6)
       const fresh = computeHomeLifeStoryIdentity(baseInput());
-      expect(r.life_story_score).toBeLessThan(fresh.life_story_score);
+      expect(r.life_story_score).toBeLessThan(fresh.life_story_score!);
     });
   });
 

@@ -769,7 +769,7 @@ describe("Education Achievement Intelligence Engine", () => {
       ];
       const resultCore = evaluateAcademicProgress(withCore);
       const resultNoCore = evaluateAcademicProgress(withoutCore);
-      expect(resultCore.overallScore).toBeGreaterThan(resultNoCore.overallScore);
+      expect(resultCore.overallScore).toBeGreaterThan(resultNoCore.overallScore!);
     });
 
     it("counts subject coverage for scoring", () => {
@@ -1016,7 +1016,7 @@ describe("Education Achievement Intelligence Engine", () => {
       );
       const alex = profiles.find((p) => p.childId === "child-alex")!;
       const jordan = profiles.find((p) => p.childId === "child-jordan")!;
-      expect(alex.overallScore).toBeGreaterThan(jordan.overallScore);
+      expect(alex.overallScore).toBeGreaterThan(jordan.overallScore!);
     });
 
     it("Morgan scores highest (exceeding progress, good attendance, outstanding PEP)", () => {
@@ -1025,7 +1025,7 @@ describe("Education Achievement Intelligence Engine", () => {
       );
       const morgan = profiles.find((p) => p.childId === "child-morgan")!;
       const alex = profiles.find((p) => p.childId === "child-alex")!;
-      expect(morgan.overallScore).toBeGreaterThanOrEqual(alex.overallScore);
+      expect(morgan.overallScore).toBeGreaterThanOrEqual(alex.overallScore!);
     });
 
     it("returns empty for no data", () => {
@@ -1079,10 +1079,10 @@ describe("Education Achievement Intelligence Engine", () => {
         DEMO_ATTENDANCE, DEMO_PEPS, DEMO_OUTCOMES, DEMO_STABILITY, DEMO_EXCLUSIONS,
         "oak-house", PERIOD_START, PERIOD_END,
       );
-      const expected = result.attendance.overallScore +
-        result.pepQuality.overallScore +
-        result.academicProgress.overallScore +
-        result.schoolStability.overallScore;
+      const expected = result.attendance.overallScore! +
+        result.pepQuality.overallScore! +
+        result.academicProgress.overallScore! +
+        result.schoolStability.overallScore!;
       expect(result.overallScore).toBe(Math.min(expected, 100));
     });
 

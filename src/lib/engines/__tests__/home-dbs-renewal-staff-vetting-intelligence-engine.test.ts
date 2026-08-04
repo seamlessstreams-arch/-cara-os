@@ -502,7 +502,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
           makeDbsCheck({ id: `d${i}`, staff_id: sid, status: "expired", is_valid: false, expiry_date: "2024-01-01" })
         ),
       }));
-      expect(rPerfect.vetting_score).toBeGreaterThan(rBad.vetting_score);
+      expect(rPerfect.vetting_score).toBeGreaterThan(rBad.vetting_score!);
     });
 
     it("70% DBS currency awards bonus +2", () => {
@@ -1120,7 +1120,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
           makeReference({ id: `r${i}`, staff_id: sid, obtained_before_start: false })
         ),
       }));
-      expect(rHigh.vetting_score).toBeGreaterThan(rLow.vetting_score);
+      expect(rHigh.vetting_score).toBeGreaterThan(rLow.vetting_score!);
     });
 
     it("timeliness includes overseas currency when overseas records exist", () => {
@@ -1232,7 +1232,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rLow = computeDbsRenewalStaffVetting(baseInput({
         dbs_check_records: [makeDbsCheck({ id: "d1", staff_id: "s1" })],
       }));
-      expect(rHigh.vetting_score).toBeGreaterThan(rLow.vetting_score);
+      expect(rHigh.vetting_score).toBeGreaterThan(rLow.vetting_score!);
     });
 
     it("70% fully vetted rate awards bonus +1", () => {
@@ -1266,7 +1266,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
         enhanced_dbs_records: [],
         overseas_check_records: [],
       }));
-      if (r.vetting_score >= 65 && r.vetting_score < 80) {
+      if (r.vetting_score! >= 65 && r.vetting_score! < 80) {
         expect(r.vetting_rating).toBe("good");
       }
       // The rating function maps >= 65 to good
@@ -1441,7 +1441,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
         dbs_check_records: Array.from({ length: 10 }, (_, i) => makeDbsCheck({ id: `v${i}`, staff_id: `s${i}` })),
       }));
       // 40% expired triggers -10 penalty
-      expect(rNoPen.vetting_score - rPen.vetting_score).toBeGreaterThanOrEqual(8);
+      expect(rNoPen.vetting_score! - rPen.vetting_score!).toBeGreaterThanOrEqual(8);
     });
 
     it("penalty 1: >=15% expired DBS → -6", () => {
@@ -1454,7 +1454,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rNoPen = computeDbsRenewalStaffVetting(baseInput({
         dbs_check_records: Array.from({ length: 10 }, (_, i) => makeDbsCheck({ id: `v${i}`, staff_id: `s${i}` })),
       }));
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 1: >=5% expired DBS → -3", () => {
@@ -1467,7 +1467,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rNoPen = computeDbsRenewalStaffVetting(baseInput({
         dbs_check_records: Array.from({ length: 10 }, (_, i) => makeDbsCheck({ id: `v${i}`, staff_id: `s${i}` })),
       }));
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("no expired DBS penalty when 0 expired", () => {
@@ -1485,7 +1485,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rNoPen = computeDbsRenewalStaffVetting(baseInput({
         enhanced_dbs_records: Array.from({ length: 10 }, (_, i) => makeEnhancedDbs({ id: `ev${i}`, staff_id: `s${i}` })),
       }));
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 2: >=10% expired enhanced DBS → -5", () => {
@@ -1498,7 +1498,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rNoPen = computeDbsRenewalStaffVetting(baseInput({
         enhanced_dbs_records: Array.from({ length: 10 }, (_, i) => makeEnhancedDbs({ id: `ev${i}`, staff_id: `s${i}` })),
       }));
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 2: >=5% expired enhanced DBS → -2", () => {
@@ -1511,7 +1511,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       const rNoPen = computeDbsRenewalStaffVetting(baseInput({
         enhanced_dbs_records: Array.from({ length: 10 }, (_, i) => makeEnhancedDbs({ id: `ev${i}`, staff_id: `s${i}` })),
       }));
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 3: >=3 unresolved reference concerns → -8", () => {
@@ -1525,7 +1525,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ reference_verification_records: refs }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 3: 2 unresolved reference concerns → -5", () => {
@@ -1539,7 +1539,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ reference_verification_records: refs }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 3: 1 unresolved reference concern → -3", () => {
@@ -1551,7 +1551,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ reference_verification_records: refs }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 3: followed-up concerns do not trigger penalty", () => {
@@ -1571,7 +1571,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ barred_list_records: records }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 4: >=15% incomplete barred list → -4", () => {
@@ -1582,7 +1582,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ barred_list_records: records }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("penalty 4: >=5% incomplete barred list → -2", () => {
@@ -1593,7 +1593,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       ];
       const rPen = computeDbsRenewalStaffVetting(baseInput({ barred_list_records: records }));
       const rNoPen = computeDbsRenewalStaffVetting(baseInput());
-      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score);
+      expect(rNoPen.vetting_score).toBeGreaterThan(rPen.vetting_score!);
     });
 
     it("no penalty 4 when 0% incomplete barred list", () => {

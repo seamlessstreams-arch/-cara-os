@@ -251,7 +251,7 @@ describe("mod1: coverage frequency", () => {
     const rBad = computeHomeOnCallGovernance(bad);
     // good: 1 shift in 14 days → 0; bad: 0 in 14 days → -4. Diff from mod1 = 4
     // mod8 also changes: good: 1 in 30 days → 0; bad: 1 in 30 days → 0. Same.
-    expect(rGood.on_call_score - rBad.on_call_score).toBe(4);
+    expect(rGood.on_call_score! - rBad.on_call_score!).toBe(4);
   });
 });
 
@@ -290,7 +290,7 @@ describe("mod3: staff diversity", () => {
     const rMulti = computeHomeOnCallGovernance(multi);
     const rSingle = computeHomeOnCallGovernance(single);
     // multi: 2 staff → +1; single: 1 staff → -2. Diff = 3
-    expect(rMulti.on_call_score - rSingle.on_call_score).toBe(3);
+    expect(rMulti.on_call_score! - rSingle.on_call_score!).toBe(3);
   });
 });
 
@@ -323,7 +323,7 @@ describe("mod4: response documentation", () => {
     const rGood = computeHomeOnCallGovernance(good);
     const rBad = computeHomeOnCallGovernance(bad);
     // good: 2/2=100% → +4; bad: 1/4=25% → -3. Diff = 7
-    expect(rGood.on_call_score - rBad.on_call_score).toBe(7);
+    expect(rGood.on_call_score! - rBad.on_call_score!).toBe(7);
   });
 });
 
@@ -355,7 +355,7 @@ describe("mod6: escalation appropriateness", () => {
     const rGood = computeHomeOnCallGovernance(good);
     const rBad = computeHomeOnCallGovernance(bad);
     // good: all critical escalated → +3; bad: 1 critical not escalated → 0. Diff = 3
-    expect(rGood.on_call_score - rBad.on_call_score).toBe(3);
+    expect(rGood.on_call_score! - rBad.on_call_score!).toBe(3);
   });
 });
 
@@ -376,7 +376,7 @@ describe("mod7: role coverage", () => {
     const rMulti = computeHomeOnCallGovernance(multi);
     const rSingle = computeHomeOnCallGovernance(single);
     // multi: 2 roles → +3; single: 1 role → 0. Diff = 3
-    expect(rMulti.on_call_score - rSingle.on_call_score).toBe(3);
+    expect(rMulti.on_call_score! - rSingle.on_call_score!).toBe(3);
   });
 });
 

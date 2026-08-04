@@ -480,7 +480,7 @@ describe("evaluateScheduleCompliance", () => {
     const resultMissed = evaluateScheduleCompliance(withMissed);
 
     // Should have both -3 (>2) and -5 (>=3) penalties applied
-    expect(resultMissed.overallScore).toBeLessThan(resultClean.overallScore);
+    expect(resultMissed.overallScore).toBeLessThan(resultClean.overallScore!);
   });
 
   it("calculates average days between sessions", () => {
@@ -611,7 +611,7 @@ describe("evaluateActionTracking", () => {
     ];
     const resultGood = evaluateActionTracking(withoutOverdue);
     const resultBad = evaluateActionTracking(withOverdue);
-    expect(resultBad.overallScore).toBeLessThan(resultGood.overallScore);
+    expect(resultBad.overallScore).toBeLessThan(resultGood.overallScore!);
   });
 
   it("gives bonus points when no actions are overdue", () => {
@@ -625,7 +625,7 @@ describe("evaluateActionTracking", () => {
     ];
     const resultNoOverdue = evaluateActionTracking(noOverdue);
     const resultWithOverdue = evaluateActionTracking(withOverdue);
-    expect(resultNoOverdue.overallScore).toBeGreaterThan(resultWithOverdue.overallScore);
+    expect(resultNoOverdue.overallScore).toBeGreaterThan(resultWithOverdue.overallScore!);
   });
 
   it("caps score at 25", () => {
@@ -730,7 +730,7 @@ describe("evaluateStaffDevelopment", () => {
     ];
     const resultLow = evaluateStaffDevelopment(outcomes, noConcernSessions);
     const resultHigh = evaluateStaffDevelopment(outcomes, highConcernSessions);
-    expect(resultLow.overallScore).toBeGreaterThan(resultHigh.overallScore);
+    expect(resultLow.overallScore).toBeGreaterThan(resultHigh.overallScore!);
   });
 
   it("gives good score for all outcomes improved with plans", () => {
@@ -935,10 +935,10 @@ describe("generateSupervisionQualityIntelligence", () => {
     );
 
     const expectedSum =
-      result.sessionQuality.overallScore +
-      result.scheduleCompliance.overallScore +
-      result.actionTracking.overallScore +
-      result.staffDevelopment.overallScore;
+      result.sessionQuality.overallScore! +
+      result.scheduleCompliance.overallScore! +
+      result.actionTracking.overallScore! +
+      result.staffDevelopment.overallScore!;
 
     expect(result.overallScore).toBe(Math.round(expectedSum * 10) / 10);
   });

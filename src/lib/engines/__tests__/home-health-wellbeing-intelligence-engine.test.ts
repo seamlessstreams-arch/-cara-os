@@ -437,7 +437,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
       ],
     }));
     const high = computeHomeHealthWellbeing(baseInput());
-    expect(high.health_score).toBeGreaterThan(low.health_score);
+    expect(high.health_score).toBeGreaterThan(low.health_score!);
   });
 
   it("penalises children without records", () => {
@@ -448,7 +448,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
         makeHealthRecord({ id: "h2", child_id: "yp_alex", date: "2026-04-10" }),
       ],
     }));
-    expect(someMissing.health_score).toBeLessThan(allCovered.health_score);
+    expect(someMissing.health_score).toBeLessThan(allCovered.health_score!);
   });
 
   it("rewards health assessments", () => {
@@ -466,7 +466,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
         makeHealthRecord({ id: "h3", date: "2026-03-15", record_type: "health_assessment" }),
       ],
     }));
-    expect(withHA.health_score).toBeGreaterThan(noHA.health_score);
+    expect(withHA.health_score).toBeGreaterThan(noHA.health_score!);
   });
 
   it("penalises overdue follow-ups", () => {
@@ -483,7 +483,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
         makeHealthRecord({ id: "h3", date: "2026-03-15", has_follow_up: true, follow_up_overdue: true }),
       ],
     }));
-    expect(withOverdue.health_score).toBeLessThan(noOverdue.health_score);
+    expect(withOverdue.health_score).toBeLessThan(noOverdue.health_score!);
   });
 
   it("penalises poor medication compliance", () => {
@@ -502,7 +502,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
         makeMedAdmin({ id: "a3", date: "2026-05-23", status: "missed" }),
       ],
     }));
-    expect(badMeds.health_score).toBeLessThan(goodMeds.health_score);
+    expect(badMeds.health_score).toBeLessThan(goodMeds.health_score!);
   });
 
   // ── Strengths ─────────────────────────────────────────────────────────────

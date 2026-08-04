@@ -530,7 +530,7 @@ describe("scoring", () => {
     }));
     // ahaCompRate = 0 → -5
     expect(r.health_monitoring_score).toBeLessThan(
-      computeHomeHealthMonitoring(baseInput()).health_monitoring_score
+      computeHomeHealthMonitoring(baseInput()).health_monitoring_score!
     );
   });
 
@@ -543,7 +543,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("dental registration penalty when not registered", () => {
@@ -555,7 +555,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("passport currency penalty when outdated", () => {
@@ -567,7 +567,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("AHA timeliness penalty when deadlines missed", () => {
@@ -579,7 +579,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("optical check penalty when not up to date", () => {
@@ -591,7 +591,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("child consent penalty when no consent", () => {
@@ -603,7 +603,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("LA sign-off penalty when not signed off", () => {
@@ -615,7 +615,7 @@ describe("scoring", () => {
       ],
     }));
     const perfect = computeHomeHealthMonitoring(baseInput());
-    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score);
+    expect(r.health_monitoring_score).toBeLessThan(perfect.health_monitoring_score!);
   });
 
   it("score is clamped to [0, 100]", () => {

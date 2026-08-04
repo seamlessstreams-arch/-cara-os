@@ -75,7 +75,7 @@ describe("evaluateSessionEffectiveness", () => {
   it("scores lower with poor outcomes", () => {
     const good = evaluateSessionEffectiveness(Array.from({ length: 5 }, () => makeSession()));
     const bad = evaluateSessionEffectiveness(Array.from({ length: 5 }, () => makeSession({ supervisionOutcome: "ineffective", safeguardingDiscussed: false })));
-    expect(good.overallScore).toBeGreaterThan(bad.overallScore);
+    expect(good.overallScore).toBeGreaterThan(bad.overallScore!);
   });
 });
 

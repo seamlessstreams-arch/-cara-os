@@ -166,7 +166,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         }),
       );
       // Difference should be 3 (6 - 3)
-      expect(r.missing_score - r2.missing_score).toBe(3);
+      expect(r.missing_score! - r2.missing_score!).toBe(3);
     });
 
     it("adds +3 when episodesPerChild <= 1 (episodes in last 90 days)", () => {
@@ -205,7 +205,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         baseInput({ total_children: 3, episodes: epsFew }),
       );
       // -5 vs +3 = 8 point difference
-      expect(rFew.missing_score - rMany.missing_score).toBe(8);
+      expect(rFew.missing_score! - rMany.missing_score!).toBe(8);
     });
 
     it("gives neither bonus nor penalty when episodesPerChild > 1 and <= 2", () => {
@@ -232,7 +232,7 @@ describe("Home Missing Episode Intelligence Engine", () => {
         baseInput({ total_children: 3, episodes: eps3 }),
       );
       // r2 has +3 from modifier 1, r has 0; difference is 3
-      expect(r2.missing_score - r.missing_score).toBe(3);
+      expect(r2.missing_score! - r.missing_score!).toBe(3);
     });
 
     it("boundary: exactly 1 episode per child gives +3", () => {

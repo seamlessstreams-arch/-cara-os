@@ -435,7 +435,7 @@ describe("Home LAC Review Intelligence Engine", () => {
         makeReview({ id: "l2", child_participation: "attended" }),
       ],
     }));
-    expect(fullParticipation.lac_review_score).toBeGreaterThan(noParticipation.lac_review_score);
+    expect(fullParticipation.lac_review_score).toBeGreaterThan(noParticipation.lac_review_score!);
   });
 
   it("penalises unstable placements", () => {
@@ -451,7 +451,7 @@ describe("Home LAC Review Intelligence Engine", () => {
         makeReview({ id: "l2", placement_stability: "unstable" }),
       ],
     }));
-    expect(unstable.lac_review_score).toBeLessThan(stable.lac_review_score);
+    expect(unstable.lac_review_score).toBeLessThan(stable.lac_review_score!);
   });
 
   it("penalises missing professional attendance", () => {
@@ -467,7 +467,7 @@ describe("Home LAC Review Intelligence Engine", () => {
         makeReview({ id: "l2", has_social_worker: false, has_iro: false }),
       ],
     }));
-    expect(withoutPro.lac_review_score).toBeLessThan(withPro.lac_review_score);
+    expect(withoutPro.lac_review_score).toBeLessThan(withPro.lac_review_score!);
   });
 
   // ── Strengths ─────────────────────────────────────────────────────────────
