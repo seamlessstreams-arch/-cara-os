@@ -14,12 +14,37 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { mapStoreToConflictInput } from "@/lib/conflict-detection/conflict-input-mapper";
 import { computeConflictDetection } from "@/lib/conflict-detection/conflict-detection-engine";
 
 export async function GET() {
-  const input = mapStoreToConflictInput(getStore() as any);
+  // Compose the exact 21 collections the conflict + event-stream mappers read
+  // from the dual-mode dal (demo → in-memory; live → Postgres/empty), and hand
+  // them to the pure mapper. The mapper is unchanged — it still reads `.X ?? []`
+  // off the object — so no engine-signature refactor, and its tests are untouched.
+  const [
+    appointments, audits, behaviourSupportPlans, complaints, dailyLog,
+    educationRecords, incidents, keyWorkingSessions, lacReviews, leaveRequests,
+    maintenance, medicationErrors, missingEpisodes, notifiableEvents,
+    reg44VisitReports, restraints, riskAssessments, shifts, supervisions,
+    youngPeople, staff,
+  ] = await Promise.all([
+    dal.appointments.findAll(), dal.audits.findAll(), dal.behaviourSupportPlans.findAll(),
+    dal.complaints.findAll(), dal.dailyLog.findAll(), dal.educationRecords.findAll(),
+    dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(),
+    dal.leaveRequests.findAll(), dal.maintenance.findAll(), dal.medicationErrors.findAll(),
+    dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.reg44VisitReports.findAll(),
+    dal.restraints.findAll(), dal.riskAssessments.findAll(), dal.shifts.findAll(),
+    dal.supervisions.findAll(), dal.youngPeople.findAll(), dal.staff.findAll(),
+  ]);
+  const input = mapStoreToConflictInput({
+    appointments, audits, behaviourSupportPlans, complaints, dailyLog,
+    educationRecords, incidents, keyWorkingSessions, lacReviews, leaveRequests,
+    maintenance, medicationErrors, missingEpisodes, notifiableEvents,
+    reg44VisitReports, restraints, riskAssessments, shifts, supervisions,
+    youngPeople, staff,
+  });
   const result = computeConflictDetection({
     ...input,
     today: new Date().toISOString().slice(0, 10),
