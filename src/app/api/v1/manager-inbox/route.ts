@@ -11,13 +11,13 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { loadEventStoreShape } from "@/lib/event-stream/dal-store-shape";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
 import { computeManagerInbox } from "@/lib/manager-inbox/manager-inbox-engine";
 
 export async function GET() {
-  const stream = buildEventStream(mapStoreToEventInput(getStore()));
+  const stream = buildEventStream(mapStoreToEventInput(await loadEventStoreShape()));
   const result = computeManagerInbox({ events: stream.events });
   return NextResponse.json({ data: result });
 }
