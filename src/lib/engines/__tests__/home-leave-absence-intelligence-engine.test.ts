@@ -273,7 +273,7 @@ describe("modifier 1: sickness rate", () => {
     // noSick: +5 for mod1, highSick: -4 for mod1 => diff 9
     // But mod6 also changes: noSick 100% planned = +3, highSick 0% planned (all sick) = -2 => diff 5
     // So total diff = 9 + 5 = 14
-    expect(noSick.leave_score - highSick.leave_score).toBe(14);
+    expect(noSick.leave_score! - highSick.leave_score!).toBe(14);
   });
 });
 
@@ -302,7 +302,7 @@ describe("modifier 2: pending approval", () => {
     // allPending future: l1 is in the future, status "pending" => futureLeave includes it, but approvedFuture = 0 => +0
     // Diff for mod5 = +3 - 0 = 3
     // Total diff = 6 (mod2) + 5 (mod7) + 3 (mod5) = 14
-    expect(noPending.leave_score - allPending.leave_score).toBe(14);
+    expect(noPending.leave_score! - allPending.leave_score!).toBe(14);
   });
 });
 
@@ -327,7 +327,7 @@ describe("modifier 3: current absence rate", () => {
     // noAbsent: mod3 +4, absent: 50% = -3 => diff 7
     // mod8 also changes: noAbsent 0 unique absent = +3, absent 2 unique absent / 4 staff = 50% => -3 => diff 6
     expect(noAbsent.leave_score).toBeDefined();
-    expect(noAbsent.leave_score).toBeGreaterThan(absent.leave_score);
+    expect(noAbsent.leave_score).toBeGreaterThan(absent.leave_score!);
   });
 });
 
@@ -348,7 +348,7 @@ describe("modifier 4: rtw compliance", () => {
     // noRTW: mod4 +4, rtwFailed: mod4 -3 = diff 7
     // But mod1 also changes: noRTW 0 sick days = +5, rtwFailed 5 sick days = changes based on rate
     // And mod6: noRTW 100% annual_leave = +3, rtwFailed 100% sick = -2 = diff 5
-    expect(noRTW.leave_score).toBeGreaterThan(rtwFailed.leave_score);
+    expect(noRTW.leave_score).toBeGreaterThan(rtwFailed.leave_score!);
   });
 });
 
@@ -372,7 +372,7 @@ describe("modifier 6: leave type diversity", () => {
     }));
     // planned: 67% annual = +3, sickHeavy: 33% annual + more sick = -2 => diff 5
     // But mod1 also shifts (different sick days)
-    expect(planned.leave_score).toBeGreaterThan(sickHeavy.leave_score);
+    expect(planned.leave_score).toBeGreaterThan(sickHeavy.leave_score!);
   });
 });
 

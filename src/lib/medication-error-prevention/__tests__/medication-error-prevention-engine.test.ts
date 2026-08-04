@@ -324,7 +324,7 @@ describe("evaluateErrorManagement", () => {
       makeError({ id: "e2", severity: "serious_harm" }),
     ];
     const resultTwo = evaluateErrorManagement(errorsTwo);
-    expect(resultTwo.overallScore).toBeLessThan(result.overallScore);
+    expect(resultTwo.overallScore).toBeLessThan(result.overallScore!);
   });
 
   it("serious harm penalty can bring score to zero", () => {
@@ -884,10 +884,10 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
     );
 
     const expected = Math.round(
-      (result.administrationQuality.overallScore +
-        result.errorManagement.overallScore +
-        result.storageSafety.overallScore +
-        result.trainingCompliance.overallScore) * 10,
+      (result.administrationQuality.overallScore! +
+        result.errorManagement.overallScore! +
+        result.storageSafety.overallScore! +
+        result.trainingCompliance.overallScore!) * 10,
     ) / 10;
     expect(result.overallScore).toBe(expected);
   });
@@ -962,9 +962,9 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
       HOME_ID, PERIOD_START, PERIOD_END,
     );
 
-    if (result.overallScore >= 80) expect(result.rating).toBe("outstanding");
-    else if (result.overallScore >= 60) expect(result.rating).toBe("good");
-    else if (result.overallScore >= 40) expect(result.rating).toBe("requires_improvement");
+    if (result.overallScore! >= 80) expect(result.rating).toBe("outstanding");
+    else if (result.overallScore! >= 60) expect(result.rating).toBe("good");
+    else if (result.overallScore! >= 40) expect(result.rating).toBe("requires_improvement");
     else expect(result.rating).toBe("inadequate");
   });
 
@@ -977,7 +977,7 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
     expect(result.childProfiles.length).toBe(3);
     for (let i = 0; i < result.childProfiles.length - 1; i++) {
       expect(result.childProfiles[i].overallScore).toBeLessThanOrEqual(
-        result.childProfiles[i + 1].overallScore,
+        result.childProfiles[i + 1].overallScore!,
       );
     }
   });

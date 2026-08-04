@@ -206,14 +206,14 @@ describe("Home Strategic Risk Intelligence Engine", () => {
     it("mod1: no briefings with staff ≥3 gives -2", () => {
       const full = computeHomeStrategicRisk(baseInput());
       const noBriefings = computeHomeStrategicRisk(baseInput({ daily_risk_briefings: [] }));
-      expect(noBriefings.strategic_risk_score).toBeLessThan(full.strategic_risk_score);
+      expect(noBriefings.strategic_risk_score).toBeLessThan(full.strategic_risk_score!);
     });
 
     it("mod3: no strategic risks is neutral", () => {
       const withRisks = computeHomeStrategicRisk(baseInput());
       const noRisks = computeHomeStrategicRisk(baseInput({ strategic_risks: [] }));
       // Removing perfect strategic risks loses +3
-      expect(noRisks.strategic_risk_score).toBe(withRisks.strategic_risk_score - 3);
+      expect(noRisks.strategic_risk_score).toBe(withRisks.strategic_risk_score! - 3);
     });
 
     it("mod5: 5+ appetite domains with red lines gives +3", () => {
@@ -240,7 +240,7 @@ describe("Home Strategic Risk Intelligence Engine", () => {
           makePlan({ id: "rmp2", review_date: "2026-03-01" }),
         ],
       }));
-      expect(withOverdue.strategic_risk_score).toBeLessThan(noOverdue.strategic_risk_score);
+      expect(withOverdue.strategic_risk_score).toBeLessThan(noOverdue.strategic_risk_score!);
     });
   });
 

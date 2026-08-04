@@ -284,7 +284,7 @@ describe("mod1: child coverage", () => {
     // But area_coverage also changes since partial has fewer unique areas maybe...
     // Both have same areas (independent_living default) so no area change.
     // child_coverage: full=100%→+5, partial=67%→+1 (67<75). Diff=4
-    expect(rFull.transition_score - rPartial.transition_score).toBe(4);
+    expect(rFull.transition_score! - rPartial.transition_score!).toBe(4);
   });
 
   it("penalises -5 for 0% child coverage equivalent (impossible but test guard with 1 child covering 1/3)", () => {
@@ -322,7 +322,7 @@ describe("mod2: area coverage breadth", () => {
     const rMany = computeHomeTransitionPlanning(many);
     const rFew = computeHomeTransitionPlanning(few);
     // many: 6 areas → +4; few: 4 areas → +2. Diff = 2
-    expect(rMany.transition_score - rFew.transition_score).toBe(2);
+    expect(rMany.transition_score! - rFew.transition_score!).toBe(2);
   });
 
   it("penalises -3 for < 2 areas", () => {
@@ -388,7 +388,7 @@ describe("mod5: at-risk goals", () => {
     const rSafe = computeHomeTransitionPlanning(safe);
     const rRisky = computeHomeTransitionPlanning(risky);
     // safe: 0% at-risk → +3; risky: 50% at-risk → -3. Diff = 6
-    expect(rSafe.transition_score - rRisky.transition_score).toBe(6);
+    expect(rSafe.transition_score! - rRisky.transition_score!).toBe(6);
   });
 });
 

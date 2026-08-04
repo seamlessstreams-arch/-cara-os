@@ -334,7 +334,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
       // high: mod1 +5 (≥75), mod8 +3 (100% ≥70)
       // low: mod1 -4 (<55), mod8 -2 (0% <15%)
       // diff = (5+3) - (-4-2) = 14
-      expect(high.competency_score - low.competency_score).toBe(14);
+      expect(high.competency_score! - low.competency_score!).toBe(14);
     });
 
     it("modifier 2: pathway ≥80% gives +3", () => {
@@ -351,7 +351,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan({ staff_id: "s1" })],
       }));
       // 100% → +3; 0% → -2; diff = 5
-      expect(high.competency_score - low.competency_score).toBe(5);
+      expect(high.competency_score! - low.competency_score!).toBe(5);
     });
 
     it("modifier 3: plan engagement ≥60% gives +4", () => {
@@ -369,7 +369,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
       // high: mod3 +4, mod4 +3 (0 overdue)
       // low: mod3 -3, mod4 neutral (no plans)
       // diff = (4+3) - (-3+0) = 10
-      expect(high.competency_score - low.competency_score).toBe(10);
+      expect(high.competency_score! - low.competency_score!).toBe(10);
     });
 
     it("modifier 4: 0 overdue actions gives +3", () => {
@@ -380,7 +380,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan({ overdue_actions: 2, total_actions: 4 })],
       }));
       // 0 overdue → +3; 2/4 = 50% > 30% → -2; diff = 5
-      expect(noOverdue.competency_score - withOverdue.competency_score).toBe(5);
+      expect(noOverdue.competency_score! - withOverdue.competency_score!).toBe(5);
     });
 
     it("modifier 5: 0 overdue assessments gives +3", () => {
@@ -393,7 +393,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan({ staff_id: "s1" })],
       }));
       // 0 overdue → +3; 100% overdue → -2; diff = 5
-      expect(current.competency_score - overdue.competency_score).toBe(5);
+      expect(current.competency_score! - overdue.competency_score!).toBe(5);
     });
 
     it("modifier 6: ≥3 stages gives +3", () => {
@@ -414,7 +414,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan({ staff_id: "s1" })],
       }));
       // 3 stages → +3; 1 stage → +0; diff = 3
-      expect(diverse.competency_score - uniform.competency_score).toBe(3);
+      expect(diverse.competency_score! - uniform.competency_score!).toBe(3);
     });
 
     it("modifier 7: low dev areas and good strengths gives +4", () => {
@@ -427,7 +427,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
         development_plans: [makePlan({ staff_id: "s1" })],
       }));
       // ≤2 dev + ≥2 strengths → +4; >4 dev → -3; diff = 7
-      expect(balanced.competency_score - heavy.competency_score).toBe(7);
+      expect(balanced.competency_score! - heavy.competency_score!).toBe(7);
     });
 
     it("modifier 8: ≥50% high readiness gives +3", () => {
@@ -448,7 +448,7 @@ describe("Home Competency Landscape Intelligence Engine", () => {
       // high: 100% ≥70 → +3; low: 0% → -2; diff includes mod8 (5) + mod1 change
       // high avg: 77.5 → +5; low avg: 52.5 → -4; mod1 diff = 9
       // mod8 diff = 3 - (-2) = 5; total = 14
-      expect(high.competency_score - low.competency_score).toBe(14);
+      expect(high.competency_score! - low.competency_score!).toBe(14);
     });
   });
 

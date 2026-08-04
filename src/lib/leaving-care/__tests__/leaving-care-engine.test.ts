@@ -1421,8 +1421,8 @@ describe("Chamberlain House demo scenario", () => {
     const alex = result.childProfiles.find((p) => p.childId === "child-alex")!;
     const jordan = result.childProfiles.find((p) => p.childId === "child-jordan")!;
 
-    expect(morgan.independenceSkillLevel).toBeGreaterThan(alex.independenceSkillLevel);
-    expect(morgan.independenceSkillLevel).toBeGreaterThan(jordan.independenceSkillLevel);
+    expect(morgan.independenceSkillLevel).toBeGreaterThan(alex.independenceSkillLevel!);
+    expect(morgan.independenceSkillLevel).toBeGreaterThan(jordan.independenceSkillLevel!);
   });
 
   it("Morgan has higher readiness than younger non-eligible children", () => {

@@ -1165,7 +1165,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
           makePersonalPassport("pp1", { child_id: "c1", photo_current: false }),
         ],
       });
-      expect(withoutPenalty.identity_score - withPenalty.identity_score).toBe(5);
+      expect(withoutPenalty.identity_score! - withPenalty.identity_score!).toBe(5);
     });
 
     it("applies -5 penalty for mentorAssignmentRate < 30", () => {
@@ -1216,7 +1216,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
           makePersonalPassport("pp1", { child_id: "c1", photo_current: false }),
         ],
       });
-      expect(withoutPenalty.identity_score - withPenalty.identity_score).toBe(5);
+      expect(withoutPenalty.identity_score! - withPenalty.identity_score!).toBe(5);
     });
 
     it("applies -5 penalty for diversityParticipationRate < 30", () => {
@@ -1268,7 +1268,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
           makePersonalPassport("pp1", { child_id: "c1", photo_current: false }),
         ],
       });
-      expect(withoutPenalty.identity_score - withPenalty.identity_score).toBe(5);
+      expect(withoutPenalty.identity_score! - withPenalty.identity_score!).toBe(5);
     });
 
     it("applies -3 penalty for religiousObservanceRate < 50", () => {
@@ -1320,7 +1320,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
           makePersonalPassport("pp1", { child_id: "c1", photo_current: false }),
         ],
       });
-      expect(withoutPenalty.identity_score - withPenalty.identity_score).toBe(3);
+      expect(withoutPenalty.identity_score! - withPenalty.identity_score!).toBe(3);
     });
 
     it("all four penalties stack", () => {

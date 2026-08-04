@@ -413,7 +413,7 @@ describe("computeHomeRiskLandscape", () => {
       const rD = computeHomeRiskLandscape(baseInput({ assessments: dec }));
       const rI = computeHomeRiskLandscape(baseInput({ assessments: inc }));
       // dec: +5, inc (100% >25): -4 → diff 9
-      expect(rD.risk_score - rI.risk_score).toBe(9);
+      expect(rD.risk_score! - rI.risk_score!).toBe(9);
     });
 
     it("modifier 2: 70%+ mitigation effectiveness gives +4", () => {
@@ -422,7 +422,7 @@ describe("computeHomeRiskLandscape", () => {
       const rE = computeHomeRiskLandscape(baseInput({ assessments: eff }));
       const rN = computeHomeRiskLandscape(baseInput({ assessments: noEff }));
       // 100% eff → +4, 0% eff → -3 → diff 7
-      expect(rE.risk_score - rN.risk_score).toBe(7);
+      expect(rE.risk_score! - rN.risk_score!).toBe(7);
     });
 
     it("modifier 3: 0% overdue gives +3", () => {
@@ -430,7 +430,7 @@ describe("computeHomeRiskLandscape", () => {
       const allOverdue = [makeAssessment({ review_date: "2026-03-01" })];
       const rN = computeHomeRiskLandscape(baseInput({ assessments: notOverdue }));
       const rO = computeHomeRiskLandscape(baseInput({ assessments: allOverdue }));
-      expect(rN.risk_score - rO.risk_score).toBe(5); // +3 vs -2
+      expect(rN.risk_score! - rO.risk_score!).toBe(5); // +3 vs -2
     });
 
     it("modifier 4: 90%+ child voice gives +4", () => {
@@ -438,7 +438,7 @@ describe("computeHomeRiskLandscape", () => {
       const noVoice = [makeAssessment({ has_child_views: false })];
       const rV = computeHomeRiskLandscape(baseInput({ assessments: withVoice }));
       const rN = computeHomeRiskLandscape(baseInput({ assessments: noVoice }));
-      expect(rV.risk_score - rN.risk_score).toBe(7); // +4 vs -3
+      expect(rV.risk_score! - rN.risk_score!).toBe(7); // +4 vs -3
     });
 
     it("modifier 5: 90%+ contingency gives +3", () => {
@@ -446,7 +446,7 @@ describe("computeHomeRiskLandscape", () => {
       const noCont = [makeAssessment({ has_contingency: false })];
       const rC = computeHomeRiskLandscape(baseInput({ assessments: withCont }));
       const rN = computeHomeRiskLandscape(baseInput({ assessments: noCont }));
-      expect(rC.risk_score - rN.risk_score).toBe(5); // +3 vs -2
+      expect(rC.risk_score! - rN.risk_score!).toBe(5); // +3 vs -2
     });
 
     it("modifier 7: 0 high/very_high gives +3", () => {
@@ -454,7 +454,7 @@ describe("computeHomeRiskLandscape", () => {
       const highRisk = [makeAssessment({ current_level: "very_high" })];
       const rL = computeHomeRiskLandscape(baseInput({ assessments: lowRisk }));
       const rH = computeHomeRiskLandscape(baseInput({ assessments: highRisk }));
-      expect(rL.risk_score - rH.risk_score).toBe(5); // +3 vs -2
+      expect(rL.risk_score! - rH.risk_score!).toBe(5); // +3 vs -2
     });
 
     it("modifier 8: avg 2.5+ mitigations gives +3", () => {
@@ -467,7 +467,7 @@ describe("computeHomeRiskLandscape", () => {
       // deep has 100% eff → +4
       // So diff includes both mod 2 (+4 vs -3) = 7 and mod 8 (+3 vs -2) = 5
       // Total diff = 12
-      expect(rD.risk_score - rS.risk_score).toBe(12);
+      expect(rD.risk_score! - rS.risk_score!).toBe(12);
     });
   });
 

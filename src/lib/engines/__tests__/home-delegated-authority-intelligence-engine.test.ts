@@ -260,7 +260,7 @@ describe("mod1: child coverage", () => {
     const rFull = computeHomeDelegatedAuthority(full);
     const rPartial = computeHomeDelegatedAuthority(partial);
     // full: 100% → +5; partial: 67% → +1 (67 < 75). Diff = 4
-    expect(rFull.authority_score - rPartial.authority_score).toBe(4);
+    expect(rFull.authority_score! - rPartial.authority_score!).toBe(4);
   });
 });
 
@@ -281,7 +281,7 @@ describe("mod2: category breadth", () => {
     });
     const rNarrow = computeHomeDelegatedAuthority(baseInput({ delegated_authorities: [narrow] }));
     // broad: mod2 10→+4, mod7 10items→+3; narrow: mod2 7→+2, mod7 7items→+1. Diff = 2+2 = 4
-    expect(rBroad.authority_score - rNarrow.authority_score).toBe(4);
+    expect(rBroad.authority_score! - rNarrow.authority_score!).toBe(4);
   });
 });
 
@@ -317,7 +317,7 @@ describe("mod4: pending items", () => {
     // noPending: 0% → +3; withPending: 50% → -3. Diff = 6
     // Also mod3 changes: noPending 100% granted → +4; withPending 50% granted → +2. Diff = 2
     // Total diff = 6 + 2 = 8
-    expect(rNo.authority_score - rWith.authority_score).toBe(8);
+    expect(rNo.authority_score! - rWith.authority_score!).toBe(8);
   });
 });
 
@@ -338,7 +338,7 @@ describe("mod5: review compliance", () => {
     // But wait — overdue next_review = "2026-05-20" — is that "due soon"?
     // daysBetween(today, 2026-05-20) = -7 → < 0 → not due soon. It's overdue.
     // current next_review = "2026-08-15" → daysBetween(2026-05-27, 2026-08-15) = 80 → > 30 → not due soon
-    expect(rCurrent.authority_score - rOverdue.authority_score).toBe(8);
+    expect(rCurrent.authority_score! - rOverdue.authority_score!).toBe(8);
   });
 });
 
@@ -361,7 +361,7 @@ describe("mod6: review freshness", () => {
     const rStale = computeHomeDelegatedAuthority(stale);
     const rFresh = computeHomeDelegatedAuthority(fresh);
     // stale: >90 days → -3; fresh: ≤30 → +3. Diff = 6
-    expect(rFresh.authority_score - rStale.authority_score).toBe(6);
+    expect(rFresh.authority_score! - rStale.authority_score!).toBe(6);
   });
 });
 

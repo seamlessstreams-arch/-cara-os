@@ -1526,7 +1526,7 @@ describe("cross-modifier interaction", () => {
     }));
     // without: mod6 = -3 → 65
     // with: mod6 = +3 (0.5 per staff) → 71
-    expect(with5.lifecycle_score - without.lifecycle_score).toBe(6);
+    expect(with5.lifecycle_score! - without.lifecycle_score!).toBe(6);
   });
 
   it("adding sickness with poor RTW reduces score", () => {
@@ -1539,7 +1539,7 @@ describe("cross-modifier interaction", () => {
     // clean: mod2: +4, mod3: +2
     // withSickness: mod2: 5/900*100=0.56% → +4, mod3: 0% completed < 50 → -4
     // diff = (-4) - (+2) = -6
-    expect(clean.lifecycle_score - withSickness.lifecycle_score).toBe(6);
+    expect(clean.lifecycle_score! - withSickness.lifecycle_score!).toBe(6);
   });
 
   it("max score achievable is 80", () => {

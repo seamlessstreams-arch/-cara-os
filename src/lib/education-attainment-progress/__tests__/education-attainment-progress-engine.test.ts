@@ -732,10 +732,10 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
       "oak-house", "2026-01-01", "2026-05-19",
     );
     const expectedSum = Math.round(
-      result.educationQuality.score +
-      result.educationCompliance.score +
-      result.educationPolicy.score +
-      result.staffEducationReadiness.score,
+      result.educationQuality.score! +
+      result.educationCompliance.score! +
+      result.educationPolicy.score! +
+      result.staffEducationReadiness.score!,
     );
     expect(result.overallScore).toBe(Math.max(0, Math.min(100, expectedSum)));
   });

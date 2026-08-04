@@ -127,7 +127,7 @@ describe("home-wide triggers and overview", () => {
   });
   it("orders children by concern score (highest first)", () => {
     for (let i = 1; i < r.children.length; i++) {
-      expect(r.children[i - 1].concern_score).toBeGreaterThanOrEqual(r.children[i].concern_score);
+      expect(r.children[i - 1].concern_score).toBeGreaterThanOrEqual(r.children[i].concern_score!);
     }
   });
 });

@@ -601,7 +601,7 @@ describe("temperature compliance scoring", () => {
       temperature_log_records: [],
     }));
     // The score difference captures the temp bonus among others
-    expect(perfect.food_storage_score).toBeGreaterThan(noTemp.food_storage_score);
+    expect(perfect.food_storage_score).toBeGreaterThan(noTemp.food_storage_score!);
   });
 
   it("gives +3 bonus when compliance 80-94%", () => {
@@ -1006,7 +1006,7 @@ describe("calibration bonuses", () => {
         makeTempLog({ id: "tl_2", thermometer_calibrated: false }),
       ],
     }));
-    expect(allCalibrated.food_storage_score).toBeGreaterThan(noneCalibrated.food_storage_score);
+    expect(allCalibrated.food_storage_score).toBeGreaterThan(noneCalibrated.food_storage_score!);
   });
 
   it("gives +1 bonus when calibration 70-89%", () => {
@@ -1045,7 +1045,7 @@ describe("EHO rating bonuses", () => {
     const noEho = computeFoodStorageRefrigerationSafety(baseInput({
       hygiene_rating_records: [makeHygieneRating({ eho_rating: null })],
     }));
-    expect(withEho5.food_storage_score).toBeGreaterThan(noEho.food_storage_score);
+    expect(withEho5.food_storage_score).toBeGreaterThan(noEho.food_storage_score!);
   });
 
   it("gives +1 bonus for EHO rating 4", () => {
@@ -1055,7 +1055,7 @@ describe("EHO rating bonuses", () => {
     const noEho = computeFoodStorageRefrigerationSafety(baseInput({
       hygiene_rating_records: [makeHygieneRating({ eho_rating: null })],
     }));
-    expect(withEho4.food_storage_score).toBeGreaterThan(noEho.food_storage_score);
+    expect(withEho4.food_storage_score).toBeGreaterThan(noEho.food_storage_score!);
   });
 
   it("no EHO bonus for rating 3", () => {

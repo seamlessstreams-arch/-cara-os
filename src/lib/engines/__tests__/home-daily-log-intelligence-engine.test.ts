@@ -397,7 +397,7 @@ describe("computeHomeDailyLog", () => {
       });
       const r = computeHomeDailyLog(inp);
       // 4/14 = 29% → -2 (was +5) — but other mods also change since fewer types
-      expect(maxR.log_score - r.log_score).toBeGreaterThanOrEqual(7);
+      expect(maxR.log_score! - r.log_score!).toBeGreaterThanOrEqual(7);
     });
 
     it("mod3: limited types lowers score", () => {
@@ -407,7 +407,7 @@ describe("computeHomeDailyLog", () => {
       inp.daily_logs = inp.daily_logs.map(e => ({ ...e, entry_type: "general" }));
       const r = computeHomeDailyLog(inp);
       // 1/9 = 11% → -4 (was +4) = 8 drop
-      expect(maxR.log_score - r.log_score).toBe(8);
+      expect(maxR.log_score! - r.log_score!).toBe(8);
     });
 
     it("mod4: no mood tracking lowers score", () => {
@@ -416,7 +416,7 @@ describe("computeHomeDailyLog", () => {
       inp.daily_logs = inp.daily_logs.map(e => ({ ...e, mood_score: null }));
       const r = computeHomeDailyLog(inp);
       // 0% mood → -3 (was +3) = 6 drop, also mod8 sig may change
-      expect(maxR.log_score - r.log_score).toBeGreaterThanOrEqual(6);
+      expect(maxR.log_score! - r.log_score!).toBeGreaterThanOrEqual(6);
     });
 
     it("mod5: single staff lowers score", () => {
@@ -425,7 +425,7 @@ describe("computeHomeDailyLog", () => {
       inp.daily_logs = inp.daily_logs.map(e => ({ ...e, staff_id: "staff_darren" }));
       const r = computeHomeDailyLog(inp);
       // 1/8 = 13% → -4 (was +4) = 8 drop
-      expect(maxR.log_score - r.log_score).toBe(8);
+      expect(maxR.log_score! - r.log_score!).toBe(8);
     });
 
     it("mod6: short content lowers score", () => {
@@ -434,7 +434,7 @@ describe("computeHomeDailyLog", () => {
       inp.daily_logs = inp.daily_logs.map(e => ({ ...e, content: "OK" }));
       const r = computeHomeDailyLog(inp);
       // 2 chars → -3 (was +3) = 6 drop
-      expect(maxR.log_score - r.log_score).toBe(6);
+      expect(maxR.log_score! - r.log_score!).toBe(6);
     });
   });
 

@@ -237,8 +237,8 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
           makeCompetency({ id: "c7", staff_id: "s8", assessed: false }),
         ],
       }));
-      expect(base.competency_score).toBeGreaterThan(degraded.competency_score);
-      expect(base.competency_score - degraded.competency_score).toBe(3); // +5 vs +2
+      expect(base.competency_score).toBeGreaterThan(degraded.competency_score!);
+      expect(base.competency_score! - degraded.competency_score!).toBe(3); // +5 vs +2
     });
 
     it("penalises -5 when <50% assessed", () => {

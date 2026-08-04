@@ -490,7 +490,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
         ],
       }));
       // high: mod1=+5, mod6=+3 (no actions). mid: mod1=+0, mod6=+3 (no actions). diff = 5.
-      expect(high.food_score - mid.food_score).toBe(5);
+      expect(high.food_score! - mid.food_score!).toBe(5);
     });
 
     it("+2 when pass rate 80-94%", () => {
@@ -553,7 +553,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
       }));
       // withChecks: mod1 = +0, noChecks: mod1 = -1 => diff = 1
       // also mod6 differs: withChecks = no actions +3, noChecks = no actions +3
-      expect(withChecks.food_score - noChecks.food_score).toBe(1);
+      expect(withChecks.food_score! - noChecks.food_score!).toBe(1);
     });
 
     it("excludes n_a checks from calculation", () => {
@@ -627,7 +627,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
       // withBudgets: mod2=+6, mod3=+5, mod5=+4 = +15
       // noBudgets: mod2=0, mod3=0, mod5=-1 = -1
       // Diff = 16 (the 3 budget-dependent modifiers)
-      expect(withBudgets.food_score - noBudgets.food_score).toBe(16);
+      expect(withBudgets.food_score! - noBudgets.food_score!).toBe(16);
     });
   });
 
@@ -738,7 +738,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
       const withPlans = computeFoodNutritionHygieneSafety(baseInput());
       const noPlans = computeFoodNutritionHygieneSafety(baseInput({ meal_plans: [] }));
       // withPlans: mod4 = +5, noPlans: mod4 = -1 => diff = 6
-      expect(withPlans.food_score - noPlans.food_score).toBe(6);
+      expect(withPlans.food_score! - noPlans.food_score!).toBe(6);
     });
   });
 

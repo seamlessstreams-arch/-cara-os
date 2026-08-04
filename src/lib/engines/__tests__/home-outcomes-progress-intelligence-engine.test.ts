@@ -462,7 +462,7 @@ describe("computeHomeOutcomesProgress", () => {
       // With 4 domains: +2 vs 1 domain: -3 → difference is +5
       const targets1 = [makeTarget({ id: "t1", domain: "health" })];
       const r1 = computeHomeOutcomesProgress(baseInput({ targets: targets1 }));
-      expect(r.outcomes_score - r1.outcomes_score).toBe(5); // +2 vs -3
+      expect(r.outcomes_score! - r1.outcomes_score!).toBe(5); // +2 vs -3
     });
 
     it("modifier 2: improving ≥60% gives +4", () => {
@@ -483,7 +483,7 @@ describe("computeHomeOutcomesProgress", () => {
       ];
       const r2 = computeHomeOutcomesProgress(baseInput({ targets: targets2 }));
       // 75% improving → +4 vs 0% improving → -3 = diff of 7
-      expect(r.outcomes_score - r2.outcomes_score).toBe(7);
+      expect(r.outcomes_score! - r2.outcomes_score!).toBe(7);
     });
 
     it("modifier 3: 0 declining gives +3", () => {
@@ -503,7 +503,7 @@ describe("computeHomeOutcomesProgress", () => {
       // 0 declining: +3, 50% declining: -2 → diff 5
       // But also improving rate changes: 50% vs 50% (same)
       // And progress changes. Let me just check declining modifier effect.
-      expect(r0.outcomes_score).toBeGreaterThan(r1.outcomes_score);
+      expect(r0.outcomes_score).toBeGreaterThan(r1.outcomes_score!);
     });
 
     it("modifier 4: avg progress ≥1.5 gives +4", () => {
@@ -519,7 +519,7 @@ describe("computeHomeOutcomesProgress", () => {
       const rL = computeHomeOutcomesProgress(baseInput({ targets: lowProg }));
       // highProg: ≥1.5 → +4, lowProg: ≥0 → +0 → diff 4
       // But other modifiers also differ (improving rate, etc). Just verify direction.
-      expect(rH.outcomes_score).toBeGreaterThan(rL.outcomes_score);
+      expect(rH.outcomes_score).toBeGreaterThan(rL.outcomes_score!);
     });
 
     it("modifier 5: 0% overdue gives +3", () => {
@@ -527,7 +527,7 @@ describe("computeHomeOutcomesProgress", () => {
       const allOverdue = [makeTarget({ review_date: "2026-04-01" })];
       const rN = computeHomeOutcomesProgress(baseInput({ targets: notOverdue }));
       const rO = computeHomeOutcomesProgress(baseInput({ targets: allOverdue }));
-      expect(rN.outcomes_score - rO.outcomes_score).toBe(5); // +3 vs -2
+      expect(rN.outcomes_score! - rO.outcomes_score!).toBe(5); // +3 vs -2
     });
 
     it("modifier 6: YP voice ≥80% gives +4", () => {
@@ -545,7 +545,7 @@ describe("computeHomeOutcomesProgress", () => {
       ];
       const rV = computeHomeOutcomesProgress(baseInput({ targets: withVoice }));
       const rN = computeHomeOutcomesProgress(baseInput({ targets: noVoice }));
-      expect(rV.outcomes_score - rN.outcomes_score).toBe(7); // +4 vs -3
+      expect(rV.outcomes_score! - rN.outcomes_score!).toBe(7); // +4 vs -3
     });
 
     it("modifier 7: 100% coverage gives +3", () => {
@@ -558,7 +558,7 @@ describe("computeHomeOutcomesProgress", () => {
       const r = computeHomeOutcomesProgress(baseInput({ targets: full, total_children: 4 }));
       const partial = [makeTarget({ id: "t1", child_id: "c1" })];
       const r2 = computeHomeOutcomesProgress(baseInput({ targets: partial, total_children: 4 }));
-      expect(r.outcomes_score - r2.outcomes_score).toBe(5); // +3 vs -2
+      expect(r.outcomes_score! - r2.outcomes_score!).toBe(5); // +3 vs -2
     });
 
     it("modifier 8: reviews per target ≥0.5 gives +3", () => {
@@ -566,7 +566,7 @@ describe("computeHomeOutcomesProgress", () => {
       const reviews = [makeReview()]; // 1 review / 2 targets = 0.5
       const rR = computeHomeOutcomesProgress(baseInput({ targets, reviews }));
       const rN = computeHomeOutcomesProgress(baseInput({ targets }));
-      expect(rR.outcomes_score - rN.outcomes_score).toBe(5); // +3 vs -2
+      expect(rR.outcomes_score! - rN.outcomes_score!).toBe(5); // +3 vs -2
     });
   });
 

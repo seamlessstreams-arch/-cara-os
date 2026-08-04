@@ -252,7 +252,7 @@ describe("Child Daily Life Intelligence Engine", () => {
     const lowCoverage = computeChildDailyLife(baseInput({
       entries: [makeEntry({ date: daysAgo(1) }), makeEntry({ date: daysAgo(20) })],
     }));
-    expect(highCoverage.daily_life_score).toBeGreaterThan(lowCoverage.daily_life_score);
+    expect(highCoverage.daily_life_score).toBeGreaterThan(lowCoverage.daily_life_score!);
   });
 
   it("penalises no entries in last 7 days", () => {
@@ -262,7 +262,7 @@ describe("Child Daily Life Intelligence Engine", () => {
     const old = computeChildDailyLife(baseInput({
       entries: [makeEntry({ date: daysAgo(15) }), makeEntry({ date: daysAgo(20) })],
     }));
-    expect(recent.daily_life_score).toBeGreaterThan(old.daily_life_score);
+    expect(recent.daily_life_score).toBeGreaterThan(old.daily_life_score!);
   });
 
   it("clamps score to 0-100", () => {

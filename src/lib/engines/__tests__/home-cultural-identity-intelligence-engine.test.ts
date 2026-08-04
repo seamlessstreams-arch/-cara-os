@@ -258,7 +258,7 @@ describe("computeHomeCulturalIdentity", () => {
     it("neutral when no records (not all children have identified faith)", () => {
       const withRO = computeHomeCulturalIdentity(baseInput());
       const withoutRO = computeHomeCulturalIdentity(baseInput({ religious_observance_records: [] }));
-      expect(withRO.cultural_identity_score).toBeGreaterThan(withoutRO.cultural_identity_score);
+      expect(withRO.cultural_identity_score).toBeGreaterThan(withoutRO.cultural_identity_score!);
     });
 
     it("penalises overdue reviews", () => {

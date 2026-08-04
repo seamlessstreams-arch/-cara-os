@@ -569,7 +569,7 @@ describe("computeHomeCommunityAccess", () => {
         makeIndependentTravel({ id: "it5", child_id: "c5" }),
       ];
       const r1 = computeHomeCommunityAccess(baseInput({ independent_travel_records: records }));
-      expect(r0.community_access_score).toBeGreaterThan(r1.community_access_score);
+      expect(r0.community_access_score).toBeGreaterThan(r1.community_access_score!);
     });
   });
 

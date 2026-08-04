@@ -299,7 +299,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       // 100% → +4, 50% → 0 (between 50 and 80 gets neither bonus nor penalty)
-      expect(withBonus.safety_score - halfDebriefed.safety_score).toBe(4);
+      expect(withBonus.safety_score! - halfDebriefed.safety_score!).toBe(4);
     });
 
     it("awards +2 for child debrief rate >= 80% but < 100%", () => {
@@ -321,7 +321,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         makeRestraint("r5", { child_debriefed: false }),
       ];
       const r60 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints60 }));
-      expect(r.safety_score - r60.safety_score).toBe(2);
+      expect(r.safety_score! - r60.safety_score!).toBe(2);
     });
 
     it("awards +3 for staff debrief rate >= 100%", () => {
@@ -335,7 +335,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       // 100% → +3, 50% → 0
-      expect(full.safety_score - half.safety_score).toBe(3);
+      expect(full.safety_score! - half.safety_score!).toBe(3);
     });
 
     it("awards +1 for staff debrief rate >= 80% but < 100%", () => {
@@ -355,7 +355,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       ];
       const r80 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints80 }));
       const r60 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints60 }));
-      expect(r80.safety_score - r60.safety_score).toBe(1);
+      expect(r80.safety_score! - r60.safety_score!).toBe(1);
     });
 
     it("awards +4 for reward-to-sanction ratio >= 4.0", () => {
@@ -373,7 +373,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(low.reward_to_sanction_ratio).toBe(2);
-      expect(r.safety_score - low.safety_score).toBe(2); // +4 vs +2
+      expect(r.safety_score! - low.safety_score!).toBe(2); // +4 vs +2
     });
 
     it("awards +2 for reward-to-sanction ratio >= 2.0 but < 4.0", () => {
@@ -397,7 +397,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r3.safety_score - r1.safety_score).toBe(2);
+      expect(r3.safety_score! - r1.safety_score!).toBe(2);
     });
 
     it("awards +3 for de-escalation rate >= 100%", () => {
@@ -413,7 +413,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(half.de_escalation_attempt_rate).toBe(50);
-      expect(full.safety_score - half.safety_score).toBe(3);
+      expect(full.safety_score! - half.safety_score!).toBe(3);
     });
 
     it("awards +1 for de-escalation rate >= 90% but < 100%", () => {
@@ -429,7 +429,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r80 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints80 }));
       expect(r90.de_escalation_attempt_rate).toBe(90);
       expect(r80.de_escalation_attempt_rate).toBe(80);
-      expect(r90.safety_score - r80.safety_score).toBe(1);
+      expect(r90.safety_score! - r80.safety_score!).toBe(1);
     });
 
     it("awards +3 for body map rate >= 100%", () => {
@@ -444,7 +444,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(half.body_map_completion_rate).toBe(50);
-      expect(full.safety_score - half.safety_score).toBe(3);
+      expect(full.safety_score! - half.safety_score!).toBe(3);
     });
 
     it("awards +1 for body map rate >= 80% but < 100%", () => {
@@ -466,7 +466,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r60 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints60 }));
       expect(r80.body_map_completion_rate).toBe(80);
       expect(r60.body_map_completion_rate).toBe(60);
-      expect(r80.safety_score - r60.safety_score).toBe(1);
+      expect(r80.safety_score! - r60.safety_score!).toBe(1);
     });
 
     it("awards +3 for restraint review rate >= 100%", () => {
@@ -481,7 +481,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(half.restraint_review_rate).toBe(50);
-      expect(full.safety_score - half.safety_score).toBe(3);
+      expect(full.safety_score! - half.safety_score!).toBe(3);
     });
 
     it("awards +1 for restraint review rate >= 80% but < 100%", () => {
@@ -501,7 +501,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       ];
       const r80 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints80 }));
       const r60 = computeEmotionalSafetyClimate(baseInput({ restraints: restraints60 }));
-      expect(r80.safety_score - r60.safety_score).toBe(1);
+      expect(r80.safety_score! - r60.safety_score!).toBe(1);
     });
 
     it("awards +3 for achievement celebration rate >= 90%", () => {
@@ -520,7 +520,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(r75.achievement_celebration_rate).toBe(75);
-      expect(full.safety_score - r75.safety_score).toBe(2); // +3 vs +1
+      expect(full.safety_score! - r75.safety_score!).toBe(2); // +3 vs +1
     });
 
     it("awards +1 for achievement celebration rate >= 70% but < 90%", () => {
@@ -546,7 +546,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r75.safety_score - r50.safety_score).toBe(1);
+      expect(r75.safety_score! - r50.safety_score!).toBe(1);
     });
 
     it("awards +3 for post-incident quality avg >= 4.0", () => {
@@ -562,7 +562,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(mid.post_incident_quality_avg).toBe(3.5);
-      expect(high.safety_score - mid.safety_score).toBe(2); // +3 vs +1
+      expect(high.safety_score! - mid.safety_score!).toBe(2); // +3 vs +1
     });
 
     it("awards +1 for post-incident quality avg >= 3.0 but < 4.0", () => {
@@ -585,7 +585,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(low.post_incident_quality_avg).toBe(2.5);
-      expect(mid.safety_score - low.safety_score).toBe(1);
+      expect(mid.safety_score! - low.safety_score!).toBe(1);
     });
 
     it("awards +2 for no injuries when restraints > 0", () => {
@@ -602,7 +602,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(withInjury.injury_rate).toBe(50);
-      expect(noInjury.safety_score - withInjury.safety_score).toBe(2);
+      expect(noInjury.safety_score! - withInjury.safety_score!).toBe(2);
     });
 
     it("awards +2 for no restraints when children > 0", () => {
@@ -646,7 +646,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       );
       expect(noPenalty.child_debrief_rate).toBe(67);
       // Difference should include the -5 penalty + loss of any bonus
-      expect(noPenalty.safety_score - r.safety_score).toBe(5);
+      expect(noPenalty.safety_score! - r.safety_score!).toBe(5);
     });
 
     it("applies -5 penalty when reward-to-sanction ratio < 1.0 and sanctions > 0", () => {
@@ -671,7 +671,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(noPenalty.reward_to_sanction_ratio).toBe(1);
-      expect(noPenalty.safety_score - r.safety_score).toBe(5);
+      expect(noPenalty.safety_score! - r.safety_score!).toBe(5);
     });
 
     it("applies -5 penalty when body map rate < 50%", () => {
@@ -696,7 +696,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(noPenalty.body_map_completion_rate).toBe(67);
-      expect(noPenalty.safety_score - r.safety_score).toBe(5);
+      expect(noPenalty.safety_score! - r.safety_score!).toBe(5);
     });
 
     it("applies -3 penalty when restraint review rate < 50%", () => {
@@ -721,7 +721,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
         }),
       );
       expect(noPenalty.restraint_review_rate).toBe(67);
-      expect(noPenalty.safety_score - r.safety_score).toBe(3);
+      expect(noPenalty.safety_score! - r.safety_score!).toBe(3);
     });
 
     it("does not apply child debrief penalty when no restraints exist", () => {

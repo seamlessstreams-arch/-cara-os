@@ -487,7 +487,7 @@ describe("Home Mental Health Intelligence Engine", () => {
       // full: 100% → +5; partial: 67% → +0 (>=50, <75)
       // But other mods also change (fewer check-ins → mod2 changes)
       // Just verify full coverage gives higher score
-      expect(full.mental_health_score).toBeGreaterThan(partial.mental_health_score);
+      expect(full.mental_health_score).toBeGreaterThan(partial.mental_health_score!);
     });
 
     it("mod3: good therapy engagement gives +4", () => {
@@ -500,7 +500,7 @@ describe("Home Mental Health Intelligence Engine", () => {
       const noTherapy = computeHomeMentalHealth(baseInput());
       // withTherapy: 100% attend + improvement → +4
       // noTherapy: no sessions, no pending → +2
-      expect(withTherapy.mental_health_score - noTherapy.mental_health_score).toBe(2);
+      expect(withTherapy.mental_health_score! - noTherapy.mental_health_score!).toBe(2);
     });
 
     it("mod5: flagged follow-up at 100% gives +4", () => {
@@ -535,7 +535,7 @@ describe("Home Mental Health Intelligence Engine", () => {
         ],
         total_children: 3,
       }));
-      expect(happy.mental_health_score).toBeGreaterThan(sad.mental_health_score);
+      expect(happy.mental_health_score).toBeGreaterThan(sad.mental_health_score!);
     });
   });
 

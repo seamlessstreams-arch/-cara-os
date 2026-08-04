@@ -239,7 +239,7 @@ describe("mod1: drill frequency", () => {
     const rFreq = computeHomeFireSafety(frequent);
     const rRare = computeHomeFireSafety(rare);
     // frequent: >=2 → +4; rare: >=1 → +2. Diff = 2
-    expect(rFreq.fire_safety_score - rRare.fire_safety_score).toBe(2);
+    expect(rFreq.fire_safety_score! - rRare.fire_safety_score!).toBe(2);
   });
 });
 
@@ -257,7 +257,7 @@ describe("mod2: results quality", () => {
     // Also mod3: passed has 0 issues → +2; failed has 1 issue actioned 100% → +3
     // mod3 diff: +2 vs +3 = -1
     // Total expected: (4 - (-4)) + (-1) = 7
-    expect(rPassed.fire_safety_score - rFailed.fire_safety_score).toBe(7);
+    expect(rPassed.fire_safety_score! - rFailed.fire_safety_score!).toBe(7);
   });
 });
 
@@ -275,7 +275,7 @@ describe("mod3: issue response", () => {
     // mod2 also differs: both have issues_identified so satisfactory_rate = 0%
     // actioned: 0% satisfactory, no failed → >=40? 0% < 40 → -2
     // notActioned: same → -2. No diff on mod2.
-    expect(rActioned.fire_safety_score - rNotActioned.fire_safety_score).toBe(6);
+    expect(rActioned.fire_safety_score! - rNotActioned.fire_safety_score!).toBe(6);
   });
 });
 
@@ -309,7 +309,7 @@ describe("mod5: all present rate", () => {
     const rGood = computeHomeFireSafety(good);
     const rPoor = computeHomeFireSafety(poor);
     // good: 100% → +3; poor: 50% → +1. Diff = 2
-    expect(rGood.fire_safety_score - rPoor.fire_safety_score).toBe(2);
+    expect(rGood.fire_safety_score! - rPoor.fire_safety_score!).toBe(2);
   });
 });
 
@@ -330,7 +330,7 @@ describe("mod6: night drills", () => {
     const rNights = computeHomeFireSafety(nights);
     const rNoNights = computeHomeFireSafety(noNights);
     // nights: >=2 → +3; noNights: 0 → -2. Diff = 5
-    expect(rNights.fire_safety_score - rNoNights.fire_safety_score).toBe(5);
+    expect(rNights.fire_safety_score! - rNoNights.fire_safety_score!).toBe(5);
   });
 });
 
@@ -359,7 +359,7 @@ describe("mod8: overdue drill", () => {
     const rCurrent = computeHomeFireSafety(current);
     const rOverdue = computeHomeFireSafety(overdue);
     // current: +4; overdue: -4. Diff = 8
-    expect(rCurrent.fire_safety_score - rOverdue.fire_safety_score).toBe(8);
+    expect(rCurrent.fire_safety_score! - rOverdue.fire_safety_score!).toBe(8);
   });
 });
 

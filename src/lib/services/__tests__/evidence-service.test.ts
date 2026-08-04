@@ -642,7 +642,7 @@ describe("computeInspectionReadiness", () => {
     expect(resultB.overallPercentage).toBe(5);
 
     // Safeguarding contributes 5x more than contact
-    expect(resultA.overallPercentage).toBe(resultB.overallPercentage * 5);
+    expect(resultA.overallPercentage).toBe(resultB.overallPercentage! * 5);
   });
 
   // ── Module structure ────────────────────────────────────────────────────

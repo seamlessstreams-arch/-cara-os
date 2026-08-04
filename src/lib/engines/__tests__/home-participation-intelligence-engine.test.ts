@@ -283,7 +283,7 @@ describe("Home Participation Intelligence Engine", () => {
     const infrequent = computeHomeParticipation(baseInput({
       house_meetings: [makeMeeting({ id: "h1", date: "2026-05-19" })],
     }));
-    expect(frequent.participation_score).toBeGreaterThan(infrequent.participation_score);
+    expect(frequent.participation_score).toBeGreaterThan(infrequent.participation_score!);
   });
 
   it("rewards high attendance", () => {
@@ -293,7 +293,7 @@ describe("Home Participation Intelligence Engine", () => {
     const low = computeHomeParticipation(baseInput({
       house_meetings: [makeMeeting({ id: "h1", children_present: ["yp_alex"], children_absent: ["yp_jordan", "yp_casey"] })],
     }));
-    expect(high.participation_score).toBeGreaterThan(low.participation_score);
+    expect(high.participation_score).toBeGreaterThan(low.participation_score!);
   });
 
   it("rewards child-raised agenda items", () => {
@@ -303,7 +303,7 @@ describe("Home Participation Intelligence Engine", () => {
     const notRaised = computeHomeParticipation(baseInput({
       house_meetings: [makeMeeting({ id: "h1", total_agenda_items: 4, child_raised_items: 0 })],
     }));
-    expect(raised.participation_score).toBeGreaterThan(notRaised.participation_score);
+    expect(raised.participation_score).toBeGreaterThan(notRaised.participation_score!);
   });
 
   it("penalises low action completion", () => {
@@ -313,7 +313,7 @@ describe("Home Participation Intelligence Engine", () => {
     const bad = computeHomeParticipation(baseInput({
       house_meetings: [makeMeeting({ id: "h1", previous_actions_total: 3, previous_actions_completed: 0 })],
     }));
-    expect(bad.participation_score).toBeLessThan(good.participation_score);
+    expect(bad.participation_score).toBeLessThan(good.participation_score!);
   });
 
   // ── Strengths ─────────────────────────────────────────────────────────────

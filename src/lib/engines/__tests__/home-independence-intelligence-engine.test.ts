@@ -268,7 +268,7 @@ describe("Home Independence Intelligence Engine", () => {
     const low = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", overall_readiness: 25 })],
     }));
-    expect(low.independence_score).toBeLessThan(high.independence_score);
+    expect(low.independence_score).toBeLessThan(high.independence_score!);
   });
 
   it("rewards all pathways on track", () => {
@@ -284,7 +284,7 @@ describe("Home Independence Intelligence Engine", () => {
         makePathway({ id: "p2", child_id: "yp_jordan", status: "attention_needed" }),
       ],
     }));
-    expect(allOnTrack.independence_score).toBeGreaterThan(mixed.independence_score);
+    expect(allOnTrack.independence_score).toBeGreaterThan(mixed.independence_score!);
   });
 
   it("penalises missing pathway plan linkage", () => {
@@ -294,7 +294,7 @@ describe("Home Independence Intelligence Engine", () => {
     const notLinked = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", pathway_plan_linked: false })],
     }));
-    expect(notLinked.independence_score).toBeLessThan(linked.independence_score);
+    expect(notLinked.independence_score).toBeLessThan(linked.independence_score!);
   });
 
   it("penalises overdue reviews", () => {
@@ -304,7 +304,7 @@ describe("Home Independence Intelligence Engine", () => {
     const overdue = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", review_date: "2026-04-01" })],
     }));
-    expect(overdue.independence_score).toBeLessThan(current.independence_score);
+    expect(overdue.independence_score).toBeLessThan(current.independence_score!);
   });
 
   it("rewards strong domain scores", () => {
@@ -314,7 +314,7 @@ describe("Home Independence Intelligence Engine", () => {
     const weak = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", domain_avg_score: 2.5 })],
     }));
-    expect(strong.independence_score).toBeGreaterThan(weak.independence_score);
+    expect(strong.independence_score).toBeGreaterThan(weak.independence_score!);
   });
 
   it("penalises many low-scoring domains", () => {
@@ -324,7 +324,7 @@ describe("Home Independence Intelligence Engine", () => {
     const many = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", low_scoring_domains: 5 })],
     }));
-    expect(many.independence_score).toBeLessThan(none.independence_score);
+    expect(many.independence_score).toBeLessThan(none.independence_score!);
   });
 
   it("rewards complete evidence and next steps", () => {
@@ -334,7 +334,7 @@ describe("Home Independence Intelligence Engine", () => {
     const incomplete = computeHomeIndependence(baseInput({
       pathways: [makePathway({ id: "p1", child_id: "yp_alex", has_evidence: false, has_next_steps: false })],
     }));
-    expect(complete.independence_score).toBeGreaterThan(incomplete.independence_score);
+    expect(complete.independence_score).toBeGreaterThan(incomplete.independence_score!);
   });
 
   // ── Strengths ─────────────────────────────────────────────────────────────

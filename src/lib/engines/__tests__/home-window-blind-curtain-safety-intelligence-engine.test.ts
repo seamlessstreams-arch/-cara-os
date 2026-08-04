@@ -1268,7 +1268,7 @@ describe("inspection additional", () => {
     // pass=false so passRate=0, but actions complete, no overdue
     const records = Array.from({ length: 5 }, () => makeInspection({ overall_pass: false, actions_required: 2, actions_completed: 2, next_inspection_due: "2026-08-01" }));
     const r = run({ inspection_records: records });
-    if (r.inspection_compliance_rate >= 50 && r.inspection_compliance_rate < 70) {
+    if (r.inspection_compliance_rate! >= 50 && r.inspection_compliance_rate! < 70) {
       expect(r.concerns.some(c => c.includes("Inspection compliance"))).toBe(true);
     }
   });
@@ -1282,7 +1282,7 @@ describe("inspection additional", () => {
   it("warning insight for 50-69% compliance", () => {
     const records = Array.from({ length: 5 }, () => makeInspection({ overall_pass: false, actions_required: 2, actions_completed: 2, next_inspection_due: "2026-08-01" }));
     const r = run({ inspection_records: records });
-    if (r.inspection_compliance_rate >= 50 && r.inspection_compliance_rate < 70) {
+    if (r.inspection_compliance_rate! >= 50 && r.inspection_compliance_rate! < 70) {
       expect(r.insights.some(i => i.severity === "warning" && i.text.includes("Inspection compliance"))).toBe(true);
     }
   });

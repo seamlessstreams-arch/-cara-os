@@ -269,7 +269,7 @@ describe("modifier 1: approval turnaround", () => {
       ],
     }));
     // fast gets +4, slow gets -3 => diff of 7
-    expect(fast.expense_score - slow.expense_score).toBe(7);
+    expect(fast.expense_score! - slow.expense_score!).toBe(7);
   });
 
   it("is neutral when no approved expenses exist", () => {
@@ -307,7 +307,7 @@ describe("modifier 2: receipt compliance", () => {
       ],
     }));
     // 100% = +5, 0% = -4 => diff 9
-    expect(good.expense_score - bad.expense_score).toBe(9);
+    expect(good.expense_score! - bad.expense_score!).toBe(9);
   });
 });
 
@@ -332,7 +332,7 @@ describe("modifier 3: pending backlog", () => {
     // Mod 8 also shifts: noPending 1 approver (+1), allPending 0 approvers (-2) = +3 diff
     // Total expected diff = 6 (mod3) + 3 (mod8) + mod1 diff
     // noPending: mod1 +4 (1 day approval), allPending: mod1 neutral (no approved) = +4
-    expect(noPending.expense_score).toBeGreaterThan(allPending.expense_score);
+    expect(noPending.expense_score).toBeGreaterThan(allPending.expense_score!);
   });
 });
 
@@ -357,7 +357,7 @@ describe("modifier 4: category diversity", () => {
       ],
     }));
     // diverse: +3, single: -2 => diff 5
-    expect(diverse.expense_score - single.expense_score).toBe(5);
+    expect(diverse.expense_score! - single.expense_score!).toBe(5);
   });
 });
 
@@ -380,7 +380,7 @@ describe("modifier 5: child benefit rate", () => {
       ],
     }));
     // 100% child linked = +4, 0% = -3 => diff 7
-    expect(high.expense_score - none.expense_score).toBe(7);
+    expect(high.expense_score! - none.expense_score!).toBe(7);
   });
 });
 
@@ -403,7 +403,7 @@ describe("modifier 6: payment method governance", () => {
       ],
     }));
     // 100% controlled = +3, 0% controlled = -2 => diff 5
-    expect(controlled.expense_score - personal.expense_score).toBe(5);
+    expect(controlled.expense_score! - personal.expense_score!).toBe(5);
   });
 });
 
@@ -427,7 +427,7 @@ describe("modifier 7: draft discipline", () => {
     }));
     // noDrafts: mod7 +3, manyDrafts: mod7 -2 => diff 5 from mod7 alone
     // But other modifiers also change (receipt rate denominator, pending rate, approvers)
-    expect(noDrafts.expense_score).toBeGreaterThan(manyDrafts.expense_score);
+    expect(noDrafts.expense_score).toBeGreaterThan(manyDrafts.expense_score!);
   });
 });
 
@@ -448,7 +448,7 @@ describe("modifier 8: manager oversight", () => {
       ],
     }));
     // multi: +3, single: +1 => diff 2
-    expect(multi.expense_score - single.expense_score).toBe(2);
+    expect(multi.expense_score! - single.expense_score!).toBe(2);
   });
 });
 

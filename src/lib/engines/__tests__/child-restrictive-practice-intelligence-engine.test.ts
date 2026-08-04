@@ -320,7 +320,7 @@ describe("Child Restrictive Practice Intelligence Engine", () => {
         makeRestraint({ date: daysAgo(i + 1), review_status: "pending" })
       ),
     }));
-    expect(few.restrictive_practice_score).toBeGreaterThan(many.restrictive_practice_score);
+    expect(few.restrictive_practice_score).toBeGreaterThan(many.restrictive_practice_score!);
   });
 
   it("penalises child injuries heavily", () => {
@@ -333,7 +333,7 @@ describe("Child Restrictive Practice Intelligence Engine", () => {
         injuries: [{ person: "yp_alex", description: "Bruise" }],
       })],
     }));
-    expect(noInjury.restrictive_practice_score).toBeGreaterThan(withInjury.restrictive_practice_score);
+    expect(noInjury.restrictive_practice_score).toBeGreaterThan(withInjury.restrictive_practice_score!);
   });
 
   it("clamps score to 0-100", () => {

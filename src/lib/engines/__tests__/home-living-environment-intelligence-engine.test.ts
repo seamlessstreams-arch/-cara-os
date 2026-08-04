@@ -546,7 +546,7 @@ describe("computeHomeLivingEnvironment", () => {
       const withBedrooms = computeHomeLivingEnvironment(baseInput());
       const withoutBedrooms = computeHomeLivingEnvironment(baseInput({ bedroom_profiles: [] }));
       // Without bedrooms: mod1=-5, mod2=-4, mod7 loses bedroom voice, mod8 changes
-      expect(withBedrooms.living_environment_score).toBeGreaterThan(withoutBedrooms.living_environment_score);
+      expect(withBedrooms.living_environment_score).toBeGreaterThan(withoutBedrooms.living_environment_score!);
     });
   });
 
@@ -568,7 +568,7 @@ describe("computeHomeLivingEnvironment", () => {
       // full: mod1=+5, mod2=+4, mod7=+0(only bedroom, 3 positives: authored+satisfaction → +2), mod8=+3
       // none: mod1=-5, mod2=-4, mod7=-3, mod8=+0
       // Difference should be significant
-      expect(full.living_environment_score).toBeGreaterThan(none.living_environment_score);
+      expect(full.living_environment_score).toBeGreaterThan(none.living_environment_score!);
     });
   });
 
@@ -577,7 +577,7 @@ describe("computeHomeLivingEnvironment", () => {
       const withPets = computeHomeLivingEnvironment(baseInput());
       const withoutPets = computeHomeLivingEnvironment(baseInput({ pet_records: [] }));
       // mod3 difference: +3 vs 0 = 3
-      const diff = withPets.living_environment_score - withoutPets.living_environment_score;
+      const diff = withPets.living_environment_score! - withoutPets.living_environment_score!;
       expect(diff).toBe(3);
     });
 
@@ -591,7 +591,7 @@ describe("computeHomeLivingEnvironment", () => {
         })],
       }));
       // good: +3, bad: -3 = 6 diff
-      expect(good.living_environment_score - bad.living_environment_score).toBe(6);
+      expect(good.living_environment_score! - bad.living_environment_score!).toBe(6);
     });
   });
 
@@ -600,7 +600,7 @@ describe("computeHomeLivingEnvironment", () => {
       const withGardens = computeHomeLivingEnvironment(baseInput());
       const withoutGardens = computeHomeLivingEnvironment(baseInput({ garden_plots: [] }));
       // mod4 diff: +3 vs 0 = 3. mod7 may change too since garden voice disappears.
-      expect(withGardens.living_environment_score).toBeGreaterThan(withoutGardens.living_environment_score);
+      expect(withGardens.living_environment_score).toBeGreaterThan(withoutGardens.living_environment_score!);
     });
 
     it("-3 when all garden metrics fail", () => {
@@ -611,7 +611,7 @@ describe("computeHomeLivingEnvironment", () => {
         })],
       }));
       const good = computeHomeLivingEnvironment(baseInput());
-      expect(good.living_environment_score).toBeGreaterThan(bad.living_environment_score);
+      expect(good.living_environment_score).toBeGreaterThan(bad.living_environment_score!);
     });
   });
 
@@ -630,13 +630,13 @@ describe("computeHomeLivingEnvironment", () => {
           makeOutdoor({ signed_off_by_rm: false, permissions_obtained: false, emergency_procedures_count: 0, child_specific_considerations_count: 0 }),
         ],
       }));
-      expect(good.living_environment_score - bad.living_environment_score).toBe(8);
+      expect(good.living_environment_score! - bad.living_environment_score!).toBe(8);
     });
 
     it("neutral when no outdoor activities", () => {
       const withActivities = computeHomeLivingEnvironment(baseInput());
       const withoutActivities = computeHomeLivingEnvironment(baseInput({ outdoor_activities: [] }));
-      expect(withActivities.living_environment_score - withoutActivities.living_environment_score).toBe(4);
+      expect(withActivities.living_environment_score! - withoutActivities.living_environment_score!).toBe(4);
     });
   });
 
@@ -669,13 +669,13 @@ describe("computeHomeLivingEnvironment", () => {
       // good mod8: 0 overdue / (3 bed + 2 garden + 3 env) = 0% → +3
       // bad mod8: 3 overdue / (3 bed + 2 garden + 3 env) = 38% → -3
       // total diff = 6 (mod6) + 6 (mod8) = 12
-      expect(good.living_environment_score - bad.living_environment_score).toBe(12);
+      expect(good.living_environment_score! - bad.living_environment_score!).toBe(12);
     });
 
     it("neutral when no environmental risks", () => {
       const withRisks = computeHomeLivingEnvironment(baseInput());
       const withoutRisks = computeHomeLivingEnvironment(baseInput({ environmental_risks: [] }));
-      expect(withRisks.living_environment_score - withoutRisks.living_environment_score).toBe(3);
+      expect(withRisks.living_environment_score! - withoutRisks.living_environment_score!).toBe(3);
     });
   });
 
@@ -697,7 +697,7 @@ describe("computeHomeLivingEnvironment", () => {
       }));
       // Without bedrooms and gardens: mod1, mod2, mod4, mod7, mod8 all change
       // But the key point is score drops significantly when voice sources are removed
-      expect(withVoice.living_environment_score).toBeGreaterThan(noVoice.living_environment_score);
+      expect(withVoice.living_environment_score).toBeGreaterThan(noVoice.living_environment_score!);
     });
   });
 
@@ -733,9 +733,9 @@ describe("computeHomeLivingEnvironment", () => {
       // So mod2 diff = 4-2 = 2, mod8 diff = 3-(-3)=6, total=8
       // But also garden overdue reviews → garden profile unchanged for mod4
       // Actually let me just test that the score drops when reviews are overdue
-      expect(good.living_environment_score).toBeGreaterThan(bad.living_environment_score);
+      expect(good.living_environment_score).toBeGreaterThan(bad.living_environment_score!);
       // The diff should be at least 6 (mod8 alone)
-      expect(good.living_environment_score - bad.living_environment_score).toBeGreaterThanOrEqual(6);
+      expect(good.living_environment_score! - bad.living_environment_score!).toBeGreaterThanOrEqual(6);
     });
   });
 

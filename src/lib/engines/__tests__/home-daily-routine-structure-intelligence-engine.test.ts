@@ -945,7 +945,7 @@ describe("penalties", () => {
     // flexibility: all have flexibility_shown: true → 100% → +3
     // Other bonuses from baseInput defaults apply
     const base = computeDailyRoutineStructure(baseInput());
-    expect(r.routine_score).toBe(base.routine_score - 4 - 5); // lost +4 bonus, got -5 penalty
+    expect(r.routine_score).toBe(base.routine_score! - 4 - 5); // lost +4 bonus, got -5 penalty
   });
 
   it("mealRegularityRate < 50 → -5", () => {
@@ -958,7 +958,7 @@ describe("penalties", () => {
     const full = computeDailyRoutineStructure(baseInput());
     // Lost +4 (mealRegularity was 100→40%), got -5 penalty
     // mealSatisfaction still 100% → +3 (no change since all defaults have child_feedback_positive=true)
-    expect(r.routine_score).toBe(full.routine_score - 4 - 5);
+    expect(r.routine_score).toBe(full.routine_score! - 4 - 5);
   });
 
   it("bedtimeAdherenceRate < 50 → -5", () => {
@@ -971,7 +971,7 @@ describe("penalties", () => {
     const full = computeDailyRoutineStructure(baseInput());
     // Lost +3 (bedtime adherence was 100→40%), got -5 penalty
     // settling still 100% → +2 (defaults have child_settled_within_30_min=true)
-    expect(r.routine_score).toBe(full.routine_score - 3 - 5);
+    expect(r.routine_score).toBe(full.routine_score! - 3 - 5);
   });
 
   it("childParticipationRate < 40 → -3", () => {
@@ -983,7 +983,7 @@ describe("penalties", () => {
     }));
     const full = computeDailyRoutineStructure(baseInput());
     // pct(12,40)=30% → <40 → penalty -3, lost +3 bonus
-    expect(r.routine_score).toBe(full.routine_score - 3 - 3);
+    expect(r.routine_score).toBe(full.routine_score! - 3 - 3);
   });
 
   it("all 4 penalties stack", () => {

@@ -448,7 +448,7 @@ describe("computeHomeMultiAgency", () => {
         multi_agency_meetings: [makeMeeting({ action_items_count: 10, actions_completed: 4 })],
       }));
       // high: +5, low: -5 → diff = 10
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(10);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(10);
     });
 
     it("+2 when no actions but meetings completed", () => {
@@ -460,7 +460,7 @@ describe("computeHomeMultiAgency", () => {
       const withActions = computeHomeMultiAgency(baseInput({
         multi_agency_meetings: [makeMeeting({ action_items_count: 10, actions_completed: 10 })],
       }));
-      expect(withActions.multi_agency_score - r.multi_agency_score).toBe(3);
+      expect(withActions.multi_agency_score! - r.multi_agency_score!).toBe(3);
     });
 
     it("+0 when no actions and no completed meetings", () => {
@@ -475,7 +475,7 @@ describe("computeHomeMultiAgency", () => {
       // But other modifiers differ (cancellation rate, child participation, etc.) — need controlled test
       // cancelled meeting also affects mod7 (cancellation rate) and mod2 (child participation denominator=0)
       // Let's just verify the no-action-completed-meeting case gives +2 by checking directly
-      expect(withActions.multi_agency_score).toBeGreaterThan(noMeetings.multi_agency_score);
+      expect(withActions.multi_agency_score).toBeGreaterThan(noMeetings.multi_agency_score!);
     });
   });
 
@@ -497,7 +497,7 @@ describe("computeHomeMultiAgency", () => {
       }));
       expect(low.meetings.child_participation_rate).toBe(0);
       // high: +4, low: -4 → diff = 8
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(8);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(8);
     });
 
     it("+0 when no completed meetings", () => {
@@ -524,7 +524,7 @@ describe("computeHomeMultiAgency", () => {
         ],
       }));
       // high: +4, low: -4 → diff = 8
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(8);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(8);
     });
 
     it("+2 when no IRO correspondence requiring response", () => {
@@ -537,7 +537,7 @@ describe("computeHomeMultiAgency", () => {
         ],
       }));
       // none: +2, full (100% compliance): +4 → diff = 2
-      expect(full.multi_agency_score - none.multi_agency_score).toBe(2);
+      expect(full.multi_agency_score! - none.multi_agency_score!).toBe(2);
     });
   });
 
@@ -556,7 +556,7 @@ describe("computeHomeMultiAgency", () => {
         ],
       }));
       // high: +3, low: -3 → diff = 6
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(6);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(6);
     });
 
     it("+1 when no professional meetings", () => {
@@ -574,7 +574,7 @@ describe("computeHomeMultiAgency", () => {
       // allAgencies is built from profMeetings90d only.
       // none: 0 agencies from prof → mod6 impacted. So we can't isolate mod4 this way.
       // Just verify the score is reasonable
-      expect(none.multi_agency_score).toBeLessThan(good.multi_agency_score);
+      expect(none.multi_agency_score).toBeLessThan(good.multi_agency_score!);
     });
   });
 
@@ -593,7 +593,7 @@ describe("computeHomeMultiAgency", () => {
         ],
       }));
       // high: +4, low: -4 → diff = 8
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(8);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(8);
     });
 
     it("+2 when no police contacts", () => {
@@ -604,7 +604,7 @@ describe("computeHomeMultiAgency", () => {
         police_contacts: [makePolice()],
       }));
       // none: +2, full (100% protocol and concordat): +4 → diff = 2
-      expect(full.multi_agency_score - none.multi_agency_score).toBe(2);
+      expect(full.multi_agency_score! - none.multi_agency_score!).toBe(2);
     });
   });
 
@@ -630,7 +630,7 @@ describe("computeHomeMultiAgency", () => {
         ],
       }));
       // three: +1, five: +3 → diff = 2
-      expect(five.multi_agency_score - three.multi_agency_score).toBe(2);
+      expect(five.multi_agency_score! - three.multi_agency_score!).toBe(2);
     });
 
     it("-3 when 0 agencies", () => {
@@ -677,7 +677,7 @@ describe("computeHomeMultiAgency", () => {
       // low: totalActions=15, completedActions=15, rate=100% → +5
       // high: totalActions=15, completedActions=15, rate=100% → +5
       // So mod1 same. mod7 diff = 6.
-      expect(high.multi_agency_score - low.multi_agency_score).toBe(6);
+      expect(high.multi_agency_score! - low.multi_agency_score!).toBe(6);
     });
 
     it("+0 when no meetings in 90d", () => {
@@ -701,7 +701,7 @@ describe("computeHomeMultiAgency", () => {
       // none: 1 requiring response, 1 sent → 100% → +4
       // two: 2 requiring response, 2 sent → 100% → +4
       // So mod3 same. diff = 4 from mod8.
-      expect(none.multi_agency_score - two.multi_agency_score).toBe(4);
+      expect(none.multi_agency_score! - two.multi_agency_score!).toBe(4);
     });
 
     it("+0 when exactly 1 dispute", () => {
@@ -712,7 +712,7 @@ describe("computeHomeMultiAgency", () => {
         iro_correspondence: [makeIRO({ formal_dispute: false })],
       }));
       // zero: +2, one: +0 → diff = 2
-      expect(zero.multi_agency_score - one.multi_agency_score).toBe(2);
+      expect(zero.multi_agency_score! - one.multi_agency_score!).toBe(2);
     });
   });
 

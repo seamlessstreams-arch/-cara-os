@@ -278,7 +278,7 @@ describe("Child Outcome Intelligence Engine", () => {
         makeTarget({ direction: "declining", baseline_rating: 3, current_rating: 2 }),
       ],
     }));
-    expect(improving.progress_score).toBeGreaterThan(declining.progress_score);
+    expect(improving.progress_score).toBeGreaterThan(declining.progress_score!);
   });
 
   it("boosts score for achieved targets", () => {
@@ -294,7 +294,7 @@ describe("Child Outcome Intelligence Engine", () => {
         makeTarget({ direction: "stable", baseline_rating: 3, current_rating: 3 }),
       ],
     }));
-    expect(withAchieved.progress_score).toBeGreaterThan(withoutAchieved.progress_score);
+    expect(withAchieved.progress_score).toBeGreaterThan(withoutAchieved.progress_score!);
   });
 
   it("penalises overdue reviews", () => {
@@ -304,7 +304,7 @@ describe("Child Outcome Intelligence Engine", () => {
     const overdue = computeChildOutcome(baseInput({
       targets: [makeTarget({ review_date: daysAgo(10) })],
     }));
-    expect(onTime.progress_score).toBeGreaterThan(overdue.progress_score);
+    expect(onTime.progress_score).toBeGreaterThan(overdue.progress_score!);
   });
 
   it("clamps score to 0-100", () => {

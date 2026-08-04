@@ -2033,7 +2033,7 @@ describe("computeNotificationResponsiveness", () => {
         notifications: [makeNotification({ id: "spa-1", read: true, created_at: "2025-03-15T08:00:00Z", read_at: "2025-03-15T09:20:00Z" })],
       }));
       // 80 minutes = 1.333...h, rounded: Math.round(1.333 * 10) / 10 = 1.3
-      const decimals = (r.average_response_hours.toString().split(".")[1] || "").length;
+      const decimals = (r.average_response_hours!.toString().split(".")[1] || "").length;
       expect(decimals).toBeLessThanOrEqual(1);
     });
   });
