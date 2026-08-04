@@ -45,13 +45,13 @@ export async function GET() {
       add({ event: "missing_episode_created", source_table: "missing_episodes", source_id: m.id, child_id: m.child_id ?? null, content: m.circumstances ?? m.notes ?? "", label: "Missing from care episode", date: day(m.date_missing ?? m.created_at) });
     }
     for (const r of restraintsList ?? []) {
-      add({ event: "restraint_recorded", source_table: "restraints", source_id: r.id, child_id: r.child_id ?? null, content: `physical intervention ${r.description ?? r.technique ?? ""}`.trim(), label: "Physical intervention / restraint", date: day(r.date ?? r.created_at) });
+      add({ event: "restraint_recorded", source_table: "restraints", source_id: r.id, child_id: r.child_id ?? null, content: `physical intervention ${r.description ?? ""}`.trim(), label: "Physical intervention / restraint", date: day(r.date ?? r.created_at) });
     }
     for (const d of disclosuresList ?? []) {
-      add({ event: "safeguarding_concern_raised", source_table: "disclosures", source_id: d.id, child_id: d.child_id ?? null, content: d.detail ?? d.description ?? "", label: "Safeguarding concern", date: day(d.date ?? d.disclosure_date ?? d.created_at) });
+      add({ event: "safeguarding_concern_raised", source_table: "disclosures", source_id: d.id, child_id: d.child_id ?? null, content: d.disclosure_summary ?? "", label: "Safeguarding concern", date: day(d.disclosure_date ?? d.created_at) });
     }
     for (const c of complaintsList ?? []) {
-      add({ event: "complaint_created", source_table: "complaints", source_id: c.id, child_id: c.child_id ?? null, content: c.summary ?? c.description ?? "", label: "Complaint", date: day(c.date ?? c.created_at) });
+      add({ event: "complaint_created", source_table: "complaints", source_id: c.id, child_id: c.child_id ?? null, content: c.summary ?? c.full_detail ?? "", label: "Complaint", date: day(c.date_received ?? c.created_at) });
     }
     for (const e of dailyLogList ?? []) {
       add({ event: "daily_log_created", source_table: "daily_log", source_id: e.id, child_id: e.child_id ?? null, content: e.content ?? "", label: `Daily log — ${e.entry_type ?? "note"}`, date: day(e.date ?? e.created_at) });

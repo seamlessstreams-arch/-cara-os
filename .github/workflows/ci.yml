@@ -35,9 +35,14 @@ jobs:
 
       # The tsc baseline was burned down 1178 → 0 (PRs #711–#718). The build
       # itself keeps ignoreBuildErrors:true (deploys never block on types),
-      # so this job is what holds the line at zero.
-      - name: tsc --noEmit (baseline locked at 0)
-        run: npx tsc --noEmit
+      # so this job is what holds the line at zero for SHIPPED app code.
+      #
+      # Scope: tsconfig.typecheck.json = tsconfig.json minus *.test.ts / __tests__.
+      # Test files are type-validated by actually running them (the Test suite),
+      # not by tsc — so the deliberate fab-0 `number|null` widening (which only
+      # trips assertions inside tests) doesn't belong in this deploy-code gate.
+      - name: tsc --noEmit (app code; baseline locked at 0)
+        run: npx tsc --noEmit -p tsconfig.typecheck.json
         env:
           NODE_OPTIONS: --max-old-space-size=8192
 
