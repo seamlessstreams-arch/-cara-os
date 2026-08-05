@@ -20,9 +20,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildTeamApproachConsistency } from "@/lib/team-approach-consistency/team-approach-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildTeamApproachConsistency(getStore()) });
+  const [behaviourLog, staff, youngPeople] = await Promise.all([dal.behaviourLog.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
+  return NextResponse.json({ data: buildTeamApproachConsistency({ behaviourLog, staff, youngPeople }) });
 }

@@ -26,9 +26,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildCumulativeRiskIntelligence } from "@/lib/cumulative-risk-intelligence/cumulative-risk-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildCumulativeRiskIntelligence(getStore()) });
+  const [incidents, keyWorkingSessions, missingEpisodes, youngPeople] = await Promise.all([dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.missingEpisodes.findAll(), dal.youngPeople.findAll()]);
+  return NextResponse.json({ data: buildCumulativeRiskIntelligence({ incidents, keyWorkingSessions, missingEpisodes, youngPeople }) });
 }

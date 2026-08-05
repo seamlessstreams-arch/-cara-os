@@ -10,11 +10,12 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeRecordingQuality } from "@/lib/recording-quality/recording-quality-engine";
 import { mapStoreToRecords } from "@/lib/recording-quality/store-records";
 
 export async function GET() {
-  const result = computeRecordingQuality({ records: mapStoreToRecords(getStore()) });
+  const [dailyLog, incidents, keyWorkingSessions, youngPeople] = await Promise.all([dal.dailyLog.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.youngPeople.findAll()]);
+  const result = computeRecordingQuality({ records: mapStoreToRecords({ dailyLog, incidents, keyWorkingSessions, youngPeople }) });
   return NextResponse.json({ data: result });
 }

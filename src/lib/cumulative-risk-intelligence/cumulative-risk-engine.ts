@@ -121,7 +121,7 @@ function supervisionPromptFor(
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildCumulativeRiskIntelligence(store: ReturnType<typeof getStore>): CumulativeRiskData {
+export function buildCumulativeRiskIntelligence(store: Pick<ReturnType<typeof getStore>, "incidents" | "keyWorkingSessions" | "missingEpisodes" | "youngPeople">): CumulativeRiskData {
   const now = new Date();
 
   const youngPeople = (store.youngPeople ?? []) as Array<{

@@ -144,7 +144,7 @@ function childSupervisionPrompt(
 
 // ── Builder ───────────────────────────────────────────────────────────────────
 
-export function buildRepairCycleIntelligence(store: ReturnType<typeof getStore>): RepairCycleData {
+export function buildRepairCycleIntelligence(store: Pick<ReturnType<typeof getStore>, "debriefRecords" | "incidents" | "youngPeople">): RepairCycleData {
   const incidents = (store.incidents ?? []) as Array<{
     id: string; child_id: string; date: string; type: string;
     severity: string; reported_by: string;

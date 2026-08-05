@@ -19,9 +19,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildCareLanguageAudit } from "@/lib/care-language-audit/care-language-audit-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildCareLanguageAudit(getStore()) });
+  const [behaviourLog, dailyLog, incidents, staff, youngPeople] = await Promise.all([dal.behaviourLog.findAll(), dal.dailyLog.findAll(), dal.incidents.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
+  return NextResponse.json({ data: buildCareLanguageAudit({ behaviourLog, dailyLog, incidents, staff, youngPeople }) });
 }

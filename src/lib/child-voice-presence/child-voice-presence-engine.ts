@@ -118,7 +118,7 @@ export interface ChildVoicePresenceData {
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildChildVoicePresence(store: ReturnType<typeof getStore>): ChildVoicePresenceData {
+export function buildChildVoicePresence(store: Pick<ReturnType<typeof getStore>, "dailyLog" | "incidents" | "keyWorkingSessions" | "lacReviews" | "youngPeople" | "ypFeedback">): ChildVoicePresenceData {
   const NOW_MS = Date.now();
   const MS_30D = 30 * 24 * 60 * 60 * 1000;
 

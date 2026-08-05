@@ -142,7 +142,7 @@ const WA_ISSUE_TO_FW: Record<string, string> = {
 
 // ── Builder ────────────────────────────────────────────────────────────────────
 
-export function buildPracticeCultureScorecard(store: ReturnType<typeof getStore>): PracticeCultureData {
+export function buildPracticeCultureScorecard(store: Pick<ReturnType<typeof getStore>, "behaviourLog" | "caraIncidentSessions" | "childPaceProfiles" | "dailyLog" | "incidents" | "keyWorkingSessions" | "practiceObservations" | "reflectiveSupervisions" | "writingAssistantAuditEvents">): PracticeCultureData {
   // ── Dimension 1: Recording Quality (WAUD acceptance) ─────────────────────
   const waud = (store.writingAssistantAuditEvents ?? []) as Array<{
     action: string; issue_type: string; created_at: string;

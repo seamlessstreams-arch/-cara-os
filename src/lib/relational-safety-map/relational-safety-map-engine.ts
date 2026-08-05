@@ -141,7 +141,7 @@ function supervisionPromptFor(
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildRelationalSafetyMap(store: ReturnType<typeof getStore>): RelationalSafetyMapData {
+export function buildRelationalSafetyMap(store: Pick<ReturnType<typeof getStore>, "childPaceProfiles" | "incidents" | "keyWorkingSessions" | "staff" | "youngPeople">): RelationalSafetyMapData {
   const now = new Date();
 
   // ── Source collections ────────────────────────────────────────────────────

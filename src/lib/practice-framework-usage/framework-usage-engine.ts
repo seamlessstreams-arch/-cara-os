@@ -174,7 +174,7 @@ export interface FrameworkUsageData {
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildPracticeFrameworkUsage(store: ReturnType<typeof getStore>): FrameworkUsageData {
+export function buildPracticeFrameworkUsage(store: Pick<ReturnType<typeof getStore>, "caraIncidentSessions" | "childPaceProfiles" | "practiceObservations" | "reflectiveSupervisions" | "staff" | "writingAssistantAuditEvents">): FrameworkUsageData {
   const NOW_MS = Date.now();
   const MS_30D = 30 * 24 * 60 * 60 * 1000;
 
