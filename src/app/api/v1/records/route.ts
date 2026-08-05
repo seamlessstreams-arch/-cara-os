@@ -9,7 +9,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import {
   createRecord,
   type CreateRecordInput,
@@ -147,15 +146,13 @@ export async function POST(req: NextRequest) {
 // ── GET: List recently created records ──────────────────────────────────────
 
 export async function GET() {
-  try {
-    const store = getStore();
-    const records = (store as Record<string, unknown>).records as Record<string, unknown>[] | undefined;
-    return NextResponse.json({
-      data: records ?? [],
-      meta: { total: records?.length ?? 0 },
-      usage: "POST to this endpoint with { record_type, staff_id, title, description } to create a record.",
-    });
-  } catch {
-    return NextResponse.json({ data: [], meta: { total: 0 } });
-  }
+  // POST dispatches each record to its own typed collection (incidents,
+  // dailyLog, …) via the universal orchestrator — there is no single `records`
+  // array to list, so this endpoint has always returned empty. (Previously read
+  // a phantom `records` field that never existed on the store; kept faithful as [].)
+  return NextResponse.json({
+    data: [],
+    meta: { total: 0 },
+    usage: "POST to this endpoint with { record_type, staff_id, title, description } to create a record.",
+  });
 }

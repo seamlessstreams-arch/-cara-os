@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 
 function todayStr() {
@@ -42,7 +41,6 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const store = getStore();
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date") ?? todayStr();
   const shiftType = searchParams.get("shift") ?? "day";
@@ -158,8 +156,9 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Missing from care
-  const missingEpisodes = ((store as unknown as Record<string, unknown[]>).missingFromCareEpisodes ?? []) as unknown as Record<string, unknown>[];
+  // Missing from care — no backing collection on this shape (was a phantom
+  // `missingFromCareEpisodes` field, always []; kept faithful as []).
+  const missingEpisodes: Record<string, unknown>[] = [];
   const dayMissing = missingEpisodes.filter((e) =>
     (e.date as string)?.startsWith(date) || (e.created_at as string)?.startsWith(date)
   );
