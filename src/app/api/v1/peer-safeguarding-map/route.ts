@@ -13,7 +13,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 type RiskLevel = "none" | "low" | "medium" | "high";
 type PairSignal = "concern" | "attention" | "stable";
@@ -104,12 +104,12 @@ function pairSignal(
 }
 
 export async function GET() {
-  const store = getStore();
+  const [peerDynamicsList, peerGroupDynamicsList, staffList, youngPeopleList] = await Promise.all([dal.peerDynamics.findAll(), dal.peerGroupDynamics.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((store.youngPeople as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
       yp.id,
       yp.preferred_name ??
         (`${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown"),
@@ -118,7 +118,7 @@ export async function GET() {
 
   // ── Staff name map ──────────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((store.staff as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s: any) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -127,7 +127,7 @@ export async function GET() {
   // ── Pair profiles ───────────────────────────────────────────────────────────
   const pairs: PeerPairProfile[] = [];
 
-  for (const p of (store.peerDynamics as any[]) ?? []) {
+  for (const p of (peerDynamicsList as any[]) ?? []) {
     const riskLevel: RiskLevel =
       (["none", "low", "medium", "high"].includes(p.risk_level)
         ? p.risk_level
@@ -199,7 +199,7 @@ export async function GET() {
   );
 
   // ── Latest group assessment ─────────────────────────────────────────────────
-  const groupAssessments = ((store.peerGroupDynamics as any[]) ?? [])
+  const groupAssessments = ((peerGroupDynamicsList as any[]) ?? [])
     .map((g: any) => ({
       id: g.id ?? "",
       assessmentDate: toDate(g.assessment_date),

@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 
 type FlagSeverity = "high" | "medium" | "low";
 type OverallSignal = "urgent" | "attention" | "good";
@@ -94,24 +94,24 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
 };
 
 export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceResponse>> {
-  const store = getStore();
+  const [caraPracticeFlagsList, caraStaffWellbeingSignalsList, caraThresholdConsultationsList, staffList, youngPeopleList] = await Promise.all([dal.caraPracticeFlags.findAll(), dal.caraStaffWellbeingSignals.findAll(), dal.caraThresholdConsultations.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   const ypMap = new Map(
-    ((store.youngPeople as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
       yp.id,
       `${yp.first_name} ${yp.last_name}`.trim() || "Unknown",
     ])
   );
 
   const staffMap = new Map(
-    ((store.staff as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s: any) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
   );
 
   // ── Practice flags ────────────────────────────────────────────────────────
-  const rawFlags = (store.caraPracticeFlags as any[]) ?? [];
+  const rawFlags = (caraPracticeFlagsList as any[]) ?? [];
   const unresolvedRaw = rawFlags.filter((f: any) => !f.resolved);
 
   const allFlags: PracticeFlagEntry[] = unresolvedRaw.map((f: any): PracticeFlagEntry => ({
@@ -147,7 +147,7 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   );
 
   // ── Threshold consultations ───────────────────────────────────────────────
-  const rawConsultations = (store.caraThresholdConsultations as any[]) ?? [];
+  const rawConsultations = (caraThresholdConsultationsList as any[]) ?? [];
   const thresholdConsultations: ThresholdConsultationEntry[] = rawConsultations
     .filter((c: any) => !c.manager_decision)
     .map((c: any): ThresholdConsultationEntry => ({
@@ -165,7 +165,7 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
     }));
 
   // ── Staff wellbeing signals ───────────────────────────────────────────────
-  const rawWellbeing = (store.caraStaffWellbeingSignals as any[]) ?? [];
+  const rawWellbeing = (caraStaffWellbeingSignalsList as any[]) ?? [];
   const staffWellbeingSignals: StaffWellbeingSignalEntry[] = rawWellbeing
     .filter((s: any) => !s.resolved)
     .map((s: any): StaffWellbeingSignalEntry => ({

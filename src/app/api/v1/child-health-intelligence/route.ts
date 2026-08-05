@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildHealthIntelligence,
   type ChildHealthIntelligenceInput,
@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [appointmentsList, camhsReferralsList, dentalRecordsList, healthAssessmentsList, immunisationRecordsList, medicationAdministrationsList, medicationsList, mentalHealthCheckInsList, opticiansRecordsList, youngPeopleList] = await Promise.all([dal.appointments.findAll(), dal.camhsReferrals.findAll(), dal.dentalRecords.findAll(), dal.healthAssessments.findAll(), dal.immunisationRecords.findAll(), dal.medicationAdministrations.findAll(), dal.medications.findAll(), dal.mentalHealthCheckIns.findAll(), dal.opticiansRecords.findAll(), dal.youngPeople.findAll()]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || "Unknown";
 
   // ── Medications ───────────────────────────────────────────────────────
-  const medications: MedicationInput[] = (store.medications ?? [])
+  const medications: MedicationInput[] = (medicationsList ?? [])
     .filter((m: any) => m.young_person_id === childId || m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Medication Administrations ────────────────────────────────────────
-  const medication_administrations: MedicationAdminInput[] = (store.medicationAdministrations ?? [])
+  const medication_administrations: MedicationAdminInput[] = (medicationAdministrationsList ?? [])
     .filter((a: any) => a.child_id === childId || medications.some((m) => m.id === a.medication_id))
     .map((a: any) => ({
       id: a.id,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Health Assessments ────────────────────────────────────────────────
-  const health_assessments: HealthAssessmentInput[] = (store.healthAssessments ?? [])
+  const health_assessments: HealthAssessmentInput[] = (healthAssessmentsList ?? [])
     .filter((ha: any) => ha.child_id === childId)
     .map((ha: any) => ({
       id: ha.id,
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Dental Records ────────────────────────────────────────────────────
-  const dental_records: DentalRecordInput[] = (store.dentalRecords ?? [])
+  const dental_records: DentalRecordInput[] = (dentalRecordsList ?? [])
     .filter((d: any) => d.child_id === childId)
     .map((d: any) => ({
       id: d.id,
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Opticians Records ─────────────────────────────────────────────────
-  const opticians_records: OpticiansRecordInput[] = (store.opticiansRecords ?? [])
+  const opticians_records: OpticiansRecordInput[] = (opticiansRecordsList ?? [])
     .filter((o: any) => o.child_id === childId)
     .map((o: any) => ({
       id: o.id,
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Immunisations ─────────────────────────────────────────────────────
-  const immunisations: ImmunisationInput[] = (store.immunisationRecords ?? [])
+  const immunisations: ImmunisationInput[] = (immunisationRecordsList ?? [])
     .filter((i: any) => i.child_id === childId)
     .map((i: any) => ({
       id: i.id,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── CAMHS ─────────────────────────────────────────────────────────────
-  const camhsRecords = (store.camhsReferrals ?? []).filter((c: any) => c.child_id === childId);
+  const camhsRecords = (camhsReferralsList ?? []).filter((c: any) => c.child_id === childId);
   let camhs: CamhsInput | null = null;
   if (camhsRecords.length > 0) {
     // Use the most recent / active referral
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Mental Health Check-Ins ───────────────────────────────────────────
-  const mental_health_check_ins: MentalHealthCheckInInput[] = (store.mentalHealthCheckIns ?? [])
+  const mental_health_check_ins: MentalHealthCheckInInput[] = (mentalHealthCheckInsList ?? [])
     .filter((mh: any) => mh.child_id === childId)
     .map((mh: any) => ({
       id: mh.id,
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Appointments ──────────────────────────────────────────────────────
-  const appointments: AppointmentInput[] = (store.appointments ?? [])
+  const appointments: AppointmentInput[] = (appointmentsList ?? [])
     .filter((a: any) => a.child_id === childId)
     .map((a: any) => ({
       id: a.id,

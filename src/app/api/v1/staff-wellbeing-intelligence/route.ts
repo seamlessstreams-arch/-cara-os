@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeStaffWellbeing,
   type StaffWellbeingInput,
@@ -18,11 +18,11 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const store = getStore();
+  const [incidentsList, leaveRequestsList, shiftsList, staffList, staffDebriefRecordsList, staffGrievanceRecordsList, staffRecognitionRecordsList, staffSicknessRecordsList, staffWellbeingRecordsList, supervisionsList, homeRec] = await Promise.all([dal.incidents.findAll(), dal.leaveRequests.findAll(), dal.shifts.findAll(), dal.staff.findAll(), dal.staffDebriefRecords.findAll(), dal.staffGrievanceRecords.findAll(), dal.staffRecognitionRecords.findAll(), dal.staffSicknessRecords.findAll(), dal.staffWellbeingRecords.findAll(), dal.supervisions.findAll(), dal.home.get()]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── Staff ─────────────────────────────────────────────────────────────────
-  const staffMembers: StaffMemberInput[] = (store.staff ?? []).map((s: any) => ({
+  const staffMembers: StaffMemberInput[] = (staffList ?? []).map((s: any) => ({
     id: s.id,
     name: `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.name || "Unknown",
     role: s.role ?? s.job_title ?? "Residential Care Worker",
@@ -32,7 +32,7 @@ export async function GET() {
   }));
 
   // ── Shifts ────────────────────────────────────────────────────────────────
-  const shifts: ShiftInput[] = (store.shifts ?? []).map((s: any) => ({
+  const shifts: ShiftInput[] = (shiftsList ?? []).map((s: any) => ({
     staff_id: s.staff_id,
     date: (s.date ?? s.shift_date ?? "").slice(0, 10),
     shift_type: s.shift_type ?? "day",
@@ -43,7 +43,7 @@ export async function GET() {
   }));
 
   // ── Leave Requests ────────────────────────────────────────────────────────
-  const leaveRequests: LeaveRequestInput[] = (store.leaveRequests ?? []).map((lr: any) => ({
+  const leaveRequests: LeaveRequestInput[] = (leaveRequestsList ?? []).map((lr: any) => ({
     staff_id: lr.staff_id,
     leave_type: lr.leave_type ?? lr.type ?? "annual",
     start_date: (lr.start_date ?? "").slice(0, 10),
@@ -53,7 +53,7 @@ export async function GET() {
   }));
 
   // ── Supervisions ──────────────────────────────────────────────────────────
-  const supervisions: SupervisionInput[] = (store.supervisions ?? []).map((sv: any) => ({
+  const supervisions: SupervisionInput[] = (supervisionsList ?? []).map((sv: any) => ({
     staff_id: sv.staff_id,
     scheduled_date: (sv.scheduled_date ?? sv.date ?? "").slice(0, 10),
     actual_date: sv.actual_date ? sv.actual_date.slice(0, 10) : null,
@@ -63,7 +63,7 @@ export async function GET() {
   }));
 
   // ── Sickness Records ──────────────────────────────────────────────────────
-  const sicknessRecords: SicknessInput[] = (store.staffSicknessRecords ?? []).map((s: any) => ({
+  const sicknessRecords: SicknessInput[] = (staffSicknessRecordsList ?? []).map((s: any) => ({
     staff_id: s.staff_id,
     date_started: (s.date_started ?? "").slice(0, 10),
     date_ended: s.date_ended ? s.date_ended.slice(0, 10) : null,
@@ -76,7 +76,7 @@ export async function GET() {
   }));
 
   // ── Wellbeing Checks ──────────────────────────────────────────────────────
-  const wellbeingChecks: WellbeingCheckInput[] = (store.staffWellbeingRecords ?? []).map((w: any) => ({
+  const wellbeingChecks: WellbeingCheckInput[] = (staffWellbeingRecordsList ?? []).map((w: any) => ({
     staff_id: w.staff_id,
     date: (w.date ?? "").slice(0, 10),
     overall_score: w.overall_score ?? 5,
@@ -89,7 +89,7 @@ export async function GET() {
   }));
 
   // ── Debriefs ──────────────────────────────────────────────────────────────
-  const debriefRecords: DebriefInput[] = (store.staffDebriefRecords ?? []).map((d: any) => ({
+  const debriefRecords: DebriefInput[] = (staffDebriefRecordsList ?? []).map((d: any) => ({
     date: (d.date ?? "").slice(0, 10),
     staff_involved: d.staff_involved ?? [],
     emotional_impact: d.emotional_impact ?? "moderate",
@@ -99,14 +99,14 @@ export async function GET() {
   }));
 
   // ── Recognition ───────────────────────────────────────────────────────────
-  const recognitionRecords: RecognitionInput[] = (store.staffRecognitionRecords ?? []).map((r: any) => ({
+  const recognitionRecords: RecognitionInput[] = (staffRecognitionRecordsList ?? []).map((r: any) => ({
     staff_id: r.staff_member ?? r.staff_id ?? "",
     date: (r.date ?? "").slice(0, 10),
     type: r.recognition_type ?? r.type ?? "peer",
   }));
 
   // ── Grievances ────────────────────────────────────────────────────────────
-  const grievanceRecords: GrievanceInput[] = (store.staffGrievanceRecords ?? []).map((g: any) => ({
+  const grievanceRecords: GrievanceInput[] = (staffGrievanceRecordsList ?? []).map((g: any) => ({
     staff_id: g.raised_by ?? g.staff_id ?? "",
     date: (g.raised_date ?? g.date ?? "").slice(0, 10),
     status: g.status ?? "open",
@@ -115,7 +115,7 @@ export async function GET() {
 
   // ── Incident Involvement ──────────────────────────────────────────────────
   const incidents: IncidentInvolvementInput[] = [];
-  for (const inc of store.incidents ?? []) {
+  for (const inc of incidentsList ?? []) {
     const i = inc as any;
     // Primary staff involved
     if (i.staff_id) {
@@ -143,7 +143,7 @@ export async function GET() {
 
   const input: StaffWellbeingInput = {
     today,
-    home_name: store.home?.name?.trim() || "This home",
+    home_name: homeRec?.name?.trim() || "This home",
     staff: staffMembers,
     shifts,
     leave_requests: leaveRequests,

@@ -7,7 +7,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeFinanceIntelligence,
   type PocketMoneyTransactionInput,
@@ -17,10 +17,10 @@ import {
 } from "@/lib/engines/finance-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [clothingAllowanceRecordsList, pocketMoneyAccountsList, pocketMoneyTransactionsList, staffList, youngPeopleList] = await Promise.all([dal.clothingAllowanceRecords.findAll(), dal.pocketMoneyAccounts.findAll(), dal.pocketMoneyTransactions.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   const transactions: PocketMoneyTransactionInput[] = [
-    ...(store.pocketMoneyTransactions ?? []).map((t: any) => ({
+    ...(pocketMoneyTransactionsList ?? []).map((t: any) => ({
       id: t.id,
       child_id: t.child_id,
       date: typeof t.date === "string" ? t.date.slice(0, 10) : t.date,
@@ -31,7 +31,7 @@ export async function GET() {
       receipt_held: t.receipt_held ?? false,
       approved_by: t.approved_by ?? "",
     })),
-    ...(store.pocketMoneyAccounts ?? []).map((a: any) => ({
+    ...(pocketMoneyAccountsList ?? []).map((a: any) => ({
       id: a.id,
       child_id: a.child_id,
       date: typeof a.date === "string" ? a.date.slice(0, 10) : a.date,
@@ -44,7 +44,7 @@ export async function GET() {
     })),
   ];
 
-  const clothing_allowances: ClothingAllowanceInput[] = (store.clothingAllowanceRecords ?? []).map((c: any) => ({
+  const clothing_allowances: ClothingAllowanceInput[] = (clothingAllowanceRecordsList ?? []).map((c: any) => ({
     id: c.id,
     child_id: c.child_id,
     financial_year: c.financial_year,
@@ -55,12 +55,12 @@ export async function GET() {
     ytd_spend: c.ytd_spend,
   }));
 
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (staffList ?? [])
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

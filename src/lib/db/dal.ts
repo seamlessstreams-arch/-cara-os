@@ -1687,6 +1687,133 @@ export const dal = {
     },
   },
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // DEMO-ONLY extensions — direct-read routes (2026-08-05). findAll returns the
+  // live store array so migrating those routes is behaviour-preserving; when a
+  // Supabase table lands, only the `if (sb())` branch changes.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  annualHealthAssessments: {
+    async findAll() { return getStore().annualHealthAssessments ?? []; },
+  },
+  caraPracticeFlags: {
+    async findAll() { return getStore().caraPracticeFlags ?? []; },
+  },
+  caraStaffWellbeingSignals: {
+    async findAll() { return getStore().caraStaffWellbeingSignals ?? []; },
+  },
+  caraThresholdConsultations: {
+    async findAll() { return getStore().caraThresholdConsultations ?? []; },
+  },
+  caseFileAudits: {
+    async findAll() { return getStore().caseFileAudits ?? []; },
+  },
+  clothingAllowanceRecords: {
+    async findAll() { return getStore().clothingAllowanceRecords ?? []; },
+  },
+  competencyProfiles: {
+    async findAll() { return getStore().competencyProfiles ?? []; },
+  },
+  contactDirectoryEntries: {
+    async findAll() { return getStore().contactDirectoryEntries ?? []; },
+  },
+  eduAttendanceRecords: {
+    async findAll() { return getStore().eduAttendanceRecords ?? []; },
+  },
+  ehcpRecords: {
+    async findAll() { return getStore().ehcpRecords ?? []; },
+  },
+  emergencyPlans: {
+    async findAll() { return getStore().emergencyPlans ?? []; },
+  },
+  genogramEntries: {
+    async findAll() { return getStore().genogramEntries ?? []; },
+  },
+  homeworkSessions: {
+    async findAll() { return getStore().homeworkSessions ?? []; },
+  },
+  immunisationRecords: {
+    async findAll() { return getStore().immunisationRecords ?? []; },
+  },
+  improvementObjectives: {
+    async findAll() { return getStore().improvementObjectives ?? []; },
+  },
+  keyworkerSessions: {
+    async findAll() { return getStore().keyworkerSessions ?? []; },
+  },
+  matchingReferrals: {
+    async findAll() { return getStore().matchingReferrals ?? []; },
+  },
+  multiAgencyMeetings: {
+    async findAll() { return getStore().multiAgencyMeetings ?? []; },
+  },
+  opticiansRecords: {
+    async findAll() { return getStore().opticiansRecords ?? []; },
+  },
+  participationEntries: {
+    async findAll() { return getStore().participationEntries ?? []; },
+  },
+  peerDynamics: {
+    async findAll() { return getStore().peerDynamics ?? []; },
+  },
+  peerGroupDynamics: {
+    async findAll() { return getStore().peerGroupDynamics ?? []; },
+  },
+  placementStabilityRecords: {
+    async findAll() { return getStore().placementStabilityRecords ?? []; },
+  },
+  pocketMoneyAccounts: {
+    async findAll() { return getStore().pocketMoneyAccounts ?? []; },
+  },
+  pocketMoneyTransactions: {
+    async findAll() { return getStore().pocketMoneyTransactions ?? []; },
+  },
+  policyReviewRecords: {
+    async findAll() { return getStore().policyReviewRecords ?? []; },
+  },
+  professionalNetworkContacts: {
+    async findAll() { return getStore().professionalNetworkContacts ?? []; },
+  },
+  protocolDrills: {
+    async findAll() { return getStore().protocolDrills ?? []; },
+  },
+  qualifications: {
+    async findAll() { return getStore().qualifications ?? []; },
+  },
+  relationshipEntries: {
+    async findAll() { return getStore().relationshipEntries ?? []; },
+  },
+  restrictionReviews: {
+    async findAll() { return getStore().restrictionReviews ?? []; },
+  },
+  schoolEngagementEvents: {
+    async findAll() { return getStore().schoolEngagementEvents ?? []; },
+  },
+  staffDebriefRecords: {
+    async findAll() { return getStore().staffDebriefRecords ?? []; },
+  },
+  staffGrievanceRecords: {
+    async findAll() { return getStore().staffGrievanceRecords ?? []; },
+  },
+  staffRecognitionRecords: {
+    async findAll() { return getStore().staffRecognitionRecords ?? []; },
+  },
+  staffWellbeingRecords: {
+    async findAll() { return getStore().staffWellbeingRecords ?? []; },
+  },
+  stayingSafePlans: {
+    async findAll() { return getStore().stayingSafePlans ?? []; },
+  },
+  therapeuticChildImpact: {
+    async findAll() { return getStore().therapeuticChildImpact ?? []; },
+  },
+  trackedDocuments: {
+    async findAll() { return getStore().trackedDocuments ?? []; },
+  },
+  tutoringRecords: {
+    async findAll() { return getStore().tutoringRecords ?? []; },
+  },
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

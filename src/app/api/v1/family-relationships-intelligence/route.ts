@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeFamilyRelationships,
   type FamilyRelationshipsInput,
@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [contactDirectoryEntriesList, contactPlansList, familyTimeSessionsList, genogramEntriesList, lacReviewsList, missingEpisodesList, placementStabilityRecordsList, youngPeopleList] = await Promise.all([dal.contactDirectoryEntries.findAll(), dal.contactPlans.findAll(), dal.familyTimeSessions.findAll(), dal.genogramEntries.findAll(), dal.lacReviews.findAll(), dal.missingEpisodes.findAll(), dal.placementStabilityRecords.findAll(), dal.youngPeople.findAll()]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     ?? "2025-01-01";
 
   // ── Family Time Sessions ──────────────────────────────────────────────────
-  const familyTimeSessions: FamilyTimeInput[] = (store.familyTimeSessions ?? [])
+  const familyTimeSessions: FamilyTimeInput[] = (familyTimeSessionsList ?? [])
     .filter((f: any) => f.child_id === childId)
     .map((f: any) => ({
       id: f.id,
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
   // No contactArrangements collection exists — the old read was always empty.
   // The real data lives on ContactPlan.arrangements; flatten each plan's
   // arrangements into the per-arrangement shape the engine expects.
-  const contactArrangements: ContactArrangementInput[] = (store.contactPlans ?? [])
+  const contactArrangements: ContactArrangementInput[] = (contactPlansList ?? [])
     .filter((p) => p.child_id === childId)
     .flatMap((p) =>
       p.arrangements.map((a) => ({
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     );
 
   // ── Genogram ──────────────────────────────────────────────────────────────
-  const genograms = (store.genogramEntries ?? []).filter((g: any) => g.child_id === childId);
+  const genograms = (genogramEntriesList ?? []).filter((g: any) => g.child_id === childId);
   let genogram: GenogramInput | null = null;
   if (genograms.length > 0) {
     const g = genograms[0] as any;
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Professional Contacts ─────────────────────────────────────────────────
-  const professionalContacts: ProfessionalContactInput[] = (store.contactDirectoryEntries ?? [])
+  const professionalContacts: ProfessionalContactInput[] = (contactDirectoryEntriesList ?? [])
     .filter((c: any) => c.child_id === childId || c.linked_child_id === childId)
     .map((c: any) => ({
       role: c.role ?? c.relationship ?? "professional",
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── LAC Reviews ───────────────────────────────────────────────────────────
-  const lacReviews: LACReviewInput[] = (store.lacReviews ?? [])
+  const lacReviews: LACReviewInput[] = (lacReviewsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       date: (r.review_date ?? r.date ?? "").slice(0, 10),
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Missing Episodes ──────────────────────────────────────────────────────
-  const missingEpisodes: MissingEpisodeInput[] = (store.missingEpisodes ?? [])
+  const missingEpisodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       date: (m.date_missing ?? m.date ?? "").slice(0, 10),
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Placement Moves ───────────────────────────────────────────────────────
-  const placementMoves: PlacementMoveInput[] = (store.placementStabilityRecords ?? [])
+  const placementMoves: PlacementMoveInput[] = (placementStabilityRecordsList ?? [])
     .filter((p: any) => p.child_id === childId && p.move_type)
     .map((p: any) => ({
       date: (p.move_date ?? p.date ?? "").slice(0, 10),

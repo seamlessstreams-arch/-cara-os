@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   buildOriginStory,
   type AdmissionReferralLite,
@@ -25,10 +25,10 @@ export async function GET(req: NextRequest) {
     if (denied) return denied;
   }
 
-  const store = getStore();
-  const admissionReferrals = store.admissionReferrals as unknown as AdmissionReferralLite[];
-  const matchingReferrals = store.matchingReferrals as unknown as MatchingReferralLite[];
-  const youngPeople = store.youngPeople as unknown as YoungPersonLite[];
+  const [admissionReferralsList, matchingReferralsList, youngPeopleList] = await Promise.all([dal.admissionReferrals.findAll(), dal.matchingReferrals.findAll(), dal.youngPeople.findAll()]);
+  const admissionReferrals = admissionReferralsList as unknown as AdmissionReferralLite[];
+  const matchingReferrals = matchingReferralsList as unknown as MatchingReferralLite[];
+  const youngPeople = youngPeopleList as unknown as YoungPersonLite[];
 
   if (childId) {
     const yp = youngPeople.find((y) => y.id === childId);

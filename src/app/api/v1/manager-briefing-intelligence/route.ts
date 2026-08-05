@@ -11,7 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { below } from "@/lib/metrics/rate";
 
 import {
@@ -92,11 +92,11 @@ import {
 } from "@/lib/engines/manager-briefing-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [activitiesList, appointmentsList, behaviourLogList, camhsReferralsList, complaintOutcomeRecordsList, dailyLogList, dentalRecordsList, eduAttendanceRecordsList, educationRecordsList, healthAssessmentsList, immunisationRecordsList, incidentsList, keyWorkingSessionsList, leaveRequestsList, mentalHealthCheckInsList, missingEpisodesList, notifiableEventsList, opticiansRecordsList, outcomeTargetsList, qaAuditRecordsList, restraintsList, riskAssessmentsList, sanctionRewardsList, shiftsList, staffList, supervisionsList, trainingRecordsList, youngPeopleList, homeRec] = await Promise.all([dal.activities.findAll(), dal.appointments.findAll(), dal.behaviourLog.findAll(), dal.camhsReferrals.findAll(), dal.complaintOutcomeRecords.findAll(), dal.dailyLog.findAll(), dal.dentalRecords.findAll(), dal.eduAttendanceRecords.findAll(), dal.educationRecords.findAll(), dal.healthAssessments.findAll(), dal.immunisationRecords.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.leaveRequests.findAll(), dal.mentalHealthCheckIns.findAll(), dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.opticiansRecords.findAll(), dal.outcomeTargets.findAll(), dal.qaAuditRecords.findAll(), dal.restraints.findAll(), dal.riskAssessments.findAll(), dal.sanctionRewards.findAll(), dal.shifts.findAll(), dal.staff.findAll(), dal.supervisions.findAll(), dal.trainingRecords.findAll(), dal.youngPeople.findAll(), dal.home.get()]);
   const today = new Date().toISOString().slice(0, 10);
 
   const ypNames = new Map(
-    store.youngPeople.map((yp) => [yp.id, yp.preferred_name || yp.first_name]),
+    youngPeopleList.map((yp) => [yp.id, yp.preferred_name || yp.first_name]),
   );
   const childNameLookup = (id: string) =>
     ypNames.get(id) ?? id.replace("yp_", "YP ");
@@ -105,20 +105,20 @@ export async function GET() {
   // 1. SAFEGUARDING
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const sgIncidents: SgIncident[] = store.incidents.map((i) => ({
+  const sgIncidents: SgIncident[] = incidentsList.map((i) => ({
     id: i.id, child_id: i.child_id, date: i.date, type: i.type,
     severity: i.severity, status: i.status,
     requires_oversight: i.requires_oversight, oversight_by: i.oversight_by ?? null,
   }));
 
-  const sgMissing: MissingEpisodeInput[] = store.missingEpisodes.map((m) => ({
+  const sgMissing: MissingEpisodeInput[] = missingEpisodesList.map((m) => ({
     id: m.id, child_id: m.child_id, date_missing: m.date_missing,
     status: m.status, risk_level: m.risk_level,
     return_interview_completed: m.return_interview_completed,
     contextual_safeguarding_risk: m.contextual_safeguarding_risk,
   }));
 
-  const sgRestraints: SgRestraint[] = store.restraints.map((r) => ({
+  const sgRestraints: SgRestraint[] = restraintsList.map((r) => ({
     id: r.id, child_id: r.child_id, date: r.date, duration: r.duration,
     reason: r.reason, restraint_type: r.restraint_type,
     injuries: (r.injuries ?? []).map((inj) => ({
@@ -129,19 +129,19 @@ export async function GET() {
     de_escalation_attempts: r.de_escalation_attempts ?? [],
   }));
 
-  const sgRiskAssessments: SgRiskAssessment[] = store.riskAssessments.map((ra) => ({
+  const sgRiskAssessments: SgRiskAssessment[] = riskAssessmentsList.map((ra) => ({
     id: ra.id, child_id: ra.child_id, domain: ra.domain,
     current_level: ra.current_level, previous_level: ra.previous_level,
     trend: ra.trend, status: ra.status, review_date: ra.review_date,
     assessed_date: ra.assessed_date,
   }));
 
-  const sgNotifiable: NotifiableEventInput[] = store.notifiableEvents.map((ne) => ({
+  const sgNotifiable: NotifiableEventInput[] = notifiableEventsList.map((ne) => ({
     id: ne.id, date: ne.date, event_type: ne.event_type,
     child_id: ne.child_id, ofsted_status: ne.ofsted_status,
   }));
 
-  const sgChildren: ChildRef[] = store.youngPeople.map((yp) => ({
+  const sgChildren: ChildRef[] = youngPeopleList.map((yp) => ({
     id: yp.id, name: yp.preferred_name ?? yp.first_name,
   }));
 
@@ -155,7 +155,7 @@ export async function GET() {
   // 2. BEHAVIOUR
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const bhEntries: BehaviourEntryInput[] = store.behaviourLog.map((e: any) => ({
+  const bhEntries: BehaviourEntryInput[] = behaviourLogList.map((e: any) => ({
     id: e.id, child_id: e.child_id, date: e.date, time: e.time,
     direction: e.direction, intensity: e.intensity, title: e.title,
     antecedent: e.antecedent, behaviour: e.behaviour, consequence: e.consequence,
@@ -163,14 +163,14 @@ export async function GET() {
     recorded_by: e.recorded_by,
   }));
 
-  const bhIncidents: BhIncident[] = store.incidents.map((i) => ({
+  const bhIncidents: BhIncident[] = incidentsList.map((i) => ({
     id: i.id, child_id: i.child_id, date: i.date, time: i.time,
     type: i.type, severity: i.severity, description: i.description,
     immediate_action: i.immediate_action, status: i.status,
     body_map_completed: i.body_map_completed, reported_by: i.reported_by,
   }));
 
-  const bhRestraints: BhRestraint[] = store.restraints.map((r: any) => ({
+  const bhRestraints: BhRestraint[] = restraintsList.map((r: any) => ({
     id: r.id, child_id: r.child_id, date: r.date, start_time: r.start_time,
     end_time: r.end_time, duration: r.duration, reason: r.reason,
     restraint_type: r.restraint_type, antecedent: r.antecedent,
@@ -183,7 +183,7 @@ export async function GET() {
     review_status: r.review_status, recorded_by: r.recorded_by,
   }));
 
-  const bhSanctions: SanctionRewardInput[] = store.sanctionRewards.map((sr) => ({
+  const bhSanctions: SanctionRewardInput[] = sanctionRewardsList.map((sr) => ({
     id: sr.id, child_id: sr.child_id, date: sr.date, direction: sr.direction,
     title: sr.title, description: sr.description, context: sr.context,
     child_response: sr.child_response, outcome: sr.outcome,
@@ -200,7 +200,7 @@ export async function GET() {
   // 3. WORKFORCE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const wfStaff: StaffInput[] = store.staff.map((s) => ({
+  const wfStaff: StaffInput[] = staffList.map((s) => ({
     id: s.id, full_name: s.full_name, role: s.role,
     employment_type: s.employment_type, employment_status: s.employment_status,
     start_date: s.start_date, probation_end_date: s.probation_end_date,
@@ -210,25 +210,25 @@ export async function GET() {
     is_active: s.is_active,
   }));
 
-  const wfTraining: TrainingInput[] = store.trainingRecords.map((t) => ({
+  const wfTraining: TrainingInput[] = trainingRecordsList.map((t) => ({
     id: t.id, staff_id: t.staff_id, course_name: t.course_name,
     category: t.category, completed_date: t.completed_date,
     expiry_date: t.expiry_date, status: t.status, is_mandatory: t.is_mandatory,
   }));
 
-  const wfSupervisions: WfSupervision[] = store.supervisions.map((s) => ({
+  const wfSupervisions: WfSupervision[] = supervisionsList.map((s) => ({
     id: s.id, staff_id: s.staff_id, scheduled_date: s.scheduled_date,
     actual_date: s.actual_date, status: s.status, type: s.type,
     wellbeing_score: s.wellbeing_score,
   }));
 
-  const wfShifts: ShiftInput[] = store.shifts.map((s) => ({
+  const wfShifts: ShiftInput[] = shiftsList.map((s) => ({
     id: s.id, staff_id: s.staff_id, date: s.date, shift_type: s.shift_type,
     start_time: s.start_time, end_time: s.end_time, status: s.status,
     overtime_minutes: s.overtime_minutes,
   }));
 
-  const wfLeave: LeaveInput[] = store.leaveRequests.map((l) => ({
+  const wfLeave: LeaveInput[] = leaveRequestsList.map((l) => ({
     id: l.id, staff_id: l.staff_id, leave_type: l.leave_type,
     start_date: l.start_date, end_date: l.end_date,
     total_days: l.total_days, status: l.status,
@@ -243,32 +243,32 @@ export async function GET() {
   // 4. HEALTH & WELLBEING
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const hwChildren: HwChild[] = store.youngPeople.map((yp) => ({
+  const hwChildren: HwChild[] = youngPeopleList.map((yp) => ({
     id: yp.id, name: yp.preferred_name ?? yp.first_name,
     date_of_birth: yp.date_of_birth,
   }));
 
-  const hwAppts: AppointmentInput[] = store.appointments.map((a) => ({
+  const hwAppts: AppointmentInput[] = appointmentsList.map((a) => ({
     id: a.id, child_id: a.child_id, date: a.date, type: a.type, status: a.status,
   }));
 
-  const hwAssessments: HealthAssessmentInput[] = store.healthAssessments.map((ha) => ({
+  const hwAssessments: HealthAssessmentInput[] = healthAssessmentsList.map((ha) => ({
     id: ha.id, child_id: ha.child_id, type: ha.type, status: ha.status,
     date: ha.date, next_due: ha.next_due,
     sdq_total: ha.sdq_scores?.total ?? null, sdq_band: ha.sdq_scores?.band ?? null,
   }));
 
-  const hwDental: DentalRecordInput[] = store.dentalRecords.map((dr) => ({
+  const hwDental: DentalRecordInput[] = dentalRecordsList.map((dr) => ({
     id: dr.id, child_id: dr.child_id, last_check_up_date: dr.last_check_up_date,
     next_check_up_due: dr.next_check_up_due, registration_status: dr.registration_status,
   }));
 
-  const hwOpticians: OpticiansRecordInput[] = store.opticiansRecords.map((or) => ({
+  const hwOpticians: OpticiansRecordInput[] = opticiansRecordsList.map((or) => ({
     id: or.id, child_id: or.child_id, last_exam_date: or.last_exam_date,
     next_exam_due: or.next_exam_due,
   }));
 
-  const hwImmunisations: ImmunisationRecordInput[] = store.immunisationRecords.map((ir) => ({
+  const hwImmunisations: ImmunisationRecordInput[] = immunisationRecordsList.map((ir) => ({
     id: ir.id, child_id: ir.child_id,
     missed_count: ir.missed_at_age.length,
     caught_up_count: ir.caught_up_during_placement.length,
@@ -276,7 +276,7 @@ export async function GET() {
     gp_reviewed_schedule: ir.gp_reviewed_schedule,
   }));
 
-  const hwCamhs: CamhsReferralInput[] = store.camhsReferrals.map((cr) => ({
+  const hwCamhs: CamhsReferralInput[] = camhsReferralsList.map((cr) => ({
     id: cr.id, child_id: cr.child_id, referral_date: cr.referral_date,
     referral_status: cr.referral_status, urgency: cr.urgency,
     sessions_held: cr.sessions_held, sessions_scheduled: cr.sessions_scheduled,
@@ -284,11 +284,11 @@ export async function GET() {
     waiting_time_weeks: cr.waiting_time_weeks,
   }));
 
-  const hwMoods: MoodEntryInput[] = store.dailyLog
+  const hwMoods: MoodEntryInput[] = dailyLogList
     .filter((e) => e.mood_score != null && e.mood_score > 0)
     .map((e) => ({ child_id: e.child_id, date: e.date, mood_score: e.mood_score! }));
 
-  const hwMentalHealth: MoodEntryInput[] = store.mentalHealthCheckIns.map((mh) => ({
+  const hwMentalHealth: MoodEntryInput[] = mentalHealthCheckInsList.map((mh) => ({
     child_id: mh.child_id, date: mh.date, mood_score: mh.mood_rating * 2,
   }));
 
@@ -303,24 +303,24 @@ export async function GET() {
   // 5. EDUCATION
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const edChildren: EdChild[] = store.youngPeople.map((yp) => ({
+  const edChildren: EdChild[] = youngPeopleList.map((yp) => ({
     id: yp.id, name: yp.preferred_name ?? yp.first_name,
   }));
 
-  const edRecords: EducationRecordInput[] = store.educationRecords.map((r) => ({
+  const edRecords: EducationRecordInput[] = educationRecordsList.map((r) => ({
     id: r.id, child_id: r.child_id, record_type: r.record_type,
     date: r.date, school: r.school ?? null,
     attendance_status: r.attendance_status ?? null,
     linked_pep: r.linked_pep ?? false, status: r.status,
   }));
 
-  const edActivities: ActivityInput[] = store.activities.map((a) => ({
+  const edActivities: ActivityInput[] = activitiesList.map((a) => ({
     id: a.id, child_id: a.child_id, date: a.date, category: a.category,
     engagement: a.engagement, duration_minutes: a.duration_minutes,
     is_new_experience: a.is_new_experience,
   }));
 
-  const edAttendance: EduAttendanceInput[] = store.eduAttendanceRecords.map((ea) => ({
+  const edAttendance: EduAttendanceInput[] = eduAttendanceRecordsList.map((ea) => ({
     id: ea.id, child_id: ea.child_id, date: ea.date,
     attendance_code: ea.attendance_code, session: ea.session,
   }));
@@ -334,7 +334,7 @@ export async function GET() {
   // 6. PLACEMENT STABILITY
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const psChildren: PsChild[] = store.youngPeople.map((yp) => ({
+  const psChildren: PsChild[] = youngPeopleList.map((yp) => ({
     id: yp.id, first_name: yp.first_name,
     preferred_name: yp.preferred_name ?? null,
     date_of_birth: yp.date_of_birth, placement_start: yp.placement_start,
@@ -343,30 +343,30 @@ export async function GET() {
     risk_flags: yp.risk_flags ?? [], status: yp.status,
   }));
 
-  const psDailyLog: DailyLogInput[] = store.dailyLog.map((dl) => ({
+  const psDailyLog: DailyLogInput[] = dailyLogList.map((dl) => ({
     id: dl.id, child_id: dl.child_id, date: dl.date,
     mood_score: dl.mood_score ?? null,
     entry_type: dl.entry_type ?? "general",
     is_significant: dl.is_significant ?? false,
   }));
 
-  const psIncidents: PsIncident[] = store.incidents.map((i) => ({
+  const psIncidents: PsIncident[] = incidentsList.map((i) => ({
     id: i.id, child_id: i.child_id, date: i.date,
     type: i.type ?? "general", severity: i.severity ?? "medium",
   }));
 
-  const psMissing: PsMissing[] = store.missingEpisodes.map((m) => ({
+  const psMissing: PsMissing[] = missingEpisodesList.map((m) => ({
     id: m.id, child_id: m.child_id, date_missing: m.date_missing,
     status: m.status, risk_level: m.risk_level,
   }));
 
-  const psKeywork: KeyworkSessionInput[] = store.keyWorkingSessions.map((kw) => ({
+  const psKeywork: KeyworkSessionInput[] = keyWorkingSessionsList.map((kw) => ({
     id: kw.id, child_id: kw.child_id, date: kw.date,
     mood_before: kw.mood_before ?? 3, mood_after: kw.mood_after ?? 3,
     type: kw.type ?? "one_to_one",
   }));
 
-  const psOutcomes: OutcomeTargetInput[] = store.outcomeTargets.map((ot) => ({
+  const psOutcomes: OutcomeTargetInput[] = outcomeTargetsList.map((ot) => ({
     id: ot.id, child_id: ot.child_id, domain: ot.domain,
     direction: ot.direction, current_rating: ot.current_rating,
     target_rating: ot.target_rating, baseline_rating: ot.baseline_rating,
@@ -383,7 +383,7 @@ export async function GET() {
   // 7. COMPLAINTS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const cmComplaints: ComplaintInput[] = (store.complaintOutcomeRecords ?? []).map((c: any) => ({
+  const cmComplaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c: any) => ({
     id: c.id,
     complaint_date: typeof c.complaint_date === "string" ? c.complaint_date.slice(0, 10) : c.complaint_date,
     complainant: c.complainant, source: c.source, theme: c.theme,
@@ -397,11 +397,11 @@ export async function GET() {
     escalated: c.escalated ?? false, ofsted_notified: c.ofsted_notified ?? false,
   }));
 
-  const cmChildren: CmChildRef[] = store.youngPeople.map((yp) => ({
+  const cmChildren: CmChildRef[] = youngPeopleList.map((yp) => ({
     id: yp.id, name: yp.preferred_name ?? yp.first_name,
   }));
 
-  const cmStaff: CmStaffRef[] = store.staff.filter((s) => s.is_active).map((s) => ({
+  const cmStaff: CmStaffRef[] = staffList.filter((s) => s.is_active).map((s) => ({
     id: s.id, name: s.full_name,
   }));
 
@@ -413,7 +413,7 @@ export async function GET() {
   // 8. QUALITY ASSURANCE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const qaAudits: QAAuditInput[] = (store.qaAuditRecords ?? []).map((r: any) => ({
+  const qaAudits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r: any) => ({
     id: r.id, title: r.title ?? "Untitled Audit", date: r.date ?? "",
     auditor: r.auditor ?? "", scope: r.scope ?? "general",
     overall_rating: r.overall_rating ?? "good", score: r.score ?? 0,
@@ -426,7 +426,7 @@ export async function GET() {
     })) : [],
   }));
 
-  const qaStaff: QaStaffRef[] = store.staff.filter((s) => s.is_active).map((s) => ({
+  const qaStaff: QaStaffRef[] = staffList.filter((s) => s.is_active).map((s) => ({
     id: s.id, name: s.full_name,
   }));
 
@@ -647,7 +647,7 @@ export async function GET() {
 
   for (const alert of health.alerts) {
     if (alert.severity === "critical" || alert.severity === "high") {
-      const childId = store.youngPeople.find(
+      const childId = youngPeopleList.find(
         (yp) => (yp.preferred_name ?? yp.first_name) === alert.child_name,
       )?.id;
       if (childId) {
@@ -662,7 +662,7 @@ export async function GET() {
 
   for (const alert of education.alerts) {
     if (alert.severity === "critical" || alert.severity === "high") {
-      const childId = store.youngPeople.find(
+      const childId = youngPeopleList.find(
         (yp) => (yp.preferred_name ?? yp.first_name) === alert.child_name,
       )?.id;
       if (childId) {
@@ -676,7 +676,7 @@ export async function GET() {
   }
 
   if (safeguarding.risk_assessments.high_or_very_high > 0) {
-    for (const ra of store.riskAssessments) {
+    for (const ra of riskAssessmentsList) {
       if (ra.current_level === "high" || ra.current_level === "very_high") {
         const entry = childFlags.get(ra.child_id) ?? { domains: new Set(), flags: [], maxSeverity: 3 };
         entry.domains.add("Safeguarding");
@@ -704,9 +704,9 @@ export async function GET() {
   const result = computeManagerBriefing({
     domains,
     children_attention: childrenAttention,
-    total_children: store.youngPeople.length,
-    total_staff: store.staff.filter((s) => s.is_active).length,
-    home_name: store.home?.name?.trim() || "This home",
+    total_children: youngPeopleList.length,
+    total_staff: staffList.filter((s) => s.is_active).length,
+    home_name: homeRec?.name?.trim() || "This home",
     today,
   });
 

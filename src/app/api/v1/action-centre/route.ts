@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import { buildActionCentre, type AttentionInput } from "@/lib/action-centre/action-centre-engine";
 import { buildRestrictionOverview } from "@/lib/rights-restriction/rights-restriction-engine";
@@ -20,19 +20,19 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const store = getStore();
+    const [incidentsList, missingEpisodesList, postIncidentReflectionsList, relationshipEntriesList, restrictionReviewsList, stayingSafePlansList, youngPeopleList] = await Promise.all([dal.incidents.findAll(), dal.missingEpisodes.findAll(), dal.postIncidentReflections.findAll(), dal.relationshipEntries.findAll(), dal.restrictionReviews.findAll(), dal.stayingSafePlans.findAll(), dal.youngPeople.findAll()]);
     const now = new Date().toISOString();
-    const children = (store.youngPeople ?? [])
+    const children = (youngPeopleList ?? [])
       .filter((yp) => yp.status === "current")
       .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
-    const incidents = store.incidents ?? [];
-    const reflections = store.postIncidentReflections ?? [];
+    const incidents = incidentsList ?? [];
+    const reflections = postIncidentReflectionsList ?? [];
 
-    const restriction = buildRestrictionOverview({ now, reviews: store.restrictionReviews ?? [], children, incidents });
+    const restriction = buildRestrictionOverview({ now, reviews: restrictionReviewsList ?? [], children, incidents });
     const reflectionOv = buildReflectionOverview({ now, reflections, incidents, children });
-    const safePlans = buildStayingSafePlanOverview({ now, plans: store.stayingSafePlans ?? [], children, reflections, incidents });
-    const relationships = buildRelationshipsOverview({ now, entries: store.relationshipEntries ?? [], children, reflections, incidents, missing: store.missingEpisodes ?? [] });
+    const safePlans = buildStayingSafePlanOverview({ now, plans: stayingSafePlansList ?? [], children, reflections, incidents });
+    const relationships = buildRelationshipsOverview({ now, entries: relationshipEntriesList ?? [], children, reflections, incidents, missing: missingEpisodesList ?? [] });
 
     const attention: AttentionInput[] = [
       ...restriction.alerts.map((a) => ({ source: "Rights & Restriction", label: a.label, why: a.why, childNames: a.childNames })),

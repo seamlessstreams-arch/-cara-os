@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeEmergencyIntelligence,
   type ProtocolDrillInput,
@@ -18,10 +18,10 @@ import {
 } from "@/lib/engines/emergency-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [emergencyPlansList, protocolDrillsList, staffList] = await Promise.all([dal.emergencyPlans.findAll(), dal.protocolDrills.findAll(), dal.staff.findAll()]);
 
   // ── Map protocol drills ─────────────────────────────────────────────────
-  const drills: ProtocolDrillInput[] = (store.protocolDrills ?? []).map((d: any) => ({
+  const drills: ProtocolDrillInput[] = (protocolDrillsList ?? []).map((d: any) => ({
     id: d.id,
     date: d.date,
     scenario_type: d.scenario_type,
@@ -36,7 +36,7 @@ export async function GET() {
   }));
 
   // ── Map emergency plans ─────────────────────────────────────────────────
-  const plans: EmergencyPlanInput[] = (store.emergencyPlans ?? []).map((p: any) => ({
+  const plans: EmergencyPlanInput[] = (emergencyPlansList ?? []).map((p: any) => ({
     id: p.id,
     title: p.title,
     plan_type: p.plan_type,
@@ -47,7 +47,7 @@ export async function GET() {
   }));
 
   // ── Map staff ───────────────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));
