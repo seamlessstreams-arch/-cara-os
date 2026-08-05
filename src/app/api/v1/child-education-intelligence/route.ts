@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeChildEducationIntelligence,
   type ChildEducationIntelligenceInput,
@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId required" }, { status: 400 });
   }
 
-  const store = getStore();
+  const [eduAttendanceRecordsList, educationRecordsList, ehcpRecordsList, homeworkSessionsList, pepRecordsList, schoolEngagementEventsList, tutoringRecordsList, youngPeopleList] = await Promise.all([dal.eduAttendanceRecords.findAll(), dal.educationRecords.findAll(), dal.ehcpRecords.findAll(), dal.homeworkSessions.findAll(), dal.pepRecords.findAll(), dal.schoolEngagementEvents.findAll(), dal.tutoringRecords.findAll(), dal.youngPeople.findAll()]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const child = store.youngPeople.find((yp) => yp.id === childId);
+  const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || "Unknown";
 
   // ── Derive school name from most recent education record ──────────────
-  const childEduRecords = (store.educationRecords ?? []).filter((r: any) => r.child_id === childId);
+  const childEduRecords = (educationRecordsList ?? []).filter((r: any) => r.child_id === childId);
   const sortedEdu = [...childEduRecords].sort(
     (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   }));
 
   // ── Formal Attendance Records ─────────────────────────────────────────
-  const attendance_records: EduAttendanceInput[] = (store.eduAttendanceRecords ?? [])
+  const attendance_records: EduAttendanceInput[] = (eduAttendanceRecordsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── EHCP ──────────────────────────────────────────────────────────────
-  const ehcpRecords = (store.ehcpRecords ?? []).filter((r: any) => r.child_id === childId);
+  const ehcpRecords = (ehcpRecordsList ?? []).filter((r: any) => r.child_id === childId);
   let ehcp: EhcpInput | null = null;
   if (ehcpRecords.length > 0) {
     const e = ehcpRecords[0] as any;
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Homework Sessions ─────────────────────────────────────────────────
-  const homework_sessions: HomeworkSessionInput[] = (store.homeworkSessions ?? [])
+  const homework_sessions: HomeworkSessionInput[] = (homeworkSessionsList ?? [])
     .filter((h: any) => h.child_id === childId)
     .map((h: any) => ({
       id: h.id,
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Tutoring Sessions ─────────────────────────────────────────────────
-  const tutoring_sessions: TutoringInput[] = (store.tutoringRecords ?? [])
+  const tutoring_sessions: TutoringInput[] = (tutoringRecordsList ?? [])
     .filter((t: any) => t.child_id === childId)
     .map((t: any) => ({
       id: t.id,
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── School Engagement Events ──────────────────────────────────────────
-  const school_engagement_events: SchoolEngagementInput[] = (store.schoolEngagementEvents ?? [])
+  const school_engagement_events: SchoolEngagementInput[] = (schoolEngagementEventsList ?? [])
     .filter((e: any) => e.child_id === childId)
     .map((e: any) => ({
       id: e.id,
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── PEP Records ───────────────────────────────────────────────────────
-  const pep_records: PepRecordInput[] = (store.pepRecords ?? [])
+  const pep_records: PepRecordInput[] = (pepRecordsList ?? [])
     .filter((p: any) => p.child_id === childId)
     .map((p: any) => ({
       id: p.id,

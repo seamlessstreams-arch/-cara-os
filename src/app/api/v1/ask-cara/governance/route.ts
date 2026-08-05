@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildGovernanceSummary } from "@/lib/ask-cara/governance-summary";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!MANAGEMENT.has((req.headers.get("x-user-role") || "").toLowerCase())) {
     return NextResponse.json({ error: "Management access required" }, { status: 403 });
   }
-  const store = getStore();
-  const summary = buildGovernanceSummary(store.askCaraAuditEvents ?? [], store.externalAiDeclarations ?? []);
+  const [askCaraAuditEventsList, externalAiDeclarationsList] = await Promise.all([dal.askCaraAuditEvents.findAll(), dal.externalAiDeclarations.findAll()]);
+  const summary = buildGovernanceSummary(askCaraAuditEventsList ?? [], externalAiDeclarationsList ?? []);
   return NextResponse.json({ data: summary });
 }

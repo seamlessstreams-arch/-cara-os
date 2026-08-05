@@ -14,15 +14,15 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import { computeActionsRegister, type ActionInput } from "@/lib/engines/actions-register-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [houseMeetingsList, keyWorkingSessionsList, lacReviewsList, medicationErrorsList, multiAgencyMeetingsList, qaAuditRecordsList, reg44VisitReportsList, supervisionsList, youngPeopleList] = await Promise.all([dal.houseMeetings.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.medicationErrors.findAll(), dal.multiAgencyMeetings.findAll(), dal.qaAuditRecords.findAll(), dal.reg44VisitReports.findAll(), dal.supervisions.findAll(), dal.youngPeople.findAll()]);
   const today = new Date().toISOString().slice(0, 10);
 
-  const yp = (store.youngPeople ?? []) as any[];
+  const yp = (youngPeopleList ?? []) as any[];
   const childName = (id?: string | null): string | undefined => {
     if (!id) return undefined;
     const c = yp.find((c) => c.id === id);
@@ -39,7 +39,7 @@ export async function GET() {
   const actions: ActionInput[] = [];
 
   // 1. Medication errors → remedial_actions[] (owner = staff_id) ──────────────
-  for (const e of arr(store.medicationErrors)) {
+  for (const e of arr(medicationErrorsList)) {
     arr(e.remedial_actions).forEach((a: any, i: number) => {
       actions.push({
         id: `mederr-${e.id}-${i}`, text: String(a.action ?? "").trim(),
@@ -51,7 +51,7 @@ export async function GET() {
   }
 
   // 2. QA audits → actions[] (owner = staff_id, due = `deadline`) ──────────────
-  for (const q of arr(store.qaAuditRecords)) {
+  for (const q of arr(qaAuditRecordsList)) {
     arr(q.actions).forEach((a: any, i: number) => {
       actions.push({
         id: `qa-${q.id}-${i}`, text: String(a.action ?? "").trim(),
@@ -62,7 +62,7 @@ export async function GET() {
   }
 
   // 3. Multi-agency meetings → action_items[] (owner = name/role string) ───────
-  for (const m of arr(store.multiAgencyMeetings)) {
+  for (const m of arr(multiAgencyMeetingsList)) {
     arr(m.action_items).forEach((a: any, i: number) => {
       actions.push({
         id: `mam-${m.id}-${i}`, text: String(a.action ?? "").trim(),
@@ -74,7 +74,7 @@ export async function GET() {
   }
 
   // 4. LAC reviews → actions_agreed[] (owner = role string, done = completed bool)
-  for (const r of arr(store.lacReviews)) {
+  for (const r of arr(lacReviewsList)) {
     arr(r.actions_agreed).forEach((a: any, i: number) => {
       actions.push({
         id: `lac-${r.id}-${i}`, text: String(a.action ?? "").trim(),
@@ -87,7 +87,7 @@ export async function GET() {
 
   // 5. Reg 44 visit reports → recommendations[] (owner = RM, due = completed_at)
   const rmName = getStaffName("staff_darren");
-  for (const v of arr(store.reg44VisitReports)) {
+  for (const v of arr(reg44VisitReportsList)) {
     arr(v.recommendations).forEach((a: any, i: number) => {
       actions.push({
         id: `reg44-${v.id}-${a.id ?? i}`, text: String(a.recommendation ?? "").trim(),
@@ -98,7 +98,7 @@ export async function GET() {
   }
 
   // 6. Supervisions → actions_agreed[] (owner = staff_id) ─────────────────────
-  for (const s of arr(store.supervisions)) {
+  for (const s of arr(supervisionsList)) {
     arr(s.actions_agreed).forEach((a: any, i: number) => {
       actions.push({
         id: `sup-${s.id}-${a.id ?? i}`, text: String(a.description ?? "").trim(),
@@ -109,7 +109,7 @@ export async function GET() {
   }
 
   // 7. House meetings → new_actions[] (no done signal → false) + actions_from_previous[] (done = completed)
-  for (const h of arr(store.houseMeetings)) {
+  for (const h of arr(houseMeetingsList)) {
     arr(h.new_actions).forEach((a: any, i: number) => {
       actions.push({
         id: `house-${h.id}-new-${i}`, text: String(a.action ?? "").trim(),
@@ -127,7 +127,7 @@ export async function GET() {
   }
 
   // 8. Key-work sessions → follow_up (owner = staff_id, done = follow_up_completed)
-  for (const k of arr(store.keyWorkingSessions)) {
+  for (const k of arr(keyWorkingSessionsList)) {
     if (k.follow_up && String(k.follow_up).trim()) {
       actions.push({
         id: `keywork-${k.id}`, text: String(k.follow_up).trim(),

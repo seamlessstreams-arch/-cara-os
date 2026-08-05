@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeEducationIntelligence,
   type ChildInput,
@@ -19,16 +19,16 @@ import {
 } from "@/lib/engines/education-intelligence-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [activitiesList, eduAttendanceRecordsList, educationRecordsList, youngPeopleList] = await Promise.all([dal.activities.findAll(), dal.eduAttendanceRecords.findAll(), dal.educationRecords.findAll(), dal.youngPeople.findAll()]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map education records ────────────────────────────────────────────────
-  const educationRecords: EducationRecordInput[] = store.educationRecords.map((r) => ({
+  const educationRecords: EducationRecordInput[] = educationRecordsList.map((r) => ({
     id: r.id,
     child_id: r.child_id,
     record_type: r.record_type,
@@ -40,7 +40,7 @@ export async function GET() {
   }));
 
   // ── Map activities ───────────────────────────────────────────────────────
-  const activities: ActivityInput[] = store.activities.map((a) => ({
+  const activities: ActivityInput[] = activitiesList.map((a) => ({
     id: a.id,
     child_id: a.child_id,
     date: a.date,
@@ -51,7 +51,7 @@ export async function GET() {
   }));
 
   // ── Map detailed attendance records ──────────────────────────────────────
-  const eduAttendance: EduAttendanceInput[] = store.eduAttendanceRecords.map((ea) => ({
+  const eduAttendance: EduAttendanceInput[] = eduAttendanceRecordsList.map((ea) => ({
     id: ea.id,
     child_id: ea.child_id,
     date: ea.date,

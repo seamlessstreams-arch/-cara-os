@@ -5,7 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeInspectionEvidencePack,
   type EvidencePackInput,
@@ -16,7 +16,7 @@ import { buildOrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const store = getStore();
+  const [advocacyRecordsList, annualHealthAssessmentsList, auditsList, behaviourLogList, careFormsList, carePlansList, caseFileAuditsList, chronologyList, complaintOutcomeRecordsList, complaintsList, contactPlansList, dailyLogList, debriefRecordsList, dentalRecordsList, disclosuresList, educationRecordsList, exploitationScreeningsList, familyTimeSessionsList, handoversList, healthAssessmentsList, improvementObjectivesList, incidentsList, independenceSkillsRecordsList, keyWorkingSessionsList, keyworkerSessionsList, lacReviewsList, leaveRequestsList, lessonsLearnedList, medicationAdministrationsList, medicationsList, mentalHealthCheckInsList, missingEpisodesList, multiAgencyMeetingsList, notifiableEventsList, outcomeReviewsList, outcomeTargetsList, participationEntriesList, positiveAchievementsList, postIncidentReflectionsList, qaAuditRecordsList, relationshipEntriesList, restraintsList, restrictionReviewsList, riskAssessmentsList, significantEventsList, staffList, stayingSafePlansList, supervisionsList, tasksList, therapeuticChildImpactList, trainingRecordsList, youngPeopleList, ypFeedbackList, homeRec] = await Promise.all([dal.advocacyRecords.findAll(), dal.annualHealthAssessments.findAll(), dal.audits.findAll(), dal.behaviourLog.findAll(), dal.careForms.findAll(), dal.carePlans.findAll(), dal.caseFileAudits.findAll(), dal.chronology.findAll(), dal.complaintOutcomeRecords.findAll(), dal.complaints.findAll(), dal.contactPlans.findAll(), dal.dailyLog.findAll(), dal.debriefRecords.findAll(), dal.dentalRecords.findAll(), dal.disclosures.findAll(), dal.educationRecords.findAll(), dal.exploitationScreenings.findAll(), dal.familyTimeSessions.findAll(), dal.handovers.findAll(), dal.healthAssessments.findAll(), dal.improvementObjectives.findAll(), dal.incidents.findAll(), dal.independenceSkillsRecords.findAll(), dal.keyWorkingSessions.findAll(), dal.keyworkerSessions.findAll(), dal.lacReviews.findAll(), dal.leaveRequests.findAll(), dal.lessonsLearned.findAll(), dal.medicationAdministrations.findAll(), dal.medications.findAll(), dal.mentalHealthCheckIns.findAll(), dal.missingEpisodes.findAll(), dal.multiAgencyMeetings.findAll(), dal.notifiableEvents.findAll(), dal.outcomeReviews.findAll(), dal.outcomeTargets.findAll(), dal.participationEntries.findAll(), dal.positiveAchievements.findAll(), dal.postIncidentReflections.findAll(), dal.qaAuditRecords.findAll(), dal.relationshipEntries.findAll(), dal.restraints.findAll(), dal.restrictionReviews.findAll(), dal.riskAssessments.findAll(), dal.significantEvents.findAll(), dal.staff.findAll(), dal.stayingSafePlans.findAll(), dal.supervisions.findAll(), dal.tasks.findAll(), dal.therapeuticChildImpact.findAll(), dal.trainingRecords.findAll(), dal.youngPeople.findAll(), dal.ypFeedback.findAll(), dal.home.get()]);
   const today = new Date().toISOString().slice(0, 10);
 
   // Default period: last 6 months
@@ -29,7 +29,7 @@ export async function GET() {
   // store) and passed in so the pack generator stays a pure mapping. Mirrors the
   // /api/v1/sop-reality-check and /api/v1/org-risk routes exactly.
   const nowIso = new Date().toISOString();
-  const sopChildren = ((store.youngPeople ?? []) as any[])
+  const sopChildren = ((youngPeopleList ?? []) as any[])
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id as string,
@@ -38,89 +38,89 @@ export async function GET() {
   const sopRealityCheck = buildSopRealityCheck({
     now: nowIso,
     children: sopChildren,
-    carePlans: (store as any).carePlans ?? [],
-    dailyLog: (store.dailyLog ?? []) as { child_id: string; date?: string }[],
-    keyWorkingSessions: store.keyWorkingSessions ?? [],
-    incidents: store.incidents ?? [],
-    debriefRecords: store.debriefRecords ?? [],
-    riskAssessments: store.riskAssessments ?? [],
-    lacReviews: store.lacReviews ?? [],
-    positiveAchievements: store.positiveAchievements ?? [],
-    educationRecords: store.educationRecords ?? [],
-    trainingRecords: store.trainingRecords ?? [],
-    supervisions: store.supervisions ?? [],
-    audits: (store.audits ?? []) as { id: string; created_at?: string; date?: string }[],
+    carePlans: carePlansList ?? [],
+    dailyLog: (dailyLogList ?? []) as { child_id: string; date?: string }[],
+    keyWorkingSessions: keyWorkingSessionsList ?? [],
+    incidents: incidentsList ?? [],
+    debriefRecords: debriefRecordsList ?? [],
+    riskAssessments: riskAssessmentsList ?? [],
+    lacReviews: lacReviewsList ?? [],
+    positiveAchievements: positiveAchievementsList ?? [],
+    educationRecords: educationRecordsList ?? [],
+    trainingRecords: trainingRecordsList ?? [],
+    supervisions: supervisionsList ?? [],
+    audits: (auditsList ?? []) as { id: string; created_at?: string; date?: string }[],
   });
   const orgRisk = buildOrgRiskDashboard({
     now: nowIso,
-    staff: store.staff ?? [],
-    supervisions: store.supervisions ?? [],
-    trainingRecords: store.trainingRecords ?? [],
-    incidents: store.incidents ?? [],
-    missing: store.missingEpisodes ?? [],
-    complaints: (store.complaints ?? []) as { date?: string; created_at?: string }[],
-    leave: store.leaveRequests ?? [],
+    staff: staffList ?? [],
+    supervisions: supervisionsList ?? [],
+    trainingRecords: trainingRecordsList ?? [],
+    incidents: incidentsList ?? [],
+    missing: missingEpisodesList ?? [],
+    complaints: (complaintsList ?? []) as { date?: string; created_at?: string }[],
+    leave: leaveRequestsList ?? [],
   });
 
   const input: EvidencePackInput = {
     today,
-    home_id: (store.home as any)?.id ?? "home_oak",
-    home_name: (store.home as any)?.name?.trim() || "This home",
+    home_id: (homeRec as any)?.id ?? "home_oak",
+    home_name: (homeRec as any)?.name?.trim() || "This home",
     period_from: periodFrom,
     period_to: periodTo,
     generated_by: "system",
 
-    youngPeople: store.youngPeople ?? [],
-    staff: store.staff ?? [],
-    careForms: store.careForms ?? [],
-    riskAssessments: store.riskAssessments ?? [],
-    incidents: store.incidents ?? [],
-    missingEpisodes: store.missingEpisodes ?? [],
-    exploitationScreenings: store.exploitationScreenings ?? [],
-    keyWorkingSessions: store.keyWorkingSessions ?? [],
-    keyworkerSessions: store.keyworkerSessions ?? [],
-    educationRecords: store.educationRecords ?? [],
-    healthAssessments: store.healthAssessments ?? [],
-    dentalRecords: store.dentalRecords ?? [],
-    mentalHealthCheckIns: store.mentalHealthCheckIns ?? [],
-    annualHealthAssessments: store.annualHealthAssessments ?? [],
-    familyTimeSessions: store.familyTimeSessions ?? [],
-    contactPlans: store.contactPlans ?? [],
-    multiAgencyMeetings: store.multiAgencyMeetings ?? [],
-    lacReviews: store.lacReviews ?? [],
-    supervisions: store.supervisions ?? [],
-    audits: store.audits ?? [],
-    qaAuditRecords: store.qaAuditRecords ?? [],
-    caseFileAudits: store.caseFileAudits ?? [],
-    tasks: store.tasks ?? [],
-    dailyLog: store.dailyLog ?? [],
-    behaviourLog: store.behaviourLog ?? [],
-    restraints: store.restraints ?? [],
-    significantEvents: store.significantEvents ?? [],
-    notifiableEvents: store.notifiableEvents ?? [],
-    outcomeTargets: store.outcomeTargets ?? [],
-    outcomeReviews: store.outcomeReviews ?? [],
-    trainingRecords: store.trainingRecords ?? [],
-    medications: store.medications ?? [],
-    medicationAdministrations: store.medicationAdministrations ?? [],
-    independenceSkillsRecords: store.independenceSkillsRecords ?? [],
-    disclosures: store.disclosures ?? [],
-    safeguardingReferrals: (store as any).safeguardingReferrals ?? [],
-    complaintOutcomeRecords: store.complaintOutcomeRecords ?? [],
-    chronology: store.chronology ?? [],
-    handovers: store.handovers ?? [],
-    therapeuticChildImpact: store.therapeuticChildImpact ?? [],
-    ypFeedback: store.ypFeedback ?? [],
-    advocacyRecords: store.advocacyRecords ?? [],
-    participationEntries: store.participationEntries ?? [],
-    improvementObjectives: store.improvementObjectives ?? [],
-    lessonsLearned: store.lessonsLearned ?? [],
+    youngPeople: youngPeopleList ?? [],
+    staff: staffList ?? [],
+    careForms: careFormsList ?? [],
+    riskAssessments: riskAssessmentsList ?? [],
+    incidents: incidentsList ?? [],
+    missingEpisodes: missingEpisodesList ?? [],
+    exploitationScreenings: exploitationScreeningsList ?? [],
+    keyWorkingSessions: keyWorkingSessionsList ?? [],
+    keyworkerSessions: keyworkerSessionsList ?? [],
+    educationRecords: educationRecordsList ?? [],
+    healthAssessments: healthAssessmentsList ?? [],
+    dentalRecords: dentalRecordsList ?? [],
+    mentalHealthCheckIns: mentalHealthCheckInsList ?? [],
+    annualHealthAssessments: annualHealthAssessmentsList ?? [],
+    familyTimeSessions: familyTimeSessionsList ?? [],
+    contactPlans: contactPlansList ?? [],
+    multiAgencyMeetings: multiAgencyMeetingsList ?? [],
+    lacReviews: lacReviewsList ?? [],
+    supervisions: supervisionsList ?? [],
+    audits: auditsList ?? [],
+    qaAuditRecords: qaAuditRecordsList ?? [],
+    caseFileAudits: caseFileAuditsList ?? [],
+    tasks: tasksList ?? [],
+    dailyLog: dailyLogList ?? [],
+    behaviourLog: behaviourLogList ?? [],
+    restraints: restraintsList ?? [],
+    significantEvents: significantEventsList ?? [],
+    notifiableEvents: notifiableEventsList ?? [],
+    outcomeTargets: outcomeTargetsList ?? [],
+    outcomeReviews: outcomeReviewsList ?? [],
+    trainingRecords: trainingRecordsList ?? [],
+    medications: medicationsList ?? [],
+    medicationAdministrations: medicationAdministrationsList ?? [],
+    independenceSkillsRecords: independenceSkillsRecordsList ?? [],
+    disclosures: disclosuresList ?? [],
+    safeguardingReferrals: [], // phantom field — never a real collection; always empty (faithful to the prior always-empty read)
+    complaintOutcomeRecords: complaintOutcomeRecordsList ?? [],
+    chronology: chronologyList ?? [],
+    handovers: handoversList ?? [],
+    therapeuticChildImpact: therapeuticChildImpactList ?? [],
+    ypFeedback: ypFeedbackList ?? [],
+    advocacyRecords: advocacyRecordsList ?? [],
+    participationEntries: participationEntriesList ?? [],
+    improvementObjectives: improvementObjectivesList ?? [],
+    lessonsLearned: lessonsLearnedList ?? [],
 
     // 23/06 Practice Intelligence Update — record-based module evidence
-    restrictionReviews: store.restrictionReviews ?? [],
-    postIncidentReflections: store.postIncidentReflections ?? [],
-    stayingSafePlans: store.stayingSafePlans ?? [],
-    relationshipEntries: store.relationshipEntries ?? [],
+    restrictionReviews: restrictionReviewsList ?? [],
+    postIncidentReflections: postIncidentReflectionsList ?? [],
+    stayingSafePlans: stayingSafePlansList ?? [],
+    relationshipEntries: relationshipEntriesList ?? [],
 
     // Whole-home assurance (pre-computed above)
     sopRealityCheck,

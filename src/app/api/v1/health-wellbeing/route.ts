@@ -8,7 +8,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeHealthWellbeing,
   type ChildInput,
@@ -22,17 +22,17 @@ import {
 } from "@/lib/engines/health-wellbeing-engine";
 
 export async function GET() {
-  const store = getStore();
+  const [appointmentsList, camhsReferralsList, dailyLogList, dentalRecordsList, healthAssessmentsList, immunisationRecordsList, mentalHealthCheckInsList, opticiansRecordsList, youngPeopleList] = await Promise.all([dal.appointments.findAll(), dal.camhsReferrals.findAll(), dal.dailyLog.findAll(), dal.dentalRecords.findAll(), dal.healthAssessments.findAll(), dal.immunisationRecords.findAll(), dal.mentalHealthCheckIns.findAll(), dal.opticiansRecords.findAll(), dal.youngPeople.findAll()]);
 
   // ── Map children ─────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeopleList.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
     date_of_birth: yp.date_of_birth,
   }));
 
   // ── Map appointments ─────────────────────────────────────────────────────
-  const appointments: AppointmentInput[] = store.appointments.map((a) => ({
+  const appointments: AppointmentInput[] = appointmentsList.map((a) => ({
     id: a.id,
     child_id: a.child_id,
     date: a.date,
@@ -41,7 +41,7 @@ export async function GET() {
   }));
 
   // ── Map health assessments ───────────────────────────────────────────────
-  const healthAssessments: HealthAssessmentInput[] = store.healthAssessments.map((ha) => ({
+  const healthAssessments: HealthAssessmentInput[] = healthAssessmentsList.map((ha) => ({
     id: ha.id,
     child_id: ha.child_id,
     type: ha.type,
@@ -53,7 +53,7 @@ export async function GET() {
   }));
 
   // ── Map dental records ───────────────────────────────────────────────────
-  const dentalRecords: DentalRecordInput[] = store.dentalRecords.map((dr) => ({
+  const dentalRecords: DentalRecordInput[] = dentalRecordsList.map((dr) => ({
     id: dr.id,
     child_id: dr.child_id,
     last_check_up_date: dr.last_check_up_date,
@@ -62,7 +62,7 @@ export async function GET() {
   }));
 
   // ── Map opticians records ────────────────────────────────────────────────
-  const opticiansRecords: OpticiansRecordInput[] = store.opticiansRecords.map((or) => ({
+  const opticiansRecords: OpticiansRecordInput[] = opticiansRecordsList.map((or) => ({
     id: or.id,
     child_id: or.child_id,
     last_exam_date: or.last_exam_date,
@@ -70,7 +70,7 @@ export async function GET() {
   }));
 
   // ── Map immunisation records ─────────────────────────────────────────────
-  const immunisationRecords: ImmunisationRecordInput[] = store.immunisationRecords.map((ir) => ({
+  const immunisationRecords: ImmunisationRecordInput[] = immunisationRecordsList.map((ir) => ({
     id: ir.id,
     child_id: ir.child_id,
     missed_count: ir.missed_at_age.length,
@@ -80,7 +80,7 @@ export async function GET() {
   }));
 
   // ── Map CAMHS referrals ──────────────────────────────────────────────────
-  const camhsReferrals: CamhsReferralInput[] = store.camhsReferrals.map((cr) => ({
+  const camhsReferrals: CamhsReferralInput[] = camhsReferralsList.map((cr) => ({
     id: cr.id,
     child_id: cr.child_id,
     referral_date: cr.referral_date,
@@ -93,7 +93,7 @@ export async function GET() {
   }));
 
   // ── Map mood entries from daily log ──────────────────────────────────────
-  const moodEntries: MoodEntryInput[] = store.dailyLog
+  const moodEntries: MoodEntryInput[] = dailyLogList
     .filter((entry) => entry.mood_score != null && entry.mood_score > 0)
     .map((entry) => ({
       child_id: entry.child_id,
@@ -102,7 +102,7 @@ export async function GET() {
     }));
 
   // Also include mental health check-ins (mood_rating is 1-5, scale to 1-10)
-  const mentalHealthMoods: MoodEntryInput[] = store.mentalHealthCheckIns.map((mh) => ({
+  const mentalHealthMoods: MoodEntryInput[] = mentalHealthCheckInsList.map((mh) => ({
     child_id: mh.child_id,
     date: mh.date,
     mood_score: mh.mood_rating * 2, // Scale 1-5 → 2-10

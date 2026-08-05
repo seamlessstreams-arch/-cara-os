@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   computeMultiAgencyIntelligence,
   type LACReviewInput,
@@ -31,22 +31,22 @@ const FREQUENCY_TO_DAYS: Record<string, number> = {
 };
 
 export async function GET() {
-  const store = getStore();
+  const [lacReviewsList, multiAgencyMeetingsList, professionalNetworkContactsList, staffList, youngPeopleList] = await Promise.all([dal.lacReviews.findAll(), dal.multiAgencyMeetings.findAll(), dal.professionalNetworkContacts.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   // ── Map children ────────────────────────────���────────────────────────────
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name ?? yp.name ?? "Unknown",
   }));
 
   // ── Map staff ─────────���──────────────────────────────��───────────────────
-  const staff: StaffRef[] = (store.staff ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));
 
   // ── Map LAC reviews ──────────��───────────────────────────────────��───────
-  const lacReviews: LACReviewInput[] = (store.lacReviews ?? []).map((r: any) => ({
+  const lacReviews: LACReviewInput[] = (lacReviewsList ?? []).map((r: any) => ({
     id: r.id,
     child_id: r.child_id,
     review_type: r.review_type ?? "subsequent",
@@ -60,7 +60,7 @@ export async function GET() {
   }));
 
   // ── Map professional contacts ────────────────────────────────────────────
-  const professionalContacts: ProfessionalContactInput[] = (store.professionalNetworkContacts ?? []).map((p: any) => ({
+  const professionalContacts: ProfessionalContactInput[] = (professionalNetworkContactsList ?? []).map((p: any) => ({
     id: p.id,
     child_id: p.child_id,
     professional_role: p.role ?? "other",
@@ -71,7 +71,7 @@ export async function GET() {
   }));
 
   // ── Map multi-agency meetings ────────��───────────────────────────────────
-  const meetings: MultiAgencyMeetingInput[] = (store.multiAgencyMeetings ?? []).map((m: any) => {
+  const meetings: MultiAgencyMeetingInput[] = (multiAgencyMeetingsList ?? []).map((m: any) => {
     const actionItems = m.action_items ?? [];
     const actionsCount = actionItems.length;
     const actionsCompleted = actionItems.filter((a: any) => a.status === "completed" || a.status === "done").length;
