@@ -1814,6 +1814,16 @@ export const dal = {
     async findAll() { return getStore().tutoringRecords ?? []; },
   },
 
+  // ── DEMO-ONLY extensions — typed-compose builder routes (2026-08-05) ──────
+  // Same placeholder pattern as above: reads fall back to the in-memory store
+  // until a Supabase table lands (then only the `if (sb())` branch changes).
+  practiceObservations: {
+    async findAll() { return getStore().practiceObservations ?? []; },
+  },
+  writingAssistantAuditEvents: {
+    async findAll() { return getStore().writingAssistantAuditEvents ?? []; },
+  },
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

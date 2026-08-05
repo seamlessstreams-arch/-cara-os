@@ -19,9 +19,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildChildVoicePresence } from "@/lib/child-voice-presence/child-voice-presence-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildChildVoicePresence(getStore()) });
+  const [dailyLog, incidents, keyWorkingSessions, lacReviews, youngPeople, ypFeedback] = await Promise.all([dal.dailyLog.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.youngPeople.findAll(), dal.ypFeedback.findAll()]);
+  return NextResponse.json({ data: buildChildVoicePresence({ dailyLog, incidents, keyWorkingSessions, lacReviews, youngPeople, ypFeedback }) });
 }

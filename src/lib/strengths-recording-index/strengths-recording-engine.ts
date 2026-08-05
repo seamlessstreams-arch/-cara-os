@@ -171,7 +171,7 @@ export interface StrengthsRecordingData {
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildStrengthsRecordingIndex(store: ReturnType<typeof getStore>): StrengthsRecordingData {
+export function buildStrengthsRecordingIndex(store: Pick<ReturnType<typeof getStore>, "behaviourLog" | "dailyLog" | "incidents" | "staff" | "youngPeople">): StrengthsRecordingData {
   type Acc = {
     total: number;
     withStrengths: number;

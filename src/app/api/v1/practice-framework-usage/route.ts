@@ -16,9 +16,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildPracticeFrameworkUsage } from "@/lib/practice-framework-usage/framework-usage-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildPracticeFrameworkUsage(getStore()) });
+  const [caraIncidentSessions, childPaceProfiles, practiceObservations, reflectiveSupervisions, staff, writingAssistantAuditEvents] = await Promise.all([dal.caraIncidentSessions.findAll(), dal.childPaceProfiles.findAll(), dal.practiceObservations.findAll(), dal.reflectiveSupervisions.findAll(), dal.staff.findAll(), dal.writingAssistantAuditEvents.findAll()]);
+  return NextResponse.json({ data: buildPracticeFrameworkUsage({ caraIncidentSessions, childPaceProfiles, practiceObservations, reflectiveSupervisions, staff, writingAssistantAuditEvents }) });
 }

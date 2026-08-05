@@ -19,9 +19,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildRelationalSafetyMap } from "@/lib/relational-safety-map/relational-safety-map-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildRelationalSafetyMap(getStore()) });
+  const [childPaceProfiles, incidents, keyWorkingSessions, staff, youngPeople] = await Promise.all([dal.childPaceProfiles.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
+  return NextResponse.json({ data: buildRelationalSafetyMap({ childPaceProfiles, incidents, keyWorkingSessions, staff, youngPeople }) });
 }

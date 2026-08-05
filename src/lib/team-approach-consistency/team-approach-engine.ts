@@ -160,7 +160,7 @@ function buildSupervisionPrompt(
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>): TeamApproachData {
+export function buildTeamApproachConsistency(store: Pick<ReturnType<typeof getStore>, "behaviourLog" | "staff" | "youngPeople">): TeamApproachData {
   const youngPeople = (store.youngPeople ?? []) as Array<{
     id: string; first_name: string; last_name: string; status: string;
   }>;

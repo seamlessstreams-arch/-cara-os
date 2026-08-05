@@ -22,9 +22,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildPracticeCultureScorecard } from "@/lib/practice-culture-scorecard/practice-culture-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildPracticeCultureScorecard(getStore()) });
+  const [behaviourLog, caraIncidentSessions, childPaceProfiles, dailyLog, incidents, keyWorkingSessions, practiceObservations, reflectiveSupervisions, writingAssistantAuditEvents] = await Promise.all([dal.behaviourLog.findAll(), dal.caraIncidentSessions.findAll(), dal.childPaceProfiles.findAll(), dal.dailyLog.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.practiceObservations.findAll(), dal.reflectiveSupervisions.findAll(), dal.writingAssistantAuditEvents.findAll()]);
+  return NextResponse.json({ data: buildPracticeCultureScorecard({ behaviourLog, caraIncidentSessions, childPaceProfiles, dailyLog, incidents, keyWorkingSessions, practiceObservations, reflectiveSupervisions, writingAssistantAuditEvents }) });
 }

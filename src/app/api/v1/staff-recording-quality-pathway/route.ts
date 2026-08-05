@@ -16,9 +16,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildStaffRecordingPathway } from "@/lib/staff-recording-quality-pathway/staff-recording-pathway-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildStaffRecordingPathway(getStore()) });
+  const [staff, writingAssistantAuditEvents] = await Promise.all([dal.staff.findAll(), dal.writingAssistantAuditEvents.findAll()]);
+  return NextResponse.json({ data: buildStaffRecordingPathway({ staff, writingAssistantAuditEvents }) });
 }

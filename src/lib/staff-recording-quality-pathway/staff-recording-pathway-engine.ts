@@ -183,7 +183,7 @@ export interface StaffRecordingPathwayData {
 
 // ── Builder ───────────────────────────────────────────────────────────────────
 
-export function buildStaffRecordingPathway(store: ReturnType<typeof getStore>): StaffRecordingPathwayData {
+export function buildStaffRecordingPathway(store: Pick<ReturnType<typeof getStore>, "staff" | "writingAssistantAuditEvents">): StaffRecordingPathwayData {
   const activeStaff = ((store.staff ?? []) as Array<{
     id: string; full_name?: string; first_name?: string; last_name?: string;
     job_title?: string; role?: string; employment_status?: string;

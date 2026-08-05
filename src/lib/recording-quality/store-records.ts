@@ -6,8 +6,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { RecordInput } from "./recording-quality-engine";
+import type { getStore } from "@/lib/db/store";
 
-export function mapStoreToRecords(store: any): RecordInput[] {
+export function mapStoreToRecords(store: Pick<ReturnType<typeof getStore>, "dailyLog" | "incidents" | "keyWorkingSessions" | "youngPeople">): RecordInput[] {
   const nameById = new Map(((store.youngPeople ?? []) as any[]).map((yp: any) => [yp.id, yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()]));
 
   return [

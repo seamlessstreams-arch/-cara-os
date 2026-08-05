@@ -175,7 +175,7 @@ function scanText(text: string): Array<Pick<LanguagePattern, "phrase" | "categor
 
 // ── Public entry point — pure ────────────────────────────────────────────────
 
-export function buildCareLanguageAudit(store: ReturnType<typeof getStore>): CareLanguageAuditData {
+export function buildCareLanguageAudit(store: Pick<ReturnType<typeof getStore>, "behaviourLog" | "dailyLog" | "incidents" | "staff" | "youngPeople">): CareLanguageAuditData {
   const hits: PatternHit[] = [];
 
   // Helper to push a hit

@@ -25,9 +25,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildRepairCycleIntelligence } from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildRepairCycleIntelligence(getStore()) });
+  const [debriefRecords, incidents, youngPeople] = await Promise.all([dal.debriefRecords.findAll(), dal.incidents.findAll(), dal.youngPeople.findAll()]);
+  return NextResponse.json({ data: buildRepairCycleIntelligence({ debriefRecords, incidents, youngPeople }) });
 }

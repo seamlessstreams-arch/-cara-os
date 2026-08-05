@@ -10,7 +10,6 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { computeRecordingQuality } from "@/lib/recording-quality/recording-quality-engine";
 import { mapStoreToRecords } from "@/lib/recording-quality/store-records";
@@ -29,8 +28,8 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  const store = getStore();
-  const quality = computeRecordingQuality({ records: mapStoreToRecords(store) });
+  const [dailyLog, incidents, keyWorkingSessions, youngPeople] = await Promise.all([dal.dailyLog.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.youngPeople.findAll()]);
+  const quality = computeRecordingQuality({ records: mapStoreToRecords({ dailyLog, incidents, keyWorkingSessions, youngPeople }) });
   const staff = ((await safeList(dal.staff.findAll())) as any[]).map((s: any) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
