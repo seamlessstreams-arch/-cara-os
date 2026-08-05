@@ -156,21 +156,30 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Missing from care — no backing collection on this shape (was a phantom
-  // `missingFromCareEpisodes` field, always []; kept faithful as []).
-  const missingEpisodes: Record<string, unknown>[] = [];
-  const dayMissing = missingEpisodes.filter((e) =>
-    (e.date as string)?.startsWith(date) || (e.created_at as string)?.startsWith(date)
+  // Missing from care — episodes that began on this date, read from the real
+  // `missingEpisodes` collection via dal (typed MissingEpisode records). The
+  // date field is `date_missing`; there is no `summary`/`notes`/`date` field.
+  const missingEpisodes = await dal.missingEpisodes.findAll();
+  const dayMissing = missingEpisodes.filter((ep) =>
+    (ep.date_missing ?? "").startsWith(date)
   );
   for (const ep of dayMissing) {
+    const detail = [
+      `${ep.risk_level ?? "high"}-risk`,
+      ep.reference || null,
+      ep.location_last_seen ? `last seen ${ep.location_last_seen}` : null,
+      ep.date_returned || ep.status === "returned" ? "returned" : "still missing",
+    ]
+      .filter(Boolean)
+      .join(" · ");
     events.push({
       type: "missing",
-      time: (ep.created_at ?? ep.date) as string,
-      title: `Missing from care — ${ep.child_id ? childName(ep.child_id as string) : "Unknown"}`,
-      description: (ep.summary as string ?? ep.notes as string ?? "").slice(0, 150),
+      time: ep.time_missing ? `${ep.date_missing}T${ep.time_missing}` : ep.date_missing,
+      title: `Missing from care — ${childName(ep.child_id)}`,
+      description: detail.slice(0, 150),
       severity: "critical",
-      child_id: ep.child_id as string,
-      child_name: ep.child_id ? childName(ep.child_id as string) : undefined,
+      child_id: ep.child_id,
+      child_name: childName(ep.child_id),
     });
   }
 
