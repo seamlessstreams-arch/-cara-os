@@ -86,6 +86,9 @@ jobs:
       - name: Fabricated-score guard (an empty population must not score as compliant)
         run: node scripts/check-fabricated-scores.js
 
+      - name: DAL-adoption guard (routes read/write via dal; 8 structural exclusions pinned)
+        run: node scripts/check-dal-adoption.js
+
       # tsc reports 0 errors on both shapes this catches — only `next build`
       # does, and it exits at the FIRST prerender crash so it reports one at a
       # time. This runs in ~2s and reports the complete set.
