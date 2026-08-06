@@ -20,6 +20,7 @@ const ALLOW = new Map([
   ["src/app/api/v1/cara/route.ts", "buildAskSnapshot boundary (full-Store builders downstream)"],
   ["src/app/api/v1/cara/chat/route.ts", "buildAskSnapshot boundary (full-Store builders downstream)"],
   ["src/app/api/v1/org-learning-report/route.ts", "buildOrgLearningInputFromStore is typed to the full Store"],
+  ["src/app/api/v1/org-learning-report/export/route.ts", "buildOrgLearningInputFromStore is typed to the full Store (same boundary as the sibling route)"],
   ["src/app/api/v1/institutional-self-check/route.ts", "builders typed to the full Store"],
   ["src/app/api/v1/plan-currency/route.ts", "dynamic-key access — collections not statically known"],
   ["src/app/api/v1/shift-briefing/route.ts", "dynamic-key access — collections not statically known"],
