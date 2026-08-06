@@ -21,7 +21,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import { computeVoiceFollowThrough } from "@/lib/voice-of-child/voice-follow-through-engine";
@@ -42,13 +43,16 @@ const strList = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim().length > 0).map((x) => x.trim()) : [];
 
 /** Barriers this home made, proved by records the other engines already own. */
-function deriveSystemBarriers(childIds: Set<string>, now: Date): SystemBarrier[] {
-  const store = getStore();
+function deriveSystemBarriers(
+  childIds: Set<string>,
+  now: Date,
+  src: Pick<ReturnType<typeof getStore>, "voiceConcernLoops" | "traumaTherapyLogs" | "multiDisciplinaryFormulations">,
+): SystemBarrier[] {
   const out: SystemBarrier[] = [];
 
   // 1. Something they raised, with nothing visibly done (voice follow-through).
   try {
-    const voice = computeVoiceFollowThrough(store.voiceConcernLoops ?? [], now);
+    const voice = computeVoiceFollowThrough(src.voiceConcernLoops ?? [], now);
     for (const d of voice.detections) {
       if (d.key !== "voice_without_response" && d.key !== "explain_back_overdue" && d.key !== "stalled_loop") continue;
       if (!childIds.has(d.childId)) continue;
@@ -67,8 +71,8 @@ function deriveSystemBarriers(childIds: Set<string>, now: Date): SystemBarrier[]
 
   // 2. Support agreed in a formulation with no sessions on record.
   try {
-    const sessions = store.traumaTherapyLogs ?? [];
-    for (const f of store.multiDisciplinaryFormulations ?? []) {
+    const sessions = src.traumaTherapyLogs ?? [];
+    for (const f of src.multiDisciplinaryFormulations ?? []) {
       if (!childIds.has(f.child_id)) continue;
       if ((f.agreed_interventions ?? []).length === 0) continue;
       if (sessions.some((s) => s.child_id === f.child_id)) continue;
@@ -96,9 +100,12 @@ export async function GET(req: NextRequest) {
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
 
-    const store = getStore();
+    const [youngPeopleList, helpReflectionsList, voiceConcernLoopsList, traumaTherapyLogsList, multiDisciplinaryFormulationsList] = await Promise.all([
+      dal.youngPeople.findAll(), dal.helpReflections.findAll(), dal.voiceConcernLoops.findAll(),
+      dal.traumaTherapyLogs.findAll(), dal.multiDisciplinaryFormulations.findAll(),
+    ]);
     const homeId = identity.homeId;
-    const children = (store.youngPeople ?? [])
+    const children = (youngPeopleList ?? [])
       .filter(
         (c) =>
           c.status === "current" &&
@@ -110,8 +117,12 @@ export async function GET(req: NextRequest) {
 
     const view = buildExperienceOfHelp({
       children,
-      reflections: (store.helpReflections ?? []).filter((r) => childIds.has(r.child_id)),
-      barriers: deriveSystemBarriers(childIds, new Date()),
+      reflections: (helpReflectionsList ?? []).filter((r) => childIds.has(r.child_id)),
+      barriers: deriveSystemBarriers(childIds, new Date(), {
+        voiceConcernLoops: voiceConcernLoopsList,
+        traumaTherapyLogs: traumaTherapyLogsList,
+        multiDisciplinaryFormulations: multiDisciplinaryFormulationsList,
+      }),
       now: new Date(),
     });
 
@@ -154,7 +165,7 @@ export async function POST(req: NextRequest) {
     const problem = validateReflection(patch);
     if (problem) return NextResponse.json({ error: problem }, { status: 422 });
 
-    const child = (getStore().youngPeople ?? []).find((c) => c.id === childId);
+    const child = ((await dal.youngPeople.findAll()) ?? []).find((c) => c.id === childId);
     if (!child) return NextResponse.json({ error: "No such child." }, { status: 404 });
 
     const now = new Date().toISOString();
@@ -172,7 +183,7 @@ export async function POST(req: NextRequest) {
       recorded_by: identity.userId,
       created_at: now,
     };
-    getStore().helpReflections.push(reflection);
+    await dal.helpReflections.create(reflection);
 
     return NextResponse.json(
       {

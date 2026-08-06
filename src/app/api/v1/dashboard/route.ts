@@ -21,7 +21,7 @@ export async function GET(_req: NextRequest) {
   const today = todayStr();
 
   // Core records via the dual-mode dal — the live tenant's Postgres when
-  // connected, the in-memory store in demo. This route USED to read getStore()
+  // connected, the in-memory store in demo. This route USED to read the store
   // directly for everything, so on a live tenant (store gated empty, never
   // hydrated from Supabase) the whole dashboard read zero regardless of what was
   // actually recorded. Every collection below that has a dal accessor now

@@ -15,7 +15,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   deriveManagerAlerts, detectPatterns, oversightSummary, OVERSIGHT_DISCLAIMER,
   type AlertStateRecord, type OversightInput,
@@ -24,21 +24,25 @@ import { currentUserId, logIncidentAudit, childName, staffNameOf } from "@/lib/c
 import type { CaraRecordingReview } from "@/lib/cara-incident/cara-incident-engine";
 import { readJsonBody } from "@/lib/http/read-json";
 
-function oversightInput(): OversightInput {
-  const store = getStore() as any;
+async function oversightInput(): Promise<OversightInput> {
+  const [sessions, entries, reviews, restoratives, reflections, alertStates] = await Promise.all([
+    dal.caraIncidentSessions.findAll(), dal.caraIncidentTimeline.findAll(),
+    dal.caraRecordingReviews.findAll(), dal.caraRestorativeConversations.findAll(),
+    dal.caraPostIncidentReflections.findAll(), dal.caraManagerAlertStates.findAll(),
+  ]);
   return {
-    sessions: store.caraIncidentSessions ?? [],
-    entries: store.caraIncidentTimeline ?? [],
-    reviews: store.caraRecordingReviews ?? [],
-    restoratives: store.caraRestorativeConversations ?? [],
-    reflections: store.caraPostIncidentReflections ?? [],
-    alertStates: store.caraManagerAlertStates ?? [],
+    sessions: sessions ?? [],
+    entries: entries ?? [],
+    reviews: reviews ?? [],
+    restoratives: restoratives ?? [],
+    reflections: reflections ?? [],
+    alertStates: alertStates ?? [],
     today: new Date().toISOString().slice(0, 10),
   };
 }
 
 export async function GET() {
-  const input = oversightInput();
+  const input = await oversightInput();
   const alerts = deriveManagerAlerts(input).map((a) => ({
     ...a,
     child_name: a.child_id ? childName(a.child_id) : null,
@@ -60,7 +64,6 @@ export async function POST(req: Request) {
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data as any;
   const user_id = currentUserId(req);
-  const store = getStore() as any;
   const now = new Date().toISOString();
   const action = String(body.action ?? "");
 
@@ -70,17 +73,12 @@ export async function POST(req: Request) {
     if (!key || !["resolved", "dismissed", "open"].includes(status)) {
       return NextResponse.json({ ok: false, error: "Invalid alert key or status." }, { status: 400 });
     }
-    store.caraManagerAlertStates = store.caraManagerAlertStates ?? [];
-    const states: AlertStateRecord[] = store.caraManagerAlertStates;
-    const existing = states.find((s) => s.id === key);
     if (status === "open") {
-      store.caraManagerAlertStates = states.filter((s) => s.id !== key); // reopen = remove the override
-    } else if (existing) {
-      existing.status = status as AlertStateRecord["status"];
-      existing.resolved_by_user_id = user_id;
-      existing.resolved_at = now;
+      await dal.caraManagerAlertStates.removeById(key); // reopen = remove the override
     } else {
-      states.push({ id: key, status: status as AlertStateRecord["status"], resolved_by_user_id: user_id, resolved_at: now });
+      await dal.caraManagerAlertStates.save({
+        id: key, status: status as AlertStateRecord["status"], resolved_by_user_id: user_id, resolved_at: now,
+      });
     }
     logIncidentAudit({ action_type: "alert_resolved", user_id, source_id: key, note: `status=${status}` });
     return NextResponse.json({ ok: true });
@@ -88,13 +86,14 @@ export async function POST(req: Request) {
 
   if (action === "mark_reviewed") {
     const review_id = String(body.review_id ?? "").trim();
-    const review = ((store.caraRecordingReviews ?? []) as CaraRecordingReview[]).find((r) => r.id === review_id);
-    if (!review) return NextResponse.json({ ok: false, error: "Record not found." }, { status: 404 });
-    if (!review.manager_reviewed_at) {
-      review.manager_reviewed_by = user_id;
-      review.manager_reviewed_at = now;
-      review.updated_at = now;
-      logIncidentAudit({ action_type: "manager_review_completed", user_id, child_id: review.child_id, source_id: review.id, approval_status: "approved" });
+    const existing = (await dal.caraRecordingReviews.findById(review_id)) as CaraRecordingReview | null;
+    if (!existing) return NextResponse.json({ ok: false, error: "Record not found." }, { status: 404 });
+    let review = existing;
+    if (!existing.manager_reviewed_at) {
+      review = (await dal.caraRecordingReviews.update(review_id, {
+        manager_reviewed_by: user_id, manager_reviewed_at: now, updated_at: now,
+      })) as CaraRecordingReview;
+      logIncidentAudit({ action_type: "manager_review_completed", user_id, child_id: existing.child_id, source_id: existing.id, approval_status: "approved" });
     }
     return NextResponse.json({ ok: true, data: { review_id, manager_reviewed_at: review.manager_reviewed_at } });
   }

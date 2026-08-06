@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { invokeAiGateway, invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
@@ -193,10 +194,9 @@ export async function POST(req: NextRequest) {
             prohibitedTriggered: answer.intent === "prohibited",
             deterministicOnly: !llmUsed,
           },
-          { id: `ac_evt_${Date.now()}_${store.askCaraAuditEvents.length}`, createdAt: new Date().toISOString() }
+          { id: `ac_evt_${Date.now()}_${(await dal.askCaraAuditEvents.findAll()).length}`, createdAt: new Date().toISOString() }
         );
-        store.askCaraAuditEvents.push(evt);
-        if (store.askCaraAuditEvents.length > 1000) store.askCaraAuditEvents.splice(0, store.askCaraAuditEvents.length - 1000);
+        await dal.askCaraAuditEvents.create(evt); // caps the log at 1000 inside the accessor
       } catch (auditErr) {
         console.error("[cara/chat] audit failed", auditErr);
       }

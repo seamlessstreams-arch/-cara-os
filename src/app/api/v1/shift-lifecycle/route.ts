@@ -22,7 +22,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
@@ -39,9 +40,20 @@ export const dynamic = "force-dynamic";
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
 const OPEN_TASK = (s: string) => s !== "completed" && s !== "cancelled";
 
+/** Exactly the collections the helpers below read, composed from the dal.
+ *  Re-fetched after any write so rebuilds see the new state. */
+type LifecycleSrc = Pick<ReturnType<typeof getStore>, "shifts" | "handovers" | "dailyLog" | "tasks" | "youngPeople" | "staff" | "shiftLifecycleRecords">;
+async function loadLifecycleSrc(): Promise<LifecycleSrc> {
+  const [shifts, handovers, dailyLog, tasks, youngPeople, staff, shiftLifecycleRecords] = await Promise.all([
+    dal.shifts.findAll(), dal.handovers.findAll(), dal.dailyLog.findAll(), dal.tasks.findAll(),
+    dal.youngPeople.findAll(), dal.staff.findAll(), dal.shiftLifecycleRecords.findAll(),
+  ]);
+  return { shifts, handovers, dailyLog, tasks, youngPeople, staff, shiftLifecycleRecords };
+}
+
 /** The shift this person is on now, or the last one they worked. */
-function resolveShift(staffId: string, shiftId: string | null) {
-  const shifts = (getStore().shifts ?? []).filter((s) => s.staff_id === staffId);
+function resolveShift(src: LifecycleSrc, staffId: string, shiftId: string | null) {
+  const shifts = (src.shifts ?? []).filter((s) => s.staff_id === staffId);
   if (shiftId) return shifts.find((s) => s.id === shiftId) ?? null;
   const today = new Date().toISOString().slice(0, 10);
   return (
@@ -56,22 +68,21 @@ function resolveShift(staffId: string, shiftId: string | null) {
  *  `visible` asks "does this home keep records of this kind?", NOT "was it done
  *  this shift" — the difference between an honest gap in Cara and a false
  *  accusation against a team. */
-function assembleEvidence(shift: {
+function assembleEvidence(src: LifecycleSrc, shift: {
   id: string;
   staff_id: string;
   date: string;
   home_id: string;
 }): Partial<Record<CheckId, CheckEvidence>> {
-  const store = getStore();
   // Scope to this home before asking "can Cara see this?" — another home's
   // records prove nothing about this one, and conflating them would let a busy
   // neighbour make a brand-new home look negligent.
   const inHome = <T extends { home_id?: string }>(rows: T[]): T[] =>
     shift.home_id ? rows.filter((r) => r.home_id === shift.home_id) : rows;
 
-  const handovers = inHome(store.handovers ?? []);
-  const dailyLog = inHome(store.dailyLog ?? []);
-  const tasks = inHome(store.tasks ?? []);
+  const handovers = inHome(src.handovers ?? []);
+  const dailyLog = inHome(src.dailyLog ?? []);
+  const tasks = inHome(src.tasks ?? []);
 
   // ── Handovers. No records of them in this home ⇒ it may hand over verbally
   // or on paper. Cara has no standing to call that a gap.
@@ -85,7 +96,7 @@ function assembleEvidence(shift: {
 
   // ── Daily records. Every child living here should have their day written.
   const homeKeepsDailyLogs = dailyLog.length > 0;
-  const children = (store.youngPeople ?? []).filter(
+  const children = (src.youngPeople ?? []).filter(
     (c) => c.status === "current" && (!shift.home_id || c.home_id === shift.home_id),
   );
   const logsToday = dailyLog.filter((l) => l.date === shift.date);
@@ -157,14 +168,14 @@ function assembleEvidence(shift: {
   };
 }
 
-function findRecord(shiftId: string): ShiftLifecycleRecord | null {
-  return (getStore().shiftLifecycleRecords ?? []).find((r) => r.shift_id === shiftId) ?? null;
+function findRecord(src: LifecycleSrc, shiftId: string): ShiftLifecycleRecord | null {
+  return (src.shiftLifecycleRecords ?? []).find((r) => r.shift_id === shiftId) ?? null;
 }
 
-function buildFor(staffId: string, shiftId: string | null) {
-  const shift = resolveShift(staffId, shiftId);
+function buildFor(src: LifecycleSrc, staffId: string, shiftId: string | null) {
+  const shift = resolveShift(src, staffId, shiftId);
   if (!shift) return null;
-  const record = findRecord(shift.id);
+  const record = findRecord(src, shift.id);
   const lifecycle = buildShiftLifecycle({
     shift: {
       id: shift.id,
@@ -174,7 +185,7 @@ function buildFor(staffId: string, shiftId: string | null) {
       start_time: shift.start_time,
       end_time: shift.end_time,
     },
-    evidence: assembleEvidence(shift),
+    evidence: assembleEvidence(src, shift),
     attested: (record?.attestations ?? []).map((a) => a.check_id),
     signedOffAt: record?.signed_off_at ?? null,
     overrideReason: record?.override_reason ?? null,
@@ -203,8 +214,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const built = buildFor(staffId, url.searchParams.get("shift_id"));
-    const staff = (getStore().staff ?? []).find((s) => s.id === staffId);
+    const src = await loadLifecycleSrc();
+    const built = buildFor(src, staffId, url.searchParams.get("shift_id"));
+    const staff = (src.staff ?? []).find((s) => s.id === staffId);
 
     if (!built) {
       return NextResponse.json({
@@ -260,12 +272,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const built = buildFor(identity.userId, str(body.shift_id) || null);
+    const src = await loadLifecycleSrc();
+    const built = buildFor(src, identity.userId, str(body.shift_id) || null);
     if (!built) return NextResponse.json({ error: "No shift found to record against." }, { status: 404 });
 
-    const store = getStore();
     const now = new Date().toISOString();
-    let record = findRecord(built.shift.id);
+    let record = findRecord(src, built.shift.id);
     if (!record) {
       record = {
         id: generateId("slc"),
@@ -280,16 +292,16 @@ export async function POST(req: NextRequest) {
         created_at: now,
         updated_at: now,
       };
-      store.shiftLifecycleRecords.push(record);
+      await dal.shiftLifecycleRecords.create(record);
     }
 
     // A person's word, kept as theirs: who said it, and when.
-    if (!record.attestations.some((a) => a.check_id === checkId)) {
-      record.attestations.push({ check_id: checkId, attested_by: identity.userId, attested_at: now });
-    }
-    record.updated_at = now;
+    const attestations = record.attestations.some((a) => a.check_id === checkId)
+      ? record.attestations
+      : [...record.attestations, { check_id: checkId, attested_by: identity.userId, attested_at: now }];
+    await dal.shiftLifecycleRecords.update(record.id, { attestations, updated_at: now });
 
-    const after = buildFor(identity.userId, built.shift.id);
+    const after = buildFor(await loadLifecycleSrc(), identity.userId, built.shift.id);
     return NextResponse.json({ data: { lifecycle: after?.lifecycle ?? null } }, { status: 201 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";
@@ -314,7 +326,8 @@ export async function PATCH(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const built = buildFor(identity.userId, str(body.shift_id) || null);
+    const src = await loadLifecycleSrc();
+    const built = buildFor(src, identity.userId, str(body.shift_id) || null);
     if (!built) return NextResponse.json({ error: "No shift found to sign off." }, { status: 404 });
     if (built.lifecycle.signedOffAt) {
       return NextResponse.json({ error: "This shift is already signed off." }, { status: 409 });
@@ -331,9 +344,8 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const store = getStore();
     const now = new Date().toISOString();
-    let record = findRecord(built.shift.id);
+    let record = findRecord(src, built.shift.id);
     if (!record) {
       record = {
         id: generateId("slc"),
@@ -348,15 +360,17 @@ export async function PATCH(req: NextRequest) {
         created_at: now,
         updated_at: now,
       };
-      store.shiftLifecycleRecords.push(record);
+      await dal.shiftLifecycleRecords.create(record);
     }
-    record.signed_off_by = identity.userId;
-    record.signed_off_at = now;
-    record.override_reason = built.lifecycle.signOff.clear ? null : reason;
-    record.overridden_blockers = built.lifecycle.signOff.blockers.map((b) => b.checkId);
-    record.updated_at = now;
+    await dal.shiftLifecycleRecords.update(record.id, {
+      signed_off_by: identity.userId,
+      signed_off_at: now,
+      override_reason: built.lifecycle.signOff.clear ? null : reason,
+      overridden_blockers: built.lifecycle.signOff.blockers.map((b) => b.checkId),
+      updated_at: now,
+    });
 
-    const after = buildFor(identity.userId, built.shift.id);
+    const after = buildFor(await loadLifecycleSrc(), identity.userId, built.shift.id);
     return NextResponse.json({ data: { lifecycle: after?.lifecycle ?? null } });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";
