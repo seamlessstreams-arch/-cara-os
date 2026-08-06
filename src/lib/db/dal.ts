@@ -993,6 +993,14 @@ export const dal = {
       s.caraRecordingReviews.push(review);
       return review;
     },
+    /** DEMO-ONLY patch-in-place (2026-08-05); returns null if unknown. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, patch: any) {
+      const review = getStore().caraRecordingReviews.find((r) => r.id === id);
+      if (!review) return null;
+      Object.assign(review, patch);
+      return review;
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1520,6 +1528,21 @@ export const dal = {
 
   askCaraAuditEvents: {
     async findAll() { return getStore().askCaraAuditEvents; },
+    // DEMO-ONLY append (2026-08-05): stamps id/createdAt only when absent, and
+    // caps the log at the most recent 1000 events (the cap previously lived in
+    // the cara/chat route).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const events = getStore().askCaraAuditEvents;
+      const evt = {
+        ...data,
+        id: data.id ?? `ac_evt_${Date.now()}_${events.length}`,
+        createdAt: data.createdAt ?? new Date().toISOString(),
+      };
+      events.push(evt);
+      if (events.length > 1000) events.splice(0, events.length - 1000);
+      return evt;
+    },
   },
 
   shiftPatterns: {
@@ -1882,6 +1905,102 @@ export const dal = {
   },
   hqUsageEvents: {
     async findAll() { return getStore().hqUsageEvents ?? []; },
+  },
+
+  // ── DEMO-ONLY extensions — write-slice 3 (2026-08-05) ─────────────────────
+  // Read+write accessors for the write-tier routes. Same placeholder pattern:
+  // in-memory until Supabase tables land (then only the `if (sb())` branch
+  // changes — routes stay as they are).
+  shiftCoverNotes: {
+    async findAll() { return getStore().shiftCoverNotes ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const s = getStore();
+      (s.shiftCoverNotes ??= []).push(data);
+      return data;
+    },
+    /** Drop any note for the given day+period (the route replaces on save). */
+    async removeByDatePeriod(date: string, period: string) {
+      const s = getStore();
+      s.shiftCoverNotes = (s.shiftCoverNotes ?? []).filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (n: any) => !(String(n.date).slice(0, 10) === date && n.period === period),
+      );
+    },
+  },
+  staffingPolicy: {
+    /** Single policy object (not a collection). */
+    async get() { return getStore().staffingPolicy; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async set(next: any) {
+      getStore().staffingPolicy = next;
+      return next;
+    },
+  },
+  caraManagerAlertStates: {
+    async findAll() { return getStore().caraManagerAlertStates ?? []; },
+    /** Upsert by id. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async save(record: any) {
+      const s = getStore();
+      s.caraManagerAlertStates = s.caraManagerAlertStates ?? [];
+      const i = s.caraManagerAlertStates.findIndex((r) => r.id === record.id);
+      if (i >= 0) s.caraManagerAlertStates[i] = record;
+      else s.caraManagerAlertStates.push(record);
+      return record;
+    },
+    /** Reopen = remove the override record. */
+    async removeById(id: string) {
+      const s = getStore();
+      s.caraManagerAlertStates = (s.caraManagerAlertStates ?? []).filter((r) => r.id !== id);
+    },
+  },
+  caraIncidentTimeline: {
+    async findAll() { return getStore().caraIncidentTimeline ?? []; },
+  },
+  circleNotes: {
+    async findAll() { return getStore().circleNotes ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      getStore().circleNotes.push(data);
+      return data;
+    },
+  },
+  circleRhythms: {
+    async findAll() { return getStore().circleRhythms ?? []; },
+    /** Patch a circle's config (enabled / starts_at); returns null if unknown. */
+    async update(id: string, patch: { enabled?: boolean; starts_at?: string }) {
+      const rhythm = (getStore().circleRhythms ?? []).find((r) => r.id === id);
+      if (!rhythm) return null;
+      if (typeof patch.enabled === "boolean") rhythm.enabled = patch.enabled;
+      if (patch.starts_at) rhythm.starts_at = patch.starts_at;
+      rhythm.updated_at = new Date().toISOString();
+      return rhythm;
+    },
+  },
+  shiftLifecycleRecords: {
+    async findAll() { return getStore().shiftLifecycleRecords ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      getStore().shiftLifecycleRecords.push(data);
+      return data;
+    },
+    /** Patch-in-place by record id; returns null if unknown. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, patch: any) {
+      const record = (getStore().shiftLifecycleRecords ?? []).find((r) => r.id === id);
+      if (!record) return null;
+      Object.assign(record, patch);
+      return record;
+    },
+  },
+  helpReflections: {
+    async findAll() { return getStore().helpReflections ?? []; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      getStore().helpReflections.push(data);
+      return data;
+    },
   },
 
 };

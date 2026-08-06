@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest) {
   const today = todayStr();
 
   // Real data via the dual-mode DAL — the live tenant's Postgres when connected,
-  // the in-memory store in demo mode. This route USED to read getStore()
+  // the in-memory store in demo mode. This route USED to read the store
   // directly, which is gated EMPTY on a live tenant: it then scored the absence
   // of data as near-perfection and reported a reassuring "96% / low risk" for a
   // home with no records at all. On a safeguarding surface, false confidence is

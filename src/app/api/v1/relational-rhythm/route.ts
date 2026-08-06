@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
@@ -39,14 +39,16 @@ export async function GET(req: NextRequest) {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
 
-    const store = getStore();
+    const [circleRhythmsList, circleNotesList] = await Promise.all([
+      dal.circleRhythms.findAll(), dal.circleNotes.findAll(),
+    ]);
     const homeId = identity.homeId;
     const scoped = <T extends { home_id: string }>(rows: T[]): T[] =>
       homeId ? rows.filter((r) => r.home_id === homeId) : rows;
 
     const view = buildRhythmView(
-      scoped(store.circleRhythms ?? []),
-      scoped(store.circleNotes ?? []),
+      scoped(circleRhythmsList ?? []),
+      scoped(circleNotesList ?? []),
       new Date(),
     );
 
@@ -102,10 +104,12 @@ export async function POST(req: NextRequest) {
       created_at: now,
       created_by: identity.userId,
     };
-    getStore().circleNotes.push(note);
+    await dal.circleNotes.create(note);
 
-    const store = getStore();
-    const view = buildRhythmView(store.circleRhythms ?? [], store.circleNotes ?? [], new Date());
+    const [circleRhythmsList, circleNotesList] = await Promise.all([
+      dal.circleRhythms.findAll(), dal.circleNotes.findAll(),
+    ]);
+    const view = buildRhythmView(circleRhythmsList ?? [], circleNotesList ?? [], new Date());
     return NextResponse.json(
       {
         data: {
@@ -152,15 +156,16 @@ export async function PATCH(req: NextRequest) {
     }
 
     const id = str(body.id);
-    const rhythm = (getStore().circleRhythms ?? []).find((r) => r.id === id);
+    const rhythm = await dal.circleRhythms.update(id, {
+      enabled: typeof body.enabled === "boolean" ? body.enabled : undefined,
+      starts_at: str(body.starts_at) || undefined,
+    });
     if (!rhythm) return NextResponse.json({ error: `No circle "${id}" in the rhythm.` }, { status: 404 });
 
-    if (typeof body.enabled === "boolean") rhythm.enabled = body.enabled;
-    if (str(body.starts_at)) rhythm.starts_at = str(body.starts_at);
-    rhythm.updated_at = new Date().toISOString();
-
-    const store = getStore();
-    const view = buildRhythmView(store.circleRhythms ?? [], store.circleNotes ?? [], new Date());
+    const [circleRhythmsList, circleNotesList] = await Promise.all([
+      dal.circleRhythms.findAll(), dal.circleNotes.findAll(),
+    ]);
+    const view = buildRhythmView(circleRhythmsList ?? [], circleNotesList ?? [], new Date());
     return NextResponse.json({ data: view });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";

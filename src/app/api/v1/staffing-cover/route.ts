@@ -5,7 +5,7 @@
 // Published shifts UNION pattern projections (published wins), minus anyone on
 // approved leave / sickness, analysed against the home staffing policy.
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import type { ShiftCoverNote } from "@/lib/rota/rota-seeds";
@@ -19,18 +19,25 @@ const COVER_REASONS = new Set(["shadow_shift", "induction", "training", "child_p
 // this API share ONE rota-safety read.
 const computeCover = computeStaffingCoverFromStore;
 
+/** Compose exactly the collections computeCover's Pick requires, via the dal.
+ *  Called fresh after any write so the recompute reflects the new state. */
+async function loadCoverShape() {
+  const [leaveRequests, shiftCoverNotes, shiftPatterns, shifts, staff, staffSicknessRecords, staffingPolicy] = await Promise.all([
+    dal.leaveRequests.findAll(), dal.shiftCoverNotes.findAll(), dal.shiftPatterns.findAll(),
+    dal.shifts.findAll(), dal.staff.findAll(), dal.staffSicknessRecords.findAll(), dal.staffingPolicy.get(),
+  ]);
+  return { leaveRequests, shiftCoverNotes, shiftPatterns, shifts, staff, staffSicknessRecords, staffingPolicy };
+}
 
 export async function GET(req: Request) {
-  const store = getStore() as any;
   const url = new URL(req.url);
   const today = new Date().toISOString().slice(0, 10);
   const from = url.searchParams.get("from") || today;
   const to = url.searchParams.get("to") || addDays(today, 13);
-  return NextResponse.json({ data: computeCover(store, from, to) });
+  return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to) });
 }
 
 export async function POST(req: Request) {
-  const store = getStore() as any;
   let body: any = {};
   const __parsed2 = await readJsonBody(req);
   if (!__parsed2.ok) return __parsed2.response;
@@ -61,26 +68,25 @@ export async function POST(req: Request) {
   };
 
   // One reason per date+period — replace any existing so re-logging updates it.
-  store.shiftCoverNotes = (store.shiftCoverNotes ?? []).filter((n: any) => !(String(n.date).slice(0, 10) === date && n.period === period));
-  store.shiftCoverNotes.push(note);
+  await dal.shiftCoverNotes.removeByDatePeriod(date, period);
+  await dal.shiftCoverNotes.create(note);
 
   // Recompute over the same fortnight so the row flips to "logged" in the response.
   const from = body.from || new Date().toISOString().slice(0, 10);
   const to = body.to || addDays(from, 13);
-  return NextResponse.json({ data: computeCover(store, from, to), note });
+  return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to), note });
 }
 
 // PATCH /api/v1/staffing-cover { min_day, min_night, expected_day, expected_night,
 // waking_night_required, from?, to? } — update the home staffing policy
 // ("updatable for need / risk") and recompute the forward picture.
 export async function PATCH(req: Request) {
-  const store = getStore() as any;
   let body: any = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
 
-  const cur = store.staffingPolicy ?? {};
+  const cur = ((await dal.staffingPolicy.get()) ?? {}) as any;
   const intOr = (v: any, fallback: number) => {
     const n = Math.round(Number(v));
     return Number.isFinite(n) ? Math.min(20, Math.max(0, n)) : fallback;
@@ -93,9 +99,9 @@ export async function PATCH(req: Request) {
     expected_night: Math.max(intOr(body.expected_night, cur.expected_night ?? 1), intOr(body.min_night, cur.min_night ?? 1)),
     waking_night_required: typeof body.waking_night_required === "boolean" ? body.waking_night_required : !!cur.waking_night_required,
   };
-  store.staffingPolicy = next;
+  await dal.staffingPolicy.set(next);
 
   const from = body.from || new Date().toISOString().slice(0, 10);
   const to = body.to || addDays(from, 13);
-  return NextResponse.json({ data: computeCover(store, from, to) });
+  return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to) });
 }
