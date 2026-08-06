@@ -10,7 +10,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { unifyNeuroProfile, deriveRecordingPrompts } from "@/lib/neurodiversity-profile/unification-engine";
 import type { NeuroRecordingContext, UnifyNeuroInput } from "@/lib/neurodiversity-profile/types";
 
@@ -22,7 +23,7 @@ const nameOf = (yp: { id?: string; preferred_name?: string | null; first_name?: 
 
 const VALID_CONTEXTS: NeuroRecordingContext[] = ["incident", "behaviour", "restraint", "daily_log", "key_work", "care_plan", "overview"];
 
-function buildInput(store: ReturnType<typeof getStore>, childId: string, childName: string, asOf: string): UnifyNeuroInput {
+function buildInput(store: Pick<ReturnType<typeof getStore>, "adhdPlans" | "autismPlans" | "ehcpRecords" | "sensoryProfileRecords" | "youngPeople">, childId: string, childName: string, asOf: string): UnifyNeuroInput {
   const byChild = (x: { child_id?: string }) => x.child_id === childId;
   return {
     childId,
@@ -97,7 +98,8 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
 
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
+    const [adhdPlansList, autismPlansList, ehcpRecordsList, sensoryProfileRecordsList, youngPeopleList] = await Promise.all([dal.adhdPlans.findAll(), dal.autismPlans.findAll(), dal.ehcpRecords.findAll(), dal.sensoryProfileRecords.findAll(), dal.youngPeople.findAll()]);
+  const store = { adhdPlans: adhdPlansList, autismPlans: autismPlansList, ehcpRecords: ehcpRecordsList, sensoryProfileRecords: sensoryProfileRecordsList, youngPeople: youngPeopleList };
     const asOf = new Date().toISOString().slice(0, 10);
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id");

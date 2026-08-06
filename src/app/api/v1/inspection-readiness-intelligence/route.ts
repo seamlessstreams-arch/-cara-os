@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { rate, rateOf, meanOf } from "@/lib/metrics/rate";
 import {
   computeInspectionReadiness,
@@ -10,7 +11,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const store = getStore();
+  const [behaviourLogList, careFormsList, complaintOutcomeRecordsList, educationRecordsList, exploitationScreeningsList, healthAssessmentsList, incidentsList, lacReviewsList, medicationAdministrationsList, medicationsList, missingEpisodesList, notifiableEventsList, qaAuditRecordsList, reg44ActionRecordsList, reg44VisitReportsList, reg45EvidenceQueueList, riskAssessmentsList, selfEvaluationAreasList, staffList, supervisionsList, trainingRecordsList, youngPeopleList, homeRec] = await Promise.all([dal.behaviourLog.findAll(), dal.careForms.findAll(), dal.complaintOutcomeRecords.findAll(), dal.educationRecords.findAll(), dal.exploitationScreenings.findAll(), dal.healthAssessments.findAll(), dal.incidents.findAll(), dal.lacReviews.findAll(), dal.medicationAdministrations.findAll(), dal.medications.findAll(), dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.qaAuditRecords.findAll(), dal.reg44ActionRecords.findAll(), dal.reg44VisitReports.findAll(), dal.reg45EvidenceQueue.findAll(), dal.riskAssessments.findAll(), dal.selfEvaluationAreas.findAll(), dal.staff.findAll(), dal.supervisions.findAll(), dal.trainingRecords.findAll(), dal.youngPeople.findAll(), dal.home.get()]);
+  const store = { behaviourLog: behaviourLogList, careForms: careFormsList, complaintOutcomeRecords: complaintOutcomeRecordsList, educationRecords: educationRecordsList, exploitationScreenings: exploitationScreeningsList, healthAssessments: healthAssessmentsList, incidents: incidentsList, lacReviews: lacReviewsList, medicationAdministrations: medicationAdministrationsList, medications: medicationsList, missingEpisodes: missingEpisodesList, notifiableEvents: notifiableEventsList, qaAuditRecords: qaAuditRecordsList, reg44ActionRecords: reg44ActionRecordsList, reg44VisitReports: reg44VisitReportsList, reg45EvidenceQueue: reg45EvidenceQueueList, riskAssessments: riskAssessmentsList, selfEvaluationAreas: selfEvaluationAreasList, staff: staffList, supervisions: supervisionsList, trainingRecords: trainingRecordsList, youngPeople: youngPeopleList, home: homeRec };
   const today = new Date().toISOString().slice(0, 10);
   const children = store.youngPeople.filter((yp) => yp.status === "current");
   const staff = store.staff.filter((s) => s.is_active);
@@ -195,7 +197,7 @@ function addDays(date: string, days: number): string {
   return d.toISOString();
 }
 
-function buildDomainMetrics(store: any, today: string): DomainMetric[] {
+function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourLog" | "careForms" | "complaintOutcomeRecords" | "educationRecords" | "exploitationScreenings" | "healthAssessments" | "incidents" | "lacReviews" | "medicationAdministrations" | "medications" | "missingEpisodes" | "notifiableEvents" | "qaAuditRecords" | "reg44ActionRecords" | "reg44VisitReports" | "reg45EvidenceQueue" | "riskAssessments" | "selfEvaluationAreas" | "staff" | "supervisions" | "trainingRecords" | "youngPeople"> & { home: ReturnType<typeof getStore>["home"] | null }, today: string): DomainMetric[] {
   const metrics: DomainMetric[] = [];
   const daysSince = (d: string) =>
     Math.floor((new Date(today).getTime() - new Date(d).getTime()) / 86_400_000);

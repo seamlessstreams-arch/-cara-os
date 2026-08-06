@@ -708,6 +708,11 @@ export const dal = {
   },
 
   candidateChecks: {
+    // DEMO-ONLY list read (2026-08-05): in-memory until a whole-table Supabase
+    // query lands (sq.getCandidateChecks is per-candidate only).
+    async findAll() {
+      return getStore().candidateChecks ?? [];
+    },
     async findByCandidate(candidateId: string) {
       const c = sb();
       if (c) return sq.getCandidateChecks(c, candidateId);
@@ -1822,6 +1827,39 @@ export const dal = {
   },
   writingAssistantAuditEvents: {
     async findAll() { return getStore().writingAssistantAuditEvents ?? []; },
+  },
+
+  // ── DEMO-ONLY extensions — uncovered-tier routes (2026-08-05) ─────────────
+  // Same placeholder pattern: in-memory reads until a Supabase table lands.
+  adhdPlans: {
+    async findAll() { return getStore().adhdPlans ?? []; },
+  },
+  autismPlans: {
+    async findAll() { return getStore().autismPlans ?? []; },
+  },
+  caraPaceAnalyses: {
+    async findAll() { return getStore().caraPaceAnalyses ?? []; },
+  },
+  caraWritingReviews: {
+    async findAll() { return getStore().caraWritingReviews ?? []; },
+  },
+  childFeedbackLoops: {
+    async findAll() { return getStore().childFeedbackLoops ?? []; },
+  },
+  competencyScores: {
+    async findAll() { return getStore().competencyScores ?? []; },
+  },
+  multiDisciplinaryFormulations: {
+    async findAll() { return getStore().multiDisciplinaryFormulations ?? []; },
+  },
+  reg44ActionRecords: {
+    async findAll() { return getStore().reg44ActionRecords ?? []; },
+  },
+  reg45EvidenceQueue: {
+    async findAll() { return getStore().reg45EvidenceQueue ?? []; },
+  },
+  sensoryProfileRecords: {
+    async findAll() { return getStore().sensoryProfileRecords ?? []; },
   },
 
 };

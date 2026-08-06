@@ -16,7 +16,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildCareLanguageAudit } from "@/lib/care-language-audit/care-language-audit-engine";
 import {
   buildTraumaTree,
@@ -44,7 +45,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const store = getStore();
+    // dailyLog + staff aren't read here directly — buildCareLanguageAudit's
+    // Pick requires them (it scans those collections for labelling language).
+    const [behaviourLogList, dailyLogList, incidentsList, multiDisciplinaryFormulationsList, staffList, traumaTherapyLogsList, youngPeopleList] = await Promise.all([dal.behaviourLog.findAll(), dal.dailyLog.findAll(), dal.incidents.findAll(), dal.multiDisciplinaryFormulations.findAll(), dal.staff.findAll(), dal.traumaTherapyLogs.findAll(), dal.youngPeople.findAll()]);
+  const store = { behaviourLog: behaviourLogList, dailyLog: dailyLogList, incidents: incidentsList, multiDisciplinaryFormulations: multiDisciplinaryFormulationsList, staff: staffList, traumaTherapyLogs: traumaTherapyLogsList, youngPeople: youngPeopleList };
     const homeId = identity.homeId;
     const children = (store.youngPeople ?? [])
       .filter((c) => c.status === "current" && (!homeId || c.home_id === homeId))
