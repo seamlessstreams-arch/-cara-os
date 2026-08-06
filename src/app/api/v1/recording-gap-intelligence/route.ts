@@ -14,16 +14,21 @@
 //  themselves of the quality of care." — Ofsted ILACS Handbook.
 //
 // All deterministic. No LLM calls. The pure compute lives in
-// `@/lib/recording-gap-intelligence/recording-gap-engine`; this route is a thin
-// wrapper over `buildRecordingGapIntelligence(getStore())`.
+// `@/lib/recording-gap-intelligence/recording-gap-engine`; this route composes
+// the engine's collections from the dual-mode dal and hands it the shape.
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { buildRecordingGapIntelligence } from "@/lib/recording-gap-intelligence/recording-gap-engine";
 
 export async function GET() {
-  return NextResponse.json({ data: buildRecordingGapIntelligence(getStore()) });
+  const [dailyLogList, keyWorkingSessionsList, lacReviewsList, welfareChecksList, youngPeopleList] = await Promise.all([
+    dal.dailyLog.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(),
+    dal.welfareChecks.findAll(), dal.youngPeople.findAll(),
+  ]);
+  const store = { dailyLog: dailyLogList, keyWorkingSessions: keyWorkingSessionsList, lacReviews: lacReviewsList, welfareChecks: welfareChecksList, youngPeople: youngPeopleList };
+  return NextResponse.json({ data: buildRecordingGapIntelligence(store) });
 }

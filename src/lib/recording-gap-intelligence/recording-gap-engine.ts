@@ -4,7 +4,7 @@
 // Pure, importable builder for Recording Gap Intelligence. Extracted from the
 // GET /api/v1/recording-gap-intelligence route so the same deterministic compute
 // can be reused and unit-tested without a Next.js request. The route is now a
-// thin wrapper that calls `buildRecordingGapIntelligence(getStore())`.
+// thin wrapper that composes the collections below from the dal.
 //
 // Detects gaps in care recording for each current resident across four
 // safeguarding-critical domains:
@@ -172,7 +172,7 @@ function supervisionPromptFor(
 // ── Public entry point — pure ────────────────────────────────────────────────
 
 export function buildRecordingGapIntelligence(
-  store: ReturnType<typeof getStore>,
+  store: Pick<ReturnType<typeof getStore>, "dailyLog" | "keyWorkingSessions" | "lacReviews" | "welfareChecks" | "youngPeople">,
 ): RecordingGapData {
   const now = new Date();
 

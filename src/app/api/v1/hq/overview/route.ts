@@ -1,6 +1,6 @@
 // CARA HQ — GET /api/v1/hq/overview (platform-owner cockpit)
 import { NextResponse, type NextRequest } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeHqOverview } from "@/lib/engines/platform-hq-engine";
 import { resolveHqActor, isPlatformAdmin } from "@/lib/hq/hq-service";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -13,14 +13,14 @@ export async function GET(req: NextRequest) {
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
-  const store = getStore();
+  const [hqAiUsageList, hqApiCallsList, hqBreakGlassGrantsList, hqDecisionsList, hqOrganisationsList, hqUsageEventsList] = await Promise.all([dal.hqAiUsage.findAll(), dal.hqApiCalls.findAll(), dal.hqBreakGlassGrants.findAll(), dal.hqDecisions.findAll(), dal.hqOrganisations.findAll(), dal.hqUsageEvents.findAll()]);
   const overview = computeHqOverview({
-    organisations: store.hqOrganisations,
-    usageEvents: store.hqUsageEvents,
-    aiUsage: store.hqAiUsage,
-    apiCalls: store.hqApiCalls,
-    decisions: store.hqDecisions,
-    breakGlass: store.hqBreakGlassGrants,
+    organisations: hqOrganisationsList,
+    usageEvents: hqUsageEventsList,
+    aiUsage: hqAiUsageList,
+    apiCalls: hqApiCallsList,
+    decisions: hqDecisionsList,
+    breakGlass: hqBreakGlassGrantsList,
     now: new Date().toISOString(),
   });
   return NextResponse.json({

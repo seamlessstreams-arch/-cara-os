@@ -1862,6 +1862,28 @@ export const dal = {
     async findAll() { return getStore().sensoryProfileRecords ?? []; },
   },
 
+  // ── DEMO-ONLY extensions — HQ metering routes (2026-08-05) ────────────────
+  // Platform-owner cockpit collections (real seeded arrays). Same placeholder
+  // pattern: in-memory reads until Supabase tables land.
+  hqAiUsage: {
+    async findAll() { return getStore().hqAiUsage ?? []; },
+  },
+  hqApiCalls: {
+    async findAll() { return getStore().hqApiCalls ?? []; },
+  },
+  hqBreakGlassGrants: {
+    async findAll() { return getStore().hqBreakGlassGrants ?? []; },
+  },
+  hqDecisions: {
+    async findAll() { return getStore().hqDecisions ?? []; },
+  },
+  hqOrganisations: {
+    async findAll() { return getStore().hqOrganisations ?? []; },
+  },
+  hqUsageEvents: {
+    async findAll() { return getStore().hqUsageEvents ?? []; },
+  },
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
