@@ -10,7 +10,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { synthesiseStaffPracticeSkills } from "@/lib/staff-practice-skills/skills-engine";
 import type { StaffPracticeSkillsInput } from "@/lib/staff-practice-skills/types";
 import { COMPETENCY_DOMAIN_LABELS } from "@/types/extended";
@@ -20,7 +21,7 @@ export const dynamic = "force-dynamic";
 const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : []);
 const num = (v: unknown): number => (typeof v === "number" ? v : Number(v) || 0);
 
-function buildInput(store: ReturnType<typeof getStore>, staffId: string, staffName: string, asOf: string): StaffPracticeSkillsInput {
+function buildInput(store: Pick<ReturnType<typeof getStore>, "competencyScores" | "keyWorkingSessions" | "practiceObservations" | "reflectiveSupervisions" | "staff" | "writingAssistantAuditEvents">, staffId: string, staffName: string, asOf: string): StaffPracticeSkillsInput {
   return {
     staffId,
     staffName,
@@ -50,7 +51,8 @@ const nameOf = (s: { id?: string; name?: string | null; preferred_name?: string 
 
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
+    const [competencyScoresList, keyWorkingSessionsList, practiceObservationsList, reflectiveSupervisionsList, staffList, writingAssistantAuditEventsList] = await Promise.all([dal.competencyScores.findAll(), dal.keyWorkingSessions.findAll(), dal.practiceObservations.findAll(), dal.reflectiveSupervisions.findAll(), dal.staff.findAll(), dal.writingAssistantAuditEvents.findAll()]);
+  const store = { competencyScores: competencyScoresList, keyWorkingSessions: keyWorkingSessionsList, practiceObservations: practiceObservationsList, reflectiveSupervisions: reflectiveSupervisionsList, staff: staffList, writingAssistantAuditEvents: writingAssistantAuditEventsList };
     const asOf = new Date().toISOString().slice(0, 10);
     const { searchParams } = new URL(req.url);
     const staffId = searchParams.get("staff_id");

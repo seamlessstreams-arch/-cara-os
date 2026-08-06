@@ -12,7 +12,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import type { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeChildVoiceDimensions } from "@/lib/child-voice-dimensions/dimensions-engine";
 import type { ChildVoiceDimensionInput } from "@/lib/child-voice-dimensions/types";
 
@@ -23,7 +24,7 @@ const nameOf = (yp: { id?: string; preferred_name?: string | null; first_name?: 
   yp.preferred_name || yp.first_name || yp.name || "Child";
 
 /** Build the pure-engine input for one child from live store snapshots. */
-function buildInput(store: ReturnType<typeof getStore>, childId: string, childName: string, asOf: string): ChildVoiceDimensionInput {
+function buildInput(store: Pick<ReturnType<typeof getStore>, "advocacyRecords" | "childFeedbackLoops" | "houseMeetings" | "keyWorkingSessions" | "lacReviews" | "youngPeople" | "ypFeedback">, childId: string, childName: string, asOf: string): ChildVoiceDimensionInput {
   return {
     childId,
     childName,
@@ -87,7 +88,8 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
 
 export async function GET(req: NextRequest) {
   try {
-    const store = getStore();
+    const [advocacyRecordsList, childFeedbackLoopsList, houseMeetingsList, keyWorkingSessionsList, lacReviewsList, youngPeopleList, ypFeedbackList] = await Promise.all([dal.advocacyRecords.findAll(), dal.childFeedbackLoops.findAll(), dal.houseMeetings.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.youngPeople.findAll(), dal.ypFeedback.findAll()]);
+  const store = { advocacyRecords: advocacyRecordsList, childFeedbackLoops: childFeedbackLoopsList, houseMeetings: houseMeetingsList, keyWorkingSessions: keyWorkingSessionsList, lacReviews: lacReviewsList, youngPeople: youngPeopleList, ypFeedback: ypFeedbackList };
     const asOf = new Date().toISOString().slice(0, 10);
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id");

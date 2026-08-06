@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeOfstedWorkforceEvidence, type DomainInput } from "@/lib/engines/ofsted-workforce-evidence-engine";
 
@@ -20,23 +20,29 @@ const iso = (d: any) => (d ? String(d).slice(0, 10) : null);
 const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 100) : null);
 
 export async function GET() {
-  const store = getStore() as any;
+  const [staffList, reflectiveSupervisionsList, trainingRecordsList, inductionRecordsList, candidateChecksList, candidateProfilesList, incidentsList, homeRec] = await Promise.all([
+    dal.staff.findAll(), dal.reflectiveSupervisions.findAll(), dal.trainingRecords.findAll(),
+    dal.inductionRecords.findAll(), dal.candidateChecks.findAll(), dal.candidateProfiles.findAll(),
+    dal.incidents.findAll(), dal.home.get(),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
-  const home_name = store.homes?.[0]?.name || store.home?.name || "the home";
+  // (Previously also probed a phantom `homes[0]` field that never existed — always
+  // fell through to the singular home record, preserved here.)
+  const home_name = (homeRec as { name?: string } | null)?.name || "the home";
 
-  const allStaff: any[] = store.staff ?? [];
+  const allStaff: any[] = staffList ?? [];
   const activeStaff = allStaff.filter((s) => s.employment_status !== "left");
   const staff: StaffLite[] = activeStaff
     .filter((s) => SUPERVISEE_ROLES.has(String(s.role)))
     .map((s) => ({ id: s.id, name: staffName(s), role: s.role }));
 
-  const supRecords: ReflectiveSupervisionRecord[] = store.reflectiveSupervisions ?? [];
+  const supRecords: ReflectiveSupervisionRecord[] = (reflectiveSupervisionsList ?? []) as ReflectiveSupervisionRecord[];
   const sup = computeSupervisionOverview({ records: supRecords, staff, today });
-  const training: any[] = store.trainingRecords ?? [];
-  const inductions: any[] = store.inductionRecords ?? [];
-  const checks: any[] = store.candidateChecks ?? [];
-  const candidates: any[] = store.candidateProfiles ?? [];
-  const incidents: any[] = store.incidents ?? [];
+  const training: any[] = trainingRecordsList ?? [];
+  const inductions: any[] = inductionRecordsList ?? [];
+  const checks: any[] = candidateChecksList ?? [];
+  const candidates: any[] = candidateProfilesList ?? [];
+  const incidents: any[] = incidentsList ?? [];
 
   const domains: DomainInput[] = [];
 

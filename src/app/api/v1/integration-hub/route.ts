@@ -8,15 +8,13 @@
 // error logging, idempotency keys, sync status, audit trail, manual override).
 //
 // NO real external calls are made — this is the adapter framework SCAFFOLD. The
-// demo store has no live integrations registry, so we map any optional
-// `store.integrations` defensively and otherwise compute the static default
-// registry via computeIntegrationHub({}).
+// demo store has no live integrations registry (the field never existed), so
+// the static default registry from computeIntegrationHub({}) always wins.
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
 import {
   computeIntegrationHub,
   type IntegrationAdapter,
@@ -27,9 +25,10 @@ import {
 const d = (v: unknown): string | null => (v == null ? null : v.toString());
 
 export async function GET() {
-  const store = getStore() as any;
-
-  const integrations = (store.integrations ?? []) as any[];
+  // No live registry exists — `integrations` was a phantom field (never on the
+  // store), so this has always been []. The defensive mapping below is kept for
+  // the day a real adapter registry lands; until then the static scaffold wins.
+  const integrations = [] as any[];
 
   // No live registry in the demo store → fall back to the static default scaffold
   // by calling the engine with no adapters supplied.
