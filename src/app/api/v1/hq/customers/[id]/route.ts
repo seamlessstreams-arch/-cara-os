@@ -1,6 +1,6 @@
 // CARA HQ — /api/v1/hq/customers/[id] (detail + status)
 import { NextResponse, type NextRequest } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db";
 import {
   summariseAiUsage,
   summariseBreakGlass,
@@ -24,8 +24,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
   const { id } = await params;
-  const store = getStore();
-  const customer = store.hqOrganisations.find((o) => o.id === id);
+  const [hqAiUsageList, hqBreakGlassGrantsList, hqOrganisationsList, hqUsageEventsList] = await Promise.all([dal.hqAiUsage.findAll(), dal.hqBreakGlassGrants.findAll(), dal.hqOrganisations.findAll(), dal.hqUsageEvents.findAll()]);
+  const customer = hqOrganisationsList.find((o) => o.id === id);
   if (!customer) {
     return NextResponse.json({ error: "Customer not found" }, { status: 404 });
   }
@@ -33,10 +33,10 @@ export async function GET(req: NextRequest, { params }: Params) {
   return NextResponse.json({
     data: {
       customer,
-      usage: summariseUsage(store.hqUsageEvents.filter((e) => e.org_id === id), now),
-      ai: summariseAiUsage(store.hqAiUsage.filter((r) => r.org_id === id), now),
+      usage: summariseUsage(hqUsageEventsList.filter((e) => e.org_id === id), now),
+      ai: summariseAiUsage(hqAiUsageList.filter((r) => r.org_id === id), now),
       break_glass: summariseBreakGlass(
-        store.hqBreakGlassGrants.filter((g) => g.org_id === id),
+        hqBreakGlassGrantsList.filter((g) => g.org_id === id),
         now,
       ),
     },

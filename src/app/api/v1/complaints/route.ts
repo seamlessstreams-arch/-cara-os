@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Write through the canonical event spine (forms-as-views). The canonical event
-  // lands on getStore().cornerstoneEvents (the spine), so the complaint surfaces in
+  // lands on the `cornerstoneEvents` spine collection, so the complaint surfaces in
   // the timeline + intelligence under the projection's stable id (evt_cmp_<id>).
   // Best-effort; never blocks complaint creation.
   try {
