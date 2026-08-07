@@ -14,6 +14,7 @@ import { api } from "@/hooks/use-api";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import type { UploadedDocument } from "@/types/documents";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
+import { documentDownloadHref } from "@/lib/compliance/document-file";
 import {
   FileText, Sparkles, AlertTriangle, CheckCircle2,
   Shield, Brain, ClipboardList, Search, X, ChevronDown, ChevronUp,
@@ -158,9 +159,9 @@ function DocumentCard({ doc }: { doc: UploadedDocument }) {
                   <span>{Math.round((doc.classification_confidence ?? 0) * 100)}% confidence</span>
                 )}
                 <span>Uploaded {formatRelative(doc.uploaded_at)}</span>
-                {doc.stored_file_path?.startsWith("data:") && (
+                {documentDownloadHref(doc.stored_file_path) && (
                   <a
-                    href={doc.stored_file_path}
+                    href={documentDownloadHref(doc.stored_file_path)!}
                     download={doc.original_file_name}
                     onClick={(e) => e.stopPropagation()}
                     className="inline-flex items-center gap-1 font-medium text-[var(--cs-navy)] hover:underline"

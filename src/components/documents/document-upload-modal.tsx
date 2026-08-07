@@ -16,6 +16,8 @@ import {
   Shield, Sparkles, ChevronRight, TriangleAlert, Brain,
   ClipboardList, Link, BookOpen, Info, ArrowRight, Download,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { DOCUMENT_BUCKET, STORAGE_SENTINEL, documentDownloadHref } from "@/lib/compliance/document-file";
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────
 type UploadPayload = {
@@ -25,6 +27,8 @@ type UploadPayload = {
   extracted_text: string;
   /** The file's bytes as a base64 data URL, so the actual file is stored. */
   file_data_url?: string | null;
+  /** Object-storage path when the browser uploaded straight to the bucket. */
+  stored_object_path?: string | null;
   linked_child_id?: string | null;
   linked_staff_id?: string | null;
   linked_incident_id?: string | null;
@@ -44,11 +48,34 @@ type Step = "select" | "analysing" | "review";
 
 const ACCEPT_TYPES = ".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.msg,.eml";
 
-// The selected file is attached inline (base64) so it is genuinely stored and
-// downloadable. Cap it so the JSON payload stays under the serverless request-
-// body limit (~4.5 MB) — larger files need object storage, a follow-up.
+// Small files are attached inline (base64) — capped so the JSON payload stays
+// under the serverless request-body limit (~4.5 MB). Larger files go straight
+// from the browser to object storage via a signed upload URL (tried first for
+// every file when storage is available), up to the bucket's 25 MB cap.
 const MAX_ATTACH_MB = 3;
 const MAX_ATTACH_BYTES = MAX_ATTACH_MB * 1024 * 1024;
+const MAX_STORAGE_MB = 25;
+const MAX_STORAGE_BYTES = MAX_STORAGE_MB * 1024 * 1024;
+
+/** Browser→bucket upload via a one-shot signed URL; null when unavailable. */
+async function uploadFileToStorage(file: File, fileName: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/v1/doc-intelligence/upload-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file_name: fileName }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.data?.enabled || !json.data.path || !json.data.token) return null;
+    const supabase = createClient();
+    const { error } = await supabase.storage
+      .from(DOCUMENT_BUCKET)
+      .uploadToSignedUrl(json.data.path, json.data.token, file);
+    return error ? null : `${STORAGE_SENTINEL}${json.data.path}`;
+  } catch {
+    return null;
+  }
+}
 
 const FILE_TYPE_MAP: Record<string, string> = {
   "application/pdf": "pdf",
@@ -114,6 +141,7 @@ export function DocumentUploadModal({
   const [fileType, setFileType] = useState("txt");
   const [fileSize, setFileSize] = useState(0);
   const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState("");
   const [context, setContext] = useState(uploadContext ?? "");
@@ -132,16 +160,22 @@ export function DocumentUploadModal({
     setFileSize(file.size);
     setFileError(null);
     setFileDataUrl(null);
+    setPendingFile(null);
     const detectedType = FILE_TYPE_MAP[file.type] ?? (file.name.endsWith(".docx") ? "docx" : file.name.endsWith(".xlsx") ? "xlsx" : "txt");
     setFileType(detectedType);
 
-    // Attach the actual file so it is stored and downloadable — not just its text.
-    if (file.size > MAX_ATTACH_BYTES) {
-      setFileError(`This file is ${(file.size / 1024 / 1024).toFixed(1)} MB — too large to attach here (max ${MAX_ATTACH_MB} MB). You can still paste its text below.`);
+    // Store the actual file so it is genuinely kept and downloadable — not
+    // just its text. Small files also get an inline base64 fallback; larger
+    // ones rely on object storage (attempted first for every file at upload).
+    if (file.size > MAX_STORAGE_BYTES) {
+      setFileError(`This file is ${(file.size / 1024 / 1024).toFixed(1)} MB — over the ${MAX_STORAGE_MB} MB limit. You can still paste its text below.`);
     } else {
-      const dataReader = new FileReader();
-      dataReader.onload = (e) => setFileDataUrl((e.target?.result as string) ?? null);
-      dataReader.readAsDataURL(file);
+      setPendingFile(file);
+      if (file.size <= MAX_ATTACH_BYTES) {
+        const dataReader = new FileReader();
+        dataReader.onload = (e) => setFileDataUrl((e.target?.result as string) ?? null);
+        dataReader.readAsDataURL(file);
+      }
     }
 
     // For text files, also pre-fill the content box so Cara can analyse it. For
@@ -174,13 +208,27 @@ export function DocumentUploadModal({
     setStep("analysing");
     setCaraError(null);
 
+    // Object storage first (browser→bucket via signed URL, no serverless body
+    // limit); inline base64 is the fallback for small files. A large file with
+    // neither path available is stated honestly rather than silently dropped.
+    let storedObjectPath: string | null = null;
+    if (pendingFile) {
+      storedObjectPath = await uploadFileToStorage(pendingFile, fileName);
+      if (!storedObjectPath && !fileDataUrl) {
+        setFileError(`Secure file storage is not available right now and this file is over the ${MAX_ATTACH_MB} MB inline limit. You can still paste its text below and upload without the file.`);
+        setStep("select");
+        return;
+      }
+    }
+
     try {
       const res = await uploadMutation.mutateAsync({
         original_file_name: fileName,
         file_type: fileType,
         file_size: fileSize,
         extracted_text: extractedText,
-        file_data_url: fileDataUrl,
+        file_data_url: storedObjectPath ? null : fileDataUrl,
+        stored_object_path: storedObjectPath,
         linked_child_id: linkedChildId ?? null,
         linked_staff_id: linkedStaffId ?? null,
         linked_incident_id: linkedIncidentId ?? null,
@@ -328,9 +376,12 @@ export function DocumentUploadModal({
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{fileError}
                 </p>
               )}
-              {fileName && fileDataUrl && !fileError && (
+              {fileName && (pendingFile || fileDataUrl) && !fileError && (
                 <p className="flex items-center gap-1.5 text-xs text-emerald-600">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />File attached — it will be stored on the record and downloadable.
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  {pendingFile && !fileDataUrl
+                    ? "File attached — it will upload to secure storage and be downloadable."
+                    : "File attached — it will be stored on the record and downloadable."}
                 </p>
               )}
 
@@ -485,9 +536,9 @@ export function DocumentUploadModal({
               )}
 
               {/* The stored file — proof it actually uploaded, and downloadable */}
-              {result.stored_file_path?.startsWith("data:") && (
+              {documentDownloadHref(result.stored_file_path) && (
                 <a
-                  href={result.stored_file_path}
+                  href={documentDownloadHref(result.stored_file_path)!}
                   download={result.original_file_name}
                   className="inline-flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-cara-gold-bg)]/40 transition-colors"
                 >
