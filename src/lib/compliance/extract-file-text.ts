@@ -6,7 +6,9 @@
 // text is posted to the (unchanged) ingest engine. Supports:
 //   • .txt / .md / text/*  → read directly
 //   • .docx                → unzip (jszip) → strip WordprocessingML → text
-//   • .pdf                 → not extracted client-side yet (paste the text)
+//   • .pdf                 → text layer via pdfjs-dist (dynamic import, so the
+//     library is only fetched when a PDF is actually picked); a scanned PDF
+//     with no text layer is stated honestly — never guessed at
 // The XML→text step is a pure function so it can be unit-tested.
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -66,7 +68,41 @@ export async function extractFileText(file: File): Promise<ExtractResult> {
   }
 
   if (name.endsWith(".pdf")) {
-    return { text: "", kind: "pdf", note: "PDF text isn't read here yet — open the PDF, copy the text and paste it. (.docx and .txt upload directly.)" };
+    try {
+      // The legacy build runs in every environment (browser AND the node test
+      // runner); the modern build needs DOM APIs node lacks. Importing the
+      // worker module registers globalThis.pdfjsWorker, so parsing runs
+      // main-thread with no worker asset URL — the bundler-magic
+      // `new URL(..., import.meta.url)` pattern breaks outside webpack.
+      const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      // @ts-expect-error — the worker module ships no type declarations; it is
+      // imported purely for its globalThis.pdfjsWorker side effect.
+      await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+      const loadingTask = pdfjs.getDocument({
+        data: new Uint8Array(await file.arrayBuffer()),
+        disableFontFace: true,
+      });
+      const doc = await loadingTask.promise;
+      const MAX_PAGES = 100;
+      const pages = Math.min(doc.numPages, MAX_PAGES);
+      let out = "";
+      for (let p = 1; p <= pages; p++) {
+        const page = await doc.getPage(p);
+        const content = await page.getTextContent();
+        out += content.items.map((it) => ("str" in it ? it.str : "")).join(" ") + "\n";
+      }
+      const truncated = doc.numPages > MAX_PAGES;
+      await loadingTask.destroy();
+      const text = out.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+      if (text.length < 20) {
+        return { text: "", kind: "pdf", note: "That PDF has no readable text layer (it's likely a scan) — paste the text instead." };
+      }
+      return truncated
+        ? { text, kind: "pdf", note: `Read the first ${MAX_PAGES} pages of ${doc.numPages} — paste anything important from the rest.` }
+        : { text, kind: "pdf" };
+    } catch {
+      return { text: "", kind: "pdf", note: "Couldn't read that PDF — paste the text instead." };
+    }
   }
 
   return { text: "", kind: "unsupported", note: "Unsupported file type — upload a .docx or .txt, or paste the text." };

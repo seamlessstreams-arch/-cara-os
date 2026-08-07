@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DOCUMENT_BUCKET, STORAGE_SENTINEL, documentDownloadHref } from "@/lib/compliance/document-file";
+import { extractFileText } from "@/lib/compliance/extract-file-text";
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────
 type UploadPayload = {
@@ -143,6 +144,7 @@ export function DocumentUploadModal({
   const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [extractNote, setExtractNote] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState("");
   const [context, setContext] = useState(uploadContext ?? "");
   const [result, setResult] = useState<UploadedDocument | null>(null);
@@ -178,14 +180,15 @@ export function DocumentUploadModal({
       }
     }
 
-    // For text files, also pre-fill the content box so Cara can analyse it. For
-    // PDF/DOCX the file is stored above; paste the text to also get analysis
-    // (server-side extraction is a follow-up).
-    if (file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
-      const reader = new FileReader();
-      reader.onload = (e) => setExtractedText((e.target?.result as string) ?? "");
-      reader.readAsText(file);
-    }
+    // Pre-fill the content box so Cara can analyse the document: .txt/.csv read
+    // directly, .docx unzipped, PDF text layer read in the browser (the binary
+    // never leaves the device for extraction). Anything unreadable is stated
+    // honestly via the extractor's note — never guessed at.
+    setExtractNote(null);
+    void extractFileText(file).then((r) => {
+      if (r.text) setExtractedText(r.text);
+      if (r.note) setExtractNote(r.note);
+    });
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -376,6 +379,11 @@ export function DocumentUploadModal({
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{fileError}
                 </p>
               )}
+              {extractNote && (
+                <p className="flex items-start gap-1.5 text-xs text-[var(--cs-text-muted)]">
+                  <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />{extractNote}
+                </p>
+              )}
               {fileName && (pendingFile || fileDataUrl) && !fileError && (
                 <p className="flex items-center gap-1.5 text-xs text-emerald-600">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
@@ -404,7 +412,7 @@ export function DocumentUploadModal({
                 <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
                   Document text <span className="text-[var(--cs-text-muted)] font-normal">(optional)</span>
                   <span className="ml-2 text-[10px] font-normal text-[var(--cs-text-muted)]">
-                    The file itself is attached above. Paste the text of a PDF/scan so Cara can also analyse it.
+                    Read automatically from PDF, Word and text files. Paste here only for scans or anything Cara couldn't read.
                   </span>
                 </label>
                 <textarea
