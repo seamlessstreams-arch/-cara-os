@@ -18,6 +18,8 @@ import {
   statusForAnalysis,
 } from "@/lib/compliance/uploaded-document-bridge";
 import type { UploadedDocument } from "@/types/documents";
+import { STORAGE_SENTINEL } from "@/lib/compliance/document-file";
+import { normaliseStoredObjectPath } from "@/lib/supabase/document-storage";
 
 // Enough text for the date/action extraction to work with, while staying an
 // excerpt rather than an unbounded blob in the documents table.
@@ -35,6 +37,9 @@ export interface SmartUploadInput {
   fileSize?: number;
   /** The file's bytes as a base64 data URL, so the actual file is stored. */
   fileDataUrl?: string | null;
+  /** Object-storage path (docs/… or storage:docs/…) when the browser uploaded
+   *  the file straight to the bucket — takes precedence over fileDataUrl. */
+  storedObjectPath?: string | null;
   uploadContext?: string;
   actorId?: string;
   linkedChildId?: string | null;
@@ -52,10 +57,13 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
 
   const tableCategory = classifyTableCategory(name, ctx);
 
-  // The actual uploaded file, retained as a base64 data URL so it is genuinely
-  // stored and downloadable (not just its extracted text). Guarded by size.
-  const storedFileUrl =
-    input.fileDataUrl && input.fileDataUrl.startsWith("data:") && input.fileDataUrl.length <= MAX_DATA_URL_CHARS
+  // The actual uploaded file: an object-storage path when the browser uploaded
+  // straight to the bucket, else retained inline as a base64 data URL (guarded
+  // by size). Either way the file is genuinely stored and downloadable.
+  const objectPath = normaliseStoredObjectPath(input.storedObjectPath);
+  const storedFileUrl = objectPath
+    ? `${STORAGE_SENTINEL}${objectPath}`
+    : input.fileDataUrl && input.fileDataUrl.startsWith("data:") && input.fileDataUrl.length <= MAX_DATA_URL_CHARS
       ? input.fileDataUrl
       : "";
 

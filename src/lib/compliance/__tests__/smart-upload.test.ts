@@ -30,3 +30,36 @@ describe("performSmartUpload — file attachment", () => {
     expect(doc.stored_file_path).toBe("");
   });
 });
+
+describe("performSmartUpload — object storage", () => {
+  it("prefers the object-storage path over the inline data URL, sentinel-prefixed", async () => {
+    const doc = await performSmartUpload({
+      fileName: "big-referral.pdf",
+      text: "referral",
+      fileDataUrl: DATA_URL,
+      storedObjectPath: "docs/2026-08/abc-big-referral.pdf",
+    });
+    expect(doc.stored_file_path).toBe("storage:docs/2026-08/abc-big-referral.pdf");
+  });
+
+  it("accepts a sentinel-prefixed path without double-prefixing", async () => {
+    const doc = await performSmartUpload({
+      fileName: "x.pdf",
+      text: "t",
+      storedObjectPath: "storage:docs/2026-08/x.pdf",
+    });
+    expect(doc.stored_file_path).toBe("storage:docs/2026-08/x.pdf");
+  });
+
+  it("rejects paths outside docs/ and traversal attempts, falling back to the data URL", async () => {
+    for (const bad of ["secrets/x.pdf", "docs/../secrets/x.pdf", "docs//x.pdf"]) {
+      const doc = await performSmartUpload({
+        fileName: "x.pdf",
+        text: "t",
+        fileDataUrl: DATA_URL,
+        storedObjectPath: bad,
+      });
+      expect(doc.stored_file_path, bad).toBe(DATA_URL);
+    }
+  });
+});
