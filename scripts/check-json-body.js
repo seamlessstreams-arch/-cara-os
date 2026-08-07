@@ -7,22 +7,12 @@
 // body → {}, malformed → a 400 the handler returns. 685 routes use it; this
 // guard keeps new routes from regressing to the raw call.
 //
-// Allowed:
-//   • `await req.json().catch(...)` — explicit inline fallback;
-//   • the legacy allowlisted files below, each verified to wrap the call in a
-//     try/catch with deliberate semantics (zod-parse → 400, or default-false).
-//     Do not add to this list — use readJsonBody in new code.
+// Allowed: `await req.json().catch(...)` — explicit inline fallback. Nothing
+// else. The legacy allowlist was burned down to zero (2026-08-07) and the
+// mechanism removed with it; every route now goes through readJsonBody.
 // ─────────────────────────────────────────────────────────────────────────────
 const fs = require("node:fs");
 const path = require("node:path");
-
-const LEGACY_ALLOWLIST = new Set([
-  "src/app/api/v1/comms/messages/[id]/receipt/route.ts",
-  "src/app/api/cara/ofsted-readiness/route.ts",
-  "src/app/api/cara/signals/generate/route.ts",
-  "src/app/api/cara/ai-review/route.ts",
-  "src/app/api/cara/mock-inspection/start/route.ts",
-]);
 
 function* walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -35,7 +25,6 @@ function* walk(dir) {
 const violations = [];
 for (const file of walk("src/app/api")) {
   const rel = file.split(path.sep).join("/");
-  if (LEGACY_ALLOWLIST.has(rel)) continue;
   const lines = fs.readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
     const m = line.match(/await\s+(req|request)\s*\.json\(\)/);

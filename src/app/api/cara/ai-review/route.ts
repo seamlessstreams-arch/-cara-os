@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { approveCaraRun, rejectCaraRun } from "@/lib/cara/engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const ReviewSchema = z.object({
   homeId: z.string().uuid(),
@@ -17,7 +18,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthenticated request." }, { status: 401 });
     }
 
-    const body = ReviewSchema.parse(await req.json());
+    const raw = await readJsonBody(req);
+    if (!raw.ok) return raw.response;
+    const body = ReviewSchema.parse(raw.data);
 
     if (body.action === "approve") {
       const result = await approveCaraRun({
