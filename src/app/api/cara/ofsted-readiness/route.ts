@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateOfstedReadinessSnapshot } from "@/lib/cara/ofsted-readiness";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const Schema = z.object({
   homeId: z.string().uuid(),
@@ -13,7 +14,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthenticated request." }, { status: 401 });
     }
 
-    const body = Schema.parse(await req.json());
+    const raw = await readJsonBody(req);
+    if (!raw.ok) return raw.response;
+    const body = Schema.parse(raw.data);
     const snapshot = await generateOfstedReadinessSnapshot({ ...body, generatedBy });
     return NextResponse.json({ snapshot });
   } catch (error) {

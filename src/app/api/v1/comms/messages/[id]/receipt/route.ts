@@ -3,6 +3,7 @@ import { db } from "@/lib/db/store";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel } from "@/lib/comms/comms-access";
 import { persistCommsReceipt } from "@/lib/supabase/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +20,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
-  let acknowledge = false;
-  try {
-    acknowledge = !!(await req.json())?.acknowledge;
-  } catch {
-    /* read-only mark */
-  }
+  // Empty body → plain read-only mark; malformed JSON → 400 (a mangled body
+  // meant something — don't silently drop the acknowledge).
+  const body = await readJsonBody(req);
+  if (!body.ok) return body.response;
+  const acknowledge = !!body.data?.acknowledge;
 
   const receipt = db.commsMessageReceipts.mark(id, msg.channel_id, user.id, { read: true, acknowledge });
   auditComms(acknowledge ? "message_acknowledged" : "message_read", user, id, {});
