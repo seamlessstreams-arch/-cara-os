@@ -10,44 +10,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import type { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { synthesiseStaffPracticeSkills } from "@/lib/staff-practice-skills/skills-engine";
-import type { StaffPracticeSkillsInput } from "@/lib/staff-practice-skills/types";
-import { COMPETENCY_DOMAIN_LABELS } from "@/types/extended";
+// The store-shape → engine-input mapping lives in @/lib/staff-practice-skills/
+// build-input so this API and the §31 export pack share ONE practice-skills read.
+import { buildStaffSkillsInput, staffDisplayName } from "@/lib/staff-practice-skills/build-input";
 
 export const dynamic = "force-dynamic";
 
-const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : []);
-const num = (v: unknown): number => (typeof v === "number" ? v : Number(v) || 0);
-
-function buildInput(store: Pick<ReturnType<typeof getStore>, "competencyScores" | "keyWorkingSessions" | "practiceObservations" | "reflectiveSupervisions" | "staff" | "writingAssistantAuditEvents">, staffId: string, staffName: string, asOf: string): StaffPracticeSkillsInput {
-  return {
-    staffId,
-    staffName,
-    asOf,
-    windowDays: 180,
-    domainLabels: COMPETENCY_DOMAIN_LABELS as unknown as Record<string, string>,
-    competencyScores: (store.competencyScores ?? [])
-      .filter((c: { staff_id?: string }) => c.staff_id === staffId)
-      .map((c) => ({ id: String(c.id), staff_id: String(c.staff_id), domain: String(c.domain ?? ""), score: num(c.score), assessed_at: String(c.assessed_at ?? c.created_at ?? "") })),
-    observations: (store.practiceObservations ?? [])
-      .filter((o: { staff_id?: string }) => o.staff_id === staffId)
-      .map((o) => ({ id: String(o.id), staff_id: String(o.staff_id), observation_date: String(o.observation_date ?? ""), outcome: String(o.outcome ?? ""), strengths_noted: arr(o.strengths_noted), areas_for_development: arr(o.areas_for_development) })),
-    supervisions: (store.reflectiveSupervisions ?? [])
-      .filter((s: { staff_id?: string }) => s.staff_id === staffId)
-      .map((s) => ({ id: String(s.id), staff_id: String(s.staff_id), date: String(s.date ?? ""), wellbeing_score: num(s.wellbeing_score), confidence_level: num(s.confidence_level), training_needs: arr(s.training_needs) })),
-    recordingAudits: (store.writingAssistantAuditEvents ?? [])
-      .filter((a: { user_id?: string }) => a.user_id === staffId)
-      .map((a) => ({ id: String(a.id), staff_id: String(a.user_id ?? ""), action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
-    keyWork: (store.keyWorkingSessions ?? [])
-      .filter((k: { staff_id?: string }) => k.staff_id === staffId)
-      .map((k) => ({ id: String(k.id), staff_id: String(k.staff_id), date: String(k.date ?? ""), child_voice: String(k.child_voice ?? "") })),
-  };
-}
-
-const nameOf = (s: { id?: string; name?: string | null; preferred_name?: string | null; first_name?: string | null; last_name?: string | null }): string =>
-  s.name || s.preferred_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || "Staff member";
+const buildInput = buildStaffSkillsInput;
+const nameOf = staffDisplayName;
 
 export async function GET(req: NextRequest) {
   try {
