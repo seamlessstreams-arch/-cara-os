@@ -412,7 +412,7 @@ export function DocumentUploadModal({
                 <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
                   Document text <span className="text-[var(--cs-text-muted)] font-normal">(optional)</span>
                   <span className="ml-2 text-[10px] font-normal text-[var(--cs-text-muted)]">
-                    Read automatically from PDF, Word and text files. Paste here only for scans or anything Cara couldn't read.
+                    Read automatically from PDF, Word, Excel, email (.eml) and text files. Paste here only for scans or anything Cara couldn't read.
                   </span>
                 </label>
                 <textarea
