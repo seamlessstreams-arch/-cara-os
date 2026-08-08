@@ -1125,7 +1125,7 @@ export default function RecruitmentPage() {
             <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-blue-600" /> Add Candidate
             </h2>
-            <button onClick={() => setShowAddCandidate(false)} className="text-slate-400 hover:text-slate-600">
+            <button aria-label="Close" onClick={() => setShowAddCandidate(false)} className="text-slate-400 hover:text-slate-600">
               <XCircle className="h-4 w-4" />
             </button>
           </div>

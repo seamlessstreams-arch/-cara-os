@@ -324,7 +324,7 @@ export default function ProbationPathwayPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--cs-text-muted)]">Objective {i + 1}</span>
                   {objectives.length > 1 && (
-                    <button onClick={() => removeObjective(o.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
+                    <button aria-label="Remove objective" onClick={() => removeObjective(o.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -400,7 +400,7 @@ export default function ProbationPathwayPage() {
                         />
                         Done
                       </label>
-                      <button onClick={() => removeReview(r.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
+                      <button aria-label="Remove review" onClick={() => removeReview(r.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
