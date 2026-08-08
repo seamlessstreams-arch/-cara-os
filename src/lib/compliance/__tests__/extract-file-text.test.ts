@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { docxXmlToText, extractFileText } from "../extract-file-text";
+import { docxXmlToText, emlToText, extractFileText, xlsxXmlToText } from "../extract-file-text";
 
 describe("docxXmlToText", () => {
   it("turns WordprocessingML paragraphs into readable lines", () => {
@@ -57,5 +57,80 @@ describe("extractFileText — pdf", () => {
     expect(result.kind).toBe("pdf");
     expect(result.text).toBe("");
     expect(result.note).toBeTruthy();
+  });
+});
+
+describe("xlsxXmlToText", () => {
+  it("collects shared and inline string cells, deduped, entities decoded", () => {
+    const shared = `<sst><si><t>Medication log</t></si><si><r><t>Fire &amp; safety</t></r><r><t> check</t></r></si></sst>`;
+    const sheet = `<worksheet><sheetData><row><c t="inlineStr"><is><t>Weekly rota</t></is></c><c><v>42</v></c></row></sheetData></worksheet>`;
+    const text = xlsxXmlToText(shared, [sheet]);
+    expect(text).toContain("Medication log");
+    expect(text).toContain("Fire & safety");
+    expect(text).toContain("Weekly rota");
+    expect(text).not.toContain("42");
+  });
+});
+
+describe("emlToText", () => {
+  it("keeps human headers and the body, drops transport noise", () => {
+    const raw = [
+      "Received: from mail.example.com by mx (Postfix)",
+      "From: LA Placements <placements@la.gov.uk>",
+      "To: manager@oakhouse.example",
+      "Subject: Strategy meeting follow-up for",
+      " Alex",
+      "Date: Thu, 7 Aug 2026 10:00:00 +0100",
+      "",
+      "Please find the actions from yesterday's strategy meeting attached.",
+    ].join("\r\n");
+    const text = emlToText(raw);
+    expect(text).toContain("Subject: Strategy meeting follow-up for Alex");
+    expect(text).toContain("From: LA Placements");
+    expect(text).toContain("actions from yesterday's strategy meeting");
+    expect(text).not.toContain("Received:");
+  });
+
+  it("prefers the text/plain part of a multipart email and decodes quoted-printable", () => {
+    const raw = [
+      'Content-Type: multipart/alternative; boundary="BOUND"',
+      "Subject: Review",
+      "",
+      "--BOUND",
+      "Content-Type: text/plain",
+      "Content-Transfer-Encoding: quoted-printable",
+      "",
+      "Placement review =E2=80=94 all actions=",
+      " complete.",
+      "--BOUND",
+      "Content-Type: text/html",
+      "",
+      "<p>Placement review</p>",
+      "--BOUND--",
+    ].join("\n");
+    const text = emlToText(raw);
+    expect(text).toContain("all actions complete");
+    expect(text).not.toContain("<p>");
+  });
+});
+
+describe("extractFileText — xlsx and eml files", () => {
+  it("reads text cells from a real .xlsx built with jszip", async () => {
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    zip.file("xl/sharedStrings.xml", "<sst><si><t>Safeguarding audit actions for Q3</t></si></sst>");
+    zip.file("xl/worksheets/sheet1.xml", '<worksheet><c t="inlineStr"><is><t>Overdue: fire drill record</t></is></c></worksheet>');
+    const buf = await zip.generateAsync({ type: "arraybuffer" });
+    const result = await extractFileText(new File([buf], "audit.xlsx"));
+    expect(result.kind).toBe("xlsx");
+    expect(result.text).toContain("Safeguarding audit actions for Q3");
+    expect(result.text).toContain("Overdue: fire drill record");
+    expect(result.note).toContain("numbers and formulas aren't read");
+  });
+
+  it("refuses .msg honestly and points at .eml", async () => {
+    const result = await extractFileText(new File(["binary"], "email.msg"));
+    expect(result.kind).toBe("unsupported");
+    expect(result.note).toContain(".eml");
   });
 });
