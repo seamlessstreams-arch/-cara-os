@@ -27,10 +27,15 @@ const PUBLIC_PREFIXES = ["/product/", "/auth/", "/login"];
  *    polls; it reports build/status only, never records.
  *  · cron        — invoked by Vercel's scheduler, which cannot carry a user
  *    session; it authenticates itself with CARA_CRON_ENABLED + its own secret.
+ *  · csp-report  — browsers POST violation reports with NO credentials, so an
+ *    auth gate silently drops every report (proven live) and the enforcement
+ *    decision never gets its data. The sink stores only directive + blocked
+ *    URL, never records.
  */
 const PUBLIC_API_EXACT = new Set([
   "/api/v1/health-check",
   "/api/cron",
+  "/api/v1/security/csp-report",
 ]);
 
 /** True for any API path (used to answer 401 rather than redirect). */
