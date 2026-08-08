@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Dependabot — automated dependency maintenance.
+#
+# Vulnerability alerts + security-update PRs are enabled at the repo level
+# (2026-08-08). This file governs the SCHEDULED version-update PRs on top of
+# those: weekly, grouped so a bump doesn't mean twenty separate PRs, and with
+# the one known-breaking major held back so it can never surprise-open.
+# ══════════════════════════════════════════════════════════════════════════════
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for the low-risk churn; each still gated by the 4 CI checks.
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Major bumps land as individual PRs a human reviews — never grouped.
+      # @anthropic-ai/sdk in particular: the AI gateway is built on its current
+      # API shape, so its major is a deliberate, separately-scoped decision.
+      - dependency-name: "@anthropic-ai/sdk"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
