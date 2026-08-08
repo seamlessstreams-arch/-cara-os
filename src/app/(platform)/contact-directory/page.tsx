@@ -375,7 +375,7 @@ export default function ContactDirectoryPage() {
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <span>{contact.phone}</span>
-                        <button onClick={() => copyToClipboard(contact.phone, `det-phone-${contact.id}`)} className="p-1 hover:bg-muted rounded">
+                        <button aria-label="Copy phone number" onClick={() => copyToClipboard(contact.phone, `det-phone-${contact.id}`)} className="p-1 hover:bg-muted rounded">
                           <Copy className="h-3 w-3 text-muted-foreground" />
                         </button>
                       </div>
@@ -384,7 +384,7 @@ export default function ContactDirectoryPage() {
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <span>{contact.email}</span>
-                        <button onClick={() => copyToClipboard(contact.email, `det-email-${contact.id}`)} className="p-1 hover:bg-muted rounded">
+                        <button aria-label="Copy email address" onClick={() => copyToClipboard(contact.email, `det-email-${contact.id}`)} className="p-1 hover:bg-muted rounded">
                           <Copy className="h-3 w-3 text-muted-foreground" />
                         </button>
                       </div>

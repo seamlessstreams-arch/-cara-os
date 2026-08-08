@@ -516,7 +516,7 @@ gathered during the investigation.
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--cs-text-muted)]">Allegation {i + 1}</span>
                   {allegations.length > 1 && (
-                    <button onClick={() => removeAllegation(a.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
+                    <button aria-label="Remove allegation" onClick={() => removeAllegation(a.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -575,7 +575,7 @@ gathered during the investigation.
               <div key={w.id} className="rounded-xl border border-[var(--cs-border)] p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--cs-text-muted)]">Witness {i + 1}</span>
-                  <button onClick={() => removeWitness(w.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
+                  <button aria-label="Remove witness" onClick={() => removeWitness(w.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -717,7 +717,7 @@ gathered during the investigation.
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--cs-text-muted)]">Evidence item {i + 1}</span>
-                  <button onClick={() => removeEvidence(e.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
+                  <button aria-label="Remove evidence" onClick={() => removeEvidence(e.id)} className="text-[var(--cs-text-muted)] hover:text-red-500">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

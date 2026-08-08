@@ -187,6 +187,7 @@ export function CaraSmartSummary({
             {overallTrend.label}
           </div>
           <button
+            aria-label="Refresh summary"
             onClick={handleRefresh}
             disabled={refreshing}
             className="text-[var(--cs-text-muted)] hover:text-[var(--cs-cara-gold)] transition-colors"

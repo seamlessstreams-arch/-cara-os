@@ -332,7 +332,7 @@ export function EventEditor({
                 <div key={i} className="flex items-center gap-2">
                   <input value={x.name} onChange={(e) => setExternals((p) => p.map((r, j) => (j === i ? { ...r, name: e.target.value } : r)))} className={inputCls} placeholder="Name / role" />
                   <input value={x.email} onChange={(e) => setExternals((p) => p.map((r, j) => (j === i ? { ...r, email: e.target.value } : r)))} className={inputCls} placeholder="email (optional)" />
-                  <button type="button" onClick={() => setExternals((p) => p.filter((_, j) => j !== i))} className="shrink-0 text-[var(--cs-text-muted)]">
+                  <button type="button" aria-label="Remove attendee" onClick={() => setExternals((p) => p.filter((_, j) => j !== i))} className="shrink-0 text-[var(--cs-text-muted)]">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -384,7 +384,7 @@ export function EventEditor({
                   <div key={i} className="flex items-center gap-2">
                     <input value={t.title} onChange={(e) => setTasks((p) => p.map((r, j) => (j === i ? { ...r, title: e.target.value } : r)))} className={inputCls} placeholder="Task to prepare" />
                     <input type="date" value={t.due_date} onChange={(e) => setTasks((p) => p.map((r, j) => (j === i ? { ...r, due_date: e.target.value } : r)))} className={`${inputCls} w-36`} />
-                    <button type="button" onClick={() => setTasks((p) => p.filter((_, j) => j !== i))} className="shrink-0 text-[var(--cs-text-muted)]">
+                    <button type="button" aria-label="Remove task" onClick={() => setTasks((p) => p.filter((_, j) => j !== i))} className="shrink-0 text-[var(--cs-text-muted)]">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

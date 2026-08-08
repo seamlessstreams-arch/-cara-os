@@ -358,11 +358,11 @@ export default function FormBuilderPage() {
                   >
                     {/* Drag handle */}
                     <div className="flex flex-col gap-0.5 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); moveField(field.id, "up"); }}>
+                      <button aria-label="Move field up" onClick={(e) => { e.stopPropagation(); moveField(field.id, "up"); }}>
                         <ChevronUp className="h-3.5 w-3.5 text-gray-400 hover:text-gray-700" />
                       </button>
                       <GripVertical className="h-3.5 w-3.5 text-gray-300" />
-                      <button onClick={(e) => { e.stopPropagation(); moveField(field.id, "down"); }}>
+                      <button aria-label="Move field down" onClick={(e) => { e.stopPropagation(); moveField(field.id, "down"); }}>
                         <ChevronDown className="h-3.5 w-3.5 text-gray-400 hover:text-gray-700" />
                       </button>
                     </div>

@@ -131,11 +131,11 @@ export default function CalendarPage() {
         {/* Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => shiftMonth(-1)} className="rounded-lg border border-[var(--cs-border)] p-1.5 text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]">
+            <button aria-label="Previous month" onClick={() => shiftMonth(-1)} className="rounded-lg border border-[var(--cs-border)] p-1.5 text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]">
               <ChevronLeft className="h-4 w-4" />
             </button>
             <h2 className="min-w-[160px] text-center text-sm font-bold text-[var(--cs-navy)]">{monthLabel}</h2>
-            <button onClick={() => shiftMonth(1)} className="rounded-lg border border-[var(--cs-border)] p-1.5 text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]">
+            <button aria-label="Next month" onClick={() => shiftMonth(1)} className="rounded-lg border border-[var(--cs-border)] p-1.5 text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]">
               <ChevronRight className="h-4 w-4" />
             </button>
             <button onClick={() => setMonthStart(new Date(today.getFullYear(), today.getMonth(), 1))} className="ml-1 rounded-lg border border-[var(--cs-border)] px-3 py-1.5 text-xs font-semibold text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]">
