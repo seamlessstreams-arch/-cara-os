@@ -22,6 +22,19 @@ describe("isPublicPath", () => {
       expect(isPublicPath(p), p).toBe(false);
     }
   });
+
+  it("keeps the credential-less API exemptions reachable — and ONLY those", () => {
+    // Browsers POST CSP violation reports with no session; the sink being
+    // gated silently dropped every report (proven live, 2026-08-08).
+    for (const p of ["/api/v1/health-check", "/api/cron", "/api/v1/security/csp-report"]) {
+      expect(isPublicPath(p), p).toBe(true);
+    }
+    // Exact-match only — no prefix creep onto sibling or child routes.
+    for (const p of ["/api/v1/security", "/api/v1/security/csp-report/extra",
+      "/api/v1/health-check2", "/api/cron/other", "/api/v1/doc-intelligence"]) {
+      expect(isPublicPath(p), p).toBe(false);
+    }
+  });
 });
 
 describe("safeNextPath", () => {

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readJsonBody } from "@/lib/http/read-json";
 
 // ── CSP violation report sink (report-ONLY mode) ────────────────────────────
 // The `Content-Security-Policy-Report-Only` header (next.config.ts) makes the
@@ -27,15 +26,11 @@ const recent: CspViolation[] = [];
 const MAX = 100;
 
 export async function POST(req: NextRequest) {
-  let payload: unknown = null;
-  try {
-    const __parsed = await readJsonBody(req);
-    if (!__parsed.ok) return __parsed.response;
-    payload = __parsed.data;
-  } catch {
-    // Malformed / empty body — acknowledge without recording.
-    return new NextResponse(null, { status: 204 });
-  }
+  // Tolerant by design: a browser beacon must NEVER get a 400 back — malformed
+  // or empty bodies are acknowledged (204) without recording. (A codemod once
+  // swapped this to readJsonBody, whose 400-on-malformed contradicted exactly
+  // this contract.)
+  const payload: unknown = await req.json().catch(() => null);
 
   for (const r of normaliseReports(payload)) {
     const violation: CspViolation = {
