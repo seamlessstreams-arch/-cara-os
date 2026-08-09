@@ -1,0 +1,14 @@
+{
+  // CI "Type check" config — validates the Playwright e2e suite.
+  //
+  // tsconfig.json EXCLUDES e2e/ and playwright.config.ts, so until TS7 made a
+  // full check cheap (~20s vs 3-4 min) these files were type-checked by nothing
+  // at all: Playwright transpiles specs at run time and the e2e suite is not a
+  // CI job, so a rotted selector helper or a renamed export sat undetected.
+  //
+  // `next-env.d.ts` is REQUIRED in include: it is what pulls the ambient node
+  // types into scope. Drop it and every `process.env` here fails with TS2591.
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "e2e/**/*.ts", "playwright.config.ts"],
+  "exclude": ["node_modules"]
+}
