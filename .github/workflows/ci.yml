@@ -41,10 +41,13 @@ jobs:
       # Test files are type-validated by actually running them (the Test suite),
       # not by tsc — so the deliberate fab-0 `number|null` widening (which only
       # trips assertions inside tests) doesn't belong in this deploy-code gate.
+      # No heap flag: TypeScript 7 (the native port, landed #883) type-checks
+      # this project in ~20s within the default heap. Under 5.9.3 the same
+      # command needed --max-old-space-size=8192 and took 3-4 minutes, and a
+      # bare `tsc` would OOM-crash silently (exit 144) while printing nothing —
+      # which is how a 265-error baseline once hid in plain sight.
       - name: tsc --noEmit (app code; baseline locked at 0)
         run: npx tsc --noEmit -p tsconfig.typecheck.json
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
 
   guards:
     name: Repo guards
