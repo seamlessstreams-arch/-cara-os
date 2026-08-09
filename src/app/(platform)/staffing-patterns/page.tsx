@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { ShiftPattern } from "@/lib/rota/shift-patterns";
 import { patternWorksOn } from "@/lib/rota/shift-patterns";
 import { CalendarRange, Plus, Pencil, Trash2, Sun, Moon, CalendarCheck } from "lucide-react";
+import { todayStr } from "@/lib/utils";
 
 // Types from use-shift-patterns
 export interface ShiftPatternRow extends ShiftPattern {
@@ -72,13 +73,13 @@ interface FormState {
 }
 
 function blankForm(): FormState {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return { staff_id: "", name: "", kind: "weekly", weekdays: [1, 2, 3, 4, 5], cycle_on: 2, cycle_off: 4, anchor_date: today, shift_type: "day", start_time: "08:00", end_time: "20:00", active: true };
 }
 function formFrom(p: ShiftPatternRow): FormState {
   return {
     id: p.id, staff_id: p.staff_id, name: p.name, kind: p.kind === "rotating" ? "rotating" : "weekly",
-    weekdays: p.weekdays ?? [], cycle_on: p.cycle_on ?? 2, cycle_off: p.cycle_off ?? 4, anchor_date: (p.anchor_date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10),
+    weekdays: p.weekdays ?? [], cycle_on: p.cycle_on ?? 2, cycle_off: p.cycle_off ?? 4, anchor_date: (p.anchor_date ?? "").slice(0, 10) || todayStr(),
     shift_type: p.shift_type, start_time: p.start_time, end_time: p.end_time, active: p.active,
   };
 }
@@ -93,14 +94,14 @@ function PatternPreview({ form }: { form: FormState }) {
       shift_type: form.shift_type, start_time: form.start_time, end_time: form.end_time, active: true, home_id: "home_oak",
     };
     const valid = form.kind === "weekly" ? form.weekdays.length > 0 : form.cycle_on >= 1 && !!form.anchor_date;
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const todayMs = Date.parse(`${todayStr}T00:00:00Z`);
+    const todayDate = todayStr();
+    const todayMs = Date.parse(`${todayDate}T00:00:00Z`);
     const mondayOffset = (new Date(todayMs).getUTCDay() + 6) % 7; // back to this week's Monday
     const startMs = todayMs - mondayOffset * 864e5;
     const cells = Array.from({ length: 28 }, (_, i) => {
       const ms = startMs + i * 864e5;
       const date = new Date(ms).toISOString().slice(0, 10);
-      return { date, num: new Date(ms).getUTCDate(), on: valid && patternWorksOn(candidate, date), past: date < todayStr };
+      return { date, num: new Date(ms).getUTCDate(), on: valid && patternWorksOn(candidate, date), past: date < todayDate };
     });
     return { cells, worked: cells.filter((c) => c.on && !c.past).length };
   }, [form]);

@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -359,7 +360,7 @@ export async function createAdmissionWorkflow(
       referring_sw_name: input.referringSWName ?? null,
       referring_sw_phone: input.referringSWPhone ?? null,
       referring_sw_email: input.referringSWEmail ?? null,
-      referral_date: input.referralDate ?? new Date().toISOString().split("T")[0],
+      referral_date: input.referralDate ?? todayStr(),
       notes: input.notes ?? null,
       created_by: input.createdBy,
       current_phase: "referral_intake",
@@ -807,7 +808,7 @@ export async function createYoungPersonFromWorkflow(
       gender: wf.child_gender,
       ethnicity: wf.child_ethnicity,
       religion: wf.child_religion,
-      placement_start: opts?.placementStart ?? wf.actual_admission_date ?? new Date().toISOString().split("T")[0],
+      placement_start: opts?.placementStart ?? wf.actual_admission_date ?? todayStr(),
       placement_type: "residential",
       local_authority: wf.referring_la,
       social_worker_name: wf.referring_sw_name ?? "",

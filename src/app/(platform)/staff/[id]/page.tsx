@@ -56,7 +56,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { UploadedDocument } from "@/types/documents";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import type { TrainingRecord, Supervision, Task, StaffMember } from "@/types";
 import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -625,7 +625,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               tasks.map((t: Task) => {
-                const isOverdue = t.due_date && t.due_date < new Date().toISOString().slice(0, 10);
+                const isOverdue = t.due_date && t.due_date < todayStr();
                 return (
                   <div
                     key={t.id}

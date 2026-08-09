@@ -4,6 +4,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { scanEvidenceGaps, type EvidenceGapScanInput } from "@/lib/intelligence/evidence-gap-scanner";
 import { evidenceItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       source_id: sourceId ?? null,
       child_id: childId ?? null,
       staff_id: staffId ?? null,
-      evidence_date: evidenceDate ?? new Date().toISOString().split("T")[0],
+      evidence_date: evidenceDate ?? todayStr(),
       created_by: actorUserId ?? null,
     }).select().single();
 

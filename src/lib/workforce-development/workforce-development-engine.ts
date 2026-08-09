@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Workforce Development Intelligence Engine
 //
@@ -638,7 +639,7 @@ export function evaluateCompetency(
 
   // Assessment currency: check if nextAssessmentDate is in the future relative to the latest assessment
   // We consider an assessment "current" if the nextAssessmentDate hasn't passed
-  const now = new Date().toISOString().split("T")[0];
+  const now = todayStr();
   const current = assessments.filter((a) => a.nextAssessmentDate >= now).length;
   const overdue = assessments.filter((a) => a.nextAssessmentDate < now).length;
   const currencyRate = pct(current, totalAssessments);

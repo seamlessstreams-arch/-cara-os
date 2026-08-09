@@ -10,6 +10,7 @@ import { dal } from "@/lib/db";
 import { planShiftGeneration } from "@/lib/rota/shift-generation";
 import type { ShiftType } from "@/lib/constants";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const from = typeof body.from === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.from) ? body.from : today;
   const to = typeof body.to === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.to) ? body.to : addDays(from, 13);
   const mode = body.mode === "publish" ? "publish" : "preview";

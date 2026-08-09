@@ -15,6 +15,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { orchestrate } from "@/lib/cara/orchestrator";
 import type { CaraRequest } from "@/lib/cara/orchestrator/types";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -213,7 +214,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const shiftDate = body.shiftDate ?? new Date().toISOString().slice(0, 10);
+    const shiftDate = body.shiftDate ?? todayStr();
     const shiftPeriod = body.shiftPeriod ?? "full_day";
 
     // Fetch shift data

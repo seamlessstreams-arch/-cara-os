@@ -15,6 +15,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildKnowledgeGraph } from "@/lib/knowledge-graph/knowledge-graph-engine";
 import type { GraphChild, GraphIncident } from "@/lib/knowledge-graph/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const windowDays = 180;
 
   const children: GraphChild[] = db.youngPeople

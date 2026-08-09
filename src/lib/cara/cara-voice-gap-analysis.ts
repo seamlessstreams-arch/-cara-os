@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara V2 — CHILD VOICE GAP ANALYSIS
 //
@@ -82,7 +83,7 @@ export function scanVoiceGaps(
   const postIncidentMaxDays = config?.postIncidentVoiceMaxDays ?? 3;
   const minThemes = config?.minThemeCoverage ?? 4;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const gaps: VoiceGap[] = [];
 
   for (const child of childIds) {

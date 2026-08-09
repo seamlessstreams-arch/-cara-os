@@ -15,7 +15,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Package, ClipboardCheck,
   Calendar, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -85,7 +85,7 @@ export default function MedicationStockCheckPage() {
 
   const handleSaveCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createCheck.mutateAsync({ date: new Date().toISOString().slice(0, 10), check_type: scForm.check_type, checked_by: "staff_darren", witnessed_by: scForm.witnessed_by || "staff_darren", status: "balanced" as StockCheckStatus, items: [], notes: scForm.notes.trim() });
+    await createCheck.mutateAsync({ date: todayStr(), check_type: scForm.check_type, checked_by: "staff_darren", witnessed_by: scForm.witnessed_by || "staff_darren", status: "balanced" as StockCheckStatus, items: [], notes: scForm.notes.trim() });
     toast.success("Stock check logged.");
     setScForm({ check_type: "weekly", witnessed_by: "", notes: "" });
     setShowNew(false);

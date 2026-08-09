@@ -24,7 +24,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Pill, Package, Trash2, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -85,7 +85,7 @@ export default function MedicationAuditPage() {
   const data: MedicationAuditRecord[] = res?.data ?? [];
 
   const [maForm, setMaForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     time: new Date().toTimeString().slice(0, 5),
     child_id: "",
     audit_type: "" as MedAuditType | "",
@@ -135,7 +135,7 @@ export default function MedicationAuditPage() {
       notes: maForm.notes,
     });
     toast.success("Medication audit recorded.");
-    setMaForm({ date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), child_id: "", audit_type: "", medication_name: "", strength: "", expected_count: "", actual_count: "", batch_number: "", expiry_date: "", audited_by: "staff_darren", witnessed_by: "", notes: "" });
+    setMaForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), child_id: "", audit_type: "", medication_name: "", strength: "", expected_count: "", actual_count: "", batch_number: "", expiry_date: "", audited_by: "staff_darren", witnessed_by: "", notes: "" });
     setShowNew(false);
   };
 

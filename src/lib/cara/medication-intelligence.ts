@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { rate, meets, below, formatRate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -147,7 +148,7 @@ export function analyseMedications(
   homeId: string = "home_oak",
   windowDays: number = 7,
 ): MedicationIntelligence {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: MedAlert[] = [];
   const patterns: MedPattern[] = [];
 

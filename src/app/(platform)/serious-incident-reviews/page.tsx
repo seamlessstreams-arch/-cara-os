@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, FileText, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { SeriousIncidentReviewRecord, SeriousIncidentReviewType, SeriousIncidentReviewStatus } from "@/types/extended";
@@ -76,7 +76,7 @@ export default function SeriousIncidentReviewsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const createSIR = useCreateSeriousIncidentReviewRecord();
-  const [sirForm, setSirForm] = useState({ title: "", review_type: "serious_incident" as SeriousIncidentReviewType, incident_date: "", review_commenced_date: new Date().toISOString().slice(0, 10), background: "" });
+  const [sirForm, setSirForm] = useState({ title: "", review_type: "serious_incident" as SeriousIncidentReviewType, incident_date: "", review_commenced_date: todayStr(), background: "" });
   const setSIR = (k: keyof typeof sirForm, v: string) => setSirForm((p) => ({ ...p, [k]: v }));
 
   const handleInitiateReview = async (e: React.FormEvent) => {
@@ -85,7 +85,7 @@ export default function SeriousIncidentReviewsPage() {
     if (!sirForm.incident_date) { toast.error("Incident date is required."); return; }
     await createSIR.mutateAsync({ title: sirForm.title.trim(), review_type: sirForm.review_type, incident_date: sirForm.incident_date, review_commenced_date: sirForm.review_commenced_date, review_completed_date: null, linked_incidents: [], young_people_involved: [], staff_involved: [], review_lead: "staff_darren", panel_members: [], background_summary: sirForm.background.trim(), key_findings: [], lessons_learned: [], recommendations: [], actions: [], external_notifications: [], practice_changes: [], training_implications: [], policy_changes: [], status: "initiated", next_review_date: null, confidentiality: "standard" });
     toast.success("Serious incident review initiated.");
-    setSirForm({ title: "", review_type: "serious_incident", incident_date: "", review_commenced_date: new Date().toISOString().slice(0, 10), background: "" });
+    setSirForm({ title: "", review_type: "serious_incident", incident_date: "", review_commenced_date: todayStr(), background: "" });
     setDialogOpen(false);
   };
 

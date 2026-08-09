@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ function round2(n: number): number {
 export function computeFinancialManagementIntelligence(
   input: FinancialManagementIntelligenceInput,
 ): FinancialManagementIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { expenses, staff } = input;
 
   const staffMap = new Map(staff.map((s) => [s.id, s.name]));

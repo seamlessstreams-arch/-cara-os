@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export function highestLevel(levels: RiskLevel[]): RiskLevel {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeRiskAssessmentIntelligence(input: RiskAssessmentIntelligenceInput): RiskAssessmentIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, assessments } = input;
 
   const current = assessments.filter((a) => a.status === "current");

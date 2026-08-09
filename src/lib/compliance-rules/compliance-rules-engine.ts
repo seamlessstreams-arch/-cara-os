@@ -28,6 +28,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -154,7 +155,7 @@ function eventLabel(event: CornerstoneEvent): string {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeComplianceRules(input: ComplianceRulesInput): ComplianceRulesResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const events = input.events ?? [];
   const supervisions = input.supervisions ?? [];
   const trainingRecords = input.trainingRecords ?? [];

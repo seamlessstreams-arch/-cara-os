@@ -14,6 +14,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -386,7 +387,7 @@ export async function createRecord(
       child_id: input.childId,
       trigger: input.trigger,
       incident_date: input.incidentDate,
-      identified_date: new Date().toISOString().split("T")[0],
+      identified_date: todayStr(),
       status: "identified",
       description: input.description,
       verbal_apology_date: null,

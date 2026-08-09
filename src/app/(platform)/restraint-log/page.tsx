@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -108,7 +108,7 @@ export default function RestraintLogPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRestraint = useCreateRestraint();
-  const [rlForm, setRlForm] = useState({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "" });
+  const [rlForm, setRlForm] = useState({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "" });
   const setRL = (k: string, v: unknown) => setRlForm((p) => ({ ...p, [k]: v }));
 
   const rlHeartRecord = useMemo<CaraPracticeRecord | null>(() => {
@@ -134,7 +134,7 @@ export default function RestraintLogPage() {
     if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
     await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: 0, child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "standing", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Restraint record saved.");
-    setRlForm({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
+    setRlForm({ date: todayStr(), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
     setShowNew(false);
   };
 

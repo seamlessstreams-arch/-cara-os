@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — MEETINGS & CHILDREN'S VOICE INTELLIGENCE ENGINE
 // Pure deterministic engine for house meetings and children's participation.
@@ -118,7 +119,7 @@ function typeLabel(type: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelligenceResult {
-  const { meetings, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { meetings, children, staff, today = todayStr() } = input;
 
   if (meetings.length === 0) {
     return {

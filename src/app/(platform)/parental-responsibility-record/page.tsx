@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -110,7 +110,7 @@ export default function ParentalResponsibilityRecordPage() {
     return items;
   }, [data, filterYP, sortBy]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   const total = data.length;

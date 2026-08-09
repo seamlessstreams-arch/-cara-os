@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -166,7 +167,7 @@ export function computeComplianceStatus(
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACReviewResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, reviews } = input;
 
   // ── Child Profiles ─────────────────────────────────────────────────────

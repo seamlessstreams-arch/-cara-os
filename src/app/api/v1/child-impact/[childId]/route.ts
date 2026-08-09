@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeChildImpact,
   type RiskAssessmentInput,
@@ -52,7 +53,7 @@ export async function GET(
       dal.youngPeople.findAll(),
       dal.ypFeedback.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Find child ─────────────────────────────────────────────────────────
   const yp = (youngPeopleList ?? []).find(

@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -61,7 +62,7 @@ export interface TodayBriefing {
 // ── Demo Briefing Generator ──────────────────────────────────────────────────
 
 function generateDemoBriefing(homeId: string): TodayBriefing {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const todayDate = new Date();
   const dayOfWeek = todayDate.toLocaleDateString("en-GB", { weekday: "long" });
 
@@ -233,7 +234,7 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
   const sb = createServerClient();
   if (!sb) return generateDemoBriefing(homeId);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const todayDate = new Date();
   const sevenDaysAgo = new Date(todayDate.getTime() - 7 * 86400000).toISOString().slice(0, 10);
   const signals: TodaySignal[] = [];

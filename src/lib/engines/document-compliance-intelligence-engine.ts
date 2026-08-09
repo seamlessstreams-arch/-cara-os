@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — DOCUMENT COMPLIANCE INTELLIGENCE ENGINE
 //
@@ -157,7 +158,7 @@ const REGULATORY_CATEGORIES = new Set<DocumentCategory>([
 export function computeDocumentComplianceIntelligence(
   input: DocumentComplianceIntelligenceInput,
 ): DocumentComplianceIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { documents, read_receipts, active_staff } = input;
 
   const activeStaffIds = new Set(active_staff.map((s) => s.id));

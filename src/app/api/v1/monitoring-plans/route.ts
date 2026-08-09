@@ -20,6 +20,7 @@ import {
   validateMonitoringPlan,
   type MonitoringPlan,
 } from "@/lib/monitoring-plans/monitoring-plans-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +109,7 @@ export async function PATCH(req: NextRequest) {
   if (body.end) {
     const ended = db.monitoringPlans.update(body.id, {
       status: "ended",
-      end_date: new Date().toISOString().slice(0, 10),
+      end_date: todayStr(),
       updated_by: auth.userId,
     });
     return NextResponse.json({ data: { enabled: true, updated: true, plan: ended } });

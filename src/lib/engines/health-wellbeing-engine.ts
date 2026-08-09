@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HEALTH & WELLBEING INTELLIGENCE ENGINE
 //
@@ -175,9 +176,6 @@ export interface HealthWellbeingInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function daysBetween(a: string, b: string): number {
   return Math.round(

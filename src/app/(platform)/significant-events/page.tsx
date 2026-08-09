@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -112,7 +112,7 @@ export default function SignificantEventsPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
-  const [seForm, setSeForm] = useState({ child_id: "", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), category: "other" as SigEventCategory, severity: "routine" as SigEventSeverity, title: "", description: "", immediate_action: "", child_response: "" });
+  const [seForm, setSeForm] = useState({ child_id: "", date: todayStr(), time: new Date().toTimeString().slice(0, 5), category: "other" as SigEventCategory, severity: "routine" as SigEventSeverity, title: "", description: "", immediate_action: "", child_response: "" });
   const setSEF = (k: keyof typeof seForm, v: string) => setSeForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -121,7 +121,7 @@ export default function SignificantEventsPage() {
     if (!seForm.title.trim()) { toast.error("Title is required."); return; }
     await createEvent.mutateAsync({ child_id: seForm.child_id, date: seForm.date, time: seForm.time, category: seForm.category, severity: seForm.severity, title: seForm.title.trim(), description: seForm.description.trim(), immediate_action: seForm.immediate_action.trim(), staff_present: ["staff_darren"], witnessed_by: [], child_response: seForm.child_response.trim(), outcome: "", notifications: [], follow_up_required: false, follow_up_actions: "", follow_up_date: "", linked_documents: [], recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Significant event recorded.");
-    setSeForm({ child_id: "", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), category: "other", severity: "routine", title: "", description: "", immediate_action: "", child_response: "" });
+    setSeForm({ child_id: "", date: todayStr(), time: new Date().toTimeString().slice(0, 5), category: "other", severity: "routine", title: "", description: "", immediate_action: "", child_response: "" });
     setShowNew(false);
   };
 

@@ -17,7 +17,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -107,7 +107,7 @@ export default function DigitalLiteracySkillsPage() {
 
   /* ── stats ───────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const thirtyDays = new Date();
     thirtyDays.setDate(thirtyDays.getDate() + 30);
     const thirtyDaysStr = thirtyDays.toISOString().slice(0, 10);

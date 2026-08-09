@@ -16,6 +16,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { computeHomeTrends, type TrendMetricInput } from "@/lib/engines/home-trends-engine";
+import { todayStr } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
 
     const [behaviourLogList, incidentsList, missingEpisodesList, restraintsList, sanctionRewardsList, youngPeopleList] = await Promise.all([
       dal.behaviourLog.findAll(),

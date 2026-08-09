@@ -21,7 +21,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, FileText, Lock, Shield, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -100,7 +100,7 @@ export default function SubjectAccessRequestsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createSAR = useCreateSubjectAccessRequestRecord();
-  const [sarForm, setSarForm] = useState({ requester_name: "", requester_type: "parent" as SubjectAccessRequesterType, request_type: "subject_access" as SubjectAccessRequestType, date_received: new Date().toISOString().slice(0, 10), notes: "" });
+  const [sarForm, setSarForm] = useState({ requester_name: "", requester_type: "parent" as SubjectAccessRequesterType, request_type: "subject_access" as SubjectAccessRequestType, date_received: todayStr(), notes: "" });
   const setSAR = (k: keyof typeof sarForm, v: string) => setSarForm((p) => ({ ...p, [k]: v }));
 
   const handleLogRequest = async (e: React.FormEvent) => {
@@ -110,11 +110,11 @@ export default function SubjectAccessRequestsPage() {
     deadline.setDate(deadline.getDate() + 30);
     await createSAR.mutateAsync({ date_received: sarForm.date_received, deadline_date: deadline.toISOString().slice(0, 10), request_type: sarForm.request_type, requester_name: sarForm.requester_name.trim(), requester_type: sarForm.requester_type, requester_relation: "", data_subject_id: null, data_subject_type: "child", status: "received", identity_verified: false, identity_method: "", data_scope: [], redactions_required: false, redaction_categories: [], third_party_consent: false, extension_applied: false, extension_reason: "", date_completed: null, response_method: "", handled_by_id: "staff_darren", dpo_consulted: false, notes: sarForm.notes.trim() });
     toast.success("Data request logged.");
-    setSarForm({ requester_name: "", requester_type: "parent", request_type: "subject_access", date_received: new Date().toISOString().slice(0, 10), notes: "" });
+    setSarForm({ requester_name: "", requester_type: "parent", request_type: "subject_access", date_received: todayStr(), notes: "" });
     setShowNew(false);
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let rows = [...records];

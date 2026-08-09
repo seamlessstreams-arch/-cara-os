@@ -7,6 +7,7 @@ import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerNaturally, buildFreeChatGrounding, type ChatTurn } from "@/lib/cara/ask-cara-natural";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 /** Sanitise client-sent chat history to typed, clipped turns (max 6). */
 function parseHistory(v: unknown): ChatTurn[] | undefined {
@@ -140,7 +141,7 @@ export async function POST(req: NextRequest) {
       const snapshot = buildAskSnapshot(store);
       const role = typeof body.role === "string" ? body.role : undefined;
       const childId = typeof body.childId === "string" ? body.childId : undefined;
-      const asOf = new Date().toISOString().slice(0, 10);
+      const asOf = todayStr();
       const answer = answerQuestion({
         question: prompt,
         asOf,
@@ -225,7 +226,7 @@ export async function POST(req: NextRequest) {
     const snapshot = buildAskSnapshot(store);
     const role = typeof body.role === "string" ? body.role : undefined;
     const childId = typeof body.childId === "string" ? body.childId : undefined;
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const detAnswer = answerQuestion({ question: prompt, asOf, role, snapshot, context: { childId } });
     grounding = buildFreeChatGrounding({
       question: prompt,

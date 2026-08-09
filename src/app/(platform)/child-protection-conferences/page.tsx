@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import type { CpConferenceRecord } from "@/types/extended";
 import {
   CP_CONFERENCE_TYPE_LABEL,
@@ -120,11 +120,11 @@ export default function ChildProtectionConferencesPage() {
   const onCpPlan = items.filter((c) => c.outcome === "subject_to_cp_plan" || c.outcome === "plan_continued").length;
   const childrenAttended = items.filter((c) => c.child_attended).length;
   const followUpPending = items.filter((c) => !c.follow_up_complete).length;
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = todayStr();
   const in60d = new Date();
   in60d.setDate(in60d.getDate() + 60);
   const in60dStr = in60d.toISOString().slice(0, 10);
-  const upcomingReviews = items.filter((c) => c.next_review_date >= todayStr && c.next_review_date <= in60dStr).length;
+  const upcomingReviews = items.filter((c) => c.next_review_date >= todayDate && c.next_review_date <= in60dStr).length;
 
   return (
     <PageShell

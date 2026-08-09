@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/http/read-json";
 import { extractReferralDocument } from "@/lib/referral-extraction/referral-extraction-engine";
 import { enhanceReferralExtraction } from "@/lib/referral-extraction/enhance-extraction";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   const deterministic = extractReferralDocument({
     text,
     fileName: body.fileName,
-    today: new Date().toISOString().slice(0, 10),
+    today: todayStr(),
   });
 
   // Deterministic is the default. `enhance:true` opts into the governed AI layer,

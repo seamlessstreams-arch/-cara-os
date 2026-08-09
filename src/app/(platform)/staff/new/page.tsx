@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 // ── useCreateStaffMember (inlined from use-staff) ───────────────────────────
 
@@ -105,7 +106,7 @@ export default function NewStaffMemberPage() {
     role: "residential_care_worker",
     job_title: "",
     employment_type: "permanent",
-    start_date: new Date().toISOString().slice(0, 10),
+    start_date: todayStr(),
     email: "",
     phone: "",
     contracted_hours: "37.5",

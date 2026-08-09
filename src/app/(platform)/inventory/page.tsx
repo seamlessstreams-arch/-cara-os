@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { InventoryItem, InventoryCategory, InventoryCondition, InventoryLocation } from "@/types/extended";
 import { INVENTORY_CATEGORY_LABEL, INVENTORY_CONDITION_LABEL, INVENTORY_LOCATION_LABEL } from "@/types/extended";
@@ -84,7 +84,7 @@ export default function InventoryPage() {
   const [fSerial, setFSerial] = useState("");
   const [fNotes, setFNotes] = useState("");
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let list = [...items];

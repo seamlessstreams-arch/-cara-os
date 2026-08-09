@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — POSSESSIONS INTELLIGENCE ENGINE
 // Pure deterministic engine for children's property and possessions analysis.
@@ -106,7 +107,7 @@ export function computePossessionsIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): PossessionsIntelligenceResult {
-  const { possessions, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { possessions, children, staff, today = todayStr() } = input;
 
   if (possessions.length === 0) {
     // All children have 0 items — generate low alerts for each

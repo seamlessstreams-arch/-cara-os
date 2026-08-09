@@ -18,7 +18,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -109,7 +109,7 @@ export default function TherapeuticInputPage() {
     e.preventDefault();
     if (!tiForm.child_id) { toast.error("Please select a young person."); return; }
     if (!tiForm.referral_reason.trim()) { toast.error("Referral reason is required."); return; }
-    await createReferral.mutateAsync({ child_id: tiForm.child_id, therapy_type: tiForm.therapy_type, provider: tiForm.provider.trim(), therapist: tiForm.therapist.trim(), referral_date: new Date().toISOString().slice(0, 10), start_date: null, frequency: "", status: "pending", referral_reason: tiForm.referral_reason.trim(), goals: tiForm.goals ? tiForm.goals.split("\n").map((s) => s.trim()).filter(Boolean) : [], recent_sessions: [], waiting_weeks: null, home_key_worker: "staff_darren", consent: "obtained", next_appointment: null, review_date: null, progress_notes: "" });
+    await createReferral.mutateAsync({ child_id: tiForm.child_id, therapy_type: tiForm.therapy_type, provider: tiForm.provider.trim(), therapist: tiForm.therapist.trim(), referral_date: todayStr(), start_date: null, frequency: "", status: "pending", referral_reason: tiForm.referral_reason.trim(), goals: tiForm.goals ? tiForm.goals.split("\n").map((s) => s.trim()).filter(Boolean) : [], recent_sessions: [], waiting_weeks: null, home_key_worker: "staff_darren", consent: "obtained", next_appointment: null, review_date: null, progress_notes: "" });
     toast.success("Therapy referral submitted.");
     setTiForm({ child_id: "", therapy_type: "camhs", provider: "", therapist: "", referral_reason: "", goals: "" });
     setShowDialog(false);

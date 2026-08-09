@@ -21,6 +21,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -609,7 +610,7 @@ export async function createDistribution(
       guide_id: input.guideId,
       child_id: input.childId,
       child_name: input.childName,
-      distribution_date: input.distributionDate ?? new Date().toISOString().split("T")[0],
+      distribution_date: input.distributionDate ?? todayStr(),
       format_provided: input.formatProvided ?? "standard_print",
       language_provided: input.languageProvided ?? "English",
       distributed_by: input.distributedBy,
@@ -683,7 +684,7 @@ export async function createFeedback(
       guide_id: input.guideId,
       child_id: input.childId,
       child_name: input.childName,
-      feedback_date: input.feedbackDate ?? new Date().toISOString().split("T")[0],
+      feedback_date: input.feedbackDate ?? todayStr(),
       rating: input.rating,
       what_was_helpful: input.whatWasHelpful ?? null,
       what_could_improve: input.whatCouldImprove ?? null,

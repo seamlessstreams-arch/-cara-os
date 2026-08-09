@@ -11,6 +11,7 @@ import type { Supervision } from "@/types/index";
 import type { Audit } from "@/types/extended";
 import type { RiChallengeLog } from "@/types/extended";
 import { weightedMeanOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, Math.round(v)));
@@ -131,7 +132,7 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
   // Care planning — based on care form completion status
   const care_planning_score = (() => {
     if (!careForms || careForms.length === 0) return null;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const total = careForms.length;
     const approved = careForms.filter((f) => f.status === "approved").length;
     const reviewed = careForms.filter((f) => f.status === "submitted").length;

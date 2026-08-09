@@ -15,6 +15,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { runSystemHealthCheck } from "@/lib/system-health/health-check-engine";
 import type { SystemHealthInput } from "@/lib/system-health/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
       dal.tasks.findAll(),
       dal.youngPeople.findAll(),
     ]);
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     // Restraint → debrief linkage: a debrief record exists for the restraint's incident.
     const debriefs = (debriefRecordsList ?? []) as Array<{ linked_incident_id?: string; child_id?: string }>;

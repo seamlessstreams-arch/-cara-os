@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computePremisesCompliance, type ComplianceItemInput } from "@/lib/engines/premises-compliance-engine";
+import { todayStr } from "@/lib/utils";
 
 const CAT = {
   cert: "Certificates",
@@ -43,7 +44,7 @@ export async function GET() {
     dal.fireDrills.findAll(),
     dal.maintenance.findAll(),
   ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const items: ComplianceItemInput[] = [];
 
   // ── 1. Certificates (from the primary building record) ───────────────────────

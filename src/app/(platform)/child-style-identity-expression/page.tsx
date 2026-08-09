@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   Shirt,
   Sparkles,
@@ -129,7 +129,7 @@ export default function ChildStyleIdentityExpressionPage() {
   const totalProfiles = items.length;
   const genderAffirmingCount = items.filter((r) => r.gender_expression_notes && r.gender_expression_notes.length > 0).length;
   const buildingConfidenceCount = items.filter((r) => r.body_confidence === "building").length;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
   const reviewsDue = items.filter((r) => r.review_date <= thirtyDaysFromNow).length;
 
@@ -407,7 +407,7 @@ export default function ChildStyleIdentityExpressionPage() {
           image and gender-affirming care), the Equality Act 2010 (protected characteristics: gender
           reassignment, race, religion, disability), and UNCRC Articles 8 (right to identity), 13 (freedom
           of expression), 14 (freedom of thought, conscience and religion), and 30 (cultural identity).
-          Records are co-authored with the young person and reviewed regularly. Today: {new Date().toISOString().slice(0, 10)}.
+          Records are co-authored with the young person and reviewed regularly. Today: {todayStr()}.
         </p>
       </div>
       <CareEventsPanel

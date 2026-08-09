@@ -14,7 +14,7 @@ import {
 import {
   Droplet, Heart, Shield, ChevronUp, ChevronDown, ArrowUpDown, Search, Star,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
 import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
@@ -56,7 +56,7 @@ export default function ChildContinenceSupportPlanPage() {
   const activePlans = data.filter((r) => r.presentation !== "resolved").length;
   const postTrauma = data.filter((r) => r.presentation === "post_trauma_onset").length;
   const externalEngaged = data.filter((r) => r.external_support_engaged.length > 0).length;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const ninetyDaysDate = new Date();
   ninetyDaysDate.setDate(ninetyDaysDate.getDate() + 90);
   const ninetyDays = ninetyDaysDate.toISOString().slice(0, 10);

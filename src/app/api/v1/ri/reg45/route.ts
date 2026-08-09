@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
@@ -18,8 +19,8 @@ export async function POST(req: NextRequest) {
   const record = intelligenceDb.riReg45Evidence.create({
     home_id: body.home_id ?? "home_oak",
     report_period: body.report_period ?? "",
-    period_start: body.period_start ?? new Date().toISOString().split("T")[0],
-    period_end: body.period_end ?? new Date().toISOString().split("T")[0],
+    period_start: body.period_start ?? todayStr(),
+    period_end: body.period_end ?? todayStr(),
     evidence_items: body.evidence_items ?? [],
     status: body.status ?? "draft",
     submitted_to_ofsted: false,

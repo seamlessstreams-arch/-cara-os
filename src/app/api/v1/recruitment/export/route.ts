@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { candidateAuditCsv, timeToAppointCsv, scrCsv } from "@/lib/recruitment/csv-export";
 import type { CandidateProfile, CandidateCheck } from "@/types/recruitment";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ async function safeList<T>(p: Promise<unknown>): Promise<T[]> {
 }
 
 function csv(name: string, body: string): NextResponse {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return new NextResponse(body, {
     status: 200,
     headers: {

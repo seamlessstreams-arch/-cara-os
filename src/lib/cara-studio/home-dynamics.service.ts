@@ -8,6 +8,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import type { CaraStudioHomeDynamics } from "@/types/cara-studio";
+import { todayStr } from "@/lib/utils";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -15,7 +16,7 @@ function homeId(): string {
 
 export async function generateHomeDynamicsSnapshot(hId: string, snapshotDate?: string): Promise<CaraStudioHomeDynamics> {
   const sb = createServerClient();
-  const date = snapshotDate ?? new Date().toISOString().slice(0, 10);
+  const date = snapshotDate ?? todayStr();
   if (!sb) return getDemoSnapshot(hId, date);
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -74,7 +75,7 @@ export async function generateHomeDynamicsSnapshot(hId: string, snapshotDate?: s
 
 export async function getLatestSnapshot(hId: string): Promise<CaraStudioHomeDynamics | null> {
   const sb = createServerClient();
-  if (!sb) return getDemoSnapshot(hId, new Date().toISOString().slice(0, 10));
+  if (!sb) return getDemoSnapshot(hId, todayStr());
 
   const { data, error } = await (sb.from("cara_studio_home_dynamics") as any)
     .select("*").eq("home_id", hId).order("snapshot_date", { ascending: false }).limit(1).single();
@@ -84,7 +85,7 @@ export async function getLatestSnapshot(hId: string): Promise<CaraStudioHomeDyna
 
 export async function listSnapshots(hId: string, days: number = 30): Promise<CaraStudioHomeDynamics[]> {
   const sb = createServerClient();
-  if (!sb) return [getDemoSnapshot(hId, new Date().toISOString().slice(0, 10))];
+  if (!sb) return [getDemoSnapshot(hId, todayStr())];
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data, error } = await (sb.from("cara_studio_home_dynamics") as any)

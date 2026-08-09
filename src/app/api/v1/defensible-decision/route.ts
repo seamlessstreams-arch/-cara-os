@@ -19,6 +19,7 @@ import {
 import { recordDecision } from "@/lib/ethical-intelligence/capture-service";
 import type { EthicalSourceRef } from "@/lib/ethical-intelligence/types";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ const DEMO: DefensibleDecisionInput = {
 export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return NextResponse.json({ data: { example: true, input: DEMO, decision: buildDefensibleDecision(DEMO, today) } });
 }
 
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "decisionSummary is required" }, { status: 400 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   try {
     const decision = buildDefensibleDecision(body as DefensibleDecisionInput, today);
 

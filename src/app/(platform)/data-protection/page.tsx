@@ -16,7 +16,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -152,7 +152,7 @@ export default function DataProtectionPage() {
       status: "received" as const,
       subject: dpForm.subject.trim(),
       description: dpForm.description,
-      date_raised: new Date().toISOString().slice(0, 10),
+      date_raised: todayStr(),
       due_date: dpForm.due_date || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       completed_date: null,
       handled_by: "staff_darren",
@@ -177,7 +177,7 @@ export default function DataProtectionPage() {
     const open = records.filter((r) => ["received", "in_progress"].includes(r.status)).length;
     const breaches = records.filter((r) => r.type === "breach").length;
     const dsars = records.filter((r) => r.type === "dsar").length;
-    const overdue = records.filter((r) => r.status !== "completed" && r.status !== "closed" && r.due_date < new Date().toISOString().slice(0, 10)).length;
+    const overdue = records.filter((r) => r.status !== "completed" && r.status !== "closed" && r.due_date < todayStr()).length;
     return { open, breaches, dsars, overdue };
   }, [records]);
 
@@ -318,7 +318,7 @@ export default function DataProtectionPage() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div><span className="text-gray-500">Raised:</span> <span className="font-medium">{r.date_raised}</span></div>
-                    <div><span className="text-gray-500">Due:</span> <span className={cn("font-medium", !r.completed_date && r.due_date < new Date().toISOString().slice(0, 10) ? "text-red-600" : "")}>{r.due_date}</span></div>
+                    <div><span className="text-gray-500">Due:</span> <span className={cn("font-medium", !r.completed_date && r.due_date < todayStr() ? "text-red-600" : "")}>{r.due_date}</span></div>
                     <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{r.completed_date ?? "—"}</span></div>
                     <div><span className="text-gray-500">Handler:</span> <span className="font-medium">{getStaffName(r.handled_by)}</span></div>
                   </div>

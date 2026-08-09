@@ -18,12 +18,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
 import type { WelfareCheck, WelfareCheckRound } from "@/types/extended";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /** A check that needs a manager's eye tonight. */
 function isConcern(c: WelfareCheck): boolean {

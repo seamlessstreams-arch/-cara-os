@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -163,7 +163,7 @@ export default function LifeStoryPage() {
     if (!nChild || !nType || !nTitle || !nDesc) return;
     createMut.mutate({
       child_id: nChild,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       type: nType as LifeStoryEntryType,
       title: nTitle,
       description: nDesc,

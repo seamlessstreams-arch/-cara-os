@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { dal } from "@/lib/db";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -36,7 +36,7 @@ export async function GET() {
   ]);
   const records: ReflectiveSupervisionRecord[] = (reflectiveSupervisionsList ?? []) as ReflectiveSupervisionRecord[];
   const staff = superviseeStaff(staffList);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const overview = computeSupervisionOverview({ records, staff, today });
   const sortedRecords = [...records].sort((a, b) => String(b.date).localeCompare(String(a.date)));

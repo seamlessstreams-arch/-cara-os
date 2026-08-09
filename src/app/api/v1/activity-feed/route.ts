@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { todayStr } from "@/lib/utils";
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 interface FeedItem {
   id: string;

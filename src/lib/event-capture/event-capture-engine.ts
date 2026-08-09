@@ -21,6 +21,7 @@ import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import { evidenceCategoriesFor } from "@/lib/event-stream/event-projector";
 import { computeEventRouting } from "@/lib/event-routing/event-routing-engine";
 import { computeDuplicateDetection } from "@/lib/duplicate-detection/duplicate-detection-engine";
+import { todayStr } from "@/lib/utils";
 
 // ── Input / Output ──────────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export function validateDraft(draft: CornerstoneEvent): { passed: boolean; issue
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeEventCapture(input: EventCaptureInput): EventCaptureResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const draft = input.draft;
 
   // Evidence the draft will build.

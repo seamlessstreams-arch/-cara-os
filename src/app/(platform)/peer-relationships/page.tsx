@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
@@ -144,7 +144,7 @@ export default function PeerRelationshipsPage() {
     if (!prForm.child_id_1 || !prForm.child_id_2) { toast.error("Please select both children."); return; }
     if (prForm.child_id_1 === prForm.child_id_2) { toast.error("Please select two different children."); return; }
     if (!prForm.description.trim()) { toast.error("Description is required."); return; }
-    await createPeer.mutateAsync({ child_id_1: prForm.child_id_1, child_id_2: prForm.child_id_2, quality: "neutral", risk_level: "none", strengths: [], concerns: [], strategies: [], entries: [{ id: crypto.randomUUID(), date: new Date().toISOString(), type: prForm.entry_type, staff_witness: "staff_darren", intervention_used: "", description: prForm.description.trim(), outcome: prForm.outcome.trim() }], last_review_date: new Date().toISOString().slice(0, 10), reviewed_by: "staff_darren", next_review_due: "", notes: "", created_at: new Date().toISOString() });
+    await createPeer.mutateAsync({ child_id_1: prForm.child_id_1, child_id_2: prForm.child_id_2, quality: "neutral", risk_level: "none", strengths: [], concerns: [], strategies: [], entries: [{ id: crypto.randomUUID(), date: new Date().toISOString(), type: prForm.entry_type, staff_witness: "staff_darren", intervention_used: "", description: prForm.description.trim(), outcome: prForm.outcome.trim() }], last_review_date: todayStr(), reviewed_by: "staff_darren", next_review_due: "", notes: "", created_at: new Date().toISOString() });
     toast.success("Peer relationship entry saved.");
     setPrForm({ child_id_1: "", child_id_2: "", entry_type: "observation", description: "", outcome: "" });
     setDialogOpen(false);
@@ -219,7 +219,7 @@ export default function PeerRelationshipsPage() {
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   return (
     <PageShell

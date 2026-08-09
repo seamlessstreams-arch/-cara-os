@@ -15,6 +15,7 @@ import { dal } from "@/lib/db";
 import { KB_ALL_ENTRIES } from "@/lib/cara/knowledge-base";
 import { runKnowledgeEvolution } from "@/lib/knowledge-evolution/knowledge-evolution-engine";
 import type { KBEntryInput, PracticeRecordText } from "@/lib/knowledge-evolution/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
     push("keyWorkSessions", keyWorkingSessionsList, ["summary", "notes", "content"]);
     push("supervisionRecords", supervisionsList, ["notes", "reflections", "summary"]);
 
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     const entries: KBEntryInput[] = KB_ALL_ENTRIES.map((e) => ({
       id: e.id,

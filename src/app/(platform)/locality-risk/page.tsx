@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LocalityRisk, LocalityRiskCategory, LocalityRiskLevel, LocalityMitigation } from "@/types/extended";
@@ -68,7 +68,7 @@ export default function LocalityRiskPage() {
   const [sortBy, setSortBy] = useState("risk");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let list = [...data];
@@ -257,7 +257,7 @@ export default function LocalityRiskPage() {
                         d.setDate(d.getDate() + 90);
                         updateMut.mutate({
                           id: risk.id,
-                          last_reviewed: new Date().toISOString().slice(0, 10),
+                          last_reviewed: todayStr(),
                           reviewed_by: "staff_darren",
                           next_review: d.toISOString().slice(0, 10),
                         });

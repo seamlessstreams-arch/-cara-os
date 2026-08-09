@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { below, meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 import type {
   LessonsLearnedAnalysis,
   LessonRecord,
@@ -79,7 +80,7 @@ export async function GET() {
       dal.reg44VisitReports.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const incidents       = (incidentsList as any[]) ?? [];
   const reg44Reports    = (reg44VisitReportsList as any[]) ?? [];

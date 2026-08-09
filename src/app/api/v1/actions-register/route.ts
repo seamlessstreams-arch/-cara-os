@@ -17,10 +17,11 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import { computeActionsRegister, type ActionInput } from "@/lib/engines/actions-register-engine";
+import { todayStr } from "@/lib/utils";
 
 export async function GET() {
   const [houseMeetingsList, keyWorkingSessionsList, lacReviewsList, medicationErrorsList, multiAgencyMeetingsList, qaAuditRecordsList, reg44VisitReportsList, supervisionsList, youngPeopleList] = await Promise.all([dal.houseMeetings.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.medicationErrors.findAll(), dal.multiAgencyMeetings.findAll(), dal.qaAuditRecords.findAll(), dal.reg44VisitReports.findAll(), dal.supervisions.findAll(), dal.youngPeople.findAll()]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const yp = (youngPeopleList ?? []) as any[];
   const childName = (id?: string | null): string | undefined => {

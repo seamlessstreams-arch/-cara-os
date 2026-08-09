@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — STAFF–CHILD CONTINUITY OF CARE INTELLIGENCE ENGINE
 //
@@ -150,7 +151,7 @@ export function bandOf(index: number): ContinuityBand {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeStaffChildContinuity(input: StaffChildContinuityInput): StaffChildContinuityResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const staffById = new Map(input.staff.map((s) => [s.id, s]));
 
   const children: ChildContinuity[] = input.children.map((child) => {

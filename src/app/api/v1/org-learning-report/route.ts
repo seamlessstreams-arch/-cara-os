@@ -14,13 +14,14 @@ import { getStore } from "@/lib/db/store";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
 import type { ReportPeriod } from "@/lib/org-learning-report/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
     const store = getStore();
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const { searchParams } = new URL(req.url);
     const period: ReportPeriod = searchParams.get("period") === "month" ? "month" : "quarter";
 

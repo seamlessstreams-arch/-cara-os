@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
@@ -69,7 +69,7 @@ function CreateNotifiableEventDialog({
   onClose: () => void;
 }) {
   const createMutation = useCreateNotifiableEvent();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const [form, setForm] = useState({
     date: today,

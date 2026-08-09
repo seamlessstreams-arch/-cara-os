@@ -31,7 +31,7 @@ import {
   CheckCircle2, Clock, Heart, Shield, Loader2, ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import Link from "next/link";
@@ -141,7 +141,7 @@ export default function BehaviourSupportPlansPage() {
   const [showNew, setShowNew] = useState(false);
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const children = useMemo(() => {
     const ids = [...new Set(plans.map((p) => p.child_id))];

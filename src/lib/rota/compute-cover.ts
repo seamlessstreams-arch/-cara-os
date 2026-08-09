@@ -10,6 +10,7 @@
 import { expandPatterns, shiftTypeToPeriod } from "@/lib/rota/shift-patterns";
 import { analyseStaffingCover, type CoverAssignment, type CoverReasonNote, type StaffingCoverResult } from "@/lib/rota/staffing-cover-engine";
 import type { getStore } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 export function addDays(date: string, n: number): string {
   return new Date(Date.parse(`${date}T00:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
@@ -17,7 +18,7 @@ export function addDays(date: string, n: number): string {
 
 /** Compute the forward cover picture from the live store for a date range. */
 export function computeStaffingCoverFromStore(store: Pick<ReturnType<typeof getStore>, "leaveRequests" | "shiftCoverNotes" | "shiftPatterns" | "shifts" | "staff" | "staffSicknessRecords" | "staffingPolicy">, from: string, to: string): StaffingCoverResult & { policy: unknown; projected_count: number } {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const inRange = (d: string) => d >= from && d <= to;
 
   // ── Published shifts in range ──

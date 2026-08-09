@@ -13,8 +13,7 @@ import {
   Activity, Heart, Pill, Shield, Users, Clock, TrendingUp,
   TrendingDown, Minus, Sun, Moon, Eye, MessageSquare,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
+import { cn, todayStr } from "@/lib/utils";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type BriefPriority = "critical" | "high" | "routine" | "positive";
@@ -245,7 +244,7 @@ export function CaraDailyIntelligence({
   homeId,
   className,
 }: DailyIntelligenceProps) {
-  const today = date ?? new Date().toISOString().slice(0, 10);
+  const today = date ?? todayStr();
   const [expanded, setExpanded] = useState(true);
   const [activeSection, setActiveSection] = useState<"events" | "moods" | "staffing" | "compliance">("events");
 

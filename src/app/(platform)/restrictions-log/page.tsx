@@ -17,7 +17,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -113,7 +113,7 @@ export default function RestrictionsLogPage() {
     authoriser_name: "",
     proportionality: "",
     child_view: "",
-    start_date: new Date().toISOString().slice(0, 10),
+    start_date: todayStr(),
   });
   const setRF = (k: keyof typeof rlForm, v: string) => setRlForm((p) => ({ ...p, [k]: v }));
 
@@ -142,7 +142,7 @@ export default function RestrictionsLogPage() {
       notified_parties: [],
     });
     toast.success("Restriction logged.");
-    setRlForm({ child_id: "", type: "", description: "", reason: "", authorised_by: "", authoriser_name: "", proportionality: "", child_view: "", start_date: new Date().toISOString().slice(0, 10) });
+    setRlForm({ child_id: "", type: "", description: "", reason: "", authorised_by: "", authoriser_name: "", proportionality: "", child_view: "", start_date: todayStr() });
     setShowDialog(false);
   };
 

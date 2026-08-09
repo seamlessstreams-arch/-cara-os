@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { toastSuccess, toastError, toastInfo } from "@/lib/toast";
 import { Input } from "@/components/ui/input";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -544,7 +544,7 @@ export default function CandidateDetailPage() {
       candidateId,
       data: {
         status: "satisfactory",
-        received_date: new Date().toISOString().slice(0, 10),
+        received_date: todayStr(),
       },
     });
   }

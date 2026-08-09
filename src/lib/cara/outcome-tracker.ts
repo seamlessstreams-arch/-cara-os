@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — OUTCOME TRACKER
 //
@@ -121,7 +122,7 @@ export function trackOutcomes(
   objectives: OutcomeObjective[],
   evidence: EvidenceEntry[],
 ): OutcomeAnalysis {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: OutcomeAlert[] = [];
   const celebrations: string[] = [];
   const recommendations: string[] = [];

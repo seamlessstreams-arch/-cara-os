@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -134,7 +134,7 @@ export default function OnlineSafetyPage() {
     }
     await createIncident.mutateAsync({
       child_id: osForm.child_id,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       category: osForm.category as OnlineSafetyIncidentCategory,
       severity: osForm.severity as OnlineSafetySeverity,
       status: "open" as OnlineSafetyIncidentStatus,

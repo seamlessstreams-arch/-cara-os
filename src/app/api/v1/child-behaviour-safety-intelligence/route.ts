@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeChildBehaviourSafety,
   type ChildBehaviourSafetyInput,
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
       dal.sleepLog.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {

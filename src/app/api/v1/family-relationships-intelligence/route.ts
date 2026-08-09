@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeFamilyRelationships,
   type FamilyRelationshipsInput,
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   }
 
   const [contactDirectoryEntriesList, contactPlansList, familyTimeSessionsList, genogramEntriesList, lacReviewsList, missingEpisodesList, placementStabilityRecordsList, youngPeopleList] = await Promise.all([dal.contactDirectoryEntries.findAll(), dal.contactPlans.findAll(), dal.familyTimeSessions.findAll(), dal.genogramEntries.findAll(), dal.lacReviews.findAll(), dal.missingEpisodes.findAll(), dal.placementStabilityRecords.findAll(), dal.youngPeople.findAll()]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {

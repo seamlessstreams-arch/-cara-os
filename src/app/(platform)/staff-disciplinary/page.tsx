@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -121,7 +121,7 @@ export default function StaffDisciplinaryPage() {
     if (!sdForm.staff_member) { toast.error("Please select a staff member."); return; }
     if (!sdForm.category) { toast.error("Please select a category."); return; }
     if (!sdForm.allegation.trim()) { toast.error("Please enter the allegation."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createCase.mutateAsync({ staff_member: sdForm.staff_member, date_raised: today, category: sdForm.category as StaffDisciplinaryCategory, severity: sdForm.severity, stage: "investigation", allegation: sdForm.allegation.trim(), investigator: null, investigation_start_date: null, investigation_end_date: null, suspended: false, suspension_date: null, suspension_review_dates: [], hearing_date: null, hearing_panel: [], outcome: "", sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "", timeline: [], support_offered: [], lado_notified: false, dbs_referral: false, ofsted_notified: false, confidentiality_level: "standard", trade_union_rep: null, lessons_learned: "", notes: "" });
     toast.success("Disciplinary case created.");
     setSdForm({ staff_member: "", category: "", severity: "minor", allegation: "" });

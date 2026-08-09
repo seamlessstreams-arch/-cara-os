@@ -22,7 +22,7 @@ import {
   Plus, Filter, ChevronDown, ChevronUp,
   CheckCircle2, Clock, FileText, AlertTriangle, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { ServiceUserAgreementRecord, ServiceUserAgreementType, ServiceUserAgreementStatus } from "@/types/extended";
@@ -87,7 +87,7 @@ export default function ServiceUserAgreementsPage() {
   const handleSaveAgreement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!suaForm.child_id) { toast.error("Please select a young person."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createRecord.mutateAsync({ child_id: suaForm.child_id, agreement_type: suaForm.agreement_type, status: suaForm.status, created_date: today, review_date: suaForm.review_date || today, last_reviewed_date: today, created_by: "staff_darren", young_person_signed_date: null, young_person_views: suaForm.young_person_views.trim(), rules: suaForm.rules.split("\n").filter(Boolean).map((r) => ({ rule: r.trim(), agreed_by_yp: false, notes: "" })), consequences: "", rewards: "", modifications: "", social_worker_aware: false });
     toast.success("Agreement saved.");
     setSuaForm({ child_id: "", agreement_type: "house_rules", status: "active", review_date: "", young_person_views: "", rules: "" });

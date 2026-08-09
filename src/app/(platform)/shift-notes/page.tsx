@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -88,7 +88,7 @@ export default function ShiftNotesPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createNote = useCreateShiftNoteRecord();
-  const [snForm, setSnForm] = useState({ date: new Date().toISOString().slice(0, 10), shift: "evening" as ShiftNoteShiftType, general_notes: "", handover: "", outstanding: "" });
+  const [snForm, setSnForm] = useState({ date: todayStr(), shift: "evening" as ShiftNoteShiftType, general_notes: "", handover: "", outstanding: "" });
   const setSNF = (k: keyof typeof snForm, v: string) => setSnForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateNote = async (e: React.FormEvent) => {
@@ -98,7 +98,7 @@ export default function ShiftNotesPage() {
     const [start, end] = meta.times.split(" – ");
     await createNote.mutateAsync({ date: snForm.date, shift: snForm.shift, start_time: start || "19:00", end_time: end || "22:00", staff_on_duty: ["staff_darren"], child_notes: [], general_notes: snForm.general_notes.trim(), maintenance_issues: "", visitors_log: "", handover_priorities: snForm.handover ? snForm.handover.split("\n").map((s) => s.trim()).filter(Boolean) : [], incidents_ref: [], completed_tasks: [], outstanding_tasks: snForm.outstanding ? snForm.outstanding.split("\n").map((s) => s.trim()).filter(Boolean) : [], recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Shift note saved.");
-    setSnForm({ date: new Date().toISOString().slice(0, 10), shift: "evening", general_notes: "", handover: "", outstanding: "" });
+    setSnForm({ date: todayStr(), shift: "evening", general_notes: "", handover: "", outstanding: "" });
     setShowNew(false);
   };
 

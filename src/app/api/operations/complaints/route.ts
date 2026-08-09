@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 import {
   listComplaints,
   getComplaint,
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
         complainant_name: body.complainantName,
         child_id: body.childId,
         staff_id: body.staffId,
-        date_received: body.dateReceived ?? new Date().toISOString().slice(0, 10),
+        date_received: body.dateReceived ?? todayStr(),
         date_acknowledged: body.dateAcknowledged,
         date_responded: body.dateResponded,
         stage: body.stage ?? "informal",

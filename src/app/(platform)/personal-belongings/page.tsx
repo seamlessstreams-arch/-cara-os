@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -116,7 +116,7 @@ export default function PersonalBelongingsPage() {
       toast.error("Young person and item description are required.");
       return;
     }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const item: BelongingItem = {
       id: crypto.randomUUID(),
       description: pbForm.description.trim(),

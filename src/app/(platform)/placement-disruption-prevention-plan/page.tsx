@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { DisruptionPreventionPlan, DisruptionRiskLevel } from "@/types/extended";
 import { DISRUPTION_RISK_LEVEL_LABEL } from "@/types/extended";
@@ -95,7 +95,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
   const heightenedOrAcute = records.filter(
     (r) => r.risk_of_disruption_level === "heightened" || r.risk_of_disruption_level === "acute"
   ).length;
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = todayStr();
   const reviewsDue30 = records.filter((r) => {
     const nr = new Date(r.next_review_date);
     const today = new Date(todayIso);

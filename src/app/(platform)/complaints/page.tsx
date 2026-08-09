@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -374,7 +374,7 @@ function NewComplaintDialog({
     child_id: "",
     category: "other" as ComplaintCategory,
     summary: "",
-    date_received: new Date().toISOString().split("T")[0],
+    date_received: todayStr(),
     includes_safeguarding_element: false,
   });
 

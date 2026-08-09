@@ -18,7 +18,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -71,7 +71,7 @@ export default function IndependenceSkillsPage() {
       }).then((r) => r.json()),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
-  const [isForm, setIsForm] = useState({ child_id: "", skill_name: "", category: "cooking" as IndependenceSkillCategory, proficiency: "not_started" as IndependenceSkillProficiency, date: new Date().toISOString().slice(0, 10), evidence: "", next_step: "" });
+  const [isForm, setIsForm] = useState({ child_id: "", skill_name: "", category: "cooking" as IndependenceSkillCategory, proficiency: "not_started" as IndependenceSkillProficiency, date: todayStr(), evidence: "", next_step: "" });
   const setIS = (k: string, v: unknown) => setIsForm((p) => ({ ...p, [k]: v }));
 
   const handleAddSkill = async (e: React.FormEvent) => {
@@ -81,7 +81,7 @@ export default function IndependenceSkillsPage() {
     const skill = { id: crypto.randomUUID(), name: isForm.skill_name.trim(), category: isForm.category, proficiency: isForm.proficiency, target_date: "", last_assessed: isForm.date, assessed_by: "staff_darren", evidence: isForm.evidence.trim(), next_step: isForm.next_step.trim() };
     await createRecord.mutateAsync({ child_id: isForm.child_id, review_date: isForm.date, reviewer: "staff_darren", overall_readiness: 50, skills: [skill], strengths: [], areas_for_development: [], child_view: "", pathway_notes: "", created_at: new Date().toISOString() });
     toast.success("Independence skill record added.");
-    setIsForm({ child_id: "", skill_name: "", category: "cooking", proficiency: "not_started", date: new Date().toISOString().slice(0, 10), evidence: "", next_step: "" });
+    setIsForm({ child_id: "", skill_name: "", category: "cooking", proficiency: "not_started", date: todayStr(), evidence: "", next_step: "" });
     setShowDialog(false);
   };
 

@@ -17,6 +17,7 @@ import {
   type ExportScope,
 } from "@/lib/inspection-intelligence/inspection-export";
 import { renderInspectionDocx } from "@/lib/inspection-intelligence/inspection-docx";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     const homeName = (home as { name?: string } | null)?.name || "The home";
     const model = buildInspectionExportModel(readiness, { homeName, scope });
-    const base = `inspection-evidence-${scope}-${new Date().toISOString().slice(0, 10)}`;
+    const base = `inspection-evidence-${scope}-${todayStr()}`;
 
     if (format === "json") {
       return new NextResponse(renderInspectionJson(model), {

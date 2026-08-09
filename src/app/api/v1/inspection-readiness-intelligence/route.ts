@@ -7,13 +7,14 @@ import {
   type InspectionReadinessInput,
   type DomainMetric,
 } from "@/lib/engines/inspection-readiness-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const [behaviourLogList, careFormsList, complaintOutcomeRecordsList, educationRecordsList, exploitationScreeningsList, healthAssessmentsList, incidentsList, lacReviewsList, medicationAdministrationsList, medicationsList, missingEpisodesList, notifiableEventsList, qaAuditRecordsList, reg44ActionRecordsList, reg44VisitReportsList, reg45EvidenceQueueList, riskAssessmentsList, selfEvaluationAreasList, staffList, supervisionsList, trainingRecordsList, youngPeopleList, homeRec] = await Promise.all([dal.behaviourLog.findAll(), dal.careForms.findAll(), dal.complaintOutcomeRecords.findAll(), dal.educationRecords.findAll(), dal.exploitationScreenings.findAll(), dal.healthAssessments.findAll(), dal.incidents.findAll(), dal.lacReviews.findAll(), dal.medicationAdministrations.findAll(), dal.medications.findAll(), dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.qaAuditRecords.findAll(), dal.reg44ActionRecords.findAll(), dal.reg44VisitReports.findAll(), dal.reg45EvidenceQueue.findAll(), dal.riskAssessments.findAll(), dal.selfEvaluationAreas.findAll(), dal.staff.findAll(), dal.supervisions.findAll(), dal.trainingRecords.findAll(), dal.youngPeople.findAll(), dal.home.get()]);
   const store = { behaviourLog: behaviourLogList, careForms: careFormsList, complaintOutcomeRecords: complaintOutcomeRecordsList, educationRecords: educationRecordsList, exploitationScreenings: exploitationScreeningsList, healthAssessments: healthAssessmentsList, incidents: incidentsList, lacReviews: lacReviewsList, medicationAdministrations: medicationAdministrationsList, medications: medicationsList, missingEpisodes: missingEpisodesList, notifiableEvents: notifiableEventsList, qaAuditRecords: qaAuditRecordsList, reg44ActionRecords: reg44ActionRecordsList, reg44VisitReports: reg44VisitReportsList, reg45EvidenceQueue: reg45EvidenceQueueList, riskAssessments: riskAssessmentsList, selfEvaluationAreas: selfEvaluationAreasList, staff: staffList, supervisions: supervisionsList, trainingRecords: trainingRecordsList, youngPeople: youngPeopleList, home: homeRec };
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const children = store.youngPeople.filter((yp) => yp.status === "current");
   const staff = store.staff.filter((s) => s.is_active);
 

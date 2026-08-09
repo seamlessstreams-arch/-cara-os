@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ function formatShiftType(t: ShiftType): string {
 export function computeHandoverContinuityIntelligence(
   input: HandoverContinuityIntelligenceInput,
 ): HandoverContinuityIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { handovers, staff, children } = input;
 
   const staffMap = new Map(staff.map((s) => [s.id, s.name]));

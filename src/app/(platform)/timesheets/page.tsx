@@ -48,7 +48,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { cn, daysFromNow } from "@/lib/utils";
+import { cn, daysFromNow, todayStr } from "@/lib/utils";
 import type { Shift, LeaveRequest, StaffMember } from "@/types";
 // ── Create-leave mutation (inlined from use-leave) ───────────────────────────
 
@@ -270,11 +270,11 @@ export default function TimesheetsPage() {
 
   function exportCSV() {
     const csv = timesheetCsv(timesheetData, effectiveApprovedIds);
-    downloadCsv(csv, `timesheets-${periodSlug()}-${new Date().toISOString().slice(0, 10)}.csv`);
+    downloadCsv(csv, `timesheets-${periodSlug()}-${todayStr()}.csv`);
   }
 
   function exportSageCSV() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const csv = sageCsv(timesheetData, effectiveApprovedIds, today);
     downloadCsv(csv, `sage-payroll-${periodSlug()}-${today}.csv`);
   }
@@ -302,7 +302,7 @@ export default function TimesheetsPage() {
       await createLeave.mutateAsync({
         staff_id: d.staff.id,
         leave_type: "toil",
-        start_date: new Date().toISOString().slice(0, 10),
+        start_date: todayStr(),
         end_date: new Date(Date.now() + (days - 1) * 86400000).toISOString().slice(0, 10),
         total_days: days,
         reason: `Converted from ${d.overtimeMinutes} overtime minutes`,

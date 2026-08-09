@@ -13,7 +13,7 @@ import { DictationButton } from "@/components/common/dictation-button";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import type { Intervention } from "@/types/extended";
 
 type SingleResponse<T> = { data: T };
@@ -204,7 +204,7 @@ export function InterventionAddModal({
         intended_outcome: intendedOutcome.trim(),
         status: "active",
         started_by: "staff_darren",
-        started_at: new Date().toISOString().split("T")[0],
+        started_at: todayStr(),
         agreed_by: null,
         review_date: reviewDate || null,
         actual_outcome: null,

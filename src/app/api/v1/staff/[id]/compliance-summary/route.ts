@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computeStaffCompliance } from "@/lib/engines/staff-compliance-engine";
 import { computeWorkforceAbsence } from "@/lib/engines/workforce-absence-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(_req: Request, { params }: Params) {
       dal.staffSicknessRecords.findAll(),
       dal.trainingRecords.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const s = (staffList ?? []).find((m: any) => String(m.id) === String(id));
   if (!s) return NextResponse.json({ error: "Staff member not found" }, { status: 404 });

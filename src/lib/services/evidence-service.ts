@@ -11,6 +11,7 @@ import type {
   EvidenceType, EvidenceLinkType, RegulatoryFramework,
   ServiceResult,
 } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -97,7 +98,7 @@ export async function createEvidenceItem(input: {
       linked_staff_id: input.linked_staff_id ?? null,
       regulation_refs: input.regulation_refs ?? [],
       sccif_refs: input.sccif_refs ?? [],
-      date_of_evidence: input.date_of_evidence ?? new Date().toISOString().split("T")[0],
+      date_of_evidence: input.date_of_evidence ?? todayStr(),
       tags: input.tags ?? [],
       uploaded_by: input.uploaded_by,
     })

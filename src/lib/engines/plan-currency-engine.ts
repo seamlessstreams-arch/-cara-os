@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — PLAN CURRENCY REGISTER ENGINE
 //
@@ -90,7 +91,7 @@ function classify(review_date: string | null | undefined, today: string, dueSoon
 // ── Main computation ──────────────────────────────────────────────────────────
 
 export function computePlanCurrency(input: PlanCurrencyInput): PlanCurrencyResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const dueSoon = input.due_soon_days ?? 30;
 
   const records: PlanCurrencyRecord[] = input.plans.map((p) => {

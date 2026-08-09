@@ -23,6 +23,7 @@ import {
 import { currentUserId, logIncidentAudit, childName, staffNameOf } from "@/lib/cara-incident/incident-service";
 import type { CaraRecordingReview } from "@/lib/cara-incident/cara-incident-engine";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 async function oversightInput(): Promise<OversightInput> {
   const [sessions, entries, reviews, restoratives, reflections, alertStates] = await Promise.all([
@@ -37,7 +38,7 @@ async function oversightInput(): Promise<OversightInput> {
     restoratives: restoratives ?? [],
     reflections: reflections ?? [],
     alertStates: alertStates ?? [],
-    today: new Date().toISOString().slice(0, 10),
+    today: todayStr(),
   };
 }
 

@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import { computeComplaintsClock, type ComplaintInput } from "@/lib/engines/complaints-clock-engine";
+import { todayStr } from "@/lib/utils";
 
 const CLOSED_STATUSES = new Set(["closed", "resolved", "withdrawn", "not_upheld_closed"]);
 
@@ -22,7 +23,7 @@ export async function GET() {
       dal.complaints.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const yp = (youngPeopleList ?? []) as any[];
   const childName = (id?: string | null): string | undefined => {

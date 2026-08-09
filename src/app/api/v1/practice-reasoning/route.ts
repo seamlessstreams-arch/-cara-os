@@ -16,6 +16,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildReasoningSignals } from "@/lib/cara-reasoning/hydrate";
 import { reasonOverChild } from "@/lib/cara-reasoning/practice-reasoning-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const youngPeople = await safeList(dal.youngPeople.findAll());
   const childId =
     req.nextUrl.searchParams.get("childId") ||

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { todayStr } from "@/lib/utils";
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole dashboard.

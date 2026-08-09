@@ -19,7 +19,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -105,7 +105,7 @@ export default function AdvocacyPage() {
       status: "pending" as AdvocacyStatus,
       provider: advForm.provider,
       advocate_name: advForm.advocate_name,
-      referral_date: new Date().toISOString().slice(0, 10),
+      referral_date: todayStr(),
       start_date: null,
       reason: advForm.reason.trim(),
       issues_raised: [],

@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeRetentionRisk, type StaffSignalsInput } from "@/lib/engines/retention-risk-engine";
+import { todayStr } from "@/lib/utils";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 
@@ -47,7 +48,7 @@ export async function GET() {
       dal.staff.findAll(),
       dal.trainingRecords.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const allStaff: any[] = staffList ?? [];
   const staff: StaffLite[] = allStaff

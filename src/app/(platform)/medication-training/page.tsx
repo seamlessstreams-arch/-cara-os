@@ -21,7 +21,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, GraduationCap, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
@@ -70,7 +70,7 @@ export default function MedicationTrainingPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRecord = useCreateMedTrainingRecord();
-  const [mtForm, setMtForm] = useState({ staff_id: "", competency_type: "administration" as MedCompetencyType, assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+  const [mtForm, setMtForm] = useState({ staff_id: "", competency_type: "administration" as MedCompetencyType, assessment_date: todayStr(), score: "", notes: "" });
   const setMT = (k: string, v: unknown) => setMtForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveAssessment = async (e: React.FormEvent) => {
@@ -80,7 +80,7 @@ export default function MedicationTrainingPage() {
     expiry.setFullYear(expiry.getFullYear() + 1);
     await createRecord.mutateAsync({ staff_id: mtForm.staff_id, competency_type: mtForm.competency_type, status: "competent", assessment_date: mtForm.assessment_date, assessed_by: "staff_darren", expiry_date: expiry.toISOString().slice(0, 10), score: mtForm.score ? parseInt(mtForm.score) : null, pass_threshold: 80, practical_assessment: false, written_assessment: true, observations: 0, notes: mtForm.notes.trim(), action_plan: "", next_assessment_date: expiry.toISOString().slice(0, 10), created_at: new Date().toISOString() });
     toast.success("Competency assessment recorded.");
-    setMtForm({ staff_id: "", competency_type: "administration", assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+    setMtForm({ staff_id: "", competency_type: "administration", assessment_date: todayStr(), score: "", notes: "" });
     setShowNew(false);
   };
 

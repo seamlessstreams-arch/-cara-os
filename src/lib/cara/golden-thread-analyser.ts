@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — GOLDEN THREAD ANALYSER
 //
@@ -300,7 +301,7 @@ export function analyseGoldenThread(input: GoldenThreadInput): GoldenThreadAnaly
   return {
     childId: input.childId,
     childName: input.childName,
-    analysedAt: new Date().toISOString().slice(0, 10),
+    analysedAt: todayStr(),
     windowDays: input.analysisWindowDays,
     overallScore,
     grade,

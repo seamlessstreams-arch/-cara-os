@@ -45,8 +45,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-
+import { cn, todayStr } from "@/lib/utils";
 import type { EmergencyPlan, EmergencyPlanType } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -79,7 +78,7 @@ export default function EmergencyPlanningPage() {
   const { data: queryData, isLoading } = useEmergencyPlans();
   const plans = queryData?.data ?? [];
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const testsDue = plans.filter((p) => p.next_test <= today).length;
 
   if (isLoading) {

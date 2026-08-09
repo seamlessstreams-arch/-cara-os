@@ -10,6 +10,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { buildABCProfiles } from "@/lib/abc-behaviour/abc-behaviour-engine";
 import type { ABCEntryInput } from "@/lib/abc-behaviour/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
       dal.youngPeople.findAll(),
       dal.behaviourLog.findAll(),
     ]);
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     const children = ((ypList ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((yp) => (yp.status ?? "current") === "current")

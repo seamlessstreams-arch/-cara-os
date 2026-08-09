@@ -16,6 +16,7 @@ import type { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { computeChildVoiceDimensions } from "@/lib/child-voice-dimensions/dimensions-engine";
 import type { ChildVoiceDimensionInput } from "@/lib/child-voice-dimensions/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,7 @@ export async function GET(req: NextRequest) {
   try {
     const [advocacyRecordsList, childFeedbackLoopsList, houseMeetingsList, keyWorkingSessionsList, lacReviewsList, youngPeopleList, ypFeedbackList] = await Promise.all([dal.advocacyRecords.findAll(), dal.childFeedbackLoops.findAll(), dal.houseMeetings.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.youngPeople.findAll(), dal.ypFeedback.findAll()]);
   const store = { advocacyRecords: advocacyRecordsList, childFeedbackLoops: childFeedbackLoopsList, houseMeetings: houseMeetingsList, keyWorkingSessions: keyWorkingSessionsList, lacReviews: lacReviewsList, youngPeople: youngPeopleList, ypFeedback: ypFeedbackList };
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id");
 

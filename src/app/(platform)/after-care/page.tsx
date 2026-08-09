@@ -24,7 +24,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Heart, Home, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -86,7 +86,7 @@ export default function AfterCarePage() {
 
   const [acForm, setAcForm] = useState({
     child_id: "",
-    left_date: new Date().toISOString().slice(0, 10),
+    left_date: todayStr(),
     left_reason: "age_18" as AfterCareLeftReason,
     current_accommodation: "",
     education_employment: "",
@@ -125,12 +125,12 @@ export default function AfterCarePage() {
       created_at: new Date().toISOString(),
     });
     toast.success("After-care record saved.");
-    setAcForm({ child_id: "", left_date: new Date().toISOString().slice(0, 10), left_reason: "age_18", current_accommodation: "", education_employment: "", notes: "" });
+    setAcForm({ child_id: "", left_date: todayStr(), left_reason: "age_18", current_accommodation: "", education_employment: "", notes: "" });
     setDialogOpen(false);
   };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let out = [...records];

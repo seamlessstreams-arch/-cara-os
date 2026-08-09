@@ -77,6 +77,7 @@ import {
   type ChildRef as CmChildRef,
   type StaffRef as CmStaffRef,
 } from "@/lib/engines/complaints-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 
 import {
   computeQualityAssuranceIntelligence,
@@ -93,7 +94,7 @@ import {
 
 export async function GET() {
   const [activitiesList, appointmentsList, behaviourLogList, camhsReferralsList, complaintOutcomeRecordsList, dailyLogList, dentalRecordsList, eduAttendanceRecordsList, educationRecordsList, healthAssessmentsList, immunisationRecordsList, incidentsList, keyWorkingSessionsList, leaveRequestsList, mentalHealthCheckInsList, missingEpisodesList, notifiableEventsList, opticiansRecordsList, outcomeTargetsList, qaAuditRecordsList, restraintsList, riskAssessmentsList, sanctionRewardsList, shiftsList, staffList, supervisionsList, trainingRecordsList, youngPeopleList, homeRec] = await Promise.all([dal.activities.findAll(), dal.appointments.findAll(), dal.behaviourLog.findAll(), dal.camhsReferrals.findAll(), dal.complaintOutcomeRecords.findAll(), dal.dailyLog.findAll(), dal.dentalRecords.findAll(), dal.eduAttendanceRecords.findAll(), dal.educationRecords.findAll(), dal.healthAssessments.findAll(), dal.immunisationRecords.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.leaveRequests.findAll(), dal.mentalHealthCheckIns.findAll(), dal.missingEpisodes.findAll(), dal.notifiableEvents.findAll(), dal.opticiansRecords.findAll(), dal.outcomeTargets.findAll(), dal.qaAuditRecords.findAll(), dal.restraints.findAll(), dal.riskAssessments.findAll(), dal.sanctionRewards.findAll(), dal.shifts.findAll(), dal.staff.findAll(), dal.supervisions.findAll(), dal.trainingRecords.findAll(), dal.youngPeople.findAll(), dal.home.get()]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const ypNames = new Map(
     youngPeopleList.map((yp) => [yp.id, yp.preferred_name || yp.first_name]),

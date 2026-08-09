@@ -24,7 +24,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import type { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import {
   buildShiftLifecycle,
@@ -55,7 +55,7 @@ async function loadLifecycleSrc(): Promise<LifecycleSrc> {
 function resolveShift(src: LifecycleSrc, staffId: string, shiftId: string | null) {
   const shifts = (src.shifts ?? []).filter((s) => s.staff_id === staffId);
   if (shiftId) return shifts.find((s) => s.id === shiftId) ?? null;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return (
     shifts.find((s) => s.date === today && (s.status === "in_progress" || s.status === "confirmed")) ??
     [...shifts].sort((a, b) => b.date.localeCompare(a.date))[0] ??

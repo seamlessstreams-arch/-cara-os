@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -648,7 +649,7 @@ export async function createReview(
       plan_id: input.planId,
       child_id: input.childId,
       child_name: input.childName,
-      review_date: input.reviewDate ?? new Date().toISOString().split("T")[0],
+      review_date: input.reviewDate ?? todayStr(),
       reviewer: input.reviewer,
       progress_summary: input.progressSummary,
       goals_reviewed: input.goalsReviewed ?? 0,

@@ -13,7 +13,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -364,7 +364,7 @@ export default function LACReviewsPage() {
             if (!childId || !reviewType) return;
             createReview.mutate({
               child_id: childId, review_type: reviewType as LACReviewType,
-              date: fd.get("date") as string || new Date().toISOString().slice(0, 10),
+              date: fd.get("date") as string || todayStr(),
               iro: fd.get("iro") as string || "", venue: fd.get("venue") as string || "",
               attendees: [], child_participation: "attended" as LACChildParticipation,
               child_views: fd.get("child_views") as string || "",

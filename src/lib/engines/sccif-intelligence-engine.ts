@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — SCCIF SELF-EVALUATION INTELLIGENCE ENGINE
 //
@@ -120,7 +121,7 @@ export function pct(numerator: number, denominator: number): number {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { areas } = input;
 
   // ── Judgment Summaries ──────────────────────────────────────────────────

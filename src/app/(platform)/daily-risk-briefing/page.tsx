@@ -11,7 +11,7 @@ import {
   AlertTriangle, CheckCircle2, Shield, Clock, Users, Pill, MapPin,
   Phone, Calendar, Moon, Sun, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { DailyRiskBriefing, ChildRiskEntry, DailyAlert, DailyContact, DailyRiskLevel } from "@/types/extended";
 import { DAILY_RISK_LEVEL_LABEL } from "@/types/extended";
@@ -46,7 +46,7 @@ export default function DailyRiskBriefingPage() {
 
   /* use the most recent briefing if available */
   const briefing: DailyRiskBriefing | undefined = briefings[0];
-  const today = briefing?.date ?? new Date().toISOString().slice(0, 10);
+  const today = briefing?.date ?? todayStr();
   const childRisks: ChildRiskEntry[] = briefing?.child_risks ?? [];
   const homeAlerts: DailyAlert[] = briefing?.home_alerts ?? [];
   const keyContacts: DailyContact[] = briefing?.key_contacts ?? [];

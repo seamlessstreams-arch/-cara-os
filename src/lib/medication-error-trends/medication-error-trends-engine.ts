@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — MEDICATION ERROR TREND & REPEAT-PATTERN INTELLIGENCE ENGINE
 //
@@ -209,7 +210,7 @@ function recurredAfterLesson(group: MedErrorInput[]): boolean {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeMedicationErrorTrends(input: MedErrorTrendInput): MedicationErrorTrendResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { errors, administrations } = input;
 
   const within = (e: MedErrorInput, min: number, max: number) => {

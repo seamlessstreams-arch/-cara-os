@@ -20,6 +20,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -529,7 +530,7 @@ export async function createAssignment(
       visitor_contact: input.visitorContact ?? null,
       dbs_check_date: input.dbsCheckDate ?? null,
       dbs_reference: input.dbsReference ?? null,
-      assignment_date: input.assignmentDate ?? new Date().toISOString().split("T")[0],
+      assignment_date: input.assignmentDate ?? todayStr(),
       assignment_reason: input.assignmentReason,
       visit_frequency: input.visitFrequency ?? "monthly",
       last_visit_date: null,
@@ -621,7 +622,7 @@ export async function createVisit(
       child_id: input.childId,
       child_name: input.childName,
       assignment_id: input.assignmentId,
-      visit_date: input.visitDate ?? new Date().toISOString().split("T")[0],
+      visit_date: input.visitDate ?? todayStr(),
       visit_duration_minutes: input.visitDurationMinutes ?? null,
       visit_type: input.visitType,
       visitor_name: input.visitorName,

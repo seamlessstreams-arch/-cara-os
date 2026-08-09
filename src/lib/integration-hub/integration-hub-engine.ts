@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — INTEGRATION HUB (ADAPTER FRAMEWORK) INTELLIGENCE ENGINE
 //
@@ -302,7 +303,7 @@ export const DEFAULT_ADAPTERS: IntegrationAdapter[] = [
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeIntegrationHub(input: IntegrationHubInput): IntegrationHubResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   // Default to the static registry scaffold when no adapters are supplied.
   const adaptersIn = input.adapters ?? DEFAULT_ADAPTERS;
 

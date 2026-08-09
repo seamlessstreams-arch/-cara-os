@@ -7,6 +7,7 @@ import {
 } from "@/lib/engines/child-360-intelligence-engine";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { buildCpie360Spine } from "@/lib/cpie/child-360-spine";
+import { todayStr } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const incidents = incidentsList
     .filter((i) => i.child_id === childId)

@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ==============================================================================
 // CARA -- WHISTLEBLOWING INTELLIGENCE ENGINE
 // Pure deterministic engine for whistleblowing disclosure analysis.
@@ -112,7 +113,7 @@ export function computeWhistleblowingIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): WhistleblowingIntelligenceResult {
-  const { reports, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { reports, staff, today = todayStr() } = input;
 
   if (reports.length === 0) {
     return {

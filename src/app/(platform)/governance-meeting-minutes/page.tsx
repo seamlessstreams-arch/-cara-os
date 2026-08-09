@@ -13,7 +13,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import {
   ChevronUp,
@@ -35,7 +35,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ─── date helper (for overdue checks) ─── */
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => todayStr();
 
 /* ─── helpers ─── */
 const getYPName = (id: string): string => {

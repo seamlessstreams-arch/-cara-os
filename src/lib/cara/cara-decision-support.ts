@@ -24,6 +24,7 @@ import type {
   CaraEarlyWarning,
 } from "@/types/cara-studio";
 import type { RiskAssessment } from "@/types/extended";
+import { todayStr } from "@/lib/utils";
 
 const DEFAULT_LOOKBACK_DAYS = 90;
 
@@ -39,7 +40,7 @@ function evidenceFromPattern(p: CaraSafeguardingPattern): CaraSafeguardingEviden
   return {
     source_table: "cara_safeguarding_patterns",
     source_id: p.id,
-    date: p.detected_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+    date: p.detected_at?.slice(0, 10) ?? todayStr(),
     excerpt: p.title,
   };
 }

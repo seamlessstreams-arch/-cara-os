@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — BEHAVIOUR TRIGGER & ESCALATION PATTERN INTELLIGENCE ENGINE
 //
@@ -153,7 +154,7 @@ function concernLevel(score: number): ConcernLevel {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeBehaviourTriggerPatterns(input: BehaviourPatternInput): BehaviourTriggerPatternsResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const nameById = new Map(input.children.map((c) => [c.id, c.name]));
 
   const childIds = new Set<string>(input.children.map((c) => c.id));

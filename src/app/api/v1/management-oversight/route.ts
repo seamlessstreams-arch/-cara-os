@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { buildOversightQueue } from "@/lib/care-events/compliance-queues";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 // → care events awaiting manager review, presented as oversight tasks + meta
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const result = buildOversightQueue(db.careEvents.findNeedingManagerReview(), today, {
     status: sp.get("status"),
     priority: sp.get("priority"),

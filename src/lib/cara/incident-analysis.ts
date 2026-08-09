@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,7 +177,7 @@ export function analyseIncidents(
   homeId: string = "home_oak",
   windowDays: number = 28,
 ): IncidentAnalysis {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: IncidentAlert[] = [];
 
   const totalIncidents = records.length;

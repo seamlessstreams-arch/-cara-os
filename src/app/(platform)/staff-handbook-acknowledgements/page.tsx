@@ -14,7 +14,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
@@ -72,7 +72,7 @@ function isComplete(doc: StaffHandbookAcknowledgementRecord): boolean {
 }
 
 function hasOverdue(doc: StaffHandbookAcknowledgementRecord): boolean {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return !isComplete(doc) && doc.required_by < today;
 }
 

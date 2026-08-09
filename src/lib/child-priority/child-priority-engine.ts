@@ -41,6 +41,7 @@ import {
   type ContinuityStaffInput,
   type ContinuitySessionInput,
 } from "../staff-child-continuity/staff-child-continuity-engine";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ───────────────────────────────────────────────────────────────
 
@@ -164,7 +165,7 @@ function bandOf(score: number): PriorityBand {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeChildPriority(input: ChildPriorityInput): ChildPriorityResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
 
   // ── Run the placement-breakdown forecast ───────────────────────────────
   const placement = computePlacementBreakdownForecast({

@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -65,7 +65,7 @@ export default function PositiveHandlingPage() {
   const handleSavePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phForm.child_id) { toast.error("Please select a young person."); return; }
-    const dt = new Date().toISOString().slice(0, 10);
+    const dt = todayStr();
     const nxt = new Date(); nxt.setFullYear(nxt.getFullYear() + 1);
     await createPlan.mutateAsync({ child_id: phForm.child_id, version: "1.0", created_date: dt, last_reviewed: dt, next_review: nxt.toISOString().slice(0, 10), reviewed_by: phForm.reviewed_by, triggers: phForm.triggers.split("\n").filter(Boolean), early_warning: [], de_escalation: [], physical_responses: [], post_incident_support: [], child_preferences: "", medical_factors: "", staff_authorised: [], consent_obtained: false, sw_consulted: false, parent_notified: false, notes: phForm.notes });
     toast.success("Positive handling plan created.");
@@ -73,7 +73,7 @@ export default function PositiveHandlingPage() {
     setShowNew(false);
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const reviewsDue = plans.filter((p) => p.next_review < today).length;
 
   const EFFECT_COLORS: Record<string, string> = {

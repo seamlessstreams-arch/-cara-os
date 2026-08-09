@@ -6,7 +6,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SwimRecord, SwimmingLevel } from "@/types/extended";
 import { SWIMMING_LEVEL_LABEL } from "@/types/extended";
@@ -119,7 +119,7 @@ export default function ChildSwimmingWaterSafetyPage() {
     const canSwim25m = records.filter((r) => r.can_swim_25m).length;
     const lessonsRunning = records.filter((r) => r.lessons_booked_active).length;
     const reviewsDue90 = records.filter((r) => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const ninety = dFromNow(90);
       return r.review_date >= today && r.review_date <= ninety;
     }).length;

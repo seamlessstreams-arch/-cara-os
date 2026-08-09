@@ -157,7 +157,7 @@ export async function GET() {
       dal.staff.findAll(),
     ]);
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayDate = now.toISOString().slice(0, 10);
 
   const staff = (staffList ?? []) as Array<{
     id: string; full_name: string; first_name: string; last_name: string;
@@ -214,7 +214,7 @@ export async function GET() {
     // Overdue actions (across all supervisions)
     const overdueActions: OverdueAction[] = sups.flatMap((s) =>
       (s.actions ?? [])
-        .filter((a) => !a.done && a.due && a.due < todayStr)
+        .filter((a) => !a.done && a.due && a.due < todayDate)
         .map((a) => ({
           action: a.action,
           due: a.due as string,
@@ -226,7 +226,7 @@ export async function GET() {
     const recentNeeds = [...new Set(sups.slice(0, 2).flatMap((s) => s.training_needs ?? []))];
 
     // Follow-up overdue
-    const followUpOverdue = !!(latest?.follow_up_date && latest.follow_up_date < todayStr);
+    const followUpOverdue = !!(latest?.follow_up_date && latest.follow_up_date < todayDate);
 
     const signal = buildSignal(status, latestWellbeing, latestConfidence, overdueActions.length, (paceRate ?? 0), followUpOverdue);
 

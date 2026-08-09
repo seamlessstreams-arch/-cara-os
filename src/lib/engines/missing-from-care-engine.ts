@@ -16,6 +16,7 @@
 // ── Types ───────────────────────────────────────────────────────────────────
 
 import { mentionsAny } from "@/lib/text/keyword-match";
+import { todayStr } from "@/lib/utils";
 
 export interface MissingEpisodeInput {
   id: string;
@@ -99,9 +100,6 @@ export interface MissingEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function monthStart(today: string): string {
   return today.slice(0, 7) + "-01";

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import type { FormFieldDefinition, FormFieldType } from "@/types/operations";
 import {
   Plus, Trash2, GripVertical, ChevronDown, ChevronUp,
@@ -201,7 +201,7 @@ export default function FormBuilderPage() {
     };
     const json = JSON.stringify(template, null, 2);
     const slug = formTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "form-template";
-    const filename = `${slug}-template-${new Date().toISOString().slice(0, 10)}.json`;
+    const filename = `${slug}-template-${todayStr()}.json`;
     const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

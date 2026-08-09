@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SUMMARY REPORT ENGINE
 //
@@ -107,7 +108,7 @@ function isPositive(r: string): boolean {
 // ── Engine ────────────────────────────────────────────────────────────────────
 
 export function computeHomeSummaryReport(input: HomeSummaryReportInput): HomeSummaryReportResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const signals = input.signals ?? [];
 
   const sections: ReportSection[] = REPORT_SECTIONS.map(({ key, title }) => {

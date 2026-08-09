@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -89,7 +89,7 @@ export default function PettyCashPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createEntry = useCreatePettyCashEntry();
-  const [pcForm, setPcForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "withdrawal" as PettyCashTransactionType, amount: "", category: "activities" as PettyCashCategory, description: "", receipt_ref: "", notes: "" });
+  const [pcForm, setPcForm] = useState({ date: todayStr(), type: "withdrawal" as PettyCashTransactionType, amount: "", category: "activities" as PettyCashCategory, description: "", receipt_ref: "", notes: "" });
   const setPC2 = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveEntry = async (e: React.FormEvent) => {
@@ -99,7 +99,7 @@ export default function PettyCashPage() {
     if (isNaN(amount) || amount <= 0) { toast.error("Valid amount is required."); return; }
     await createEntry.mutateAsync({ date: pcForm.date, type: pcForm.type, category: pcForm.category, amount, description: pcForm.description.trim(), receipt_ref: pcForm.receipt_ref.trim(), receipt_attached: false, child_id: "", authorised_by: "staff_darren", recorded_by: "staff_darren", notes: pcForm.notes.trim(), balance_after: 0, created_at: new Date().toISOString() });
     toast.success("Petty cash entry saved.");
-    setPcForm({ date: new Date().toISOString().slice(0, 10), type: "withdrawal", amount: "", category: "activities", description: "", receipt_ref: "", notes: "" });
+    setPcForm({ date: todayStr(), type: "withdrawal", amount: "", category: "activities", description: "", receipt_ref: "", notes: "" });
     setShowNew(false);
   };
 

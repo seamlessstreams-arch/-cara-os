@@ -14,6 +14,7 @@ import type { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { unifyNeuroProfile, deriveRecordingPrompts } from "@/lib/neurodiversity-profile/unification-engine";
 import type { NeuroRecordingContext, UnifyNeuroInput } from "@/lib/neurodiversity-profile/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +101,7 @@ export async function GET(req: NextRequest) {
   try {
     const [adhdPlansList, autismPlansList, ehcpRecordsList, sensoryProfileRecordsList, youngPeopleList] = await Promise.all([dal.adhdPlans.findAll(), dal.autismPlans.findAll(), dal.ehcpRecords.findAll(), dal.sensoryProfileRecords.findAll(), dal.youngPeople.findAll()]);
   const store = { adhdPlans: adhdPlansList, autismPlans: autismPlansList, ehcpRecords: ehcpRecordsList, sensoryProfileRecords: sensoryProfileRecordsList, youngPeople: youngPeopleList };
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id");
 

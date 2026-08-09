@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Pill, AlertTriangle, CheckCircle, Heart, Lightbulb, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -81,7 +81,7 @@ export default function MedicationErrorInvestigationPage() {
     child_id: "",
     error_type: "wrong_dose_given" as MedInvErrorType,
     error_severity: "no_harm" as MedInvSeverity,
-    date_of_error: new Date().toISOString().split("T")[0],
+    date_of_error: todayStr(),
     staff_involved: "",
     child_impact_observed: "",
     root_cause_analysis: "",
@@ -118,7 +118,7 @@ export default function MedicationErrorInvestigationPage() {
       });
       toast.success("Investigation opened");
       setShowCreate(false);
-      setForm({ child_id: "", error_type: "wrong_dose_given", error_severity: "no_harm", date_of_error: new Date().toISOString().split("T")[0], staff_involved: "", child_impact_observed: "", root_cause_analysis: "" });
+      setForm({ child_id: "", error_type: "wrong_dose_given", error_severity: "no_harm", date_of_error: todayStr(), staff_involved: "", child_impact_observed: "", root_cause_analysis: "" });
     } catch {
       toast.error("Failed to save. Please try again.");
     }

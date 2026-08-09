@@ -64,6 +64,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import { CheckCircle2, FileText, Sparkles, Upload, Pencil } from "lucide-react";
+import { todayStr } from "@/lib/utils";
 
 interface ReferralExtractionResponse {
   data: ReferralExtraction;
@@ -137,7 +138,7 @@ export default function NewYoungPersonPage() {
     preferred_name: "",
     date_of_birth: "",
     gender: "",
-    placement_start: new Date().toISOString().slice(0, 10),
+    placement_start: todayStr(),
     local_authority: "",
     legal_status: LEGAL_STATUSES[0],
   });

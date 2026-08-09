@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Sparkles, Package, Heart, AlertTriangle, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SensoryEquipmentRecord, SensoryEquipmentCategory, SensoryEquipmentCondition, SensoryEquipmentLocation, SensoryEquipmentUseFrequency } from "@/types/extended";
@@ -94,7 +94,7 @@ export default function SensoryEquipmentInventoryPage() {
     condition: "good" as SensoryEquipmentCondition,
     use_frequency: "as_needed" as SensoryEquipmentUseFrequency,
     purchase_cost: 0,
-    purchase_date: new Date().toISOString().split("T")[0],
+    purchase_date: todayStr(),
     replacement_due: "",
     recommended_by: "",
     child_preference: "",
@@ -111,7 +111,7 @@ export default function SensoryEquipmentInventoryPage() {
       await createRecord.mutateAsync(form);
       toast.success("Item added to inventory");
       setShowCreate(false);
-      setForm({ item_name: "", category: "calming", location: "lounge_sensory_corner", assigned_to_child: "", condition: "good", use_frequency: "as_needed", purchase_cost: 0, purchase_date: new Date().toISOString().split("T")[0], replacement_due: "", recommended_by: "", child_preference: "", sensory_profile: "", notes: "" });
+      setForm({ item_name: "", category: "calming", location: "lounge_sensory_corner", assigned_to_child: "", condition: "good", use_frequency: "as_needed", purchase_cost: 0, purchase_date: todayStr(), replacement_due: "", recommended_by: "", child_preference: "", sensory_profile: "", notes: "" });
     } catch {
       toast.error("Failed to save. Please try again.");
     }

@@ -13,11 +13,12 @@ import { NextResponse } from "next/server";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
+import { todayStr } from "@/lib/utils";
 
 // ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoInputs(): RiScoreInputs {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const now = new Date().toISOString();
   const yesterday = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString();
   const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();

@@ -14,7 +14,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { BoardReport, BoardAgreedAction, BoardReportType, RagRating } from "@/types/extended";
 import {
@@ -75,7 +75,7 @@ const reportTypeColour = (t: BoardReportType) => {
   }
 };
 
-const todayDate = () => new Date().toISOString().slice(0, 10);
+const todayDate = () => todayStr();
 
 const isCurrentYear = (dt: string) => {
   const yr = new Date().getFullYear().toString();

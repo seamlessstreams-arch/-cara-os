@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — STAFF DISCIPLINARY INTELLIGENCE ENGINE
 // Pure deterministic engine for staff disciplinary case analysis.
@@ -130,7 +131,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): StaffDisciplinaryIntelligenceResult {
-  const { cases, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { cases, staff, today = todayStr() } = input;
 
   if (cases.length === 0) {
     return {

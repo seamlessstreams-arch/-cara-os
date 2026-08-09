@@ -20,7 +20,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, Lock, Shield, Scale, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import {
   DoLRecord, DoLRestrictionType, DoLLegalBasis, DoLReviewStatus,
@@ -80,7 +80,7 @@ export default function DeprivationOfLibertyPage() {
     child_views: "",
     legal_basis: "care_plan" as DoLLegalBasis,
     authorised_by_id: "staff_darren",
-    date_imposed: new Date().toISOString().slice(0, 10),
+    date_imposed: todayStr(),
     review_date: "",
   });
   const setDF = (k: keyof typeof dolForm, v: string) => setDolForm((p) => ({ ...p, [k]: v }));
@@ -115,7 +115,7 @@ export default function DeprivationOfLibertyPage() {
       notes: "",
     });
     toast.success("Restriction logged.");
-    setDolForm({ child_id: "", restriction_type: "", description: "", necessary_justification: "", child_views: "", legal_basis: "care_plan", authorised_by_id: "staff_darren", date_imposed: new Date().toISOString().slice(0, 10), review_date: "" });
+    setDolForm({ child_id: "", restriction_type: "", description: "", necessary_justification: "", child_views: "", legal_basis: "care_plan", authorised_by_id: "staff_darren", date_imposed: todayStr(), review_date: "" });
     setShowNew(false);
   };
 

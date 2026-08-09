@@ -23,7 +23,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Stethoscope, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { HealthMonitoringEntry, HealthMonitoringType, HealthMonitoringStatus } from "@/types/extended";
 import { HEALTH_MONITORING_TYPE_LABEL, HEALTH_MONITORING_STATUS_LABEL } from "@/types/extended";
@@ -73,7 +73,7 @@ export default function HealthMonitoringPage() {
   });
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayStr(), []);
 
   const filtered = useMemo(() => {
     let out = [...records];

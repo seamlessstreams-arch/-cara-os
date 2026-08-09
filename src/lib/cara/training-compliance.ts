@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -177,7 +178,7 @@ export function analyseTrainingCompliance(
   records: StaffTrainingRecord[],
   homeId: string = "home_oak",
 ): TrainingCompliance {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: TrainingAlert[] = [];
   const expiryWarnings: ExpiryWarning[] = [];
 

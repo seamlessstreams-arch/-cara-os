@@ -12,12 +12,10 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export async function GET(req: NextRequest) {
   const today = todayStr();

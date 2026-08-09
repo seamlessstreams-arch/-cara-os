@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -137,7 +138,7 @@ const DECIDED_STATUSES: ReferralStatus[] = ["accepted", "placed", "declined"];
 export function computeAdmissionReferralIntelligence(
   input: AdmissionReferralIntelligenceInput,
 ): AdmissionReferralIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { referrals, current_occupancy, max_occupancy } = input;
 
   // ── Pipeline counts ───────────────────────────────────────────────────

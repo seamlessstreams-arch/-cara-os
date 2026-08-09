@@ -5,6 +5,7 @@ import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
+import { todayStr } from "@/lib/utils";
 
 // Stages in progression order — advancing past the last element is never valid
 const STAGE_ORDER = [
@@ -144,7 +145,7 @@ export async function GET(
     ? Math.round((verifiedChecks.length / requiredChecks.length) * 100)
     : null;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const days_in_stage = Math.max(0, Math.floor(
     (new Date(today).getTime() - new Date(candidate.updated_at.slice(0, 10)).getTime()) / 86400000
   ));

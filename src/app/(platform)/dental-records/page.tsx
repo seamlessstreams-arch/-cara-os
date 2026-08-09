@@ -19,7 +19,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   Search, ArrowUpDown, X, ChevronUp, ChevronDown, Smile,
   CheckCircle2, AlertTriangle, Clock, Stethoscope, Shield,
@@ -70,7 +70,7 @@ export default function DentalRecordsPage() {
   const [sortBy, setSortBy] = useState("nextDue");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   /* ── Filtering & sort ───────────────────────────────────────────────────── */
   const filtered = useMemo(() => {

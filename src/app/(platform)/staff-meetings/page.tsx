@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -86,7 +86,7 @@ export default function StaffMeetingsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createMeeting = useCreateStaffMeetingRecord();
-  const [smForm, setSmForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "team_meeting" as StaffMeetingType, title: "", general_notes: "", next_meeting_date: "" });
+  const [smForm, setSmForm] = useState({ date: todayStr(), type: "team_meeting" as StaffMeetingType, title: "", general_notes: "", next_meeting_date: "" });
   const setSM = (k: string, v: unknown) => setSmForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveMeeting = async (e: React.FormEvent) => {
@@ -94,7 +94,7 @@ export default function StaffMeetingsPage() {
     if (!smForm.title.trim()) { toast.error("Meeting title is required."); return; }
     await createMeeting.mutateAsync({ date: smForm.date, type: smForm.type, title: smForm.title.trim(), chair: "staff_darren", attendees: [], apologies: [], agenda_items: [], actions_from_previous: [], new_actions: [], general_notes: smForm.general_notes.trim(), next_meeting_date: smForm.next_meeting_date, duration: 60, recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Staff meeting recorded.");
-    setSmForm({ date: new Date().toISOString().slice(0, 10), type: "team_meeting", title: "", general_notes: "", next_meeting_date: "" });
+    setSmForm({ date: todayStr(), type: "team_meeting", title: "", general_notes: "", next_meeting_date: "" });
     setShowNew(false);
   };
 

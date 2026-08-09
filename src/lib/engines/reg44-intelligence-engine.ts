@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { rate, rateOf, meanOf, meets, below, formatRate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ export function average(arr: number[]): number {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44IntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { visits } = input;
 
   // Sort visits chronologically (oldest first)

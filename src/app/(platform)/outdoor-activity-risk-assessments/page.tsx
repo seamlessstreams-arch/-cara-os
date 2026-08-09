@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, MapPin, Shield, AlertTriangle, CheckCircle, Users, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -68,7 +68,7 @@ export default function OutdoorActivityRiskAssessmentsPage() {
   const [form, setForm] = useState({
     activity_name: "",
     activity_type: "adventure_park" as OutdoorActivityType,
-    date: new Date().toISOString().split("T")[0],
+    date: todayStr(),
     location: "",
     duration_hours: 2,
     lead_staff: "",
@@ -99,7 +99,7 @@ export default function OutdoorActivityRiskAssessmentsPage() {
       });
       toast.success("Risk assessment logged");
       setShowCreate(false);
-      setForm({ activity_name: "", activity_type: "adventure_park", date: new Date().toISOString().split("T")[0], location: "", duration_hours: 2, lead_staff: "", behaviour_risk_rating: "low", missing_from_care_risk: "low" });
+      setForm({ activity_name: "", activity_type: "adventure_park", date: todayStr(), location: "", duration_hours: 2, lead_staff: "", behaviour_risk_rating: "low", missing_from_care_risk: "low" });
     } catch {
       toast.error("Failed to save. Please try again.");
     }

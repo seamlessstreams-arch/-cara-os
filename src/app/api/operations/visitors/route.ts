@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 import {
   listVisitorEntries,
   createVisitorEntry,
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
         id_verified: body.idVerified ?? false,
         notes: body.notes,
         recorded_by: body.recordedBy,
-        date: body.date ?? new Date().toISOString().split("T")[0],
+        date: body.date ?? todayStr(),
       });
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
       return NextResponse.json({ ok: true, data: result.data }, { status: 201 });

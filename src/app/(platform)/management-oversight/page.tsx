@@ -38,7 +38,7 @@ import {
   Loader2,
   Eye,
 } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -125,7 +125,7 @@ function OversightTaskCard({
   onComplete: (task: OversightTask) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const isOverdue =
     task.due_date &&
     task.due_date < today &&

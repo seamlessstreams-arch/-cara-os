@@ -21,7 +21,7 @@ import {
   Phone, Video, Mail, Users, FileText, PenLine,
   CheckCircle2, AlertTriangle, Clock, Heart, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -122,7 +122,7 @@ export default function ParentPartnershipPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const createContact = useCreateParentPartnershipRecord();
-  const [ppForm, setPpForm] = useState({ child_id: "", family_member_name: "", relationship_type: "birth_parent" as ParentRelationshipType, contact_type: "phone_call" as ParentContactType, date: new Date().toISOString().slice(0, 10), duration: "", engagement_level: "neutral" as ParentEngagementLevel, initiated_by: "home" as ParentContactInitiator, summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
+  const [ppForm, setPpForm] = useState({ child_id: "", family_member_name: "", relationship_type: "birth_parent" as ParentRelationshipType, contact_type: "phone_call" as ParentContactType, date: todayStr(), duration: "", engagement_level: "neutral" as ParentEngagementLevel, initiated_by: "home" as ParentContactInitiator, summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
   const setPP = (k: keyof typeof ppForm, v: string) => setPpForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveContact = async (e: React.FormEvent) => {
@@ -132,7 +132,7 @@ export default function ParentPartnershipPage() {
     if (!ppForm.summary.trim()) { toast.error("Summary is required."); return; }
     await createContact.mutateAsync({ date: ppForm.date, child_id: ppForm.child_id, family_member_name: ppForm.family_member_name.trim(), relationship_type: ppForm.relationship_type, contact_type: ppForm.contact_type, engagement_level: ppForm.engagement_level, initiated_by: ppForm.initiated_by, duration: parseInt(ppForm.duration) || 0, staff_member_id: "staff_darren", summary: ppForm.summary.trim(), concerns: ppForm.concerns.trim(), positive_outcomes: ppForm.positive_outcomes ? ppForm.positive_outcomes.split("\n").map((s) => s.trim()).filter(Boolean) : [], follow_up_actions: ppForm.follow_up_actions ? ppForm.follow_up_actions.split("\n").map((s) => s.trim()).filter(Boolean) : [], sw_informed: false, notes: ppForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Contact logged.");
-    setPpForm({ child_id: "", family_member_name: "", relationship_type: "birth_parent", contact_type: "phone_call", date: new Date().toISOString().slice(0, 10), duration: "", engagement_level: "neutral", initiated_by: "home", summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
+    setPpForm({ child_id: "", family_member_name: "", relationship_type: "birth_parent", contact_type: "phone_call", date: todayStr(), duration: "", engagement_level: "neutral", initiated_by: "home", summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
     setDialogOpen(false);
   };
 

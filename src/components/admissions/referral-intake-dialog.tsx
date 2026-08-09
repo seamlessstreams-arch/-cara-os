@@ -24,6 +24,7 @@ import { ADMISSION_REFERRAL_SOURCE_LABEL } from "@/types/extended";
 import type { AdmissionReferral, AdmissionReferralSource, AdmissionGender } from "@/types/extended";
 import { Sparkles, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
+import { todayStr } from "@/lib/utils";
 
 interface ReferralExtractionResponse {
   data: ReferralExtraction;
@@ -132,7 +133,7 @@ export function ReferralIntakeDialog({
       presenting_needs: splitLines(needs),
       risk_factors: splitLines(risks),
       status: "new",
-      referral_date: new Date().toISOString().slice(0, 10),
+      referral_date: todayStr(),
       staff_id: "staff_darren",
     });
     reset();

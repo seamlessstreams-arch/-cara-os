@@ -8,11 +8,12 @@
 import { NextResponse } from "next/server";
 import { computeSaferRecruitmentCommand } from "@/lib/engines/safer-recruitment-command-engine";
 import { assembleCommandCandidates } from "@/lib/safer-recruitment/command-data";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const result = computeSaferRecruitmentCommand({ today, candidates: assembleCommandCandidates() });
   return NextResponse.json({ data: result });
 }

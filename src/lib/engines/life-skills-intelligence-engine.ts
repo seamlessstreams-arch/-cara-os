@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — LIFE SKILLS & INDEPENDENCE INTELLIGENCE ENGINE
 // Pure deterministic engine for independence readiness analysis.
@@ -111,7 +112,7 @@ function statusLabel(s: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsIntelligenceResult {
-  const { pathways, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { pathways, children, staff, today = todayStr() } = input;
 
   if (pathways.length === 0) {
     return {

@@ -19,7 +19,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -99,7 +99,7 @@ export default function HealthAssessmentsPage() {
 
   const [draft, setDraft] = useState<Partial<HealthAssessment>>({});
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const stats = useMemo(() => ({
     total: data.length,

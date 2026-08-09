@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { above, below, meets } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 export interface ComplaintInput {
   id: string;
@@ -141,7 +142,7 @@ export function computeComplaintsIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): ComplaintsIntelligenceResult {
-  const { complaints, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { complaints, children, staff, today = todayStr() } = input;
 
   if (complaints.length === 0) {
     return {

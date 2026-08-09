@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -368,7 +368,7 @@ export default function SleepLogPage() {
             });
           }} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Date</Label><Input type="date" name="date" defaultValue={new Date().toISOString().slice(0, 10)} required /></div>
+              <div><Label>Date</Label><Input type="date" name="date" defaultValue={todayStr()} required /></div>
               <div><Label>Shift Type</Label>
                 <select name="shift_type" required className="w-full rounded-md border px-3 py-2 text-sm">
                   {SHIFT_TYPES.map((t) => <option key={t} value={t}>{SHIFT_LABELS[t]}</option>)}

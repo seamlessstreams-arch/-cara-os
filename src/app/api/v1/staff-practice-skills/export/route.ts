@@ -20,6 +20,7 @@ import {
   renderStaffSkillsJson,
 } from "@/lib/staff-practice-skills/staff-skills-export";
 import { renderStaffSkillsDocx } from "@/lib/staff-practice-skills/staff-skills-docx";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: `No staff member "${staffId}".` }, { status: 404 });
     }
 
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const profile = synthesiseStaffPracticeSkills(buildStaffSkillsInput(store, staffId, staffDisplayName(staff), asOf));
     const model = buildStaffSkillsExportModel(profile);
     const base = `staff-development-${staffId}-${asOf}`;

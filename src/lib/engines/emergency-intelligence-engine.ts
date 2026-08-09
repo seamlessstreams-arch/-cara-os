@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -154,7 +155,7 @@ export function computeEmergencyIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): EmergencyIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { drills, plans } = input;
 
   // ── Drill analysis ──────────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import { dal } from "@/lib/db";
 import { readJsonBody } from "@/lib/http/read-json";
 import { buildGateBoard, evaluateTransition } from "@/lib/quality-gates/quality-gate-engine";
 import type { GateBoardInput, GateIncident, GateMissingEpisode, GateRestraint, GateTask } from "@/lib/quality-gates/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ async function loadCollections(): Promise<Collections> {
 function buildInput(c: Collections): GateBoardInput {
   return {
     homeId: "home_oak",
-    asOf: new Date().toISOString().slice(0, 10),
+    asOf: todayStr(),
     incidents: mapIncidents(c.incidents),
     restraints: mapRestraints(c.restraints),
     missingEpisodes: mapMissing(c.missingEpisodes, c.returnInterviews),

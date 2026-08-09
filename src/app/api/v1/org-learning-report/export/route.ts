@@ -25,6 +25,7 @@ import {
   renderOrgLearningJson,
 } from "@/lib/org-learning-report/org-learning-export";
 import { renderOrgLearningDocx } from "@/lib/org-learning-report/org-learning-docx";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const period: ReportPeriod = searchParams.get("period") === "month" ? "month" : "quarter";
     const format = (searchParams.get("format") || "html").toLowerCase();
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     const input = buildOrgLearningInputFromStore(getStore(), asOf, period);
     const report = buildOrgLearningReport(input);

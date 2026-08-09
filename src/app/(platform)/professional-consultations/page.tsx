@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -83,7 +83,7 @@ export default function ProfessionalConsultationsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createConsultation = useCreateProfessionalConsultation();
-  const [pcForm, setPcForm] = useState({ date: new Date().toISOString().slice(0, 10), time: "", type: "social_worker" as ProfConsultationType, method: "phone" as ProfConsultationMethod, professional_name: "", organisation: "", reason: "", advice_given: "" });
+  const [pcForm, setPcForm] = useState({ date: todayStr(), time: "", type: "social_worker" as ProfConsultationType, method: "phone" as ProfConsultationMethod, professional_name: "", organisation: "", reason: "", advice_given: "" });
   const setPC = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveConsultation = async (e: React.FormEvent) => {
@@ -92,7 +92,7 @@ export default function ProfessionalConsultationsPage() {
     if (!pcForm.reason.trim()) { toast.error("Reason is required."); return; }
     await createConsultation.mutateAsync({ date: pcForm.date, time: pcForm.time, type: pcForm.type, method: pcForm.method, professional_name: pcForm.professional_name.trim(), professional_role: "", organisation: pcForm.organisation.trim(), child_id: "", reason: pcForm.reason.trim(), advice_given: pcForm.advice_given.trim(), actions_agreed: [], follow_up_required: false, follow_up_date: "", follow_up_completed: false, confidential: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
     toast.success("Consultation recorded.");
-    setPcForm({ date: new Date().toISOString().slice(0, 10), time: "", type: "social_worker", method: "phone", professional_name: "", organisation: "", reason: "", advice_given: "" });
+    setPcForm({ date: todayStr(), time: "", type: "social_worker", method: "phone", professional_name: "", organisation: "", reason: "", advice_given: "" });
     setShowNew(false);
   };
 

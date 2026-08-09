@@ -16,7 +16,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -79,7 +79,7 @@ export default function YPSavingsPage() {
     tx_type: "" as YPSavingsTransactionType | "",
     description: "",
     amount: "",
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     receipt_ref: "",
     recorded_by: "staff_darren",
   });
@@ -106,7 +106,7 @@ export default function YPSavingsPage() {
       notes: "",
     });
     toast.success("Transaction recorded.");
-    setYpForm({ child_id: "", tx_type: "", description: "", amount: "", date: new Date().toISOString().slice(0, 10), receipt_ref: "", recorded_by: "staff_darren" });
+    setYpForm({ child_id: "", tx_type: "", description: "", amount: "", date: todayStr(), receipt_ref: "", recorded_by: "staff_darren" });
     setShowDialog(false);
   };
 

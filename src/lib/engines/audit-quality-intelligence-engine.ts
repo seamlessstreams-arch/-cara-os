@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ function round1(n: number): number {
 export function computeAuditQualityIntelligence(
   input: AuditQualityIntelligenceInput,
 ): AuditQualityIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { audits, staff } = input;
 
   const staffMap = new Map(staff.map((s) => [s.id, s.name]));

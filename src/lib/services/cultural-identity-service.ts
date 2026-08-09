@@ -8,6 +8,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -562,7 +563,7 @@ export async function createAction(
       home_id: input.homeId,
       child_id: input.childId,
       child_name: input.childName,
-      action_date: input.actionDate ?? new Date().toISOString().split("T")[0],
+      action_date: input.actionDate ?? todayStr(),
       recorded_by: input.recordedBy,
       action_type: input.actionType,
       description: input.description ?? "",

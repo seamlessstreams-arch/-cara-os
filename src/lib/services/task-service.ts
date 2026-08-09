@@ -511,7 +511,7 @@ export async function getTaskStats(homeId: string): Promise<ServiceResult<TaskSt
 
   const allTasks = tasks ?? [];
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayDate = now.toISOString().split("T")[0];
 
   const stats: TaskStats = {
     total: allTasks.length,
@@ -535,7 +535,7 @@ export async function getTaskStats(homeId: string): Promise<ServiceResult<TaskSt
       stats.overdue++;
     }
     // Due today
-    if (t.due_date && t.due_date.startsWith(todayStr)) {
+    if (t.due_date && t.due_date.startsWith(todayDate)) {
       stats.due_today++;
     }
     // Unassigned

@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   Sparkles,
   Loader2,
@@ -178,7 +178,7 @@ function emptyRecord(): SourceRecordInput {
   return {
     recordId: `rec_${Math.random().toString(36).slice(2, 8)}`,
     recordType: "daily_log",
-    recordDate: new Date().toISOString().slice(0, 10),
+    recordDate: todayStr(),
     recordText: "",
   };
 }

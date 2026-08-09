@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import {
   ArrowUpDown,
@@ -126,7 +126,7 @@ export default function RiskManagementBoardPage() {
   const [sortBy, setSortBy] = useState("residual-desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayStr(), []);
 
   const stats = useMemo(() => {
     const total = risks.length;

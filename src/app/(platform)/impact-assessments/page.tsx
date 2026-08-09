@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
@@ -78,7 +78,7 @@ export default function ImpactAssessmentsPage() {
   const handleSaveAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!iaForm.referral_name.trim()) { toast.error("Referral name is required."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createAssessment.mutateAsync({ referral_name: iaForm.referral_name.trim(), referral_age: parseInt(iaForm.referral_age) || 0, referral_gender: iaForm.referral_gender, referral_authority: iaForm.referral_authority.trim(), date: today, status: "draft" as ImpactAssessmentStatus, assessor: "staff_darren", impact_on_existing: [], impact_on_referral: [], overall_recommendation: iaForm.recommendation, conditions: [], rationale: iaForm.rationale.trim(), panel_date: null, panel_outcome: null, notes: "" });
     toast.success("Impact assessment created.");
     setIaForm({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" });

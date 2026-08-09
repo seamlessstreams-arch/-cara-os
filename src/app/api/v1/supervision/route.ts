@@ -15,12 +15,10 @@ import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { Supervision } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 // Reads and writes go through the dual-mode dal — the supervisions table on a
 // live tenant, the in-memory store in demo. This route previously used the

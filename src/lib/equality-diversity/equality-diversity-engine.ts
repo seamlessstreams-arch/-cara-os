@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Equality & Diversity Intelligence Engine
 //
@@ -474,7 +475,7 @@ export function evaluateStaffCompetency(
   const overdueCount = trainingRecords.filter((r) => r.status === "overdue").length;
 
   // Expired: completed but past expiry
-  const now = new Date().toISOString().slice(0, 10);
+  const now = todayStr();
   const expiredCount = trainingRecords.filter(
     (r) => r.status === "completed" && r.expiryDate && r.expiryDate < now,
   ).length;

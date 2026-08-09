@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Digital Literacy & Online Engagement Intelligence Engine
 //
@@ -362,7 +363,7 @@ export function evaluateDigitalSkills(
   }
 
   // Overdue reviews
-  const refDate = referenceDate ?? new Date().toISOString().split("T")[0];
+  const refDate = referenceDate ?? todayStr();
   const overdueReviews = Array.from(latestMap.values()).filter(
     (a) => a.reviewDate < refDate,
   ).length;
@@ -430,7 +431,7 @@ export function evaluateDeviceAccess(
   }));
 
   // Overdue reviews
-  const refDate = referenceDate ?? new Date().toISOString().split("T")[0];
+  const refDate = referenceDate ?? todayStr();
   const overdueReviews = relevantRecords.filter((r) => r.reviewDate < refDate).length;
 
   // Children without access

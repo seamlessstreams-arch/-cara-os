@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -477,7 +478,7 @@ export async function createReferral(
       home_id: input.homeId,
       child_id: input.childId,
       child_name: input.childName,
-      referral_date: input.referralDate ?? new Date().toISOString().split("T")[0],
+      referral_date: input.referralDate ?? todayStr(),
       referral_reason: input.referralReason,
       advocate_service: input.advocateService,
       advocate_name: input.advocateName ?? null,
@@ -564,7 +565,7 @@ export async function createRightsRecord(
       home_id: input.homeId,
       child_id: input.childId,
       child_name: input.childName,
-      record_date: input.recordDate ?? new Date().toISOString().split("T")[0],
+      record_date: input.recordDate ?? todayStr(),
       recorded_by: input.recordedBy,
       right_type: input.rightType,
       child_informed: input.childInformed ?? false,

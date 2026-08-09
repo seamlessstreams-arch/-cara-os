@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -125,7 +125,7 @@ export default function SensoryProfilesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const createProfile = useCreateSensoryProfileRecord();
-  const [spForm, setSpForm] = useState({ child_id: "", diagnosis: "", assessment_date: new Date().toISOString().slice(0, 10), review_date: "", notes: "" });
+  const [spForm, setSpForm] = useState({ child_id: "", diagnosis: "", assessment_date: todayStr(), review_date: "", notes: "" });
   const setSP = (k: keyof typeof spForm, v: string) => setSpForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateProfile = async (e: React.FormEvent) => {
@@ -134,7 +134,7 @@ export default function SensoryProfilesPage() {
     const reviewDate = spForm.review_date || new Date(Date.now() + 180 * 864e5).toISOString().slice(0, 10);
     await createProfile.mutateAsync({ child_id: spForm.child_id, status: "active", diagnosis: spForm.diagnosis ? [spForm.diagnosis] : [], assessment_date: spForm.assessment_date, assessed_by: "staff_darren", review_date: reviewDate, entries: [], strategies: [], environmental_adaptations: [], communication_preferences: [], child_views: "", parent_carer_views: "", professional_input: "", notes: spForm.notes });
     toast.success("Sensory profile created.");
-    setSpForm({ child_id: "", diagnosis: "", assessment_date: new Date().toISOString().slice(0, 10), review_date: "", notes: "" });
+    setSpForm({ child_id: "", diagnosis: "", assessment_date: todayStr(), review_date: "", notes: "" });
     setDialogOpen(false);
   };
 

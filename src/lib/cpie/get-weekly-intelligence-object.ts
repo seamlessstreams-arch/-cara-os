@@ -11,6 +11,7 @@
 import { getStore } from "@/lib/db/store";
 import { getChildTwin } from "./get-child-twin";
 import { buildWeeklyIntelligenceObject, type WeeklyIntelligenceObject } from "./weekly-intelligence-object";
+import { todayStr } from "@/lib/utils";
 
 type Store = ReturnType<typeof getStore>;
 
@@ -23,7 +24,7 @@ function rows(store: Store, k: string): Record<string, unknown>[] {
  *  Default window is 7 days (weekly); pass windowDays/periodLabel for monthly. */
 export function getWeeklyIntelligenceObject(
   childId: string,
-  weekEnding: string = new Date().toISOString().slice(0, 10),
+  weekEnding: string = todayStr(),
   nowIso: string = new Date().toISOString(),
   windowDays = 7,
   periodLabel = "week",
@@ -54,7 +55,7 @@ export function getWeeklyIntelligenceObject(
 /** A child's MONTHLY intelligence object — a 30-day window. */
 export function getMonthlyIntelligenceObject(
   childId: string,
-  monthEnding: string = new Date().toISOString().slice(0, 10),
+  monthEnding: string = todayStr(),
   nowIso: string = new Date().toISOString(),
 ): WeeklyIntelligenceObject | null {
   return getWeeklyIntelligenceObject(childId, monthEnding, nowIso, 30, "month");
@@ -62,7 +63,7 @@ export function getMonthlyIntelligenceObject(
 
 /** Weekly objects for every current child (home rollups, manager review). */
 export function getAllWeeklyIntelligenceObjects(
-  weekEnding: string = new Date().toISOString().slice(0, 10),
+  weekEnding: string = todayStr(),
   nowIso: string = new Date().toISOString(),
 ): WeeklyIntelligenceObject[] {
   const store = getStore();

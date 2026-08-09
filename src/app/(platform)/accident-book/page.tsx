@@ -23,7 +23,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -348,7 +348,7 @@ export default function AccidentBookPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createAccident.isPending} onClick={() => { createAccident.mutate({ date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), reported_by: "staff_darren", person_type: "child", person_id: null, person_name: "", category: "other", severity: "minor", status: "open", location: "", description: "", injury_details: "", first_aid_given: false, first_aid_by: null, first_aid_details: "", medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: "", preventive_measures: "", follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending} onClick={() => { createAccident.mutate({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), reported_by: "staff_darren", person_type: "child", person_id: null, person_name: "", category: "other", severity: "minor", status: "open", location: "", description: "", injury_details: "", first_aid_given: false, first_aid_by: null, first_aid_details: "", medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: "", preventive_measures: "", follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
