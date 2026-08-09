@@ -19,7 +19,7 @@ import { toast }        from "sonner";
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -199,7 +199,7 @@ export default function EnvironmentalRiskPage() {
     incident_history: r.incident_history, notes: r.notes,
   }));
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const in14 = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 14); return dt.toISOString().slice(0, 10); })();
 
   return (

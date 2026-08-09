@@ -22,6 +22,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -601,7 +602,7 @@ export async function createStatement(
       home_id: input.homeId,
       version: input.version,
       title: input.title,
-      effective_date: input.effectiveDate ?? new Date().toISOString().split("T")[0],
+      effective_date: input.effectiveDate ?? todayStr(),
       review_date: input.reviewDate,
       last_reviewed_date: null,
       reviewed_by: null,
@@ -712,7 +713,7 @@ export async function createReview(
     .insert({
       home_id: input.homeId,
       statement_id: input.statementId,
-      review_date: input.reviewDate ?? new Date().toISOString().split("T")[0],
+      review_date: input.reviewDate ?? todayStr(),
       reviewer_name: input.reviewerName,
       reviewer_role: input.reviewerRole,
       outcome: input.outcome,
@@ -777,7 +778,7 @@ export async function createAmendment(
     .insert({
       home_id: input.homeId,
       statement_id: input.statementId,
-      amendment_date: input.amendmentDate ?? new Date().toISOString().split("T")[0],
+      amendment_date: input.amendmentDate ?? todayStr(),
       amendment_type: input.amendmentType,
       amended_by: input.amendedBy,
       section_amended: input.sectionAmended,

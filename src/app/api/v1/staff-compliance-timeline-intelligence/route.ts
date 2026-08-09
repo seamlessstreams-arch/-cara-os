@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import type { StaffMember } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
@@ -99,7 +100,7 @@ function staffSignal(issues: string[]): StaffComplianceSignal {
 }
 
 export async function GET() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const staff = (await safeList(dal.staff.findAll())) as StaffMember[];
   const activeStaff = staff.filter(

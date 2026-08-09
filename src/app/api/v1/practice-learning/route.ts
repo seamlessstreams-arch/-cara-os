@@ -15,6 +15,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildLearningInput } from "@/lib/practice-learning/hydrate";
 import { learnFromEvents } from "@/lib/practice-learning/learning-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const childId = req.nextUrl.searchParams.get("childId") || req.nextUrl.searchParams.get("child_id");
   const debriefs = db.debriefRecords.findAll();
 

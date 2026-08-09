@@ -13,8 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
-import { cn } from "@/lib/utils";
-
+import { cn, todayStr } from "@/lib/utils";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface WelfareChecksResponse {
@@ -61,7 +60,7 @@ export function WelfareChecksCard() {
 
     // Latest round time
     const todayRoundsList = rounds.filter((r) => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = todayStr();
       return r.round_date === today;
     });
     const latestRoundTime = todayRoundsList.length > 0

@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — PLACEMENT STABILITY PREDICTOR
 //
@@ -129,7 +130,7 @@ export function assessPlacementStability(input: PlacementInput): StabilityAssess
   const earlyWarnings: string[] = [];
   let stabilityPoints = 100; // Start at max, deduct for risks
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const placementDuration = Math.round(
     (new Date(today).getTime() - new Date(input.placementStartDate).getTime()) / 86400000
   );

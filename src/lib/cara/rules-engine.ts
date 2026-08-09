@@ -18,6 +18,7 @@ import {
   deterministicRewrite,
   type RewriteMode,
 } from "@/lib/writing-assistant/deterministic-rewrite";
+import { todayStr } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -605,7 +606,7 @@ const RULE_HANDLERS: Record<string, RuleHandler> = {
   // ─── Template-based Drafting ────────────────────────────────────────────
 
   draft_handover: (input, ctx) => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const childRef = ctx?.childName ? `**Child:** ${ctx.childName}` : "";
     const output = `**Shift Handover — ${today}**
 
@@ -639,7 +640,7 @@ ${input ? `Based on notes provided:\n${input}` : "[Record key events]"}
   },
 
   draft_shift_summary: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const staffRef = ctx?.staffName ? `**Shift Lead:** ${ctx.staffName}` : "**Shift Lead:** [Name]";
     const output = `**Shift Summary — ${today}**
 
@@ -673,7 +674,7 @@ ${input ? input : "[Summarise main events from the shift]"}
   },
 
   create_meeting_minutes: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const output = `**Meeting Minutes — ${today}**
 
 **Meeting Type:** [e.g. Team Meeting / Professionals Meeting / LAC Review]
@@ -721,7 +722,7 @@ Action: [Who / what / by when]`}
   },
 
   create_agenda: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     // Infer meeting type from input if possible
     let standingItems: string[];
     const lower = (input || "").toLowerCase();
@@ -795,7 +796,7 @@ ${standingItems.map((item, i) => `${i + 1}. ${item}`).join("\n")}
 
   create_onboarding_tasks: (input, ctx) => {
     const staffRef = ctx?.staffName || input || "[New starter name]";
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const output = `**Onboarding Checklist — ${staffRef}**
 **Start Date:** [Date]
 **Created:** ${today}
@@ -1642,7 +1643,7 @@ ${standingItems.map((item, i) => `${i + 1}. ${item}`).join("\n")}
 
   prepare_meeting_agenda: (input, ctx) => {
     // Delegate to create_agenda with the same logic
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const lower = (input || "").toLowerCase();
     let meetingType = "General Meeting";
     let items: string[];
@@ -1740,7 +1741,7 @@ ${items.map((item, i) => `${i + 1}. ${item}`).join("\n")}
   },
 
   escalate_overdue_task: (input, ctx) => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const staffRef = ctx?.staffName || "[Assigned staff member]";
     const output = `**Task Escalation Notice**
 
@@ -1877,7 +1878,7 @@ If this task relates to a child's safety, welfare, or a regulatory requirement, 
       actions.push("Schedule follow-up review date");
     }
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     let output = `**Management Action Plan — ${today}**\n\n`;
     output += `| # | Action | Owner | Due Date | Status |\n`;
     output += `|---|--------|-------|----------|--------|\n`;
@@ -1954,7 +1955,7 @@ If this task relates to a child's safety, welfare, or a regulatory requirement, 
   // ═══════════════════════════════════════════════════════════════════════════
 
   draft_daily_log: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const childRef = ctx?.childName || "[Child's name]";
     let sectionsFilled = 0;
 
@@ -2002,7 +2003,7 @@ ${hasEvents ? input : "[Record morning activities, interactions, and observation
   },
 
   draft_incident_record: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const childRef = ctx?.childName || "[Child's name]";
     let sectionsFilled = 0;
 
@@ -2063,7 +2064,7 @@ ${hasNarrative ? input : "[Describe the incident factually — what did the chil
   },
 
   draft_keywork_session: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const childRef = ctx?.childName || "[Child's name]";
     let sectionsFilled = 0;
 
@@ -2105,7 +2106,7 @@ ${hasThemes ? input : "[What topics were covered in the session?]"}
   },
 
   draft_supervision_notes: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const staffRef = ctx?.staffName || "[Supervisee name]";
     let sectionsFilled = 0;
 
@@ -2160,7 +2161,7 @@ ${hasContent ? input : "[Discuss each key child — progress, concerns, plans]"}
   },
 
   draft_contact_summary: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 20;
@@ -2211,7 +2212,7 @@ ${hasContent ? input : "[Summarise the main points of the conversation]"}
 **Child:** ${childRef}
 **School:** [School name]
 **Year Group:** [Year]
-**Date of Summary:** ${ctx?.date || new Date().toISOString().slice(0, 10)}
+**Date of Summary:** ${ctx?.date || todayStr()}
 
 ---
 
@@ -2249,7 +2250,7 @@ ${hasContent ? input : "[Summarise academic progress across subjects]"}
     const output = `**Health Summary**
 
 **Child:** ${childRef}
-**Date of Summary:** ${ctx?.date || new Date().toISOString().slice(0, 10)}
+**Date of Summary:** ${ctx?.date || todayStr()}
 
 ---
 
@@ -2293,7 +2294,7 @@ ${hasContent ? input : "[List recent health appointments and outcomes]"}
     const output = `**Independence Skills Summary**
 
 **Child:** ${childRef}
-**Date of Assessment:** ${ctx?.date || new Date().toISOString().slice(0, 10)}
+**Date of Assessment:** ${ctx?.date || todayStr()}
 **Assessed By:** [Staff name]
 
 ---
@@ -2328,7 +2329,7 @@ ${hasContent ? input : "[Where has the young person made progress?]"}
   },
 
   draft_team_meeting_minutes: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 20;
@@ -2385,7 +2386,7 @@ ${hasContent ? input : "[Update for each child — key events, progress, concern
   },
 
   draft_return_to_work_note: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const staffRef = ctx?.staffName || "[Staff member name]";
     let sectionsFilled = 0;
 
@@ -2441,7 +2442,7 @@ ${hasContent ? input : "[Update for each child — key events, progress, concern
   },
 
   draft_training_need_summary: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 20;
@@ -2487,7 +2488,7 @@ ${hasContent ? input : "[List specific training gaps and how they were identifie
   },
 
   draft_reference_request: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 10;
@@ -2543,7 +2544,7 @@ Yours sincerely,
   },
 
   draft_reference_chaser: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 10;
@@ -2589,7 +2590,7 @@ Yours sincerely,
   },
 
   draft_conditional_offer: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 10;
@@ -2650,7 +2651,7 @@ I accept this conditional offer of employment.
   },
 
   draft_recruitment_decision_record: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 10;
@@ -2711,7 +2712,7 @@ _______________  _______________  _______________
   },
 
   draft_missing_episode_report: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const childRef = ctx?.childName || "[Child's name]";
     let sectionsFilled = 0;
 
@@ -2779,7 +2780,7 @@ ${hasContent ? input : "[What happened? What were the events leading up to the c
   },
 
   missing_episode_return_interview_notes: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const childRef = ctx?.childName || "[Child's name]";
     let sectionsFilled = 0;
 
@@ -2991,7 +2992,7 @@ Kind regards,
     }
 
     sectionsFilled++;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
 
     // Try to extract a name from text
     const nameMatch = input.match(/(?:to|for|dear|attention\s+of)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
@@ -3453,7 +3454,7 @@ Yours sincerely,
   },
 
   monthly_quality_summary: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     const month = new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
     let sectionsFilled = 0;
 
@@ -3514,7 +3515,7 @@ ${hasContent ? input : "[Summary of outcomes for each child this month]"}
   },
 
   responsible_individual_qa_summary: (input, ctx) => {
-    const today = ctx?.date || new Date().toISOString().slice(0, 10);
+    const today = ctx?.date || todayStr();
     let sectionsFilled = 0;
 
     const hasContent = input.trim().length > 20;

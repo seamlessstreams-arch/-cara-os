@@ -11,6 +11,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -293,7 +294,7 @@ export function identifyPestControlManagementAlerts(
     if (
       r.re_inspection_required &&
       r.re_inspection_date !== null &&
-      r.re_inspection_date < new Date().toISOString().slice(0, 10)
+      r.re_inspection_date < todayStr()
     ) {
       alerts.push({
         type: "re_inspection_overdue",

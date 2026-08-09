@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Data Protection & GDPR Intelligence Engine
 //
@@ -333,7 +334,7 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
   const ageAppropriateExplained = records.filter((r) => r.ageAppropriateExplained).length;
   const ageAppropriateExplainedRate = pct(ageAppropriateExplained, total);
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const reviewDateCurrent = records.filter(
     (r) => r.reviewDate && r.reviewDate >= today
   ).length;
@@ -467,7 +468,7 @@ export function evaluateGovernancePractice(
 
   // Use most recent governance record
   const gov = governance[governance.length - 1];
-  const refDate = referenceDate || new Date().toISOString().split("T")[0];
+  const refDate = referenceDate || todayStr();
 
   const auditWithin12Months =
     gov.lastAuditDate !== undefined &&
@@ -699,7 +700,7 @@ export function generateDataProtectionIntelligence(
   periodEnd: string,
   referenceDate?: string
 ): DataProtectionIntelligence {
-  const refDate = referenceDate || new Date().toISOString().split("T")[0];
+  const refDate = referenceDate || todayStr();
 
   const breachManagement = evaluateBreachManagement(breaches);
   const consentCompliance = evaluateConsentCompliance(consentRecords);

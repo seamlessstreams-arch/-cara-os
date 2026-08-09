@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -119,7 +119,7 @@ export default function WhistleblowingPage() {
     const ref = `WB-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, "0")}`;
     await createRecord.mutateAsync({
       reference: ref,
-      date_raised: new Date().toISOString().slice(0, 10),
+      date_raised: todayStr(),
       raised_by: wbForm.anonymous ? "Anonymous" : "staff_darren",
       anonymous: wbForm.anonymous,
       category: wbForm.category as WhistleblowingCategory,
@@ -133,7 +133,7 @@ export default function WhistleblowingPage() {
       external_referral: null,
       outcome: "",
       lessons_learned: "",
-      timeline: [{ date: new Date().toISOString().slice(0, 10), action: "Concern raised", by: wbForm.anonymous ? "Anonymous" : getStaffName(wbForm.assigned_to) }],
+      timeline: [{ date: todayStr(), action: "Concern raised", by: wbForm.anonymous ? "Anonymous" : getStaffName(wbForm.assigned_to) }],
       protection_measures: [],
     });
     toast.success("Concern submitted.");

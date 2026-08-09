@@ -25,7 +25,7 @@ import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge }        from "@/components/ui/badge";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -103,7 +103,7 @@ export default function StaffCompetencyPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   const createCompetency = useCreateStaffCompetencyRecord();
-  const [scForm, setScForm] = useState({ staff_id: "", area: "", level: "not_assessed" as StaffCompetencyLevel, assessed_date: new Date().toISOString().slice(0, 10), assessed_by: "", expiry_date: "", notes: "" });
+  const [scForm, setScForm] = useState({ staff_id: "", area: "", level: "not_assessed" as StaffCompetencyLevel, assessed_date: todayStr(), assessed_by: "", expiry_date: "", notes: "" });
   const setSC = (k: string, v: unknown) => setScForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveAssessment = async (e: React.FormEvent) => {
@@ -113,7 +113,7 @@ export default function StaffCompetencyPage() {
     if (!scForm.area) { toast.error("Please select a competency area."); return; }
     await createCompetency.mutateAsync({ staff_id: scForm.staff_id, staff_name: staff.full_name, role: staff.role ?? "", entries: [{ id: crypto.randomUUID(), area: scForm.area, level: scForm.level, assessed_date: scForm.assessed_date || null, assessed_by: scForm.assessed_by || null, expiry_date: scForm.expiry_date || null, notes: scForm.notes.trim() }] });
     toast.success("Competency assessment saved.");
-    setScForm({ staff_id: "", area: "", level: "not_assessed", assessed_date: new Date().toISOString().slice(0, 10), assessed_by: "", expiry_date: "", notes: "" });
+    setScForm({ staff_id: "", area: "", level: "not_assessed", assessed_date: todayStr(), assessed_by: "", expiry_date: "", notes: "" });
     setShowDialog(false);
   };
 

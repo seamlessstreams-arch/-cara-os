@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — POLICIES REGISTER INTELLIGENCE ENGINE
 // Pure deterministic engine for policy register coverage analysis.
@@ -139,7 +140,7 @@ export function computePoliciesIntelligence(input: {
   today?: string;
 }): PoliciesIntelligenceResult {
   const { policies, staff, today: todayOverride } = input;
-  const today = todayOverride ?? new Date().toISOString().slice(0, 10);
+  const today = todayOverride ?? todayStr();
 
   // ── Overview calculations ───────────────────────────────────────────────
 

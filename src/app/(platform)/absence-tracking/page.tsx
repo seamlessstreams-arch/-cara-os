@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
@@ -75,7 +75,7 @@ export default function AbsenceTrackingPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
 
-  const [abForm, setAbForm] = useState({ child_id: "", date: new Date().toISOString().slice(0, 10), absence_type: "unauthorised" as AbsenceType, setting: "school" as AbsenceSetting, setting_name: "", sessions: "1", reason: "", action_taken: "" });
+  const [abForm, setAbForm] = useState({ child_id: "", date: todayStr(), absence_type: "unauthorised" as AbsenceType, setting: "school" as AbsenceSetting, setting_name: "", sessions: "1", reason: "", action_taken: "" });
   const setAB = (k: string, v: unknown) => setAbForm((p) => ({ ...p, [k]: v }));
 
   const handleRecordAbsence = async (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export default function AbsenceTrackingPage() {
     if (!abForm.reason.trim()) { toast.error("Reason is required."); return; }
     await createAbsence.mutateAsync({ child_id: abForm.child_id, date: abForm.date, absence_type: abForm.absence_type, setting: abForm.setting, setting_name: abForm.setting_name.trim(), sessions: parseInt(abForm.sessions) || 1, reason: abForm.reason.trim(), action_taken: abForm.action_taken.trim(), school_notified: false, sw_notified: false, recorded_by: "staff_darren", follow_up: "", created_at: new Date().toISOString() });
     toast.success("Absence recorded.");
-    setAbForm({ child_id: "", date: new Date().toISOString().slice(0, 10), absence_type: "unauthorised", setting: "school", setting_name: "", sessions: "1", reason: "", action_taken: "" });
+    setAbForm({ child_id: "", date: todayStr(), absence_type: "unauthorised", setting: "school", setting_name: "", sessions: "1", reason: "", action_taken: "" });
     setShowNew(false);
   };
 

@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -128,7 +128,7 @@ export default function YPFeedbackPage() {
     e.preventDefault();
     if (!fbForm.child_id) { toast.error("Please select a young person."); return; }
     if (!fbForm.feedback.trim()) { toast.error("Please enter feedback."); return; }
-    await createFeedback.mutateAsync({ child_id: fbForm.child_id, date: new Date().toISOString().slice(0, 10), category: fbForm.category, method: fbForm.method, sentiment: fbForm.sentiment, feedback: fbForm.feedback.trim(), action_taken: "", action_by: "", response_given_to_child: false, response_date: null, response_details: "", child_satisfied: null, collected_by: fbForm.collected_by, notes: "" });
+    await createFeedback.mutateAsync({ child_id: fbForm.child_id, date: todayStr(), category: fbForm.category, method: fbForm.method, sentiment: fbForm.sentiment, feedback: fbForm.feedback.trim(), action_taken: "", action_by: "", response_given_to_child: false, response_date: null, response_details: "", child_satisfied: null, collected_by: fbForm.collected_by, notes: "" });
     toast.success("Feedback recorded.");
     setFbForm({ child_id: "", category: "general", method: "verbal", sentiment: "ok", feedback: "", collected_by: "staff_darren" });
     setDialogOpen(false);

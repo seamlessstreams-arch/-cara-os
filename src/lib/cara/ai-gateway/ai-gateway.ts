@@ -59,6 +59,7 @@ import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { estimateCostGbp, recordDecision } from "@/lib/hq/usage-meter";
 import { isAiKillSwitchOn, canRoleUseAi } from "../ai-availability";
 import type { CaraDataSensitivity, CaraTaskType, CaraProviderName } from "../core/types";
+import { todayStr } from "@/lib/utils";
 
 // ── Public contract ───────────────────────────────────────────────────────────
 
@@ -641,7 +642,7 @@ function defaultDeps(): AiGatewayDeps {
       try {
         // Sum today's metered AI cost from the in-memory ring (best-effort).
         const { getStore } = require("@/lib/db/store");
-        const today = new Date().toISOString().slice(0, 10);
+        const today = todayStr();
         const rows = (getStore().hqAiUsage ?? []) as { at: string; cost_gbp: number }[];
         return rows.filter((r) => r.at?.slice(0, 10) === today).reduce((s, r) => s + (r.cost_gbp ?? 0), 0);
       } catch { return 0; }

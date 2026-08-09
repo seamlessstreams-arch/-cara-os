@@ -20,7 +20,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -147,7 +147,7 @@ export default function OfstedActionPlanPage() {
   const handleSaveAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oaForm.text.trim()) { toast.error("Action text is required."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createItem.mutateAsync({ inspection_date: today, action_type: oaForm.action_type, text: oaForm.text.trim(), priority: oaForm.priority, status: "not_started" as OfstedActionStatus, owner: oaForm.owner || null, target_date: oaForm.target_date || null, completed_date: null, progress: 0, evidence: oaForm.evidence.trim(), updates: [] });
     toast.success("Action item added.");
     setOaForm({ action_type: "requirement", priority: "medium", text: "", owner: "", target_date: "", evidence: "" });

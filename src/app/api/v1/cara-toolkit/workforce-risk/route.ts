@@ -19,6 +19,7 @@ import type {
   SignalColour,
   ActionRequired,
 } from "@/lib/cara-visual-toolkit/types";
+import { todayStr } from "@/lib/utils";
 
 function signal(green: boolean, amber: boolean): SignalColour {
   if (green) return "green";
@@ -41,7 +42,7 @@ export async function GET() {
       dal.staff.findAll(),
       dal.trainingRecords.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const staff          = (staffList as any[]) ?? [];
   const supervisions   = (reflectiveSupervisionsList as any[]) ?? [];

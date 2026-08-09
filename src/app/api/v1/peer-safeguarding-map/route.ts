@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 
 type RiskLevel = "none" | "low" | "medium" | "high";
 type PairSignal = "concern" | "attention" | "stable";
@@ -105,7 +106,7 @@ function pairSignal(
 
 export async function GET() {
   const [peerDynamicsList, peerGroupDynamicsList, staffList, youngPeopleList] = await Promise.all([dal.peerDynamics.findAll(), dal.peerGroupDynamics.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(

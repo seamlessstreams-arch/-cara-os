@@ -6,6 +6,7 @@ import type {
   StaffSkillsAnalysis,
   SignalColour,
 } from "@/lib/cara-visual-toolkit/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function GET() {
   const staff = (staffList as any[]) ?? [];
   const trainingRecords = (trainingRecordsList as any[]) ?? [];
   const supervisions = (reflectiveSupervisionsList as any[]) ?? [];
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const activeStaff = staff.filter(
     (s: any) => s.employment_status !== "left" && s.is_active !== false

@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -181,7 +182,7 @@ const RATING_ORDER: AppraisalRating[] = [
 export function computeAppraisalIntelligence(
   input: AppraisalIntelligenceInput,
 ): AppraisalIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { appraisals, staff } = input;
 
   const activeStaff = staff.filter((s) => s.is_active);

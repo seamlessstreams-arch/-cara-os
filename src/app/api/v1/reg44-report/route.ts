@@ -15,7 +15,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { readJsonBody } from "@/lib/http/read-json";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
-import { generateId, localMonthKey } from "@/lib/utils";
+import { generateId, localMonthKey, todayStr } from "@/lib/utils";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
@@ -38,7 +38,7 @@ async function buildDraftForGate(homeId: string, month: string) {
     dal.ypFeedback.findAll(),
     dal.buildingChecks.findAll(),
   ]);
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   const win = monthWindow(month);
   const pack = generateReg44Pack(homeId, { window: { start: win.start, end: win.end } });
   const inMonth = (d: string) => d >= win.start && d <= win.end;

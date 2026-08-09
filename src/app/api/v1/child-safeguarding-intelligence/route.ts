@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeChildSafeguarding,
   type RiskAssessmentInput,
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
   const childName = (child?.name ?? `${child?.first_name ?? ""} ${child?.last_name ?? ""}`.trim()) || childId;
   const childAge = child?.age ?? 15;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Risk Assessments ───────────────────────────────────────────────────
   const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])

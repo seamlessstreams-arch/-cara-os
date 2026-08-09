@@ -22,6 +22,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
+import { todayStr } from "@/lib/utils";
 
 // ── Output types ────────────────────────────────────────────────────────────
 
@@ -194,7 +195,7 @@ class UnionFind {
 export function computeDuplicateDetection(
   input: DuplicateDetectionInput,
 ): DuplicateDetectionResult {
-  const _today = input.today ?? new Date().toISOString().slice(0, 10);
+  const _today = input.today ?? todayStr();
   void _today; // reserved for future recency weighting; kept for determinism contract.
 
   const byId = new Map<string, ChildRef>();

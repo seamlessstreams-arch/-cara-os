@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
-import { localMonthKey } from "@/lib/utils";
+import { localMonthKey, todayStr } from "@/lib/utils";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     const homeId = searchParams.get("home_id") || "home_oak";
     const format = (searchParams.get("format") || "html").toLowerCase();
     const win = monthWindow(searchParams.get("month") || "");
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     // Assemble the A–Q report from live evidence.
     const pack = generateReg44Pack(homeId, { window: { start: win.start, end: win.end } });

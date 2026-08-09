@@ -16,6 +16,7 @@ import {
   computeHomeSummaryReport,
   type ReportSignalInput,
 } from "@/lib/engines/home-summary-report-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -115,7 +116,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
 
     const [youngPeople, staffList, home] = await Promise.all([
       safeList(dal.youngPeople.findAll()),

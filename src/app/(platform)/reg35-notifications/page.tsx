@@ -20,7 +20,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, Bell, FileText, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -88,15 +88,15 @@ export default function Reg35NotificationsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createNotif = useCreateReg35Notification();
-  const [r35Form, setR35Form] = useState({ date_of_event: new Date().toISOString().slice(0, 10), notification_type: "serious_injury" as Reg35NotificationType, child_id: "", method: "phone" as Reg35NotificationMethod, ofsted_ref: "", summary: "" });
+  const [r35Form, setR35Form] = useState({ date_of_event: todayStr(), notification_type: "serious_injury" as Reg35NotificationType, child_id: "", method: "phone" as Reg35NotificationMethod, ofsted_ref: "", summary: "" });
   const setR35 = (k: keyof typeof r35Form, v: string) => setR35Form((p) => ({ ...p, [k]: v }));
 
   const handleLogNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!r35Form.summary.trim()) { toast.error("Summary is required."); return; }
-    await createNotif.mutateAsync({ date_of_event: r35Form.date_of_event, date_notified: new Date().toISOString().slice(0, 10), notification_type: r35Form.notification_type, notified_to_ofsted: true, notified_to_la: false, notified_to_police: false, notified_to_other: [], method: r35Form.method, ofsted_ref: r35Form.ofsted_ref.trim(), child_id: r35Form.child_id || null, summary: r35Form.summary.trim(), actions_taken: [], notified_by_id: "staff_darren", timeliness_compliant: true, ofsted_response: "awaiting_response", follow_up_required: false, follow_up_details: "", linked_records: [], notes: "" });
+    await createNotif.mutateAsync({ date_of_event: r35Form.date_of_event, date_notified: todayStr(), notification_type: r35Form.notification_type, notified_to_ofsted: true, notified_to_la: false, notified_to_police: false, notified_to_other: [], method: r35Form.method, ofsted_ref: r35Form.ofsted_ref.trim(), child_id: r35Form.child_id || null, summary: r35Form.summary.trim(), actions_taken: [], notified_by_id: "staff_darren", timeliness_compliant: true, ofsted_response: "awaiting_response", follow_up_required: false, follow_up_details: "", linked_records: [], notes: "" });
     toast.success("Reg 35 notification logged.");
-    setR35Form({ date_of_event: new Date().toISOString().slice(0, 10), notification_type: "serious_injury", child_id: "", method: "phone", ofsted_ref: "", summary: "" });
+    setR35Form({ date_of_event: todayStr(), notification_type: "serious_injury", child_id: "", method: "phone", ofsted_ref: "", summary: "" });
     setShowNew(false);
   };
 

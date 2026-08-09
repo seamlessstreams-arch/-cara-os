@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export async function GET() {
       dal.healthRecordEntries.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const in14Days = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
 
   const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");

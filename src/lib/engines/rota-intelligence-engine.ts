@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { mentions } from "@/lib/text/keyword-match";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ────────────────────────────────────────────────────────────────
 
@@ -100,9 +101,6 @@ export interface CaraRotaInsight {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function shiftLabel(shiftType: string): string {
   const labels: Record<string, string> = {

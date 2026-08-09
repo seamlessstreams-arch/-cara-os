@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeRiskIntelligenceDashboard,
   type RiskIntelligenceDashboardInput,
@@ -24,7 +25,7 @@ export async function GET(_request: NextRequest) {
       dal.significantEvents.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Children ──────────────────────────────────────────────────────────
   const children: ChildSummaryInput[] = youngPeopleList.map((yp) => ({

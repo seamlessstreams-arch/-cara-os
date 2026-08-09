@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -218,7 +219,7 @@ export function average(arr: number[]): number {
 export function computeStaffDevelopmentIntelligence(
   input: StaffDevelopmentIntelligenceInput,
 ): StaffDevelopmentIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { staff, appraisals, competency_profiles, qualifications, inductions, development_plans } = input;
 
   const activeStaff = staff.filter((s) => s.is_active);

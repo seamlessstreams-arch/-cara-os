@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -146,7 +146,7 @@ export default function EqualityDiversityPage() {
   const handleCreateInitiative = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eqForm.title.trim()) { toast.error("Title is required."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const target = new Date(Date.now() + 90 * 864e5).toISOString().slice(0, 10);
     await createInitiative.mutateAsync({ title: eqForm.title.trim(), description: eqForm.description.trim(), status: "planned", lead_by: eqForm.lead_by, start_date: today, target_date: target, characteristics: [], objectives: [], actions: [], outcomes: [], evidence: [], notes: "", created_at: new Date().toISOString() });
     toast.success("Initiative created.");

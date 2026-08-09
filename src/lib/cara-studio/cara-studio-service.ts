@@ -13,7 +13,7 @@
 import "server-only";
 import type { z } from "zod";
 import { db, getStore } from "@/lib/db/store";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import {
   persistCaraStudioOutput,
   persistCaraAiRun,
@@ -76,7 +76,7 @@ export function loadContext(childId: string | null, theme: string): CaraChildCon
     keyworkThemes: [...new Set(keywork)] as string[],
     approvedResources: db.caraLibraryResources.findApproved(),
     theme,
-    today: new Date().toISOString().slice(0, 10),
+    today: todayStr(),
   });
 }
 

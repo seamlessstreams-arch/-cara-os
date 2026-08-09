@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { todayStr } from "@/lib/utils";
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, n));

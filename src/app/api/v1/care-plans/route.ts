@@ -2,6 +2,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const homeId  = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
     child_id:                  body.child_id ?? "",
     version:                   body.version ?? 1,
     status:                    "active",
-    placement_start:           body.placement_start ?? new Date().toISOString().split("T")[0],
+    placement_start:           body.placement_start ?? todayStr(),
     current_placement_type:    body.current_placement_type ?? "Full-time residential",
     legal_status:              body.legal_status ?? "",
     goals:                     body.goals ?? [],

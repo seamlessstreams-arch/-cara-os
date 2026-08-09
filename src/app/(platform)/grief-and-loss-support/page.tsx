@@ -16,7 +16,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -93,7 +93,7 @@ export default function GriefAndLossSupportPage() {
   if (isLoading) return <PageShell title="Grief & Loss Support" subtitle="Bereavement, separation, placement loss, pet loss and identity loss — supporting each child individually"><div className="p-8 text-center text-muted-foreground">Loading grief records…</div></PageShell>;
 
   /* ── stats ────────────────────────────────────────────────────────── */
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const d14 = new Date(); d14.setDate(d14.getDate() + 14); const d14Str = d14.toISOString().slice(0, 10);
 
   const stats = {

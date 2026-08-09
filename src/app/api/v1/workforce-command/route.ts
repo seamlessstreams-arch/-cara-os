@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeWorkforceCommand, type WorkforceCommandInput } from "@/lib/engines/workforce-command-engine";
+import { todayStr } from "@/lib/utils";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 const APPOINTED_STAGES = new Set(["appointed", "onboarding"]);
@@ -30,7 +31,7 @@ async function fetchJson(baseUrl: string, route: string): Promise<any | null> {
 }
 
 export async function GET(req: Request) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const inDays = (d: any, n: number) => { const v = iso(d); return !!v && v >= today && (Date.parse(v) - Date.parse(today)) / 86_400_000 <= n; };
   const past = (d: any) => { const v = iso(d); return !!v && v < today; };
 

@@ -17,6 +17,7 @@ import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
 import { buildReg44BuildingSafety, type Reg44BuildingCheckInput } from "@/lib/reg44-report-intelligence/building-safety";
 import type { Reg44AssessmentInput } from "@/lib/reg44-report-intelligence/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : ""
 /** month "2026-06" → {start,end}; default to the current month. */
 function monthWindow(month: string): { start: string; end: string; month: string } {
   const m = /^(\d{4})-(\d{2})$/.exec(month);
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   if (!m) {
     const ym = asOf.slice(0, 7);
     return { start: `${ym}-01`, end: `${ym}-31`, month: ym };
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const homeId = searchParams.get("home_id") || "home_oak";
     const win = monthWindow(searchParams.get("month") || "");
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
 
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;

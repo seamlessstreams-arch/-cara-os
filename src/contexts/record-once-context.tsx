@@ -54,6 +54,7 @@ import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { CarePlanGoal, RiskAssessment, CarePlan } from "@/types/extended";
 import type { YoungPerson, StaffMember, TrainingRecord, Supervision, Task } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 interface YPEnriched extends YoungPerson {
   age: number;
@@ -196,7 +197,7 @@ const RecordOnceContext = createContext<RecordOnceData>({
   staff: null,
   currentUser: null,
   isLoading: false,
-  today: new Date().toISOString().slice(0, 10),
+  today: todayStr(),
   currentTime: new Date().toTimeString().slice(0, 5),
   getValue: () => null,
 });
@@ -388,7 +389,7 @@ export function RecordOnceProvider({
     (!!childId && riskQuery.isLoading) ||
     (!!staffIdFromProps && staffQuery.isLoading);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const currentTime = new Date().toTimeString().slice(0, 5);
 
   // Derive child auto-fill

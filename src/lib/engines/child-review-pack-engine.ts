@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — CHILD REVIEW PACK ENGINE
 //
@@ -124,7 +125,7 @@ const WELLBEING_LABEL: Record<string, string> = {
 // ── Engine ────────────────────────────────────────────────────────────────────
 
 export function buildChildReviewPack(input: ChildReviewPackInput): ChildReviewPackResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const months = Math.round(input.days_in_placement / 30);
 
   const demographics = [

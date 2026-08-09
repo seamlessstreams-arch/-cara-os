@@ -35,7 +35,7 @@ import {
   Clock,
   CircleDot,
 } from "lucide-react";
-import { cn, localMonthKey } from "@/lib/utils";
+import { cn, localMonthKey, todayStr } from "@/lib/utils";
 import { getStaffById } from "@/lib/seed-data";
 import type {
   Reg44Visit,
@@ -257,7 +257,7 @@ export default function Reg44Page() {
             disabled={createVisit.isPending}
             onClick={() => createVisit.mutate({
               homeId: "oak-house",
-              visitDate: new Date().toISOString().split("T")[0],
+              visitDate: todayStr(),
               visitorName: "Independent Visitor",
               visitType: "announced",
             })}

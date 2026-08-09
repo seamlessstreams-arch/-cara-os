@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ function childName(childId: string, children: ChildRef[]): string {
 // ── Main Engine ─────────────────────────────────────────────────────────────
 
 export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { transactions, clothing_allowances, children, staff } = input;
 
   const periodTransactions = transactions.filter((t) => isInPeriod(t.date, today));

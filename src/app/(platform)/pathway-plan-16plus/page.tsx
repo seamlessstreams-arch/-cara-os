@@ -54,7 +54,7 @@ import {
   Heart, Home, Briefcase, Users, Target, ShieldAlert, Wrench, Phone,
   Loader2, Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -134,7 +134,7 @@ export default function PathwayPlan16PlusPage() {
     e.preventDefault();
     if (!ppForm.child_id) { toast.error("Please select a young person."); return; }
     const yp = YOUNG_PEOPLE.find((y) => y.id === ppForm.child_id);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const reviewDate = new Date(); reviewDate.setMonth(reviewDate.getMonth() + 6);
     await createPlan.mutateAsync({ child_id: ppForm.child_id, child_initials: yp ? `${yp.first_name[0]}${yp.last_name[0]}` : "??", age: yp?.date_of_birth ? Math.floor((Date.now() - new Date(yp.date_of_birth).getTime()) / 31557600000) : 16, status: "active_16_18" as PathwayPlanStatus, plan_version: "1.0", last_review_date: today, personal_advisor: ppForm.personal_advisor.trim(), social_worker: "", accommodation: ppForm.accommodation.trim(), education_employment_training: "", health_needs: [], financial_support: [], support_network: [], aspirations: ppForm.aspirations.split("\n").filter(Boolean), risks: [], independent_living_skills: {}, next_review_date: reviewDate.toISOString().slice(0, 10), contact_arrangements: "", statutory_16plus_review_schedule: "Every 6 months" });
     toast.success("Pathway plan created.");
@@ -143,7 +143,7 @@ export default function PathwayPlan16PlusPage() {
   };
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const in30 = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 30); return dt.toISOString().slice(0, 10); })();
 
   const displayName = (r: PathwayPlan) =>

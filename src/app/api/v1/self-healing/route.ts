@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { runSelfHealingScan, selectAutoRepairs } from "@/lib/self-healing/self-healing-engine";
 import type { HealEvent, IntegrityRepair, SelfHealingInput } from "@/lib/self-healing/types";
 
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 function buildInput(store: ReturnType<typeof getStore>): SelfHealingInput {
   return {
     homeId: "home_oak",
-    asOf: new Date().toISOString().slice(0, 10),
+    asOf: todayStr(),
     childIds: ((store.youngPeople ?? []) as Array<{ id: string }>).map((c) => String(c.id)),
     incidents: ((store.incidents ?? []) as unknown as Array<Record<string, unknown>>).map((i) => ({
       id: String(i.id),

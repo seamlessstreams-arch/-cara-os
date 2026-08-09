@@ -15,6 +15,7 @@ import {
   computeChildDailyLife,
   type DailyLogEntryInput,
 } from "@/lib/engines/child-daily-life-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "childId is required" }, { status: 400 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const [youngPeople, dailyLog] = await Promise.all([
     safeList(dal.youngPeople.findAll()),

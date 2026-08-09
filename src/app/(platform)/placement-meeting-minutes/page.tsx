@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -109,11 +109,11 @@ export default function PlacementMeetingMinutesPage() {
   const total = entries.length;
   const openActions = entries.reduce((sum, m) => sum + (m.actions ?? []).filter((a) => a.status !== "done").length, 0);
   const childAttendedCount = entries.filter((m) => m.child_attended).length;
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = todayStr();
   const in14 = new Date();
   in14.setDate(in14.getDate() + 14);
   const in14Str = in14.toISOString().slice(0, 10);
-  const upcomingNext = entries.filter((m) => m.next_meeting >= todayStr && m.next_meeting <= in14Str).length;
+  const upcomingNext = entries.filter((m) => m.next_meeting >= todayDate && m.next_meeting <= in14Str).length;
 
   return (
     <PageShell

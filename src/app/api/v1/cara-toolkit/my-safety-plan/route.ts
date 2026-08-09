@@ -7,6 +7,7 @@ import type {
   RiskLevel,
   SignalColour,
 } from "@/lib/cara-visual-toolkit/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export async function GET() {
   const riskAssessments = (riskAssessmentsList as any[]) ?? [];
   const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const childPlans: ChildSafetyPlan[] = youngPeople
     .filter((yp: any) => yp.status !== "moved_on" && yp.status !== "discharged")

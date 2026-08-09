@@ -31,7 +31,7 @@ import {
   ShoppingCart, Globe, Sparkles, AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PocketMoneyAccount, PocketMoneyAccountTxType, PocketMoneyAccountCategory } from "@/types/extended";
@@ -465,7 +465,7 @@ function NewTransactionDialog({
       : lastBalance - parsedAmount;
 
     const tx: Partial<PocketMoneyAccount> = {
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       child_id: childId,
       transaction_type: transactionType,
       category,

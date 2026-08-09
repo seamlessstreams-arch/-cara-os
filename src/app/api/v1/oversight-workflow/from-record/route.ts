@@ -18,6 +18,7 @@ import { incidentToOversightInput } from "@/lib/oversight/hydrate";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { OVERSIGHT_DISCLAIMER, type OversightMode } from "@/lib/oversight/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
   const recordType = sp.get("recordType") ?? "incident";
   const modeParam = sp.get("mode") as OversightMode | null;
   const mode = modeParam && VALID_MODES.includes(modeParam) ? modeParam : "both";
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   if (recordType !== "incident") {
     return NextResponse.json(

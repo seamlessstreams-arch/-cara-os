@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -81,7 +81,7 @@ export default function MenuPlanningPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createMeal = useCreateMealPlan();
-  const [mealForm, setMealForm] = useState({ date: new Date().toISOString().slice(0, 10), meal: "dinner" as MealType, main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
+  const [mealForm, setMealForm] = useState({ date: todayStr(), meal: "dinner" as MealType, main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
   const setMF = (k: keyof typeof mealForm, v: string) => setMealForm((p) => ({ ...p, [k]: v }));
 
   const handleAddMeal = async (e: React.FormEvent) => {
@@ -89,7 +89,7 @@ export default function MenuPlanningPage() {
     if (!mealForm.main_dish.trim()) { toast.error("Main dish is required."); return; }
     await createMeal.mutateAsync({ date: mealForm.date, meal: mealForm.meal, main_dish: mealForm.main_dish.trim(), sides: mealForm.sides ? mealForm.sides.split(",").map((s) => s.trim()).filter(Boolean) : [], dessert: mealForm.dessert.trim(), dietary_flags: [], prepared_by: mealForm.prepared_by || "staff_darren", child_preferences: [], special_notes: mealForm.notes.trim(), budget: parseFloat(mealForm.budget) || 0, leftover_action: "", created_at: new Date().toISOString() });
     toast.success("Meal plan added.");
-    setMealForm({ date: new Date().toISOString().slice(0, 10), meal: "dinner", main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
+    setMealForm({ date: todayStr(), meal: "dinner", main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
     setShowNew(false);
   };
 

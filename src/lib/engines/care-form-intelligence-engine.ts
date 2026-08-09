@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ function isOverdue(form: CareFormInput, today: string): boolean {
 export function computeCareFormIntelligence(
   input: CareFormIntelligenceInput,
 ): CareFormIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { forms, staff } = input;
 
   const staffMap = new Map(staff.map((s) => [s.id, s.name]));

@@ -34,7 +34,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import type { UploadedDocument } from "@/types/documents";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -855,7 +855,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                       <span className="flex-1 text-slate-700 font-medium truncate">{task.title}</span>
                       {task.due_date && (
                         <span className={cn("text-[10px] shrink-0",
-                          task.due_date < new Date().toISOString().slice(0, 10) ? "text-red-600 font-semibold" : "text-slate-400"
+                          task.due_date < todayStr() ? "text-red-600 font-semibold" : "text-slate-400"
                         )}>
                           {formatRelative(task.due_date)}
                         </span>

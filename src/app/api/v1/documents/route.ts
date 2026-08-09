@@ -12,12 +12,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 // Documents are read/written via the dual-mode dal (the documents table on a
 // live tenant, the in-memory store in demo). Read receipts have no dal accessor

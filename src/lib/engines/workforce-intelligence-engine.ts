@@ -20,6 +20,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -173,9 +174,6 @@ export interface WorkforceEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function daysBetween(a: string, b: string): number {
   return Math.round(

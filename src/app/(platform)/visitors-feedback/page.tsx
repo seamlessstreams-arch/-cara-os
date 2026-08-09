@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -90,7 +90,7 @@ export default function VisitorsFeedbackPage() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["visitors-feedback-records"] }),
   });
-  const [vfForm, setVfForm] = useState({ visitor_name: "", visitor_role: "reg44" as VisitorsFeedbackRole, visit_date: new Date().toISOString().slice(0, 10), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
+  const [vfForm, setVfForm] = useState({ visitor_name: "", visitor_role: "reg44" as VisitorsFeedbackRole, visit_date: todayStr(), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
   const setVF = (k: string, v: unknown) => setVfForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveFeedback = async (e: React.FormEvent) => {
@@ -98,7 +98,7 @@ export default function VisitorsFeedbackPage() {
     if (!vfForm.visitor_name.trim()) { toast.error("Visitor name is required."); return; }
     await createFeedback.mutateAsync({ visitor_name: vfForm.visitor_name.trim(), visitor_role: vfForm.visitor_role, visit_date: vfForm.visit_date, rating: parseInt(vfForm.rating) || 3, positives: vfForm.positives.split("\n").filter(Boolean), concerns: vfForm.concerns.split("\n").filter(Boolean), suggestions: vfForm.suggestions.split("\n").filter(Boolean), action_taken: null, responded_by: null, child_related: null, notes: vfForm.notes.trim() });
     toast.success("Visitor feedback recorded.");
-    setVfForm({ visitor_name: "", visitor_role: "reg44", visit_date: new Date().toISOString().slice(0, 10), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
+    setVfForm({ visitor_name: "", visitor_role: "reg44", visit_date: todayStr(), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
     setShowNew(false);
   };
 

@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { rate, weightedMeanOf, meets, below } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -990,7 +991,7 @@ export function buildStaffSafeguardingProfiles(
       (a, b) => b.expiryDate.localeCompare(a.expiryDate),
     );
     const latestExpiry = sortedTraining[0]?.expiryDate ?? null;
-    const trainingCurrent = latestExpiry !== null && latestExpiry >= new Date().toISOString().slice(0, 10);
+    const trainingCurrent = latestExpiry !== null && latestExpiry >= todayStr();
 
     // Supervision stats
     const supervisionCount = staffSupervision.length;

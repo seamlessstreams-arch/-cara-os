@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — STAFFING ADEQUACY ANALYSER
 //
@@ -168,7 +169,7 @@ export function analyseStaffingAdequacy(
   config: HomeConfig,
   windowDays: number = 7,
 ): StaffingAdequacy {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: StaffingAlert[] = [];
   const gaps: StaffingGap[] = [];
 

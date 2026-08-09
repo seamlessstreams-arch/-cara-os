@@ -20,7 +20,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Camera, X, Clock, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { PhotoConsentRecord, PhotoConsentCategory, PhotoConsentStatus } from "@/types/extended";
@@ -71,7 +71,7 @@ export default function PhotoConsentPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRecord = useCreatePhotoConsentRecord();
-  const [pcForm, setPcForm] = useState({ child_id: "", review_date: new Date().toISOString().slice(0, 10), young_person_views: "", overall_notes: "" });
+  const [pcForm, setPcForm] = useState({ child_id: "", review_date: todayStr(), young_person_views: "", overall_notes: "" });
   const setPC = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveReview = async (e: React.FormEvent) => {
@@ -80,7 +80,7 @@ export default function PhotoConsentPage() {
     const next = new Date(pcForm.review_date); next.setFullYear(next.getFullYear() + 1);
     await createRecord.mutateAsync({ child_id: pcForm.child_id, last_review_date: pcForm.review_date, next_review_date: next.toISOString().slice(0, 10), reviewed_by: "staff_darren", overall_notes: pcForm.overall_notes.trim(), permissions: [], social_worker_consent: false, young_person_views: pcForm.young_person_views.trim(), delegated_authority: "", created_at: new Date().toISOString() });
     toast.success("Photo consent review saved.");
-    setPcForm({ child_id: "", review_date: new Date().toISOString().slice(0, 10), young_person_views: "", overall_notes: "" });
+    setPcForm({ child_id: "", review_date: todayStr(), young_person_views: "", overall_notes: "" });
     setShowNew(false);
   };
 

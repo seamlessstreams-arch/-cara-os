@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -163,7 +164,7 @@ export async function generateOfstedReadinessSnapshot(input: {
 
   const since = new Date();
   since.setDate(since.getDate() - 90);
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = todayStr();
 
   const [goldenThread, signals, childVoice, aiRuns, supervisions, training] = await Promise.all([
     (sb.from("golden_thread_events") as SB)

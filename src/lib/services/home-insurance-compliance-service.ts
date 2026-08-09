@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;
 
@@ -239,7 +240,7 @@ export function computeInsuranceAlerts(
   rows: HomeInsuranceComplianceRow[],
 ): { type: string; severity: "critical" | "high" | "medium"; message: string; record_id?: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium"; message: string; record_id?: string }[] = [];
-  const now = new Date(new Date().toISOString().split("T")[0]);
+  const now = new Date(todayStr());
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
 
   for (const r of rows) {

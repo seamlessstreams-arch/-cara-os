@@ -7,6 +7,7 @@ import {
   providerOversightLog,
   nextFallbackId,
 } from "@/lib/intelligence/fallback-store";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.from("provider_home_summaries").insert({
       home_id: homeId,
       provider_id: providerId ?? null,
-      summary_date: summaryDate ?? new Date().toISOString().split("T")[0],
+      summary_date: summaryDate ?? todayStr(),
       occupancy: occupancy ?? null,
       staffing_level: staffingLevel ?? null,
       incident_count: incidentCount ?? 0,

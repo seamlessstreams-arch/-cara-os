@@ -15,7 +15,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -77,15 +77,15 @@ export default function CommunicationBookPage() {
   const pinnedRef    = useRef<HTMLInputElement>(null);
   const actionRef    = useRef<HTMLInputElement>(null);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = todayStr();
 
   const stats = useMemo(() => ({
     total: items.length,
     pinned: items.filter((e) => e.pinned).length,
     urgent: items.filter((e) => e.priority === "urgent").length,
     actionsPending: items.filter((e) => e.action_required && !e.action_completed_by).length,
-    today: items.filter((e) => e.date === todayStr).length,
-  }), [items, todayStr]);
+    today: items.filter((e) => e.date === todayDate).length,
+  }), [items, todayDate]);
 
   const filtered = useMemo(() => {
     let list = [...items];

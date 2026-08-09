@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — KEY DATES INTELLIGENCE ENGINE
 //
@@ -125,9 +126,6 @@ export interface KeyDatesEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /** Days between two ISO date strings. Positive = future, negative = past. */
 export function daysBetween(from: string, to: string): number {

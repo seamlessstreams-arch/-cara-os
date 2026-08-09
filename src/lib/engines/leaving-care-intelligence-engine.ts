@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — LEAVING CARE INTELLIGENCE ENGINE
 //
@@ -187,7 +188,7 @@ function roundTo(value: number, decimals: number): number {
 export function computeLeavingCareIntelligence(
   input: LeavingCareIntelligenceInput
 ): LeavingCareIntelligenceResult {
-  const today = input.today || new Date().toISOString().split("T")[0];
+  const today = input.today || todayStr();
   const { pathwayPlans, independenceSkills, children, staff } = input;
 
   // ── Build child age map ─────────────────────────────────────────────────

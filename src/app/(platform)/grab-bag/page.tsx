@@ -20,7 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
 import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
@@ -102,7 +102,7 @@ export default function GrabBagPage() {
   const handleSaveBag = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bagForm.child_id) { toast.error("Please select a young person."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const nextCheck = new Date(); nextCheck.setMonth(nextCheck.getMonth() + 1);
     await createBag.mutateAsync({ child_id: bagForm.child_id, location: bagForm.location.trim() || "Secure cupboard", last_checked: today, checked_by: "", next_check_due: nextCheck.toISOString().slice(0, 10), items: DEFAULT_ITEMS.map((item) => ({ name: item.name, present: false, notes: "", required: item.required, expiry_date: null })), overall_status: "incomplete" as GrabBagStatus, notes: bagForm.notes });
     toast.success("Grab bag record created.");
@@ -110,7 +110,7 @@ export default function GrabBagPage() {
     setShowNew(false);
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let list = [...bags];
@@ -170,7 +170,7 @@ export default function GrabBagPage() {
   ];
 
   const handleMarkChecked = (bagId: string) => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const next = new Date();
     next.setDate(next.getDate() + 30);
     updateMutation.mutate({ id: bagId, last_checked: today, checked_by: "staff_darren", next_check_due: next.toISOString().slice(0, 10) });

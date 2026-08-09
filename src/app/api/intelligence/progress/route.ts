@@ -8,6 +8,7 @@ import {
   outcomeSnapshots,
   nextFallbackId,
 } from "@/lib/intelligence/fallback-store";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest) {
         child_id: payload.childId,
         home_id: homeId,
         goal_id: payload.goalId ?? null,
-        entry_date: payload.entryDate ?? new Date().toISOString().split("T")[0],
+        entry_date: payload.entryDate ?? todayStr(),
         area: payload.area,
         what_happened: payload.whatHappened,
         impact_on_child: payload.impactOnChild ?? null,
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
       const { data, error } = await supabase.from("child_outcome_snapshots").insert({
         child_id: payload.childId,
         home_id: homeId,
-        snapshot_date: payload.snapshotDate ?? new Date().toISOString().split("T")[0],
+        snapshot_date: payload.snapshotDate ?? todayStr(),
         education_score: payload.educationScore ?? null,
         health_score: payload.healthScore ?? null,
         emotional_wellbeing_score: payload.emotionalWellbeingScore ?? null,

@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeChildEmotionalWellbeing,
   type MoodEntryInput,
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
       dal.therapeuticInputRecords.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
   const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;

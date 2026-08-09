@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { todayStr } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     home_id: body.home_id ?? "home_oak",
     visit_number: body.visit_number ?? 1,
     visit_date: body.visit_date ?? null,
-    scheduled_date: body.scheduled_date ?? new Date().toISOString().split("T")[0],
+    scheduled_date: body.scheduled_date ?? todayStr(),
     visitor_name: body.visitor_name ?? "",
     visitor_organisation: body.visitor_organisation ?? null,
     status: body.status ?? "scheduled",

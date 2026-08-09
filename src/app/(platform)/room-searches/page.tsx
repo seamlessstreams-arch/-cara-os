@@ -20,7 +20,7 @@ import {
   ChevronDown, ChevronUp, AlertTriangle,
   CheckCircle2, Clock, Eye, Loader2,
 } from "lucide-react";
-import { cn }                          from "@/lib/utils";
+import { cn, todayStr }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
@@ -124,7 +124,7 @@ export default function RoomSearchesPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   const createSearch = useCreateRoomSearchRecord();
-  const [rsForm, setRsForm] = useState({ child_id: "", search_type: "routine" as RoomSearchType, date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [] as string[], child_response: "", notes: "" });
+  const [rsForm, setRsForm] = useState({ child_id: "", search_type: "routine" as RoomSearchType, date: todayStr(), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [] as string[], child_response: "", notes: "" });
   const setRS = (k: string, v: unknown) => setRsForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveSearch = async (e: React.FormEvent) => {
@@ -133,7 +133,7 @@ export default function RoomSearchesPage() {
     if (!rsForm.reason.trim()) { toast.error("Reason for search is required."); return; }
     await createSearch.mutateAsync({ child_id: rsForm.child_id, date: rsForm.date, time: rsForm.time, search_type: rsForm.search_type, reason: rsForm.reason.trim(), conducted_by: "staff_darren", witnessed_by: "", child_present: true, child_informed: true, areas_searched: rsForm.areas, items_found: [], nothing_found: true, child_response: rsForm.child_response.trim(), child_distress_level: "none", follow_up_required: false, follow_up_actions: [], social_worker_notified: false, parent_notified: false, manager_approval: "", notes: rsForm.notes.trim(), status: "completed", linked_incident: null });
     toast.success("Room search recorded.");
-    setRsForm({ child_id: "", search_type: "routine", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [], child_response: "", notes: "" });
+    setRsForm({ child_id: "", search_type: "routine", date: todayStr(), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [], child_response: "", notes: "" });
     setShowDialog(false);
   };
 

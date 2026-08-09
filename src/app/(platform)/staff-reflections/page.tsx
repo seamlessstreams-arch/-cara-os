@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, CheckCircle2, Clock, BookOpen, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -78,7 +78,7 @@ export default function StaffReflectionsPage() {
   const handleSaveReflection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rfForm.title.trim()) { toast.error("Title is required."); return; }
-    await createRecord.mutateAsync({ staff_id: rfForm.staff_id || "staff_darren", date: new Date().toISOString().slice(0, 10), type: rfForm.type, mood: rfForm.mood, title: rfForm.title.trim(), what_happened: rfForm.what_happened.trim(), what_i_felt: rfForm.what_i_felt.trim(), what_i_learned: rfForm.what_i_learned.trim(), what_i_would_do_differently: rfForm.what_i_would_do_differently.trim(), linked_to_yp: [], linked_incident: null, shared_with_manager: false, manager_feedback: "", development_goal: "", is_private: false });
+    await createRecord.mutateAsync({ staff_id: rfForm.staff_id || "staff_darren", date: todayStr(), type: rfForm.type, mood: rfForm.mood, title: rfForm.title.trim(), what_happened: rfForm.what_happened.trim(), what_i_felt: rfForm.what_i_felt.trim(), what_i_learned: rfForm.what_i_learned.trim(), what_i_would_do_differently: rfForm.what_i_would_do_differently.trim(), linked_to_yp: [], linked_incident: null, shared_with_manager: false, manager_feedback: "", development_goal: "", is_private: false });
     toast.success("Reflection saved.");
     setRfForm({ staff_id: "", title: "", type: "daily", mood: "positive", what_happened: "", what_i_felt: "", what_i_learned: "", what_i_would_do_differently: "" });
     setDialogOpen(false);

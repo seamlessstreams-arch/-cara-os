@@ -16,6 +16,7 @@ import {
   type Reg32Staff,
   type ComplianceVerdictLite,
 } from "@/lib/reg32-deployment/reg32-deployment-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const from = req.nextUrl.searchParams.get("from")?.slice(0, 10) || today;
   const to = req.nextUrl.searchParams.get("to")?.slice(0, 10) || addDays(today, 13); // default: 2-week window

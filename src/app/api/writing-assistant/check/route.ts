@@ -14,6 +14,7 @@ import { getWritingProvider, isWritingAssistantEnabled } from "@/lib/writing-ass
 import { MAX_CHECK_LENGTH, type WritingCheckInput, type WritingMode } from "@/lib/writing-assistant/types";
 import { getAnthropicClient } from "@/lib/anthropic-client";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 function isAiRewriteAvailable(): boolean {
   try { getAnthropicClient(); return true; } catch { return false; }
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
   }
 
   const mode: WritingMode = VALID_MODES.includes(body.mode as WritingMode) ? (body.mode as WritingMode) : "standard";
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   try {
     const result = await getWritingProvider().checkText({

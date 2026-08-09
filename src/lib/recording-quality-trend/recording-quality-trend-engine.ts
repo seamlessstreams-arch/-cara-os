@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { ScoredRecord, DimensionAverages } from "@/lib/recording-quality/recording-quality-engine";
+import { todayStr } from "@/lib/utils";
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ function trendOverPoints(points: WeeklyPoint[], sel: (p: WeeklyPoint) => number)
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeRecordingQualityTrend(input: RecordingQualityTrendInput): RecordingQualityTrendResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const weeks = input.weeks ?? 8;
 
   // Bucket records into weekly windows. Bucket i covers [i*7, (i+1)*7) days ago.

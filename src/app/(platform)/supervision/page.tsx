@@ -248,7 +248,7 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
         actions_agreed: actions,
         staff_signature: staffSigned,
         supervisor_signature: supervisorSigned,
-        actual_date: sup.actual_date ?? new Date().toISOString().split("T")[0],
+        actual_date: sup.actual_date ?? todayStr(),
         ...(markComplete ? { status: "completed" } : {}),
       },
       { onSuccess: () => onClose() }

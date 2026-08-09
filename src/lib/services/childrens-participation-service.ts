@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -598,7 +599,7 @@ export async function createConsultation(
       home_id: input.homeId,
       child_id: input.childId,
       child_name: input.childName,
-      consultation_date: input.consultationDate ?? new Date().toISOString().split("T")[0],
+      consultation_date: input.consultationDate ?? todayStr(),
       consulted_by: input.consultedBy,
       topic: input.topic,
       context: input.context,

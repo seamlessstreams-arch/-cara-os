@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
@@ -257,7 +257,7 @@ export default function KeyWorkingPage() {
       {
         child_id: formChildId,
         staff_id: "staff_darren",
-        date: (fd.get("date") as string) || new Date().toISOString().slice(0, 10),
+        date: (fd.get("date") as string) || todayStr(),
         type: formType as SessionType,
         duration: Number(fd.get("duration")) || 30,
         location: (fd.get("location") as string) || "",

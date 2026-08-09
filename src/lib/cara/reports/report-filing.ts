@@ -15,6 +15,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import type { ChildReport, ReportType } from "@/types/cara-reports";
 import { REPORT_TYPE_LABELS } from "@/types/cara-reports";
 import { writeCaraAudit } from "@/lib/cara/audit/cara-audit";
+import { todayStr } from "@/lib/utils";
 
 // ── Filing Path Templates ──────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ export async function fileLockedReport(
     // Demo mode — return a simulated filing result
     return {
       success: true,
-      filingPath: `young-people/demo-child/cara-reports/weekly/${new Date().toISOString().slice(0, 10)}`,
+      filingPath: `young-people/demo-child/cara-reports/weekly/${todayStr()}`,
       documentId: `doc-demo-${Date.now()}`,
     };
   }

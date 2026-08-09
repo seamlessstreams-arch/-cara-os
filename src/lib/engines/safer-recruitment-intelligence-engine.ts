@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -245,7 +246,7 @@ function isCheckComplete(status: CheckStatus): boolean {
 export function computeSaferRecruitmentIntelligence(
   input: SaferRecruitmentIntelligenceInput,
 ): SaferRecruitmentIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { vacancies, candidates, checks, references, offers } = input;
 
   // ── Index maps ─────────────────────────────────────────────────────────

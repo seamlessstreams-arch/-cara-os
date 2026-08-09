@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ export function analyseSupervisions(
   staffList: { id: string; name: string; startDate?: string }[],
   homeId: string = "home_oak"
 ): SupervisionIntelligence {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const profiles = buildProfiles(records, staffList, today);
 
   const overdueStaff = profiles.filter((p) => p.isOverdue);
@@ -262,7 +263,7 @@ function extractThemes(records: SupervisionRecord[]): SupervisionIntelligence["c
   const themeCounts = new Map<string, number>();
   const recentThemeCounts = new Map<string, number>();
 
-  const thirtyDaysAgo = addDays(new Date().toISOString().slice(0, 10), -30);
+  const thirtyDaysAgo = addDays(todayStr(), -30);
 
   for (const record of records) {
     for (const theme of record.themes) {

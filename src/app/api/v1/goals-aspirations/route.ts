@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { OUTCOME_DOMAIN_LABELS } from "@/types/extended";
+import { todayStr } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
       dal.outcomeTargets.findAll(),
       dal.youngPeople.findAll(),
     ]);
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayStr();
 
     const youngPeople = (youngPeopleList as any[]) ?? [];
     const outcomeTargets = (outcomeTargetsList as any[]) ?? [];

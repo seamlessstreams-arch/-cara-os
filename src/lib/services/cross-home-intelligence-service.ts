@@ -8,6 +8,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { isLiveTenant } from "@/lib/db/live-mode";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -379,7 +380,7 @@ export async function generateSnapshot(
   if (!homes || homes.length === 0) return { ok: true, data: { generated: 0 } };
 
   let generated = 0;
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
 
   for (const home of homes as { id: string; name: string }[]) {
     // Count children

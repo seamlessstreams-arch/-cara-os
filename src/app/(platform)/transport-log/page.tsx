@@ -56,7 +56,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   Car, CheckCircle2, Clock, MapPin, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type {
   TransportLogRecord,
@@ -261,7 +261,7 @@ export default function TransportLogPage() {
   const handleCreate = () => {
     if (!nDriver || !nVehicle || !nPurpose || !nDestination || !nDepartureTime) return;
     createMutation.mutate({
-      date: nDate || new Date().toISOString().slice(0, 10),
+      date: nDate || todayStr(),
       driver: nDriver,
       driver_licence_checked: true,
       vehicle: nVehicle,

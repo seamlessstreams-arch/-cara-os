@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { getStaffName, STAFF } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import type { AgencyFeedback, AgencyShiftType, AgencyVerdict, RecordingQuality } from "@/types/extended";
 import {
   AGENCY_SHIFT_TYPE_LABEL,
@@ -70,7 +70,7 @@ export default function AgencyStaffFeedbackPage() {
   const [form, setForm] = useState({
     agency_staff_name: "",
     agency: "",
-    shift_date: new Date().toISOString().split("T")[0],
+    shift_date: todayStr(),
     shift_type: "early" as AgencyShiftType,
     permanent_staff_on_shift: "",
     professionalism_rating: 3,
@@ -96,14 +96,14 @@ export default function AgencyStaffFeedbackPage() {
         follows_routines: true,
         follows_behaviour_support_plans: true,
         follows_sensory_protocols: true,
-        feedback_to_agency_date: new Date().toISOString().split("T")[0],
+        feedback_to_agency_date: todayStr(),
         follow_up_action: "None",
         reviewed_by: form.permanent_staff_on_shift,
         notes: "",
       });
       toast.success("Feedback logged");
       setShowCreate(false);
-      setForm({ agency_staff_name: "", agency: "", shift_date: new Date().toISOString().split("T")[0], shift_type: "early", permanent_staff_on_shift: "", professionalism_rating: 3, relational_skills_rating: 3, recording_quality: "adequate", overall_verdict: "approved_for_repeat", feedback_summary: "" });
+      setForm({ agency_staff_name: "", agency: "", shift_date: todayStr(), shift_type: "early", permanent_staff_on_shift: "", professionalism_rating: 3, relational_skills_rating: 3, recording_quality: "adequate", overall_verdict: "approved_for_repeat", feedback_summary: "" });
     } catch {
       toast.error("Failed to save. Please try again.");
     }

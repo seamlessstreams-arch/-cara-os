@@ -21,6 +21,7 @@
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { WorkflowRule, WorkflowActionType, WorkflowRole } from "@/types/workflow-rule";
 import { evalCondition } from "@/lib/event-routing/event-routing-engine";
+import { todayStr } from "@/lib/utils";
 
 // ── Output ────────────────────────────────────────────────────────────────────
 
@@ -155,7 +156,7 @@ function ruleApplies(e: CornerstoneEvent, rule: WorkflowRule): boolean {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeWorkflowOrchestration(input: WorkflowOrchestrationInput): WorkflowOrchestrationResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const todayDay = today.slice(0, 10);
   const rules = input.rules ?? DEFAULT_WORKFLOW_RULES;
 

@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 
 export type WellbeingSignal = "support_needed" | "attention" | "positive" | "thriving";
 export type TeamSignal = "concern" | "attention" | "positive" | "thriving";
@@ -81,7 +82,7 @@ function wellbeingSignal(score: number, overdueFollowUp: boolean, overdueActions
 
 export async function GET() {
   const reflectiveSupervisionsList = await dal.reflectiveSupervisions.findAll();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const rawSupervisions = (reflectiveSupervisionsList as any[] ?? []);
 

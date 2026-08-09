@@ -20,7 +20,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, UserMinus, Calendar, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -87,7 +87,7 @@ export default function StaffSicknessPage() {
 
   const [ssForm, setSsForm] = useState({
     staff_id: "",
-    date_started: new Date().toISOString().slice(0, 10),
+    date_started: todayStr(),
     reason: "" as StaffSicknessAbsenceReason | "",
     reason_detail: "",
     cover_arrangements: "",
@@ -121,7 +121,7 @@ export default function StaffSicknessPage() {
       manager_notes: "",
     });
     toast.success("Sickness absence logged.");
-    setSsForm({ staff_id: "", date_started: new Date().toISOString().slice(0, 10), reason: "", reason_detail: "", cover_arrangements: "" });
+    setSsForm({ staff_id: "", date_started: todayStr(), reason: "", reason_detail: "", cover_arrangements: "" });
     setShowNew(false);
   };
 

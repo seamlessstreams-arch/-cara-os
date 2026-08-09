@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { todayStr } from "@/lib/utils";
 import {
   listPremisesChecks,
   createPremisesCheck,
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
         priority: body.priority ?? "medium",
         location: body.location ?? "",
         reported_by: body.reportedBy,
-        reported_date: body.reportedDate ?? new Date().toISOString().split("T")[0],
+        reported_date: body.reportedDate ?? todayStr(),
         assigned_to: body.assignedTo,
         estimated_cost: body.estimatedCost,
         actual_cost: body.actualCost,

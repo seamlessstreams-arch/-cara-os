@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { DietaryPlan } from "@/types/extended";
 import { DIETARY_ALLERGY_SEVERITY_LABEL } from "@/types/extended";
@@ -90,7 +90,7 @@ export default function DietaryRequirementsPage() {
   const total = records.length;
   const criticalAllergies = records.filter((p) => p.allergies.some((a) => a.severity === "life_threatening" || a.severity === "severe")).length;
   const allChildAgreed = records.every((p) => p.child_agreed);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const thirtyDaysLater = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
   const dueReview = records.filter((p) => p.next_review_date <= thirtyDaysLater).length;
 

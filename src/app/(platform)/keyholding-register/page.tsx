@@ -21,7 +21,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Key, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -80,7 +80,7 @@ export default function KeyholdingRegisterPage() {
   const handleAddKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!krForm.key_name.trim()) { toast.error("Key name is required."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createItem.mutateAsync({ key_name: krForm.key_name.trim(), key_type: krForm.key_type, key_number: krForm.key_number.trim(), total_copies: parseInt(krForm.total_copies) || 1, permanent_holders: [], sign_out_log: [], restricted_access: false, authorised_staff: [], location: krForm.location.trim(), last_audit: today, next_audit_due: "", status: "in_use", lost_key_incidents: [], notes: krForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Key record added.");
     setKrForm({ key_name: "", key_number: "", total_copies: "1", key_type: "master", location: "", notes: "" });
@@ -95,7 +95,7 @@ export default function KeyholdingRegisterPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let out = [...data];

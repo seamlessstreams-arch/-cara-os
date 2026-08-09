@@ -78,6 +78,7 @@ import { computeBoilerHeatingSystemServicing } from "@/lib/engines/home-boiler-h
 import { computeHomeBSPEffectiveness } from "@/lib/engines/home-bsp-effectiveness-intelligence-engine";
 import { computeHomeBuildingOpsSafety } from "@/lib/engines/home-building-ops-safety-intelligence-engine";
 import { computeCamhsSpecialistReferral } from "@/lib/engines/home-camhs-specialist-referral-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 import { computeCaraContentQuality } from "@/lib/engines/home-cara-content-quality-intelligence-engine";
 import { computeHomeCareEventQuality } from "@/lib/engines/home-care-event-quality-intelligence-engine";
 import { computeCaseFileAuditQuality } from "@/lib/engines/home-case-file-audit-quality-intelligence-engine";
@@ -783,7 +784,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const children = store.youngPeople ?? [];
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Accident records
     const accidentBook = (store.accidentBook as any[] ?? []);
@@ -846,7 +847,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "activity-enrichment-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__activity_enrichment[] = (store.youngPeople ?? []).map((yp: any) => ({
@@ -911,7 +912,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "admission-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Home context ─────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -966,7 +967,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1130,7 +1131,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1285,7 +1286,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         issues_raised_count: Array.isArray(r.issues_raised) ? r.issues_raised.length : 0,
       }));
   
-      const result = computeAdvocacyIndependentVoice({ today: new Date().toISOString().slice(0, 10), total_children, records });
+      const result = computeAdvocacyIndependentVoice({ today: todayStr(), total_children, records });
       return NextResponse.json({ data: result });
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 500 });
@@ -1297,7 +1298,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Agency shift records → AgencyShiftInput[]
     const rawShifts = (store.agencyStaffLog as any[] ?? []);
@@ -1365,7 +1366,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1519,7 +1520,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1674,7 +1675,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         growth_on_track: !!a.growth_on_track,
       }));
   
-      const result = computeAnnualHealthAssessment({ today: new Date().toISOString().slice(0, 10), total_children, assessments });
+      const result = computeAnnualHealthAssessment({ today: todayStr(), total_children, assessments });
       return NextResponse.json({ data: result });
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 500 });
@@ -1686,7 +1687,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1813,7 +1814,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -1972,7 +1973,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2114,7 +2115,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.attachmentProfiles as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const profiles: AttachmentProfileRecordInput[] = raw.map((r: any) => {
         const behaviours = Array.isArray(r.behaviours) ? r.behaviours : [];
@@ -2167,7 +2168,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -2222,7 +2223,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2341,7 +2342,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2501,7 +2502,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2644,7 +2645,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2806,7 +2807,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "behaviour-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -2872,7 +2873,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -2990,7 +2991,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.behaviourSupportPlans as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const plans: BehaviourSupportPlanRecordInput[] = raw.map((r: any) => {
         const primaryBehaviours = Array.isArray(r.primary_behaviours) ? r.primary_behaviours : [];
@@ -3046,7 +3047,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Belongings records
     const rawBelongings = (store.belongingsRecords as any[] ?? []);
@@ -3110,7 +3111,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -3266,7 +3267,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -3403,7 +3404,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "bsp-effectiveness-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Behaviour Support Plans ────────────────────────────────────────────
     const plans: BSPPlanInput[] = ((store.behaviourSupportPlans ?? []) as any[])
@@ -3489,7 +3490,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "building-ops-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const evacuation_plans: EvacuationPlanInput__building_ops_safety[] = (store.evacuationPlans as any[]).map((e: any) => ({
       id: e.id, scenario_type: e.scenario_type ?? "fire",
@@ -3558,7 +3559,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // CAMHS referrals
     const rawCamhs = (store.camhsReferrals as any[] ?? []);
@@ -3643,7 +3644,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -3688,7 +3689,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.length;
@@ -3753,7 +3754,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Case file audits
     const rawAudits = (store.caseFileAudits as any[] ?? []);
@@ -3819,7 +3820,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -3955,7 +3956,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "child-voice-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Total Children ────────────────────────────────────────────────────
     const totalChildren = ((store.youngPeople ?? []) as any[]).length;
@@ -4022,7 +4023,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -4144,7 +4145,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "child-wellbeing-composite": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const children = store.youngPeople ?? [];
   
     const child_snapshots: ChildWellbeingSnapshot[] = children.map((child: any) => {
@@ -4241,7 +4242,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "childrens-rights-participation-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children's Rights ─────────────────────────────────────────────────
     const rights_entries: ChildrensRightInput[] = (store.childrensRights as any[]).map((r: any) => ({
@@ -4327,7 +4328,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Children's meeting records → ChildrensMeetingInput[]
     const rawMeetings = (store.childrensMeetingRecords as any[] ?? []);
@@ -4393,7 +4394,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "chronology-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const entries: ChronologyEntryInput[] = ((store.chronology ?? []) as any[])
       .map((e: any) => ({
@@ -4424,7 +4425,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -4551,7 +4552,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -4686,7 +4687,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "communication-contact-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Communication Book Entries ──────────────────────────────────────
     const comm_book_entries: CommBookInput[] = (store.communicationBookEntries as any[]).map((e: any) => ({
@@ -4752,7 +4753,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -4882,7 +4883,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "community-access-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Transport Logs ──────────────────────────────────────────────────
     const transport_logs: TransportLogInput__community_access[] = ((store as any).transportLogRecords ?? []).map((l: any) => ({
@@ -4960,7 +4961,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -5089,7 +5090,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "competency-landscape-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Competency Profiles ────────────────────────────────────────────────
     const profiles: CompetencyProfileInput[] = (
@@ -5154,7 +5155,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -5283,7 +5284,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "complaints-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -5322,7 +5323,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -5453,7 +5454,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Consent records
     const rawConsent = (store.consentRecords as any[] ?? []);
@@ -5517,7 +5518,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Contextual safeguarding risks — mapped to the engine's REAL
     // ContextualSafeguardingRecordInput (was silent drift: plural *_counts and
@@ -5557,7 +5558,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.contextualSafeguardingRisks as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const risks: ContextualSafeguardingRecordInput[] = raw.map((r: any) => ({
         id: r.id,
@@ -5588,7 +5589,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -5762,7 +5763,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -5899,7 +5900,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Cooking & baking records → CookingRecordInput[]
     const rawRecords = (store.cookingBakingRecords as any[] ?? []);
@@ -5937,7 +5938,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -6068,7 +6069,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -6164,7 +6165,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "cultural-identity-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Cultural Identity Plans ───────────────────────────────────────
     const cultural_identity_plans: CulturalIdentityPlanInput__cultural_identity[] = (store.culturalIdentityPlans as any[]).map((p: any) => ({
@@ -6236,7 +6237,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "daily-log-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Daily logs ───────────────────────────────────────────────────────
     const dailyLogs: DailyLogEntryInput__daily_log[] = (
@@ -6279,7 +6280,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const children = store.youngPeople ?? [];
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Daily routine plans
     const rawRoutines = (store.dailyRoutinePlans as any[] ?? []);
@@ -6363,7 +6364,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -6482,7 +6483,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -6645,7 +6646,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "data-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Data breaches ──────────────────────────────────────────────────
     const data_breaches: DataBreachInput[] = (
@@ -6745,7 +6746,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -6886,7 +6887,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Staff count (STAFF-focused engine — uses store.staff) ─────────
       const total_staff = ((store.staff as any[]) || []).length;
@@ -7003,7 +7004,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "delegated-authority-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Delegated Authorities ─────────────────────────────────────────────
     const delegatedAuthorities: DelegatedAuthorityInput[] = (
@@ -7046,7 +7047,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -7181,7 +7182,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Children count ────────────────────────────────────────────────
       const youngPeople = (store.youngPeople ?? []) as any[];
@@ -7230,7 +7231,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Digital literacy skill records → DigitalSkillInput[]
     const rawSkills = (store.digitalLiteracySkillRecords as any[] ?? []);
@@ -7300,7 +7301,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "digital-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Online safety incidents ─────────────────────────────────────────
     const incidents: OnlineSafetyIncidentInput[] = (
@@ -7379,7 +7380,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -7520,7 +7521,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // LGBTQ+ inclusion records → LgbtqSupportInput[]
     const rawLgbtq = (store.lgbtqInclusionRecords as any[] ?? []);
@@ -7584,7 +7585,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "document-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const staffList = (store.staff ?? []) as any[];
     const totalStaff = staffList.filter((s: any) => s.status === "active" || !s.status).length;
@@ -7624,7 +7625,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "education-achievement-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -7660,7 +7661,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "education-engagement-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────
     const childIds = new Set<string>();
@@ -7768,7 +7769,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -7926,7 +7927,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8046,7 +8047,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8166,7 +8167,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "emergency-preparedness-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Staff count ───────────────────────────────────────────────────────
     const staff = (store.staff ?? []) as any[];
@@ -8230,7 +8231,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8362,7 +8363,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8460,7 +8461,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "enrichment-achievement-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Creative Projects ─────────────────────────────────────────────
     const creative_projects: CreativeProjectInput[] = (store.creativeProjectRecords as any[]).map((p: any) => ({
@@ -8534,7 +8535,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8649,7 +8650,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -8787,7 +8788,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "expense-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Expenses ──────────────────────────────────────────────────────────
     const expenses: ExpenseInput[] = (
@@ -8825,7 +8826,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "exploitation-screening-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Exploitation screenings ──────────────────────────────────────────
     const screenings: ExploitationScreeningInput__exploitation_screening[] = (
@@ -8878,7 +8879,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -9022,7 +9023,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "facilities-compliance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Fire Equipment Checks ────────────────────────────────────────────
     const fire_checks: FireCheckInput[] = ((store.fireEquipmentChecks ?? []) as any[])
@@ -9090,7 +9091,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "family-engagement-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -9146,7 +9147,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -9240,7 +9241,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.length;
@@ -9296,7 +9297,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Pocket money transactions
     const rawPocket = (store.pocketMoneyTransactions as any[] ?? []);
@@ -9370,7 +9371,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "financial-wellbeing-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Pocket Money Transactions ─────────────────────────────────────
     const transactions: FinancialTransactionInput[] = ((store.pocketMoneyTransactions ?? []) as any[])
@@ -9406,7 +9407,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = (store.youngPeople ?? []).filter((c: any) => c.status === "current");
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Fire drills → FireDrillRecordInput[]
     const rawDrills = (store.fireDrills as any[] ?? []);
@@ -9436,7 +9437,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -9552,7 +9553,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "fire-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Fire Drills ───────────────────────────────────────────────────────
     const fireDrills: FireDrillInput[] = (
@@ -9599,7 +9600,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -9731,7 +9732,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Food budget week records → FoodBudgetInput[]
     const rawBudgets = (store.foodBudgetWeekRecords as any[] ?? []);
@@ -9788,7 +9789,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -9926,7 +9927,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -10050,7 +10051,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -10191,7 +10192,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -10327,7 +10328,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Management walkrounds
     const rawWalkrounds = (store.managementWalkrounds as any[] ?? []);
@@ -10409,7 +10410,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -10539,7 +10540,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const total_staff = (store.staff as any[] || []).length;
   
@@ -10662,7 +10663,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "handover-continuity-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const youngPeople = (store.youngPeople ?? []) as any[];
     const totalChildren = youngPeople.filter((yp: any) => yp.status === "current").length;
@@ -10712,7 +10713,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -10871,7 +10872,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Appointments → AppointmentRecordInput[]
     const rawAppointments = (store.appointments as any[] ?? []);
@@ -10899,7 +10900,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "health-monitoring-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -10976,7 +10977,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "health-wellbeing-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -11034,7 +11035,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11130,7 +11131,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11260,7 +11261,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "holiday-enriching-experiences-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const totalChildren = (store.youngPeople ?? []).filter(
       (yp: any) => yp.status === "current",
     ).length;
@@ -11306,7 +11307,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11439,7 +11440,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.length;
@@ -11512,7 +11513,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11638,7 +11639,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11780,7 +11781,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "house-meeting-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const totalChildren = (store.youngPeople ?? []).filter(
       (yp: any) => yp.status === "current",
     ).length;
@@ -11820,7 +11821,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -11960,7 +11961,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "incident-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Total Children ────────────────────────────────────────────────────
     const totalChildren = ((store.youngPeople ?? []) as any[]).length;
@@ -12033,7 +12034,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "independence-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -12088,7 +12089,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -12210,7 +12211,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "independence-life-skills-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Independence Living Assessments ───────────────────────────────
     const independence_assessments: IndependenceAssessmentInput[] = (store.independenceLivingAssessments as any[]).map((a: any) => ({
@@ -12294,7 +12295,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.length;
@@ -12359,7 +12360,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const children = store.youngPeople ?? [];
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Infection records
     const rawInfections = (store.infectionRecords as any[] ?? []);
@@ -12426,7 +12427,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -12556,7 +12557,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -12637,7 +12638,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -12776,7 +12777,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -12888,7 +12889,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "key-working-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -12929,7 +12930,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -13069,7 +13070,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     };
 
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const sessions: KeyworkerSessionInput[] = ((store.keyworkerSessions ?? []) as any[])
       .map((s: any) => ({
@@ -13104,7 +13105,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "lac-review-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -13155,7 +13156,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const todayMs = new Date(today).getTime();
   
     // LADO referrals → LadoReferralInput[]
@@ -13240,7 +13241,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -13378,7 +13379,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "leave-absence-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Leave Requests ────────────────────────────────────────────────────
     const leaveRequests: LeaveInput[] = (
@@ -13415,7 +13416,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const sixMonthsAgo = new Date(Date.now() - 180 * 86_400_000).toISOString().slice(0, 10);
   
     // Transition planning records → goals
@@ -13499,7 +13500,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Lessons learned → LessonInput[]
     const rawLessons = (store.lessonsLearned as any[] ?? []);
@@ -13553,7 +13554,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "life-story-identity-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const life_story_entries: LifeStoryInput[] = (store.lifeStoryEntries as any[]).map((e: any) => ({
       id: e.id, child_id: e.child_id ?? "",
@@ -13629,7 +13630,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "living-environment-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────
     const childIds = new Set<string>();
@@ -13718,7 +13719,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -13812,7 +13813,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.length;
@@ -13881,7 +13882,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Lone working records → LoneWorkingRecordInput[]
     const rawRecords = (store.loneWorkingRecords as any[] ?? []);
@@ -13941,7 +13942,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Management walkrounds → WalkroundInput[]
     const rawWalkrounds = (store.managementWalkrounds as any[] ?? []);
@@ -13989,7 +13990,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const rawAdmins = store.medicationAdministrations as any[];
       const rawMeds = store.medications as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // Active medications and children on medication
       const activeMeds = rawMeds.filter((m: any) => m.is_active);
@@ -14038,7 +14039,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "medication-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Medication Audit Records ────────────────────────────────────────
     const audits: MedAuditInput[] = (
@@ -14151,7 +14152,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "medication-management-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Medications ──────────────────────────────────────────────────────
     const medications: MedicationInput[] = (
@@ -14226,7 +14227,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -14320,7 +14321,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "meeting-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const meetings: HouseMeetingInput__meeting_governance[] = ((store.houseMeetings ?? []) as any[])
       .map((m: any) => {
@@ -14370,7 +14371,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -14494,7 +14495,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "mental-health-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Mental health check-ins ─────────────────────────────────────────
     const check_ins: MentalHealthCheckInInput[] = (
@@ -14576,7 +14577,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -14713,7 +14714,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.missingEpisodes as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const episodes: MissingEpisodeRecordInput[] = raw.map((r: any) => {
         const dateMissing = r.date_missing ? r.date_missing.toString().slice(0, 10) : "";
@@ -14759,7 +14760,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "missing-episodes-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -14797,7 +14798,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -14922,7 +14923,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -15049,7 +15050,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -15183,7 +15184,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "multi-agency-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Unique children ─────────────────────────────────────────────────
     const childIds = new Set<string>();
@@ -15270,7 +15271,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.multiDisciplinaryFormulations as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const formulations: FormulationRecordInput[] = raw.map((r: any) => ({
         id: r.id,
@@ -15304,7 +15305,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -15450,7 +15451,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     try {
       const store = getStore();
       const result = computeNightCareQuality({
-        today: new Date().toISOString().slice(0, 10),
+        today: todayStr(),
         total_children: (store.youngPeople as any[])?.length ?? 0,
         night_checks: (store.nightChecks as any[]) ?? [],
         night_logs: (store.nightLogs as any[]) ?? [],
@@ -15468,7 +15469,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "night-care-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Night Checks ──────────────────────────────────────────────────
     const night_checks: NightCheckInput__night_care_safety[] = (store.nightChecks as any[]).map((x: any) => ({
@@ -15546,7 +15547,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Night staff handovers → NightHandoverInput[]
     const rawHandovers = (store.nightStaffHandovers as any[] ?? []);
@@ -15589,7 +15590,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     };
 
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__night_safety[] = (store.youngPeople ?? []).map((yp: any) => ({
@@ -15749,7 +15750,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -15865,7 +15866,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "notifiable-events-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -15909,7 +15910,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -15944,7 +15945,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "nutrition-catering-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────
     const childIds = new Set<string>();
@@ -16060,7 +16061,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -16304,7 +16305,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       } catch { return null; }
     };
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const results = await Promise.allSettled(
       ENGINE_ROUTES.map(([route, name, domain]) => fetchEngineScore(route, name, domain)),
     );
@@ -16319,7 +16320,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "on-call-governance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── On-Call Shifts ────────────────────────────────────────────────────
     const onCallShifts: OnCallShiftInput[] = (
@@ -16369,7 +16370,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "organizational-learning-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Serious Incident Reviews ────────────────────────────────────────
     const serious_incident_reviews: SeriousIncidentReviewInput[] = (
@@ -16441,7 +16442,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.outcomeStarAssessments as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const assessments: OutcomeStarRecordInput[] = raw.map((r: any) => {
         const scores = r.scores && typeof r.scores === "object" ? Object.values(r.scores) as number[] : [];
@@ -16500,7 +16501,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Outcome Star assessments
     const rawStars = (store.outcomeStarAssessments as any[] ?? []);
@@ -16566,7 +16567,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "outcomes-progress-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Outcome Targets ─────────────────────────────────────────
     const targets: OutcomeTargetInput[] = ((store.outcomeTargets ?? []) as any[])
@@ -16619,7 +16620,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -16738,7 +16739,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Parent partnership records → ParentContactInput[]
     const rawContacts = (store.parentPartnershipRecords as any[] ?? []);
@@ -16768,7 +16769,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -16901,7 +16902,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "participation-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -16953,7 +16954,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "peer-dynamics-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Peer Dynamics ─────────────────────────────────────────────────────
     const peerDynamics: PeerDynamicInput[] = (
@@ -17014,7 +17015,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -17178,7 +17179,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         has_sen: p.sen_status !== "none" && !!p.sen_status,
       }));
   
-      const result = computePepEducationQuality({ today: new Date().toISOString().slice(0, 10), total_children, peps });
+      const result = computePepEducationQuality({ today: todayStr(), total_children, peps });
       return NextResponse.json({ data: result });
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 500 });
@@ -17190,7 +17191,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -17318,7 +17319,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -17466,7 +17467,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -17602,7 +17603,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -17729,7 +17730,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const threeMonthsAgo = new Date(new Date(today).getTime() - 90 * 86400000).toISOString().slice(0, 10);
   
     // Disruption prevention plans → DisruptionPlanInput[]
@@ -17806,7 +17807,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.placementImpactAssessments as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const assessments: PlacementImpactRecordInput[] = raw.map((r: any) => {
         const impacts = Array.isArray(r.impact_on_existing) ? r.impact_on_existing : [];
@@ -17844,7 +17845,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "placement-journey-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const pre_admission_checklists: PreAdmissionChecklistInput[] = (store.preAdmissionChecklists as any[]).map((p: any) => ({
       id: p.id, child_id: p.child_id ?? "",
@@ -17914,7 +17915,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "placement-stability-depth-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Stability Records ──────────────────────────────────────────
     const stability_records: StabilityRecordInput[] = (store.placementStabilityRecords as any[]).map((r: any) => ({
@@ -18014,7 +18015,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "placement-stability-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children (current placements only) ──────────────────────────
     const children: PlacementChildInput[] = ((store.youngPeople ?? []) as any[])
@@ -18067,7 +18068,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -18213,7 +18214,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -18375,7 +18376,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -18496,7 +18497,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -18604,7 +18605,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "policy-compliance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Home Policies ─────────────────────────────────────────────────
     const policies: PolicyInput__policy_compliance[] = ((store.homePolicies ?? []) as any[])
@@ -18635,7 +18636,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.status === "current" || s.status === "active").length;
@@ -18762,7 +18763,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -18887,7 +18888,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.postIncidentChildDebriefs as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const debriefs: PostIncidentDebriefRecordInput[] = raw.map((r: any) => ({
         id: r.id,
@@ -18923,7 +18924,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Practice observations → PracticeObservationInput[]
     const rawObservations = (store.practiceObservations as any[] ?? []);
@@ -18952,7 +18953,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "premises-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Buildings ─────────────────────────────────────────────────────
     const buildings: BuildingInput[] = ((store.buildings ?? []) as any[])
@@ -19014,7 +19015,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -19147,7 +19148,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.length;
@@ -19199,7 +19200,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "quality-assurance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── QA Audit Records ──────────────────────────────────────────────────
     const audits: QAAuditInput[] = ((store.qaAuditRecords ?? []) as any[])
@@ -19292,7 +19293,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const childrenWithAsp = new Set(aspirations.map((a: any) => a.child_id ?? a.young_person_id).filter(Boolean)).size;
   
     const result = computeQualityOfCare({
-      today: new Date().toISOString().slice(0, 10),
+      today: todayStr(),
       total_children: tc,
       feedback_entries_total: feedback.length,
       feedback_entries_acted_on: feedbackActed,
@@ -19329,7 +19330,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "quality-of-care-review-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const totalChildren = (store.youngPeople ?? []).filter(
       (yp: any) => yp.status === "current",
     ).length;
@@ -19373,7 +19374,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -19506,7 +19507,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "recording-quality-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const care_forms: CareFormInput[] = ((store.careForms ?? []) as any[])
       .map((f: any) => ({
@@ -19536,7 +19537,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -19609,7 +19610,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -19766,7 +19767,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "reg44-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -19845,7 +19846,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "reg4445-evidence-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const reg44_packs: Reg44PackInput[] = (store.reg44Packs as any[]).map((p: any) => ({
       id: p.id, month: p.month ?? "", visit_completed: !!(p.visit_completed),
@@ -19951,7 +19952,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const lastRating = latestInspection?.rating ?? latestInspection?.outcome ?? null;
   
     const result = computeRegulatoryCompliance({
-      today: new Date().toISOString().slice(0, 10),
+      today: todayStr(),
       reg44_visits_due: reg44Reports.length,
       reg44_visits_completed: reg44Completed,
       reg44_actions_total: reg44Actions.length,
@@ -19989,7 +19990,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "regulatory-compliance-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Reg 44 Visit Reports ──────────────────────────────────────────────
     const reg44_visits: Reg44VisitInput__regulatory_compliance[] = ((store.reg44VisitReports ?? []) as any[])
@@ -20076,7 +20077,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.length;
@@ -20151,7 +20152,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -20264,7 +20265,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -20412,7 +20413,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.restraints as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const restraints: RestraintRecordInput[] = raw.map((r: any) => {
         const staffArr = Array.isArray(r.staff_involved) ? r.staff_involved : [];
@@ -20451,7 +20452,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "restrictive-practice-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -20501,7 +20502,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Return interviews → ReturnInterviewRecordInput[]
     const rawInterviews = (store.returnInterviews as any[] ?? []);
@@ -20541,7 +20542,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -20679,7 +20680,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "risk-assessment-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -20749,7 +20750,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "risk-landscape-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Risk Assessments ────────────────────────────────────────
     const assessments: RiskAssessmentInput__risk_landscape[] = ((store.riskAssessments ?? []) as any[])
@@ -20794,7 +20795,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.riskManagementPlanRecords as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const plans: RiskManagementPlanRecordInput[] = raw.map((r: any) => {
         const triggers = Array.isArray(r.triggers) ? r.triggers : [];
@@ -20839,7 +20840,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "safeguarding-depth-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const body_maps: BodyMapInput[] = (store.bodyMap as any[]).map((b: any) => ({
       id: b.id,
@@ -20930,7 +20931,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "safeguarding-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -21057,7 +21058,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const ctxMitigated = ctxRisks.filter((c: any) => c.mitigated || c.status === "mitigated" || c.status === "resolved").length;
   
     const result = computeSafeguardingOversight({
-      today: new Date().toISOString().slice(0, 10),
+      today: todayStr(),
       total_children: tc,
       safeguarding_referrals_total: sgRefs.length,
       safeguarding_referrals_resolved: sgResolved,
@@ -21096,7 +21097,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "safeguarding-prevention-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // -- Children ---------------------------------------------------------------
     const childIds = new Set<string>();
@@ -21222,7 +21223,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     };
 
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const vacancies: VacancyInput__safer_recruitment[] = ((store.vacancies ?? []) as any[])
       .map((v: any) => ({
@@ -21277,7 +21278,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Safer recruitment records
     const rawRecruitment = (store.saferRecruitmentRecords as any[] ?? []);
@@ -21350,7 +21351,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Children count ────────────────────────────────────────────────
       const youngPeople = (store.youngPeople ?? []) as any[];
@@ -21387,7 +21388,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -21512,7 +21513,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = (store.youngPeople ?? []).filter((c: any) => c.status === "current");
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Self-evaluation areas → SelfEvaluationAreaInput[]
     const rawAreas = (store.selfEvaluationAreas as any[] ?? []);
@@ -21550,7 +21551,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.selfHarmSafetyPlanRecords as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const plans: SelfHarmSafetyPlanRecordInput[] = raw.map((r: any) => ({
         id: r.id,
@@ -21590,7 +21591,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -21707,7 +21708,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -21841,7 +21842,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Sensory room usage
     const rawSensory = (store.sensoryRoomUsageRecords as any[] ?? []);
@@ -21913,7 +21914,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -22049,7 +22050,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -22191,7 +22192,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "shift-pattern-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Shifts ────────────────────────────────────────────────────────────
     const shifts: ShiftInput[] = (
@@ -22242,7 +22243,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.siblingContactProtocolRecords as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const todayMs = new Date(today).getTime();
   
       const records: SiblingContactRecordInput[] = raw.map((r: any) => {
@@ -22290,7 +22291,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -22440,7 +22441,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.sleepLog as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const logs: SleepNightCareRecordInput[] = raw.map((r: any) => {
         const disturbances = Array.isArray(r.disturbances) ? r.disturbances : [];
@@ -22480,7 +22481,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "sleep-quality-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Sleep Logs ────────────────────────────────────────────────────────
     const sleepLogs: SleepLogInput[] = (
@@ -22528,7 +22529,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -22656,7 +22657,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -22799,7 +22800,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.socialWorkerContactRecords as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const contacts: SocialWorkerContactRecordInput[] = raw.map((r: any) => {
         const actions = Array.isArray(r.action_items) ? r.action_items : [];
@@ -22838,7 +22839,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "specialized-health-plans-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── ADHD Plans ─────────────────────────────────────────────────────────
     const adhd_plans: ADHDPlanInput[] = (store.adhdPlans as any[]).map((p: any) => ({
@@ -22994,7 +22995,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Staff competency records → CompetencyInput[]
     const rawComp = (store.staffCompetencyRecords as any[] ?? []);
@@ -23070,7 +23071,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Staff debrief records → DebriefRecordInput[]
     const rawDebriefs = (store.staffDebriefRecords as any[] ?? []);
@@ -23111,7 +23112,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = (store.staff as any[] ?? []);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Debriefing records ────────────────────────────────────────────────
     const rawDebriefings = optionalCollection(store, "staffDebriefingRecords");
@@ -23212,7 +23213,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-development-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Staff Members ─────────────────────────────────────────────────────
     const staffList: StaffMemberInput[] = ((store.staff ?? []) as any[])
@@ -23299,7 +23300,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Staff count ───────────────────────────────────────────────────
       const staff = (store.staff ?? []) as any[];
@@ -23371,7 +23372,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -23462,7 +23463,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-lifecycle-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Induction Records ─────────────────────────────────────────────────
     const inductionRecords: StaffInductionInput__staff_lifecycle[] = (
@@ -23533,7 +23534,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-lone-working-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const total_staff = (store.staff as any[] || []).length;
   
     // ── Risk assessment records ──────────────────────────────────────────
@@ -23646,7 +23647,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-performance-appraisal-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const total_staff = ((store.staff as any[]) || []).length;
   
     // ── Appraisal Records ────────────────────────────────────────────────
@@ -23948,7 +23949,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -24023,7 +24024,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Staff recognition records → StaffRecognitionInput[]
     const rawRecognitions = (store.staffRecognitionRecords as any[] ?? []);
@@ -24054,7 +24055,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Staff reflections
     const rawReflections = (store.staffReflectionRecords as any[] ?? []);
@@ -24124,7 +24125,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const total_staff = ((store.staff as any[]) || []).length;
   
@@ -24251,7 +24252,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Lone Working Records ─────────────────────────────────────────────
     const loneWorkingRecords: LoneWorkingInput[] = (
@@ -24357,7 +24358,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.length;
@@ -24480,7 +24481,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Staff count (STAFF-focused engine — uses store.staff) ─────────
       const staff = (store.staff ?? []) as any[];
@@ -24597,7 +24598,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "staff-wellbeing-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Wellbeing Checks ──────────────────────────────────────────────────
     const wellbeingChecks: WellbeingCheckInput[] = (
@@ -24639,7 +24640,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Total staff (NOT youngPeople) ──────────────────────────────────
       const total_staff = ((store.staff as any[]) || []).length;
@@ -24765,7 +24766,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Stakeholder feedback records
     const rawFeedback = (store.stakeholderFeedbackRecords as any[] ?? []);
@@ -24840,7 +24841,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -25006,7 +25007,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.length;
@@ -25055,7 +25056,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const statVisits = (store.statutoryVisitRecords as any[] ?? []);
     const statutory_visits: StatutoryVisitInput[] = statVisits.map((v: any) => ({
@@ -25113,7 +25114,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "strategic-risk-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const daily_risk_briefings: DailyRiskBriefingInput[] = (store.dailyRiskBriefings as any[]).map((b: any) => ({
       id: b.id, date: (b.date ?? "").toString().slice(0, 10),
@@ -25180,7 +25181,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -25339,7 +25340,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         child_authored: !!s.child_authored,
       }));
   
-      const result = computeSubstanceMisuseScreening({ today: new Date().toISOString().slice(0, 10), total_children, screenings });
+      const result = computeSubstanceMisuseScreening({ today: todayStr(), total_children, screenings });
       return NextResponse.json({ data: result });
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 500 });
@@ -25434,7 +25435,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         } catch { return null; }
       };
 
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const store = getStore();
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.filter((c) => c.status === "current").length || youngPeople.length;
@@ -25481,7 +25482,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "supervision-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Staff ─────────────────────────────────────────────────────────────
     const staffArr = (store.staff ?? []) as any[];
@@ -25566,7 +25567,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
       const total_staff = staff.filter((s: any) => s.is_active !== false).length;
@@ -25616,7 +25617,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -25737,7 +25738,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -25880,7 +25881,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "therapeutic-climate-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Behaviour Log ───────────────────────────────────────────
     const behaviour_log: BehaviourLogInput__therapeutic_climate[] = ((store.behaviourLog ?? []) as any[])
@@ -25943,7 +25944,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -26079,7 +26080,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "therapeutic-progress-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Behaviour Map Entries ──────────────────────────────────────────
     const behaviour_map_entries: BehaviourMapInput[] = (store.behaviourMapEntries as any[]).map((e: any) => ({
@@ -26192,7 +26193,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const children = store.youngPeople ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Therapeutic child impact → TherapeuticImpactInput[]
     const rawImpact = (store.therapeuticChildImpact as any[] ?? []);
@@ -26271,7 +26272,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -26387,7 +26388,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "transition-planning-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Transition Goals ──────────────────────────────────────────────────
     const transitionGoals: TransitionGoalInput__transition_planning[] = (
@@ -26427,7 +26428,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "transport-journey-safety-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const totalChildren = (store.youngPeople ?? []).filter(
       (yp: any) => yp.status === "current",
     ).length;
@@ -26499,7 +26500,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -26597,7 +26598,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const raw = store.traumaTherapyLogs as any[];
       const total_children = (store.youngPeople ?? []).length;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const logs: TraumaTherapyRecordInput[] = raw.map((r: any) => ({
         id: r.id,
@@ -26635,7 +26636,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "trends": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const dateOf = (r: any): string => (r?.date ?? r?.created_at ?? r?.reported_at ?? "").toString().slice(0, 10);
     const datesFrom = (arr: any[] | undefined, filter?: (r: any) => boolean): string[] =>
@@ -26701,7 +26702,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -26831,7 +26832,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "visitor-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
     const youngPeople = (store.youngPeople ?? []) as any[];
@@ -26867,7 +26868,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -26987,7 +26988,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -27119,7 +27120,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -27249,7 +27250,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -27369,7 +27370,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -27511,7 +27512,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       // ── Children count ────────────────────────────────────────────────
       const youngPeople = (store.youngPeople ?? []) as any[];
@@ -27589,7 +27590,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     };
 
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__wellbeing[] = (store.youngPeople ?? []).map((yp: any) => ({
@@ -27762,7 +27763,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -27894,7 +27895,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     // Whistleblowing records → WhistleblowingRecordInput[]
     const rawRecords = (store.whistleblowingRecords as any[] ?? []);
@@ -27949,7 +27950,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
@@ -28086,7 +28087,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   "workforce-planning-intelligence": async () => {
   
     const store = getStore();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
   
     const staffMembers: StaffInput[] = ((store.staff ?? []) as any[])
       .map((s: any) => ({
@@ -28244,7 +28245,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     };
   
     const result = computeWorkforceResilience({
-      today: new Date().toISOString().slice(0, 10),
+      today: todayStr(),
       total_staff: staff.length,
       staff_snapshots,
       home_level,
@@ -28258,7 +28259,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.length;
@@ -28317,7 +28318,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
   
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;

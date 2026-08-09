@@ -25,6 +25,7 @@ import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 import { readJsonBody } from "@/lib/http/read-json";
 import { formatRate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ─── Deterministic safeguarding scan (no AI key required) ────────────────────
 
@@ -431,7 +432,7 @@ function deterministicAssistText(opts: { question?: string; pageContext?: string
       (opts.pageContext ? `What needs my attention on ${opts.pageContext}?` : "What needs my attention today?");
     const answer = answerQuestion({
       question: q,
-      asOf: new Date().toISOString().slice(0, 10),
+      asOf: todayStr(),
       role: opts.role,
       snapshot,
       context: { pageTitle: opts.pageContext },
@@ -1701,7 +1702,7 @@ export async function POST(req: NextRequest) {
   if (typeof question === "string" && question.trim()) {
     try {
       const snapshot = buildAskSnapshot(getStore());
-      const asOf = new Date().toISOString().slice(0, 10);
+      const asOf = todayStr();
       const detAnswer = answerQuestion({ question, asOf, role: user_role, snapshot });
       const pack = buildFreeChatGrounding({
         question,

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -126,7 +126,7 @@ export default function TransitionPlanningPage() {
     e.preventDefault();
     if (!tpForm.child_id) { toast.error("Please select a young person."); return; }
     if (!tpForm.goal.trim()) { toast.error("Goal is required."); return; }
-    await createGoal.mutateAsync({ child_id: tpForm.child_id, area: tpForm.area, goal: tpForm.goal.trim(), description: tpForm.description.trim(), status: "not_started", target_date: tpForm.target_date, start_date: new Date().toISOString().slice(0, 10), key_worker: tpForm.key_worker, actions: [], progress: "", percent_complete: 0, review_date: "", notes: tpForm.notes.trim(), created_at: new Date().toISOString() });
+    await createGoal.mutateAsync({ child_id: tpForm.child_id, area: tpForm.area, goal: tpForm.goal.trim(), description: tpForm.description.trim(), status: "not_started", target_date: tpForm.target_date, start_date: todayStr(), key_worker: tpForm.key_worker, actions: [], progress: "", percent_complete: 0, review_date: "", notes: tpForm.notes.trim(), created_at: new Date().toISOString() });
     toast.success("Transition goal created.");
     setTpForm({ child_id: "", area: "housing", goal: "", description: "", target_date: "", key_worker: "staff_darren", notes: "" });
     setShowNew(false);

@@ -24,6 +24,7 @@ import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine"
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
 import type { AskCaraOpsIntelligence, AskCaraTwinDigest, AskCaraWeeklyDigest } from "@/lib/ask-cara/types";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
+import { todayStr } from "@/lib/utils";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
 const s = (v: unknown): string => (typeof v === "string" ? v : "");
@@ -257,7 +258,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
       .filter((w): w is WeeklyIntelligenceObject => !!w)
       .map((w) => wioToDigest(w, store)),
     // Operational domains — health & safety, rota safety, wellbeing, reg 44.
-    ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
+    ops: buildOpsIntelligence(store, todayStr()),
     // Leg four: the child-level practice-intelligence engines' findings
     // (care language, child voice, recording gaps, cumulative risk) so a
     // practice question is answered from the engine's read, not KB theory.
@@ -301,7 +302,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
  *  Shifts are rota noise for a child's diary; child-linked items only. */
 function buildChildCalendars(childIds: string[]): AskCaraChildCalendar[] | undefined {
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const clean = (items: Array<{ child_id: string | null; source: string; date: string; title: string }>) =>
       items.filter((i) => i.child_id && String(i.source) !== "shift");
     const upcoming = clean(getCalendarFeed({ from: today, to: addDays(today, 14) }).items);

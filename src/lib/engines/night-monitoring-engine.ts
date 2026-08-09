@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — NIGHT MONITORING & WELFARE INTELLIGENCE ENGINE
 //
@@ -146,7 +147,7 @@ export function findEarliestAsleepTime(checks: WelfareCheckInput[]): string | nu
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeNightMonitoring(input: NightMonitoringInput): NightMonitoringResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, welfareChecks, welfareRounds } = input;
 
   // ── Filter by time period ──────────────────────────────────────────────

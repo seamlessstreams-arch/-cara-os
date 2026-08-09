@@ -6,6 +6,7 @@ import { persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist"
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 import type { CandidateProfile } from "@/types/recruitment";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Base recruitment endpoint — the recruitment overview dashboard.
@@ -100,7 +101,7 @@ function buildCandidateSummary(candidate: CandidateProfile, today: string) {
 
 // ── GET /api/v1/recruitment ──────────────────────────────────────────────────
 export async function GET(_req: NextRequest) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const profiles = db.candidateProfiles.findAll();
   const built = profiles.map((c) => buildCandidateSummary(c, today));
@@ -174,6 +175,6 @@ export async function POST(req: NextRequest) {
 
   void persistRecruitmentCandidate(created); // best-effort write-through (no-op when off)
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return NextResponse.json({ data: buildCandidateSummary(created, today).detail }, { status: 201 });
 }

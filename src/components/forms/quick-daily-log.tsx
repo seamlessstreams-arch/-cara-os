@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { useRecordOnce } from "@/contexts/record-once-context";
 import { SmartFormField } from "@/components/forms/smart-form-field";
 import { ChildContextCard } from "@/components/forms/child-context-card";
@@ -199,7 +199,7 @@ export function QuickDailyLog({
     setForm({
       ...INITIAL_FORM,
       childName: child?.childName || "",
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
       home: child?.homeName || "",
       staffName: staff?.staffName || "",

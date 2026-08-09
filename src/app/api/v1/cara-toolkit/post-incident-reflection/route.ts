@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import type { IncidentReflection, PostIncidentReflectionAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function GET() {
     ]);
   const incidents = (incidentsList as any[]) ?? [];
   const debriefRecords = (debriefRecordsList as any[]) ?? [];
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // Index debriefs by linked_incident_id
   const debriefByIncident = new Map<string, any>();

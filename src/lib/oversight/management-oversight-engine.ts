@@ -43,9 +43,10 @@ import {
   buildChildAddressedOversight,
   shouldSuppressChildAddressed,
 } from "./templates/child-addressed-templates";
+import { todayStr } from "@/lib/utils";
 
 function isoNow(today?: string): string {
-  return today ?? new Date().toISOString().slice(0, 10);
+  return today ?? todayStr();
 }
 
 // ─── Regulatory + QA tagging ───────────────────────────────────────────────────

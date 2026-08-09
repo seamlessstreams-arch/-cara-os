@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -68,7 +68,7 @@ export default function DelegatedAuthorityPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
 

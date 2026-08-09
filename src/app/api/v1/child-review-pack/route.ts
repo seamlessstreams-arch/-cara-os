@@ -19,6 +19,7 @@ import {
   type ReviewDomainScore,
 } from "@/lib/engines/child-review-pack-engine";
 import { generateReportNarrative } from "@/lib/cara/report-narrative";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
     if (identity instanceof NextResponse) return identity;
     const denied = assertChildHomeAccess(identity, childId);
     if (denied) return denied;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
 
     const youngPeople = await safeList(dal.youngPeople.findAll());
     const current = youngPeople.filter((c) => c.status === "current");

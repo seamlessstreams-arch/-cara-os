@@ -195,12 +195,12 @@ export default function ChildHeritageLanguageTrackerPage() {
     0
   );
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayDate = now.toISOString().slice(0, 10);
   const horizon = new Date(now);
   horizon.setDate(horizon.getDate() + 90);
   const horizonStr = horizon.toISOString().slice(0, 10);
   const reviewsDue90d = items.filter(
-    (r) => r.review_date >= todayStr && r.review_date <= horizonStr
+    (r) => r.review_date >= todayDate && r.review_date <= horizonStr
   ).length;
 
   if (isLoading) {

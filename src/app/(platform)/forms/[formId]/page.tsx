@@ -79,7 +79,7 @@ function useYoungPeople(status = "current") {
 import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import {
   CARE_FORM_TYPE_LABELS, CARE_FORM_TYPES, CARE_FORM_STATUSES,
 } from "@/lib/constants";
@@ -363,7 +363,7 @@ export default function FormDetailPage() {
   const prio = PRIORITY_CONFIG[form.priority];
   const StatusIcon = stat.icon;
   const typeLabel = CARE_FORM_TYPE_LABELS[form.form_type as keyof typeof CARE_FORM_TYPE_LABELS] ?? form.form_type;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const isOverdue = form.due_date && form.due_date < today && !isApproved;
 
   return (

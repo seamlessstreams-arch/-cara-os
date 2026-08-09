@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -91,7 +91,7 @@ export default function QualityOfCarePage() {
   const [showNew, setShowNew] = useState(false);
 
   const createReview = useCreateQualityOfCareReview();
-  const [qocForm, setQocForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "monthly" as QocReviewType, lead_reviewer: "", overall_rating: "good" as QocRating, strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
+  const [qocForm, setQocForm] = useState({ date: todayStr(), type: "monthly" as QocReviewType, lead_reviewer: "", overall_rating: "good" as QocRating, strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
   const setQOC = (k: string, v: unknown) => setQocForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveReview = async (e: React.FormEvent) => {
@@ -99,7 +99,7 @@ export default function QualityOfCarePage() {
     if (!qocForm.lead_reviewer.trim()) { toast.error("Lead reviewer is required."); return; }
     await createReview.mutateAsync({ date: qocForm.date, type: qocForm.type, lead_reviewer: qocForm.lead_reviewer.trim(), overall_rating: qocForm.overall_rating, domains: [], strengths: qocForm.strengths.split("\n").filter(Boolean), areas_for_improvement: qocForm.areas_for_improvement.split("\n").filter(Boolean), children_feedback: qocForm.children_feedback.trim(), staff_feedback: qocForm.staff_feedback.trim(), actions: [], next_review_date: qocForm.next_review_date, notes: qocForm.notes.trim() });
     toast.success("Quality of care review saved.");
-    setQocForm({ date: new Date().toISOString().slice(0, 10), type: "monthly", lead_reviewer: "", overall_rating: "good", strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
+    setQocForm({ date: todayStr(), type: "monthly", lead_reviewer: "", overall_rating: "good", strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
     setShowNew(false);
   };
 

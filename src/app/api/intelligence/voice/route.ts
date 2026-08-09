@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { voiceEntries, nextFallbackId } from "@/lib/intelligence/fallback-store";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.from("child_voice_entries").insert({
       child_id: childId,
       home_id: homeId,
-      entry_date: entryDate ?? new Date().toISOString().split("T")[0],
+      entry_date: entryDate ?? todayStr(),
       category,
       child_words: childWords ?? null,
       summary: summary ?? null,

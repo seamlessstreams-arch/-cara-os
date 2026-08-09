@@ -619,12 +619,12 @@ describe("identifyVisitorAlerts", () => {
 
   it("generates visitor_not_signed_out alert for today's visitor with arrival > 4h ago and no departure", () => {
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayDate = now.toISOString().slice(0, 10);
     const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
 
     const result = identifyVisitorAlerts([
       makeVisitorEntry({
-        date: todayStr,
+        date: todayDate,
         arrival_time: fiveHoursAgo.toISOString(),
         departure_time: null,
         visitor_name: "Lingering Larry",
@@ -638,12 +638,12 @@ describe("identifyVisitorAlerts", () => {
 
   it("does not generate visitor_not_signed_out for today's visitor arrived less than 4h ago", () => {
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayDate = now.toISOString().slice(0, 10);
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
     const result = identifyVisitorAlerts([
       makeVisitorEntry({
-        date: todayStr,
+        date: todayDate,
         arrival_time: twoHoursAgo.toISOString(),
         departure_time: null,
       }),
@@ -666,12 +666,12 @@ describe("identifyVisitorAlerts", () => {
 
   it("does not generate visitor_not_signed_out when departure_time is set", () => {
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayDate = now.toISOString().slice(0, 10);
     const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
 
     const result = identifyVisitorAlerts([
       makeVisitorEntry({
-        date: todayStr,
+        date: todayDate,
         arrival_time: fiveHoursAgo.toISOString(),
         departure_time: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
       }),
@@ -710,7 +710,7 @@ describe("identifyVisitorAlerts", () => {
 
   it("generates multiple alerts simultaneously from different checks", () => {
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayDate = now.toISOString().slice(0, 10);
     const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
 
     const result = identifyVisitorAlerts([
@@ -718,7 +718,7 @@ describe("identifyVisitorAlerts", () => {
         visitor_type: "social_worker",
         dbs_checked: false,
         id_verified: false,
-        date: todayStr,
+        date: todayDate,
         arrival_time: fiveHoursAgo.toISOString(),
         departure_time: null,
       }),

@@ -12,7 +12,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CulturalIdentityPlan, CulturalIdentityArea, CulturalIdentityAreaStatus } from "@/types/extended";
 import { CULTURAL_IDENTITY_AREA_STATUS_LABEL } from "@/types/extended";
@@ -30,7 +30,7 @@ export default function CulturalIdentityPage() {
   const plans = raw?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const reviewsDue = plans.filter((p) => p.next_review < today).length;
   const needsAttention = plans.reduce((s, p) => s + p.identity_areas.filter((a) => a.status === "needs_attention").length, 0);
 

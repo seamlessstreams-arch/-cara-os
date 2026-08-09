@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — MULTI-AGENCY WORKING INTELLIGENCE ENGINE
 //
@@ -177,7 +178,7 @@ export function getRoleLabel(role: string): string {
 // ── Main Engine ─────────────────────────────────────────────────────────────
 
 export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): MultiAgencyIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().split("T")[0];
+  const today = input.today ?? todayStr();
   const { lacReviews, professionalContacts, meetings, children } = input;
 
   // ── Overview calculations ───────────────────────────────────────────────

@@ -14,7 +14,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select,
@@ -62,7 +62,7 @@ export default function ChildRightsLiteracyTrackerPage() {
   const [filterChild, setFilterChild] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
 
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayStr(), []);
 
   const childrenOptions = useMemo(() => {
     const ids = Array.from(new Set(items.map((r) => r.child_id)));

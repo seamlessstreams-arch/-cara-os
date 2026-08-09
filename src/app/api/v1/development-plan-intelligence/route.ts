@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export async function GET() {
       dal.developmentPlans.findAll(),
       dal.staff.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const staffMap = new Map<string, string>(
     staffList.map((s) => [s.id, `${s.first_name} ${s.last_name}`.trim()])

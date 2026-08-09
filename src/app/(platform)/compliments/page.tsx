@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -292,7 +292,7 @@ export default function ComplimentsPage() {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
             createCompliment.mutate({
-              date: fd.get("date") as string || new Date().toISOString().slice(0, 10),
+              date: fd.get("date") as string || todayStr(),
               source: fd.get("source") as ComplimentSource,
               source_name: fd.get("source_name") as string,
               category: fd.get("category") as ComplimentCategory,
@@ -311,7 +311,7 @@ export default function ComplimentsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Date</Label>
-                <Input type="date" name="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                <Input type="date" name="date" defaultValue={todayStr()} />
               </div>
               <div>
                 <Label>Source Name</Label>

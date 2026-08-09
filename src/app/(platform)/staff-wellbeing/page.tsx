@@ -20,7 +20,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -84,7 +84,7 @@ export default function StaffWellbeingPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createWellbeing = useCreateStaffWellbeingRecord();
-  const [swForm, setSwForm] = useState({ staff_id: "", date: new Date().toISOString().slice(0, 10), type: "monthly_checkin" as StaffWellbeingCheckType, overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
+  const [swForm, setSwForm] = useState({ staff_id: "", date: todayStr(), type: "monthly_checkin" as StaffWellbeingCheckType, overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
   const setSW = (k: string, v: unknown) => setSwForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveWellbeing = async (e: React.FormEvent) => {
@@ -92,11 +92,11 @@ export default function StaffWellbeingPage() {
     if (!swForm.staff_id) { toast.error("Please select a staff member."); return; }
     await createWellbeing.mutateAsync({ staff_id: swForm.staff_id, date: swForm.date, type: swForm.type, overall_score: parseInt(swForm.overall_score) || 7, workload_score: 5, support_score: 5, moral_score: 5, stressors: swForm.stressors.split("\n").filter(Boolean), positives: swForm.positives.split("\n").filter(Boolean), support_needed: swForm.support_needed.trim(), action_agreed: swForm.action_agreed.trim(), follow_up_date: null, conducted_by: "staff_darren", confidential: swForm.confidential, notes: swForm.notes.trim() });
     toast.success("Wellbeing check-in saved.");
-    setSwForm({ staff_id: "", date: new Date().toISOString().slice(0, 10), type: "monthly_checkin", overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
+    setSwForm({ staff_id: "", date: todayStr(), type: "monthly_checkin", overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
     setShowNew(false);
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const filtered = useMemo(() => {
     let list = [...records];

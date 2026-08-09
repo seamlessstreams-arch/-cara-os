@@ -22,7 +22,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Droplets, Thermometer, ShieldCheck,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -81,7 +81,7 @@ export default function WaterHygienePage() {
   const [showNew, setShowNew] = useState(false);
 
   const [whForm, setWhForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     time: new Date().toTimeString().slice(0, 5),
     check_type: "" as WaterHygieneCheckType | "",
     location: "" as WaterHygieneLocation | "",
@@ -116,7 +116,7 @@ export default function WaterHygienePage() {
       next_due_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
     });
     toast.success("Water hygiene check recorded.");
-    setWhForm({ date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), check_type: "", location: "", temperature: "", compliance: "", checked_by: "staff_darren", notes: "", action_required: "" });
+    setWhForm({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), check_type: "", location: "", temperature: "", compliance: "", checked_by: "staff_darren", notes: "", action_required: "" });
     setShowNew(false);
   };
 

@@ -46,7 +46,7 @@ function useYoungPeople(status = "current") {
       ),
   });
 }
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import {
   CARE_EVENT_STATUS_LABEL, CARE_EVENT_CATEGORY_LABEL,
 } from "@/types/care-events";
@@ -532,7 +532,7 @@ function CreateEventDialog({
     content: "",
     category: "general" as CareEventCategory,
     child_id: "",
-    event_date: new Date().toISOString().slice(0, 10),
+    event_date: todayStr(),
     event_time: new Date().toTimeString().slice(0, 5),
     mood_score: "" as string | number,
     is_significant: false,
@@ -546,7 +546,7 @@ function CreateEventDialog({
 
   function resetAndClose() {
     setStep("form");
-    setForm({ title: "", content: "", category: "general", child_id: "", event_date: new Date().toISOString().slice(0, 10), event_time: new Date().toTimeString().slice(0, 5), mood_score: "", is_significant: false });
+    setForm({ title: "", content: "", category: "general", child_id: "", event_date: todayStr(), event_time: new Date().toTimeString().slice(0, 5), mood_score: "", is_significant: false });
     setCreatedEvent(null);
     setRoutingPreview(null);
     setEvidenceAnswers({});
@@ -986,7 +986,7 @@ export default function CareEventsPage() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Today's events", value: filtered.filter((e) => e.event_date === new Date().toISOString().slice(0, 10)).length, icon: Clock, color: "text-slate-700" },
+          { label: "Today's events", value: filtered.filter((e) => e.event_date === todayStr()).length, icon: Clock, color: "text-slate-700" },
           { label: "Needs manager review", value: counts.manager_review_required ?? 0, icon: AlertCircle, color: "text-amber-600" },
           { label: "Reg 40 triage", value: filtered.filter((e) => e.requires_reg40_triage && e.status !== "verified" && e.status !== "locked").length, icon: AlertTriangle, color: "text-red-600" },
           { label: "Verified (30 days)", value: counts.verified ?? 0, icon: CheckCircle2, color: "text-emerald-600" },

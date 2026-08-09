@@ -23,7 +23,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -80,7 +80,7 @@ export default function ReferralTrackerPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createReferral = useCreateReferralTrackerRecord();
-  const [rfForm, setRfForm] = useState({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: new Date().toISOString().slice(0, 10) });
+  const [rfForm, setRfForm] = useState({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: todayStr() });
   const setRF = (k: string, v: unknown) => setRfForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveReferral = async (e: React.FormEvent) => {
@@ -88,7 +88,7 @@ export default function ReferralTrackerPage() {
     if (!rfForm.referring_authority.trim()) { toast.error("Referring authority is required."); return; }
     await createReferral.mutateAsync({ child_ref: rfForm.child_ref.trim() || `REF-${Date.now()}`, age: parseInt(rfForm.age) || 0, gender: rfForm.gender, referring_authority: rfForm.referring_authority.trim(), social_worker_name: rfForm.social_worker_name.trim(), referral_date: rfForm.referral_date, status: "received" as ReferralTrackerStatus, reason_for_placement: rfForm.reason.trim(), referral_documents_received: false, impact_assessment_completed: false, matching_panel_date: null, matching_panel_outcome: null, decision_date: null, admission_date: null, decline_reason: null, notes: "", timeline: [] });
     toast.success("Referral added.");
-    setRfForm({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: new Date().toISOString().slice(0, 10) });
+    setRfForm({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: todayStr() });
     setShowNew(false);
   };
   const [search, setSearch] = useState("");

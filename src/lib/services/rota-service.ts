@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -304,7 +305,7 @@ function computeAbsenceProfile(absences: AbsenceRecord[]): {
   let sickAbsenceCount = 0;
   let returnToWorkCompleted = 0;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // Per-staff sick days accumulator
   const staffSickDays = new Map<string, { staff_name: string; days: number }>();

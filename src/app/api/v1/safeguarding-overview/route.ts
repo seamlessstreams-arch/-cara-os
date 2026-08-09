@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { computeSafeguardingOverview } from "@/lib/engines/safeguarding-overview-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
       dal.riskAssessments.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   // Optional child scope: ?childId=X narrows every section to one child.
   const childId = new URL(req.url).searchParams.get("childId");
 

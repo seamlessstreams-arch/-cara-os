@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -177,7 +178,7 @@ export function computeHomeImprovementMetrics(
 
   const urgent = records.filter((r) => r.priority_level === "urgent").length;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const overdue = records.filter(
     (r) =>
       r.target_completion_date &&
@@ -271,7 +272,7 @@ export function identifyHomeImprovementAlerts(
   }
 
   // Overdue projects
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const overdue = records.filter(
     (r) =>
       r.target_completion_date &&

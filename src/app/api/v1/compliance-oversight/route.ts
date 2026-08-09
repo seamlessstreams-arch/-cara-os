@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { analyseComplianceOversight, COMPLIANCE_CATEGORIES, type OversightDoc, type OversightTask } from "@/lib/compliance/compliance-oversight-engine";
 import { DOCUMENT_CATEGORY_LABELS, type UploadedDocument } from "@/types/documents";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function GET() {
     dal.uploadedDocuments.findAll(),
     dal.tasks.findAll(),
   ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const complianceDocs: UploadedDocument[] = (uploadedDocumentsList ?? []).filter(
     (d: UploadedDocument) => d.document_category && COMPLIANCE_CATEGORIES.has(d.document_category),

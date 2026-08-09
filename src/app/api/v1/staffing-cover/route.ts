@@ -6,7 +6,7 @@
 // approved leave / sickness, analysed against the home staffing policy.
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import type { ShiftCoverNote } from "@/lib/rota/rota-seeds";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -31,7 +31,7 @@ async function loadCoverShape() {
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const from = url.searchParams.get("from") || today;
   const to = url.searchParams.get("to") || addDays(today, 13);
   return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to) });
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   await dal.shiftCoverNotes.create(note);
 
   // Recompute over the same fortnight so the row flips to "logged" in the response.
-  const from = body.from || new Date().toISOString().slice(0, 10);
+  const from = body.from || todayStr();
   const to = body.to || addDays(from, 13);
   return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to), note });
 }
@@ -101,7 +101,7 @@ export async function PATCH(req: Request) {
   };
   await dal.staffingPolicy.set(next);
 
-  const from = body.from || new Date().toISOString().slice(0, 10);
+  const from = body.from || todayStr();
   const to = body.to || addDays(from, 13);
   return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to) });
 }

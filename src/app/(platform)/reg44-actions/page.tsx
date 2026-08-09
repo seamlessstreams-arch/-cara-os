@@ -21,7 +21,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Eye, ListChecks, Loader2, ExternalLink,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -87,7 +87,7 @@ const BORDER_PRI: Record<Reg44ActionPriority, string> = {
 export default function Reg44ActionsPage() {
   const { data: records = [], isLoading } = useReg44ActionRecords();
   const createMutation = useCreateReg44ActionRecord();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

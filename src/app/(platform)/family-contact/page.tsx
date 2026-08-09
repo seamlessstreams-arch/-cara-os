@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -438,7 +438,7 @@ function ArrangementCard({
   const [logConcernsDetail, setLogConcernsDetail] = useState("");
   const [logSafeguarding, setLogSafeguarding] = useState(false);
   const [logSafeguardingDetail, setLogSafeguardingDetail] = useState("");
-  const [logDate, setLogDate]             = useState(new Date().toISOString().split("T")[0]);
+  const [logDate, setLogDate]             = useState(todayStr());
 
   function submitLog() {
     if (!logNarrative.trim()) return;

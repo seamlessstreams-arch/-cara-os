@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, Shield, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -82,7 +82,7 @@ export default function RiskManagementPlansPage() {
     e.preventDefault();
     if (!rmpForm.child_id) { toast.error("Please select a young person."); return; }
     if (!rmpForm.description.trim()) { toast.error("Risk description is required."); return; }
-    await createPlan.mutateAsync({ child_id: rmpForm.child_id, risk_category: rmpForm.risk_category, current_risk_level: rmpForm.risk_level, previous_risk_level: rmpForm.risk_level, risk_description: rmpForm.description.trim(), triggers: [], warning_signals: [], management_strategies: [], emergency_plan: rmpForm.emergency_plan.trim(), protective_factors: [], escalation_procedure: "", review_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), last_reviewed: new Date().toISOString().slice(0, 10), created_by: "staff_darren", approved_by: "", multi_agency_input: [], child_views: "", status: "active" });
+    await createPlan.mutateAsync({ child_id: rmpForm.child_id, risk_category: rmpForm.risk_category, current_risk_level: rmpForm.risk_level, previous_risk_level: rmpForm.risk_level, risk_description: rmpForm.description.trim(), triggers: [], warning_signals: [], management_strategies: [], emergency_plan: rmpForm.emergency_plan.trim(), protective_factors: [], escalation_procedure: "", review_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), last_reviewed: todayStr(), created_by: "staff_darren", approved_by: "", multi_agency_input: [], child_views: "", status: "active" });
     toast.success("Risk management plan created.");
     setRmpForm({ child_id: "", risk_category: "other", risk_level: "medium", description: "", emergency_plan: "" });
     setDialogOpen(false);

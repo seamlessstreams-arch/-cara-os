@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -137,7 +138,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const [staffMembers, shifts] = await Promise.all([
     safeList(dal.staff.findAll()),

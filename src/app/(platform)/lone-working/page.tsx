@@ -20,7 +20,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Shield, User, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -77,7 +77,7 @@ export default function LoneWorkingPage() {
   const handleSaveAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lwForm.staff_id) { toast.error("Please select a staff member."); return; }
-    await createRecord.mutateAsync({ staff_id: lwForm.staff_id, scenario: lwForm.scenario, risk_level: lwForm.risk_level, status: "current", assessment_date: new Date().toISOString().slice(0, 10), review_date: lwForm.review_date, assessed_by: "staff_darren", hazards: lwForm.hazards.split("\n").filter(Boolean), control_measures: lwForm.control_measures.split("\n").filter(Boolean), check_in_protocol: "", personal_alarm_issued: false, emergency_procedure: "", notes: "", created_at: new Date().toISOString() });
+    await createRecord.mutateAsync({ staff_id: lwForm.staff_id, scenario: lwForm.scenario, risk_level: lwForm.risk_level, status: "current", assessment_date: todayStr(), review_date: lwForm.review_date, assessed_by: "staff_darren", hazards: lwForm.hazards.split("\n").filter(Boolean), control_measures: lwForm.control_measures.split("\n").filter(Boolean), check_in_protocol: "", personal_alarm_issued: false, emergency_procedure: "", notes: "", created_at: new Date().toISOString() });
     toast.success("Lone working assessment saved.");
     setLwForm({ staff_id: "", scenario: "waking_night", risk_level: "low", review_date: "", hazards: "", control_measures: "" });
     setShowNew(false);

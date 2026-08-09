@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -183,7 +184,7 @@ export function computeFrequencyTrend(
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeRestraintIntelligence(input: RestraintIntelligenceInput): RestraintIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, restraints } = input;
 
   const within30d = restraints.filter((r) => daysBetween(r.date, today) <= 30);

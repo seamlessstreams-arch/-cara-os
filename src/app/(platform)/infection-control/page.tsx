@@ -21,7 +21,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, ShieldAlert, Thermometer, Bug, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { InfectionRecord, InfectionType, InfectionSeverity, InfectionStatus } from "@/types/extended";
@@ -65,7 +65,7 @@ export default function InfectionControlPage() {
     severity: "" as InfectionSeverity | "",
     symptoms: "",
     notes: "",
-    date_reported: new Date().toISOString().slice(0, 10),
+    date_reported: todayStr(),
     reported_by_id: "staff_darren",
   });
   const setIF = (k: keyof typeof infForm, v: string) => setInfForm((p) => ({ ...p, [k]: v }));
@@ -98,7 +98,7 @@ export default function InfectionControlPage() {
       created_at: new Date().toISOString(),
     });
     toast.success("Infection record logged.");
-    setInfForm({ affected_person_type: "child", affected_person_id: "", infection_type: "", severity: "", symptoms: "", notes: "", date_reported: new Date().toISOString().slice(0, 10), reported_by_id: "staff_darren" });
+    setInfForm({ affected_person_type: "child", affected_person_id: "", infection_type: "", severity: "", symptoms: "", notes: "", date_reported: todayStr(), reported_by_id: "staff_darren" });
     setShowNew(false);
   };
 

@@ -16,6 +16,7 @@ import {
   computeChildLACReview,
   type LACReviewInput,
 } from "@/lib/engines/child-lac-review-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       dal.lacReviews.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
   const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;

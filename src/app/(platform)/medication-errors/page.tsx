@@ -714,7 +714,7 @@ function NewErrorDialog({
       date_occurred,
       time_occurred: time_occurred || "00:00",
       reported_by: "staff_darren",
-      reported_date: new Date().toISOString().slice(0, 10),
+      reported_date: todayStr(),
       error_type,
       severity,
       medication: medication.trim(),

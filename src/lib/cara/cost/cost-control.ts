@@ -16,6 +16,7 @@ import type {
 import { DEFAULT_COST_LIMITS, PROVIDER_COST_PER_1K } from "../core/constants";
 import { CaraCostLimitError } from "../core/errors";
 import { getProvider } from "../providers";
+import { todayStr } from "@/lib/utils";
 
 // ── CaraCostControlService ────────────────────────────────────────────────
 
@@ -189,7 +190,7 @@ export class CaraCostControlService {
   // ── Private ──────────────────────────────────────────────────────────────
 
   private getDailySpend(organisationId: string, homeId?: string, userId?: string): number {
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayStr();
     return this.usageLog
       .filter(u => {
         if (u.organisationId !== organisationId) return false;

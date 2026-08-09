@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -129,7 +129,7 @@ export default function ConsentRecordsPage() {
     return ids.map((id) => ({ id, name: getYPName(id) }));
   })();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const in30 = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 30); return dt.toISOString().slice(0, 10); })();
 
   const filtered = (() => {
@@ -343,7 +343,7 @@ export default function ConsentRecordsPage() {
                             disabled={updateMutation.isPending}
                             onClick={() =>
                               updateMutation.mutate(
-                                { id: r.id, status: "granted", date_decided: new Date().toISOString().slice(0, 10) },
+                                { id: r.id, status: "granted", date_decided: todayStr() },
                                 { onSuccess: () => toast.success("Consent granted") }
                               )
                             }
@@ -357,7 +357,7 @@ export default function ConsentRecordsPage() {
                             disabled={updateMutation.isPending}
                             onClick={() =>
                               updateMutation.mutate(
-                                { id: r.id, status: "refused", date_decided: new Date().toISOString().slice(0, 10) },
+                                { id: r.id, status: "refused", date_decided: todayStr() },
                                 { onSuccess: () => toast.success("Consent refused") }
                               )
                             }

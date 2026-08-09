@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Positive Behaviour Support (PBS) Intelligence Engine
 //
@@ -632,7 +633,7 @@ export function buildChildBehaviourProfiles(
         ? childPlans[0].status
         : "no_plan";
     const planCurrent = activePlan
-      ? activePlan.nextReviewDate >= new Date().toISOString().slice(0, 10)
+      ? activePlan.nextReviewDate >= todayStr()
       : false;
 
     // De-escalation success rate

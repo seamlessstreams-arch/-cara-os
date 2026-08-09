@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { api } from "@/hooks/use-api";
@@ -94,7 +94,7 @@ function FeedRow({ item }: { item: FeedItem }) {
   const ts = item.timestamp;
   const datePart = ts.slice(0, 10);
   const timePart = ts.includes("T") ? ts.split("T")[1]?.slice(0, 5) : "";
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const isToday = datePart === today;
 
   return (

@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meanOf, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,7 +121,7 @@ export function analyseKeyWork(
   homeId: string = "home_oak",
   windowDays: number = 28,
 ): KeyWorkAnalysis {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const alerts: KeyWorkAlert[] = [];
 
   // Per-child analysis

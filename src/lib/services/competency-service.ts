@@ -6,6 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -327,7 +328,7 @@ export async function createCompetencyAssessment(
       competency_area: input.competencyArea,
       level: input.level,
       assessed_by: input.assessedBy,
-      assessed_date: new Date().toISOString().split("T")[0],
+      assessed_date: todayStr(),
       evidence: input.evidence ?? null,
       development_notes: input.developmentNotes ?? null,
       next_review_date: input.nextReviewDate ?? null,

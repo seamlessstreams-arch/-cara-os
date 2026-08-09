@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { computeStaffCompliance } from "@/lib/engines/staff-compliance-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const [staffList, trainingRecords] = await Promise.all([
     safeList(dal.staff.findAll()),

@@ -8,7 +8,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -86,10 +86,10 @@ export default function LacReviewPrepPage() {
   const total = data.length;
   const reportsSubmitted = data.filter((p) => p.home_report_submitted).length;
   const totalOpenActions = data.reduce((sum, p) => sum + (p.outstanding_actions ?? []).filter((a) => a.status !== "done").length, 0);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = todayStr();
   const d30 = new Date(); d30.setDate(d30.getDate() + 30);
   const d30Str = d30.toISOString().slice(0, 10);
-  const upcoming30 = data.filter((p) => p.review_scheduled_for >= todayStr && p.review_scheduled_for <= d30Str).length;
+  const upcoming30 = data.filter((p) => p.review_scheduled_for >= todayDate && p.review_scheduled_for <= d30Str).length;
 
   const exportCols: ExportColumn<LacReviewPrep>[] = [
     { header: "Young Person", accessor: (r: LacReviewPrep) => getYPName(r.child_id) },

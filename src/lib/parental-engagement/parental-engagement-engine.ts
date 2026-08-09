@@ -15,6 +15,7 @@
 
 import { withinPeriod } from "@/lib/date-period";
 import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -505,7 +506,7 @@ export function evaluateFamilyPlanning(
     (plans.filter((p) => p.professionalInvolved).length / plans.length) * 100,
   );
 
-  const refDate = referenceDate || new Date().toISOString().split("T")[0];
+  const refDate = referenceDate || todayStr();
 
   const currentPlans = plans.filter((p) => p.nextReviewDate >= refDate).length;
   const overduePlans = plans.filter((p) => p.nextReviewDate < refDate).length;
@@ -794,7 +795,7 @@ export function generateParentalEngagementIntelligence(
   periodEnd: string,
   referenceDate?: string,
 ): ParentalEngagementIntelligenceResult {
-  const refDate = referenceDate || new Date().toISOString().split("T")[0];
+  const refDate = referenceDate || todayStr();
   const assessedAt = refDate;
 
   // Filter contacts to period

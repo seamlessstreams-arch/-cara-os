@@ -16,8 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Search, Heart, CheckCircle, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-
+import { cn, todayStr } from "@/lib/utils";
 // Types from use-keywork-sessions
 export interface KeyworkSession {
   id: string;
@@ -400,7 +399,7 @@ export default function ChildKeyworker1to1SessionsPage() {
               createSession.mutate({
                 child_id: nChild,
                 staff_id: "staff_anna",
-                session_date: new Date().toISOString().slice(0, 10),
+                session_date: todayStr(),
                 duration_minutes: 45,
                 format: nFormat,
                 child_chose_format: true,

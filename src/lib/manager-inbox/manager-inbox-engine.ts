@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent, CornerstoneRiskLevel, CornerstoneApprovalLevel } from "@/types/cornerstone-event";
+import { todayStr } from "@/lib/utils";
 
 // ── Output ────────────────────────────────────────────────────────────────────
 
@@ -156,7 +157,7 @@ function toItem(e: CornerstoneEvent, today: string): InboxItem | null {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeManagerInbox(input: ManagerInboxInput): ManagerInboxResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
 
   const items = input.events
     .map((e) => toItem(e, today))

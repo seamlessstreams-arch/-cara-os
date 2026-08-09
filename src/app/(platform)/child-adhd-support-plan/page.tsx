@@ -17,7 +17,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select,
@@ -114,7 +114,7 @@ export default function ChildADHDSupportPlanPage() {
 
   /* ── stats ─────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const d90 = new Date();
     d90.setDate(d90.getDate() + 90);
     const ninetyDays = d90.toISOString().slice(0, 10);

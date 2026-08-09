@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — CHRONOLOGY INTELLIGENCE ENGINE
 //
@@ -136,7 +137,7 @@ function dateToMonth(date: string): string {
 export function computeChronologyIntelligence(
   input: ChronologyIntelligenceInput,
 ): ChronologyIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, events } = input;
 
   const thirtyDaysAgo = (() => {

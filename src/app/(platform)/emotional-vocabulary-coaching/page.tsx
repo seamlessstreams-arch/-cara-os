@@ -17,7 +17,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select,
@@ -210,7 +210,7 @@ export default function EmotionalVocabularyCoachingPage() {
     next_step: r.next_step,
   }));
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayDate = todayStr();
 
   return (
     <PageShell
@@ -374,7 +374,7 @@ export default function EmotionalVocabularyCoachingPage() {
                       <span
                         className={cn(
                           "font-medium",
-                          r.review_date <= todayStr ? "text-rose-600" : "",
+                          r.review_date <= todayDate ? "text-rose-600" : "",
                         )}
                       >
                         {r.review_date}

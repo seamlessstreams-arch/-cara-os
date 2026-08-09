@@ -14,7 +14,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -125,7 +125,7 @@ export default function ChildPhysioOtPlanPage() {
 
   /* ── stats ───────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const ninetyOut = new Date();
     ninetyOut.setDate(ninetyOut.getDate() + 90);
     const ninety = ninetyOut.toISOString().slice(0, 10);

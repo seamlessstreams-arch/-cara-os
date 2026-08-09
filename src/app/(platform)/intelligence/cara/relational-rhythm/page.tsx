@@ -16,7 +16,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import {
   suggestPrompt,
@@ -82,7 +82,7 @@ const fmtWhen = (iso: string | null): string => {
   return d.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => todayStr();
 const lines = (s: string): string[] => s.split("\n").map((x) => x.trim()).filter(Boolean);
 
 export default function RelationalRhythmPage() {

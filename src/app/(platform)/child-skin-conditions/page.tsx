@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import {
   Sparkles,
   Heart,
@@ -112,7 +112,7 @@ export default function ChildSkinConditionsPage() {
 
   // ── Stats ───────────────────────────────────────────────────────────────────
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const in90 = (() => {
     const dt = new Date();
     dt.setDate(dt.getDate() + 90);

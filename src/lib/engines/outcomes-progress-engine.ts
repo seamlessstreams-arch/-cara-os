@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — OUTCOMES PROGRESS INTELLIGENCE ENGINE
 //
@@ -212,7 +213,7 @@ export function average(arr: number[]): number {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesProgressResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, targets, reviews } = input;
 
   // ── Overview ────────────────────────────────────────────────────────────

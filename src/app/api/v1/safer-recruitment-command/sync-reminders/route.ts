@@ -15,11 +15,12 @@ import { createTaskRecord } from "@/lib/supabase/care-records";
 import { computeSaferRecruitmentCommand } from "@/lib/engines/safer-recruitment-command-engine";
 import { deriveReminderSpecs, planReminderSync } from "@/lib/engines/recruitment-reminder-engine";
 import { assembleCommandCandidates } from "@/lib/safer-recruitment/command-data";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const actor = req.headers.get("x-user-id") ?? "staff_darren";
 
   const command = computeSaferRecruitmentCommand({ today, candidates: assembleCommandCandidates() });

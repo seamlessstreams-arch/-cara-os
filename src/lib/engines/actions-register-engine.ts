@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — UNIFIED ACTIONS REGISTER ENGINE
 //
@@ -80,7 +81,7 @@ const URGENCY_ORDER: Record<ActionUrgency, number> = {
 // ── Main computation ──────────────────────────────────────────────────────────
 
 export function computeActionsRegister(input: ActionsRegisterInput): ActionsRegisterResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const dueSoon = input.due_soon_days ?? 7;
 
   const classified: RegisteredAction[] = input.actions.map((a) => {

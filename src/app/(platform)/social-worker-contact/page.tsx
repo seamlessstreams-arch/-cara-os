@@ -23,7 +23,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Phone, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -102,7 +102,7 @@ export default function SocialWorkerContactPage() {
 
   const [swForm, setSwForm] = useState({
     child_id: "",
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     time: "09:00",
     contact_type: "" as SocialWorkerContactType | "",
     direction: "outgoing" as string,
@@ -144,7 +144,7 @@ export default function SocialWorkerContactPage() {
       next_scheduled_contact: null,
     });
     toast.success("Contact logged.");
-    setSwForm({ child_id: "", date: new Date().toISOString().slice(0, 10), time: "09:00", contact_type: "", direction: "outgoing", purpose: "", summary: "", outcome: "" });
+    setSwForm({ child_id: "", date: todayStr(), time: "09:00", contact_type: "", direction: "outgoing", purpose: "", summary: "", outcome: "" });
     setDialogOpen(false);
   };
 
@@ -161,7 +161,7 @@ export default function SocialWorkerContactPage() {
     return out;
   }, [records, search, childFilter, typeFilter, sortBy]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const overdueFollowUps = records.filter(r => r.follow_up_required && r.follow_up_date && r.follow_up_date < today && r.action_items.some(a => a.status !== "completed"));
   const statVisits = records.filter(r => r.contact_type === "statutory_visit").length;
   const thisMonth = records.length;

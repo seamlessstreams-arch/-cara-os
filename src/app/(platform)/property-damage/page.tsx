@@ -22,7 +22,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Hammer, PoundSterling,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -88,7 +88,7 @@ export default function PropertyDamagePage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRecord = useCreatePropertyDamageRecord();
-  const [pdForm, setPdForm] = useState({ date: new Date().toISOString().slice(0, 10), time: "", location: "bedroom" as PropertyLocation, damage_type: "deliberate" as PropertyDamageType, specific_area: "", description: "", severity: "minor" as PropertyDamageSeverity, estimated_cost: "" });
+  const [pdForm, setPdForm] = useState({ date: todayStr(), time: "", location: "bedroom" as PropertyLocation, damage_type: "deliberate" as PropertyDamageType, specific_area: "", description: "", severity: "minor" as PropertyDamageSeverity, estimated_cost: "" });
   const setPD = (k: string, v: unknown) => setPdForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveDamage = async (e: React.FormEvent) => {
@@ -96,7 +96,7 @@ export default function PropertyDamagePage() {
     if (!pdForm.description.trim()) { toast.error("Description is required."); return; }
     await createRecord.mutateAsync({ date: pdForm.date, time: pdForm.time, reported_by: "staff_darren", location: pdForm.location, specific_area: pdForm.specific_area.trim(), damage_type: pdForm.damage_type, severity: pdForm.severity, status: "reported", responsible_person_id: null, responsible_person_name: "", description: pdForm.description.trim(), photographs_taken: false, estimated_cost: pdForm.estimated_cost ? parseFloat(pdForm.estimated_cost) : 0, actual_cost: null, insurance_claimed: false, insurance_ref: null, repair_details: "", repair_completed_date: null, linked_incident_id: null, behaviour_context: "", risk_assessment_updated: false, notes: "" });
     toast.success("Property damage record saved.");
-    setPdForm({ date: new Date().toISOString().slice(0, 10), time: "", location: "bedroom", damage_type: "deliberate", specific_area: "", description: "", severity: "minor", estimated_cost: "" });
+    setPdForm({ date: todayStr(), time: "", location: "bedroom", damage_type: "deliberate", specific_area: "", description: "", severity: "minor", estimated_cost: "" });
     setShowNew(false);
   };
 

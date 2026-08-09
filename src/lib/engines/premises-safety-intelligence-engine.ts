@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -221,7 +222,7 @@ const FIRE_SAFETY_CHECK_TYPES = new Set([
 export function computePremisesSafetyIntelligence(
   input: PremisesSafetyIntelligenceInput,
 ): PremisesSafetyIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { buildings, building_checks, maintenance, vehicles, vehicle_checks } = input;
 
   // ── Index maps ─────────────────────────────────────────────────────────

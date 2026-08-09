@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 export interface VisitorInput {
   id: string;
@@ -125,7 +126,7 @@ function categoryLabel(cat: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelligenceResult {
-  const { visitors, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { visitors, children, staff, today = todayStr() } = input;
 
   if (visitors.length === 0) {
     return {

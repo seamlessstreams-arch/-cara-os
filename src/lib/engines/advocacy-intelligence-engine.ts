@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — ADVOCACY & CHILDREN'S RIGHTS INTELLIGENCE ENGINE
 // Pure deterministic engine for advocacy referral analysis.
@@ -108,7 +109,7 @@ export function computeAdvocacyIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): AdvocacyIntelligenceResult {
-  const { referrals, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { referrals, children, staff, today = todayStr() } = input;
 
   if (referrals.length === 0) {
     return {

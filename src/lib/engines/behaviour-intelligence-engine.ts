@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { mentionsAny } from "@/lib/text/keyword-match";
+import { todayStr } from "@/lib/utils";
 
 // The real word forms behind the old "de-escalat" substring stem — matched
 // word-boundaried so plain "escalated" never counts as de-escalation.
@@ -196,9 +197,6 @@ export interface BehaviourEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(

@@ -12,6 +12,7 @@ import { attemptTransition, getValidTransitions } from "@/lib/quality-ecology";
 import type { ScheduledOccurrence, LifecycleStatus } from "@/lib/quality-ecology";
 import type { UserContext } from "@/lib/permissions/types";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 type SB = any;
 
@@ -348,7 +349,7 @@ function getDemoValidTransitions(occurrenceId: string) {
     templateId: "demo-tpl",
     templateName: "Demo Task",
     homeId: "home-oak",
-    dueDate: new Date().toISOString().slice(0, 10),
+    dueDate: todayStr(),
     scheduledAt: new Date().toISOString(),
     status: "submitted" as LifecycleStatus,
     statusHistory: [],

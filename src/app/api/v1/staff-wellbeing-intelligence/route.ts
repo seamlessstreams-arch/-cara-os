@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 import {
   computeStaffWellbeing,
   type StaffWellbeingInput,
@@ -19,7 +20,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const [incidentsList, leaveRequestsList, shiftsList, staffList, staffDebriefRecordsList, staffGrievanceRecordsList, staffRecognitionRecordsList, staffSicknessRecordsList, staffWellbeingRecordsList, supervisionsList, homeRec] = await Promise.all([dal.incidents.findAll(), dal.leaveRequests.findAll(), dal.shifts.findAll(), dal.staff.findAll(), dal.staffDebriefRecords.findAll(), dal.staffGrievanceRecords.findAll(), dal.staffRecognitionRecords.findAll(), dal.staffSicknessRecords.findAll(), dal.staffWellbeingRecords.findAll(), dal.supervisions.findAll(), dal.home.get()]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Staff ─────────────────────────────────────────────────────────────────
   const staffMembers: StaffMemberInput[] = (staffList ?? []).map((s: any) => ({

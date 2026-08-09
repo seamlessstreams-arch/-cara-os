@@ -22,7 +22,7 @@ import {
   ClipboardList, Eye, Users, FileText, MessageSquare,
   Home, BookOpen, Heart, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
@@ -91,7 +91,7 @@ export default function StatutoryVisitLogPage() {
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   /* ── filtered & sorted ─────────────────────────────────────────────────── */
   const processed = useMemo(() => {

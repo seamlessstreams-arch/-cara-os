@@ -22,7 +22,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, Shield, Brain, Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CriticalIncidentDebriefRecord, DebriefIncidentCategory, IncidentDebriefStatus, DebriefImpactLevel } from "@/types/extended";
 import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF_IMPACT_LEVEL_LABEL } from "@/types/extended";
@@ -60,7 +60,7 @@ export default function CriticalIncidentDebriefPage() {
   const handleScheduleDebrief = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cidForm.incident_summary.trim()) { toast.error("Incident summary is required."); return; }
-    await createRecord.mutateAsync({ incident_date: cidForm.incident_date || new Date().toISOString().slice(0, 10), debrief_date: cidForm.debrief_date || "", incident_category: cidForm.incident_category, incident_summary: cidForm.incident_summary.trim(), impact_level: cidForm.impact_level, young_person_ids: [], staff_involved_ids: [], facilitator_id: "", attendees: [], status: "scheduled", what_happened: "", what_worked_well: [], what_could_improve: [], root_causes: [], emotional_impact: "", actions_agreed: [], actions_completed: 0, policy_changes: "", training_needs: [], shared_with: [], follow_up_date: null, notes: "", created_at: new Date().toISOString() });
+    await createRecord.mutateAsync({ incident_date: cidForm.incident_date || todayStr(), debrief_date: cidForm.debrief_date || "", incident_category: cidForm.incident_category, incident_summary: cidForm.incident_summary.trim(), impact_level: cidForm.impact_level, young_person_ids: [], staff_involved_ids: [], facilitator_id: "", attendees: [], status: "scheduled", what_happened: "", what_worked_well: [], what_could_improve: [], root_causes: [], emotional_impact: "", actions_agreed: [], actions_completed: 0, policy_changes: "", training_needs: [], shared_with: [], follow_up_date: null, notes: "", created_at: new Date().toISOString() });
     toast.success("Debrief scheduled.");
     setCidForm({ incident_date: "", debrief_date: "", incident_category: "other", impact_level: "medium", incident_summary: "" });
     setShowNew(false);

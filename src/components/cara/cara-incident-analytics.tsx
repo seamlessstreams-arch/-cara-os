@@ -21,6 +21,7 @@ import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 import { getYPName } from "@/lib/seed-data";
 import type { Incident } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,7 +208,7 @@ export function CaraIncidentAnalytics() {
     queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
   });
   const allIncidents = incQuery.data?.data ?? [];
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayStr(), []);
   const data   = useMemo(() => computeIncidentAnalytics(allIncidents, today), [allIncidents, today]);
 
   const tCfg    = TREND_CONFIG[data.trend];

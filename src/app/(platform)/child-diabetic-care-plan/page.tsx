@@ -13,7 +13,7 @@ import {
 import {
   Activity, AlertTriangle, Droplet, ChevronUp, ChevronDown, ArrowUpDown, Search, Phone, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { DiabeticCarePlan } from "@/types/extended";
 import {
@@ -88,7 +88,7 @@ export default function ChildDiabeticCarePlanPage() {
   const total = data.length;
   const onTarget = data.filter(isOnTarget).length;
   const selfManaging = data.filter((r) => r.child_can_self_manage === "fully" || r.child_can_self_manage === "with_prompts").length;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const ninetyDaysDate = new Date();
   ninetyDaysDate.setDate(ninetyDaysDate.getDate() + 90);
   const ninetyDays = ninetyDaysDate.toISOString().slice(0, 10);

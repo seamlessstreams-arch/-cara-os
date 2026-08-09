@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — PLACEMENT BREAKDOWN FORECAST ENGINE
 //
@@ -417,7 +418,7 @@ function trendOf(velocityPerWeek: number): RiskTrend {
 export function computePlacementBreakdownForecast(
   input: PlacementForecastInput,
 ): PlacementBreakdownForecastResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
 
   const child_forecasts: ChildPlacementForecast[] = input.children.map((child) => {
     const data: ChildData = {

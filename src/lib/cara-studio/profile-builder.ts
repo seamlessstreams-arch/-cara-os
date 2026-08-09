@@ -18,6 +18,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CaraChildProfile, EvidenceRef } from "./types";
+import { todayStr } from "@/lib/utils";
 
 type SB = any;
 
@@ -63,7 +64,7 @@ export async function buildChildProfile(
     evidenceRefs.push({
       type: "care_plan",
       id: childId,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr(),
       summary: `${objectives.length} active care plan objectives`,
     });
   }

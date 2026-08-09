@@ -21,6 +21,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent, CornerstoneRiskLevel, CornerstoneApprovalLevel } from "@/types/cornerstone-event";
+import { todayStr } from "@/lib/utils";
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ function trendOf(recent: number, prior: number): RadarTrend {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeEventIntelligence(input: EventIntelligenceInput): EventIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const nameById = new Map((input.children ?? []).map((c) => [c.id, c.name]));
 
   const inWindow = (e: CornerstoneEvent, min: number, max: number) => {

@@ -35,6 +35,7 @@
 
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import { tokenize, jaccard } from "@/lib/duplicate-detection/duplicate-detection-engine";
+import { todayStr } from "@/lib/utils";
 
 // ── Output types ────────────────────────────────────────────────────────────
 
@@ -226,7 +227,7 @@ function injuryAssertion(e: CornerstoneEvent): "yes" | "no" | null {
 // ── Main computation ───────────────────────────────────────────────────────
 
 export function computeConflictDetection(input: ConflictDetectionInput): ConflictDetectionResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const endOfToday = toMs(`${today}T23:59:59.999Z`);
 
   const childById = new Map<string, SubjectRef>();

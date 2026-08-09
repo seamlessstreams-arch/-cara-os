@@ -15,7 +15,7 @@ import {
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Moon, Sun, Search, ArrowUpDown, ChevronUp, ChevronDown, Plus,
@@ -107,7 +107,7 @@ export default function NightStaffHandoverPage() {
   const handleSaveHandover = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nhForm.night_staff) { toast.error("Night staff is required."); return; }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     await createHandover.mutateAsync({ date: today, evening_staff: nhForm.evening_staff || "staff_darren", night_staff: nhForm.night_staff, handover_time: nhForm.handover_time, children_at_home: YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => y.id), children_sleeping: {}, children_awake: "", medication_given: false, medication_due: "", risk_briefing: nhForm.risk_briefing.split("\n").filter(Boolean), specific_concerns: {}, night_checks_required: {}, expected_returns: "", emergency_contacts: "", morning_wake_time: "07:00", morning_staff: "", night_events: [], morning_handover_complete: false });
     toast.success("Night handover logged.");
     setNhForm({ evening_staff: "", night_staff: "", handover_time: "22:00", risk_briefing: "", notes: "" });

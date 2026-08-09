@@ -48,7 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   ChevronUp,
@@ -122,7 +122,7 @@ export default function ReligiousObservanceLogPage() {
   const [filterChild, setFilterChild] = useState("all");
   const [sortBy, setSortBy] = useState("review_due");
 
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayStr(), []);
   const in30 = useMemo(() => d(30), []);
   const in90 = useMemo(() => d(90), []);
 

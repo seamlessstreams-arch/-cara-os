@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { buildReg40Queue, buildReg40NotifiableDraft } from "@/lib/care-events/compliance-queues";
 import { readJsonBody } from "@/lib/http/read-json";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 // → care events requiring Reg 40 triage, presented as triage tasks + meta
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const events = db.careEvents.findForReg40();
   const result = buildReg40Queue(events, events.length, today, {
     status: sp.get("status"),
@@ -57,7 +58,7 @@ export async function PATCH(req: NextRequest) {
     const draft = buildReg40NotifiableDraft(updated, {
       reportedBy: body.completed_by ?? "",
       note: body.evidence_note,
-      today: new Date().toISOString().slice(0, 10),
+      today: todayStr(),
     });
     notifiable_event_id = db.notifiableEvents.create(draft).id;
   }

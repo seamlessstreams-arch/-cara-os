@@ -18,6 +18,7 @@ import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { computePlanCurrency, type PlanRecordInput } from "@/lib/engines/plan-currency-engine";
+import { todayStr } from "@/lib/utils";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
@@ -48,7 +49,7 @@ const REGISTRY: { key: string; label: string; typeKey: string; reviewField: stri
 
 export async function GET() {
   const store = getStore();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const yp = ((await safeList(dal.youngPeople.findAll())) as any[]).filter((c) => c.status === "current");
   const children = yp.map((c) => ({

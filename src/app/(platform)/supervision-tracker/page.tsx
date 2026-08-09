@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import {
   AlertTriangle, CheckCircle2, Clock, Users, Calendar, Loader2, Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SupervisionTrackerRecord, SupervisionTrackerComplianceStatus } from "@/types/extended";
@@ -70,11 +70,11 @@ const BORDER_ST: Record<SupervisionTrackerComplianceStatus, string> = {
 function getStatus(nextDue: string): SupervisionTrackerComplianceStatus {
   const today = new Date();
   const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-  const todayStr = d(0);
+  const todayDate = d(0);
   const sevenDays = d(7);
   const thirtyDaysAgo = d(-30);
   if (nextDue < thirtyDaysAgo) return "significantly_overdue";
-  if (nextDue < todayStr) return "overdue";
+  if (nextDue < todayDate) return "overdue";
   if (nextDue <= sevenDays) return "due_soon";
   return "compliant";
 }
@@ -94,7 +94,7 @@ export default function SupervisionTrackerPage() {
   const [showNew, setShowNew] = useState(false);
   const [staffId, setStaffId] = useState("");
   const [supervisorId, setSupervisorId] = useState("");
-  const [lastDate, setLastDate] = useState(new Date().toISOString().slice(0, 10));
+  const [lastDate, setLastDate] = useState(todayStr());
   const [frequency, setFrequency] = useState("Monthly");
   const [sessionsYear, setSessionsYear] = useState(1);
   const [sessionsExpected, setSessionsExpected] = useState(12);

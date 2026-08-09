@@ -25,7 +25,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, MapPin, Users, Shield,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 
@@ -105,7 +105,7 @@ export default function ContextualSafeguardingPage() {
         description: form.description,
         community_mapping: form.community_mapping,
         review_date: form.review_date,
-        date_identified: new Date().toISOString().slice(0, 10),
+        date_identified: todayStr(),
         children_affected: [],
         risk_factors: [],
         protective_actions: [],

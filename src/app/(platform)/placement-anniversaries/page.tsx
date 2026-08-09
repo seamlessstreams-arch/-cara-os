@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -91,8 +91,8 @@ export default function PlacementAnniversariesPage() {
   }, [records, filterYP, filterSignificance, sortBy]);
 
   const total = records.length;
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const upcoming90 = records.filter((a) => a.date >= todayStr && a.date <= new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10)).length;
+  const todayDate = todayStr();
+  const upcoming90 = records.filter((a) => a.date >= todayDate && a.date <= new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10)).length;
   const difficult = records.filter((a) => a.emotional_significance === "difficult").length;
   const allChildAgreed = records.every((a) => a.child_agreed);
 

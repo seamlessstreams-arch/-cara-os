@@ -8,6 +8,7 @@ import {
   type SkillInput,
   type PathwayPlanInput,
 } from "@/lib/engines/child-independence-intelligence-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       dal.pathwayPlans.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const child = youngPeopleList.find((yp) => yp.id === childId);
   if (!child) {

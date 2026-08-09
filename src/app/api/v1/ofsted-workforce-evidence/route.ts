@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeOfstedWorkforceEvidence, type DomainInput } from "@/lib/engines/ofsted-workforce-evidence-engine";
+import { todayStr } from "@/lib/utils";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 const staffName = (s: any) => s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
@@ -25,7 +26,7 @@ export async function GET() {
     dal.inductionRecords.findAll(), dal.candidateChecks.findAll(), dal.candidateProfiles.findAll(),
     dal.incidents.findAll(), dal.home.get(),
   ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   // (Previously also probed a phantom `homes[0]` field that never existed — always
   // fell through to the singular home record, preserved here.)
   const home_name = (homeRec as { name?: string } | null)?.name || "the home";

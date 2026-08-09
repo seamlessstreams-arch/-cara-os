@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — COMPLAINTS CLOCK ENGINE
 //
@@ -105,7 +106,7 @@ const URGENCY_ORDER: Record<ClockUrgency, number> = { breached: 0, due_soon: 1, 
 // ── Main computation ──────────────────────────────────────────────────────────
 
 export function computeComplaintsClock(input: ComplaintsClockInput): ComplaintsClockResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const dueSoon = input.due_soon_days ?? 3;
 
   const clocks: ComplaintClock[] = input.complaints.map((c) => {

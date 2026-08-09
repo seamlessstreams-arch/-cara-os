@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { rate, meets, below, formatRate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -157,7 +158,7 @@ export function getOrderTypeLabel(type: string): string {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { restrictions, orders, children } = input;
 
   const activeRestrictions = restrictions.filter((r) => r.status === "active");

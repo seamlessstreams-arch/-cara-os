@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -64,7 +64,7 @@ function useCreateDischargeRecord() {
 
 /* ── local helpers ─────────────────────────────────────────────────────── */
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => todayStr();
 
 const STATUS_COLOURS: Record<DischargePlanStatus, string> = {
   not_started: "bg-gray-100 text-gray-700",

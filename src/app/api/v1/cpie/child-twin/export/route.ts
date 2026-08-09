@@ -19,6 +19,7 @@ import {
   renderChildTwinJson,
 } from "@/lib/cpie/child-twin-export";
 import { renderChildTwinDocx } from "@/lib/cpie/child-twin-docx";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     const format = (searchParams.get("format") || "html").toLowerCase();
     const model = buildChildTwinExportModel(twin);
-    const base = `child-practice-intelligence-${childId}-${new Date().toISOString().slice(0, 10)}`;
+    const base = `child-practice-intelligence-${childId}-${todayStr()}`;
 
     if (format === "json") {
       return new NextResponse(renderChildTwinJson(model), {

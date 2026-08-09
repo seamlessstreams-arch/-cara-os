@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — REGULATORY REPORTING INTELLIGENCE ENGINE
 //
@@ -149,7 +150,7 @@ export function isWithinLast12Months(date: string, today: string): boolean {
 export function computeRegulatoryReportingIntelligence(
   input: RegulatoryReportingIntelligenceInput
 ): RegulatoryReportingIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { reg44Reports, reg45Reports, notifications } = input;
 
   // ── Reg 44 Analysis ─────────────────────────────────────────────────────────

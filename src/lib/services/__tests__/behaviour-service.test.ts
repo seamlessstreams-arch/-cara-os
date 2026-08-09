@@ -595,7 +595,7 @@ describe("identifyBehaviourAlerts", () => {
   // Use a fixed "now" concept via date strings relative to real time.
   // The function uses `new Date()` internally, so we use dates relative to today.
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayDate = today.toISOString().split("T")[0];
 
   /** Return date string N days before today. */
   function daysBeforeToday(n: number): string {
@@ -662,7 +662,7 @@ describe("identifyBehaviourAlerts", () => {
         physical_intervention: true,
         pi_injuries_child: true,
         pi_injuries_staff: false,
-        date: todayStr,
+        date: todayDate,
       }),
     ];
     const result = identifyBehaviourAlerts(entries, []);
@@ -678,7 +678,7 @@ describe("identifyBehaviourAlerts", () => {
         physical_intervention: true,
         pi_injuries_child: false,
         pi_injuries_staff: true,
-        date: todayStr,
+        date: todayDate,
       }),
     ];
     const result = identifyBehaviourAlerts(entries, []);
@@ -693,7 +693,7 @@ describe("identifyBehaviourAlerts", () => {
         physical_intervention: true,
         pi_injuries_child: true,
         pi_injuries_staff: true,
-        date: todayStr,
+        date: todayDate,
       }),
     ];
     const result = identifyBehaviourAlerts(entries, []);

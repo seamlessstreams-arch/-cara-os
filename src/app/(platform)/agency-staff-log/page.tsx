@@ -22,7 +22,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, Users, UserCheck, Shield, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -73,7 +73,7 @@ export default function AgencyStaffLogPage() {
     agency_name: "",
     worker_name: "",
     worker_ref: "",
-    date_of_shift: new Date().toISOString().slice(0, 10),
+    date_of_shift: todayStr(),
     shift_type: "day",
     booking_reason: "" as AgencyBookingReason | "",
     dbs_number: "",
@@ -116,7 +116,7 @@ export default function AgencyStaffLogPage() {
       notes: asForm.notes,
     });
     toast.success("Agency shift logged.");
-    setAsForm({ agency_name: "", worker_name: "", worker_ref: "", date_of_shift: new Date().toISOString().slice(0, 10), shift_type: "day", booking_reason: "", dbs_number: "", authorised_by_id: "staff_darren", notes: "" });
+    setAsForm({ agency_name: "", worker_name: "", worker_ref: "", date_of_shift: todayStr(), shift_type: "day", booking_reason: "", dbs_number: "", authorised_by_id: "staff_darren", notes: "" });
     setShowNew(false);
   };
 

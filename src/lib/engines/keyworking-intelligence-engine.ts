@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ export function computeCompliance(
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput): KeyworkingIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { children, sessions } = input;
 
   // ── Filter by time period ──────────────────────────────────────────────

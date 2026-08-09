@@ -22,6 +22,7 @@ import {
   mapRelationshipHomeToSignal,
   mapSopRealityCheckToSignal,
 } from "@/lib/engines/briefing-native-mappers";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -205,7 +206,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
 
     const [results, nativeSignals] = await Promise.all([
       Promise.allSettled(ENGINES.map(([route, domain]) => fetchSignal(baseUrl, route, domain))),

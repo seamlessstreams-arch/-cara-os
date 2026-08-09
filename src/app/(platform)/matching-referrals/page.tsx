@@ -9,7 +9,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -88,7 +88,7 @@ export default function MatchingReferralsPage() {
   const handleAddReferral = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mrForm.child_name.trim()) { toast.error("Child name is required."); return; }
-    await createReferral.mutateAsync({ child_name: mrForm.child_name.trim(), age: parseInt(mrForm.age) || 0, gender: mrForm.gender, local_authority: mrForm.local_authority.trim(), social_worker: mrForm.social_worker.trim(), referral_date: new Date().toISOString().slice(0, 10), status: "received", assigned_to: "", overall_match: "moderate", match_domains: [], impact_on_current: [], strengths: [], concerns: [], conditions: [], decision_date: null, decision_by: null, decision_rationale: "", placement_type: mrForm.placement_type, presenting_needs: mrForm.presenting_needs.split("\n").filter(Boolean), risk_factors: mrForm.risk_factors.split("\n").filter(Boolean), created_at: new Date().toISOString() });
+    await createReferral.mutateAsync({ child_name: mrForm.child_name.trim(), age: parseInt(mrForm.age) || 0, gender: mrForm.gender, local_authority: mrForm.local_authority.trim(), social_worker: mrForm.social_worker.trim(), referral_date: todayStr(), status: "received", assigned_to: "", overall_match: "moderate", match_domains: [], impact_on_current: [], strengths: [], concerns: [], conditions: [], decision_date: null, decision_by: null, decision_rationale: "", placement_type: mrForm.placement_type, presenting_needs: mrForm.presenting_needs.split("\n").filter(Boolean), risk_factors: mrForm.risk_factors.split("\n").filter(Boolean), created_at: new Date().toISOString() });
     toast.success("Referral added.");
     setMrForm({ child_name: "", age: "", gender: "", local_authority: "", social_worker: "", placement_type: "", presenting_needs: "", risk_factors: "" });
     setShowDialog(false);

@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — PATTERN DETECTION ENGINE
 //
@@ -134,7 +135,7 @@ export function analysePatterns(
   if (events.length === 0) {
     return {
       childId,
-      analysisDate: new Date().toISOString().slice(0, 10),
+      analysisDate: todayStr(),
       windowDays,
       totalEvents: 0,
       patternsDetected: [],
@@ -170,7 +171,7 @@ export function analysePatterns(
 
   return {
     childId,
-    analysisDate: new Date().toISOString().slice(0, 10),
+    analysisDate: todayStr(),
     windowDays,
     totalEvents: childEvents.length,
     patternsDetected: otherPatterns.sort((a, b) => b.confidence - a.confidence),
@@ -679,7 +680,7 @@ function detectImprovements(events: TimelineEvent[], childId: string, windowDays
 function computeRiskIndicators(events: TimelineEvent[], windowDays: number): RiskIndicator[] {
   const indicators: RiskIndicator[] = [];
   const halfWindow = Math.floor(windowDays / 2);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const midDate = new Date(Date.now() - halfWindow * 86400000).toISOString().slice(0, 10);
 
   const categories = [...new Set(events.map((e) => e.category))];

@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 export interface NotifiableEventInput {
   id: string;
@@ -130,7 +131,7 @@ function typeLabel(type: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeNotifiableEventsIntelligence(input: EngineInput): NotifiableEventsIntelligenceResult {
-  const { events, children, staff, today = new Date().toISOString().slice(0, 10) } = input;
+  const { events, children, staff, today = todayStr() } = input;
 
   if (events.length === 0) {
     return {

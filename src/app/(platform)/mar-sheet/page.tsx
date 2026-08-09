@@ -16,7 +16,7 @@ import {
   Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, XCircle, Clock, Pill, ShieldCheck, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { formatRate, rateOf } from "@/lib/metrics/rate";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
@@ -59,9 +59,6 @@ function formatDate(dateStr: string): string {
   return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function isWithinLastDays(dateStr: string, days: number): boolean {
   const target = new Date(dateStr + "T00:00:00").getTime();

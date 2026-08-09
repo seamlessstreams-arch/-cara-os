@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — QUALITY ASSURANCE INTELLIGENCE ENGINE
 //
@@ -128,7 +129,7 @@ export function computeQualityAssuranceIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): QualityAssuranceIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const audits = input.audits;
 
   // ── Overview ────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { computeWorkforceAbsence } from "@/lib/engines/workforce-absence-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export async function GET() {
       dal.staff.findAll(),
       dal.staffSicknessRecords.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const result = computeWorkforceAbsence({
     today,

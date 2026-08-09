@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — MANAGER PRIORITY BRIEFING ENGINE
 //
@@ -150,7 +151,7 @@ function isPositiveRating(rating: string | null): boolean {
 export function computeManagerPriorityBriefing(
   input: ManagerPriorityBriefingInput,
 ): PriorityBriefingResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const signals = input.signals ?? [];
 
   // 1. Flatten every engine's payload into atomic, severity-tagged signals.

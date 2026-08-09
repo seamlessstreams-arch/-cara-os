@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -198,7 +199,7 @@ export function computeWellbeingTrend(
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeSupervisionIntelligence(input: SupervisionIntelligenceInput): SupervisionIntelligenceResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const { staff, supervisions, training } = input;
 
   const completed = supervisions.filter((s) => s.status === "completed");

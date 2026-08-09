@@ -19,6 +19,7 @@ import {
   renderStrategyJson,
 } from "@/lib/strategy-discussion/strategy-export";
 import { renderStrategyDocx } from "@/lib/strategy-discussion/strategy-docx";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   const format = (searchParams.get("format") || "html").toLowerCase();
   const model = buildStrategyExportModel(request);
-  const base = `strategy-discussion-${request.id}-${new Date().toISOString().slice(0, 10)}`;
+  const base = `strategy-discussion-${request.id}-${todayStr()}`;
 
   if (format === "json") {
     return new NextResponse(renderStrategyJson(model), {

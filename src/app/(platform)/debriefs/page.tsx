@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -77,7 +77,7 @@ export default function DebriefsPage() {
   const { data: raw, isLoading } = useDebriefRecords();
   const debriefs = raw?.data ?? [];
   const createDebrief = useCreateDebriefRecord();
-  const [debForm, setDebForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "post_incident" as ReflectiveDebriefType, what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
+  const [debForm, setDebForm] = useState({ date: todayStr(), type: "post_incident" as ReflectiveDebriefType, what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
   const setDeb = (k: string, v: unknown) => setDebForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateDebrief = async (e: React.FormEvent) => {
@@ -85,7 +85,7 @@ export default function DebriefsPage() {
     if (!debForm.what_happened.trim()) { toast.error("What happened is required."); return; }
     await createDebrief.mutateAsync({ date: debForm.date, type: debForm.type, linked_incident_id: "", linked_incident_summary: "", child_id: "", staff_involved: [], facilitated_by: "staff_darren", what_happened: debForm.what_happened.trim(), what_worked_well: debForm.what_worked_well.trim(), what_could_improve: debForm.what_could_improve.trim(), staff_wellbeing: "", child_perspective: "", lessons_learned: debForm.lessons_learned.split("\n").filter(Boolean), changes_needed: [], follow_up_actions: [], support_offered: false, support_details: "", created_at: new Date().toISOString() });
     toast.success("Debrief saved.");
-    setDebForm({ date: new Date().toISOString().slice(0, 10), type: "post_incident", what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
+    setDebForm({ date: todayStr(), type: "post_incident", what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
     setShowNew(false);
   };
   const [search, setSearch] = useState("");

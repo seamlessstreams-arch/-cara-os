@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -72,7 +72,7 @@ export default function HouseMeetingsPage() {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
-  const [hmForm, setHmForm] = useState({ date: new Date().toISOString().slice(0, 10), meeting_type: "regular" as HouseMeetingType, chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
+  const [hmForm, setHmForm] = useState({ date: todayStr(), meeting_type: "regular" as HouseMeetingType, chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
   const setHM = (k: string, v: unknown) => setHmForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
@@ -80,7 +80,7 @@ export default function HouseMeetingsPage() {
     if (!hmForm.general_comments.trim()) { toast.error("General comments are required."); return; }
     await createMeeting.mutateAsync({ date: hmForm.date, meeting_type: hmForm.meeting_type, chair_person: hmForm.chair_person || "staff_darren", minutes_taker: hmForm.minutes_taker || "staff_ryan", children_present: [], children_absent: [], staff_present: [], agenda: [], child_feedback: [], actions_from_previous: [], new_actions: [], general_comments: hmForm.general_comments.trim(), next_meeting_date: hmForm.next_meeting_date, duration: parseInt(hmForm.duration) || 60, created_at: new Date().toISOString() });
     toast.success("House meeting recorded.");
-    setHmForm({ date: new Date().toISOString().slice(0, 10), meeting_type: "regular", chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
+    setHmForm({ date: todayStr(), meeting_type: "regular", chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
     setShowNew(false);
   };
   const meetings = hmData?.data ?? [];
@@ -121,7 +121,7 @@ export default function HouseMeetingsPage() {
     const allActions = meetings.flatMap((m) => m.new_actions);
     const totalAgendaItems = meetings.reduce((a, m) => a + m.agenda.length, 0);
     const totalFeedback = meetings.reduce((a, m) => a + m.child_feedback.length, 0);
-    const nextMeeting = meetings.map((m) => m.next_meeting_date).filter((d) => d >= new Date().toISOString().slice(0, 10)).sort()[0] || "—";
+    const nextMeeting = meetings.map((m) => m.next_meeting_date).filter((d) => d >= todayStr()).sort()[0] || "—";
     const avgDuration = total > 0 ? Math.round(meetings.reduce((a, m) => a + m.duration, 0) / total) : null;
     return { total, totalAgendaItems, totalFeedback, nextMeeting, avgDuration };
   }, [meetings]);

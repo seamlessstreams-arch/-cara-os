@@ -241,7 +241,7 @@ export function identifyVisitorAlerts(
     VISITOR_TYPES.filter((vt) => vt.professional).map((vt) => vt.type),
   );
 
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayDate = now.toISOString().slice(0, 10);
 
   // Day-level visitor counts for high_volume detection
   const dayCount: Record<string, number> = {};
@@ -249,7 +249,7 @@ export function identifyVisitorAlerts(
   for (const e of entries) {
     // visitor_not_signed_out: entry from today with no departure_time and arrival > 4 hours ago
     if (
-      e.date === todayStr &&
+      e.date === todayDate &&
       e.departure_time == null
     ) {
       const arrivalTime = new Date(e.arrival_time).getTime();

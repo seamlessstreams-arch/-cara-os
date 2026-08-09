@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // TRANSITION & PATHWAY PLANNING INTELLIGENCE ENGINE
 //
@@ -557,7 +558,7 @@ export function evaluateGoalProgress(
   const deferredGoals = allGoals.filter((g) => g.status === "deferred");
 
   // Goals nearing deadline: within 30 days of target date and not achieved/deferred
-  const refDateStr = referenceDate ?? new Date().toISOString().split("T")[0];
+  const refDateStr = referenceDate ?? todayStr();
   const refDate = new Date(refDateStr);
   const thirtyDaysLater = new Date(refDate);
   thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);

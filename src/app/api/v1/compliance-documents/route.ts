@@ -7,7 +7,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { extractComplianceDocument } from "@/lib/compliance/document-extraction";
 import { COMPLIANCE_CATEGORIES } from "@/lib/compliance/compliance-oversight-engine";
 import { DOCUMENT_CATEGORY_LABELS, type DocumentIntelCategory, type DocumentIntelFileType, type UploadedDocument } from "@/types/documents";
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   if (text.length < 20) {
     return NextResponse.json({ error: "Paste the document text (at least a couple of lines) so Cara can read it." }, { status: 400 });
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const now = new Date().toISOString();
   const actor = req.headers.get("x-user-id") || req.headers.get("cs_user_id") || "system";
 

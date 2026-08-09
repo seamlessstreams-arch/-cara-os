@@ -16,7 +16,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { FamilyRelationshipRecord, FamilyRelationshipQuality, FamilyRelationshipTrajectory } from "@/types/extended";
 import {
@@ -83,7 +83,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
     ).length;
     const pct = total === 0 ? 0 : Math.round((strongOrImproving / total) * 100);
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const in30 = new Date();
     in30.setDate(in30.getDate() + 30);
     const in30Str = in30.toISOString().slice(0, 10);

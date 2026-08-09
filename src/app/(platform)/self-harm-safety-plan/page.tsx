@@ -15,7 +15,7 @@ import {
   Shield, Heart, Phone, ChevronUp, ChevronDown, ArrowUpDown,
   Search, AlertTriangle, CheckCircle, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
@@ -74,7 +74,7 @@ export default function SelfHarmSafetyPlanPage() {
   const [sortKey, setSortKey] = useState<SortKey>("nextReviewDate");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const cycleSort = (key: SortKey) => {

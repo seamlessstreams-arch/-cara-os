@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — COMPLAINTS ↔ INCIDENT CORRELATION INTELLIGENCE ENGINE
 //
@@ -175,7 +176,7 @@ const TYPE_BONUS: Record<CorrelationType, number> = {
 export function computeComplaintsIncidentCorrelation(
   input: ComplaintsIncidentInput,
 ): ComplaintsIncidentCorrelationResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const nameById = new Map(input.children.map((c) => [c.id, c.name]));
 
   // Every child appearing in complaints or incidents within the analysis window.

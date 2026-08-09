@@ -9,7 +9,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -86,7 +86,7 @@ export default function MultiAgencyMeetingsPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   const createMeeting = useCreateMultiAgencyMeeting();
-  const [mamForm, setMamForm] = useState({ child_id: "", meeting_type: "professionals" as MultiAgencyMeetingType, date: new Date().toISOString().slice(0, 10), time: "10:00", venue: "", chaired_by: "" });
+  const [mamForm, setMamForm] = useState({ child_id: "", meeting_type: "professionals" as MultiAgencyMeetingType, date: todayStr(), time: "10:00", venue: "", chaired_by: "" });
   const setMAM = (k: keyof typeof mamForm, v: string) => setMamForm((p) => ({ ...p, [k]: v }));
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
@@ -95,7 +95,7 @@ export default function MultiAgencyMeetingsPage() {
     if (!mamForm.venue.trim()) { toast.error("Venue is required."); return; }
     await createMeeting.mutateAsync({ child_id: mamForm.child_id, meeting_type: mamForm.meeting_type, meeting_status: "scheduled", date: mamForm.date, time: mamForm.time, venue: mamForm.venue.trim(), chaired_by: mamForm.chaired_by || "External chair", home_representative: "staff_darren", attendees: [], key_discussion_points: [], decisions_reached: [], child_participation: "", action_items: [], next_meeting_date: null, notes: "", created_at: new Date().toISOString() });
     toast.success("Meeting scheduled.");
-    setMamForm({ child_id: "", meeting_type: "professionals", date: new Date().toISOString().slice(0, 10), time: "10:00", venue: "", chaired_by: "" });
+    setMamForm({ child_id: "", meeting_type: "professionals", date: todayStr(), time: "10:00", venue: "", chaired_by: "" });
     setShowDialog(false);
   };
 

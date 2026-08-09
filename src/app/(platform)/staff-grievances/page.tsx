@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -134,7 +134,7 @@ export default function StaffGrievancesPage() {
     }
     await createGrievance.mutateAsync({
       raised_by: gForm.raised_by,
-      raised_date: new Date().toISOString().slice(0, 10),
+      raised_date: todayStr(),
       category: gForm.category as StaffGrievanceCategory,
       severity: gForm.severity,
       status: "informal_raised" as const,

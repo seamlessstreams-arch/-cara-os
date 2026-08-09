@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
+import { todayStr } from "@/lib/utils";
 
 // ── The 14 canonical evidence categories ────────────────────────────────────────
 
@@ -94,7 +95,7 @@ function daysAgo(iso: string, today: string): number {
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeEvidenceBank(input: EvidenceBankInput): EvidenceBankResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
 
   const recent = input.events.filter((e) => {
     const d = daysAgo(e.occurredAt, today);

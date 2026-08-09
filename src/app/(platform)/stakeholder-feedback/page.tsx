@@ -20,7 +20,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -88,7 +88,7 @@ export default function StakeholderFeedbackPage() {
   const [showNew, setShowNew] = useState(false);
 
   const createRecord = useCreateStakeholderFeedbackRecord();
-  const [sfForm, setSfForm] = useState({ date: new Date().toISOString().slice(0, 10), source: "social_worker" as StakeholderFeedbackSource, source_name: "", method: "conversation" as StakeholderFeedbackMethod, sentiment: "positive" as StakeholderFeedbackSentiment, summary: "", direct_quote: "", action_taken: "" });
+  const [sfForm, setSfForm] = useState({ date: todayStr(), source: "social_worker" as StakeholderFeedbackSource, source_name: "", method: "conversation" as StakeholderFeedbackMethod, sentiment: "positive" as StakeholderFeedbackSentiment, summary: "", direct_quote: "", action_taken: "" });
   const setSF = (k: string, v: unknown) => setSfForm((p) => ({ ...p, [k]: v }));
 
   const handleSaveFeedback = async (e: React.FormEvent) => {
@@ -96,7 +96,7 @@ export default function StakeholderFeedbackPage() {
     if (!sfForm.summary.trim()) { toast.error("Summary is required."); return; }
     await createRecord.mutateAsync({ date: sfForm.date, source: sfForm.source, source_name: sfForm.source_name.trim(), related_yp: null, method: sfForm.method, sentiment: sfForm.sentiment, themes: [], summary: sfForm.summary.trim(), direct_quote: sfForm.direct_quote.trim() || null, action_taken: sfForm.action_taken.trim() || null, responded_by: "staff_darren", response_date: null, acknowledged: false });
     toast.success("Stakeholder feedback recorded.");
-    setSfForm({ date: new Date().toISOString().slice(0, 10), source: "social_worker", source_name: "", method: "conversation", sentiment: "positive", summary: "", direct_quote: "", action_taken: "" });
+    setSfForm({ date: todayStr(), source: "social_worker", source_name: "", method: "conversation", sentiment: "positive", summary: "", direct_quote: "", action_taken: "" });
     setShowNew(false);
   };
 

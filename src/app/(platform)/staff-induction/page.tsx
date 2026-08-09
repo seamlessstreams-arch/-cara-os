@@ -17,7 +17,7 @@ import {
 import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -90,7 +90,7 @@ export default function StaffInductionPage() {
   const [indForm, setIndForm] = useState({
     staff_name: "",
     role: "",
-    start_date: new Date().toISOString().slice(0, 10),
+    start_date: todayStr(),
     induction_lead: "staff_darren",
   });
   const setIND = (k: keyof typeof indForm, v: string) => setIndForm((p) => ({ ...p, [k]: v }));
@@ -112,7 +112,7 @@ export default function StaffInductionPage() {
       tasks: [],
     });
     toast.success("Induction record created.");
-    setIndForm({ staff_name: "", role: "", start_date: new Date().toISOString().slice(0, 10), induction_lead: "staff_darren" });
+    setIndForm({ staff_name: "", role: "", start_date: todayStr(), induction_lead: "staff_darren" });
     setShowDialog(false);
   };
 

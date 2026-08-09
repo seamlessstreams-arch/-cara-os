@@ -9,11 +9,12 @@ import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
 import { buildVacancySetupPack } from "@/lib/engines/vacancy-setup-engine";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   const employerValuesProfilesList = await dal.employerValuesProfiles.findAll();
   const vacancies = db.vacancies.findAll();
   if (vacancies.length === 0) {

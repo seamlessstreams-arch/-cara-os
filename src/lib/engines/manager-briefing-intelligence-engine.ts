@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { meanOf, meets, below, formatRate } from "@/lib/metrics/rate";
+import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -236,7 +237,7 @@ function computeChildAction(severity: "critical" | "high" | "medium" | "low", fl
 const SEVERITY_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
 
 export function computeManagerBriefing(input: ManagerBriefingInput): ManagerBriefingResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
 
   // ── Domain health ───────────────────────────────────────────────────────
   const domainHealth: DomainHealth[] = input.domains.map((d) => ({

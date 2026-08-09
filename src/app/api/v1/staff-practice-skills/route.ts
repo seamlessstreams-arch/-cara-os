@@ -15,6 +15,7 @@ import { synthesiseStaffPracticeSkills } from "@/lib/staff-practice-skills/skill
 // The store-shape → engine-input mapping lives in @/lib/staff-practice-skills/
 // build-input so this API and the §31 export pack share ONE practice-skills read.
 import { buildStaffSkillsInput, staffDisplayName } from "@/lib/staff-practice-skills/build-input";
+import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
   try {
     const [competencyScoresList, keyWorkingSessionsList, practiceObservationsList, reflectiveSupervisionsList, staffList, writingAssistantAuditEventsList] = await Promise.all([dal.competencyScores.findAll(), dal.keyWorkingSessions.findAll(), dal.practiceObservations.findAll(), dal.reflectiveSupervisions.findAll(), dal.staff.findAll(), dal.writingAssistantAuditEvents.findAll()]);
   const store = { competencyScores: competencyScoresList, keyWorkingSessions: keyWorkingSessionsList, practiceObservations: practiceObservationsList, reflectiveSupervisions: reflectiveSupervisionsList, staff: staffList, writingAssistantAuditEvents: writingAssistantAuditEventsList };
-    const asOf = new Date().toISOString().slice(0, 10);
+    const asOf = todayStr();
     const { searchParams } = new URL(req.url);
     const staffId = searchParams.get("staff_id");
 

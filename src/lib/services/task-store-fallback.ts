@@ -21,6 +21,7 @@ import { db } from "@/lib/db/store";
 import type {
   CsTask, CsTaskCategory, CsTaskPriority, CsTaskStatus, ServiceResult,
 } from "@/types/operations";
+import { todayStr } from "@/lib/utils";
 
 // db.tasks rows are Partial<Task> at runtime; treat them as CsTask carriers.
 type Row = Record<string, unknown> & { id: string };
@@ -48,7 +49,7 @@ export function listTasksFromStore(
     limit?: number;
   },
 ): ServiceResult<CsTask[]> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   let rows = (db.tasks.findAll() as unknown as Row[]).filter(
     (r) => !r.home_id || r.home_id === homeId,
   );

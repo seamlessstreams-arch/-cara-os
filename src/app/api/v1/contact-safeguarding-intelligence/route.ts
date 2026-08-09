@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { todayStr } from "@/lib/utils";
 
 type IncidentIntensity = "low" | "medium" | "high" | "severe";
 type LinkType = "direct_trigger" | "post_contact_window";
@@ -124,7 +125,7 @@ export async function GET() {
       dal.familyTimeSessions.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(

@@ -13,7 +13,7 @@ import {
   Calendar, AlertTriangle, CheckCircle2, BookOpen, Target, Star, Clock,
   ArrowUpDown, Loader2, Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -81,7 +81,7 @@ export default function PepTrackerPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createPep = useCreatePepRecord();
-  const [pepForm, setPepForm] = useState({ child_id: "", school: "", year_group: "", pep_date: new Date().toISOString().slice(0, 10) });
+  const [pepForm, setPepForm] = useState({ child_id: "", school: "", year_group: "", pep_date: todayStr() });
   const setPEP = (k: string, v: unknown) => setPepForm((p) => ({ ...p, [k]: v }));
 
   const handleSavePep = async (e: React.FormEvent) => {
@@ -90,7 +90,7 @@ export default function PepTrackerPage() {
     const next = new Date(); next.setMonth(next.getMonth() + 4);
     await createPep.mutateAsync({ child_id: pepForm.child_id, school: pepForm.school.trim(), year_group: parseInt(pepForm.year_group) || 9, key_stage: "KS4", designated_teacher: "", virtual_school_contact: "", pep_date: pepForm.pep_date, next_review_date: next.toISOString().slice(0, 10), status: "draft" as PepStatus, attendance: 0, exclusions: 0, exclusion_days: 0, sen_status: "none" as PepSenStatus, sen_details: "", targets: [], pupil_premium: { annual_allocation: 2530, spent_to_date: 0, items: [] }, child_views: "", carer_views: "", social_worker_views: "", strengths: [], barriers: [], key_worker: "", actions: [] });
     toast.success("PEP record created.");
-    setPepForm({ child_id: "", school: "", year_group: "", pep_date: new Date().toISOString().slice(0, 10) });
+    setPepForm({ child_id: "", school: "", year_group: "", pep_date: todayStr() });
     setShowNew(false);
   };
   const [sortBy, setSortBy] = useState<"date" | "attendance" | "name">("date");

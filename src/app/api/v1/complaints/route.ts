@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { generateId } from "@/lib/utils";
+import { generateId, todayStr } from "@/lib/utils";
 import { runPostSaveIntelligence } from "@/lib/cara/post-save-intelligence";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     ? intelligenceDb.complaints.findOpen(homeId)
     : intelligenceDb.complaints.findAll(homeId);
 
-  const today    = new Date().toISOString().split("T")[0];
+  const today    = todayStr();
   const overdue  = records.filter((r) => r.status !== "closed" && r.response_due < today).length;
   const dueToday = records.filter((r) => r.status !== "closed" && r.response_due === today).length;
   const openCount = records.filter((r) => r.status !== "closed").length;
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
 
   const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
-  const dateReceived = body.date_received ?? new Date().toISOString().split("T")[0];
+  const dateReceived = body.date_received ?? todayStr();
   const nextRef = `CMP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`;
 
   const record = intelligenceDb.complaints.create({

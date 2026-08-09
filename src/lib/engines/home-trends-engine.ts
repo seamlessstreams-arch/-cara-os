@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME TRENDS / "DIRECTION OF TRAVEL" ENGINE
 //
@@ -158,7 +159,7 @@ function metricHeadline(
 // ── Main computation ──────────────────────────────────────────────────────────
 
 export function computeHomeTrends(input: HomeTrendsInput): HomeTrendsResult {
-  const today = input.today ?? new Date().toISOString().slice(0, 10);
+  const today = input.today ?? todayStr();
   const weeks = input.weeks ?? 8;
 
   const metrics: TrendMetricResult[] = input.metrics.map((m) => {

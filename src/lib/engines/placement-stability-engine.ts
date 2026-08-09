@@ -1,3 +1,4 @@
+import { todayStr } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — PLACEMENT STABILITY INTELLIGENCE ENGINE
 //
@@ -147,9 +148,6 @@ export interface PlacementStabilityInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function daysBetween(a: string, b: string): number {
   return Math.round(

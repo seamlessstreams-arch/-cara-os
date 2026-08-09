@@ -17,6 +17,7 @@ import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { mapStoreToConflictInput } from "@/lib/conflict-detection/conflict-input-mapper";
 import { computeConflictDetection } from "@/lib/conflict-detection/conflict-detection-engine";
+import { todayStr } from "@/lib/utils";
 
 export async function GET() {
   // Compose the exact 21 collections the conflict + event-stream mappers read
@@ -47,7 +48,7 @@ export async function GET() {
   });
   const result = computeConflictDetection({
     ...input,
-    today: new Date().toISOString().slice(0, 10),
+    today: todayStr(),
   });
   return NextResponse.json({ data: result });
 }
