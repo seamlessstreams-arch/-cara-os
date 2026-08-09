@@ -49,6 +49,26 @@ jobs:
       - name: tsc --noEmit (app code; baseline locked at 0)
         run: npx tsc --noEmit -p tsconfig.typecheck.json
 
+      # Two scopes tsc could never afford to check under 5.9.3. Both are at zero
+      # today and each costs ~25s under TS7, so gate them before they rot.
+      #
+      # Tests: burning the 460 `number|null` errors the fab-0 widening left in
+      # test files took a whole PR (#835), and nothing has held that line since —
+      # the step above deliberately excludes them.
+      #
+      # e2e: excluded from tsconfig.json outright, and the Playwright suite is not
+      # a CI job, so until now these files were type-checked by NOTHING. Playwright
+      # transpiles specs at run time, which means a renamed export or a rotted
+      # helper only surfaced when someone ran the suite by hand.
+      #
+      # All three scopes are disjoint and were each proven to fail on a planted
+      # error before landing, so a green run here means all three really ran.
+      - name: tsc --noEmit (tests included; baseline locked at 0)
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: tsc --noEmit (Playwright e2e; baseline locked at 0)
+        run: npx tsc --noEmit -p tsconfig.e2e.json
+
   guards:
     name: Repo guards
     runs-on: ubuntu-latest
