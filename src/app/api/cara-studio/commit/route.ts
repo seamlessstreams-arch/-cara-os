@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[cara-studio/commit] Error:", err);
     return NextResponse.json(
-      { error: "Commit action failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Commit action failed" },
       { status: 500 },
     );
   }

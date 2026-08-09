@@ -61,8 +61,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("[api/cara/document-analyse] Error:", error);
-    const message =
-      error instanceof Error ? error.message : "Unknown document analysis error";
+    const message = "Unknown document analysis error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

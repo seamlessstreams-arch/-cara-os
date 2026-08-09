@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/keyworking] Error:", err);
     return NextResponse.json(
-      { error: "Keyworking intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Keyworking intelligence failed" },
       { status: 500 },
     );
   }

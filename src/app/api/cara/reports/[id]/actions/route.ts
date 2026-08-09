@@ -25,7 +25,7 @@ export async function GET(
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : "Internal server error",
+        error: "Internal server error",
       },
       { status: 500 },
     );
@@ -119,7 +119,7 @@ export async function POST(
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : "Internal server error",
+        error: "Internal server error",
       },
       { status: 500 },
     );

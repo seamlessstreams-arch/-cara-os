@@ -44,7 +44,8 @@ export async function GET() {
     const data = buildActionCentre({ now, reflections, childNameOf: getYPName, attention });
     return NextResponse.json({ data });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

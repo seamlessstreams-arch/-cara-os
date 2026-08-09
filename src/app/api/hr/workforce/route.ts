@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(getDemoData(homeId, staffId, view));
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

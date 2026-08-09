@@ -75,7 +75,8 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ data: overview });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -267,7 +268,8 @@ export async function PATCH(req: NextRequest) {
     if (!updated) return NextResponse.json({ error: "Reflection not found" }, { status: 404 });
     return NextResponse.json({ data: { reflection: updated, analysis: analysePostIncidentReflection(updated, now) } });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

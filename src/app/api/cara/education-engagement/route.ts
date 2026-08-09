@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/education-engagement] Error:", err);
     return NextResponse.json(
-      { error: "Education engagement intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Education engagement intelligence failed" },
       { status: 500 },
     );
   }

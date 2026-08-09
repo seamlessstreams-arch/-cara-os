@@ -106,7 +106,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       );
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Could not capture record" },
+        { error: "Could not capture record" },
         { status: 500 },
       );
     }

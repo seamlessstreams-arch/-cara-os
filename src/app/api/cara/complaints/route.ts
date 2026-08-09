@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/complaints] Error:", err);
     return NextResponse.json(
-      { error: "Complaints intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Complaints intelligence failed" },
       { status: 500 },
     );
   }

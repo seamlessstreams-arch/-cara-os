@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/safeguarding] Error:", err);
     return NextResponse.json(
-      { error: "Safeguarding intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Safeguarding intelligence failed" },
       { status: 500 },
     );
   }

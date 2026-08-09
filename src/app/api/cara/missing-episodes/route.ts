@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/missing-episodes] Error:", err);
     return NextResponse.json(
-      { error: "Missing episodes intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Missing episodes intelligence failed" },
       { status: 500 },
     );
   }

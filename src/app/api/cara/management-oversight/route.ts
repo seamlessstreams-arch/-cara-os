@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
     review = await analyseRecord(input);
   } catch (err) {
     return NextResponse.json(
-      { error: "Engine error", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Engine error" },
       { status: 500 },
     );
   }

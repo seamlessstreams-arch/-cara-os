@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(getDemoTransition(occurrenceId, targetStatus, reason));
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(getDemoValidTransitions(occurrenceId));
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/sleep-patterns] Error:", err);
     return NextResponse.json(
-      { error: "Sleep pattern intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Sleep pattern intelligence failed" },
       { status: 500 },
     );
   }

@@ -37,7 +37,7 @@ export async function GET(
     return NextResponse.json({ data: timeline });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to fetch audit timeline", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to fetch audit timeline" },
       { status: 500 },
     );
   }

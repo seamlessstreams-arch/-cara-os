@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
     const reads = children.map((yp) => readFor(yp.id, yp.preferred_name || yp.first_name || "Child"));
     return NextResponse.json({ data: { ...buildEducationDisruptionOverview(reads), statutoryBasis: STATUTORY_BASIS } });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

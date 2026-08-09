@@ -64,7 +64,8 @@ export async function GET(_req: NextRequest) {
       meta: { generatedAt: overview.generatedAt, childCount: overview.children.length, engine: "relationship-intelligence-home", version: "1.0.0" },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

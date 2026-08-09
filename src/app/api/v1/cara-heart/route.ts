@@ -86,7 +86,8 @@ export async function POST(req: Request) {
     const output = runCaraHeartResidentialPracticeEngine(record as CaraPracticeRecord);
     return NextResponse.json({ ok: true, data: output }, { status: 200 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown engine error";
+    console.error("[api] unhandled route error:", err);
+    const message = "Unknown engine error";
     return NextResponse.json(
       { ok: false, error: `Engine error: ${message}` },
       { status: 500 },

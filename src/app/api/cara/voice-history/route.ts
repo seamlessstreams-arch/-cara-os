@@ -139,7 +139,8 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[api/cara/voice-history] Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

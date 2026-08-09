@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/emotional-wellbeing] Error:", err);
     return NextResponse.json(
-      { error: "Emotional wellbeing intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Emotional wellbeing intelligence failed" },
       { status: 500 },
     );
   }

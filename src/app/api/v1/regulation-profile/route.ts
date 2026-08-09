@@ -93,7 +93,8 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -140,7 +141,8 @@ export async function PUT(req: NextRequest) {
     await dal.regulationProfiles.create(profile);
     return NextResponse.json({ data: profile }, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -184,7 +186,8 @@ export async function POST(req: NextRequest) {
     await dal.adultRegulationReflections.create(reflection);
     return NextResponse.json({ data: { ...reflection, read: readReflection(reflection) } }, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
