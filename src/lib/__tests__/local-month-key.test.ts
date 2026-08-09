@@ -1,43 +1,81 @@
 import { describe, it, expect } from "vitest";
-import { localMonthKey } from "@/lib/utils";
+import { localMonthKey, londonDateStr, todayStr, daysFromNow } from "@/lib/utils";
 
-// Regression cover for the UTC-vs-local month bug. "Current month" used to be
-// derived with `new Date().toISOString().slice(0, 7)`, which is the UTC month —
-// wrong for a UK home for part of every BST month, and outright collision-prone
-// when building a month timeline.
+// Calendar dates in Cara are Europe/London, always — the homes are in the UK
+// and their records are legal documents, so "what day is it" must mean the day
+// the staff on shift are living in, never the server's day.
 //
-// These assertions are written to be TIMEZONE-INDEPENDENT: they assert the
-// invariant (a month start always yields that month's key, and twelve
-// consecutive month starts yield twelve distinct keys) rather than reproducing
-// a Europe/London artifact, so they hold on any CI runner. The concrete BST
-// failures they protect against, verified in Europe/London:
-//   · 1 Jul 00:30 BST → toISOString() gives "2026-06" (the PREVIOUS month), so
-//     month-scoped Reg 44 alerts and report defaults read the wrong month for
-//     the first hour of every BST month.
-//   · Local midnight on 1 Mar and on 1 Apr BOTH give "2026-03" via
-//     toISOString() (1 Apr 00:00 BST == 31 Mar 23:00 UTC) — so the 12-month
-//     Reg 44 timeline emitted a duplicate React key and silently lost April.
+// Every instant below is written with an EXPLICIT offset (…+01:00 / …Z) so the
+// assertions describe one unambiguous moment and hold identically on a London
+// dev machine and a UTC CI runner. (Constructing with `new Date(y, m, d, h)`
+// would mean a different instant on each, which is how the previous version of
+// this file quietly encoded the runner's zone into its expectations.)
+describe("londonDateStr — the night-shift bug", () => {
+  it("files a 00:30 BST record under TODAY, not yesterday", () => {
+    // 00:30 on 9 Aug in London is 23:30 on 8 Aug UTC. toISOString() — what this
+    // codebase used everywhere — would date the record 8 August: a night-shift
+    // incident, medication round or missing-from-care episode logged under the
+    // wrong day.
+    const justAfterMidnightBst = new Date("2026-08-09T00:30:00+01:00");
+    expect(justAfterMidnightBst.toISOString().slice(0, 10)).toBe("2026-08-08"); // the old, wrong answer
+    expect(londonDateStr(justAfterMidnightBst)).toBe("2026-08-09"); // the day staff are actually working
+  });
+
+  it("agrees with UTC outside BST, when London is GMT", () => {
+    const winterNight = new Date("2026-01-15T00:30:00Z");
+    expect(londonDateStr(winterNight)).toBe("2026-01-15");
+  });
+
+  it("holds at both clock changes", () => {
+    // Spring forward: 01:00 GMT → 02:00 BST on 29 Mar 2026.
+    expect(londonDateStr(new Date("2026-03-29T00:30:00Z"))).toBe("2026-03-29");
+    expect(londonDateStr(new Date("2026-03-29T01:30:00Z"))).toBe("2026-03-29");
+    // Autumn back: 02:00 BST → 01:00 GMT on 25 Oct 2026.
+    expect(londonDateStr(new Date("2026-10-25T00:30:00Z"))).toBe("2026-10-25");
+    expect(londonDateStr(new Date("2026-10-24T23:30:00Z"))).toBe("2026-10-25"); // still BST → already the 25th
+  });
+
+  it("todayStr is the London date and always well-formed", () => {
+    expect(todayStr()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(todayStr()).toBe(londonDateStr());
+  });
+});
+
+describe("daysFromNow", () => {
+  it("is calendar arithmetic anchored on today", () => {
+    expect(daysFromNow(0)).toBe(todayStr());
+    const [y, m, d] = todayStr().split("-").map(Number);
+    expect(daysFromNow(1)).toBe(new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10));
+    expect(daysFromNow(-1)).toBe(new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10));
+  });
+
+  it("crosses month and year ends correctly", () => {
+    expect(daysFromNow(0)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(daysFromNow(400)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+// Regression cover for the UTC-vs-London month bug: month-scoped Reg 44 alerts
+// and report defaults read the wrong month for the first hour of every BST
+// month, and a twelve-month timeline built from local midnights collided at the
+// spring change (Mar and Apr both mapping to "YYYY-03"), duplicating a React
+// key and silently dropping a month.
 describe("localMonthKey", () => {
-  it("returns the LOCAL month of a month-start date, for all twelve months", () => {
-    for (let m = 0; m < 12; m++) {
-      const monthStart = new Date(2026, m, 1);
-      expect(localMonthKey(monthStart)).toBe(`2026-${String(m + 1).padStart(2, "0")}`);
-    }
+  it("returns the London month at the first-hour boundary", () => {
+    // 00:30 on 1 Jul BST is 30 Jun in UTC — the alerts must follow the home.
+    expect(localMonthKey(new Date("2026-07-01T00:30:00+01:00"))).toBe("2026-07");
+    expect(localMonthKey(new Date("2026-07-31T23:30:00+01:00"))).toBe("2026-07");
+    // …and the instant an hour later is genuinely the new month.
+    expect(localMonthKey(new Date("2026-08-01T00:30:00+01:00"))).toBe("2026-08");
   });
 
   it("gives twelve DISTINCT keys across a year — no clock-change collision", () => {
-    // This is the timeline bug: buildMonthTimeline() walks back twelve local
-    // month starts. Two of them collapsing into one key duplicates a React key
-    // and drops a month from the Reg 44 timeline.
-    const keys = Array.from({ length: 12 }, (_, m) => localMonthKey(new Date(2026, m, 1)));
+    const keys = Array.from({ length: 12 }, (_, m) =>
+      localMonthKey(new Date(`2026-${String(m + 1).padStart(2, "0")}-01T12:00:00Z`)),
+    );
     expect(new Set(keys).size).toBe(12);
-  });
-
-  it("reads local clock parts, not the UTC instant", () => {
-    // Just after local midnight on the 1st is where UTC and local diverge under
-    // BST; the key must follow the local calendar the home actually works to.
-    expect(localMonthKey(new Date(2026, 6, 1, 0, 30))).toBe("2026-07");
-    expect(localMonthKey(new Date(2026, 6, 31, 23, 30))).toBe("2026-07");
+    expect(keys[2]).toBe("2026-03");
+    expect(keys[3]).toBe("2026-04");
   });
 
   it("defaults to now and is always well-formed YYYY-MM", () => {

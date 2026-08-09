@@ -34,23 +34,55 @@ export function initials(name: string): string {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
+// ─── Calendar dates are ALWAYS Europe/London ────────────────────────────────
+// The homes are in the UK and their records are legal documents, so "what day
+// is it" must mean the day the staff on shift are living in — never the
+// server's day.
+//
+// Two ways to get this wrong, both of which were live here:
+//   • toISOString() is UTC. During BST (≈late Mar–late Oct, half the year) a
+//     record written between 00:00 and 00:59 was filed under YESTERDAY — night
+//     shifts are exactly when incidents, medication rounds and missing-from-care
+//     episodes get recorded.
+//   • getFullYear()/getMonth()/getDate() are the RUNTIME's local zone. That is
+//     London in the browser but UTC on Vercel, so "use local parts" silently
+//     reverts to the same bug in every server route and rendered page.
+// Naming the zone is the only thing that holds in both places.
+const LONDON_TZ = "Europe/London";
+
+const londonDateParts = new Intl.DateTimeFormat("en-CA", {
+  timeZone: LONDON_TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** The calendar date in Europe/London as YYYY-MM-DD. */
+export function londonDateStr(d: Date = new Date()): string {
+  return londonDateParts.format(d);
+}
+
+/**
+ * A date n days from today in London terms. Calendar arithmetic on the date
+ * parts (not +n×86400000ms), so the clock changes can't shift the answer.
+ */
 export function daysFromNow(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = londonDateStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
 
 export function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
+  return londonDateStr();
 }
 
-// "Current month" must come from LOCAL date parts, not toISOString() (UTC).
-// In Europe/London (BST, UTC+1) between 00:00 and 00:59 on the 1st, the UTC
-// month is still the previous one, so month-scoped alerts and defaults go
-// wrong — and keys built from local-midnight month starts collide at the
-// spring clock change (Mar/Apr both map to "YYYY-03"), duplicating React keys.
+/**
+ * "YYYY-MM" for the current month in London. Month-scoped alerts and defaults
+ * read this, and keys built from local-midnight month starts used to collide
+ * at the spring clock change (Mar/Apr both mapping to "YYYY-03"), duplicating
+ * React keys.
+ */
 export function localMonthKey(dt: Date = new Date()): string {
-  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+  return londonDateStr(dt).slice(0, 7);
 }
 
 export function isOverdue(dueDate: string | null, status: string): boolean {
