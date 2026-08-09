@@ -24,6 +24,7 @@ import {
   type StrategyDiscussionRequest,
   type StrategySectionKey,
 } from "./types";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export const STRATEGY_EXPORT_VERSION = "1.0.0";
 
@@ -212,7 +213,7 @@ export function renderStrategyHtml(model: StrategyExportModel): string {
 
   const auditHtml = model.auditTrail.length
     ? `<ul>${model.auditTrail
-        .map((a) => `<li>${esc(a.at.slice(0, 16).replace("T", " "))} — ${esc(a.actor)}: ${esc(a.action)}${a.detail ? ` (${esc(a.detail)})` : ""}</li>`)
+        .map((a) => `<li>${esc(londonDateTimeStr(a.at))} — ${esc(a.actor)}: ${esc(a.action)}${a.detail ? ` (${esc(a.detail)})` : ""}</li>`)
         .join("")}</ul>`
     : `<p class="none">No audit entries.</p>`;
 
@@ -237,7 +238,7 @@ export function renderStrategyHtml(model: StrategyExportModel): string {
 <header>
   <h1>Strategy Discussion Request</h1>
   <p class="meta">${esc(h.childName)} · request ${esc(h.requestId)} · ${esc(h.statusLabel)}</p>
-  <p class="meta">Raised by ${esc(h.createdBy)} on ${esc(h.createdAt.slice(0, 10))} · pack generated ${esc(h.generatedAt.slice(0, 16).replace("T", " "))} · v${esc(model.version)}</p>
+  <p class="meta">Raised by ${esc(h.createdBy)} on ${esc(h.createdAt.slice(0, 10))} · pack generated ${esc(londonDateTimeStr(h.generatedAt))} · v${esc(model.version)}</p>
 </header>
 
 <p class="advisory">${esc(model.advisoryStatement)}</p>

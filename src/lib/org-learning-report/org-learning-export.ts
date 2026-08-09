@@ -16,6 +16,7 @@ import type {
   OrgLearningReportSection,
   ThemeWeight,
 } from "./types";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export const ORG_LEARNING_EXPORT_VERSION = "1.0.0";
 
@@ -149,7 +150,7 @@ export function renderOrgLearningHtml(model: OrgLearningExportModel): string {
 <header>
   <h1>Organisational Learning</h1>
   <p class="meta">${esc(h.homeName)} · ${esc(h.periodLabel)} (last ${h.windowDays} days, as of ${esc(h.asOf)})</p>
-  <p class="meta">Pack generated ${esc(h.generatedAt.slice(0, 16).replace("T", " "))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
+  <p class="meta">Pack generated ${esc(londonDateTimeStr(h.generatedAt))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
 </header>
 
 <p class="headline">${esc(model.headline)}</p>

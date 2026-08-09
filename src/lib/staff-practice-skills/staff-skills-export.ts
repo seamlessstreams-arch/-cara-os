@@ -16,6 +16,7 @@ import type {
   StaffPracticeSkillsProfile,
   StaffSupervisionPrompt,
 } from "./types";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export const STAFF_SKILLS_EXPORT_VERSION = "1.0.0";
 
@@ -180,7 +181,7 @@ export function renderStaffSkillsHtml(model: StaffSkillsExportModel): string {
 <header>
   <h1>Staff Development Pack</h1>
   <p class="meta">${esc(h.staffName)} · last ${h.windowDays} days, as of ${esc(h.asOf)}</p>
-  <p class="meta">Pack generated ${esc(h.generatedAt.slice(0, 16).replace("T", " "))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
+  <p class="meta">Pack generated ${esc(londonDateTimeStr(h.generatedAt))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
 </header>
 
 <p class="tone">${esc(model.toneNote)}</p>

@@ -8,6 +8,7 @@
 
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import type { StrategyExportModel } from "./strategy-export";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export async function renderStrategyDocx(model: StrategyExportModel): Promise<Buffer> {
   const h = model.header;
@@ -19,7 +20,7 @@ export async function renderStrategyDocx(model: StrategyExportModel): Promise<Bu
     new Paragraph({
       children: [
         new TextRun({
-          text: `Raised by ${h.createdBy} on ${h.createdAt.slice(0, 10)} · pack generated ${h.generatedAt.slice(0, 16).replace("T", " ")} · v${model.version}`,
+          text: `Raised by ${h.createdBy} on ${h.createdAt.slice(0, 10)} · pack generated ${londonDateTimeStr(h.generatedAt)} · v${model.version}`,
           size: 18,
         }),
       ],
@@ -104,7 +105,7 @@ export async function renderStrategyDocx(model: StrategyExportModel): Promise<Bu
     body.push(
       new Paragraph({
         bullet: { level: 0 },
-        children: [new TextRun({ text: `${a.at.slice(0, 16).replace("T", " ")} — ${a.actor}: ${a.action}${a.detail ? ` (${a.detail})` : ""}`, size: 18 })],
+        children: [new TextRun({ text: `${londonDateTimeStr(a.at)} — ${a.actor}: ${a.action}${a.detail ? ` (${a.detail})` : ""}`, size: 18 })],
       }),
     );
   }

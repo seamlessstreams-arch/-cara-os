@@ -62,6 +62,43 @@ export function londonDateStr(d: Date = new Date()): string {
   return londonDateParts.format(d);
 }
 
+const londonDateTime = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LONDON_TZ,
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const londonLongDateFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LONDON_TZ,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/**
+ * A timestamp shown to a reader, in London ("9 Aug 2026, 00:30").
+ * Server-rendered output (report packs, generated titles) would otherwise use
+ * the runtime zone — UTC on Vercel — and show a 22:45 incident as 21:45.
+ */
+export function londonDateTimeStr(d: Date | string): string {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(dt.getTime())) return typeof d === "string" ? d : "";
+  return londonDateTime.format(dt).replace(",", " ·");
+}
+
+/** A long-form London date ("9 August 2026") for titles and prose. */
+export function londonLongDate(d: Date = new Date()): string {
+  return londonLongDateFmt.format(d);
+}
+
+/** The current month name in London ("August"). */
+export function londonMonthName(d: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: LONDON_TZ, month: "long" }).format(d);
+}
+
 /**
  * A date n days from today in London terms. Calendar arithmetic on the date
  * parts (not +n×86400000ms), so the clock changes can't shift the answer.
