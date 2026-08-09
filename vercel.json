@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "node --max-old-space-size=8192 node_modules/.bin/next build",
+  "buildCommand": "node --max-old-space-size=6144 node_modules/.bin/next build",
   "crons": [
     {
       "path": "/api/cron",
