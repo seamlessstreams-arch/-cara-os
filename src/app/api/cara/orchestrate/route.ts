@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[api/cara/orchestrate] Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown orchestration error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Unknown orchestration error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

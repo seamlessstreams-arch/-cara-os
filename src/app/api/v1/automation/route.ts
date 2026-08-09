@@ -38,7 +38,7 @@ export async function GET() {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to fetch automation rules", detail: err instanceof Error ? err.message : "Unknown error" },
+      { error: "Failed to fetch automation rules" },
       { status: 500 },
     );
   }

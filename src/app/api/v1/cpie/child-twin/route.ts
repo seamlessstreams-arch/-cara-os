@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
       meta: { engine: "cpie-child-twin", version: twin.engineVersion, generatedAt: twin.generatedAt },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

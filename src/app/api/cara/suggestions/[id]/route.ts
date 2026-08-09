@@ -65,7 +65,7 @@ export async function GET(
     return NextResponse.json({ data: suggestion });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to fetch suggestion", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to fetch suggestion" },
       { status: 500 },
     );
   }
@@ -146,7 +146,7 @@ export async function PATCH(
     return NextResponse.json({ data: updated });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to update suggestion", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to update suggestion" },
       { status: 500 },
     );
   }

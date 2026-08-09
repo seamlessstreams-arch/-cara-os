@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/family-contact] Error:", err);
     return NextResponse.json(
-      { error: "Family contact intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Family contact intelligence failed" },
       { status: 500 },
     );
   }

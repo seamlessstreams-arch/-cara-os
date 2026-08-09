@@ -687,7 +687,8 @@ function notFound(slug: string) {
 }
 
 function serverError(err: unknown) {
-  const message = err instanceof Error ? err.message : "Internal server error";
+  console.error("[api] unhandled route error:", err);
+  const message = "Internal server error";
   return json({ error: message }, 500);
 }
 

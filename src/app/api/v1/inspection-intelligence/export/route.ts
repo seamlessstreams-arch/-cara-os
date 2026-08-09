@@ -106,7 +106,8 @@ export async function GET(req: NextRequest) {
     // Default: HTML (renders inline for print / save-as-PDF).
     return new NextResponse(renderInspectionHtml(model), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

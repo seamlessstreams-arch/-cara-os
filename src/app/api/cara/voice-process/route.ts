@@ -138,7 +138,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[api/cara/voice-process] Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown voice processing error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Unknown voice processing error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

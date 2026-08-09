@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
       data: { ...summary, ladder: CHALLENGE_LADDER, writeEnabled: isFeatureEnabled("professional_challenge_write") },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -102,7 +103,8 @@ export async function POST(req: NextRequest) {
     await dal.professionalChallenges.create(challenge);
     return NextResponse.json({ data: challenge }, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -171,7 +173,8 @@ export async function PATCH(req: NextRequest) {
     c.updated_by = identity.userId;
     return NextResponse.json({ data: c });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

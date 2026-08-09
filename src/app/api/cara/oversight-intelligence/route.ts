@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       return NextResponse.json(
-        { error: "Analysis failed", detail: err instanceof Error ? err.message : String(err) },
+        { error: "Analysis failed" },
         { status: 500 },
       );
     }
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       return NextResponse.json(
-        { error: "Generation failed", detail: err instanceof Error ? err.message : String(err) },
+        { error: "Generation failed" },
         { status: 500 },
       );
     }

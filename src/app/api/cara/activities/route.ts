@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara/activities] Error:", err);
     return NextResponse.json(
-      { error: "Activities intelligence failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Activities intelligence failed" },
       { status: 500 },
     );
   }

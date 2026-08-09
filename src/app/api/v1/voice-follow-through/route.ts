@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
       data: { ...result, writeEnabled: isFeatureEnabled("voice_follow_through_write") },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -112,7 +113,8 @@ export async function POST(req: NextRequest) {
     await dal.voiceConcernLoops.create(loop);
     return NextResponse.json({ data: loop }, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -166,7 +168,8 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ data: loop, stages: VOICE_LOOP_STAGES });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

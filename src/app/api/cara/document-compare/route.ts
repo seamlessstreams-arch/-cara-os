@@ -68,8 +68,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("[api/cara/document-compare] Error:", error);
-    const message =
-      error instanceof Error ? error.message : "Unknown document comparison error";
+    const message = "Unknown document comparison error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

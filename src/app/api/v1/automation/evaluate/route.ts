@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to evaluate automation rules", detail: err instanceof Error ? err.message : "Unknown error" },
+      { error: "Failed to evaluate automation rules" },
       { status: 500 },
     );
   }

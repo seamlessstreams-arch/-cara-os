@@ -65,7 +65,8 @@ export async function GET(req: NextRequest) {
       meta: { engine: "cpie-weekly-intelligence", version: wio.engineVersion, generatedAt: wio.generatedAt, period: wio.periodLabel, window: { start: wio.weekStart, end: wio.weekEnding, days: wio.windowDays } },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: suggestions });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to fetch suggestions", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to fetch suggestions" },
       { status: 500 },
     );
   }
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ data: persisted }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to generate suggestions", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to generate suggestions" },
       { status: 500 },
     );
   }

@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[cara-studio/approve] Error:", err);
     return NextResponse.json(
-      { error: "Approval action failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Approval action failed" },
       { status: 500 },
     );
   }

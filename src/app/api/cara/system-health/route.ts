@@ -130,7 +130,6 @@ export async function GET() {
     return NextResponse.json(
       {
         error: "System health check failed",
-        detail: err instanceof Error ? err.message : String(err),
       },
       { status: 500 },
     );

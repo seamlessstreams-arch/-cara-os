@@ -246,7 +246,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[cara-studio/generate] Error:", err);
     return NextResponse.json(
-      { error: "Failed to generate content", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Failed to generate content" },
       { status: 500 },
     );
   }

@@ -69,7 +69,8 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ data: overview });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -125,7 +126,8 @@ export async function POST(req: NextRequest) {
     db.stayingSafePlans.append(plan);
     return NextResponse.json({ data: { plan, analysis: analyseStayingSafePlan(plan, now) } }, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -151,7 +153,8 @@ export async function PATCH(req: NextRequest) {
     if (!updated) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     return NextResponse.json({ data: { plan: updated, analysis: analyseStayingSafePlan(updated, now) } });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error("[api] unhandled route error:", error);
+    const message = "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

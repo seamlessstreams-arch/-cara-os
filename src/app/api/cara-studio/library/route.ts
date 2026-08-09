@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[cara-studio/library] Error:", err);
     return NextResponse.json(
-      { error: "Library query failed", detail: err instanceof Error ? err.message : String(err) },
+      { error: "Library query failed" },
       { status: 500 },
     );
   }
