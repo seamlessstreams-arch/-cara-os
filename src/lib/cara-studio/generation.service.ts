@@ -19,6 +19,7 @@ import type {
   CaraStudioQualityCheck,
 } from "@/types/cara-studio";
 import { ARTIFACT_TYPE_LABELS } from "@/types/cara-studio";
+import { londonLongDate } from "@/lib/utils";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -65,7 +66,7 @@ export async function generateArtifact(
 
   // 4. Build artifact title
   const typeLabel = ARTIFACT_TYPE_LABELS[request.artifact_type];
-  const title = `${typeLabel} — ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
+  const title = `${typeLabel} — ${londonLongDate()}`;
 
   // 5. Persist artifact
   let artifact: CaraStudioArtifact;

@@ -21,6 +21,7 @@ import type {
   SESSION_TYPE_LABELS,
 } from "@/types/practice-intelligence";
 import { SESSION_TYPE_LABELS as LABELS } from "@/types/practice-intelligence";
+import { londonLongDate } from "@/lib/utils";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -156,7 +157,7 @@ export async function generateSession(opts: {
     sessionContent = getDefaultSessionContent(opts.sessionType);
   }
 
-  const title = `${LABELS[opts.sessionType]} — ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
+  const title = `${LABELS[opts.sessionType]} — ${londonLongDate()}`;
 
   // Persist if DB available
   if (sb) {

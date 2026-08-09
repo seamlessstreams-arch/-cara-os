@@ -8,6 +8,7 @@
 
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import type { StaffSkillsExportModel } from "./staff-skills-export";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export async function renderStaffSkillsDocx(model: StaffSkillsExportModel): Promise<Buffer> {
   const h = model.header;
@@ -23,7 +24,7 @@ export async function renderStaffSkillsDocx(model: StaffSkillsExportModel): Prom
     new Paragraph({
       children: [
         new TextRun({
-          text: `Pack generated ${h.generatedAt.slice(0, 16).replace("T", " ")} · engine v${h.engineVersion} · export v${model.version}`,
+          text: `Pack generated ${londonDateTimeStr(h.generatedAt)} · engine v${h.engineVersion} · export v${model.version}`,
           size: 18,
         }),
       ],

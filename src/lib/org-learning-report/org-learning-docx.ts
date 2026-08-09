@@ -8,6 +8,7 @@
 
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import type { OrgLearningExportModel } from "./org-learning-export";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export async function renderOrgLearningDocx(model: OrgLearningExportModel): Promise<Buffer> {
   const h = model.header;
@@ -23,7 +24,7 @@ export async function renderOrgLearningDocx(model: OrgLearningExportModel): Prom
     new Paragraph({
       children: [
         new TextRun({
-          text: `Pack generated ${h.generatedAt.slice(0, 16).replace("T", " ")} · engine v${h.engineVersion} · export v${model.version}`,
+          text: `Pack generated ${londonDateTimeStr(h.generatedAt)} · engine v${h.engineVersion} · export v${model.version}`,
           size: 18,
         }),
       ],

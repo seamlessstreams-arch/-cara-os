@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { localMonthKey, londonDateStr, todayStr, daysFromNow } from "@/lib/utils";
+import { localMonthKey, londonDateStr, londonDateTimeStr, londonLongDate, londonMonthName, todayStr, daysFromNow } from "@/lib/utils";
 
 // Calendar dates in Cara are Europe/London, always — the homes are in the UK
 // and their records are legal documents, so "what day is it" must mean the day
@@ -80,5 +80,34 @@ describe("localMonthKey", () => {
 
   it("defaults to now and is always well-formed YYYY-MM", () => {
     expect(localMonthKey()).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
+  });
+});
+
+describe("londonDateTimeStr — reader-facing timestamps", () => {
+  it("shows a 00:30 BST pack stamp as the 9th at 00:30, not the 8th at 23:30", () => {
+    // Report packs are server-rendered, and the server runs UTC — so a raw ISO
+    // slice put the WRONG DAY AND HOUR on a document that goes to a review.
+    const packAt = new Date("2026-08-08T23:30:00Z");
+    expect(packAt.toISOString().slice(0, 16).replace("T", " ")).toBe("2026-08-08 23:30"); // old, wrong
+    expect(londonDateTimeStr(packAt)).toBe("9 Aug 2026 · 00:30");
+  });
+
+  it("shows a late-evening incident at its London time", () => {
+    expect(londonDateTimeStr(new Date("2026-08-09T21:45:00Z"))).toBe("9 Aug 2026 · 22:45");
+  });
+
+  it("agrees with UTC in winter, when London is GMT", () => {
+    expect(londonDateTimeStr(new Date("2026-01-15T09:05:00Z"))).toBe("15 Jan 2026 · 09:05");
+  });
+
+  it("accepts ISO strings and degrades gracefully on junk", () => {
+    expect(londonDateTimeStr("2026-08-09T21:45:00Z")).toBe("9 Aug 2026 · 22:45");
+    expect(londonDateTimeStr("not a date")).toBe("not a date");
+  });
+
+  it("londonLongDate / londonMonthName follow London, not the runtime", () => {
+    const justAfterMidnightBst = new Date("2026-08-31T23:30:00Z"); // 1 Sep 00:30 BST
+    expect(londonLongDate(justAfterMidnightBst)).toBe("1 September 2026");
+    expect(londonMonthName(justAfterMidnightBst)).toBe("September");
   });
 });

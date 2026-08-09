@@ -9,6 +9,7 @@
 
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 import type { ChildTwinExportModel } from "./child-twin-export";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export async function renderChildTwinDocx(model: ChildTwinExportModel): Promise<Buffer> {
   const h = model.header;
@@ -20,7 +21,7 @@ export async function renderChildTwinDocx(model: ChildTwinExportModel): Promise<
     new Paragraph({
       children: [
         new TextRun({
-          text: `Twin generated ${h.generatedAt.slice(0, 16).replace("T", " ")} · pack generated ${h.packGeneratedAt.slice(0, 16).replace("T", " ")} · engine v${h.engineVersion} · export v${model.version}`,
+          text: `Twin generated ${londonDateTimeStr(h.generatedAt)} · pack generated ${londonDateTimeStr(h.packGeneratedAt)} · engine v${h.engineVersion} · export v${model.version}`,
           size: 18,
         }),
       ],

@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { ChildTwin, TwinConfidence } from "./types";
+import { londonDateTimeStr } from "@/lib/utils";
 
 export const CHILD_TWIN_EXPORT_VERSION = "1.0.0";
 
@@ -210,7 +211,7 @@ export function renderChildTwinHtml(model: ChildTwinExportModel): string {
 <header>
   <h1>Child Practice-Intelligence Pack</h1>
   <p class="meta">${esc(h.childName)}</p>
-  <p class="meta">Twin generated ${esc(h.generatedAt.slice(0, 16).replace("T", " "))} · pack generated ${esc(h.packGeneratedAt.slice(0, 16).replace("T", " "))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
+  <p class="meta">Twin generated ${esc(londonDateTimeStr(h.generatedAt))} · pack generated ${esc(londonDateTimeStr(h.packGeneratedAt))} · engine v${esc(h.engineVersion)} · export v${esc(model.version)}</p>
 </header>
 
 <p class="statement">${esc(model.childStatement)}</p>

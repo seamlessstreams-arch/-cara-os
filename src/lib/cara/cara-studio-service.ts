@@ -15,6 +15,7 @@ import { gatherSourcesForRequest } from "./cara-studio-sources";
 import { detectGapsForRequest } from "./cara-studio-gaps";
 import { fileCommittedArtifact } from "./cara-filing-cabinet";
 import { CARA_PROFESSIONAL_IDENTITY_PROMPT } from "./writingStyleRules";
+import { londonMonthName } from "@/lib/utils";
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
@@ -517,7 +518,7 @@ function detectSafeguardingLevel(
 
 function buildFilingPath(request: CaraGenerationRequest): string {
   const year = new Date().getFullYear();
-  const month = new Date().toLocaleString("en-GB", { month: "long" });
+  const month = londonMonthName();
   const category = request.child_id ? `Children/${request.child_id}` : "Home";
   return `${category}/${year}/${month}/${request.artifact_type}`;
 }
