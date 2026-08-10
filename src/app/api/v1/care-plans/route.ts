@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -47,6 +48,9 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+
+  const missing = requireFields(body, ["child_id"]);
+  if (missing) return missing;
   const record = intelligenceDb.carePlans.create({
     home_id:                   body.home_id ?? "home_oak",
     child_id:                  body.child_id ?? "",
