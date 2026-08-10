@@ -189,7 +189,14 @@ export async function GET() {
         notes: r.notes,
       }));
 
-    const signal = trainingSignal(mandatoryExpired, mandatoryNotStarted, mandatoryExpiringSoon, mandatoryRecords.length);
+    // `mandatory` is THIS staff member's mandatory records, matching the three
+    // counts above and the denominator buildSupervisionPrompt gets below. The
+    // home-wide `mandatoryRecords` was both a temporal-dead-zone reference (it
+    // is declared after this callback runs, so the route threw on every request)
+    // and the wrong denominator: it would have scored a staff member with no
+    // records against the home's total, returning "compliant" where the honest
+    // answer is "not_recorded".
+    const signal = trainingSignal(mandatoryExpired, mandatoryNotStarted, mandatoryExpiringSoon, mandatory.length);
 
     return {
       staffId: s.id,
