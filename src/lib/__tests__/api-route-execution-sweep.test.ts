@@ -19,8 +19,11 @@ import path from "node:path";
 // permits that shape — a block-scoped read inside a closure is legal at compile
 // time because the compiler cannot know when the closure runs.
 //
-// Scope: static routes only. Dynamic ([param]) routes need real params, and
-// non-GET handlers need bodies; both are left to their own tests.
+// Scope: GET handlers. Static routes are called bare; dynamic ([param]) routes
+// are called with a probe id that deliberately matches nothing, so a 404 is the
+// expected answer and any crash in param parsing, lookup or not-found handling
+// still surfaces. Non-GET handlers need per-route fixture bodies and are left
+// to their own tests.
 //
 // 4xx is FINE and expected — ~350 routes legitimately demand a childId, a date
 // range, or a POST. This asserts only that a handler RESPONDS rather than
@@ -39,37 +42,66 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
-const routes = [...walk(API_DIR)]
-  .filter((f) => !f.includes("["))
+const allGetRoutes = [...walk(API_DIR)]
   .filter((f) => /export (async function|function|const) GET/.test(fs.readFileSync(f, "utf8")))
   .sort();
 
+const staticRoutes = allGetRoutes.filter((f) => !f.includes("["));
+const dynamicRoutes = allGetRoutes.filter((f) => f.includes("["));
+
+// Build the URL and the params object a dynamic route expects. Next passes
+// params as a PROMISE, and catch-all segments as an array — a harness that gets
+// either shape wrong reports crashes that belong to the harness, not the app.
+function probeFor(file: string): { urlPath: string; params: Record<string, string | string[]> } {
+  const params: Record<string, string | string[]> = {};
+  const segments = path
+    .relative(path.join(ROOT, "src/app"), path.dirname(file))
+    .split(path.sep)
+    .map((segment) => {
+      const match = /^\[(\.\.\.)?(.+)\]$/.exec(segment);
+      if (!match) return segment;
+      const name = match[2];
+      params[name] = match[1] ? [PROBE_ID] : PROBE_ID;
+      return PROBE_ID;
+    });
+  return { urlPath: "/" + segments.join("/"), params };
+}
+
+const PROBE_ID = "probe-nonexistent-id";
+
 // A 503 that names the missing Supabase configuration is the correct answer for
 // a persistence-backed feature running in demo mode, not a failure.
-const SUPABASE_REQUIRED = /persistence is not configured|supabaseRequired/i;
+const SUPABASE_REQUIRED = /persistence is not configured|supabaseRequired|database not available/i;
 
 describe("API route execution sweep", () => {
   it("has routes to sweep", () => {
     // If a refactor moves route files, the sweep must fail loudly rather than
     // silently pass over an empty list.
-    expect(routes.length).toBeGreaterThan(500);
+    expect(staticRoutes.length).toBeGreaterThan(500);
+    expect(dynamicRoutes.length).toBeGreaterThan(50);
   });
 
-  it("every static GET route responds without throwing", { timeout: 600_000 }, async () => {
+  async function sweep(files: string[], dynamic: boolean) {
     const threw: string[] = [];
     const failed: string[] = [];
 
-    for (const file of routes) {
-      const urlPath =
-        "/" + path.relative(path.join(ROOT, "src/app"), path.dirname(file)).split(path.sep).join("/");
+    for (const file of files) {
+      const { urlPath, params } = dynamic
+        ? probeFor(file)
+        : {
+            urlPath:
+              "/" + path.relative(path.join(ROOT, "src/app"), path.dirname(file)).split(path.sep).join("/"),
+            params: {},
+          };
       const spec =
         "@/" + path.relative(path.join(ROOT, "src"), file).split(path.sep).join("/").replace(/\.ts$/, "");
 
       try {
         const mod = (await import(/* @vite-ignore */ spec)) as {
-          GET: (r: NextRequest) => Promise<Response>;
+          GET: (r: NextRequest, ctx?: { params: Promise<Record<string, string | string[]>> }) => Promise<Response>;
         };
-        const res = await mod.GET(new NextRequest("http://localhost" + urlPath));
+        const req = new NextRequest("http://localhost" + urlPath);
+        const res = dynamic ? await mod.GET(req, { params: Promise.resolve(params) }) : await mod.GET(req);
         if (res.status >= 500) {
           const body = await res.text().catch(() => "");
           if (!SUPABASE_REQUIRED.test(body)) {
@@ -82,5 +114,13 @@ describe("API route execution sweep", () => {
     }
 
     expect({ threw, failed }).toEqual({ threw: [], failed: [] });
+  }
+
+  it("every static GET route responds without throwing", { timeout: 600_000 }, async () => {
+    await sweep(staticRoutes, false);
+  });
+
+  it("every dynamic GET route responds without throwing", { timeout: 600_000 }, async () => {
+    await sweep(dynamicRoutes, true);
   });
 });
