@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import { POST as postContactLog } from "@/app/api/v1/contact-logs/route";
 import { POST as postCarePlan } from "@/app/api/v1/care-plans/route";
 import { POST as postComplaint } from "@/app/api/v1/complaints/route";
+import { POST as postForm } from "@/app/api/v1/forms/route";
+import { POST as postSupervision } from "@/app/api/v1/supervision/route";
 
 // Regression guard. All three of these answered an EMPTY body with 201 and a
 // written record:
@@ -59,5 +61,69 @@ describe("write routes reject an empty body", () => {
       }),
     );
     expect(res.status).toBe(400);
+  });
+});
+
+// forms and supervision were held back from the first two batches because they
+// have several UI callers and a required field the UI omits would break a
+// working create. Reading those callers settled it: BOTH already enforce these
+// fields client-side — quick-create-modal refuses to submit without a title,
+// and the supervision dialog refuses without staff_id AND scheduled_date. The
+// server simply was not enforcing what the UI already believed, so a malformed
+// or replayed request walked straight past a check the user could see.
+describe("forms and supervision match the rule their own UI enforces", () => {
+  it("forms rejects a create with no title", async () => {
+    const res = await postForm(emptyPost());
+    expect(res.status).toBe(400);
+    expect((await res.json()).missing).toContain("title");
+  });
+
+  it("supervision rejects a create with no staff member or date", async () => {
+    const res = await postSupervision(emptyPost());
+    expect(res.status).toBe(400);
+    const missing = (await res.json()).missing;
+    expect(missing).toContain("staff_id");
+    expect(missing).toContain("scheduled_date");
+  });
+
+  it("supervision still rejects a staff member with no date", async () => {
+    const res = await postSupervision(
+      new NextRequest("http://localhost/probe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ staff_id: "staff_probe" }),
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).missing).toEqual(["scheduled_date"]);
+  });
+
+  it("accepts the payload the supervision dialog actually sends", async () => {
+    const res = await postSupervision(
+      new NextRequest("http://localhost/probe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          staff_id: "staff_probe",
+          scheduled_date: "2026-08-18",
+          type: "formal",
+          status: "scheduled",
+        }),
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect((await res.json()).data.staff_id).toBe("staff_probe");
+  });
+
+  it("accepts the payload the form dialog actually sends", async () => {
+    const res = await postForm(
+      new NextRequest("http://localhost/probe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Weekly key-work record", form_type: "keywork", status: "draft" }),
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect((await res.json()).data.title).toBe("Weekly key-work record");
   });
 });
