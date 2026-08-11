@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { createFormulation, listFormulations, getFormulationForChild } from "@/lib/cara-studio/formulation.service";
 
@@ -31,6 +32,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
+    const __missing = requireFields(body, ["child_id"]);
+    if (__missing) return __missing;
     const formulation = await createFormulation({
       home_id: hId(),
       child_id: body.child_id,

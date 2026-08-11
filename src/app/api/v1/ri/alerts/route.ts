@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { RiAlert, RiAlertType, RiAlertSeverity } from "@/types/extended";
@@ -76,6 +77,8 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  const __missing = requireFields(body, ["title"]);
+  if (__missing) return __missing;
   const record = intelligenceDb.riAlerts.create({
     home_id: body.home_id ?? "home_oak",
     alert_type: body.alert_type ?? "rising_risk",

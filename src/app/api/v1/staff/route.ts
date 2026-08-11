@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -126,6 +127,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const parsed = await readJsonBody(req);
   if (!parsed.ok) return parsed.response;
+  const __missing = requireFields(parsed.data, ["full_name"]);
+  if (__missing) return __missing;
   try {
     const created = await dal.staff.create(parsed.data as Record<string, unknown>);
     return NextResponse.json({ data: created }, { status: 201 });

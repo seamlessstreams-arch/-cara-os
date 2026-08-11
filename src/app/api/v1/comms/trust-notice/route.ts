@@ -4,6 +4,7 @@ import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { persistTrustNoticeAck } from "@/lib/supabase/comms";
 import { STAFF_TRUST_NOTICE_VERSION } from "@/types/comms";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,8 @@ export async function POST(req: NextRequest) {
     const __parsed = await readJsonBody(req);
     if (!__parsed.ok) return __parsed.response;
     body = __parsed.data;
+    const __missing = requireFields(body, ["staff_id"]);
+    if (__missing) return __missing;
   } catch {
     /* no body */
   }

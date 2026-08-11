@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  const __missing = requireFields(body, ["staff_id"]);
+  if (__missing) return __missing;
   const plan = db.successionPlans.create({
     ...body,
     home_id: body.home_id ?? "home_oak",

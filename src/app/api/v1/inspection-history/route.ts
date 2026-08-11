@@ -3,6 +3,7 @@ import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireNonEmptyBody } from "@/lib/http/require-fields";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,8 @@ export async function POST(req: NextRequest) {
     const __parsed = await readJsonBody(req);
     if (!__parsed.ok) return __parsed.response;
     body = __parsed.data;
+    const __missing = requireNonEmptyBody(body);
+    if (__missing) return __missing;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

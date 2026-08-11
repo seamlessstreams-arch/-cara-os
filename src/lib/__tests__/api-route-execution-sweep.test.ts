@@ -124,3 +124,82 @@ describe("API route execution sweep", () => {
     await sweep(dynamicRoutes, true);
   });
 });
+
+// ─── POST with an empty body ────────────────────────────────────────────────
+//
+// readJsonBody proves a body is valid JSON. It does not prove the body SAYS
+// anything, and 47 handlers went straight from a parsed `{}` into
+// `create({ field: body.field ?? default })` and answered 201 — writing records
+// that assert things nobody recorded. contact-logs wrote outcome "positive"
+// with safeguarding_concern false; care-plans wrote an active plan with
+// child_id ""; pi-debriefs wrote technique_used "team_teach_holding", a
+// physical restraint technique, for an incident that did not exist.
+//
+// A 4xx here is the correct answer. A 201 means a record was written from
+// nothing, so any route that still does it has to be listed below with a
+// reason — which is what stops the next one arriving unnoticed.
+
+const POST_EMPTY_BODY_ALLOWED = new Set([
+  // Analysis endpoints: they run over the whole home and treat child_id as an
+  // OPTIONAL narrowing filter, so a bodyless call is the normal invocation.
+  "/api/cara-studio/contradictions",
+  "/api/cara-studio/early-warnings",
+  "/api/cara-studio/gaps",
+  "/api/cara-studio/home-dynamics",
+  "/api/cara-studio/safeguarding-patterns",
+  "/api/v1/cara-studio/annex-a-snapshot",
+  "/api/v1/cara-studio/care-graph",
+  "/api/v1/cara-studio/decision-support",
+  "/api/v1/cara-studio/home-dynamics",
+  "/api/v1/cara-studio/reg45-evidence",
+  "/api/v1/cara-studio/reg45-reports",
+  "/api/v1/cara-studio/safeguarding-patterns",
+  // Not yet fixed, deliberately. Both have six-plus UI callers whose payloads
+  // were not cheaply verifiable, and requiring a field the UI omits would break
+  // a working create — worse than the bug. They stay listed rather than guessed.
+  "/api/v1/forms",
+  "/api/v1/supervision",
+]);
+
+const postRoutes = [...walk(API_DIR)]
+  .filter((f) => /export (async function|function|const) POST/.test(fs.readFileSync(f, "utf8")))
+  .sort();
+
+describe("POST handlers reject a body that says nothing", () => {
+  it("no unlisted route creates a record from {}", { timeout: 900_000 }, async () => {
+    const created: string[] = [];
+
+    for (const file of postRoutes) {
+      const { urlPath, params } = file.includes("[")
+        ? probeFor(file)
+        : {
+            urlPath:
+              "/" + path.relative(path.join(ROOT, "src/app"), path.dirname(file)).split(path.sep).join("/"),
+            params: {},
+          };
+      if (POST_EMPTY_BODY_ALLOWED.has(urlPath)) continue;
+      const spec =
+        "@/" + path.relative(path.join(ROOT, "src"), file).split(path.sep).join("/").replace(/\.ts$/, "");
+
+      try {
+        const mod = (await import(/* @vite-ignore */ spec)) as {
+          POST: (r: NextRequest, ctx?: { params: Promise<Record<string, string | string[]>> }) => Promise<Response>;
+        };
+        const req = new NextRequest("http://localhost" + urlPath, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        });
+        const res = file.includes("[")
+          ? await mod.POST(req, { params: Promise.resolve(params) })
+          : await mod.POST(req);
+        if (res.status === 201) created.push(urlPath);
+      } catch {
+        // Throwing is covered by the GET sweep's sibling concern; this leg is
+        // only about silently writing a record.
+      }
+    }
+
+    expect(created).toEqual([]);
+  });
+});

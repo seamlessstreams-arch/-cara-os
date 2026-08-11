@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 
 const HOME_ID = "home_oak";
 
@@ -29,6 +30,8 @@ export async function POST(req: NextRequest) {
     const __parsed = await readJsonBody(req);
     if (!__parsed.ok) return __parsed.response;
     body = __parsed.data;
+    const __missing = requireFields(body, ["original_filename"]);
+    if (__missing) return __missing;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

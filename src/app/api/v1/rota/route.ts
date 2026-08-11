@@ -20,6 +20,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -103,6 +104,8 @@ export async function POST(req: NextRequest) {
   const parsed = await readJsonBody(req);
   if (!parsed.ok) return parsed.response;
   const body = parsed.data as Row;
+  const __missing = requireFields(body, ["shift_date"]);
+  if (__missing) return __missing;
   try {
     const shift = await dal.shifts.create({
       status: "scheduled",
