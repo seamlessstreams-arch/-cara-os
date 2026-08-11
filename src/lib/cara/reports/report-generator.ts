@@ -44,6 +44,7 @@ import { buildWritingPrompt, rewriteSection as buildRewritePrompt } from "@/lib/
 import { generateCaraJSON, generateCaraContent } from "@/lib/cara/ai/provider";
 import { sanitiseOutput, validateOutputSafety } from "@/lib/cara/ai/safety";
 import { writeCaraAudit } from "@/lib/cara/audit/cara-audit";
+import { isDemoReportId } from "./demo-report-id";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -589,7 +590,9 @@ export async function getReport(
   const sb = createServerClient();
 
   if (!sb) {
-    return getDemoReportData(reportId);
+    // Only ids the demo generator actually minted. Anything else is a report
+    // that does not exist, and the caller must be told so — see demo-report-id.
+    return isDemoReportId(reportId) ? getDemoReportData(reportId) : null;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

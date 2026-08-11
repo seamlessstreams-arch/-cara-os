@@ -31,6 +31,7 @@ import { getSectionsForReportType } from "@/lib/cara/reports/report-templates";
 import type { SectionTemplate } from "@/lib/cara/reports/report-templates";
 import { generateCaraJSON, generateCaraContent } from "@/lib/cara/ai/provider";
 import { challengeOutputSchema } from "@/lib/cara/ai/schemas";
+import { isDemoReportId } from "@/lib/cara/reports/demo-report-id";
 
 // ── Severity ordering for sort ────────────────────────────────────────────
 
@@ -891,7 +892,10 @@ async function fetchReportData(reportId: string): Promise<{
 } | null> {
   const sb = createServerClient();
 
-  if (!sb) return getDemoReportDataForChallenge(reportId);
+  // Same rule as getReport: the demo fallback answers only for ids the demo
+  // generator minted, so an unknown id is reported as unknown rather than
+  // answered with an invented report about a named child.
+  if (!sb) return isDemoReportId(reportId) ? getDemoReportDataForChallenge(reportId) : null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: report, error: reportError } = await (sb.from("child_reports") as any)
