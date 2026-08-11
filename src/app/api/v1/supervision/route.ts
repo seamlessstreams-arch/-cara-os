@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -85,6 +86,8 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  const __missing = requireFields(body, ["staff_id", "scheduled_date"]);
+  if (__missing) return __missing;
   try {
     const supervision = await dal.supervisions.create(body);
     return NextResponse.json({ data: supervision }, { status: 201 });

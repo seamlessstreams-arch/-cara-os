@@ -154,11 +154,6 @@ const POST_EMPTY_BODY_ALLOWED = new Set([
   "/api/v1/cara-studio/reg45-evidence",
   "/api/v1/cara-studio/reg45-reports",
   "/api/v1/cara-studio/safeguarding-patterns",
-  // Not yet fixed, deliberately. Both have six-plus UI callers whose payloads
-  // were not cheaply verifiable, and requiring a field the UI omits would break
-  // a working create — worse than the bug. They stay listed rather than guessed.
-  "/api/v1/forms",
-  "/api/v1/supervision",
 ]);
 
 const postRoutes = [...walk(API_DIR)]
