@@ -35,3 +35,19 @@ export function requireFields(
     { status: 400 },
   );
 }
+
+// Some creates pass the parsed body straight into `create(body)` against a type
+// this helper cannot see. Requiring a named field there would be a guess, and a
+// wrong guess 400s a legitimate create forever. Requiring the body to say
+// SOMETHING is the honest floor: it still stops `POST {}` writing a skeleton
+// record, without inventing a schema.
+export function requireNonEmptyBody(body: Record<string, unknown>): NextResponse | null {
+  const hasValue = Object.values(body).some(
+    (v) => v !== undefined && v !== null && !(typeof v === "string" && v.trim() === ""),
+  );
+  if (hasValue) return null;
+  return NextResponse.json(
+    { error: "Request body is empty — nothing to record.", missing: ["<any field>"] },
+    { status: 400 },
+  );
+}

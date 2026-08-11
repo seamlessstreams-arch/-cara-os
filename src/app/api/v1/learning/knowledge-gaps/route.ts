@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  const __missing = requireFields(body, ["gap_area"]);
+  if (__missing) return __missing;
   const record = intelligenceDb.knowledgeGaps.create({
     home_id: body.home_id ?? "home_oak",
     gap_area: body.gap_area ?? "",

@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { createDecisionSupport, listDecisionSupport } from "@/lib/cara-studio/decision-support.service";
 
@@ -25,6 +26,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
+    const __missing = requireFields(body, ["decision_context"]);
+    if (__missing) return __missing;
     const record = await createDecisionSupport({
       home_id: hId(),
       decision_context: body.decision_context,

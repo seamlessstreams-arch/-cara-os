@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireNonEmptyBody } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
@@ -63,6 +64,8 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
+  const __missing = requireNonEmptyBody(body);
+  if (__missing) return __missing;
   const audit = await dal.qaAudits.create(body);
   return NextResponse.json({ data: audit }, { status: 201 });
 }

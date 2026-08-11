@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireNonEmptyBody } from "@/lib/http/require-fields";
 import type { WelfareCheck, WelfareCheckRound } from "@/types/extended";
 import { todayStr } from "@/lib/utils";
 
@@ -83,6 +84,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const parsed = await readJsonBody(req);
   if (!parsed.ok) return parsed.response;
+  const __missing = requireNonEmptyBody(parsed.data);
+  if (__missing) return __missing;
   try {
     const round = db.welfareCheckRounds.create(parsed.data);
     return NextResponse.json({ data: round }, { status: 201 });
