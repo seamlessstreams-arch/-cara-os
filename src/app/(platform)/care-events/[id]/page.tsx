@@ -796,6 +796,22 @@ export default function CareEventDetailPage({
   const routes: CareEventRoute[] = (data?.data as { routes?: CareEventRoute[] })?.routes ?? [];
   const auditEntries: CareEventAuditLog[] = auditData?.entries ?? [];
 
+  // Hooks must run on every render, in the same order — so they precede the
+  // loading/error early returns below. Placing them after those returns (as an
+  // earlier revision did) changes the hook call count the moment the query
+  // resolves, which is the React Hooks violation eslint flagged. The values
+  // they produce are only READ further down, behind the `!event` guard.
+  const verifyMutation = useVerifyCareEvent();
+  const returnMutation = useReturnCareEvent();
+  const lockMutation = useLockCareEvent();
+  const amendMutation = useAmendCareEvent();
+  const retryMutation = useRetryCareEventRouting();
+
+  const [returnDialog, setReturnDialog] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [amendDialog, setAmendDialog] = useState(false);
+  const [amendReason, setAmendReason] = useState("");
+
   if (isLoading) {
     return (
       <PageShell title="Care Event" subtitle="Loading…">
@@ -827,17 +843,6 @@ export default function CareEventDetailPage({
   const failedRoutes = routes.filter(
     (r) => r.status === "failed" || r.status === "retry_required"
   ).length;
-
-  const verifyMutation = useVerifyCareEvent();
-  const returnMutation = useReturnCareEvent();
-  const lockMutation = useLockCareEvent();
-  const amendMutation = useAmendCareEvent();
-  const retryMutation = useRetryCareEventRouting();
-
-  const [returnDialog, setReturnDialog] = useState(false);
-  const [returnReason, setReturnReason] = useState("");
-  const [amendDialog, setAmendDialog] = useState(false);
-  const [amendReason, setAmendReason] = useState("");
 
   const canVerify = ["routed", "manager_review_required", "routing_failed"].includes(event.status);
   const canReturn = ["submitted", "routing", "routed", "manager_review_required"].includes(event.status);
