@@ -13,8 +13,12 @@ docs/
 *.md
 !README.md
 
-# Scripts
+# Scripts — excluded wholesale, EXCEPT anything package.json runs at install
+# time. postinstall executes during Vercel's `npm install`, so an ignored
+# script file fails the whole deployment in ~26 seconds with MODULE_NOT_FOUND
+# (learned live: #899 broke every production deploy until this allowlist).
 scripts/
+!scripts/link-eslint-ts6.js
 
 # Local config
 playwright.config.ts
