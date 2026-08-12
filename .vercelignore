@@ -17,7 +17,11 @@ docs/
 # time. postinstall executes during Vercel's `npm install`, so an ignored
 # script file fails the whole deployment in ~26 seconds with MODULE_NOT_FOUND
 # (learned live: #899 broke every production deploy until this allowlist).
-scripts/
+# gitignore semantics: a file cannot be re-included when its PARENT DIRECTORY
+# is excluded, so `scripts/` + `!scripts/x` silently ignores the negation.
+# Excluding the directory's CONTENTS (`scripts/*`) leaves the directory itself
+# traversable, which is what makes the negation effective.
+scripts/*
 !scripts/link-eslint-ts6.js
 
 # Local config
