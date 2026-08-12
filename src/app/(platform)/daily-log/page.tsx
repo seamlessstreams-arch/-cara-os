@@ -19,7 +19,7 @@ import {
   Users, ArrowUpDown,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
@@ -573,14 +573,14 @@ export default function DailyLogPage() {
   const query = new URLSearchParams();
   if (selectedYP !== "all") query.set("child_id", selectedYP);
   if (dateFilter === "today") query.set("date", todayStr());
-  if (dateFilter === "yesterday") query.set("date", new Date(Date.now() - 86400000).toISOString().slice(0, 10));
+  if (dateFilter === "yesterday") query.set("date", daysFromNow(-1));
   if (dateFilter === "7days") query.set("days", String(7));
   if (typeFilter !== "all") query.set("entry_type", typeFilter);
 
   const queryParams = {
     ...(selectedYP !== "all" ? { child_id: selectedYP } : {}),
     ...(dateFilter === "today" ? { date: todayStr() } : {}),
-    ...(dateFilter === "yesterday" ? { date: new Date(Date.now() - 86400000).toISOString().slice(0, 10) } : {}),
+    ...(dateFilter === "yesterday" ? { date: daysFromNow(-1) } : {}),
     ...(dateFilter === "7days" ? { days: 7 } : {}),
     ...(typeFilter !== "all" ? { entry_type: typeFilter } : {}),
   };

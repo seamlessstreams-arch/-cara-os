@@ -24,21 +24,31 @@ export function formatDateTime(date: string | Date | null | undefined): string {
   return d.toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+/**
+ * Whole London calendar days from today to the given instant: +1 = tomorrow,
+ * -1 = yesterday, 0 = today. NaN for an unparseable input.
+ *
+ * This is the ONLY correct basis for "Today"/"Yesterday"/"n days ago" labels.
+ * Rolling-window maths — Math.round((target - now) / 86400000) — compounds two
+ * zone bugs: a date-only string ("2026-08-13") parses as UTC MIDNIGHT, which is
+ * 01:00 during BST, so from ~12:30 that afternoon the rounded diff hit -1 and a
+ * task due TODAY read "Yesterday" — and one due tomorrow read "Today" all
+ * evening. Half of every summer day, on every surface labelling days. Comparing
+ * London calendar dates asks the question the reader is actually asking.
+ */
+export function londonDayDiff(date: string | Date): number {
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return NaN;
+  const [ty, tm, td] = todayStr().split("-").map(Number);
+  const [dy, dm, dd] = londonDateStr(d).split("-").map(Number);
+  return Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
+}
+
 export function formatRelative(date: string | Date | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return typeof date === "string" ? date : "";
-  // Calendar-day difference in London — NOT a rolling 24-hour window. The old
-  // Math.round((d - now) / 86400000) had two zone bugs compounding: a date-only
-  // string ("2026-08-13") parses as UTC MIDNIGHT, which is 01:00 during BST, so
-  // from ~12:30 that afternoon the rounded diff hit -1 and a task due TODAY
-  // read "Yesterday" — and one due tomorrow read "Today" all evening. Half of
-  // every summer day, on every surface using this: task due dates, "last key
-  // working", welfare rounds. Comparing London calendar dates asks the question
-  // the reader is actually asking.
-  const [ty, tm, td] = todayStr().split("-").map(Number);
-  const [dy, dm, dd] = londonDateStr(d).split("-").map(Number);
-  const diff = Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
+  const diff = londonDayDiff(d);
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
   if (diff === -1) return "Yesterday";

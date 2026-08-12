@@ -10,7 +10,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import type { TimelineEvent, TimelineEventType, TimelineRiskLevel, TimelineFilter } from "@/lib/timeline/types";
 import {
   FileText, AlertTriangle, Shield, Heart, GraduationCap, Pill,
@@ -219,11 +219,11 @@ const RISK_OPTIONS: TimelineRiskLevel[] = ["low", "medium", "high", "critical"];
 // ── Date grouping ────────────────────────────────────────────────────────────
 
 function getDateGroup(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const eventDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diff = Math.floor((today.getTime() - eventDate.getTime()) / 86400000);
+  // London calendar days. Local date parts are right in a London browser but
+  // UTC in SSR/prerender — the server and client disagreed on the group in the
+  // 00:00–00:59 BST window (hydration mismatch), and a viewer abroad got their
+  // own zone's grouping on records that live in London days.
+  const diff = -londonDayDiff(dateStr);
 
   if (diff === 0) return "Today";
   if (diff === 1) return "Yesterday";

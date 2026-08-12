@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { formatRelative } from "@/lib/utils";
+import { formatRelative, londonDayDiff } from "@/lib/utils";
 
 // formatRelative used a rolling 24-hour diff: Math.round((d - now) / 86400000).
 // A date-only string parses as UTC midnight — 01:00 during BST — so from about
@@ -55,5 +55,49 @@ describe("formatRelative — calendar days in London, not a rolling 24h window",
     expect(formatRelative("not-a-date")).toBe("not-a-date");
     expect(formatRelative("")).toBe("");
     expect(formatRelative(null)).toBe("");
+  });
+});
+
+// londonDayDiff is the shared basis for every "Today"/"Yesterday" label. Four
+// surfaces had hand-rolled the rolling-window version of this and each was
+// wrong in its own way: a risk card called a log written yesterday evening
+// "Today" until the same hour tonight (Math.floor of now-then); the timeline
+// grouped by the RUNTIME zone's calendar (UTC in SSR); two "Yesterday" filters
+// took the UTC slice of a local subtraction. All four now call this.
+describe("londonDayDiff — signed London calendar days from today", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  const at = (iso: string) => vi.setSystemTime(new Date(iso));
+
+  it("a log written yesterday evening, read this morning, is -1 — not 0", () => {
+    // 14 hours apart, but different London days: the risk-card repro.
+    at("2026-08-13T10:00:00+01:00");
+    expect(londonDayDiff("2026-08-12T20:00:00+01:00")).toBe(-1);
+  });
+
+  it("a timestamp from earlier the same London day is 0 across a >24h-free window", () => {
+    at("2026-08-13T23:30:00+01:00");
+    expect(londonDayDiff("2026-08-13T00:15:00+01:00")).toBe(0);
+  });
+
+  it("inside the BST midnight window the London day wins over the UTC day", () => {
+    // 00:30 London on the 14th = 23:30Z on the 13th.
+    at("2026-08-13T23:30:00Z");
+    expect(londonDayDiff("2026-08-14")).toBe(0);
+    expect(londonDayDiff("2026-08-13")).toBe(-1);
+    expect(londonDayDiff("2026-08-15")).toBe(1);
+  });
+
+  it("spans the spring clock change without drifting", () => {
+    // 2026-03-29 is the BST switch: the 23-hour day must still count as 1.
+    at("2026-03-30T12:00:00+01:00");
+    expect(londonDayDiff("2026-03-28T12:00:00Z")).toBe(-2);
+    expect(londonDayDiff("2026-03-29T12:00:00+01:00")).toBe(-1);
+  });
+
+  it("is NaN for junk", () => {
+    at("2026-08-13T16:00:00+01:00");
+    expect(londonDayDiff("not-a-date")).toBeNaN();
   });
 });
