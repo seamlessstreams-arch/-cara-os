@@ -36,7 +36,7 @@ function useYoungPeople(status = "current") {
       ),
   });
 }
-import { cn, formatRelative } from "@/lib/utils";
+import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
 import {
   Heart, AlertTriangle, Shield, Loader2, ChevronRight,
   User, BookOpen, Pill, MapPin, Flame, CheckCircle2,
@@ -57,16 +57,22 @@ function riskLabel(flagCount: number): string {
 }
 
 function logRecencyColour(lastLog: string | null): string {
+  // Same London calendar-day basis as logRecencyLabel below, or the colour and
+  // the label disagree (green "fresh" next to "Yesterday").
   if (!lastLog) return "text-red-500";
-  const days = Math.floor((Date.now() - new Date(lastLog).getTime()) / (1000 * 60 * 60 * 24));
-  if (days > 2) return "text-red-500";
+  const days = -londonDayDiff(lastLog);
+  if (Number.isNaN(days) || days > 2) return "text-red-500";
   if (days > 0) return "text-amber-500";
   return "text-emerald-500";
 }
 
 function logRecencyLabel(lastLog: string | null): string {
   if (!lastLog) return "No logs";
-  const days = Math.floor((Date.now() - new Date(lastLog).getTime()) / (1000 * 60 * 60 * 24));
+  // London calendar days, not a rolling 24h window — the floor of (now - then)
+  // called a log written yesterday evening "Today" until the same hour tonight,
+  // overstating recency on a risk surface.
+  const days = -londonDayDiff(lastLog);
+  if (Number.isNaN(days)) return "No logs";
   if (days === 0) return "Today";
   if (days === 1) return "Yesterday";
   return `${days}d ago`;

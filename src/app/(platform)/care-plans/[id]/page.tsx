@@ -12,7 +12,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
 
@@ -147,9 +147,11 @@ const LOG_TYPE_COLOURS: Record<string, string> = {
 
 function lacCountdown(dateStr: string | null): { days: number; label: string; colour: string } | null {
   if (!dateStr) return null;
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
-  const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+  // London calendar days — setHours(0,0,0,0) midnights are the RUNTIME zone,
+  // so a statutory review due today read "in 1d" in SSR (UTC) and in any
+  // viewer zone that isn't London.
+  const days = londonDayDiff(dateStr);
+  if (Number.isNaN(days)) return null;
   if (days < 0)  return { days, label: `${Math.abs(days)}d overdue`, colour: "text-red-700 bg-red-50 border-red-200" };
   if (days === 0) return { days, label: "Today",                      colour: "text-red-700 bg-red-50 border-red-200" };
   if (days <= 14) return { days, label: `in ${days}d`,               colour: "text-amber-700 bg-amber-50 border-amber-200" };

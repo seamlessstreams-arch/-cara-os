@@ -44,7 +44,7 @@ function useYoungPeople(status = "current") {
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, todayStr, formatRelative } from "@/lib/utils";
+import { cn, todayStr, daysFromNow, formatRelative } from "@/lib/utils";
 import {
   Moon, Sun, Shield, CheckCircle2, AlertTriangle, Clock,
   Eye, Loader2, Plus, ChevronDown, ChevronUp, Heart,
@@ -762,7 +762,7 @@ export default function WelfareChecksPage() {
           {[
             { label: "All", value: undefined },
             { label: "Today", value: today },
-            { label: "Yesterday", value: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); })() },
+            { label: "Yesterday", value: daysFromNow(-1) },
           ].map((f) => (
             <button
               key={f.label}
