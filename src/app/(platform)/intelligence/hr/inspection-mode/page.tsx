@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import {
   Printer,
   Download,
@@ -428,7 +428,7 @@ export default function HrInspectionModePage() {
                 inspector reviews. Every section can be printed to PDF or exported as a
                 spreadsheet. All staff names shown here are anonymised references. The
                 pack is generated from live data and reflects the position as at{" "}
-                {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}.
+                {londonDisplay({ day: "2-digit", month: "long", year: "numeric" })}.
               </p>
             </div>
           </div>

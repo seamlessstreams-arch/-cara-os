@@ -45,7 +45,7 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import { classifyHomeRecord, type HomeClassificationResult } from "@/lib/record-classifier/home-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
 import { EntryAssist } from "@/components/forms/entry-assist";
@@ -171,7 +171,7 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName: homeNameProp
         </div>
         <div>
           <p className="text-sm font-bold text-[var(--cs-navy)]">{homeName}</p>
-          <p className="text-[11px] text-[var(--cs-text-muted)]">Recording for {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <p className="text-[11px] text-[var(--cs-text-muted)]">Recording for {londonDisplay({ weekday: "long", day: "numeric", month: "long" })}</p>
         </div>
       </div>
 

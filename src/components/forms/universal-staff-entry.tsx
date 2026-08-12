@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import { getStore } from "@/lib/db/store";
 import { classifyStaffRecord, type StaffClassificationResult } from "@/lib/record-classifier/staff-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
@@ -126,7 +126,7 @@ export function UniversalStaffEntry({ staffId, onSuccess, onCancel, className }:
         </div>
         <div>
           <p className="text-sm font-bold text-[var(--cs-navy)]">{staffName}</p>
-          <p className="text-[11px] text-[var(--cs-text-muted)]">Recording for {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <p className="text-[11px] text-[var(--cs-text-muted)]">Recording for {londonDisplay({ weekday: "long", day: "numeric", month: "long" })}</p>
         </div>
       </div>
 

@@ -35,6 +35,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { londonLongDate } from "@/lib/utils";
 import {
   Select,
   SelectTrigger,
@@ -570,7 +571,7 @@ export default function DocumentAnalysisPage() {
     const markdown = [
       "# Document Analysis Report",
       "",
-      `**Date:** ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
+      `**Date:** ${londonLongDate()}`,
       `**Document type:** ${documentType}`,
       `**Analysis query:** ${query}`,
       `**Agent:** ${result.agentUsed}`,

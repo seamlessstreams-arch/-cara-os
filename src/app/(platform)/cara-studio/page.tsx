@@ -12,7 +12,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { LearningDesignSection } from "@/components/cara-studio/learning-design-section";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -697,7 +697,7 @@ function CaraStudioContent() {
                     <div className="flex items-center gap-2 text-xs">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                       <span className="text-[var(--cs-text-secondary)]">
-                        Created by {currentUser?.full_name} · {new Date().toLocaleDateString("en-GB")}
+                        Created by {currentUser?.full_name} · {londonDisplay({ day: "2-digit", month: "2-digit", year: "numeric" })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">

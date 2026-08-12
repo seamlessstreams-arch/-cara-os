@@ -14,7 +14,7 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useMounted } from "@/hooks/use-mounted";
 
@@ -36,7 +36,7 @@ function AttributionWatermark({ className }: { className?: string }) {
     const who = currentUser?.full_name ?? "Unattributed session";
     const role = currentUser?.role ? ` · ${String(currentUser.role).replace(/_/g, " ")}` : "";
     const at = mounted
-      ? ` · ${new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}`
+      ? ` · ${londonDisplay({ day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}`
       : "";
     return `${who}${role}${at}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps

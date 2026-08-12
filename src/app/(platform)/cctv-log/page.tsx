@@ -30,6 +30,7 @@ import type { CCTVAccess, CCTVAccessReason, CCTVCamera } from "@/types/extended"
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { londonDisplay } from "@/lib/utils";
 
 /* ── data (inlined from the former use-cctv-accesses hook) ─────────────── */
 
@@ -270,7 +271,7 @@ export default function CCTVLogPage() {
             const fd = new FormData(e.currentTarget);
             createAccess.mutate({
               date: today,
-              time_accessed: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+              time_accessed: londonDisplay({ hour: "2-digit", minute: "2-digit" }),
               reason: fd.get("reason") as CCTVAccessReason,
               footage_date: fd.get("footage_date") as string,
               footage_time_range: fd.get("footage_time_range") as string,

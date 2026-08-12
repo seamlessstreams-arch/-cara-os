@@ -47,7 +47,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { cn, todayStr, formatDate, daysFromNow } from "@/lib/utils";
+import { cn, todayStr, formatDate, daysFromNow, londonDisplay } from "@/lib/utils";
 import { LEAVE_TYPE_LABELS } from "@/lib/constants";
 import type { LeaveRequest, StaffMember } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -682,7 +682,7 @@ export default function LeavePage() {
                   {/* suppressHydrationWarning: a month label read from the wall
                       clock. The SSR HTML is frozen at build time, so a build and
                       a view either side of a month boundary would disagree here. */}
-                  <CardTitle suppressHydrationWarning className="text-base">Team Leave Calendar — {new Date().toLocaleString("default", { month: "long", year: "numeric" })}</CardTitle>
+                  <CardTitle suppressHydrationWarning className="text-base">Team Leave Calendar — {londonDisplay({ month: "long", year: "numeric" })}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">

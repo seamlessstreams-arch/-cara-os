@@ -35,7 +35,7 @@ import {
   Clock,
   CircleDot,
 } from "lucide-react";
-import { cn, localMonthKey, todayStr } from "@/lib/utils";
+import { cn, localMonthKey, todayStr, londonDisplay } from "@/lib/utils";
 import { getStaffById } from "@/lib/seed-data";
 import type {
   Reg44Visit,
@@ -278,7 +278,7 @@ export default function Reg44Page() {
                 The SSR HTML is frozen at build time, so a build and a view either
                 side of a month boundary would disagree here (React error #418). */}
             <p suppressHydrationWarning className="font-semibold text-red-800">
-              No Regulation 44 visit recorded for {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+              No Regulation 44 visit recorded for {londonDisplay({ month: "long", year: "numeric" })}
             </p>
             <p className="text-red-700">
               Regulation 44 requires an independent person to visit the home at least once per month. Schedule or record this month&apos;s visit as soon as possible.

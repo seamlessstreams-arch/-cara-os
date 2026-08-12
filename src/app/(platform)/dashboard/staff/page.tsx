@@ -44,7 +44,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn, formatRelative, isOverdue } from "@/lib/utils";
+import { cn, formatRelative, isOverdue, londonDisplay } from "@/lib/utils";
 import type { Task, Shift, YoungPerson } from "@/types";
 import type { BuildingCheck, Vehicle, HandoverEntry } from "@/types/extended";
 import {
@@ -415,7 +415,7 @@ export default function StaffDashboardPage() {
   return (
     <PageShell
       title="My Dashboard"
-      subtitle={`${getGreeting()}, ${d.staff.full_name.split(" ")[0]} — ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`}
+      subtitle={`${getGreeting()}, ${d.staff.full_name.split(" ")[0]} — ${londonDisplay({ weekday: "long", day: "numeric", month: "long" })}`}
       caraContext={{ pageTitle: "My Dashboard", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">

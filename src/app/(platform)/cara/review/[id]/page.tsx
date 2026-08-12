@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
-import { cn } from "@/lib/utils";
+import { cn, londonDateTimeStr } from "@/lib/utils";
 import {
   Sparkles,
   ArrowLeft,
@@ -607,7 +607,7 @@ export default function CaraSuggestionDetailPage({
                          "Marked no action required"}
                       </p>
                       <p className="text-[10px] text-slate-400">
-                        {new Date().toLocaleString("en-GB")} &middot; registered_manager
+                        {londonDateTimeStr(new Date())} &middot; registered_manager
                       </p>
                     </div>
                   </div>
