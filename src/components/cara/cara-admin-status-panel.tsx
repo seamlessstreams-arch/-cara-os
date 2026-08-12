@@ -13,6 +13,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { londonDisplay } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,7 @@ export function CaraAdminStatusPanel() {
       if (!res.ok) throw new Error(`Health check failed (${res.status})`);
       const data: SystemHealthResponse = await res.json();
       setHealth(data);
-      setLastChecked(new Date().toLocaleTimeString());
+      setLastChecked(londonDisplay({ hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch system health");
     } finally {

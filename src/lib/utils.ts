@@ -94,6 +94,20 @@ export function londonLongDate(d: Date = new Date()): string {
   return londonLongDateFmt.format(d);
 }
 
+/**
+ * Format an instant for DISPLAY pinned to London, with the caller's own
+ * Intl options. Client components rendering "today" via a bare
+ * `new Date().toLocaleDateString("en-GB", …)` use the RUNTIME zone — London in
+ * the browser but UTC in SSR/prerender — so between 00:00 and 00:59 BST the
+ * two renders disagree on the date and React reports a hydration mismatch,
+ * with the header briefly showing yesterday. Pinning the zone makes the server
+ * and client strings identical and, more importantly, makes the displayed
+ * "today" agree with the todayStr() value the form actually persists.
+ */
+export function londonDisplay(opts: Intl.DateTimeFormatOptions, d: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: LONDON_TZ, ...opts }).format(d);
+}
+
 /** The current month name in London ("August"). */
 export function londonMonthName(d: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-GB", { timeZone: LONDON_TZ, month: "long" }).format(d);

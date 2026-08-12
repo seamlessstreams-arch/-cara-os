@@ -52,7 +52,7 @@ import type { CareEvent, CareEventStatus, CareEventCategory } from "@/types/care
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { careToast } from "@/lib/toast";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, todayStr, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
+import { cn, todayStr, formatRelative, isOverdue, isDueToday, londonDisplay } from "@/lib/utils";
 import type { Task, Incident, YoungPerson, Shift } from "@/types";
 import {
   AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, Clock,
@@ -581,7 +581,7 @@ function getGreeting(): string {
 }
 
 function formatLiveDate(): string {
-  return new Date().toLocaleDateString("en-GB", {
+  return londonDisplay({
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 }

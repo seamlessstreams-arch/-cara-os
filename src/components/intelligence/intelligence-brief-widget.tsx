@@ -46,7 +46,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import type { PatternAlert, ActionOutcome, HomeClimateSnapshot } from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
@@ -164,7 +164,7 @@ export function IntelligenceBriefWidget() {
 
   // ── Today date label ──────────────────────────────────────────────────────
 
-  const todayLabel = new Date().toLocaleDateString("en-GB", {
+  const todayLabel = londonDisplay({
     weekday: "short",
     day: "numeric",
     month: "short",

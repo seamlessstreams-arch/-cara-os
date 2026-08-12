@@ -126,7 +126,7 @@ function useLeave(params?: {
       api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
   });
 }
-import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday } from "@/lib/utils";
+import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday, londonDisplay } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 
@@ -285,7 +285,7 @@ export default function MyDayPage() {
       subtitle={`${greeting}, ${displayName} — here's what needs your attention today`}
       caraContext={{ pageTitle: "My Day", sourceType: "child_record" }}
       actions={
-        <PrintButton title="My Day" subtitle={`${displayName} — ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`} targetId="my-day-content" />
+        <PrintButton title="My Day" subtitle={`${displayName} — ${londonDisplay({ weekday: "long", day: "numeric", month: "long" })}`} targetId="my-day-content" />
       }
     >
       <div id="my-day-content" className="space-y-6">
@@ -296,7 +296,7 @@ export default function MyDayPage() {
               <Sun className="h-6 w-6 text-yellow-300" />
             </div>
             <div className="flex-1">
-              <div suppressHydrationWarning className="text-xs font-medium text-[var(--cs-text-gentle)] mb-1">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+              <div suppressHydrationWarning className="text-xs font-medium text-[var(--cs-text-gentle)] mb-1">{londonDisplay({ weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
               <div suppressHydrationWarning className="text-xl font-bold">{greeting}, {displayName}</div>
               <div className="text-sm text-[var(--cs-text-gentle)] mt-1">
                 {myTasks.length > 0

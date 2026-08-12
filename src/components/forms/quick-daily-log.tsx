@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, londonDisplay } from "@/lib/utils";
 import { useRecordOnce } from "@/contexts/record-once-context";
 import { SmartFormField } from "@/components/forms/smart-form-field";
 import { ChildContextCard } from "@/components/forms/child-context-card";
@@ -158,7 +158,7 @@ export function QuickDailyLog({
         try {
           localStorage.setItem(draftKey, JSON.stringify(form));
           setIsDraft(true);
-          setLastSaved(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
+          setLastSaved(londonDisplay({ hour: "2-digit", minute: "2-digit" }));
         } catch {
           // Storage full or unavailable
         }
