@@ -5,23 +5,40 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Both formatters pin Europe/London rather than the runtime zone. For a London
+// browser the output is identical, but the runtime zone is UTC in SSR and the
+// viewer's zone anywhere else — and a date-only string parses as UTC midnight,
+// so a manager checking from west of UTC saw every record dated a day early
+// ("2026-09-13" rendered as 12 Sept in New York). Same class as todayStr.
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  if (Number.isNaN(d.getTime())) return typeof date === "string" ? date : "";
+  return d.toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric" });
 }
 
 export function formatDateTime(date: string | Date | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  if (Number.isNaN(d.getTime())) return typeof date === "string" ? date : "";
+  return d.toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
 export function formatRelative(date: string | Date | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  const now = new Date();
-  const diff = Math.round((d.getTime() - now.getTime()) / 86400000);
+  if (Number.isNaN(d.getTime())) return typeof date === "string" ? date : "";
+  // Calendar-day difference in London — NOT a rolling 24-hour window. The old
+  // Math.round((d - now) / 86400000) had two zone bugs compounding: a date-only
+  // string ("2026-08-13") parses as UTC MIDNIGHT, which is 01:00 during BST, so
+  // from ~12:30 that afternoon the rounded diff hit -1 and a task due TODAY
+  // read "Yesterday" — and one due tomorrow read "Today" all evening. Half of
+  // every summer day, on every surface using this: task due dates, "last key
+  // working", welfare rounds. Comparing London calendar dates asks the question
+  // the reader is actually asking.
+  const [ty, tm, td] = todayStr().split("-").map(Number);
+  const [dy, dm, dd] = londonDateStr(d).split("-").map(Number);
+  const diff = Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
   if (diff === -1) return "Yesterday";
