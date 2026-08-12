@@ -3,12 +3,13 @@ import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
+import { todayStr } from "@/lib/utils";
 
 // Slice 2 of the practice library: Strengths Recording, Repair Cycle,
 // Relational Safety Map, Team Approach Consistency — answered from THIS home's
 // engine findings, never KB theory.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (question: string, role = "registered_manager") => answerQuestion({ question, asOf, role, snapshot });
 
 describe("Ask CARA — practice library slice 2", () => {

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ConsentCapacityMonitoringRecord } from "../consent-capacity-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeConsentCapacityMetrics, identifyConsentCapacityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ConsentCapacityMonitoringRecord>): ConsentCapacityMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ConsentCapacityMonitoringRecord>): Conse
     capacity_level: overrides?.capacity_level ?? "full_capacity",
     decision_type: overrides?.decision_type ?? "consent_given",
     competence_assessment: overrides?.competence_assessment ?? "age_appropriate",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

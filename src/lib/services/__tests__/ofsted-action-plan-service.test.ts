@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type OfstedActionPlanRecord } from "../ofsted-action-plan-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeOfstedActionPlanMetrics, identifyOfstedActionPlanAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<OfstedActionPlanRecord>): OfstedActionPlanRecord {
   return {
@@ -12,11 +13,11 @@ function makeRecord(overrides?: Partial<OfstedActionPlanRecord>): OfstedActionPl
     action_status: overrides?.action_status ?? "completed",
     finding_priority: overrides?.finding_priority ?? "medium",
     inspection_type: overrides?.inspection_type ?? "full_inspection",
-    inspection_date: overrides?.inspection_date ?? now.toISOString().split("T")[0],
+    inspection_date: overrides?.inspection_date ?? todayStr(),
     finding_description: overrides?.finding_description ?? "Improve recording",
     action_plan: overrides?.action_plan ?? "Train staff on recording",
     responsible_person: overrides?.responsible_person ?? "Manager A",
-    target_date: overrides?.target_date ?? now.toISOString().split("T")[0],
+    target_date: overrides?.target_date ?? todayStr(),
     evidence_gathered: overrides?.evidence_gathered ?? true,
     progress_documented: overrides?.progress_documented ?? true,
     staff_briefed: overrides?.staff_briefed ?? true,

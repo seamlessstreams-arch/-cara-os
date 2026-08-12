@@ -3,12 +3,13 @@ import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
+import { todayStr } from "@/lib/utils";
 
 // Real seeded store — Cara's information pull for a child must now include the
 // calendar/diary (meetings, reviews, family time, appointments) and the child's
 // own feedback, alongside the records and engines.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (question: string, role = "registered_manager") => answerQuestion({ question, asOf, role, snapshot });
 
 describe("Ask CARA — child calendar, appointments & feedback", () => {

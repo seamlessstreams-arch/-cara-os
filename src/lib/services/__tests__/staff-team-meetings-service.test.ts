@@ -15,6 +15,7 @@
 
 import { describe, it, expect } from "vitest";
 import crypto from "crypto";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   MEETING_TYPES,
@@ -46,9 +47,9 @@ function daysAgo(n: number): string {
 }
 
 function futureDateISO(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Build a minimal TeamMeeting with sensible defaults. */

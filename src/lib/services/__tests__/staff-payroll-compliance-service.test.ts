@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -33,14 +34,14 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffPayrollComplianceRow>): StaffPayrollComplianceRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
-    check_date: "check_date" in (overrides ?? {}) ? overrides!.check_date! : now.toISOString().split("T")[0],
+    check_date: "check_date" in (overrides ?? {}) ? overrides!.check_date! : todayStr(),
     check_type: "check_type" in (overrides ?? {}) ? overrides!.check_type! : "Right to Work",
     compliance_status: "compliance_status" in (overrides ?? {}) ? overrides!.compliance_status! : "Compliant",
     right_to_work_verified: "right_to_work_verified" in (overrides ?? {}) ? overrides!.right_to_work_verified! : true,

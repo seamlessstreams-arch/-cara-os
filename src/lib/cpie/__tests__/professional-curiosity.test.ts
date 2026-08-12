@@ -3,9 +3,10 @@ import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { getStore } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 const ask = (q: string, role = "registered_manager") =>
-  answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot: buildAskSnapshot(getStore()), role });
+  answerQuestion({ question: q, asOf: todayStr(), snapshot: buildAskSnapshot(getStore()), role });
 
 describe("CPIE — Professional Curiosity synthesis", () => {
   it("synthesises cross-dimension reflective questions for Alex", () => {

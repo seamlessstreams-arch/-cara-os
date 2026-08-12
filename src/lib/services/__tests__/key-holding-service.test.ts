@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type KeyHoldingRecord } from "../key-holding-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeKeyHoldingMetrics, identifyKeyHoldingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<KeyHoldingRecord>): KeyHoldingRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<KeyHoldingRecord>): KeyHoldingRecord {
     key_type: overrides?.key_type ?? "front_door",
     key_status: overrides?.key_status ?? "in_use",
     audit_result: overrides?.audit_result ?? "all_accounted",
-    event_date: overrides?.event_date ?? now.toISOString().split("T")[0],
+    event_date: overrides?.event_date ?? todayStr(),
     key_number: overrides?.key_number ?? "KEY-001",
     holder_name: overrides?.holder_name ?? "Staff A",
     holder_role: overrides?.holder_role ?? "Care Worker",

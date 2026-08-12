@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffSupportActionRecord } from "../staff-support-action-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSupportActionMetrics, identifySupportActionAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffSupportActionRecord>): StaffSupportActionRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<StaffSupportActionRecord>): StaffSupport
     action_outcome: "positive",
     completion_status: "completed",
     action_priority: "medium",
-    session_date: now.toISOString().split("T")[0],
+    session_date: todayStr(),
     staff_name: "Staff A",
     recorded_by: "Manager A",
     action_description: "Test action",

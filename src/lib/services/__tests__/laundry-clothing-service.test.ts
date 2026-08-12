@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   CLOTHING_EVENT_TYPES,
@@ -61,14 +62,14 @@ function makeRecord(
 
 /** Return an ISO date string for N days ago from now */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
   return d.toISOString().slice(0, 10);
 }
 
 /** Return an ISO date string for N days from now (future) */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 }

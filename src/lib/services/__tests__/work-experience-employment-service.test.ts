@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type WorkExperienceEmploymentRecord } from "../work-experience-employment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeWorkExperienceMetrics, identifyWorkExperienceAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<WorkExperienceEmploymentRecord>): WorkExperienceEmploymentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<WorkExperienceEmploymentRecord>): WorkEx
     readiness_level: overrides?.readiness_level ?? "nearly_ready",
     employer_feedback: overrides?.employer_feedback ?? "good",
     skill_acquisition: overrides?.skill_acquisition ?? "good_gain",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

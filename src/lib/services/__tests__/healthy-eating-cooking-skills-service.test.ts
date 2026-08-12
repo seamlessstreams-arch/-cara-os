@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HealthyEatingCookingSkillsRecord } from "../healthy-eating-cooking-skills-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHealthyEatingMetrics, identifyHealthyEatingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HealthyEatingCookingSkillsRecord>): HealthyEatingCookingSkillsRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<HealthyEatingCookingSkillsRecord>): Heal
     skill_level: overrides?.skill_level ?? "competent",
     engagement_level: overrides?.engagement_level ?? "engaged",
     health_outcome: overrides?.health_outcome ?? "some_improvement",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildrensTherapySessionRecord } from "../childrens-therapy-sessions-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeChildrensTherapyMetrics, identifyChildrensTherapyAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildrensTherapySessionRecord>): ChildrensTherapySessionRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildrensTherapySessionRecord>): Childre
     session_outcome: overrides?.session_outcome ?? "positive_progress",
     child_engagement: overrides?.child_engagement ?? "fully_engaged",
     therapy_frequency: overrides?.therapy_frequency ?? "weekly",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     therapist_name: overrides?.therapist_name ?? "Dr Smith",

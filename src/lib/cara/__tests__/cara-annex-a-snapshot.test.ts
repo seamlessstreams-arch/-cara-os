@@ -11,11 +11,12 @@ import {
   loadAnnexASnapshots,
 } from "@/lib/cara/cara-annex-a-snapshot";
 import { CARA_ANNEX_A_SECTIONS } from "@/types/cara-studio";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_oak";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

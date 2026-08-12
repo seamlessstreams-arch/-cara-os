@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MedicationEffectivenessReviewRecord } from "../medication-effectiveness-review-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMedicationEffectivenessMetrics, identifyMedicationEffectivenessAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationEffectivenessReviewRecord>): MedicationEffectivenessReviewRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<MedicationEffectivenessReviewRecord>): M
     effectiveness_rating: overrides?.effectiveness_rating ?? "effective",
     adherence_level: overrides?.adherence_level ?? "full_adherence",
     review_compliance: overrides?.review_compliance ?? "fully_compliant",
-    review_date: overrides?.review_date ?? now.toISOString().split("T")[0],
+    review_date: overrides?.review_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     reviewed_by: overrides?.reviewed_by ?? "Staff A",

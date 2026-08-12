@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   SUPPORT_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<YoungPersonEmploymentSupportRow>,
@@ -40,7 +41,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     child_name: "child_name" in (overrides ?? {}) ? overrides!.child_name! : "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    support_date: "support_date" in (overrides ?? {}) ? overrides!.support_date! : now.toISOString().split("T")[0],
+    support_date: "support_date" in (overrides ?? {}) ? overrides!.support_date! : todayStr(),
     support_type: "support_type" in (overrides ?? {}) ? overrides!.support_type! : "cv_preparation",
     employment_status: "employment_status" in (overrides ?? {}) ? overrides!.employment_status! : "not_in_employment",
     readiness_level: "readiness_level" in (overrides ?? {}) ? overrides!.readiness_level! : "developing",

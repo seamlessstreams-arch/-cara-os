@@ -4,6 +4,7 @@ import {
   identifyPrAlerts,
 } from "./parental-responsibility-service";
 import type { ParentalResponsibilityRecord } from "./parental-responsibility-service";
+import { daysFromNow } from "@/lib/utils";
 
 // -- Factory ------------------------------------------------------------------
 
@@ -159,7 +160,7 @@ describe("identifyPrAlerts", () => {
   });
 
   it("flags high care_order_expiring within 30 days", () => {
-    const soon = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const soon = daysFromNow(15);
     const records = [makeRecord({ care_order_expiry: soon })];
     const alerts = identifyPrAlerts(records, 1);
     const exp = alerts.filter((a) => a.type === "care_order_expiring");
@@ -168,7 +169,7 @@ describe("identifyPrAlerts", () => {
   });
 
   it("does not flag care_order_expiring when > 30 days away", () => {
-    const far = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const far = daysFromNow(60);
     const records = [makeRecord({ care_order_expiry: far })];
     const alerts = identifyPrAlerts(records, 1);
     const exp = alerts.filter((a) => a.type === "care_order_expiring");

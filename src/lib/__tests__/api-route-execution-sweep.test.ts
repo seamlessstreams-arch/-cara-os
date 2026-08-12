@@ -198,3 +198,70 @@ describe("POST handlers reject a body that says nothing", () => {
     expect(created).toEqual([]);
   });
 });
+
+// ─── PATCH / PUT / DELETE with a probe id and an empty body ─────────────────
+//
+// Same gap the GET sweep closed: nothing else in the pipeline ever EXECUTES a
+// mutating handler, so one could throw on its first request with every gate
+// green. Probed with an id that matches nothing and a body that says nothing,
+// so 4xx is the expected answer; the two things asserted are that no handler
+// throws and none 5xxes for a reason other than the honest Supabase refusal.
+//
+// Deliberately NOT asserted: that a mutation of a nonexistent id must 404.
+// The demo placeholder pattern answers { ok: true, persisted: false } without
+// consulting a store — in demo mode "nonexistent id" is not even decidable —
+// and that is documented degradation, not fabrication: no invented record is
+// returned and the caller is told nothing persisted.
+//
+// Cost, measured like-for-like (cold transform cache, CI heap): ~26s on top of
+// the file's ~204s. The first triage of these 172 handlers found zero throws;
+// this leg exists so that stays true.
+
+function mutatingRoutes(method: string): string[] {
+  const rx = new RegExp(`export (async function|function|const) ${method}\\b`);
+  return [...walk(API_DIR)].filter((f) => rx.test(fs.readFileSync(f, "utf8"))).sort();
+}
+
+describe("mutating handlers respond without throwing", () => {
+  it.each(["PATCH", "PUT", "DELETE"] as const)("every %s route", { timeout: 600_000 }, async (method) => {
+    const threw: string[] = [];
+    const failed: string[] = [];
+
+    for (const file of mutatingRoutes(method)) {
+      const { urlPath, params } = file.includes("[")
+        ? probeFor(file)
+        : {
+            urlPath:
+              "/" + path.relative(path.join(ROOT, "src/app"), path.dirname(file)).split(path.sep).join("/"),
+            params: {},
+          };
+      const spec =
+        "@/" + path.relative(path.join(ROOT, "src"), file).split(path.sep).join("/").replace(/\.ts$/, "");
+
+      try {
+        const mod = (await import(/* @vite-ignore */ spec)) as Record<
+          string,
+          (r: NextRequest, ctx?: { params: Promise<Record<string, string | string[]>> }) => Promise<Response>
+        >;
+        const req = new NextRequest("http://localhost" + urlPath, {
+          method,
+          headers: { "content-type": "application/json" },
+          body: method === "DELETE" ? undefined : "{}",
+        });
+        const res = file.includes("[")
+          ? await mod[method](req, { params: Promise.resolve(params) })
+          : await mod[method](req);
+        if (res.status >= 500) {
+          const body = await res.text().catch(() => "");
+          if (!SUPABASE_REQUIRED.test(body)) {
+            failed.push(`${urlPath} -> ${res.status} ${body.slice(0, 120)}`);
+          }
+        }
+      } catch (e) {
+        threw.push(`${urlPath} -> ${(e as Error)?.message?.slice(0, 140)}`);
+      }
+    }
+
+    expect({ threw, failed }).toEqual({ threw: [], failed: [] });
+  });
+});

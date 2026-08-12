@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffShiftPatternMonitoringRecord } from "../staff-shift-pattern-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffShiftPatternMetrics, identifyStaffShiftPatternAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffShiftPatternMonitoringRecord>): StaffShiftPatternMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffShiftPatternMonitoringRecord>): Sta
     fatigue_risk: overrides?.fatigue_risk ?? "low",
     staffing_level: overrides?.staffing_level ?? "fully_staffed",
     shift_compliance: overrides?.shift_compliance ?? "fully_compliant",
-    shift_date: overrides?.shift_date ?? now.toISOString().split("T")[0],
+    shift_date: overrides?.shift_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     shift_supervisor: overrides?.shift_supervisor ?? "Manager A",
     rest_period_compliant: overrides?.rest_period_compliant ?? true,

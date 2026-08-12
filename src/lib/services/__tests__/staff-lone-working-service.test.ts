@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffLoneWorkingRecord } from "../staff-lone-working-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffLoneWorkingMetrics, identifyStaffLoneWorkingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffLoneWorkingRecord>): StaffLoneWorkingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffLoneWorkingRecord>): StaffLoneWorki
     risk_level: overrides?.risk_level ?? "medium",
     check_in_frequency: overrides?.check_in_frequency ?? "hourly",
     authorisation_level: overrides?.authorisation_level ?? "manager_approved",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     risk_assessed: overrides?.risk_assessed ?? true,
     manager_authorised: overrides?.manager_authorised ?? true,

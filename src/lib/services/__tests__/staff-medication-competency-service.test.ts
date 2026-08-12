@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffMedicationCompetencyRecord } from "../staff-medication-competency-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffMedicationCompetencyMetrics, identifyStaffMedicationCompetencyAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffMedicationCompetencyRecord>): StaffMedicationCompetencyRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffMedicationCompetencyRecord>): Staff
     assessment_outcome: overrides?.assessment_outcome ?? "competent",
     medication_category: overrides?.medication_category ?? "oral_medication",
     training_provider: overrides?.training_provider ?? "in_house_trainer",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     assessed_by: overrides?.assessed_by ?? "Manager A",
     theory_passed: overrides?.theory_passed ?? true,

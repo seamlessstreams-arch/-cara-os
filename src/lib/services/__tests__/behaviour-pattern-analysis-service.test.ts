@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type BehaviourPatternAnalysisRecord } from "../behaviour-pattern-analysis-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeBehaviourPatternMetrics, identifyBehaviourPatternAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<BehaviourPatternAnalysisRecord>): BehaviourPatternAnalysisRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<BehaviourPatternAnalysisRecord>): Behavi
     trigger_type: overrides?.trigger_type ?? "peer_conflict",
     intervention_outcome: overrides?.intervention_outcome ?? "de_escalated",
     behaviour_severity: overrides?.behaviour_severity ?? "low",
-    incident_date: overrides?.incident_date ?? now.toISOString().split("T")[0],
+    incident_date: overrides?.incident_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     staff_involved: overrides?.staff_involved ?? "Staff A",

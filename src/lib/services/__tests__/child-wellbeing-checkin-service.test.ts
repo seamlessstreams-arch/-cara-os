@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildWellbeingCheckinRecord } from "../child-wellbeing-checkin-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeWellbeingCheckinMetrics, identifyWellbeingCheckinAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildWellbeingCheckinRecord>): ChildWellbeingCheckinRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildWellbeingCheckinRecord>): ChildWell
     emotional_state: overrides?.emotional_state ?? "calm",
     wellbeing_domain: overrides?.wellbeing_domain ?? "emotional",
     check_in_type: overrides?.check_in_type ?? "morning_routine",
-    check_in_date: overrides?.check_in_date ?? now.toISOString().split("T")[0],
+    check_in_date: overrides?.check_in_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     staff_name: overrides?.staff_name ?? "Staff A",

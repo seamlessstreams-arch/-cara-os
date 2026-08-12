@@ -4,12 +4,13 @@ import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
 import { getWeeklyNarrative, getWeeklyReport } from "@/lib/cpie/get-weekly-report";
+import { todayStr } from "@/lib/utils";
 
 // Cara's reporting and summarising must consider the 9 Quality Standards
 // (Children's Homes (England) Regulations 2015) and the five outcomes —
 // narrated from the WIO's evidence lines, only where genuinely evidenced.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (question: string, role = "registered_manager") => answerQuestion({ question, asOf, role, snapshot });
 
 describe("Quality Standards & Five Outcomes across Cara's surfaces", () => {

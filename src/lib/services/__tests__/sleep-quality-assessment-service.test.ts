@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type SleepQualityAssessmentRecord } from "../sleep-quality-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSleepQualityMetrics, identifySleepQualityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SleepQualityAssessmentRecord>): SleepQualityAssessmentRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<SleepQualityAssessmentRecord>): SleepQua
     sleep_environment: overrides?.sleep_environment ?? "good",
     waking_frequency: overrides?.waking_frequency ?? "none",
     sleep_concern: overrides?.sleep_concern ?? "none_identified",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

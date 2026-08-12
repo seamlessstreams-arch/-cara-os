@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   analyseTrainingCompliance,
   type StaffTrainingRecord,
@@ -9,11 +10,11 @@ import {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function futureDate(daysAhead: number): string {
-  return new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(daysAhead);
 }
 
 function makeTraining(overrides: Partial<TrainingEntry> = {}): TrainingEntry {
@@ -65,7 +66,7 @@ describe("Training Compliance Tracker", () => {
     });
 
     it("sets analysis date to today", () => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const result = analyseTrainingCompliance([], "home_oak");
       expect(result.analysisDate).toBe(today);
     });

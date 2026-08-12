@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PlacementMatchingAssessmentRecord } from "../placement-matching-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePlacementMatchingMetrics, identifyPlacementMatchingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PlacementMatchingAssessmentRecord>): PlacementMatchingAssessmentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PlacementMatchingAssessmentRecord>): Pla
     match_quality: overrides?.match_quality ?? "good_match",
     assessment_timing: overrides?.assessment_timing ?? "pre_admission",
     impact_level: overrides?.impact_level ?? "positive",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     assessed_by: overrides?.assessed_by ?? "Manager A",
     matching_rationale: overrides?.matching_rationale ?? "Test rationale",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ComplaintResolutionTrackingRecord } from "../complaint-resolution-tracking-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeComplaintResolutionMetrics, identifyComplaintResolutionAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ComplaintResolutionTrackingRecord>): ComplaintResolutionTrackingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ComplaintResolutionTrackingRecord>): Com
     resolution_status: overrides?.resolution_status ?? "resolved",
     outcome_type: overrides?.outcome_type ?? "not_upheld",
     response_timeline: overrides?.response_timeline ?? "within_7_days",
-    complaint_date: overrides?.complaint_date ?? now.toISOString().split("T")[0],
+    complaint_date: overrides?.complaint_date ?? todayStr(),
     complainant_name: overrides?.complainant_name ?? "Parent A",
     handled_by: overrides?.handled_by ?? "Staff A",
     acknowledged_promptly: overrides?.acknowledged_promptly ?? true,

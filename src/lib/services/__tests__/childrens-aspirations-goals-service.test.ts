@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildrensAspirationsGoalsRecord } from "../childrens-aspirations-goals-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeAspirationsGoalsMetrics, identifyAspirationsGoalsAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildrensAspirationsGoalsRecord>): ChildrensAspirationsGoalsRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildrensAspirationsGoalsRecord>): Child
     goal_status: overrides?.goal_status ?? "on_track",
     motivation_level: overrides?.motivation_level ?? "motivated",
     support_quality: overrides?.support_quality ?? "good",
-    review_date: overrides?.review_date ?? now.toISOString().split("T")[0],
+    review_date: overrides?.review_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

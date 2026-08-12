@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MissingPersonRiskRecord } from "../missing-person-risk-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMissingPersonRiskMetrics, identifyMissingPersonRiskAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MissingPersonRiskRecord>): MissingPersonRiskRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<MissingPersonRiskRecord>): MissingPerson
     assessment_type: overrides?.assessment_type ?? "initial_assessment",
     trigger_plan_status: overrides?.trigger_plan_status ?? "active",
     protective_factor: overrides?.protective_factor ?? "positive_relationships",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     previous_missing_episodes: overrides?.previous_missing_episodes ?? 2,

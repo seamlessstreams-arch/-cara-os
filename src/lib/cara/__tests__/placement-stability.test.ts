@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { assessPlacementStability, type PlacementInput } from "../placement-stability";
+import { daysFromNow } from "@/lib/utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function stableInput(overrides: Partial<PlacementInput> = {}): PlacementInput {

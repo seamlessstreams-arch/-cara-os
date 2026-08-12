@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -32,17 +33,17 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffExitInterviewRow>): StaffExitInterviewRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
-    interview_date: "interview_date" in (overrides ?? {}) ? overrides!.interview_date! : now.toISOString().split("T")[0],
+    interview_date: "interview_date" in (overrides ?? {}) ? overrides!.interview_date! : todayStr(),
     interviewer_name: "interviewer_name" in (overrides ?? {}) ? overrides!.interviewer_name! : "HR Manager",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     departure_reason: "departure_reason" in (overrides ?? {}) ? overrides!.departure_reason! : "Resignation",
-    departure_date: "departure_date" in (overrides ?? {}) ? overrides!.departure_date! : now.toISOString().split("T")[0],
+    departure_date: "departure_date" in (overrides ?? {}) ? overrides!.departure_date! : todayStr(),
     notice_period_met: "notice_period_met" in (overrides ?? {}) ? overrides!.notice_period_met! : true,
     knowledge_transfer_completed: "knowledge_transfer_completed" in (overrides ?? {}) ? overrides!.knowledge_transfer_completed! : true,
     handover_document_provided: "handover_document_provided" in (overrides ?? {}) ? overrides!.handover_document_provided! : true,

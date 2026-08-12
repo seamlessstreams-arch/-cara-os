@@ -13,6 +13,7 @@ import {
   PATHWAY_PLAN_STATUS,
 } from "../life-skills-service";
 import type { SkillAssessment, PathwayPlan } from "../life-skills-service";
+import { todayStr } from "@/lib/utils";
 
 const {
   computeChildReadiness,
@@ -585,7 +586,7 @@ describe("identifyLifeSkillsAlerts", () => {
 
   it("does not generate stale_assessment alert when assessment is recent", () => {
     // Use today's date to ensure it's within 90 days
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayStr();
     const assessments = [
       makeSkillAssessment({
         child_id: "child-1",
@@ -661,7 +662,7 @@ describe("identifyLifeSkillsAlerts", () => {
         child_id: "child-1",
         child_name: "Alice",
         competency_level: "competent",
-        assessed_date: new Date().toISOString().split("T")[0],
+        assessed_date: todayStr(),
       }),
     ];
     const plans = [

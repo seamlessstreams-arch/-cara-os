@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   _testing,
@@ -15,7 +16,7 @@ const { computeProfessionalNetworkMetrics, identifyProfessionalNetworkAlerts } =
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(
   overrides?: Partial<ProfessionalNetworkRecord>,
@@ -27,7 +28,7 @@ function makeRecord(
     contact_frequency: overrides?.contact_frequency ?? "monthly",
     engagement_quality: overrides?.engagement_quality ?? "good",
     relationship_status: overrides?.relationship_status ?? "active",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     recorded_by: overrides?.recorded_by ?? "Manager A",
     professional_name: overrides?.professional_name ?? "J. Smith",

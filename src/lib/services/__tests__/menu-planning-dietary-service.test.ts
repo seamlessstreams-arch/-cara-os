@@ -6,10 +6,11 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing, type MenuPlanningDietaryRecord } from "../menu-planning-dietary-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMenuPlanningMetrics, identifyMenuPlanningAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -21,7 +22,7 @@ function makeRecord(overrides?: Partial<MenuPlanningDietaryRecord>): MenuPlannin
     dietary_category: overrides?.dietary_category ?? "standard",
     nutritional_rating: overrides?.nutritional_rating ?? "good",
     child_satisfaction: overrides?.child_satisfaction ?? "enjoyed_it",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     recorded_by: overrides?.recorded_by ?? "Staff A",
     meal_description: overrides?.meal_description ?? "Test meal",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type FamilyEngagementTrackingRecord } from "../family-engagement-tracking-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeFamilyEngagementMetrics, identifyFamilyEngagementAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FamilyEngagementTrackingRecord>): FamilyEngagementTrackingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<FamilyEngagementTrackingRecord>): Family
     family_response: overrides?.family_response ?? "engaged",
     participation_level: overrides?.participation_level ?? "full_participation",
     relationship_quality: overrides?.relationship_quality ?? "good",
-    engagement_date: overrides?.engagement_date ?? now.toISOString().split("T")[0],
+    engagement_date: overrides?.engagement_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     family_member_name: overrides?.family_member_name ?? "Mum A",

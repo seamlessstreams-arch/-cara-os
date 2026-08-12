@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type OutdoorSpacesPlayAreasRecord } from "../outdoor-spaces-play-areas-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeOutdoorSpacesMetrics, identifyOutdoorSpacesAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<OutdoorSpacesPlayAreasRecord>): OutdoorSpacesPlayAreasRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<OutdoorSpacesPlayAreasRecord>): OutdoorS
     condition_rating: overrides?.condition_rating ?? "good",
     safety_assessment: overrides?.safety_assessment ?? "fully_safe",
     accessibility_level: overrides?.accessibility_level ?? "fully_accessible",
-    inspection_date: overrides?.inspection_date ?? now.toISOString().split("T")[0],
+    inspection_date: overrides?.inspection_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     inspected_by: overrides?.inspected_by ?? "Staff A",

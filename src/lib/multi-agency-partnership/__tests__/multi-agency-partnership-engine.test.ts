@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   generateMultiAgencyPartnershipIntelligence,
   evaluatePartnershipEngagement,
@@ -26,9 +27,9 @@ import type {
 
 // ── Test Fixtures ──────────────────────────────────────────────────────────
 
-const today = new Date().toISOString().slice(0, 10);
-const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+const today = todayStr();
+const tenDaysAgo = daysFromNow(-10);
+const sixtyDaysAgo = daysFromNow(-60);
 
 const makeRelationship = (overrides: Partial<AgencyRelationship> = {}): AgencyRelationship => ({
   id: "rel-1",

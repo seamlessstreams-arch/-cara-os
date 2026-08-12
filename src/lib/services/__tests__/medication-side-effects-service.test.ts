@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MedicationSideEffectsRecord } from "../medication-side-effects-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMedicationSideEffectsMetrics, identifyMedicationSideEffectsAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationSideEffectsRecord>): MedicationSideEffectsRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<MedicationSideEffectsRecord>): Medicatio
     severity: overrides?.severity ?? "mild",
     gp_response: overrides?.gp_response ?? "no_change_needed",
     medication_category: overrides?.medication_category ?? "antidepressant",
-    reported_date: overrides?.reported_date ?? now.toISOString().split("T")[0],
+    reported_date: overrides?.reported_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     reported_by: overrides?.reported_by ?? "Staff A",

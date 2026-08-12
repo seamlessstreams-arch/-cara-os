@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   CONSENT_CATEGORIES,
@@ -51,7 +52,7 @@ function makeRecord(overrides: Partial<ConsentRecord> = {}): ConsentRecord {
   };
 }
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function futureDate(days: number): string {
   const d = new Date(now);

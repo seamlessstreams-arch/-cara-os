@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "../medication-errors-service";
+import { todayStr } from "@/lib/utils";
 import {
   ERROR_TYPES,
   ERROR_SEVERITIES,
@@ -24,7 +25,7 @@ const { computeMedErrorMetrics, identifyMedErrorAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Build a minimal MedicationError with sensible defaults. */
 function medError(overrides?: Partial<MedicationError>): MedicationError {
@@ -33,7 +34,7 @@ function medError(overrides?: Partial<MedicationError>): MedicationError {
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Alex Smith",
     child_id: overrides?.child_id ?? "child-1",
-    error_date: overrides?.error_date ?? now.toISOString().split("T")[0],
+    error_date: overrides?.error_date ?? todayStr(),
     error_time: overrides?.error_time ?? "08:00",
     error_type: overrides?.error_type ?? "wrong_dose",
     error_severity: overrides?.error_severity ?? "no_harm",

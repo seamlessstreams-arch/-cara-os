@@ -3,11 +3,12 @@ import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
+import { todayStr } from "@/lib/utils";
 
 // The final library cluster: Practice Culture Scorecard, Framework Usage,
 // Staff Recording Quality — the home's culture answered from its own engines.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (question: string, role = "registered_manager") => answerQuestion({ question, asOf, role, snapshot });
 
 describe("Ask CARA — home practice-culture cluster", () => {

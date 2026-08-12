@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   DISTURBANCE_TYPES,
@@ -14,7 +15,7 @@ const {
   generateSleepDisturbanceCaraInsights,
 } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<SleepDisturbanceInterventionRow>,
@@ -24,7 +25,7 @@ function makeRow(
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    incident_date: overrides?.incident_date ?? now.toISOString().split("T")[0],
+    incident_date: overrides?.incident_date ?? todayStr(),
     disturbance_type: overrides?.disturbance_type ?? "nightmares",
     intervention_type: overrides?.intervention_type ?? "reassurance",
     severity_level: overrides?.severity_level ?? "mild",

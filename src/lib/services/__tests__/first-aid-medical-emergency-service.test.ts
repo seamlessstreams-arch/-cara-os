@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type FirstAidMedicalEmergencyRecord } from "../first-aid-medical-emergency-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeFirstAidMetrics, identifyFirstAidAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FirstAidMedicalEmergencyRecord>): FirstAidMedicalEmergencyRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<FirstAidMedicalEmergencyRecord>): FirstA
     severity_level: overrides?.severity_level ?? "minor",
     response_quality: overrides?.response_quality ?? "good",
     outcome_assessment: overrides?.outcome_assessment ?? "full_recovery",
-    incident_date: overrides?.incident_date ?? now.toISOString().split("T")[0],
+    incident_date: overrides?.incident_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     responded_by: overrides?.responded_by ?? "Staff A",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HomeworkAcademicSupportRecord } from "../homework-academic-support-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHomeworkAcademicMetrics, identifyHomeworkAcademicAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HomeworkAcademicSupportRecord>): HomeworkAcademicSupportRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<HomeworkAcademicSupportRecord>): Homewor
     support_type: overrides?.support_type ?? "homework_help",
     engagement_level: overrides?.engagement_level ?? "engaged",
     progress_outcome: overrides?.progress_outcome ?? "met_expectations",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

@@ -10,6 +10,7 @@ import {
 } from "@/lib/cara/cara-reg45-evidence";
 import { verifyCareEventsBulk } from "@/lib/care-events/manager-bulk-actions";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_reg45_bridge";
 
@@ -34,7 +35,7 @@ function seedEvent(overrides: Partial<CareEvent> = {}): CareEvent {
     content: "A safeguarding concern that should appear in Reg 45 evidence.",
     category: "safeguarding" as CareEventCategory,
     is_current_version: true,
-    event_date: new Date().toISOString().slice(0, 10),
+    event_date: todayStr(),
     status: "manager_review_required",
     contributes_to_reg45: true,
     is_safeguarding: true,

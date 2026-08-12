@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildDevelopmentMilestoneRecord } from "../child-development-milestone-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeChildDevelopmentMetrics, identifyChildDevelopmentAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildDevelopmentMilestoneRecord>): ChildDevelopmentMilestoneRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildDevelopmentMilestoneRecord>): Child
     achievement_status: overrides?.achievement_status ?? "met",
     support_level: overrides?.support_level ?? "minimal_support",
     progress_rating: overrides?.progress_rating ?? "good_progress",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

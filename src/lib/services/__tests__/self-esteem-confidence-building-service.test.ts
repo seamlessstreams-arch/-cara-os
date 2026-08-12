@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type SelfEsteemConfidenceBuildingRecord } from "../self-esteem-confidence-building-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSelfEsteemMetrics, identifySelfEsteemAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SelfEsteemConfidenceBuildingRecord>): SelfEsteemConfidenceBuildingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<SelfEsteemConfidenceBuildingRecord>): Se
     confidence_level: overrides?.confidence_level ?? "confident",
     progress_assessment: overrides?.progress_assessment ?? "some_improvement",
     self_image_rating: overrides?.self_image_rating ?? "positive",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

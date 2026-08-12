@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type CommunityLinksIntegrationRecord } from "../community-links-integration-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeCommunityLinksMetrics, identifyCommunityLinksAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CommunityLinksIntegrationRecord>): CommunityLinksIntegrationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<CommunityLinksIntegrationRecord>): Commu
     engagement_level: overrides?.engagement_level ?? "fully_engaged",
     link_status: overrides?.link_status ?? "active",
     funding_source: overrides?.funding_source ?? "home_budget",
-    start_date: overrides?.start_date ?? now.toISOString().split("T")[0],
+    start_date: overrides?.start_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     activity_name: overrides?.activity_name ?? "Football Club",

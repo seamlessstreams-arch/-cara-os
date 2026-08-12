@@ -5,11 +5,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
 import { generateHomeDynamicsSnapshot } from "@/lib/cara/cara-home-dynamics";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_oak";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

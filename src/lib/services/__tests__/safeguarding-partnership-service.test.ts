@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   REFERRAL_TYPES,
@@ -26,7 +27,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<SafeguardingPartnershipRow>,
@@ -36,7 +37,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     child_name: "child_name" in (overrides ?? {}) ? overrides!.child_name! : "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    referral_date: "referral_date" in (overrides ?? {}) ? overrides!.referral_date! : now.toISOString().split("T")[0],
+    referral_date: "referral_date" in (overrides ?? {}) ? overrides!.referral_date! : todayStr(),
     referral_type: "referral_type" in (overrides ?? {}) ? overrides!.referral_type! : "mash_referral",
     referral_outcome: "referral_outcome" in (overrides ?? {}) ? overrides!.referral_outcome! : "no_further_action",
     partner_agency: "partner_agency" in (overrides ?? {}) ? overrides!.partner_agency! : "social_services",

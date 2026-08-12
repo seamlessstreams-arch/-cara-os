@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffSupervisionComplianceRecord } from "../staff-supervision-compliance-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffSupervisionComplianceMetrics, identifyStaffSupervisionComplianceAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffSupervisionComplianceRecord>): StaffSupervisionComplianceRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffSupervisionComplianceRecord>): Staf
     frequency_compliance: overrides?.frequency_compliance ?? "on_schedule",
     quality_rating: overrides?.quality_rating ?? "good",
     action_completion: overrides?.action_completion ?? "all_complete",
-    supervision_date: overrides?.supervision_date ?? now.toISOString().split("T")[0],
+    supervision_date: overrides?.supervision_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     supervisor_name: overrides?.supervisor_name ?? "Manager A",
     agenda_prepared: overrides?.agenda_prepared ?? true,

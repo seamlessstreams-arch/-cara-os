@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   TRANSPORT_EVENT_TYPES,
@@ -58,14 +59,14 @@ function makeRecord(
 
 /** Return an ISO date string for N days ago from now */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
   return d.toISOString().slice(0, 10);
 }
 
 /** Return an ISO date string for N days in the future from now */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 }

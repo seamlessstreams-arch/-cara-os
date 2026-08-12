@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   TRANSACTION_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildrensPocketMoneyAuditRow>,
@@ -40,7 +41,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     child_name: "child_name" in (overrides ?? {}) ? overrides!.child_name! : "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    audit_date: "audit_date" in (overrides ?? {}) ? overrides!.audit_date! : now.toISOString().split("T")[0],
+    audit_date: "audit_date" in (overrides ?? {}) ? overrides!.audit_date! : todayStr(),
     transaction_type: "transaction_type" in (overrides ?? {}) ? overrides!.transaction_type! : "weekly_allowance",
     audit_outcome: "audit_outcome" in (overrides ?? {}) ? overrides!.audit_outcome! : "compliant",
     reconciliation_status: "reconciliation_status" in (overrides ?? {}) ? overrides!.reconciliation_status! : "reconciled",

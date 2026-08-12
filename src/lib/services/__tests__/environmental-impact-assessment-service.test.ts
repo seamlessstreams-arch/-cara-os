@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   ASSESSMENT_AREAS,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<EnvironmentalImpactAssessmentRow>,
@@ -38,7 +39,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
-    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : now.toISOString().split("T")[0],
+    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : todayStr(),
     assessment_area: "assessment_area" in (overrides ?? {}) ? overrides!.assessment_area! : "energy_efficiency",
     performance_rating: "performance_rating" in (overrides ?? {}) ? overrides!.performance_rating! : "good",
     improvement_status: "improvement_status" in (overrides ?? {}) ? overrides!.improvement_status! : "in_progress",

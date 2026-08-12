@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { _testing } from "../placement-stability-service";
+import { todayStr } from "@/lib/utils";
 import {
   PLACEMENT_TYPES,
   MOVE_REASONS,
@@ -28,7 +29,7 @@ const { computeStabilityMetrics, identifyStabilityAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {

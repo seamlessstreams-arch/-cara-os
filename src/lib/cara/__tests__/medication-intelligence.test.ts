@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   analyseMedications,
   type MedicationRecord,
@@ -8,7 +9,7 @@ import {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function makeRecord(overrides: Partial<MedicationRecord> = {}): MedicationRecord {
@@ -80,7 +81,7 @@ describe("Medication Intelligence", () => {
     });
 
     it("sets analysis date to today", () => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const result = analyseMedications([], [], "home_oak", 7);
       expect(result.analysisDate).toBe(today);
     });

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type InternetUsageMonitoringRecord } from "../internet-usage-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeInternetUsageMetrics, identifyInternetUsageAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<InternetUsageMonitoringRecord>): InternetUsageMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<InternetUsageMonitoringRecord>): Interne
     usage_purpose: overrides?.usage_purpose ?? "education",
     concern_level: overrides?.concern_level ?? "no_concerns",
     monitoring_level: overrides?.monitoring_level ?? "periodic_checks",
-    monitoring_date: overrides?.monitoring_date ?? now.toISOString().split("T")[0],
+    monitoring_date: overrides?.monitoring_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     monitored_by: overrides?.monitored_by ?? "Staff A",

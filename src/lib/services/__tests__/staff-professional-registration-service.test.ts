@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -34,7 +35,7 @@ const { computeRegistrationMetrics, computeRegistrationAlerts, generateRegistrat
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffProfessionalRegistrationRow>): StaffProfessionalRegistrationRow {
   return {
@@ -44,7 +45,7 @@ function makeRow(overrides?: Partial<StaffProfessionalRegistrationRow>): StaffPr
     professional_body: "professional_body" in (overrides ?? {}) ? overrides!.professional_body! : "Social Work England",
     registration_number: "registration_number" in (overrides ?? {}) ? overrides!.registration_number! : "SWE-001234",
     registration_status: "registration_status" in (overrides ?? {}) ? overrides!.registration_status! : "Active",
-    registration_date: "registration_date" in (overrides ?? {}) ? overrides!.registration_date! : now.toISOString().split("T")[0],
+    registration_date: "registration_date" in (overrides ?? {}) ? overrides!.registration_date! : todayStr(),
     expiry_date: "expiry_date" in (overrides ?? {}) ? (overrides!.expiry_date ?? null) : null,
     pin_verified: "pin_verified" in (overrides ?? {}) ? overrides!.pin_verified! : true,
     pin_verification_date: "pin_verification_date" in (overrides ?? {}) ? (overrides!.pin_verification_date ?? null) : null,

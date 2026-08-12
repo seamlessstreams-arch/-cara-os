@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -33,7 +34,7 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffMandatoryRefresherTrainingRow>): StaffMandatoryRefresherTrainingRow {
   return {
@@ -41,8 +42,8 @@ function makeRow(overrides?: Partial<StaffMandatoryRefresherTrainingRow>): Staff
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     training_type: "training_type" in (overrides ?? {}) ? overrides!.training_type! : "First Aid",
-    completion_date: "completion_date" in (overrides ?? {}) ? overrides!.completion_date! : now.toISOString().split("T")[0],
-    expiry_date: "expiry_date" in (overrides ?? {}) ? overrides!.expiry_date! : now.toISOString().split("T")[0],
+    completion_date: "completion_date" in (overrides ?? {}) ? overrides!.completion_date! : todayStr(),
+    expiry_date: "expiry_date" in (overrides ?? {}) ? overrides!.expiry_date! : todayStr(),
     training_status: "training_status" in (overrides ?? {}) ? overrides!.training_status! : "Current",
     training_provider: "training_provider" in (overrides ?? {}) ? (overrides!.training_provider ?? null) : "St John Ambulance",
     certificate_held: "certificate_held" in (overrides ?? {}) ? overrides!.certificate_held! : true,

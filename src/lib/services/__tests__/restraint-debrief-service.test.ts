@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type RestraintDebriefRecord } from "../restraint-debrief-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeRestraintDebriefMetrics, identifyRestraintDebriefAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<RestraintDebriefRecord>): RestraintDebriefRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<RestraintDebriefRecord>): RestraintDebri
     restraint_type: overrides?.restraint_type ?? "planned_intervention",
     debrief_outcome: overrides?.debrief_outcome ?? "no_concerns",
     child_emotional_state: overrides?.child_emotional_state ?? "calm",
-    debrief_date: overrides?.debrief_date ?? now.toISOString().split("T")[0],
+    debrief_date: overrides?.debrief_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     staff_involved: overrides?.staff_involved ?? "Staff A",

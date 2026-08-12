@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type LacHealthAssessmentRow } from "../lac-health-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeLacHealthAssessmentMetrics, computeLacHealthAssessmentAlerts, generateLacHealthAssessmentCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<LacHealthAssessmentRow>): LacHealthAssessmentRow {
   return {
     id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     assessment_type: overrides?.assessment_type ?? "initial_health_assessment",
     health_outcome: overrides?.health_outcome ?? "all_actions_met",
     compliance_status: overrides?.compliance_status ?? "within_timescale",

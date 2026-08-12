@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type CreativeEnrichmentActivitiesRecord } from "../creative-enrichment-activities-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeCreativeEnrichmentMetrics, identifyCreativeEnrichmentAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CreativeEnrichmentActivitiesRecord>): CreativeEnrichmentActivitiesRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<CreativeEnrichmentActivitiesRecord>): Cr
     engagement_level: overrides?.engagement_level ?? "engaged",
     skill_development: overrides?.skill_development ?? "some_progress",
     creative_output: overrides?.creative_output ?? "work_in_progress",
-    activity_date: overrides?.activity_date ?? now.toISOString().split("T")[0],
+    activity_date: overrides?.activity_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     facilitated_by: overrides?.facilitated_by ?? "Staff A",

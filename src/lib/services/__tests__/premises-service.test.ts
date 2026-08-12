@@ -12,6 +12,7 @@ import {
   MAINTENANCE_CATEGORIES,
 } from "../premises-service";
 import type { PremisesCheck, MaintenanceRequest } from "../premises-service";
+import { todayStr } from "@/lib/utils";
 
 const {
   computePremisesCompliance,
@@ -24,16 +25,16 @@ const {
 
 /** Helper: ISO date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Helper: ISO date string N days from now. */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Build a minimal PremisesCheck with sensible defaults. */
@@ -512,7 +513,7 @@ describe("computeMaintenanceSummary", () => {
 // ── identifyPremisesAlerts ──────────────────────────────────────────────────
 
 describe("identifyPremisesAlerts", () => {
-  const now = new Date(new Date().toISOString().split("T")[0]);
+  const now = new Date(todayStr());
 
   it("returns no alerts when all statutory checks are current and no issues", () => {
     // Provide recent checks for all 12 types
@@ -789,7 +790,7 @@ describe("computeCheckSchedule", () => {
 
   it("sets next_due to today for never-done checks", () => {
     const schedule = computeCheckSchedule([]);
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayStr();
     for (const entry of schedule) {
       expect(entry.next_due).toBe(today);
     }

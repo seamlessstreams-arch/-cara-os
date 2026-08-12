@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ContactSupervisionRecord } from "../contact-supervision-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeContactSupervisionMetrics, identifyContactSupervisionAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ContactSupervisionRecord>): ContactSupervisionRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ContactSupervisionRecord>): ContactSuper
     supervision_level: overrides?.supervision_level ?? "full_supervision",
     child_response: overrides?.child_response ?? "positive",
     contact_outcome: overrides?.contact_outcome ?? "completed_as_planned",
-    contact_date: overrides?.contact_date ?? now.toISOString().split("T")[0],
+    contact_date: overrides?.contact_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supervised_by: overrides?.supervised_by ?? "Staff A",

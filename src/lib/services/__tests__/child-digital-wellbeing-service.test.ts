@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildDigitalWellbeingRecord } from "../child-digital-wellbeing-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeChildDigitalWellbeingMetrics, identifyChildDigitalWellbeingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildDigitalWellbeingRecord>): ChildDigitalWellbeingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildDigitalWellbeingRecord>): ChildDigi
     online_safety_rating: overrides?.online_safety_rating ?? "good",
     screen_time_compliance: overrides?.screen_time_compliance ?? "within_guidelines",
     digital_literacy_level: overrides?.digital_literacy_level ?? "competent",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

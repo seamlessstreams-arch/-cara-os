@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type EmotionalWellbeingOutcomeRow } from "../emotional-wellbeing-outcome-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeEmotionalWellbeingMetrics, computeEmotionalWellbeingAlerts, generateEmotionalWellbeingCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<EmotionalWellbeingOutcomeRow>): EmotionalWellbeingOutcomeRow {
   return {
     id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     outcome_measure: overrides?.outcome_measure ?? "sdq_total",
     raw_score: overrides?.raw_score ?? 12,
     clinical_band: overrides?.clinical_band ?? "normal",

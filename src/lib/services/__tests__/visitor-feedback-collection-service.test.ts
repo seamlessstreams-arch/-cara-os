@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type VisitorFeedbackCollectionRecord } from "../visitor-feedback-collection-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeVisitorFeedbackMetrics, identifyVisitorFeedbackAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<VisitorFeedbackCollectionRecord>): VisitorFeedbackCollectionRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<VisitorFeedbackCollectionRecord>): Visit
     feedback_rating: overrides?.feedback_rating ?? "good",
     visit_purpose: overrides?.visit_purpose ?? "family_contact",
     satisfaction_level: overrides?.satisfaction_level ?? "satisfied",
-    visit_date: overrides?.visit_date ?? now.toISOString().split("T")[0],
+    visit_date: overrides?.visit_date ?? todayStr(),
     visitor_name: overrides?.visitor_name ?? "Parent A",
     collected_by: overrides?.collected_by ?? "Staff A",
     feedback_sought_proactively: overrides?.feedback_sought_proactively ?? true,

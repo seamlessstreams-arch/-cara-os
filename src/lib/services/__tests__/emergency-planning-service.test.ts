@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "../emergency-planning-service";
+import { todayStr } from "@/lib/utils";
 import {
   DRILL_TYPES,
   EMERGENCY_CONTACT_TYPES,
@@ -26,9 +27,9 @@ const {
 
 /** ISO date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Build a minimal FireDrillRecord with sensible defaults. */

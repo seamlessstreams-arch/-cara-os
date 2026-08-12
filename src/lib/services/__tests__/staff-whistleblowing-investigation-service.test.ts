@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   CONCERN_CATEGORIES,
@@ -37,7 +38,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<StaffWhistleblowingInvestigationRow>,
@@ -47,7 +48,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Alice Smith",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : "staff-1",
-    disclosure_date: "disclosure_date" in (overrides ?? {}) ? overrides!.disclosure_date! : now.toISOString().split("T")[0],
+    disclosure_date: "disclosure_date" in (overrides ?? {}) ? overrides!.disclosure_date! : todayStr(),
     concern_category: "concern_category" in (overrides ?? {}) ? overrides!.concern_category! : "unsafe_practice",
     investigation_outcome: "investigation_outcome" in (overrides ?? {}) ? overrides!.investigation_outcome! : "unsubstantiated",
     investigation_status: "investigation_status" in (overrides ?? {}) ? overrides!.investigation_status! : "closed",

@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   RISK_LEVELS,
@@ -24,7 +25,7 @@ import type {
 
 const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildGangsAffiliationRiskRow>,
@@ -33,7 +34,7 @@ function makeRow(
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     risk_level: overrides?.risk_level ?? "Low",
     gang_involvement_indicators: overrides?.gang_involvement_indicators ?? 0,
     county_lines_risk: overrides?.county_lines_risk ?? false,
@@ -1472,6 +1473,6 @@ describe("makeRow factory", () => {
   });
   it("sets assessment_date to today by default", () => {
     const row = makeRow();
-    expect(row.assessment_date).toBe(now.toISOString().split("T")[0]);
+    expect(row.assessment_date).toBe(todayStr());
   });
 });

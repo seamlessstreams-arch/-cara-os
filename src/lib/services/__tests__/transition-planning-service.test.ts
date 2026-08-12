@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   TRANSITION_TYPES,
@@ -33,9 +34,9 @@ const { computeTransitionMetrics, identifyTransitionAlerts } = _testing;
 
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Like daysAgo but clamped to no earlier than the start of the current calendar
@@ -51,9 +52,9 @@ function daysAgoInQuarter(n: number): string {
 
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** ISO datetime string N days ago. */
@@ -806,7 +807,7 @@ describe("computeTransitionMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyTransitionAlerts", () => {
-  const now = new Date(new Date().toISOString().split("T")[0]);
+  const now = new Date(todayStr());
 
   // ── No alerts ────────────────────────────────────────────────────────
 

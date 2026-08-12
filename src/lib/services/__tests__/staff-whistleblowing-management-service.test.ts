@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -34,13 +35,13 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffWhistleblowingDisclosureRow>): StaffWhistleblowingDisclosureRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
-    disclosure_date: "disclosure_date" in (overrides ?? {}) ? overrides!.disclosure_date! : now.toISOString().split("T")[0],
+    disclosure_date: "disclosure_date" in (overrides ?? {}) ? overrides!.disclosure_date! : todayStr(),
     handler_name: "handler_name" in (overrides ?? {}) ? overrides!.handler_name! : "Safeguarding Lead",
     discloser_name: "discloser_name" in (overrides ?? {}) ? overrides!.discloser_name! : "Jane Smith",
     disclosure_type: "disclosure_type" in (overrides ?? {}) ? overrides!.disclosure_type! : "Safeguarding Concern",

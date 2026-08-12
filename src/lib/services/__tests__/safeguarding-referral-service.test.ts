@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type SafeguardingReferralRecord } from "../safeguarding-referral-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSafeguardingReferralMetrics, identifySafeguardingReferralAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SafeguardingReferralRecord>): SafeguardingReferralRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<SafeguardingReferralRecord>): Safeguardi
     referral_outcome: overrides?.referral_outcome ?? "pending",
     referral_urgency: overrides?.referral_urgency ?? "routine",
     concern_category: overrides?.concern_category ?? "other",
-    referral_date: overrides?.referral_date ?? now.toISOString().split("T")[0],
+    referral_date: overrides?.referral_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     referred_to_agency: overrides?.referred_to_agency ?? "MASH Team",

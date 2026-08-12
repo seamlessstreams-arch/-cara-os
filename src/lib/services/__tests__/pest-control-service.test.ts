@@ -30,12 +30,13 @@ import {
 } from "../pest-control-service";
 
 import type { PestControlRecord } from "../pest-control-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePestControlMetrics, identifyPestControlAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Build a minimal PestControlRecord with sensible defaults. */
 function makeRecord(overrides: Partial<PestControlRecord> = {}): PestControlRecord {

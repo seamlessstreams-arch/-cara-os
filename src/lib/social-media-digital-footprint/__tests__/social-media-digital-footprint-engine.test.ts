@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   evaluateConsentManagement,
   evaluateDigitalIncidentResponse,
@@ -35,7 +36,7 @@ const makeConsent = (overrides: Partial<ImageConsentRecord> = {}): ImageConsentR
   childName: "Alex",
   consentType: "photo",
   consentStatus: "granted",
-  reviewDate: new Date().toISOString().slice(0, 10),
+  reviewDate: todayStr(),
   parentCarerConsulted: true,
   childConsulted: true,
   expiryDate: "2027-01-01",
@@ -234,7 +235,7 @@ describe("evaluateConsentManagement", () => {
   });
 
   it("handles review currency check for recent review dates", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const consents = [
       makeConsent({ id: "c1", reviewDate: today }),
     ];

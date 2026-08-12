@@ -16,12 +16,13 @@ import { describe, it, expect } from "vitest";
 
 import { _testing } from "../staff-return-to-work-interview-service";
 import type { StaffReturnToWorkInterviewRow } from "../staff-return-to-work-interview-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<StaffReturnToWorkInterviewRow>,
@@ -31,7 +32,7 @@ function makeRow(
     home_id: overrides?.home_id ?? crypto.randomUUID(),
     staff_name: overrides?.staff_name ?? "Staff A",
     interview_date:
-      overrides?.interview_date ?? now.toISOString().split("T")[0],
+      overrides?.interview_date ?? todayStr(),
     absence_type: overrides?.absence_type ?? "Short-term Sickness",
     absence_duration_days: overrides?.absence_duration_days ?? 3,
     interviewer_name: overrides?.interviewer_name ?? "D. Laville",

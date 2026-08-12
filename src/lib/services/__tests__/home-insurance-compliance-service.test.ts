@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow } from "@/lib/utils";
 
 import {
   INSURANCE_TYPES,
@@ -30,13 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
-
-function daysFromNow(days: number): string {
-  const d = new Date(now);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
-}
+const now = new Date();
 
 function makeRow(
   overrides?: Partial<HomeInsuranceComplianceRow>,
@@ -51,7 +46,7 @@ function makeRow(
     coverage_level: "coverage_level" in (overrides ?? {}) ? overrides!.coverage_level! : "full",
     review_outcome: "review_outcome" in (overrides ?? {}) ? overrides!.review_outcome! : "satisfactory",
     renewal_date: "renewal_date" in (overrides ?? {}) ? overrides!.renewal_date! : daysFromNow(90),
-    last_review_date: "last_review_date" in (overrides ?? {}) ? overrides!.last_review_date! : now.toISOString().split("T")[0],
+    last_review_date: "last_review_date" in (overrides ?? {}) ? overrides!.last_review_date! : todayStr(),
     premium_amount: "premium_amount" in (overrides ?? {}) ? (overrides!.premium_amount ?? null) : 1200,
     policy_document_held: "policy_document_held" in (overrides ?? {}) ? overrides!.policy_document_held! : true,
     certificate_displayed: "certificate_displayed" in (overrides ?? {}) ? overrides!.certificate_displayed! : true,

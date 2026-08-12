@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   computeBehaviourSummary,
   computeChildBehaviourProfile,
@@ -215,7 +216,7 @@ describe("identifyBehaviourAlerts", () => {
   it("fires low_positive_ratio when all entries in last 30 days are concerning", () => {
     // Use recent dates to be within 30-day window
     const today = new Date();
-    const recentDate = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const recentDate = daysFromNow(-5);
     const entries = [
       makeEntry({ id: "1", child_id: "c1", category: "concerning", date: recentDate }),
       makeEntry({ id: "2", child_id: "c1", category: "aggression", date: recentDate }),

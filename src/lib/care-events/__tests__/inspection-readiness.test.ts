@@ -6,9 +6,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
 import { computeInspectionReadiness } from "@/lib/care-events/inspection-readiness";
 import type { CareEvent, AnnexAEvidenceItem, ChildDailySummary } from "@/types/care-events";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_readiness_test";
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = todayStr();
 
 function clearAll() {
   const evs = db.careEvents.findAll();

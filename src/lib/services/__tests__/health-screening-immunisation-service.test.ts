@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HealthScreeningImmunisationRecord } from "../health-screening-immunisation-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHealthScreeningMetrics, identifyHealthScreeningAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HealthScreeningImmunisationRecord>): HealthScreeningImmunisationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<HealthScreeningImmunisationRecord>): Hea
     screening_outcome: overrides?.screening_outcome ?? "all_clear",
     immunisation_status: overrides?.immunisation_status ?? "fully_up_to_date",
     health_risk: overrides?.health_risk ?? "low",
-    screening_date: overrides?.screening_date ?? now.toISOString().split("T")[0],
+    screening_date: overrides?.screening_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     conducted_by: overrides?.conducted_by ?? "Staff A",

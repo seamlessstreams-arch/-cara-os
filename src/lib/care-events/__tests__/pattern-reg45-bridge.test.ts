@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
 import { promoteCareEventPatternsToReg45 } from "@/lib/care-events/pattern-reg45-bridge";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_promote_test";
 
@@ -27,7 +28,7 @@ function clearAll() {
 }
 
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
   return d.toISOString().slice(0, 10);
 }

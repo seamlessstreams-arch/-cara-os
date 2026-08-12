@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffPerformanceDipRecord } from "../staff-performance-dip-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePerformanceDipMetrics, identifyPerformanceDipAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffPerformanceDipRecord>): StaffPerformanceDipRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffPerformanceDipRecord>): StaffPerfor
     dip_severity: overrides?.dip_severity ?? "possible_dip",
     dip_status: overrides?.dip_status ?? "resolved",
     frequency_pattern: overrides?.frequency_pattern ?? "one_off",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
     identified_by: overrides?.identified_by ?? "Manager A",

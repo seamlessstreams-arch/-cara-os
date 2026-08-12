@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type FaithSpiritualObservanceRecord } from "../faith-spiritual-observance-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeFaithSpiritualMetrics, identifyFaithSpiritualAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<FaithSpiritualObservanceRecord>): FaithSpiritualObservanceRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<FaithSpiritualObservanceRecord>): FaithS
     support_level: overrides?.support_level ?? "well_supported",
     child_engagement: overrides?.child_engagement ?? "engaged",
     cultural_sensitivity: overrides?.cultural_sensitivity ?? "good",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

@@ -11,12 +11,13 @@ import {
   loadReg45Reports,
 } from "@/lib/cara/cara-reg45-report";
 import type { CaraReg45EvidenceItem } from "@/types/cara-studio";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_oak";
 const CHILD_ID = "yp_alex";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

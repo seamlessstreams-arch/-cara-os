@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PetCareResponsibilityRecord } from "../pet-care-responsibility-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePetCareMetrics, identifyPetCareAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PetCareResponsibilityRecord>): PetCareResponsibilityRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PetCareResponsibilityRecord>): PetCareRe
     care_quality: overrides?.care_quality ?? "good",
     responsibility_level: overrides?.responsibility_level ?? "shared_responsibility",
     therapeutic_impact: overrides?.therapeutic_impact ?? "positive",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

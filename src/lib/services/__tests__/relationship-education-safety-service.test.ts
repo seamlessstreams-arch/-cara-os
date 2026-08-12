@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type RelationshipEducationSafetyRecord } from "../relationship-education-safety-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeRelationshipEducationMetrics, identifyRelationshipEducationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<RelationshipEducationSafetyRecord>): RelationshipEducationSafetyRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<RelationshipEducationSafetyRecord>): Rel
     understanding_level: overrides?.understanding_level ?? "good_understanding",
     engagement_quality: overrides?.engagement_quality ?? "engaged",
     age_appropriateness: overrides?.age_appropriateness ?? "appropriate",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     delivered_by: overrides?.delivered_by ?? "Staff A",

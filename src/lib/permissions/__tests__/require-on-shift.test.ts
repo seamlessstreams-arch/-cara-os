@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { requireOnShift } from "../require-on-shift";
 import { db } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 afterEach(() => {
   delete process.env.SHIFT_BASED_ACCESS_ENFORCED;
@@ -21,7 +22,7 @@ describe("requireOnShift (enforcement ON by default)", () => {
 
   it("allows an on-shift general-staff user", () => {
     const staffId = "staff_ros_onshift";
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     db.shifts.create({
       staff_id: staffId, date: today, shift_type: "day", start_time: "08:00", end_time: "16:00",
       break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: `${today}T08:00:00.000Z`,

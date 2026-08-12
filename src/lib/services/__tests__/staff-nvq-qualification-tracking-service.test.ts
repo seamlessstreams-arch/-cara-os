@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -34,7 +35,7 @@ const { computeNvqMetrics, computeNvqAlerts, generateNvqCaraInsights } = _testin
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffNvqQualificationTrackingRow>): StaffNvqQualificationTrackingRow {
   return {
@@ -42,12 +43,12 @@ function makeRow(overrides?: Partial<StaffNvqQualificationTrackingRow>): StaffNv
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    review_date: "review_date" in (overrides ?? {}) ? overrides!.review_date! : now.toISOString().split("T")[0],
+    review_date: "review_date" in (overrides ?? {}) ? overrides!.review_date! : todayStr(),
     qualification_level: "qualification_level" in (overrides ?? {}) ? overrides!.qualification_level! : "level_3",
     qualification_status: "qualification_status" in (overrides ?? {}) ? overrides!.qualification_status! : "in_progress",
     qualification_type: "qualification_type" in (overrides ?? {}) ? overrides!.qualification_type! : "diploma_residential_childcare",
     registration_status: "registration_status" in (overrides ?? {}) ? overrides!.registration_status! : "registered",
-    start_date: "start_date" in (overrides ?? {}) ? overrides!.start_date! : now.toISOString().split("T")[0],
+    start_date: "start_date" in (overrides ?? {}) ? overrides!.start_date! : todayStr(),
     expected_completion_date: "expected_completion_date" in (overrides ?? {}) ? (overrides!.expected_completion_date ?? null) : null,
     actual_completion_date: "actual_completion_date" in (overrides ?? {}) ? (overrides!.actual_completion_date ?? null) : null,
     reg32_compliant: "reg32_compliant" in (overrides ?? {}) ? overrides!.reg32_compliant! : true,

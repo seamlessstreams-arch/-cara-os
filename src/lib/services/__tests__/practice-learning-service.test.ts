@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   LEARNING_SOURCES,
@@ -1634,7 +1635,7 @@ describe("Edge cases", () => {
 
   describe("default now parameter", () => {
     it("computeLearningMetrics uses current date when now is not provided", () => {
-      const e = makeLearningEvent({ event_date: new Date().toISOString().split("T")[0] });
+      const e = makeLearningEvent({ event_date: todayStr() });
       const m = computeLearningMetrics([e], []);
       // Event should be within the 90-day window of current date
       expect(m.events_this_quarter).toBe(1);

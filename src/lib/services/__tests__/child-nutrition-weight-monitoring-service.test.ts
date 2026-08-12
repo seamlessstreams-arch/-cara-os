@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   BMI_CATEGORIES,
@@ -18,7 +19,7 @@ const {
   generateNutritionCaraInsights,
 } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildNutritionWeightMonitoringRow>,
@@ -28,7 +29,7 @@ function makeRow(
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     bmi_category: overrides?.bmi_category ?? "healthy_weight",
     dietary_need: overrides?.dietary_need ?? "none",
     monitoring_status: overrides?.monitoring_status ?? "routine",

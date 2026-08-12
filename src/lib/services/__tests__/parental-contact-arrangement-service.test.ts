@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ParentalContactArrangementRow } from "../parental-contact-arrangement-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeParentalContactMetrics, computeParentalContactAlerts, generateParentalContactCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<ParentalContactArrangementRow>): ParentalContactArrangementRow {
   return {
     id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    contact_date: overrides?.contact_date ?? now.toISOString().split("T")[0],
+    contact_date: overrides?.contact_date ?? todayStr(),
     contact_type: overrides?.contact_type ?? "face_to_face_supervised",
     contact_outcome: overrides?.contact_outcome ?? "positive",
     court_order_status: overrides?.court_order_status ?? "agreed_informally",

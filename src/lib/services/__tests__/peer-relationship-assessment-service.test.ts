@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PeerRelationshipAssessmentRecord } from "../peer-relationship-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePeerRelationshipMetrics, identifyPeerRelationshipAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PeerRelationshipAssessmentRecord>): PeerRelationshipAssessmentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PeerRelationshipAssessmentRecord>): Peer
     social_skill_level: overrides?.social_skill_level ?? "age_appropriate",
     conflict_style: overrides?.conflict_style ?? "collaborative",
     friendship_stability: overrides?.friendship_stability ?? "stable",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

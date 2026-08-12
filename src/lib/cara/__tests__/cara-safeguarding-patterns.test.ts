@@ -5,12 +5,13 @@
 import { describe, it, expect } from "vitest";
 import { db } from "@/lib/db/store";
 import { runSafeguardingScan } from "@/lib/cara/cara-safeguarding-patterns";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_oak_sg_test";
 const CHILD_ID = "yp_sg_test";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

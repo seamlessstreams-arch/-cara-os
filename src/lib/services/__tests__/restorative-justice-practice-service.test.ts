@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type RestorativeJusticePracticeRecord } from "../restorative-justice-practice-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeRestorativeJusticeMetrics, identifyRestorativeJusticeAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<RestorativeJusticePracticeRecord>): RestorativeJusticePracticeRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<RestorativeJusticePracticeRecord>): Rest
     outcome_level: overrides?.outcome_level ?? "fully_resolved",
     participation_willingness: overrides?.participation_willingness ?? "fully_willing",
     relationship_impact: overrides?.relationship_impact ?? "improved",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     facilitated_by: overrides?.facilitated_by ?? "Staff A",

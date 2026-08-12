@@ -3,11 +3,12 @@ import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
+import { todayStr } from "@/lib/utils";
 
 // Real seeded snapshot — the grounding must carry the platform's intelligence,
 // scoped by tier, and only ever strings the deterministic engines computed.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 
 function packFor(question: string, role?: string): string {
   const answer = answerQuestion({ question, asOf, role, snapshot });

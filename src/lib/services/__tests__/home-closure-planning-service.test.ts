@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HomeClosurePlanningRow } from "../home-closure-planning-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHomeClosurePlanningMetrics, computeHomeClosurePlanningAlerts, generateHomeClosurePlanningCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<HomeClosurePlanningRow>): HomeClosurePlanningRow {
   return {

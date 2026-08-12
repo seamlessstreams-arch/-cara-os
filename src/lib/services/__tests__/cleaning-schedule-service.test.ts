@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type CleaningScheduleRecord } from "../cleaning-schedule-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeCleaningMetrics, identifyCleaningAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CleaningScheduleRecord>): CleaningScheduleRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<CleaningScheduleRecord>): CleaningSchedu
     cleaning_standard: overrides?.cleaning_standard ?? "good",
     area_cleaned: overrides?.area_cleaned ?? "kitchen",
     hygiene_risk: overrides?.hygiene_risk ?? "none",
-    cleaning_date: overrides?.cleaning_date ?? now.toISOString().split("T")[0],
+    cleaning_date: overrides?.cleaning_date ?? todayStr(),
     area_name: overrides?.area_name ?? "Kitchen A",
     cleaning_products_safe: overrides?.cleaning_products_safe ?? true,
     products_stored_safely: overrides?.products_stored_safely ?? true,

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type AdvocacyRepresentationRecord } from "../advocacy-representation-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeAdvocacyRepresentationMetrics, identifyAdvocacyRepresentationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<AdvocacyRepresentationRecord>): AdvocacyRepresentationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<AdvocacyRepresentationRecord>): Advocacy
     representation_quality: overrides?.representation_quality ?? "good",
     child_satisfaction: overrides?.child_satisfaction ?? "satisfied",
     outcome_effectiveness: overrides?.outcome_effectiveness ?? "mostly_effective",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     facilitated_by: overrides?.facilitated_by ?? "Staff A",

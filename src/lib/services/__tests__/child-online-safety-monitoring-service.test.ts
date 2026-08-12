@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   CHECK_TYPES,
@@ -17,7 +18,7 @@ const {
   generateCaraInsights,
 } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildOnlineSafetyMonitoringRow>,
@@ -25,7 +26,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: overrides?.home_id ?? "home-1",
-    check_date: overrides?.check_date ?? now.toISOString().split("T")[0],
+    check_date: overrides?.check_date ?? todayStr(),
     checker_name: overrides?.checker_name ?? "Checker X",
     child_name: overrides?.child_name ?? "Child A",
     check_type: overrides?.check_type ?? "Device Check",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PocketMoneyManagementRecord } from "../pocket-money-management-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePocketMoneyMetrics, identifyPocketMoneyAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PocketMoneyManagementRecord>): PocketMoneyManagementRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PocketMoneyManagementRecord>): PocketMon
     spending_category: overrides?.spending_category ?? "savings",
     approval_status: overrides?.approval_status ?? "approved",
     financial_literacy_level: overrides?.financial_literacy_level ?? "supported",
-    transaction_date: overrides?.transaction_date ?? now.toISOString().split("T")[0],
+    transaction_date: overrides?.transaction_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     recorded_by: overrides?.recorded_by ?? "Staff A",

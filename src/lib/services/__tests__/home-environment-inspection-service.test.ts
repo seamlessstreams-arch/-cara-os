@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HomeEnvironmentInspectionRecord } from "../home-environment-inspection-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHomeEnvironmentMetrics, identifyHomeEnvironmentAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HomeEnvironmentInspectionRecord>): HomeEnvironmentInspectionRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<HomeEnvironmentInspectionRecord>): HomeE
     condition_rating: overrides?.condition_rating ?? "good",
     hazard_level: overrides?.hazard_level ?? "none",
     compliance_status: overrides?.compliance_status ?? "fully_compliant",
-    inspection_date: overrides?.inspection_date ?? now.toISOString().split("T")[0],
+    inspection_date: overrides?.inspection_date ?? todayStr(),
     inspected_by: overrides?.inspected_by ?? "Staff A",
     cleanliness_acceptable: overrides?.cleanliness_acceptable ?? true,
     fire_safety_checked: overrides?.fire_safety_checked ?? true,

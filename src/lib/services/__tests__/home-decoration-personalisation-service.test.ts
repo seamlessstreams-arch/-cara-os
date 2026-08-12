@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HomeDecorationPersonalisationRecord } from "../home-decoration-personalisation-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHomeDecorationMetrics, identifyHomeDecorationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<HomeDecorationPersonalisationRecord>): HomeDecorationPersonalisationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<HomeDecorationPersonalisationRecord>): H
     satisfaction_level: overrides?.satisfaction_level ?? "satisfied",
     personalisation_scope: overrides?.personalisation_scope ?? "bedroom_only",
     budget_status: overrides?.budget_status ?? "within_budget",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     assessed_by: overrides?.assessed_by ?? "Staff A",

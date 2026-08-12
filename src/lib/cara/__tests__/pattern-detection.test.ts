@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { analysePatterns, type TimelineEvent } from "../pattern-detection";
+import { daysFromNow } from "@/lib/utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 const CHILD = "child_jordan";
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function makeEvent(overrides: Partial<TimelineEvent> & { date: string }): TimelineEvent {

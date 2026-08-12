@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type DentalOpticalHealthRecord } from "../dental-optical-health-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeDentalOpticalMetrics, identifyDentalOpticalAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<DentalOpticalHealthRecord>): DentalOpticalHealthRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<DentalOpticalHealthRecord>): DentalOptic
     compliance_level: overrides?.compliance_level ?? "fully_compliant",
     treatment_outcome: overrides?.treatment_outcome ?? "no_treatment_needed",
     urgency_assessment: overrides?.urgency_assessment ?? "routine",
-    appointment_date: overrides?.appointment_date ?? now.toISOString().split("T")[0],
+    appointment_date: overrides?.appointment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     accompanied_by: overrides?.accompanied_by ?? "Staff A",

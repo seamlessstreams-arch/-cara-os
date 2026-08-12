@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   SUBSTANCE_TYPES,
   SCREENING_OUTCOMES,
@@ -26,7 +27,7 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildSubstanceMisuseScreeningRow>,
@@ -35,7 +36,7 @@ function makeRow(
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: overrides?.home_id ?? crypto.randomUUID(),
     child_name: overrides?.child_name ?? "Child A",
-    screening_date: overrides?.screening_date ?? now.toISOString().split("T")[0],
+    screening_date: overrides?.screening_date ?? todayStr(),
     substance_type: overrides?.substance_type ?? "Cannabis",
     screening_outcome: overrides?.screening_outcome ?? "No Concern",
     intervention_type:

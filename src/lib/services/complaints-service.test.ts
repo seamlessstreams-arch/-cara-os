@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   computeComplaintsSummary,
   computeNotificationCompliance,
@@ -235,7 +236,7 @@ describe("identifyComplaintAlerts", () => {
 
   it("flags pattern detection: 3+ in same category within 30 days", () => {
     const now = new Date();
-    const recentDate = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]; // 5 days ago
+    const recentDate = daysFromNow(-5); // 5 days ago
     const complaints = [
       makeComplaint({ id: "c1", complaint_category: "staff_conduct", date_received: recentDate }),
       makeComplaint({ id: "c2", complaint_category: "staff_conduct", date_received: recentDate }),

@@ -4,12 +4,13 @@ import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildRecordCatalogue, searchCatalogue, labelOf } from "../record-catalogue";
 import { buildGroundingPack } from "../build-grounding";
+import { todayStr } from "@/lib/utils";
 
 // "ASK CARA MUST BE ABLE TO ACCESS THE COMPLETE APPLICATION" — the universal
 // catalogue introspects EVERY store collection at runtime, so any record the
 // specialists don't cover is still answerable, tier-scoped, never invented.
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (question: string, role = "registered_manager") => answerQuestion({ question, asOf, role, snapshot });
 
 describe("Ask CARA — universal record catalogue (complete application)", () => {

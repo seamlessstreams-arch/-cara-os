@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   computeWhistleblowingMetrics,
   identifyWhistleblowingAlerts,
@@ -151,7 +152,7 @@ describe("identifyWhistleblowingAlerts", () => {
   });
 
   it("fires critical alert for unacknowledged disclosure > 48 hours", () => {
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const threeDaysAgo = daysFromNow(-3);
     const reports = [
       makeReport({ status: "received", acknowledged_date: null, disclosure_date: threeDaysAgo }),
     ];
@@ -162,7 +163,7 @@ describe("identifyWhistleblowingAlerts", () => {
   });
 
   it("fires high alert for high-risk open > 7 days", () => {
-    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const tenDaysAgo = daysFromNow(-10);
     const reports = [
       makeReport({ risk_level: "high", status: "under_investigation", disclosure_date: tenDaysAgo }),
     ];
@@ -191,7 +192,7 @@ describe("identifyWhistleblowingAlerts", () => {
   });
 
   it("fires high alert for follow-up overdue", () => {
-    const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const pastDate = daysFromNow(-5);
     const reports = [
       makeReport({ follow_up_date: pastDate, follow_up_completed: false }),
     ];
@@ -222,7 +223,7 @@ describe("identifyWhistleblowingAlerts", () => {
   });
 
   it("fires medium alert for investigation running > 30 days", () => {
-    const fortyDaysAgo = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const fortyDaysAgo = daysFromNow(-40);
     const reports = [
       makeReport({
         status: "under_investigation",
