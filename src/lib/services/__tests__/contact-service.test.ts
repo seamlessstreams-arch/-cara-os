@@ -12,6 +12,7 @@ import {
   CONTACT_OUTCOMES,
 } from "../contact-service";
 import { _testing } from "../contact-service";
+import { todayStr, daysFromNow} from "@/lib/utils";
 
 const {
   computeContactCompliance,
@@ -282,8 +283,8 @@ describe("computeChildContactProfile", () => {
       plan({ child_id: "child-2", contact_person_name: "Dad" }),
     ];
     const records = [
-      record({ child_id: "child-1", scheduled_date: new Date().toISOString().slice(0, 10) }),
-      record({ child_id: "child-2", scheduled_date: new Date().toISOString().slice(0, 10) }),
+      record({ child_id: "child-1", scheduled_date: todayStr() }),
+      record({ child_id: "child-2", scheduled_date: todayStr() }),
     ];
     const result = computeChildContactProfile("child-1", plans, records);
     expect(result.active_contacts).toHaveLength(1);
@@ -326,8 +327,8 @@ describe("computeChildContactProfile", () => {
 
   it("counts total contacts in last 30 days", () => {
     const today = new Date();
-    const recent = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const old = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const recent = daysFromNow(-5);
+    const old = daysFromNow(-60);
 
     const records = [
       record({ id: "r1", child_id: "child-1", scheduled_date: recent }),
@@ -340,7 +341,7 @@ describe("computeChildContactProfile", () => {
 
   it("counts family contacts in last 30 days", () => {
     const today = new Date();
-    const recent = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const recent = daysFromNow(-5);
 
     const records = [
       record({ id: "r1", child_id: "child-1", contact_person_role: "birth_parent", scheduled_date: recent }),
@@ -637,7 +638,7 @@ describe("suggestContactActions", () => {
   });
 
   it("does not flag overdue when recent completed contact exists", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const plans = [
       plan({ planned_frequency: "weekly", is_active: true }),
     ];
@@ -738,7 +739,7 @@ describe("suggestContactActions", () => {
   });
 
   it("does not flag no family contact when recent completed family contact exists", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const plans = [
       plan({ child_id: "child-1", contact_person_role: "birth_parent", is_active: true }),
     ];

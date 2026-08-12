@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MedicationConsentRecord } from "../medication-consent-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMedicationConsentMetrics, identifyMedicationConsentAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationConsentRecord>): MedicationConsentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<MedicationConsentRecord>): MedicationCon
     consent_status: overrides?.consent_status ?? "active",
     medication_type: overrides?.medication_type ?? "prescribed_regular",
     consent_given_by: overrides?.consent_given_by ?? "parent_mother",
-    consent_date: overrides?.consent_date ?? now.toISOString().split("T")[0],
+    consent_date: overrides?.consent_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     medication_name: overrides?.medication_name ?? "Paracetamol",

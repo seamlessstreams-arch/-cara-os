@@ -13,6 +13,7 @@ import {
   PEP_TARGETS_STATUS,
 } from "../education-service";
 import { _testing } from "../education-service";
+import { todayStr, daysFromNow} from "@/lib/utils";
 
 const {
   computeAttendanceStats,
@@ -128,7 +129,7 @@ function activity(overrides?: Partial<ActivityRecord>): ActivityRecord {
     child_id: "child-1",
     activity_name: "Football",
     category: "sport",
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     duration_minutes: 60,
     location: "Playing field",
     description: null,
@@ -389,9 +390,8 @@ describe("computeEducationProfile", () => {
   });
 
   it("counts activities within the last 30 days", () => {
-    const today = new Date();
-    const recent = new Date(today.getTime() - 5 * 86400000).toISOString().slice(0, 10);
-    const old = new Date(today.getTime() - 60 * 86400000).toISOString().slice(0, 10);
+    const recent = daysFromNow(-5);
+    const old = daysFromNow(-60);
 
     const activities = [
       activity({ id: "a1", date: recent }),
@@ -403,8 +403,7 @@ describe("computeEducationProfile", () => {
   });
 
   it("groups recent activities by category", () => {
-    const today = new Date();
-    const recent = new Date(today.getTime() - 5 * 86400000).toISOString().slice(0, 10);
+    const recent = daysFromNow(-5);
 
     const activities = [
       activity({ id: "a1", category: "sport", date: recent }),
@@ -416,7 +415,7 @@ describe("computeEducationProfile", () => {
   });
 
   it("excludes old activities from category counts", () => {
-    const old = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
+    const old = daysFromNow(-60);
     const activities = [
       activity({ id: "a1", category: "sport", date: old }),
     ];

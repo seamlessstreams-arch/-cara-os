@@ -3,9 +3,10 @@ import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { answerNaturally, buildFreeChatGrounding, formatHistory } from "../ask-cara-natural";
+import { todayStr } from "@/lib/utils";
 
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 
 async function natural(question: string, role = "registered_manager") {
   const answer = answerQuestion({ question, asOf, role, snapshot });

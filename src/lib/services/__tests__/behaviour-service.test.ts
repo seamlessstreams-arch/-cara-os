@@ -16,6 +16,7 @@ import {
 } from "../behaviour-service";
 
 import type { BehaviourEntry, RewardSanction } from "../behaviour-service";
+import { todayStr } from "@/lib/utils";
 
 const {
   computeBehaviourSummary,
@@ -595,7 +596,7 @@ describe("identifyBehaviourAlerts", () => {
   // Use a fixed "now" concept via date strings relative to real time.
   // The function uses `new Date()` internally, so we use dates relative to today.
   const today = new Date();
-  const todayDate = today.toISOString().split("T")[0];
+  const todayDate = todayStr();
 
   /** Return date string N days before today. */
   function daysBeforeToday(n: number): string {

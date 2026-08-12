@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   MEETING_TYPES,
@@ -45,9 +46,9 @@ function daysAgo(n: number): string {
 }
 
 function futureDateStr(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Build a minimal ChildrensMeetingRecord with sensible defaults. */
@@ -90,7 +91,7 @@ function makeRecord(
 }
 
 /** Normalised "today" matching the service's `new Date()` comparison. */
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Math.round(value * 1000) / 10 — same rounding the service uses. */
 function rate(num: number, den: number): number {

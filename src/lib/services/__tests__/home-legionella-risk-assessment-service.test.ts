@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   WATER_SYSTEM_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<HomeLegionellaRiskAssessmentRow>,
@@ -38,7 +39,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : crypto.randomUUID(),
-    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : now.toISOString().split("T")[0],
+    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : todayStr(),
     assessor_name: "assessor_name" in (overrides ?? {}) ? overrides!.assessor_name! : "D. Laville",
     water_system_type: "water_system_type" in (overrides ?? {}) ? overrides!.water_system_type! : "Hot Water",
     risk_level: "risk_level" in (overrides ?? {}) ? overrides!.risk_level! : "Low",

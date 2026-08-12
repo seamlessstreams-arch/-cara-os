@@ -7,10 +7,11 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffReviewOutcomeRecord } from "../staff-review-outcome-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeReviewOutcomeMetrics, identifyReviewOutcomeAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ function makeRecord(overrides?: Partial<StaffReviewOutcomeRecord>): StaffReviewO
     review_outcome: "review_outcome" in (overrides ?? {}) ? overrides!.review_outcome! : "good",
     outcome_status: "outcome_status" in (overrides ?? {}) ? overrides!.outcome_status! : "finalised",
     follow_up_urgency: "follow_up_urgency" in (overrides ?? {}) ? overrides!.follow_up_urgency! : "next_review",
-    session_date: "session_date" in (overrides ?? {}) ? overrides!.session_date! : now.toISOString().split("T")[0],
+    session_date: "session_date" in (overrides ?? {}) ? overrides!.session_date! : todayStr(),
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Staff A",
     reviewed_by: "reviewed_by" in (overrides ?? {}) ? overrides!.reviewed_by! : "Manager A",
     strengths_discussed: "strengths_discussed" in (overrides ?? {}) ? overrides!.strengths_discussed! : "Test strengths",

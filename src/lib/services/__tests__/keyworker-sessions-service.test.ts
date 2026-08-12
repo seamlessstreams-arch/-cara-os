@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type KeyworkerSessionRecord } from "../keyworker-sessions-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeKeyworkerSessionMetrics, identifyKeyworkerSessionAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<KeyworkerSessionRecord>): KeyworkerSessionRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<KeyworkerSessionRecord>): KeyworkerSessi
     session_quality: overrides?.session_quality ?? "good",
     child_mood: overrides?.child_mood ?? "positive",
     session_location: overrides?.session_location ?? "in_home",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     keyworker_name: overrides?.keyworker_name ?? "Staff A",

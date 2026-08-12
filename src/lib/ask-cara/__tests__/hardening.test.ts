@@ -4,11 +4,12 @@ import { buildAskSnapshot } from "../build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
 import { buildRecordCatalogue } from "../record-catalogue";
+import { todayStr } from "@/lib/utils";
 
 // Regression guards for the readiness-audit hardening pass (six confirmed fixes
 // in shipped Ask CARA code, surfaced by the multi-agent review).
 const snapshot = buildAskSnapshot(getStore());
-const asOf = new Date().toISOString().slice(0, 10);
+const asOf = todayStr();
 const ask = (q: string, role = "registered_manager") => answerQuestion({ question: q, asOf, role, snapshot });
 
 describe("Ask CARA hardening — readiness fixes", () => {

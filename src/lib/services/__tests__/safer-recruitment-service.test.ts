@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   _testing,
   DBS_TYPES,
@@ -1032,7 +1033,7 @@ describe("identifyRecruitmentAlerts", () => {
         status: "valid",
         dbs_type: "enhanced",
         update_service_registered: false,
-        expiry_date: new Date(Date.now() + 10 * 86400000).toISOString().split("T")[0],
+        expiry_date: daysFromNow(10),
       }),
     ];
     const alerts = identifyRecruitmentAlerts(dbs, [], []);

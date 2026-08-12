@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   CERTIFICATE_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ComplianceCertificateRow>,

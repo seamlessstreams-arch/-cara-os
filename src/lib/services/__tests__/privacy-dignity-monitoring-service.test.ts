@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PrivacyDignityMonitoringRecord } from "../privacy-dignity-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePrivacyDignityMetrics, identifyPrivacyDignityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PrivacyDignityMonitoringRecord>): PrivacyDignityMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PrivacyDignityMonitoringRecord>): Privac
     dignity_rating: overrides?.dignity_rating ?? "good",
     intrusion_type: overrides?.intrusion_type ?? "none",
     response_quality: overrides?.response_quality ?? "good",
-    monitoring_date: overrides?.monitoring_date ?? now.toISOString().split("T")[0],
+    monitoring_date: overrides?.monitoring_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     monitored_by: overrides?.monitored_by ?? "Staff A",

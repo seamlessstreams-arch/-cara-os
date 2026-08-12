@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -35,7 +36,7 @@ const { computeDbsMetrics, computeDbsAlerts, generateDbsCaraInsights } = _testin
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffDbsRenewalTrackingRow>): StaffDbsRenewalTrackingRow {
   return {
@@ -43,13 +44,13 @@ function makeRow(overrides?: Partial<StaffDbsRenewalTrackingRow>): StaffDbsRenew
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    check_date: "check_date" in (overrides ?? {}) ? overrides!.check_date! : now.toISOString().split("T")[0],
+    check_date: "check_date" in (overrides ?? {}) ? overrides!.check_date! : todayStr(),
     dbs_type: "dbs_type" in (overrides ?? {}) ? overrides!.dbs_type! : "enhanced",
     dbs_status: "dbs_status" in (overrides ?? {}) ? overrides!.dbs_status! : "current",
     check_outcome: "check_outcome" in (overrides ?? {}) ? overrides!.check_outcome! : "clear",
     renewal_priority: "renewal_priority" in (overrides ?? {}) ? overrides!.renewal_priority! : "routine",
     dbs_number: "dbs_number" in (overrides ?? {}) ? (overrides!.dbs_number ?? null) : "DBS-001234",
-    issue_date: "issue_date" in (overrides ?? {}) ? overrides!.issue_date! : now.toISOString().split("T")[0],
+    issue_date: "issue_date" in (overrides ?? {}) ? overrides!.issue_date! : todayStr(),
     renewal_date: "renewal_date" in (overrides ?? {}) ? (overrides!.renewal_date ?? null) : null,
     enhanced_check_completed: "enhanced_check_completed" in (overrides ?? {}) ? overrides!.enhanced_check_completed! : true,
     barred_list_checked: "barred_list_checked" in (overrides ?? {}) ? overrides!.barred_list_checked! : true,

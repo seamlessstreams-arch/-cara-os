@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MedicationStorageRecord } from "../medication-storage-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMedicationStorageMetrics, identifyMedicationStorageAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<MedicationStorageRecord>): MedicationStorageRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<MedicationStorageRecord>): MedicationSto
     check_type: overrides?.check_type ?? "daily_check",
     storage_condition: overrides?.storage_condition ?? "satisfactory",
     temperature_status: overrides?.temperature_status ?? "in_range",
-    check_date: overrides?.check_date ?? now.toISOString().split("T")[0],
+    check_date: overrides?.check_date ?? todayStr(),
     storage_location: overrides?.storage_location ?? "Main Office",
     temperature_reading: "temperature_reading" in (overrides ?? {}) ? (overrides!.temperature_reading ?? null) : 5.0,
     min_temperature: "min_temperature" in (overrides ?? {}) ? (overrides!.min_temperature ?? null) : 2.0,

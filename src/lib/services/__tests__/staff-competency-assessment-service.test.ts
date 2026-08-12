@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffCompetencyAssessmentRecord } from "../staff-competency-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffCompetencyMetrics, identifyStaffCompetencyAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffCompetencyAssessmentRecord>): StaffCompetencyAssessmentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffCompetencyAssessmentRecord>): Staff
     assessment_method: overrides?.assessment_method ?? "direct_observation",
     competency_rating: overrides?.competency_rating ?? "meets_expectations",
     action_required: overrides?.action_required ?? "none",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     staff_role: overrides?.staff_role ?? "RSW",
     assessor_name: overrides?.assessor_name ?? "Manager A",

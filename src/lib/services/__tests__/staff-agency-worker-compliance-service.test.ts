@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -33,7 +34,7 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffAgencyWorkerComplianceRow>): StaffAgencyWorkerComplianceRow {
   return {
@@ -41,7 +42,7 @@ function makeRow(overrides?: Partial<StaffAgencyWorkerComplianceRow>): StaffAgen
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     agency_name: "agency_name" in (overrides ?? {}) ? overrides!.agency_name! : "CarePlus Agency",
-    start_date: "start_date" in (overrides ?? {}) ? overrides!.start_date! : now.toISOString().split("T")[0],
+    start_date: "start_date" in (overrides ?? {}) ? overrides!.start_date! : todayStr(),
     end_date: "end_date" in (overrides ?? {}) ? (overrides!.end_date ?? null) : null,
     compliance_status: "compliance_status" in (overrides ?? {}) ? overrides!.compliance_status! : "Compliant",
     dbs_verified: "dbs_verified" in (overrides ?? {}) ? overrides!.dbs_verified! : true,

@@ -12,6 +12,7 @@ import {
   REVIEW_FREQUENCY,
 } from "../outcomes-service";
 import type { OutcomeTarget, OutcomeReview } from "../outcomes-service";
+import { todayStr } from "@/lib/utils";
 
 const {
   computeChildOutcomes,
@@ -660,7 +661,7 @@ describe("identifyOutcomeAlerts", () => {
       makeOutcomeReview({
         id: "r1",
         child_id: "child-1",
-        review_date: new Date().toISOString().slice(0, 10), // today
+        review_date: todayStr(), // today
       }),
     ];
     const alerts = identifyOutcomeAlerts(targets, reviews);

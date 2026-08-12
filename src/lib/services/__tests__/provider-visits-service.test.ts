@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   VISIT_TYPES,
@@ -24,7 +25,7 @@ const { computeVisitMetrics, identifyVisitAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeVisit(
   overrides: Partial<{

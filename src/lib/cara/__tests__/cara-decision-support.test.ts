@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 import {
   runDecisionSupport,
   loadDecisionSupport,
@@ -13,7 +14,7 @@ const HOME_ID = "home_oak";
 const CHILD_ID = "yp_alex";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

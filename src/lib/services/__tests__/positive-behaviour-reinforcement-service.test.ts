@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PositiveBehaviourReinforcementRecord } from "../positive-behaviour-reinforcement-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePositiveBehaviourMetrics, identifyPositiveBehaviourAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PositiveBehaviourReinforcementRecord>): PositiveBehaviourReinforcementRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PositiveBehaviourReinforcementRecord>): 
     praise_quality: overrides?.praise_quality ?? "specific_genuine",
     child_response: overrides?.child_response ?? "positive",
     consistency_level: overrides?.consistency_level ?? "consistent",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

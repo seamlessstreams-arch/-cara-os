@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type EhcpSendMonitoringRecord } from "../ehcp-send-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeEhcpSendMetrics, identifyEhcpSendAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<EhcpSendMonitoringRecord>): EhcpSendMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<EhcpSendMonitoringRecord>): EhcpSendMoni
     ehcp_status: overrides?.ehcp_status ?? "plan_issued",
     provision_delivery: overrides?.provision_delivery ?? "fully_delivered",
     outcome_progress: overrides?.outcome_progress ?? "on_track",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     recorded_by: overrides?.recorded_by ?? "Staff A",
     primary_need_description: overrides?.primary_need_description ?? "Test need",

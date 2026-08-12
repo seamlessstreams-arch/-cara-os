@@ -30,12 +30,13 @@ import {
 } from "../infection-control-service";
 
 import type { InfectionControlRecord } from "../infection-control-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeInfectionControlMetrics, identifyInfectionControlAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Build a minimal InfectionControlRecord with sensible defaults. */
 function makeRecord(overrides: Partial<InfectionControlRecord> = {}): InfectionControlRecord {

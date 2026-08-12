@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ProfessionalConsultationRecord } from "../professional-consultation-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeProfessionalConsultationMetrics, identifyProfessionalConsultationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ProfessionalConsultationRecord>): ProfessionalConsultationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ProfessionalConsultationRecord>): Profes
     consultation_type: overrides?.consultation_type ?? "planned_session",
     consultation_outcome: overrides?.consultation_outcome ?? "recommendations_made",
     consultation_urgency: overrides?.consultation_urgency ?? "routine",
-    consultation_date: overrides?.consultation_date ?? now.toISOString().split("T")[0],
+    consultation_date: overrides?.consultation_date ?? todayStr(),
     professional_name: overrides?.professional_name ?? "Dr Smith",
     professional_organisation: overrides?.professional_organisation ?? "NHS Trust",
     child_name: overrides?.child_name ?? "Child A",

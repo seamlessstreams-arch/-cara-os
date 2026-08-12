@@ -7,6 +7,7 @@
 import { describe, it, expect, vi } from "vitest";
 import crypto from "crypto";
 import { _testing } from "../anti-bullying-service";
+import { todayStr } from "@/lib/utils";
 import {
   BULLYING_TYPES,
   BULLYING_SEVERITIES,
@@ -1256,7 +1257,7 @@ describe("Edge cases", () => {
 
   describe("default now parameter", () => {
     it("computeBullyingMetrics works without explicit now", () => {
-      const incidents = [makeIncident({ incident_date: new Date().toISOString().split("T")[0] })];
+      const incidents = [makeIncident({ incident_date: todayStr() })];
       const result = computeBullyingMetrics(incidents, 5);
       expect(result.total_incidents).toBe(1);
       expect(result.incidents_this_month).toBe(1);

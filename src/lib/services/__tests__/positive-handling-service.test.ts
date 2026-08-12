@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PositiveHandlingRecord } from "../positive-handling-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePositiveHandlingMetrics, identifyPositiveHandlingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PositiveHandlingRecord>): PositiveHandlingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<PositiveHandlingRecord>): PositiveHandli
     review_outcome: overrides?.review_outcome ?? "plan_effective",
     trigger_category: overrides?.trigger_category ?? "emotional",
     intervention_level: overrides?.intervention_level ?? "verbal_de_escalation",
-    review_date: overrides?.review_date ?? now.toISOString().split("T")[0],
+    review_date: overrides?.review_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     triggers_identified: overrides?.triggers_identified ?? true,

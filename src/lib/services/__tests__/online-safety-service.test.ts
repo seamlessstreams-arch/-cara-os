@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -815,7 +816,7 @@ describe("computeOnlineSafetyMetrics", () => {
   describe("default now parameter", () => {
     it("uses current date when now is not provided", () => {
       const incidents = [
-        makeIncident({ incident_date: new Date().toISOString().split("T")[0] }),
+        makeIncident({ incident_date: todayStr() }),
       ];
       const result = computeOnlineSafetyMetrics(incidents, [], 0);
       expect(result.incidents_this_month).toBe(1);

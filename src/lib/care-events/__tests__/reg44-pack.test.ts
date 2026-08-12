@@ -7,12 +7,13 @@ import { db } from "@/lib/db/store";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import type { CareEvent } from "@/types/care-events";
 import type { Incident, YoungPerson } from "@/types";
+import { todayStr } from "@/lib/utils";
 
 const HOME_ID = "home_reg44_pack_test";
 const CHILD_ID = "yp_reg44_pack";
 
 function todayMinus(days: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
 }

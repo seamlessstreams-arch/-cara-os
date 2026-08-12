@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   REFERRAL_REASONS,
@@ -36,16 +37,16 @@ const {
 
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** ISO datetime string N days ago. */
@@ -810,7 +811,7 @@ describe("identifyAdvocacyAlerts", () => {
     });
 
     it("includes days elapsed in unallocated message", () => {
-      const now = new Date(new Date().toISOString().split("T")[0]);
+      const now = new Date(todayStr());
       const referrals = [
         makeReferral({ id: "r1", status: "referred", allocated_date: null, referral_date: daysAgo(10) }),
       ];
@@ -919,7 +920,7 @@ describe("identifyAdvocacyAlerts", () => {
     });
 
     it("includes days elapsed in no contact message", () => {
-      const now = new Date(new Date().toISOString().split("T")[0]);
+      const now = new Date(todayStr());
       const referrals = [
         makeReferral({ id: "r1", status: "active", last_contact_date: daysAgo(45), referral_date: daysAgo(60) }),
       ];

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type DeviceScreenTimeMonitoringRecord } from "../device-screen-time-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeDeviceScreenTimeMetrics, identifyDeviceScreenTimeAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<DeviceScreenTimeMonitoringRecord>): DeviceScreenTimeMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<DeviceScreenTimeMonitoringRecord>): Devi
     usage_category: overrides?.usage_category ?? "educational",
     compliance_level: overrides?.compliance_level ?? "fully_compliant",
     wellbeing_impact: overrides?.wellbeing_impact ?? "neutral",
-    monitoring_date: overrides?.monitoring_date ?? now.toISOString().split("T")[0],
+    monitoring_date: overrides?.monitoring_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     monitored_by: overrides?.monitored_by ?? "Staff A",

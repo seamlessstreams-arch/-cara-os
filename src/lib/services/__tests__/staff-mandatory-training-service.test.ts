@@ -20,12 +20,13 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { _testing, type StaffMandatoryTrainingRecord } from "../staff-mandatory-training-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeMandatoryTrainingMetrics, identifyMandatoryTrainingAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffMandatoryTrainingRecord>): StaffMandatoryTrainingRecord {
   return {

@@ -3,9 +3,10 @@ import { getChildTwin, getAllChildTwins } from "@/lib/cpie/get-child-twin";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { getStore } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 const ask = (q: string, role = "registered_manager") =>
-  answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot: buildAskSnapshot(getStore()), role });
+  answerQuestion({ question: q, asOf: todayStr(), snapshot: buildAskSnapshot(getStore()), role });
 
 describe("CPIE — Digital Twin (slice 1)", () => {
   it("builds a whole-child twin for Alex from his records and his own words", () => {
@@ -45,7 +46,7 @@ describe("CPIE — Digital Twin (slice 1)", () => {
     expect(b).toBe(a); // same object — no rebuild without a store change
     const store = getStore();
     store.positiveAchievements.push({
-      id: "pach_test_1", child_id: "yp_alex", date: new Date().toISOString().slice(0, 10),
+      id: "pach_test_1", child_id: "yp_alex", date: todayStr(),
       category: "social", title: "Test entry", description: "t", recorded_by: "t", shared_with: [], celebrated_how: "", child_reaction: "",
     } as (typeof store.positiveAchievements)[number]);
     const c = getChildTwin("yp_alex");

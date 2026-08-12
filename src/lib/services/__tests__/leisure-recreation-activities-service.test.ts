@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type LeisureRecreationActivitiesRecord } from "../leisure-recreation-activities-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeLeisureRecreationMetrics, identifyLeisureRecreationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<LeisureRecreationActivitiesRecord>): LeisureRecreationActivitiesRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<LeisureRecreationActivitiesRecord>): Lei
     participation_level: overrides?.participation_level ?? "enthusiastic",
     enjoyment_rating: overrides?.enjoyment_rating ?? "enjoyed",
     skill_development: overrides?.skill_development ?? "good_growth",
-    activity_date: overrides?.activity_date ?? now.toISOString().split("T")[0],
+    activity_date: overrides?.activity_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     facilitated_by: overrides?.facilitated_by ?? "Staff A",

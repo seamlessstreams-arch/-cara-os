@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { _testing } from "../key-documents-service";
+import { todayStr } from "@/lib/utils";
 import {
   DOCUMENT_TYPES,
   DOCUMENT_STATUSES,
@@ -24,7 +25,7 @@ const { computeDocumentMetrics, identifyDocumentAlerts } = _testing;
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /** Normalised "now" — avoids midnight-drift issues across test runs. */
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Return a date string N days before the reference date. */
 function daysAgo(n: number, from: Date = now): string {

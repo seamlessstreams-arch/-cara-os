@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   EXIT_REASONS,
@@ -26,7 +27,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<StaffRetentionExitAnalysisRow>,
@@ -36,7 +37,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    exit_date: "exit_date" in (overrides ?? {}) ? overrides!.exit_date! : now.toISOString().split("T")[0],
+    exit_date: "exit_date" in (overrides ?? {}) ? overrides!.exit_date! : todayStr(),
     exit_reason: "exit_reason" in (overrides ?? {}) ? overrides!.exit_reason! : "career_progression",
     retention_risk_level: "retention_risk_level" in (overrides ?? {}) ? overrides!.retention_risk_level! : "low",
     analysis_status: "analysis_status" in (overrides ?? {}) ? overrides!.analysis_status! : "closed",

@@ -34,6 +34,7 @@ import { synthesiseStaffPracticeSkills } from "../staff-practice-skills/skills-e
 import type { StaffPracticeSkillsInput } from "../staff-practice-skills/types";
 import { buildOrgLearningReport } from "../org-learning-report/report-engine";
 import type { OrgLearningReportInput } from "../org-learning-report/types";
+import { todayStr } from "@/lib/utils";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
 
@@ -212,7 +213,7 @@ describe("behaviour-trigger-patterns engine fires on the arc (merged store)", ()
 // fails if the voice arc (or the merge) stops telling the story.
 
 describe("child voice dimensions fire on the arc (merged store)", () => {
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   const day = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
   const voiceInput = (childId: string, childName: string): ChildVoiceDimensionInput => {
     const s = getStore();
@@ -276,7 +277,7 @@ describe("child voice dimensions fire on the arc (merged store)", () => {
 // exactly as /api/v1/neurodiversity-profile does.
 
 describe("neurodiversity profile fires on the arc (merged store)", () => {
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   const neuroInput = (childId: string, childName: string): UnifyNeuroInput => {
     const s = getStore();
     const byChild = (x: { child_id?: string }) => x.child_id === childId;
@@ -323,7 +324,7 @@ describe("neurodiversity profile fires on the arc (merged store)", () => {
 // clear growing edge in recording. Maps getStore() as the route does.
 
 describe("staff practice skills fire on the arc (merged store)", () => {
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   const staffInput = (staffId: string, staffName: string): StaffPracticeSkillsInput => {
     const s = getStore();
     const by = (x: { staff_id?: string }) => x.staff_id === staffId;
@@ -365,7 +366,7 @@ describe("staff practice skills fire on the arc (merged store)", () => {
 // loops into one leadership picture. Maps getStore() as the route does.
 
 describe("org learning report fires on the arc (merged store)", () => {
-  const asOf = new Date().toISOString().slice(0, 10);
+  const asOf = todayStr();
   const day = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
   const reportInput = (): OrgLearningReportInput => {
     const s = getStore();

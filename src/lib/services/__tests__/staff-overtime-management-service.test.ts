@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -32,13 +33,13 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffOvertimeManagementRow>): StaffOvertimeManagementRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
-    review_date: "review_date" in (overrides ?? {}) ? overrides!.review_date! : now.toISOString().split("T")[0],
+    review_date: "review_date" in (overrides ?? {}) ? overrides!.review_date! : todayStr(),
     reviewer_name: "reviewer_name" in (overrides ?? {}) ? overrides!.reviewer_name! : "Registered Manager",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     review_period_start: "review_period_start" in (overrides ?? {}) ? overrides!.review_period_start! : "2026-04-01",

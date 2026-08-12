@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   analyseIncidents,
   type IncidentRecord,
@@ -7,7 +8,7 @@ import {
 // ── Helpers ────────────────────────────────────────────────────────���────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function makeIncident(overrides: Partial<IncidentRecord> = {}): IncidentRecord {

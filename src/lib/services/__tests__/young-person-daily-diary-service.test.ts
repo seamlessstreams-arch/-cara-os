@@ -7,9 +7,10 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing, type YoungPersonDailyDiaryRecord } from "../young-person-daily-diary-service";
+import { todayStr } from "@/lib/utils";
 const { computeDailyDiaryMetrics, identifyDailyDiaryAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

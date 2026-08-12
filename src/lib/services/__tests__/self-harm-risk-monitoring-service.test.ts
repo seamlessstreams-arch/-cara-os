@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type SelfHarmRiskMonitoringRecord } from "../self-harm-risk-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSelfHarmRiskMetrics, identifySelfHarmRiskAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SelfHarmRiskMonitoringRecord>): SelfHarmRiskMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<SelfHarmRiskMonitoringRecord>): SelfHarm
     intervention_type: overrides?.intervention_type ?? "therapeutic_conversation",
     safety_plan_status: overrides?.safety_plan_status ?? "active_reviewed",
     trigger_type: overrides?.trigger_type ?? "peer_conflict",
-    monitoring_date: overrides?.monitoring_date ?? now.toISOString().split("T")[0],
+    monitoring_date: overrides?.monitoring_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     monitored_by: overrides?.monitored_by ?? "Staff A",

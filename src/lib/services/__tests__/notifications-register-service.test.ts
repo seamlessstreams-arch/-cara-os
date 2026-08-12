@@ -26,12 +26,13 @@ import {
 } from "../notifications-register-service";
 
 import type { NotificationRecord } from "../notifications-register-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeNotificationMetrics, identifyNotificationAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(
   overrides: Partial<NotificationRecord> = {},

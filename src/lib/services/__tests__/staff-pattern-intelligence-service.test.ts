@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffPatternInsightRecord } from "../staff-pattern-intelligence-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePatternInsightMetrics, identifyPatternInsightAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffPatternInsightRecord>): StaffPatternInsightRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffPatternInsightRecord>): StaffPatter
     insight_severity: overrides?.insight_severity ?? "informational",
     confidence_level: overrides?.confidence_level ?? "high",
     insight_status: overrides?.insight_status ?? "reviewed",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
     identified_by: overrides?.identified_by ?? "Manager A",

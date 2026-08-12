@@ -2,12 +2,13 @@ import { describe, it, expect } from "vitest";
 import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
+import { todayStr } from "@/lib/utils";
 
 // Mirrors deterministicAssistText in /api/v1/cara/route.ts
 function assist(question: string, pageContext?: string): string {
   const snapshot = buildAskSnapshot(getStore());
   const q = question.trim() || (pageContext ? `What needs my attention on ${pageContext}?` : "What needs my attention today?");
-  return answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot, context: { pageTitle: pageContext } }).text;
+  return answerQuestion({ question: q, asOf: todayStr(), snapshot, context: { pageTitle: pageContext } }).text;
 }
 
 describe("workflow assistant deterministic assist", () => {

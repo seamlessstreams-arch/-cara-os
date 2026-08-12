@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffBurnoutIndicatorRecord } from "../staff-burnout-indicator-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeBurnoutMetrics, identifyBurnoutAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffBurnoutIndicatorRecord>): StaffBurnoutIndicatorRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffBurnoutIndicatorRecord>): StaffBurn
     burnout_severity: overrides?.burnout_severity ?? "early_sign",
     support_status: overrides?.support_status ?? "resolved",
     impact_level: overrides?.impact_level ?? "low",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
     observed_by: overrides?.observed_by ?? "Manager A",

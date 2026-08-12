@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 // Mock Supabase before importing anything from the service
 vi.mock("@/lib/supabase/server", () => ({
@@ -40,7 +41,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffSicknessManagementRow>): StaffSicknessManagementRow {
   return {
@@ -48,7 +49,7 @@ function makeRow(overrides?: Partial<StaffSicknessManagementRow>): StaffSickness
     home_id: overrides?.home_id ?? "home-1",
     staff_name: overrides?.staff_name ?? "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    absence_start_date: overrides?.absence_start_date ?? now.toISOString().split("T")[0],
+    absence_start_date: overrides?.absence_start_date ?? todayStr(),
     absence_end_date: "absence_end_date" in (overrides ?? {}) ? (overrides!.absence_end_date ?? null) : null,
     absence_type: overrides?.absence_type ?? "short_term",
     management_status: overrides?.management_status ?? "resolved",

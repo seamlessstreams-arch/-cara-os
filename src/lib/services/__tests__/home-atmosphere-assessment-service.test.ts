@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   ATMOSPHERE_DIMENSIONS,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<HomeAtmosphereAssessmentRow>,
@@ -38,7 +39,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
-    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : now.toISOString().split("T")[0],
+    assessment_date: "assessment_date" in (overrides ?? {}) ? overrides!.assessment_date! : todayStr(),
     atmosphere_dimension: "atmosphere_dimension" in (overrides ?? {}) ? overrides!.atmosphere_dimension! : "warmth_welcome",
     atmosphere_rating: "atmosphere_rating" in (overrides ?? {}) ? overrides!.atmosphere_rating! : "good",
     assessment_method: "assessment_method" in (overrides ?? {}) ? overrides!.assessment_method! : "staff_observation",

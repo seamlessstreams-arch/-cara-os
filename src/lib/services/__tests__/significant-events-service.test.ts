@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { _testing } from "../significant-events-service";
+import { todayStr } from "@/lib/utils";
 import {
   EVENT_CATEGORIES,
   EVENT_SENTIMENTS,
@@ -24,7 +25,7 @@ const { computeEventMetrics, identifyEventAlerts } = _testing;
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /** Normalized today to avoid date-drift across midnight boundary. */
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Return a date string N days before a reference date. */
 function daysAgo(n: number, from: Date = now): string {
@@ -824,7 +825,7 @@ describe("computeEventMetrics", () => {
     });
 
     it("works without explicit now parameter", () => {
-      const events = [makeEvent({ event_date: new Date().toISOString().split("T")[0] })];
+      const events = [makeEvent({ event_date: todayStr() })];
       const m = computeEventMetrics(events, 3);
       expect(m.total_events).toBe(1);
     });
@@ -1479,7 +1480,7 @@ describe("Edge cases", () => {
 
   describe("default now parameter", () => {
     it("computeEventMetrics works without explicit now", () => {
-      const events = [makeEvent({ event_date: new Date().toISOString().split("T")[0] })];
+      const events = [makeEvent({ event_date: todayStr() })];
       const m = computeEventMetrics(events, 3);
       expect(m.total_events).toBe(1);
     });

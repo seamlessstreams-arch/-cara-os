@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 import { withShiftAccess } from "../with-shift-access";
 import { db } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 afterEach(() => {
   delete process.env.SHIFT_BASED_ACCESS_ENFORCED;
@@ -33,7 +34,7 @@ describe("withShiftAccess (enforcement ON by default)", () => {
 
   it("allows an on-shift general-staff user", async () => {
     const staffId = "staff_wsa_onshift";
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     db.shifts.create({
       staff_id: staffId, date: today, shift_type: "day", start_time: "08:00", end_time: "16:00",
       break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: `${today}T08:00:00.000Z`,

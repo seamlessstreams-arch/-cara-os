@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   computeSanctionRewardMetrics,
   identifyBehaviourManagementAlerts,
@@ -19,7 +20,7 @@ function makeSanction(overrides: Partial<SanctionRecord> = {}): SanctionRecord {
     sanction_type: "verbal_reminder",
     reason: "Disruptive behaviour",
     description: "Verbal reminder given",
-    incident_date: new Date().toISOString().slice(0, 10),
+    incident_date: todayStr(),
     incident_time: "14:00",
     duration_minutes: 5,
     privilege_removed: null,
@@ -32,7 +33,7 @@ function makeSanction(overrides: Partial<SanctionRecord> = {}): SanctionRecord {
     witnessed_by: null,
     manager_reviewed: true,
     manager_reviewed_by: "manager-1",
-    manager_review_date: new Date().toISOString().slice(0, 10),
+    manager_review_date: todayStr(),
     status: "completed",
     created_at: "2026-01-01T00:00:00Z",
     ...overrides,
@@ -48,7 +49,7 @@ function makeReward(overrides: Partial<RewardRecord> = {}): RewardRecord {
     reward_type: "verbal_praise",
     reason: "Good behaviour",
     description: "Praised for helping",
-    award_date: new Date().toISOString().slice(0, 10),
+    award_date: todayStr(),
     awarded_by: "staff-1",
     linked_to_target: false,
     target_description: null,
@@ -183,7 +184,7 @@ describe("identifyBehaviourManagementAlerts", () => {
   });
 
   it("flags 5+ sanctions in 30 days for a child as high", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const sanctions = Array.from({ length: 5 }, (_, i) =>
       makeSanction({ id: `s-${i}`, child_id: "c1", child_name: "Alex", incident_date: today }),
     );
@@ -194,7 +195,7 @@ describe("identifyBehaviourManagementAlerts", () => {
   });
 
   it("flags low reward-to-sanction ratio per child as medium", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const sanctions = [
       makeSanction({ child_id: "c1", child_name: "Alex", incident_date: today }),
       makeSanction({ id: "s-2", child_id: "c1", child_name: "Alex", incident_date: today }),

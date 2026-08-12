@@ -2,10 +2,11 @@ import { describe, it, expect } from "vitest";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { getStore } from "@/lib/db/store";
+import { todayStr } from "@/lib/utils";
 
 const snap = buildAskSnapshot(getStore());
 const ask = (q: string, role = "registered_manager") =>
-  answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot: snap, role });
+  answerQuestion({ question: q, asOf: todayStr(), snapshot: snap, role });
 
 describe("Ask CARA — weekly summary consumes the CPIE Weekly Intelligence Object", () => {
   it("carries a weekly digest per current child on the snapshot", () => {

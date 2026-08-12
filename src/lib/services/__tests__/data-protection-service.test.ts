@@ -16,6 +16,7 @@
 import { describe, it, expect } from "vitest";
 import { _testing } from "../data-protection-service";
 import type { DataProtectionRecord } from "../data-protection-service";
+import { todayStr } from "@/lib/utils";
 import {
   DATA_EVENT_TYPES,
   COMPLIANCE_STATUSES,
@@ -27,7 +28,7 @@ const { computeDataProtectionMetrics, identifyDataProtectionAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function daysAgo(n: number): string {
   const d = new Date(now);

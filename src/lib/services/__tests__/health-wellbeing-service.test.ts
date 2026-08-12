@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "../health-wellbeing-service";
+import { todayStr } from "@/lib/utils";
 import {
   APPOINTMENT_TYPES,
   WELLBEING_DIMENSIONS,
@@ -89,16 +90,16 @@ function profile(overrides?: Partial<HealthProfile>): HealthProfile {
 
 /** Helper: date string N days ago from now. */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Helper: date string N days in the future from now. */
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 // ── classifySDQScores ──────────────────────────────────────────────────────

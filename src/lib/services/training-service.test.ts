@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   computeTrainingCompliance,
   computeStaffTrainingProfile,
@@ -97,7 +98,7 @@ describe("computeTrainingCompliance", () => {
   });
 
   it("identifies expiring within 30 days", () => {
-    const soon = new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0];
+    const soon = daysFromNow(15);
     const records = [
       makeTrainingRecord({ expiry_date: soon, status: "expiring" }),
     ];
@@ -189,7 +190,7 @@ describe("identifyTrainingAlerts", () => {
   });
 
   it("triggers high alert for DBS expiring within 30 days", () => {
-    const soon = new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0];
+    const soon = daysFromNow(15);
     const dbs = [makeDBS({ renewal_due: soon })];
     const alerts = identifyTrainingAlerts([], dbs, []);
     expect(alerts.some((a) => a.type === "dbs_expiring_30_days" && a.severity === "high")).toBe(true);

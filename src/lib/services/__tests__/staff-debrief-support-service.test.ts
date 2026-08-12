@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffDebriefSupportRecord } from "../staff-debrief-support-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffDebriefMetrics, identifyStaffDebriefAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffDebriefSupportRecord>): StaffDebriefSupportRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffDebriefSupportRecord>): StaffDebrie
     incident_severity: overrides?.incident_severity ?? "medium",
     staff_impact: overrides?.staff_impact ?? "mildly_affected",
     support_outcome: overrides?.support_outcome ?? "fully_supported",
-    debrief_date: overrides?.debrief_date ?? now.toISOString().split("T")[0],
+    debrief_date: overrides?.debrief_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     facilitated_by: overrides?.facilitated_by ?? "Manager A",
     timely_debrief: overrides?.timely_debrief ?? true,

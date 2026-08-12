@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ArrivalSettlingExperienceRecord } from "../arrival-settling-experience-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeArrivalSettlingMetrics, identifyArrivalSettlingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ArrivalSettlingExperienceRecord>): ArrivalSettlingExperienceRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ArrivalSettlingExperienceRecord>): Arriv
     settling_quality: overrides?.settling_quality ?? "settled_well",
     welcome_assessment: overrides?.welcome_assessment ?? "good",
     comfort_level: overrides?.comfort_level ?? "comfortable",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     supported_by: overrides?.supported_by ?? "Staff A",

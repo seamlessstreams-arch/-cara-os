@@ -3,11 +3,11 @@ import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { getStore } from "@/lib/db/store";
-import { daysFromNow } from "@/lib/utils";
+import { daysFromNow, todayStr} from "@/lib/utils";
 
 const d = (n: number) => daysFromNow(n).slice(0, 10);
 const ask = (q: string, role = "registered_manager") =>
-  answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot: buildAskSnapshot(getStore()), role });
+  answerQuestion({ question: q, asOf: todayStr(), snapshot: buildAskSnapshot(getStore()), role });
 
 describe("CPIE — Monthly Intelligence Object (30-day window)", () => {
   it("windows 30 days, not 7 — the monthly object is labelled and wider", () => {

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   PARTICIPATION_TYPES,
@@ -30,7 +31,7 @@ const {
   generateVoiceParticipationCaraInsights,
 } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Factory ──────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ function makeRow(
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    participation_date: overrides?.participation_date ?? now.toISOString().split("T")[0],
+    participation_date: overrides?.participation_date ?? todayStr(),
     participation_type: overrides?.participation_type ?? "house_meeting",
     voice_outcome: overrides?.voice_outcome ?? "views_fully_incorporated",
     participation_level: overrides?.participation_level ?? "active",
@@ -1451,7 +1452,7 @@ describe("Edge cases", () => {
     expect(row.home_id).toBe("home-1");
     expect(row.child_name).toBe("Child A");
     expect(row.child_id).toBeNull();
-    expect(row.participation_date).toBe(now.toISOString().split("T")[0]);
+    expect(row.participation_date).toBe(todayStr());
     expect(row.participation_type).toBe("house_meeting");
     expect(row.voice_outcome).toBe("views_fully_incorporated");
     expect(row.participation_level).toBe("active");

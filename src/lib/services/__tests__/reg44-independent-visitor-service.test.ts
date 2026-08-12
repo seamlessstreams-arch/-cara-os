@@ -23,6 +23,7 @@ import {
 } from "../reg44-independent-visitor-service";
 
 import type { Reg44IndependentVisitorReportRow } from "../reg44-independent-visitor-service";
+import { todayStr } from "@/lib/utils";
 
 const {
   computeReg44IndependentVisitorMetrics,
@@ -32,7 +33,7 @@ const {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<Reg44IndependentVisitorReportRow>,

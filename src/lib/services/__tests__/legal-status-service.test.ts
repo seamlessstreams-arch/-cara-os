@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   LEGAL_STATUSES,
@@ -34,7 +35,7 @@ import {
 const { computeLegalMetrics, identifyLegalAlerts } = _testing;
 
 // ── Date normalisation ────────────────────────────────────────────────────
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 

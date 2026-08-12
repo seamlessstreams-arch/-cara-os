@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type BoundaryManagementRecord } from "../boundary-management-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeBoundaryManagementMetrics, identifyBoundaryManagementAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<BoundaryManagementRecord>): BoundaryManagementRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<BoundaryManagementRecord>): BoundaryMana
     child_response: overrides?.child_response ?? "accepted",
     staff_approach: overrides?.staff_approach ?? "calm_explanation",
     consistency_rating: overrides?.consistency_rating ?? "fully_consistent",
-    incident_date: overrides?.incident_date ?? now.toISOString().split("T")[0],
+    incident_date: overrides?.incident_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     staff_name: overrides?.staff_name ?? "Staff A",

@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   MITIGATION_TYPES,
@@ -26,7 +27,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<HomeRadonTestingRow>,
@@ -34,7 +35,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : crypto.randomUUID(),
-    test_date: "test_date" in (overrides ?? {}) ? overrides!.test_date! : now.toISOString().split("T")[0],
+    test_date: "test_date" in (overrides ?? {}) ? overrides!.test_date! : todayStr(),
     tester_name: "tester_name" in (overrides ?? {}) ? overrides!.tester_name! : "D. Laville",
     test_location: "test_location" in (overrides ?? {}) ? overrides!.test_location! : "Living Room",
     test_duration_days: "test_duration_days" in (overrides ?? {}) ? overrides!.test_duration_days! : 90,

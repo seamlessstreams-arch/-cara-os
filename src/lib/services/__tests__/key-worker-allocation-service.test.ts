@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type KeyWorkerAllocationRecord } from "../key-worker-allocation-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeKeyWorkerAllocationMetrics, identifyKeyWorkerAllocationAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<KeyWorkerAllocationRecord>): KeyWorkerAllocationRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<KeyWorkerAllocationRecord>): KeyWorkerAl
     relationship_quality: overrides?.relationship_quality ?? "good",
     workload_level: overrides?.workload_level ?? "balanced",
     continuity_rating: overrides?.continuity_rating ?? "stable",
-    review_date: overrides?.review_date ?? now.toISOString().split("T")[0],
+    review_date: overrides?.review_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     key_worker_name: overrides?.key_worker_name ?? "Staff A",

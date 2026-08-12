@@ -1,14 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { trackOutcomes, type OutcomeObjective, type EvidenceEntry, type ProgressIndicator } from "../outcome-tracker";
+import { daysFromNow } from "@/lib/utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function futureDate(daysAhead: number): string {
-  return new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(daysAhead);
 }
 
 function makeIndicator(overrides: Partial<ProgressIndicator> = {}): ProgressIndicator {

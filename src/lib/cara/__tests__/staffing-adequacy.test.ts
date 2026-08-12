@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   analyseStaffingAdequacy,
   type ShiftSlot,
@@ -10,7 +11,7 @@ import {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAhead: number): string {
-  return new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(daysAhead);
 }
 
 const defaultConfig: HomeConfig = {
@@ -75,7 +76,7 @@ describe("Staffing Adequacy Analyser", () => {
     });
 
     it("sets analysis date to today", () => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayStr();
       const result = analyseStaffingAdequacy([], [], [], defaultConfig, 7);
       expect(result.analysisDate).toBe(today);
     });

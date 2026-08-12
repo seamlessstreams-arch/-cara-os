@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ChildRiskAssessmentReviewRecord } from "../child-risk-assessment-review-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeChildRiskReviewMetrics, identifyChildRiskReviewAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildRiskAssessmentReviewRecord>): ChildRiskAssessmentReviewRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ChildRiskAssessmentReviewRecord>): Child
     review_outcome: overrides?.review_outcome ?? "risk_reduced",
     current_risk_level: overrides?.current_risk_level ?? "medium",
     review_frequency: overrides?.review_frequency ?? "monthly",
-    review_date: overrides?.review_date ?? now.toISOString().split("T")[0],
+    review_date: overrides?.review_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     reviewed_by: overrides?.reviewed_by ?? "Manager A",

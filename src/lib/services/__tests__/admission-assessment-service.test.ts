@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type AdmissionAssessmentRecord } from "../admission-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeAdmissionAssessmentMetrics, identifyAdmissionAssessmentAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<AdmissionAssessmentRecord>): AdmissionAssessmentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<AdmissionAssessmentRecord>): AdmissionAs
     suitability_decision: overrides?.suitability_decision ?? "suitable",
     matching_outcome: overrides?.matching_outcome ?? "good_match",
     referral_source: overrides?.referral_source ?? "local_authority",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     placing_authority: overrides?.placing_authority ?? "LA-1",

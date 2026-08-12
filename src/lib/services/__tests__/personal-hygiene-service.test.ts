@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type PersonalHygieneRecord } from "../personal-hygiene-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePersonalHygieneMetrics, identifyPersonalHygieneAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<PersonalHygieneRecord>): PersonalHygieneRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<PersonalHygieneRecord>): PersonalHygiene
     support_level: overrides?.support_level ?? "independent",
     progress_rating: overrides?.progress_rating ?? "good",
     sensitivity_level: overrides?.sensitivity_level ?? "standard",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     child_consulted: overrides?.child_consulted ?? true,

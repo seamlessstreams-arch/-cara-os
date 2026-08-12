@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type ShiftHandoverQualityRecord } from "../shift-handover-quality-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeShiftHandoverQualityMetrics, identifyShiftHandoverQualityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ShiftHandoverQualityRecord>): ShiftHandoverQualityRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<ShiftHandoverQualityRecord>): ShiftHando
     quality_rating: overrides?.quality_rating ?? "good",
     completion_status: overrides?.completion_status ?? "fully_complete",
     handover_format: overrides?.handover_format ?? "verbal_and_written",
-    handover_date: overrides?.handover_date ?? now.toISOString().split("T")[0],
+    handover_date: overrides?.handover_date ?? todayStr(),
     outgoing_staff: overrides?.outgoing_staff ?? "Staff A",
     incoming_staff: overrides?.incoming_staff ?? "Staff B",
     medication_info_shared: overrides?.medication_info_shared ?? true,

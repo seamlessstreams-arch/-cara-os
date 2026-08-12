@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffAnnualLeaveRow } from "../staff-annual-leave-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffAnnualLeaveMetrics, computeStaffAnnualLeaveAlerts, generateStaffAnnualLeaveCaraInsights } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<StaffAnnualLeaveRow>): StaffAnnualLeaveRow {
   return {

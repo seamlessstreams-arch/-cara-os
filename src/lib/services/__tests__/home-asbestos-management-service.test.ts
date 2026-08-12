@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   ASBESTOS_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<HomeAsbestosManagementRow>,
@@ -38,7 +39,7 @@ function makeRow(
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : crypto.randomUUID(),
-    survey_date: "survey_date" in (overrides ?? {}) ? overrides!.survey_date! : now.toISOString().split("T")[0],
+    survey_date: "survey_date" in (overrides ?? {}) ? overrides!.survey_date! : todayStr(),
     surveyor_name: "surveyor_name" in (overrides ?? {}) ? overrides!.surveyor_name! : "D. Laville",
     location: "location" in (overrides ?? {}) ? overrides!.location! : "Boiler Room",
     asbestos_type: "asbestos_type" in (overrides ?? {}) ? overrides!.asbestos_type! : "Chrysotile",

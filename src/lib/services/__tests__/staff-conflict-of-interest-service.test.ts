@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   CONFLICT_TYPES,
@@ -30,7 +31,7 @@ const {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<StaffConflictOfInterestRow>,
@@ -40,7 +41,7 @@ function makeRow(
     home_id: "home_id" in (overrides ?? {}) ? overrides!.home_id! : "home-1",
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Staff A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,
-    declaration_date: "declaration_date" in (overrides ?? {}) ? overrides!.declaration_date! : now.toISOString().split("T")[0],
+    declaration_date: "declaration_date" in (overrides ?? {}) ? overrides!.declaration_date! : todayStr(),
     conflict_type: "conflict_type" in (overrides ?? {}) ? overrides!.conflict_type! : "financial_interest",
     risk_level: "risk_level" in (overrides ?? {}) ? overrides!.risk_level! : "low",
     mitigation_status: "mitigation_status" in (overrides ?? {}) ? overrides!.mitigation_status! : "in_place",

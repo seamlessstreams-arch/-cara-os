@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 
 import {
   FORCED_MARRIAGE_RISK_LEVELS,
@@ -15,7 +16,7 @@ const {
   generateForcedMarriageRiskCaraInsights,
 } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildForcedMarriageRiskRow>,
@@ -24,7 +25,7 @@ function makeRow(
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     risk_level: overrides?.risk_level ?? "Low",
     risk_indicators_count: overrides?.risk_indicators_count ?? 0,
     fmpo_in_place: overrides?.fmpo_in_place ?? false,

@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   DECEASED_RELATIONSHIPS,
   GRIEF_STAGES,
@@ -26,7 +27,7 @@ const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRow(
   overrides?: Partial<ChildBereavementSupportRow>,
@@ -35,7 +36,7 @@ function makeRow(
     id: overrides?.id ?? "r-1",
     home_id: overrides?.home_id ?? "home-1",
     child_name: overrides?.child_name ?? "Child A",
-    bereavement_date: overrides?.bereavement_date ?? now.toISOString().split("T")[0],
+    bereavement_date: overrides?.bereavement_date ?? todayStr(),
     deceased_relationship: overrides?.deceased_relationship ?? "Parent",
     grief_stage: overrides?.grief_stage ?? "Not Assessed",
     support_type: overrides?.support_type ?? "Key Worker",

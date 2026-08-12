@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   _testing,
   CHECK_TYPES,
@@ -50,9 +51,9 @@ function daysAgoISO(n: number): string {
 
 /** Date string N days ago (YYYY-MM-DD). */
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 /** Build a minimal NightCheck with sensible defaults. */

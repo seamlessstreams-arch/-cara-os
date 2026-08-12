@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type TransitionPlanningReadinessRecord } from "../transition-planning-readiness-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeTransitionPlanningMetrics, identifyTransitionPlanningAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<TransitionPlanningReadinessRecord>): TransitionPlanningReadinessRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<TransitionPlanningReadinessRecord>): Tra
     readiness_level: overrides?.readiness_level ?? "mostly_ready",
     independence_skill: overrides?.independence_skill ?? "good",
     pathway_plan_status: overrides?.pathway_plan_status ?? "in_place",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",

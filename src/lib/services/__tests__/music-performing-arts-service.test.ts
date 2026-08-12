@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr } from "@/lib/utils";
 import {
   validateMusicPerformingArts,
   ACTIVITY_TYPES,
@@ -10,7 +11,7 @@ import {
   type MusicPerformingArtsRow,
 } from "../music-performing-arts-service";
 
-const now = new Date().toISOString().split("T")[0];
+const now = todayStr();
 
 function makeRow(overrides?: Partial<MusicPerformingArtsRow>): MusicPerformingArtsRow {
   return {

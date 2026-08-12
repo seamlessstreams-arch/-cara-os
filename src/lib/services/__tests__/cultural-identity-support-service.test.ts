@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type CulturalIdentitySupportRecord } from "../cultural-identity-support-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeCulturalIdentityMetrics, identifyCulturalIdentityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<CulturalIdentitySupportRecord>): CulturalIdentitySupportRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<CulturalIdentitySupportRecord>): Cultura
     support_type: overrides?.support_type ?? "cultural_activity",
     engagement_level: overrides?.engagement_level ?? "engaged",
     cultural_competency: overrides?.cultural_competency ?? "competent",
-    support_date: overrides?.support_date ?? now.toISOString().split("T")[0],
+    support_date: overrides?.support_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     staff_name: overrides?.staff_name ?? "Staff A",

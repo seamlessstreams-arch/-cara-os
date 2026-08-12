@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { checkShiftSafety, type ShiftContext, type StaffMember, type ChildPresence } from "../shift-safety";
+import { daysFromNow } from "@/lib/utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,8 +35,8 @@ function makeContext(overrides: Partial<ShiftContext> = {}): ShiftContext {
     childrenPresent: [makeChild(), makeChild({ id: "child_2", name: "Child 2" })],
     scheduledEvents: [],
     lastHandoverComplete: true,
-    lastFireDrill: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
-    lastEnvironmentCheck: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10),
+    lastFireDrill: daysFromNow(-7),
+    lastEnvironmentCheck: daysFromNow(-2),
     medicationsToAdminister: [],
     openRisks: [],
     ...overrides,
@@ -273,7 +274,7 @@ describe("Shift Safety Checker", () => {
   describe("emergency", () => {
     it("flags overdue fire drill", () => {
       const ctx = makeContext({
-        lastFireDrill: new Date(Date.now() - 35 * 86400000).toISOString().slice(0, 10),
+        lastFireDrill: daysFromNow(-35),
       });
       const result = checkShiftSafety(ctx);
       const signal = result.signals.find((s) => s.id === "fire_drill_overdue");
@@ -282,7 +283,7 @@ describe("Shift Safety Checker", () => {
 
     it("passes when fire drill recent", () => {
       const ctx = makeContext({
-        lastFireDrill: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
+        lastFireDrill: daysFromNow(-5),
       });
       const result = checkShiftSafety(ctx);
       const signal = result.signals.find((s) => s.id === "fire_drill_overdue");

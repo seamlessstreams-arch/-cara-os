@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type EnvironmentalAuditRecord } from "../environmental-audit-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeEnvironmentalAuditMetrics, identifyEnvironmentalAuditAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<EnvironmentalAuditRecord>): EnvironmentalAuditRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<EnvironmentalAuditRecord>): Environmenta
     audit_rating: overrides?.audit_rating ?? "good",
     audit_type: overrides?.audit_type ?? "scheduled_audit",
     priority_level: overrides?.priority_level ?? "low",
-    audit_date: overrides?.audit_date ?? now.toISOString().split("T")[0],
+    audit_date: overrides?.audit_date ?? todayStr(),
     area_name: overrides?.area_name ?? "Lounge",
     homely_feel: overrides?.homely_feel ?? true,
     child_friendly: overrides?.child_friendly ?? true,

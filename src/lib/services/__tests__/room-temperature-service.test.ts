@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type TemperatureRecord } from "../room-temperature-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeTemperatureMetrics, identifyTemperatureAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<TemperatureRecord>): TemperatureRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<TemperatureRecord>): TemperatureRecord {
     temperature_status: overrides?.temperature_status ?? "comfortable",
     heating_system: overrides?.heating_system ?? "central_heating",
     check_time: overrides?.check_time ?? "morning",
-    check_date: overrides?.check_date ?? now.toISOString().split("T")[0],
+    check_date: overrides?.check_date ?? todayStr(),
     temperature_celsius: overrides?.temperature_celsius ?? 21,
     target_temperature: overrides?.target_temperature ?? 21,
     room_name: overrides?.room_name ?? "Bedroom 1",

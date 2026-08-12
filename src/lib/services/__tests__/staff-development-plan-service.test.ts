@@ -6,10 +6,11 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffDevelopmentPlanRecord } from "../staff-development-plan-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeDevelopmentPlanMetrics, identifyDevelopmentPlanAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ function makeRecord(overrides?: Partial<StaffDevelopmentPlanRecord>): StaffDevel
     plan_status: "plan_status" in (overrides ?? {}) ? overrides!.plan_status! : "active",
     approval_status: "approval_status" in (overrides ?? {}) ? overrides!.approval_status! : "approved",
     priority_level: "priority_level" in (overrides ?? {}) ? overrides!.priority_level! : "medium",
-    session_date: "session_date" in (overrides ?? {}) ? overrides!.session_date! : now.toISOString().split("T")[0],
+    session_date: "session_date" in (overrides ?? {}) ? overrides!.session_date! : todayStr(),
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Staff A",
     created_by: "created_by" in (overrides ?? {}) ? overrides!.created_by! : "Manager A",
     staff_id: "staff_id" in (overrides ?? {}) ? (overrides!.staff_id ?? null) : null,

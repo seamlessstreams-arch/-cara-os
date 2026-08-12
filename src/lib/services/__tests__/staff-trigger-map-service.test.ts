@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffTriggerMapRecord } from "../staff-trigger-map-service";
+import { todayStr } from "@/lib/utils";
 const { computeTriggerMapMetrics, identifyTriggerMapAlerts } = _testing;
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffTriggerMapRecord>): StaffTriggerMapRecord {
   return {
@@ -11,7 +12,7 @@ function makeRecord(overrides?: Partial<StaffTriggerMapRecord>): StaffTriggerMap
     trigger_severity: "moderate",
     coping_effectiveness: "effective",
     map_status: "active",
-    session_date: now.toISOString().split("T")[0],
+    session_date: todayStr(),
     staff_name: "Staff A",
     identified_by: "Manager A",
     trigger_description: "Test trigger",

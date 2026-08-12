@@ -5,9 +5,10 @@ import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { getStore } from "@/lib/db/store";
 import { mentionsAny } from "@/lib/text/keyword-match";
+import { todayStr } from "@/lib/utils";
 
 const ask = (q: string, role = "registered_manager") =>
-  answerQuestion({ question: q, asOf: new Date().toISOString().slice(0, 10), snapshot: buildAskSnapshot(getStore()), role });
+  answerQuestion({ question: q, asOf: todayStr(), snapshot: buildAskSnapshot(getStore()), role });
 
 describe("CPIE — Good Parenting / Lived Experience dimension", () => {
   it("reads a rich childhood for Alex (movie night, swimming, guitar) as good parenting", () => {

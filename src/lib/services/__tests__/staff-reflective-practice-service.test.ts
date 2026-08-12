@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffReflectivePracticeRecord } from "../staff-reflective-practice-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffReflectiveMetrics, identifyStaffReflectiveAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffReflectivePracticeRecord>): StaffReflectivePracticeRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffReflectivePracticeRecord>): StaffRe
     reflection_model: overrides?.reflection_model ?? "gibbs",
     reflection_outcome: overrides?.reflection_outcome ?? "practice_improved",
     reflection_depth: overrides?.reflection_depth ?? "deep",
-    reflection_date: overrides?.reflection_date ?? now.toISOString().split("T")[0],
+    reflection_date: overrides?.reflection_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     facilitator_name: overrides?.facilitator_name ?? "Manager A",
     child_focused: overrides?.child_focused ?? true,

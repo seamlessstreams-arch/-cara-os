@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   validateYouthAward,
   AWARD_SCHEMES,
@@ -8,7 +9,7 @@ import {
   type YouthAwardsRow,
 } from "../youth-awards-service";
 
-const now = new Date().toISOString().split("T")[0];
+const now = todayStr();
 
 function makeRow(overrides?: Partial<YouthAwardsRow>): YouthAwardsRow {
   return {
@@ -89,7 +90,7 @@ describe("youth-awards-service", () => {
     });
 
     it("future date fails", () => {
-      const futureDate = new Date(Date.now() + 86400000 * 30).toISOString().split("T")[0];
+      const futureDate = daysFromNow(30);
       const result = validateYouthAward({
         youngPersonName: "Young Person A",
         recordDate: futureDate,

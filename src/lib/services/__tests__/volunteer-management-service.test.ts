@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type VolunteerRecord } from "../volunteer-management-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeVolunteerMetrics, identifyVolunteerAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<VolunteerRecord>): VolunteerRecord {
   return {
@@ -15,8 +16,8 @@ function makeRecord(overrides?: Partial<VolunteerRecord>): VolunteerRecord {
     dbs_status: overrides?.dbs_status ?? "clear",
     training_status: overrides?.training_status ?? "up_to_date",
     supervision_frequency: overrides?.supervision_frequency ?? "monthly",
-    start_date: overrides?.start_date ?? now.toISOString().split("T")[0],
-    dbs_check_date: "dbs_check_date" in (overrides ?? {}) ? (overrides!.dbs_check_date ?? null) : now.toISOString().split("T")[0],
+    start_date: overrides?.start_date ?? todayStr(),
+    dbs_check_date: "dbs_check_date" in (overrides ?? {}) ? (overrides!.dbs_check_date ?? null) : todayStr(),
     dbs_expiry_date: "dbs_expiry_date" in (overrides ?? {}) ? (overrides!.dbs_expiry_date ?? null) : null,
     safeguarding_trained: overrides?.safeguarding_trained ?? true,
     first_aid_trained: overrides?.first_aid_trained ?? true,

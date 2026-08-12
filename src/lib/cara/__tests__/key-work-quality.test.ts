@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { daysFromNow } from "@/lib/utils";
 import {
   analyseKeyWork,
   type KeyWorkSession,
@@ -8,7 +9,7 @@ import {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeDate(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+  return daysFromNow(-daysAgo);
 }
 
 function makeSession(overrides: Partial<KeyWorkSession> = {}): KeyWorkSession {

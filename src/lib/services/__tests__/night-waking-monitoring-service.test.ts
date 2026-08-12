@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type NightWakingMonitoringRecord } from "../night-waking-monitoring-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeNightWakingMetrics, identifyNightWakingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<NightWakingMonitoringRecord>): NightWakingMonitoringRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<NightWakingMonitoringRecord>): NightWaki
     child_emotional_state: overrides?.child_emotional_state ?? "calm",
     staff_response: overrides?.staff_response ?? "verbal_reassurance",
     sleep_return_time: overrides?.sleep_return_time ?? "within_15_minutes",
-    waking_date: overrides?.waking_date ?? now.toISOString().split("T")[0],
+    waking_date: overrides?.waking_date ?? todayStr(),
     waking_time: overrides?.waking_time ?? "02:00",
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,

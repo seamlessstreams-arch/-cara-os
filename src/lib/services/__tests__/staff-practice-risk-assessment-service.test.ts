@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffPracticeRiskAssessmentRecord } from "../staff-practice-risk-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computePracticeRiskMetrics, identifyPracticeRiskAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffPracticeRiskAssessmentRecord>): StaffPracticeRiskAssessmentRecord {
   return {
@@ -13,7 +14,7 @@ function makeRecord(overrides?: Partial<StaffPracticeRiskAssessmentRecord>): Sta
     likelihood: overrides?.likelihood ?? "possible",
     impact_severity: overrides?.impact_severity ?? "moderate",
     assessment_status: overrides?.assessment_status ?? "active",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     staff_name: overrides?.staff_name ?? "Staff A",
     assessed_by: overrides?.assessed_by ?? "Manager A",
     identified_concern: overrides?.identified_concern ?? "Test concern",

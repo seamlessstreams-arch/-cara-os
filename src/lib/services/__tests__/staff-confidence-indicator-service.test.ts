@@ -14,10 +14,11 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffConfidenceIndicatorRecord } from "../staff-confidence-indicator-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeConfidenceIndicatorMetrics, identifyConfidenceIndicatorAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ function makeRecord(overrides?: Partial<StaffConfidenceIndicatorRecord>): StaffC
     confidence_level: "confident",
     trend_direction: "stable",
     assessment_source: "supervision_observation",
-    session_date: now.toISOString().split("T")[0],
+    session_date: todayStr(),
     staff_name: "Staff A",
     assessed_by: "Manager A",
     confidence_description: "Test description",

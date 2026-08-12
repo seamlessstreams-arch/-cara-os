@@ -13,6 +13,7 @@ import { describe, it, expect } from "vitest";
 import { _testing } from "../health-appointments-service";
 
 import type { HealthAppointmentRecord } from "../health-appointments-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeHealthAppointmentMetrics, identifyHealthAppointmentAlerts } =
   _testing;
@@ -20,15 +21,15 @@ const { computeHealthAppointmentMetrics, identifyHealthAppointmentAlerts } =
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function daysAgo(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() - n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 function daysFromNow(n: number): string {
-  const d = new Date();
+  const d = new Date(todayStr());
   d.setDate(d.getDate() + n);
-  return d.toISOString().split("T")[0];
+  return d.toISOString().slice(0, 10);
 }
 
 function daysAgoISO(n: number): string {
@@ -38,7 +39,7 @@ function daysAgoISO(n: number): string {
 }
 
 /** Normalised "today" at midnight for overdue comparisons. */
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Build a minimal HealthAppointmentRecord with sensible defaults. */
 function makeRecord(

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type SiblingContactQualityRecord } from "../sibling-contact-quality-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeSiblingContactMetrics, identifySiblingContactAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SiblingContactQualityRecord>): SiblingContactQualityRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<SiblingContactQualityRecord>): SiblingCo
     contact_quality: overrides?.contact_quality ?? "good",
     sibling_relationship: overrides?.sibling_relationship ?? "close",
     barrier_type: overrides?.barrier_type ?? "none",
-    contact_date: overrides?.contact_date ?? now.toISOString().split("T")[0],
+    contact_date: overrides?.contact_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     sibling_name: overrides?.sibling_name ?? "Sibling A",

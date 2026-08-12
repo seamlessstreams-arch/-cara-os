@@ -7,6 +7,7 @@ import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
 import type { TrainingNeed, RiAlert, Audit, RiReg45Evidence, RiChallengeLog } from "@/types/extended";
 import type { TrainingRecord, DailyLogEntry, CareForm, Incident } from "@/types/index";
+import { todayStr, daysFromNow} from "@/lib/utils";
 
 // ── Fixture Helpers ─────────────────────────────────────────────────────────
 
@@ -193,7 +194,7 @@ function makeDailyLog(overrides: Partial<DailyLogEntry> = {}): DailyLogEntry {
   return {
     id: "dl-1",
     child_id: "child-1",
-    date: new Date().toISOString().slice(0, 10),
+    date: todayStr(),
     time: "10:00",
     entry_type: "general",
     content: "Routine log entry",
@@ -1158,7 +1159,7 @@ describe("computeRiScores", () => {
 
     it("computes from log volume and significant entries", () => {
       const inputs = emptyInputs();
-      const now = new Date().toISOString().slice(0, 10);
+      const now = todayStr();
       inputs.ypCount = 2;
       inputs.dailyLogs = Array.from({ length: 8 }, (_, i) =>
         makeDailyLog({
@@ -1177,7 +1178,7 @@ describe("computeRiScores", () => {
 
     it("excludes logs older than 30 days", () => {
       const inputs = emptyInputs();
-      const old = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const old = daysFromNow(-31);
       inputs.ypCount = 1;
       inputs.dailyLogs = [
         makeDailyLog({ id: "dl-1", created_at: old }),
@@ -1190,7 +1191,7 @@ describe("computeRiScores", () => {
 
     it("clamps to maximum 92", () => {
       const inputs = emptyInputs();
-      const now = new Date().toISOString().slice(0, 10);
+      const now = todayStr();
       inputs.ypCount = 1;
       inputs.dailyLogs = Array.from({ length: 30 }, (_, i) =>
         makeDailyLog({ id: `dl-${i}`, created_at: now, is_significant: true }),

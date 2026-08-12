@@ -8,6 +8,7 @@
 
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { _testing } from "../body-map-service";
+import { todayStr } from "@/lib/utils";
 import {
   MARK_TYPES,
   BODY_LOCATIONS,
@@ -27,7 +28,7 @@ const { computeBodyMapMetrics, identifyBodyMapAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Return a date string N days before `now`. */
 function daysAgo(n: number): string {
@@ -723,7 +724,7 @@ describe("computeBodyMapMetrics", () => {
 
     it("defaults now parameter when not provided", () => {
       const records = [
-        makeRecord({ observation_date: new Date().toISOString().split("T")[0] }),
+        makeRecord({ observation_date: todayStr() }),
       ];
       const m = computeBodyMapMetrics(records, 5);
       expect(m.total_records).toBe(1);

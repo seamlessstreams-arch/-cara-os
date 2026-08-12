@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type EducationAttendanceTrackingRecord } from "../education-attendance-tracking-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeEducationAttendanceMetrics, identifyEducationAttendanceAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<EducationAttendanceTrackingRecord>): EducationAttendanceTrackingRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<EducationAttendanceTrackingRecord>): Edu
     absence_reason: overrides?.absence_reason ?? "none",
     school_engagement: overrides?.school_engagement ?? "fully_engaged",
     education_setting: overrides?.education_setting ?? "mainstream_school",
-    attendance_date: overrides?.attendance_date ?? now.toISOString().split("T")[0],
+    attendance_date: overrides?.attendance_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     recorded_by: overrides?.recorded_by ?? "Staff A",

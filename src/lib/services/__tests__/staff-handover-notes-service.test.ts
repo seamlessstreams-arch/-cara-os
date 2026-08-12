@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffHandoverNotesRecord } from "../staff-handover-notes-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeStaffHandoverNotesMetrics, identifyStaffHandoverNotesAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<StaffHandoverNotesRecord>): StaffHandoverNotesRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<StaffHandoverNotesRecord>): StaffHandove
     note_priority: overrides?.note_priority ?? "medium",
     note_status: overrides?.note_status ?? "acknowledged",
     shift_type: overrides?.shift_type ?? "day_to_night",
-    handover_date: overrides?.handover_date ?? now.toISOString().split("T")[0],
+    handover_date: overrides?.handover_date ?? todayStr(),
     outgoing_staff: overrides?.outgoing_staff ?? "Staff A",
     incoming_staff: overrides?.incoming_staff ?? "Staff B",
     child_specific: overrides?.child_specific ?? true,

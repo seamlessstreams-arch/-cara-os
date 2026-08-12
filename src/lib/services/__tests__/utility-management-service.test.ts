@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type UtilityRecord } from "../utility-management-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeUtilityMetrics, identifyUtilityAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<UtilityRecord>): UtilityRecord {
   return {
@@ -11,7 +12,7 @@ function makeRecord(overrides?: Partial<UtilityRecord>): UtilityRecord {
     home_id: overrides?.home_id ?? "home-1",
     utility_type: overrides?.utility_type ?? "electricity",
     reading_type: overrides?.reading_type ?? "meter_reading",
-    reading_date: overrides?.reading_date ?? now.toISOString().split("T")[0],
+    reading_date: overrides?.reading_date ?? todayStr(),
     cost_status: overrides?.cost_status ?? "within_budget",
     energy_rating: overrides?.energy_rating ?? "c",
     meter_reading: "meter_reading" in (overrides ?? {}) ? (overrides!.meter_reading ?? null) : 1000,

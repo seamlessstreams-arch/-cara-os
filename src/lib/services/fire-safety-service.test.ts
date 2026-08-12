@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   computeFireSafetyMetrics,
   identifyFireSafetyAlerts,
@@ -79,14 +80,14 @@ describe("computeFireSafetyMetrics", () => {
   });
 
   it("detects drill_overdue when last drill > 30 days ago", () => {
-    const oldDate = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const oldDate = daysFromNow(-35);
     const records = [makeRecord({ event_date: oldDate })];
     const result = computeFireSafetyMetrics(records);
     expect(result.drill_overdue).toBe(true);
   });
 
   it("drill_overdue is false when drill is recent", () => {
-    const recentDate = new Date().toISOString().slice(0, 10);
+    const recentDate = todayStr();
     const records = [makeRecord({ event_date: recentDate })];
     const result = computeFireSafetyMetrics(records);
     expect(result.drill_overdue).toBe(false);
@@ -104,7 +105,7 @@ describe("identifyFireSafetyAlerts", () => {
   });
 
   it("triggers failed_evacuation critical alert", () => {
-    const records = [makeRecord({ evacuation_result: "failed", event_date: new Date().toISOString().slice(0, 10) })];
+    const records = [makeRecord({ evacuation_result: "failed", event_date: todayStr() })];
     const alerts = identifyFireSafetyAlerts(records);
     const failed = alerts.find((a) => a.type === "failed_evacuation");
     expect(failed).toBeDefined();
@@ -112,7 +113,7 @@ describe("identifyFireSafetyAlerts", () => {
   });
 
   it("triggers persons_not_accounted critical alert", () => {
-    const records = [makeRecord({ all_persons_accounted: false, evacuation_result: "successful", event_date: new Date().toISOString().slice(0, 10) })];
+    const records = [makeRecord({ all_persons_accounted: false, evacuation_result: "successful", event_date: todayStr() })];
     const alerts = identifyFireSafetyAlerts(records);
     const notAccounted = alerts.find((a) => a.type === "persons_not_accounted");
     expect(notAccounted).toBeDefined();
@@ -120,7 +121,7 @@ describe("identifyFireSafetyAlerts", () => {
   });
 
   it("triggers non_compliant high alert", () => {
-    const records = [makeRecord({ compliance_status: "non_compliant", event_date: new Date().toISOString().slice(0, 10) })];
+    const records = [makeRecord({ compliance_status: "non_compliant", event_date: todayStr() })];
     const alerts = identifyFireSafetyAlerts(records);
     const nc = alerts.find((a) => a.type === "non_compliant");
     expect(nc).toBeDefined();
@@ -128,7 +129,7 @@ describe("identifyFireSafetyAlerts", () => {
   });
 
   it("triggers equipment_out_of_service high alert", () => {
-    const records = [makeRecord({ equipment_status: "out_of_service", event_date: new Date().toISOString().slice(0, 10) })];
+    const records = [makeRecord({ equipment_status: "out_of_service", event_date: todayStr() })];
     const alerts = identifyFireSafetyAlerts(records);
     const oos = alerts.find((a) => a.type === "equipment_out_of_service");
     expect(oos).toBeDefined();

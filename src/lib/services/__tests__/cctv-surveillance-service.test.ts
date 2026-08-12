@@ -30,12 +30,13 @@ import {
 } from "../cctv-surveillance-service";
 
 import type { CctvRecord } from "../cctv-surveillance-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeCctvMetrics, identifyCctvAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 /** Build a minimal CctvRecord with sensible defaults. */
 function makeRecord(overrides: Partial<CctvRecord> = {}): CctvRecord {

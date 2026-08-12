@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type LifeStoryWorkRecord } from "../life-story-work-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeLifeStoryWorkMetrics, identifyLifeStoryWorkAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<LifeStoryWorkRecord>): LifeStoryWorkRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<LifeStoryWorkRecord>): LifeStoryWorkReco
     child_engagement: overrides?.child_engagement ?? "fully_engaged",
     emotional_response: overrides?.emotional_response ?? "positive",
     session_frequency: overrides?.session_frequency ?? "weekly",
-    session_date: overrides?.session_date ?? now.toISOString().split("T")[0],
+    session_date: overrides?.session_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
     facilitator_name: overrides?.facilitator_name ?? "Staff A",

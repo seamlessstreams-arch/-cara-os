@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type RoomSharingAssessmentRecord } from "../room-sharing-assessment-service";
+import { todayStr } from "@/lib/utils";
 
 const { computeRoomSharingMetrics, identifyRoomSharingAlerts } = _testing;
 
-const now = new Date(new Date().toISOString().split("T")[0]);
+const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<RoomSharingAssessmentRecord>): RoomSharingAssessmentRecord {
   return {
@@ -12,7 +13,7 @@ function makeRecord(overrides?: Partial<RoomSharingAssessmentRecord>): RoomShari
     compatibility_rating: overrides?.compatibility_rating ?? "highly_compatible",
     room_risk_level: overrides?.room_risk_level ?? "no_risk",
     review_frequency: overrides?.review_frequency ?? "monthly",
-    assessment_date: overrides?.assessment_date ?? now.toISOString().split("T")[0],
+    assessment_date: overrides?.assessment_date ?? todayStr(),
     child_name: overrides?.child_name ?? "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
     assessed_by: overrides?.assessed_by ?? "Staff A",
