@@ -52,7 +52,7 @@ import {
   CheckCheck, CircleDot, X,
 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 
@@ -533,7 +533,7 @@ export default function Regulation44Page() {
   const sortedDates = visits.map((v) => v.visit_date).sort((a, b) => b.localeCompare(a));
   const lastVisit = sortedDates[0];
   const daysSinceLastVisit = lastVisit
-    ? Math.floor((Date.now() - new Date(lastVisit).getTime()) / 86400000)
+    ? -londonDayDiff(lastVisit)
     : null;
   const visitDue = daysSinceLastVisit !== null && daysSinceLastVisit >= 25;
 

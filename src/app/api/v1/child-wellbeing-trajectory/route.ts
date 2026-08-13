@@ -28,6 +28,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { londonDayDiff } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -376,7 +377,7 @@ export async function GET() {
 
   const childProfiles: ChildWellbeingProfile[] = currentChildren.map((yp) => {
     const placementDays = Math.floor(
-      (now.getTime() - new Date(yp.placement_start).getTime()) / (24 * 60 * 60 * 1000),
+      -londonDayDiff(yp.placement_start, now),
     );
 
     const domains = [

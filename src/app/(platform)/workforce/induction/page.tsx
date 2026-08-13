@@ -20,7 +20,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import type { InductionRecord } from "@/types/extended";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
   ShieldCheck, CheckCircle2, Clock, AlertTriangle, User,
@@ -234,8 +234,8 @@ function InductionCard({
   const pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : null;
 
   // Days since start
-  const daysSinceStart = Math.ceil((Date.now() - new Date(record.start_date).getTime()) / 86400000);
-  const daysToTarget = Math.ceil((new Date(record.target_completion_date).getTime() - Date.now()) / 86400000);
+  const daysSinceStart = -londonDayDiff(record.start_date) + 1; // ordinal: Day 1 on the start date
+  const daysToTarget = londonDayDiff(record.target_completion_date);
   const isOverdue = daysToTarget < 0;
 
   // Current phase
@@ -499,7 +499,7 @@ export default function InductionTrackerPage() {
                 {records.map((record) => {
                   const completedItems = (record.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length;
                   const pct = (record.items?.length ?? 0) > 0 ? Math.round((completedItems / (record.items?.length ?? 0)) * 100) : null;
-                  const daysSinceStart = Math.ceil((Date.now() - new Date(record.start_date).getTime()) / 86400000);
+                  const daysSinceStart = -londonDayDiff(record.start_date) + 1; // ordinal: Day 1 on the start date
 
                   return (
                     <div key={record.id} className="flex items-center gap-3 py-1.5">

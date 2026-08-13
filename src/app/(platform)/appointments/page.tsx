@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -159,7 +159,7 @@ export default function AppointmentsPage() {
     attended:  entries.filter(e => e.status === "attended").length,
     missed:    entries.filter(e => e.status === "missed").length,
     thisWeek:  entries.filter(e => {
-      const diff = (new Date(e.date).getTime() - Date.now()) / 86400000;
+      const diff = londonDayDiff(e.date);
       return diff >= 0 && diff <= 7 && e.status === "scheduled";
     }).length,
     total: entries.length,

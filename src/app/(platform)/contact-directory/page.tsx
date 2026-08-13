@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -137,7 +137,7 @@ export default function ContactDirectoryPage() {
     emergency: contacts.filter(c => c.is_emergency).length,
     categories: new Set(contacts.map(c => c.category)).size,
     recentlyUpdated: contacts.filter(c => {
-      const diff = (Date.now() - new Date(c.last_updated).getTime()) / 86400000;
+      const diff = -londonDayDiff(c.last_updated);
       return diff <= 30;
     }).length,
   };

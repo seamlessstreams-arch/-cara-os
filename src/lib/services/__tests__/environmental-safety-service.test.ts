@@ -992,8 +992,8 @@ describe("identifySafetyAlerts", () => {
     ];
     const alerts = identifySafetyAlerts(checks, [], now);
     const od = alerts.find((a) => a.type === "check_overdue");
-    // now is noon on May 13, April 13 midnight is 30d 12h => rounds to 31
-    expect(od!.message).toContain("31");
+    // April 13 -> May 13 is 30 London calendar days (the old rolling round said 31)
+    expect(od!.message).toContain("30");
   });
 
   it("check_overdue alert message contains next due date", () => {

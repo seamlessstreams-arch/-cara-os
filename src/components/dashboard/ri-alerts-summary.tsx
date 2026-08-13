@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2,
   Loader2, ChevronRight, Flame, Clock,
@@ -138,7 +138,7 @@ export function RiAlertsSummary() {
 
         {/* Top alerts list */}
         {active.slice(0, 4).map((alert: RiAlert) => {
-          const daysOpen = Math.round((Date.now() - new Date(alert.created_at).getTime()) / 86400000);
+          const daysOpen = -londonDayDiff(alert.created_at);
           return (
             <Link key={alert.id} href="/ri/alerts">
               <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[var(--cs-surface)] transition-colors">

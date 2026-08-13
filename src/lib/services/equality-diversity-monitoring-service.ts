@@ -23,6 +23,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -413,7 +414,7 @@ export function computeAlerts(
     ) {
       const recordDate = new Date(r.record_date);
       const now = new Date();
-      const daysSince = Math.floor((now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSince = -londonDayDiff(recordDate);
       if (daysSince > 28) {
         alerts.push({
           type: "complaint_prolonged_investigation",

@@ -23,6 +23,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -495,7 +496,7 @@ export function computeAlerts(
     if (r.next_review_date && r.support_stage !== "Closed") {
       const reviewDate = new Date(r.next_review_date);
       if (reviewDate < today) {
-        const daysOverdue = Math.floor((today.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysOverdue = -londonDayDiff(reviewDate);
         alerts.push({
           type: "overdue_review",
           severity: "critical",
@@ -655,7 +656,7 @@ export function computeAlerts(
   const approachingReviews = rows.filter((r) => {
     if (!r.next_review_date || r.support_stage === "Closed") return false;
     const reviewDate = new Date(r.next_review_date);
-    const daysUntil = Math.floor((reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntil = londonDayDiff(reviewDate);
     return daysUntil > 0 && daysUntil <= 30;
   });
   if (approachingReviews.length > 0) {

@@ -14,7 +14,7 @@ import {
 import {
   FileText, Camera, ShieldCheck, ChevronUp, ChevronDown, ArrowUpDown, Search, Calendar,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { PhotoIdRecord, PhotoIdType, PhotoIdStatus } from "@/types/extended";
 import { PHOTO_ID_TYPE_LABEL, PHOTO_ID_STATUS_LABEL } from "@/types/extended";
@@ -64,9 +64,7 @@ const fmtGBP = (n: number) => new Intl.NumberFormat("en-GB", { style: "currency"
 
 const daysUntil = (iso?: string) => {
   if (!iso) return null;
-  const target = new Date(iso).getTime();
-  const now = new Date().getTime();
-  return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(iso);
 };
 
 /* ── component ───────────────────────────────────────────────────────────── */

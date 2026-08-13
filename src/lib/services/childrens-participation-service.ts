@@ -17,7 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -328,7 +328,7 @@ export function identifyParticipationAlerts(
     )[0];
     if (now.getTime() - new Date(latestHouse.meeting_date).getTime() > thirtyDaysMs) {
       const daysSince = Math.round(
-        (now.getTime() - new Date(latestHouse.meeting_date).getTime()) / 86400000,
+        -londonDayDiff(latestHouse.meeting_date, now),
       );
       alerts.push({
         type: "no_recent_house_meeting",

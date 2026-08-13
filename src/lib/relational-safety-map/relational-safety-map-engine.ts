@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { getStore } from "@/lib/db/store";
+import { londonDayDiff } from "@/lib/utils";
 
 export type RelationalStatus = "secure" | "developing" | "fragile";
 export type KeyWorkFrequency = "regular" | "intermittent" | "absent";
@@ -79,7 +80,7 @@ export interface RelationalSafetyMapData {
 function daysBetween(dateStr: string, now: Date): number {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 9999;
-  const days = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+  const days = -londonDayDiff(d);
   // A future-dated record must never count as "recent" key work / incident — it
   // was masking real key-work gaps (and could rate a child falsely "secure").
   return days < 0 ? 9999 : days;

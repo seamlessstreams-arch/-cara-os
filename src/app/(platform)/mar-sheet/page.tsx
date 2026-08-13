@@ -16,7 +16,7 @@ import {
   Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, XCircle, Clock, Pill, ShieldCheck, Loader2,
 } from "lucide-react";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, londonDayDiff } from "@/lib/utils";
 import { formatRate, rateOf } from "@/lib/metrics/rate";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
@@ -61,9 +61,7 @@ function formatDate(dateStr: string): string {
 
 
 function isWithinLastDays(dateStr: string, days: number): boolean {
-  const target = new Date(dateStr + "T00:00:00").getTime();
-  const now = new Date().getTime();
-  const diffDays = (now - target) / (1000 * 60 * 60 * 24);
+  const diffDays = -londonDayDiff(dateStr);
   return diffDays >= 0 && diffDays <= days;
 }
 

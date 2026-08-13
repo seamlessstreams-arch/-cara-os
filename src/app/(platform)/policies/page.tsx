@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -88,7 +88,7 @@ const POLICY_EXPORT_COLS: ExportColumn<HomePolicy>[] = [
 function daysUntil(dateStr: string): number {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+  return londonDayDiff(target, today);
 }
 
 // ── Policy Card ──────────────────────────────────────────────────────────────

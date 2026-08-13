@@ -20,7 +20,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision, CareEvent } from "@/types/care-events";
 import type { Task } from "@/types/index";
 import type { ActionOutcome, HealthCheckScore, InspectionRecord, PatternAlert, HomeClimateSnapshot } from "@/types/extended";
-import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
+import { cn, formatDate, daysFromNow, todayStr, londonDayDiff } from "@/lib/utils";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
@@ -796,7 +796,7 @@ function ActionPlanPanel() {
             const StatusIcon = cfg.icon;
             const isExpanded = expandedId === action.id;
             const daysUntilDue = action.due_date
-              ? Math.ceil((new Date(action.due_date).getTime() - Date.now()) / 86400000)
+              ? londonDayDiff(action.due_date)
               : null;
 
             return (

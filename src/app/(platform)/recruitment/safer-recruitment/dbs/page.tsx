@@ -11,7 +11,7 @@ import {
   Loader2, Info, ShieldAlert, Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -565,7 +565,7 @@ export default function DBSTrackerPage() {
                         {appointedWithDBS.map(({ candidate, dbsCheck }) => {
                           const issueDate = dbsCheck.verified_at ? new Date(dbsCheck.verified_at) : null;
                           const nextReview = issueDate ? new Date(issueDate.getFullYear() + 3, issueDate.getMonth(), issueDate.getDate()) : null;
-                          const daysToReview = nextReview ? Math.floor((nextReview.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+                          const daysToReview = nextReview ? londonDayDiff(nextReview) : null;
                           return (
                             <tr key={candidate.id} className="border-b border-[var(--cs-border-subtle)] last:border-0 hover:bg-[var(--cs-surface)]">
                               <td className="px-4 py-3 text-sm font-medium text-[var(--cs-navy)]">

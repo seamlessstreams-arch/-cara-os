@@ -12,6 +12,7 @@
 
 import { TRIGGER_RULES } from "./workflow-trigger.service";
 import type { WorkflowSuggestion, WorkflowTriggerEvent } from "@/types/practice-intelligence";
+import { londonDayDiff } from "@/lib/utils";
 
 export interface PracticeFollowUp {
   id: string;
@@ -81,7 +82,7 @@ export function buildPracticeFollowUps(input: FollowUpInput): PracticeFollowUp[]
     // Recent only — bounded [0, windowDays] so future-dated records don't slip in.
     const recMs = Date.parse(rec.date);
     if (!Number.isNaN(recMs) && !Number.isNaN(nowMs)) {
-      const days = (nowMs - recMs) / 86_400_000;
+      const days =-londonDayDiff(new Date(recMs), new Date(nowMs));
       if (days < 0 || days > windowDays) continue;
     }
     const rule = TRIGGER_RULES.find((r) => r.events.includes(rec.event));

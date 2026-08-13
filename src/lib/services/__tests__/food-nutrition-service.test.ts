@@ -1023,8 +1023,8 @@ describe("identifyNutritionAlerts", () => {
     ];
     const alerts = identifyNutritionAlerts(profiles, [], [], 1, now);
     const overdue = alerts.find((a) => a.type === "profile_review_overdue");
-    // 2025-06-01 to 2025-06-15T12:00:00Z = 14.5 days, Math.round => 15
-    expect(overdue!.message).toContain("15");
+    // 2025-06-01 -> 2025-06-15 is 14 London calendar days (the old rolling round said 15)
+    expect(overdue!.message).toContain("14");
   });
 
   it("no profile_review_overdue when next_review_date is in the future", () => {

@@ -7,6 +7,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 
+import { londonDayDiff } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
 
@@ -200,8 +201,7 @@ export function computeReportingSchedule(
     if (seenDueDates.has(key)) continue;
     seenDueDates.add(key);
 
-    const dueMs = new Date(r.next_due_date).getTime();
-    const diffDays = Math.round((dueMs - nowMs) / msPerDay);
+    const diffDays = londonDayDiff(r.next_due_date, now);
 
     if (diffDays < 0) {
       overdue.push({

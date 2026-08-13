@@ -50,7 +50,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
+import { cn, formatDate, daysFromNow, todayStr, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -1056,7 +1056,7 @@ export default function SupervisionPage() {
             )}
             {PROBATION.map((prob) => {
               const staff = allActiveStaff.find((s) => s.id === prob.staffId);
-              const daysLeft = prob.endDate ? Math.max(0, Math.ceil((new Date(prob.endDate).getTime() - Date.now()) / 86400000)) : 0;
+              const daysLeft = prob.endDate ? Math.max(0, londonDayDiff(prob.endDate)) : 0;
               const totalDays = Math.ceil((new Date(prob.endDate || "").getTime() - new Date(prob.startDate).getTime()) / 86400000);
               const elapsed = totalDays - daysLeft;
               const pct = totalDays > 0 ? Math.round((elapsed / totalDays) * 100) : 100;

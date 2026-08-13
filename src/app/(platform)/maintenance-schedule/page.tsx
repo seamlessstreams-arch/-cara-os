@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   ChevronDown, ChevronUp, ArrowUpDown,
   Wrench, Flame, Zap, Shield, Droplets, Bug, Home, TreePine, Cable, ArrowUpFromLine,
@@ -104,7 +104,7 @@ export default function MaintenanceSchedulePage() {
   const inDatePct = total > 0 ? Math.round((inDateCount / total) * 100) : null;
   const due30 = data.filter((m) => {
     const due = new Date(m.next_due);
-    const days = Math.floor((due.getTime() - today.getTime()) / 86400000);
+    const days = londonDayDiff(due, today);
     return days >= 0 && days <= 30 && m.compliance_status !== "overdue";
   }).length;
   const overdue = data.filter((m) => m.compliance_status === "overdue").length;

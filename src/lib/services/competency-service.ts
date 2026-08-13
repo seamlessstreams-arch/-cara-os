@@ -6,7 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -113,7 +113,7 @@ export function computeTrainingStatus(
   if (!expiryDate) return "current";
 
   const expiry = new Date(expiryDate);
-  const daysUntilExpiry = Math.floor((expiry.getTime() - now.getTime()) / 86400000);
+  const daysUntilExpiry = londonDayDiff(expiry, now);
 
   if (daysUntilExpiry < 0) return "expired";
   if (daysUntilExpiry <= 30) return "expiring_soon";

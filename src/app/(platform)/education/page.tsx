@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -149,7 +149,7 @@ export default function EducationPage() {
   /* ── stats ──────────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
     const thisWeek = records.filter(e => {
-      const diff = (Date.now() - new Date(e.date).getTime()) / 86400000;
+      const diff = -londonDayDiff(e.date);
       return diff >= 0 && diff <= 7;
     });
     return {

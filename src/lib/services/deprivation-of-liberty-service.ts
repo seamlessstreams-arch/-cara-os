@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -274,7 +275,7 @@ function identifyDoLAlerts(
     // Expiring orders — within 14 days of end_date
     if (o.end_date) {
       const endDate = new Date(o.end_date);
-      const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilExpiry = londonDayDiff(endDate, now);
       if (daysUntilExpiry <= 0) {
         alerts.push({
           type: "order_expired",
@@ -294,7 +295,7 @@ function identifyDoLAlerts(
     if (o.review_date) {
       const reviewDate = new Date(o.review_date);
       if (reviewDate < now) {
-        const daysOverdue = Math.ceil((now.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysOverdue = -londonDayDiff(reviewDate);
         alerts.push({
           type: "order_review_overdue",
           severity: "high",
@@ -340,7 +341,7 @@ function identifyDoLAlerts(
     if (r.next_review_date) {
       const nextReview = new Date(r.next_review_date);
       if (nextReview < now) {
-        const daysOverdue = Math.ceil((now.getTime() - nextReview.getTime()) / (1000 * 60 * 60 * 24));
+        const daysOverdue = -londonDayDiff(nextReview);
         alerts.push({
           type: "restriction_review_overdue",
           severity: "high",

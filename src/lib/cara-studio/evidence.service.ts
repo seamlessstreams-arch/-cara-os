@@ -5,6 +5,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import type { CaraStudioEvidenceAssessment, CaraStudioConfidenceLevel, CaraStudioSource } from "@/types/cara-studio";
+import { londonDayDiff } from "@/lib/utils";
 
 export async function assessEvidence(source: CaraStudioSource): Promise<CaraStudioEvidenceAssessment> {
   // Relevance: has meaningful content
@@ -13,7 +14,7 @@ export async function assessEvidence(source: CaraStudioSource): Promise<CaraStud
   // Recency: how recent is the source
   let recency = 50;
   if (source.source_date) {
-    const daysSince = Math.floor((Date.now() - new Date(source.source_date).getTime()) / 86400000);
+    const daysSince = -londonDayDiff(source.source_date);
     if (daysSince <= 7) recency = 100;
     else if (daysSince <= 30) recency = 80;
     else if (daysSince <= 90) recency = 60;

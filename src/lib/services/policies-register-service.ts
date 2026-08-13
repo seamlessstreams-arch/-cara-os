@@ -10,6 +10,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -226,7 +227,7 @@ function computePolicyMetrics(
   const reviewedPolicies = policies.filter((p) => p.last_reviewed_date);
   let totalDaysSinceReview = 0;
   for (const p of reviewedPolicies) {
-    const daysSince = (now.getTime() - new Date(p.last_reviewed_date!).getTime()) / 86400000;
+    const daysSince = -londonDayDiff(p.last_reviewed_date!, now);
     totalDaysSinceReview += daysSince;
   }
   const avgDaysSinceReview = reviewedPolicies.length > 0

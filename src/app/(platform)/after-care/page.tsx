@@ -24,7 +24,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Heart, Home, Loader2,
 } from "lucide-react";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -204,7 +204,7 @@ export default function AfterCarePage() {
         {/* RAG overview cards */}
         <div className="grid md:grid-cols-3 gap-4">
           {records.map(r => {
-            const daysSince = r.contact_log.length ? Math.round((Date.now() - new Date(r.contact_log[0].date).getTime()) / 86400000) : 999;
+            const daysSince = r.contact_log.length ? -londonDayDiff(r.contact_log[0].date) : 999;
             return (
               <Card key={r.id} className={cn("border-l-4", RAG_CLR[r.overall_rag])}>
                 <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2">{getYPName(r.child_id)} <Badge className={cn("text-xs", RAG_BADGE[r.overall_rag])}>{r.overall_rag.toUpperCase()}</Badge></CardTitle></CardHeader>

@@ -38,7 +38,7 @@ function useHomeName(fallback = "This home"): string {
 }
 import React from "react";
 import { getStore } from "@/lib/db/store";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, Clock, Users, Shield, FileText, CheckSquare, Sparkles } from "lucide-react";
 
 function useIntelligenceSummary() {
@@ -77,7 +77,7 @@ function useIntelligenceSummary() {
   const fireDrills = (store.fireDrills as any[] || []);
   const lastDrill = fireDrills.sort((a: any, b: any) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
   if (lastDrill) {
-    const daysSince = Math.floor((now.getTime() - new Date(lastDrill.date).getTime()) / 86400000);
+    const daysSince = -londonDayDiff(lastDrill.date, now);
     if (daysSince > 30) overdue.push(`Fire drill — last completed ${daysSince} days ago`);
   }
 

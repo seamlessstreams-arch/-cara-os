@@ -23,6 +23,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { getStore } from "@/lib/db/store";
+import { londonDayDiff } from "@/lib/utils";
 
 export type CumulativeSignal = "escalating" | "concerning" | "stable" | "improving";
 export type SignalDirection = "worsening" | "stable" | "improving";
@@ -73,7 +74,7 @@ export interface CumulativeRiskData {
 function daysBetween(dateStr: string, now: Date): number {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 9999;
-  const days = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+  const days = -londonDayDiff(d);
   // Future-dated records (data-entry errors) are NOT recent — never let them
   // clamp to "today" and inflate risk to urgent.
   return days < 0 ? 9999 : days;

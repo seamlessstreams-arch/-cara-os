@@ -23,6 +23,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
+import { londonDayDiff } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -196,7 +197,7 @@ export async function GET() {
     const latest = sups[0] ?? null;
 
     const daysSince = latest
-      ? Math.floor((now.getTime() - new Date(latest.date).getTime()) / (24 * 60 * 60 * 1000))
+      ? -londonDayDiff(latest.date, now)
       : null;
 
     const status = supervisionStatus(daysSince);

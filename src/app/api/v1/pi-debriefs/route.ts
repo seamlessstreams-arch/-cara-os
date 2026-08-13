@@ -3,6 +3,7 @@ import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
+import { londonDayDiff } from "@/lib/utils";
 export async function GET(req: NextRequest) {
   const homeId     = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
   const incidentId = req.nextUrl.searchParams.get("incident_id");
@@ -13,9 +14,7 @@ export async function GET(req: NextRequest) {
   const pending    = filtered.filter((r) => r.status === "pending").length;
   const incomplete = filtered.filter((r) => !r.yp_debrief_completed || !r.staff_debrief_completed).length;
   const overdue    = filtered.filter((r) => {
-    const created = new Date(r.created_at).getTime();
-    const now     = Date.now();
-    const daysSince = (now - created) / (1000 * 60 * 60 * 24);
+    const daysSince = -londonDayDiff(r.created_at);
     return daysSince > 2 && r.status !== "rm_signed_off";
   }).length;
 

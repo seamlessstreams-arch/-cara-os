@@ -6,7 +6,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
   MessageSquare, Clock, CheckCircle2, AlertTriangle, Plus,
@@ -84,7 +84,7 @@ export default function WorkforceSupervisionPage() {
   const getSupervisionStatus = (nextDue: string | null | undefined): StatusKey => {
     if (!nextDue) return "unknown";
     const due = new Date(nextDue);
-    const diffDays = Math.ceil((due.getTime() - today.getTime()) / 86400000);
+    const diffDays = londonDayDiff(due, today);
     if (diffDays < 0) return "overdue";
     if (diffDays <= 3) return "due_soon";
     return "on_track";
@@ -92,7 +92,7 @@ export default function WorkforceSupervisionPage() {
 
   const getDiffDays = (nextDue: string | null | undefined): number | null => {
     if (!nextDue) return null;
-    return Math.ceil((new Date(nextDue).getTime() - today.getTime()) / 86400000);
+    return londonDayDiff(nextDue, today);
   };
 
   // Stats

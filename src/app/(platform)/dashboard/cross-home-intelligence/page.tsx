@@ -41,7 +41,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   Globe,
   Building2,
@@ -398,7 +398,7 @@ function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   const now = new Date();
-  return Math.ceil((d.getTime() - now.getTime()) / 86400000);
+  return londonDayDiff(d, now);
 }
 
 function regStatus(dateStr: string | null): { label: string; style: string } {

@@ -22,6 +22,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+import { londonDayDiff } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -220,7 +221,7 @@ export async function GET() {
       const lastSession = allChildSessions
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       const daysSince = lastSession
-        ? Math.floor((now.getTime() - new Date(lastSession.date).getTime()) / (24 * 60 * 60 * 1000))
+        ? -londonDayDiff(lastSession.date, now)
         : null;
 
       return {

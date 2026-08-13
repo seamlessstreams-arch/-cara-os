@@ -100,4 +100,12 @@ describe("londonDayDiff — signed London calendar days from today", () => {
     at("2026-08-13T16:00:00+01:00");
     expect(londonDayDiff("not-a-date")).toBeNaN();
   });
+
+  it("honours an injected anchor, so services keep their testable `now` param", () => {
+    // System clock deliberately elsewhere — the anchor must win.
+    at("2030-01-01T12:00:00Z");
+    const anchor = new Date("2026-08-13T16:00:00+01:00");
+    expect(londonDayDiff("2026-08-14", anchor)).toBe(1);
+    expect(londonDayDiff("2026-08-12T20:00:00+01:00", anchor)).toBe(-1);
+  });
 });

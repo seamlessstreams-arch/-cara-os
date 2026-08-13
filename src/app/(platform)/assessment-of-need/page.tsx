@@ -25,7 +25,7 @@ import {
   Users, Heart, GraduationCap, Sparkles, Home, Sun, Compass,
   Shield, Stethoscope, MessageSquare, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -172,7 +172,7 @@ export default function AssessmentOfNeedPage() {
     return data.filter((r) => {
       if (!r.signed_off_by_rm) return true;
       const ad = new Date(r.assessment_date);
-      const days = Math.round((today.getTime() - ad.getTime()) / (1000 * 60 * 60 * 24));
+      const days = -londonDayDiff(ad, today);
       return days >= 21;
     }).length;
   }, [data]);

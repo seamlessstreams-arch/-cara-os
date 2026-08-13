@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -433,9 +434,7 @@ export function identifyMultiAgencyAlerts(
     ) {
       const dueDate = new Date(c.next_contact_due).getTime();
       if (now.getTime() - dueDate > fourteenDaysMs) {
-        const daysOverdue = Math.round(
-          (now.getTime() - dueDate) / (1000 * 60 * 60 * 24),
-        );
+        const daysOverdue = -londonDayDiff(c.next_contact_due, now);
         alerts.push({
           type: "sw_contact_overdue",
           severity: "high",
@@ -477,7 +476,7 @@ export function identifyMultiAgencyAlerts(
       new Date(r.review_date) < now
     ) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(r.review_date).getTime()) / (1000 * 60 * 60 * 24),
+        -londonDayDiff(r.review_date, now),
       );
       alerts.push({
         type: "lac_review_overdue",
@@ -529,7 +528,7 @@ export function identifyMultiAgencyAlerts(
       new Date(m.follow_up_date) < now
     ) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(m.follow_up_date).getTime()) / (1000 * 60 * 60 * 24),
+        -londonDayDiff(m.follow_up_date, now),
       );
       alerts.push({
         type: "follow_up_overdue",

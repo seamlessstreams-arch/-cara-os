@@ -53,7 +53,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -166,7 +166,7 @@ const BUCKET_CONFIG: Record<Bucket, { label: string; badgeClass: string; bg: str
 function daysUntil(dateStr: string): number {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+  return londonDayDiff(target, today);
 }
 
 function daysBadge(days: number): string {

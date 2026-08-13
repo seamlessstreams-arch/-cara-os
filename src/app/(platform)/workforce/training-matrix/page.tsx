@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   GraduationCap, CheckCircle2, Clock, AlertTriangle,
   Search, BarChart3, ShieldAlert, Users, TrendingUp,
@@ -312,7 +312,7 @@ export default function TrainingMatrixPage() {
     return count + TRAINING_CATEGORIES.filter((cat) => {
       const expiry = getExpiryForCategory(s.id, cat.key);
       if (!expiry) return false;
-      const daysUntil = (new Date(expiry).getTime() - Date.now()) / 86400000;
+      const daysUntil = londonDayDiff(expiry);
       return daysUntil > 0 && daysUntil <= 90;
     }).length;
   }, 0);
@@ -577,7 +577,7 @@ export default function TrainingMatrixPage() {
                         const status = getStatusForCategory(member.id, cat.key);
                         const Icon = STATUS_ICON[status];
                         const expiry = getExpiryForCategory(member.id, cat.key);
-                        const daysUntilExpiry = expiry ? Math.round((new Date(expiry).getTime() - Date.now()) / 86400000) : null;
+                        const daysUntilExpiry = expiry ? londonDayDiff(expiry) : null;
                         const expiringsSoon = daysUntilExpiry !== null && daysUntilExpiry > 0 && daysUntilExpiry <= 90;
                         return (
                           <td key={cat.key} className="px-2 py-2.5 text-center">

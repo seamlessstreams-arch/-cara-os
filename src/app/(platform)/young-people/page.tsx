@@ -71,7 +71,7 @@ function useChildExperienceLatest(childId: string) {
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import type { CarePlan, OutcomeTarget, OutcomeReview, OutcomeDomain } from "@/types/extended";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
@@ -275,7 +275,7 @@ function lacDaysLabel(dateStr: string | null | undefined): string | null {
   if (!dateStr) return null;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const d = new Date(dateStr); d.setHours(0, 0, 0, 0);
-  const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  const days = londonDayDiff(d, today);
   if (days < 0)  return `LAC overdue ${Math.abs(days)}d`;
   if (days === 0) return "LAC today";
   return `LAC in ${days}d`;
@@ -810,7 +810,7 @@ export default function YoungPeoplePage() {
     const today = new Date();
     const noRecentLog = current.filter((yp) => {
       if (!yp.last_log_date) return true;
-      const days = Math.floor((today.getTime() - new Date(yp.last_log_date).getTime()) / 86400000);
+      const days = -londonDayDiff(yp.last_log_date, today);
       return days > 2;
     }).length;
 
@@ -856,7 +856,7 @@ export default function YoungPeoplePage() {
       case "no_recent_log":
         result = result.filter((yp) => {
           if (!yp.last_log_date) return true;
-          const days = Math.floor((today.getTime() - new Date(yp.last_log_date).getTime()) / 86400000);
+          const days = -londonDayDiff(yp.last_log_date, today);
           return days > 2;
         });
         break;

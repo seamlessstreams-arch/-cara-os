@@ -20,7 +20,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -148,7 +148,7 @@ function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
+  return londonDayDiff(target, today);
 }
 
 function reviewBadge(reviewDate: string | null): { label: string; cls: string } | null {

@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
 import {
   Calendar, Cake, GraduationCap, Users, Clock,
   Award, FileText, Heart, Loader2, ChevronRight,
@@ -172,7 +172,7 @@ export function KeyDatesCard({ limit = 8 }: { limit?: number }) {
 
   const overdueCount = items.filter((i) => i.notes === "Overdue" || i.notes === "Expired").length;
   const thisWeekCount = items.filter((i) => {
-    const diff = Math.round((new Date(i.date).getTime() - Date.now()) / 86400000);
+    const diff = londonDayDiff(i.date);
     return diff >= 0 && diff <= 7;
   }).length;
 

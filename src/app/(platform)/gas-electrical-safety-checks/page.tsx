@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   Flame,
   Zap,
@@ -257,7 +257,7 @@ export default function GasElectricalSafetyChecksPage() {
                       </span>
                     ) : expiringSoon ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">
-                        Expiring in {Math.ceil((new Date(r.expiry_date).getTime() - Date.now()) / 86400000)}d
+                        Expiring in {londonDayDiff(r.expiry_date)}d
                       </span>
                     ) : null}
                   </div>

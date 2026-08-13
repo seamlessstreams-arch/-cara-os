@@ -42,7 +42,7 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { VehiclePreUseCheck, VehiclePreUseCheckItem, VehicleCheckFuelLevel, VehicleCheckOutcome } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
@@ -132,12 +132,7 @@ const formatPretty = (iso: string): string => {
   return tail ? `${pretty} ${tail}` : pretty;
 };
 
-const daysUntil = (iso: string): number => {
-  const target = new Date(iso).getTime();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.round((target - today.getTime()) / (1000 * 60 * 60 * 24));
-};
+const daysUntil = (iso: string): number => londonDayDiff(iso);
 
 // ── Sort options ─────────────────────────────────────────────────────────────
 type SortKey =

@@ -11,6 +11,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -339,7 +340,7 @@ export function identifyWhistleblowingAlerts(
       const disclosureDate = new Date(r.disclosure_date).getTime();
       if (now.getTime() - disclosureDate > sevenDaysMs) {
         const daysElapsed = Math.round(
-          (now.getTime() - disclosureDate) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(disclosureDate), now),
         );
         alerts.push({
           type: "high_risk_open",
@@ -359,7 +360,7 @@ export function identifyWhistleblowingAlerts(
       const startDate = new Date(r.investigation_start_date).getTime();
       if (now.getTime() - startDate > thirtyDaysMs) {
         const daysElapsed = Math.round(
-          (now.getTime() - startDate) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(startDate), now),
         );
         alerts.push({
           type: "investigation_prolonged",
@@ -378,7 +379,7 @@ export function identifyWhistleblowingAlerts(
       const followUpDate = new Date(r.follow_up_date).getTime();
       if (now.getTime() > followUpDate) {
         const daysOverdue = Math.round(
-          (now.getTime() - followUpDate) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(followUpDate), now),
         );
         alerts.push({
           type: "follow_up_overdue",

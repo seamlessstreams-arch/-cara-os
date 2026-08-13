@@ -23,7 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { RiAlert, RiAlertType, RiAlertSeverity, TrainingNeed } from "@/types/extended";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -169,7 +169,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
   };
 
   // Days since alert was created
-  const daysOpen = Math.round((Date.now() - new Date(alert.created_at).getTime()) / 86400000);
+  const daysOpen = -londonDayDiff(alert.created_at);
 
   return (
     <Card className={cn("border transition-all", SEVERITY_COLOURS[alert.severity], alert.is_resolved && "opacity-60")}>

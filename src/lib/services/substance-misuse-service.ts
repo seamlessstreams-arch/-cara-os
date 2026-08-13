@@ -15,6 +15,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -335,7 +336,7 @@ export function identifySubstanceMisuseAlerts(
       new Date(a.next_assessment_date).getTime() < now.getTime()
     ) {
       const daysOverdue = Math.floor(
-        (now.getTime() - new Date(a.next_assessment_date).getTime()) / 86400000,
+        -londonDayDiff(a.next_assessment_date, now),
       );
       alerts.push({
         type: "overdue_assessment",

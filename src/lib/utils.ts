@@ -36,10 +36,13 @@ export function formatDateTime(date: string | Date | null | undefined): string {
  * evening. Half of every summer day, on every surface labelling days. Comparing
  * London calendar dates asks the question the reader is actually asking.
  */
-export function londonDayDiff(date: string | Date): number {
+export function londonDayDiff(date: string | Date, anchor: Date = new Date()): number {
   const d = typeof date === "string" ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return NaN;
-  const [ty, tm, td] = todayStr().split("-").map(Number);
+  // `anchor` exists for services that take an injectable `now` — the diff is
+  // then London-days between anchor's day and date's day, testable at any
+  // fixed instant.
+  const [ty, tm, td] = londonDateStr(anchor).split("-").map(Number);
   const [dy, dm, dd] = londonDateStr(d).split("-").map(Number);
   return Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
 }

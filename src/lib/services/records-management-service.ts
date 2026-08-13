@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -393,7 +394,7 @@ export function identifyRecordsAlerts(
     // Overdue SAR
     if (r.date_due && new Date(r.date_due) < now && r.status !== "completed" && r.status !== "refused") {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(r.date_due).getTime()) / 86400000,
+        -londonDayDiff(r.date_due, now),
       );
       alerts.push({
         type: "access_request_overdue",
@@ -406,7 +407,7 @@ export function identifyRecordsAlerts(
     // Not acknowledged within 2 days
     if (r.status === "received" && !r.date_acknowledged) {
       const daysSince = Math.round(
-        (now.getTime() - new Date(r.request_date).getTime()) / 86400000,
+        -londonDayDiff(r.request_date, now),
       );
       if (daysSince > 2) {
         alerts.push({

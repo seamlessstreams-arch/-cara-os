@@ -19,7 +19,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
@@ -71,7 +71,7 @@ function daysUntil(iso: string): number {
   today.setHours(0, 0, 0, 0);
   const target = new Date(iso);
   target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(target, today);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

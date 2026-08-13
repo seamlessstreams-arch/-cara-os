@@ -1,3 +1,4 @@
+import { londonDayDiff } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — SHIFT SAFETY CHECKER
 //
@@ -333,7 +334,7 @@ export function checkShiftSafety(ctx: ShiftContext): ShiftSafetyResult {
   // ─── 9. Fire drill overdue ────────────────────────────────────────────────
   complianceChecks++;
   if (ctx.lastFireDrill) {
-    const daysSince = Math.round((Date.now() - new Date(ctx.lastFireDrill).getTime()) / 86400000);
+    const daysSince = -londonDayDiff(ctx.lastFireDrill);
     if (daysSince > FIRE_DRILL_MAX_DAYS) {
       signals.push({
         id: "fire_drill_overdue",
@@ -362,7 +363,7 @@ export function checkShiftSafety(ctx: ShiftContext): ShiftSafetyResult {
   // ─── 10. Environment check overdue ────────────────────────────────────────
   complianceChecks++;
   if (ctx.lastEnvironmentCheck) {
-    const daysSince = Math.round((Date.now() - new Date(ctx.lastEnvironmentCheck).getTime()) / 86400000);
+    const daysSince = -londonDayDiff(ctx.lastEnvironmentCheck);
     if (daysSince > ENVIRONMENT_CHECK_MAX_DAYS) {
       signals.push({
         id: "environment_check_overdue",
