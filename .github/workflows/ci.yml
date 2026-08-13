@@ -121,6 +121,9 @@ jobs:
       - name: Rolling-day-maths guard (day counts are London calendar days, not 24h windows)
         run: node scripts/check-rolling-day-maths.js
 
+      - name: Unguarded-fetch guard (no query/mutation may swallow an HTTP error)
+        run: node scripts/check-unguarded-fetch.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 
