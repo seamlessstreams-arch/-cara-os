@@ -42,6 +42,7 @@ import type { HealthcarePlan } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ─── severity helpers ─── */
 const SEVERITY_META: Record<string, { label: string; color: string }> = {
   mild: { label: "Mild", color: "bg-[--cs-success-bg] text-[--cs-success]" },
@@ -68,7 +69,7 @@ const exportCols: ExportColumn<HealthcarePlan>[] = [
 export default function HealthcarePlansPage() {
   const { data: raw, isLoading } = useQuery<{ data: HealthcarePlan[] }>({
     queryKey: ["healthcare-plans"],
-    queryFn: () => fetch("/api/v1/healthcare-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HealthcarePlan[] }>("/api/v1/healthcare-plans"),
   });
   const plans = useMemo(() => raw?.data ?? [], [raw]);
 

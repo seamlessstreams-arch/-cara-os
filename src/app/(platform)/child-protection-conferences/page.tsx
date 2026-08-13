@@ -39,6 +39,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { StrategyDiscussionPanel } from "@/components/strategy-discussion/strategy-discussion-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── config ──────────────────────────────────────────────────────────────────
 const outcomeColour: Record<string, string> = {
   subject_to_cp_plan: "bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -74,7 +75,7 @@ const exportCols: ExportColumn<CpConferenceRecord>[] = [
 export default function ChildProtectionConferencesPage() {
   const { data: res, isLoading } = useQuery<{ data: CpConferenceRecord[] }>({
     queryKey: ["cp-conferences"],
-    queryFn: () => fetch("/api/v1/cp-conferences").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CpConferenceRecord[] }>("/api/v1/cp-conferences"),
   });
   const items = res?.data ?? [];
 

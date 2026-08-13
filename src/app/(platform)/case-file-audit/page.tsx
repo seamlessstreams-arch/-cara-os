@@ -44,6 +44,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-case-file-audits hook) ──────────── */
 
 const CASE_FILE_AUDITS_KEY = "case-file-audits";
@@ -51,7 +52,7 @@ const CASE_FILE_AUDITS_KEY = "case-file-audits";
 function useCaseFileAudits() {
   return useQuery<{ data: CaseFileAudit[] }>({
     queryKey: [CASE_FILE_AUDITS_KEY],
-    queryFn: () => fetch("/api/v1/case-file-audits").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CaseFileAudit[] }>("/api/v1/case-file-audits"),
   });
 }
 

@@ -69,7 +69,7 @@ export default function HomeImprovementPlanPage() {
   // Inlined useImprovementObjectives
   const objectivesQuery = useQuery<{ data: ImprovementObjective[] }>({
     queryKey: ["improvement-objectives"],
-    queryFn: () => fetch("/api/v1/improvement-objectives").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ImprovementObjective[] }>("/api/v1/improvement-objectives"),
   });
   const { data: raw, isLoading } = objectivesQuery;
   const entries = useMemo(() => raw?.data ?? [], [raw]);

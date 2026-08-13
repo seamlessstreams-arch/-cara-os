@@ -28,7 +28,7 @@ interface SelfHealingScan {
 function useSelfHealing() {
   return useQuery<{ data: SelfHealingScan }>({
     queryKey: [SELF_HEALING_KEY],
-    queryFn: () => fetch(SELF_HEALING_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SelfHealingScan }>(SELF_HEALING_URL),
     staleTime: 60 * 1000,
   });
 }

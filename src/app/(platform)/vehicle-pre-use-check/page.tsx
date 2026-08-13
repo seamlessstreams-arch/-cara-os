@@ -50,13 +50,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const VEHICLE_PRE_USE_CHECKS_KEY = "vehicle-pre-use-checks";
 
 function useVehiclePreUseChecks(homeId?: string) {
   const qs = homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: VehiclePreUseCheck[] }>({
     queryKey: [VEHICLE_PRE_USE_CHECKS_KEY, homeId],
-    queryFn: () => fetch(`/api/v1/vehicle-pre-use-checks${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: VehiclePreUseCheck[] }>(`/api/v1/vehicle-pre-use-checks${qs}`),
   });
 }
 

@@ -40,11 +40,9 @@ function useLifeStoryEntries(childId?: string) {
   return useQuery<{ data: LifeStoryEntry[] }>({
     queryKey: childId ? [LIFE_STORY_ENTRIES_KEY, childId] : [LIFE_STORY_ENTRIES_KEY],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: LifeStoryEntry[] }>(childId
           ? `/api/v1/life-story-entries?child_id=${childId}`
-          : "/api/v1/life-story-entries"
-      ).then((r) => r.json()),
+          : "/api/v1/life-story-entries"),
   });
 }
 

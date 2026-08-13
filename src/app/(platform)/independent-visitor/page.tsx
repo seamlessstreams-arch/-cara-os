@@ -24,11 +24,12 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── component ───────────────────────────────────────────────────────── */
 export default function IndependentVisitorPage() {
   const { data: res, isLoading } = useQuery<{ data: VisitorReport[] }>({
     queryKey: ["visitor-reports"],
-    queryFn: () => fetch("/api/v1/visitor-reports").then((r) => r.json()),
+    queryFn: () => api.get<{ data: VisitorReport[] }>("/api/v1/visitor-reports"),
   });
   const reports: VisitorReport[] = res?.data ?? [];
   const [search, setSearch] = useState("");

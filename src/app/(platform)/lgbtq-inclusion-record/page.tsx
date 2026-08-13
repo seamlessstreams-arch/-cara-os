@@ -37,17 +37,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-lgbtq-inclusion-records ─────────────────────── */
 
 function useLgbtqInclusionRecords(childId?: string) {
   return useQuery<{ data: LgbtqInclusionRecord[] }>({
     queryKey: childId ? ["lgbtq-inclusion-records", childId] : ["lgbtq-inclusion-records"],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: LgbtqInclusionRecord[] }>(childId
           ? `/api/v1/lgbtq-inclusion-records?child_id=${childId}`
-          : "/api/v1/lgbtq-inclusion-records"
-      ).then((r) => r.json()),
+          : "/api/v1/lgbtq-inclusion-records"),
   });
 }
 

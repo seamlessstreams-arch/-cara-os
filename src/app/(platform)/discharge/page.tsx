@@ -50,7 +50,7 @@ const DISCHARGE_RECORDS_API = "/api/v1/discharge-records";
 function useDischargeRecords(childId?: string) {
   return useQuery<{ data: DischargeRecord[] }>({
     queryKey: childId ? [DISCHARGE_RECORDS_KEY, childId] : [DISCHARGE_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${DISCHARGE_RECORDS_API}?child_id=${childId}` : DISCHARGE_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DischargeRecord[] }>(childId ? `${DISCHARGE_RECORDS_API}?child_id=${childId}` : DISCHARGE_RECORDS_API),
   });
 }
 

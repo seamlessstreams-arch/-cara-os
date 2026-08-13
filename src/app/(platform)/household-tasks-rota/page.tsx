@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── helpers ─────────────────────────────────────────────────────────────────
 function supportColour(s: SupportLevel): string {
   switch (s) {
@@ -95,8 +96,7 @@ export default function HouseholdTasksRotaPage() {
     queryKey: ["household-tasks"],
     queryFn: async () => {
       const params = "";
-      const res = await fetch(`/api/v1/household-tasks${params}`);
-      return res.json();
+      return api.get<any>(`/api/v1/household-tasks${params}`);
     },
   });
   const data = useMemo(() => raw?.data ?? [], [raw]);

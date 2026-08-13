@@ -42,7 +42,7 @@ const HEALTH_ASSESSMENTS_API = "/api/v1/health-assessments";
 function useHealthAssessments(childId?: string) {
   return useQuery<{ data: HealthAssessment[] }>({
     queryKey: childId ? [HEALTH_ASSESSMENTS_KEY, childId] : [HEALTH_ASSESSMENTS_KEY],
-    queryFn: () => fetch(childId ? `${HEALTH_ASSESSMENTS_API}?child_id=${childId}` : HEALTH_ASSESSMENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: HealthAssessment[] }>(childId ? `${HEALTH_ASSESSMENTS_API}?child_id=${childId}` : HEALTH_ASSESSMENTS_API),
   });
 }
 

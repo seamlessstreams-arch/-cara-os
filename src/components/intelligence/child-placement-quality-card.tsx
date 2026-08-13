@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { PlacementQuality, ChildPlacementQualityResult } from "@/lib/engines/child-placement-quality-engine";
 
+import { api } from "@/hooks/use-api";
 // ── useChildPlacementQuality (inlined from deleted
 // src/hooks/use-child-placement-quality.ts). Also used, byte-identical, in
 // app/(platform)/intelligence/cara/child-placement-quality/page.tsx.
@@ -25,7 +26,7 @@ function useChildPlacementQuality(childId: string | null) {
   return useQuery<{ data: ChildPlacementQualityResult }>({
     queryKey: ["child-placement-quality", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-placement-quality?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: ChildPlacementQualityResult }>(`/api/v1/child-placement-quality?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const statusColour: Record<string, string> = {
   active: "bg-green-100 text-green-800",
   trialled_declined: "bg-blue-100 text-blue-800",
@@ -60,7 +61,7 @@ const exportCols: ExportColumn<ClubRecord>[] = [
 export default function AfterSchoolClubTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: ClubRecord[] }>({
     queryKey: ["club-records"],
-    queryFn: () => fetch("/api/v1/club-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ClubRecord[] }>("/api/v1/club-records"),
   });
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");

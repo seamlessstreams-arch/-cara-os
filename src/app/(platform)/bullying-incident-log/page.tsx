@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── label maps ───────────────────────────────────────────────────────────── */
 
 const CONTEXT_LABEL: Record<BullyingContext, string> = {
@@ -122,7 +123,7 @@ const STATUSES: BullyingStatus[] = ["open_investigating", "closed_resolved", "mo
 export default function BullyingIncidentLogPage() {
   const { data: biData, isLoading } = useQuery<{ data: BullyingIncident[] }>({
     queryKey: ["bullying-incidents"],
-    queryFn: () => fetch("/api/v1/bullying-incidents").then((r) => r.json()),
+    queryFn: () => api.get<{ data: BullyingIncident[] }>("/api/v1/bullying-incidents"),
   });
   const data = biData?.data ?? [];
 

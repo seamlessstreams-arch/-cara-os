@@ -34,13 +34,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PERSONAL_PASS_KEY = "personal-passports";
 const PERSONAL_PASS_API = "/api/v1/personal-passports";
 
 function usePersonalPassports(childId?: string) {
   return useQuery<{ data: PersonalPassport[] }>({
     queryKey: childId ? [PERSONAL_PASS_KEY, childId] : [PERSONAL_PASS_KEY],
-    queryFn: () => fetch(childId ? `${PERSONAL_PASS_API}?child_id=${childId}` : PERSONAL_PASS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PersonalPassport[] }>(childId ? `${PERSONAL_PASS_API}?child_id=${childId}` : PERSONAL_PASS_API),
   });
 }
 

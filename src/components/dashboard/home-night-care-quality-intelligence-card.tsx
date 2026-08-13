@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { NightCareRating } from "@/lib/engines/home-night-care-quality-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 function useHomeNightCareQualityIntelligence() {
   return useQuery({
     queryKey: ["home-night-care-quality-intelligence"],
-    queryFn: () => fetch("/api/v1/home-night-care-quality-intelligence").then(r => r.json()),
+    queryFn: () => api.get<any>("/api/v1/home-night-care-quality-intelligence"),
     refetchInterval: 60_000,
   });
 }

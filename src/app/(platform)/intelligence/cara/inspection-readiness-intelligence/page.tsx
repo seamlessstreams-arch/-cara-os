@@ -9,6 +9,7 @@ import type { ReadinessGrade, InspectionReadinessResult } from "@/lib/engines/in
 
 import { formatRate } from "@/lib/metrics/rate";
 
+import { api } from "@/hooks/use-api";
 const GRADE_META: Record<ReadinessGrade, { label: string; color: string; bg: string; border: string }> = {
   outstanding:          { label: "Outstanding",          color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
   good:                 { label: "Good",                 color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200" },
@@ -39,7 +40,7 @@ const SEV_META: Record<string, string> = {
 export default function InspectionReadinessIntelligencePage() {
   const { data, isLoading, error } = useQuery<{ data: InspectionReadinessResult }>({
     queryKey: ["inspection-readiness-intelligence"],
-    queryFn: () => fetch("/api/v1/inspection-readiness-intelligence").then((r) => r.json()),
+    queryFn: () => api.get<{ data: InspectionReadinessResult }>("/api/v1/inspection-readiness-intelligence"),
     refetchInterval: 60_000,
   });
   const d = data?.data;

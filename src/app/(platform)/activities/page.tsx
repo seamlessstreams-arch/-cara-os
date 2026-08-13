@@ -345,7 +345,7 @@ export default function ActivitiesPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: Activity[] }>({
     queryKey: ["activities"],
-    queryFn: () => fetch("/api/v1/activities").then((r) => r.json()),
+    queryFn: () => api.get<{ data: Activity[] }>("/api/v1/activities"),
   });
   const createActivity = useMutation({
     mutationFn: (data: Partial<Activity>) =>

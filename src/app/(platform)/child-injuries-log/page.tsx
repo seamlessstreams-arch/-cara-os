@@ -25,6 +25,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-child-injury-records hook) ──────────── */
 
 const CHILD_INJURY_RECORDS_KEY = "child-injury-records";
@@ -34,7 +35,7 @@ function useChildInjuryRecords(childId?: string) {
   return useQuery<{ data: ChildInjuryRecord[] }>({
     queryKey: childId ? [CHILD_INJURY_RECORDS_KEY, childId] : [CHILD_INJURY_RECORDS_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_INJURY_RECORDS_API}?child_id=${childId}` : CHILD_INJURY_RECORDS_API).then((r) => r.json()),
+      api.get<{ data: ChildInjuryRecord[] }>(childId ? `${CHILD_INJURY_RECORDS_API}?child_id=${childId}` : CHILD_INJURY_RECORDS_API),
   });
 }
 

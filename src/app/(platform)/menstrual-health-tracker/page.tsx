@@ -27,7 +27,7 @@ const MENSTRUAL_HEALTH_PLANS_API = "/api/v1/menstrual-health-plans";
 function useMenstrualHealthPlans(childId?: string) {
   return useQuery<{ data: MenstrualHealthPlan[] }>({
     queryKey: childId ? [MENSTRUAL_HEALTH_PLANS_KEY, childId] : [MENSTRUAL_HEALTH_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${MENSTRUAL_HEALTH_PLANS_API}?child_id=${childId}` : MENSTRUAL_HEALTH_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MenstrualHealthPlan[] }>(childId ? `${MENSTRUAL_HEALTH_PLANS_API}?child_id=${childId}` : MENSTRUAL_HEALTH_PLANS_API),
   });
 }
 import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 const STAGE_CLR: Record<MenstrualStage, string> = {

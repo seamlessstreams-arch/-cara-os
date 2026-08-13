@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-child-expert-entries hook) ──────── */
 
 const CHILD_EXPERT_ENTRIES_KEY = "child-expert-entries";
@@ -37,7 +38,7 @@ function useChildExpertEntries(childId?: string) {
   return useQuery<{ data: ChildExpertEntry[] }>({
     queryKey: childId ? [CHILD_EXPERT_ENTRIES_KEY, childId] : [CHILD_EXPERT_ENTRIES_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_EXPERT_ENTRIES_API}?child_id=${childId}` : CHILD_EXPERT_ENTRIES_API).then((r) => r.json()),
+      api.get<{ data: ChildExpertEntry[] }>(childId ? `${CHILD_EXPERT_ENTRIES_API}?child_id=${childId}` : CHILD_EXPERT_ENTRIES_API),
   });
 }
 

@@ -62,7 +62,7 @@ export default function ContactDirectoryPage() {
 
   const { data, isLoading } = useQuery<{ data: ContactDirectoryEntry[] }>({
     queryKey: ["contact-directory-entries"],
-    queryFn: () => fetch("/api/v1/contact-directory-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ContactDirectoryEntry[] }>("/api/v1/contact-directory-entries"),
   });
   const qc = useQueryClient();
   const createMutation = useMutation({

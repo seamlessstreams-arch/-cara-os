@@ -52,13 +52,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SKIN_CONDITION_PLANS_KEY = "skin-condition-plans";
 const SKIN_CONDITION_PLANS_API = "/api/v1/skin-condition-plans";
 
 function useSkinConditionPlans(childId?: string) {
   return useQuery<{ data: SkinConditionPlan[] }>({
     queryKey: childId ? [SKIN_CONDITION_PLANS_KEY, childId] : [SKIN_CONDITION_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${SKIN_CONDITION_PLANS_API}?child_id=${childId}` : SKIN_CONDITION_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SkinConditionPlan[] }>(childId ? `${SKIN_CONDITION_PLANS_API}?child_id=${childId}` : SKIN_CONDITION_PLANS_API),
   });
 }
 

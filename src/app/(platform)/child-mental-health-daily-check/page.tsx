@@ -38,7 +38,7 @@ const MENTAL_HEALTH_CHECK_INS_API = "/api/v1/mental-health-check-ins";
 function useMentalHealthCheckIns(childId?: string) {
   return useQuery<{ data: MentalHealthCheckIn[] }>({
     queryKey: childId ? [MENTAL_HEALTH_CHECK_INS_KEY, childId] : [MENTAL_HEALTH_CHECK_INS_KEY],
-    queryFn: () => fetch(childId ? `${MENTAL_HEALTH_CHECK_INS_API}?child_id=${childId}` : MENTAL_HEALTH_CHECK_INS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MentalHealthCheckIn[] }>(childId ? `${MENTAL_HEALTH_CHECK_INS_API}?child_id=${childId}` : MENTAL_HEALTH_CHECK_INS_API),
   });
 }
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -46,6 +46,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps ──────────────────────────────────────────────────────── */
 const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: string }> = {
   1: { color: "text-red-600",    bar: "bg-red-400",    label: "Very low" },

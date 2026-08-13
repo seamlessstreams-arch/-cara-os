@@ -32,6 +32,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { WakeUpRoutine } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 // ── export columns ──────────────────────────────────────────────────────────
 function ratingColour(r: number): string {
   if (r >= 4) return "text-green-600";
@@ -60,7 +61,7 @@ const exportCols: ExportColumn<WakeUpRoutine>[] = [
 export default function WakeUpRoutinesPage() {
   const { data: result, isLoading } = useQuery<{ data: WakeUpRoutine[] }>({
     queryKey: ["wake-up-routines", undefined, "home_oak"],
-    queryFn: () => fetch("/api/v1/wake-up-routines?home_id=home_oak").then((r) => r.json()),
+    queryFn: () => api.get<{ data: WakeUpRoutine[] }>("/api/v1/wake-up-routines?home_id=home_oak"),
   });
   const data = result?.data ?? [];
 

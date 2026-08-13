@@ -25,12 +25,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const READINESS_ITEMS_KEY = "readiness-items";
 
 function useReadinessItems() {
   return useQuery<{ data: ReadinessItem[] }>({
     queryKey: [READINESS_ITEMS_KEY],
-    queryFn: () => fetch("/api/v1/readiness-items").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ReadinessItem[] }>("/api/v1/readiness-items"),
   });
 }
 

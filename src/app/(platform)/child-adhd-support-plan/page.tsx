@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── label maps ───────────────────────────────────────────────────────── */
 
 const DIAGNOSIS_STATUS_LABEL: Record<ADHDDiagnosisStatus, string> = {
@@ -100,7 +101,7 @@ const EXPORT_COLS: ExportColumn<ADHDPlan>[] = [
 export default function ChildADHDSupportPlanPage() {
   const { data: apData, isLoading } = useQuery<{ data: ADHDPlan[] }>({
     queryKey: ["adhd-plans"],
-    queryFn: () => fetch("/api/v1/adhd-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ADHDPlan[] }>("/api/v1/adhd-plans"),
   });
   const data = apData?.data ?? [];
 

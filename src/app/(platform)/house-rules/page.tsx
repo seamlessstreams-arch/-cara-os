@@ -29,6 +29,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ─── category meta ─── */
 const categoryConfig: Record<HouseRuleCategory, { label: string; color: string; icon: typeof BookOpen }> = {
   boundaries: { label: "Boundaries", color: "bg-blue-100 text-blue-800", icon: Shield },
@@ -58,10 +59,8 @@ const exportCols: ExportColumn<HouseRule>[] = [
 export default function HouseRulesPage() {
   const { data: raw, isLoading } = useQuery<{ data: HouseRule[] }>({
     queryKey: ["house-rules"],
-    queryFn: async () => {
-      const res = await fetch("/api/v1/house-rules");
-      return res.json();
-    },
+    queryFn: () =>
+      api.get<{ data: HouseRule[] }>("/api/v1/house-rules"),
   });
   const rules = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);

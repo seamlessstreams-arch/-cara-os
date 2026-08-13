@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const typeColour: Record<VisitorType, string> = {
   professional: "bg-blue-100 text-blue-800",
   volunteer: "bg-green-100 text-green-800",
@@ -67,7 +68,7 @@ const exportCols: ExportColumn<ExternalVisitor>[] = [
 export default function ExternalVisitorLogPage() {
   const { data: queryData, isLoading } = useQuery<{ data: ExternalVisitor[] }>({
     queryKey: ["external-visitors"],
-    queryFn: () => fetch("/api/v1/external-visitors").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ExternalVisitor[] }>("/api/v1/external-visitors"),
   });
   const data = queryData?.data ?? [];
 

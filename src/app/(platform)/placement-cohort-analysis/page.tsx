@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const DYNAMIC_COLOURS: Record<CohortPairDynamic, string> = {
@@ -64,7 +65,7 @@ const EXPORT_COLS: ExportColumn<CohortAnalysis>[] = [
 export default function PlacementCohortAnalysisPage() {
   const { data: res, isLoading } = useQuery<{ data: CohortAnalysis[] }>({
     queryKey: ["cohort-analyses"],
-    queryFn: () => fetch("/api/v1/cohort-analyses").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CohortAnalysis[] }>("/api/v1/cohort-analyses"),
   });
   const records = res?.data ?? [];
 

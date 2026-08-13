@@ -43,7 +43,7 @@ const DOL_RECORDS_API = "/api/v1/dol-records";
 function useDoLRecords(childId?: string) {
   return useQuery<{ data: DoLRecord[] }>({
     queryKey: childId ? [DOL_RECORDS_KEY, childId] : [DOL_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${DOL_RECORDS_API}?child_id=${childId}` : DOL_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DoLRecord[] }>(childId ? `${DOL_RECORDS_API}?child_id=${childId}` : DOL_RECORDS_API),
   });
 }
 

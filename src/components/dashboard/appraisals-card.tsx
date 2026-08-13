@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { AppraisalIntelligenceResult } from "@/lib/engines/appraisal-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 
+import { api } from "@/hooks/use-api";
 // ── Query Config ────────────────────────────────────────────────────────────
 const APPRAISAL_INTELLIGENCE_KEY = "appraisal-intelligence";
 const APPRAISAL_INTELLIGENCE_API = "/api/v1/appraisal-intelligence";
@@ -69,7 +70,7 @@ const STATUS_BADGE: Record<string, string> = {
 export function AppraisalsCard() {
   const { data, isLoading } = useQuery<AppraisalIntelligenceResponse>({
     queryKey: [APPRAISAL_INTELLIGENCE_KEY],
-    queryFn: () => fetch(APPRAISAL_INTELLIGENCE_API).then((r) => r.json()),
+    queryFn: () => api.get<AppraisalIntelligenceResponse>(APPRAISAL_INTELLIGENCE_API),
     refetchInterval: 60_000,
   });
   const intel = data?.data;

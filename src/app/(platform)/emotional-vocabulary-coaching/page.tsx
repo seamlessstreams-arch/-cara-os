@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-emotional-vocab-records ──────────────────── */
 
 const EMOTIONAL_VOCAB_KEY = "emotional-vocab-records";
@@ -45,7 +46,7 @@ function useEmotionalVocabRecords(childId?: string) {
   return useQuery<{ data: EmotionalVocabRecord[] }>({
     queryKey: childId ? [EMOTIONAL_VOCAB_KEY, childId] : [EMOTIONAL_VOCAB_KEY],
     queryFn: () =>
-      fetch(childId ? `${EMOTIONAL_VOCAB_API}?child_id=${childId}` : EMOTIONAL_VOCAB_API).then((r) => r.json()),
+      api.get<{ data: EmotionalVocabRecord[] }>(childId ? `${EMOTIONAL_VOCAB_API}?child_id=${childId}` : EMOTIONAL_VOCAB_API),
   });
 }
 

@@ -35,7 +35,7 @@ const MEDICATION_STOCK_CHECKS_API = "/api/v1/medication-stock-checks";
 function useMedicationStockChecks() {
   return useQuery<{ data: MedicationStockCheck[] }>({
     queryKey: [MEDICATION_STOCK_CHECKS_KEY],
-    queryFn: () => fetch(MEDICATION_STOCK_CHECKS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MedicationStockCheck[] }>(MEDICATION_STOCK_CHECKS_API),
   });
 }
 

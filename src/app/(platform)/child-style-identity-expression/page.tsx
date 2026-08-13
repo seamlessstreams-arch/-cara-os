@@ -31,13 +31,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const STYLE_IDENTITY_KEY = "style-identity-records";
 const STYLE_IDENTITY_API = "/api/v1/style-identity-records";
 
 function useStyleIdentityRecords(childId?: string) {
   return useQuery<{ data: StyleIdentityRecord[] }>({
     queryKey: childId ? [STYLE_IDENTITY_KEY, childId] : [STYLE_IDENTITY_KEY],
-    queryFn: () => fetch(childId ? `${STYLE_IDENTITY_API}?child_id=${childId}` : STYLE_IDENTITY_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: StyleIdentityRecord[] }>(childId ? `${STYLE_IDENTITY_API}?child_id=${childId}` : STYLE_IDENTITY_API),
   });
 }
 

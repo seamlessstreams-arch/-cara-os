@@ -49,7 +49,7 @@ function useReg35Notifications(childId?: string) {
       const url = childId
         ? `/api/v1/reg35-notifications?child_id=${childId}`
         : "/api/v1/reg35-notifications";
-      return fetch(url).then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? []));
+      return api.get<Reg35Notification[] | { data?: Reg35Notification[] }>(url).then((j) => Array.isArray(j) ? j : (j?.data ?? []));
     },
   });
 }

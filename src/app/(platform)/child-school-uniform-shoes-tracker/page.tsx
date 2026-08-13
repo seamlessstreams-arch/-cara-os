@@ -37,12 +37,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const UNIFORM_RECORDS_KEY = "uniform-records";
 
 function useUniformRecords() {
   return useQuery<{ data: UniformRecord[] }>({
     queryKey: [UNIFORM_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/uniform-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: UniformRecord[] }>("/api/v1/uniform-records"),
   });
 }
 

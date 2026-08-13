@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { AuditQualityIntelligenceResult } from "@/lib/engines/audit-quality-intelligence-engine";
 import { meets, formatRate } from "@/lib/metrics/rate";
 
+import { api } from "@/hooks/use-api";
 // ── Query Config ────────────────────────────────────────────────────────────
 const AUDIT_QUALITY_INTELLIGENCE_KEY = "audit-quality-intelligence";
 const AUDIT_QUALITY_INTELLIGENCE_API = "/api/v1/audit-quality-intelligence";
@@ -52,7 +53,7 @@ function formatCategory(cat: string): string {
 export function AuditComplianceCard() {
   const { data, isLoading } = useQuery<AuditQualityIntelligenceResponse>({
     queryKey: [AUDIT_QUALITY_INTELLIGENCE_KEY],
-    queryFn: () => fetch(AUDIT_QUALITY_INTELLIGENCE_API).then((r) => r.json()),
+    queryFn: () => api.get<AuditQualityIntelligenceResponse>(AUDIT_QUALITY_INTELLIGENCE_API),
     refetchInterval: 60_000,
   });
   const intel = data?.data;

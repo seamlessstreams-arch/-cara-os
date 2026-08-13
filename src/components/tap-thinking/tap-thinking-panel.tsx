@@ -26,6 +26,7 @@ import {
 } from "@/lib/tap-thinking/types";
 import { cn } from "@/lib/utils";
 
+import { api } from "@/hooks/use-api";
 const TAP_THINKING_KEY = "tap-thinking";
 const TAP_THINKING_URL = "/api/v1/tap-thinking";
 
@@ -59,7 +60,7 @@ function useTapSessions(filter?: { childId?: string; context?: string; status?: 
   const qs = params.toString();
   return useQuery<ListResponse>({
     queryKey: [TAP_THINKING_KEY, filter?.childId ?? "", filter?.context ?? "", filter?.status ?? ""],
-    queryFn: () => fetch(`${TAP_THINKING_URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    queryFn: () => api.get<ListResponse>(`${TAP_THINKING_URL}${qs ? `?${qs}` : ""}`),
     staleTime: 15 * 1000,
   });
 }

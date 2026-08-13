@@ -10,6 +10,7 @@ import { ProfileEditor } from "@/components/cara-studio/profile-editor";
 import { Sparkles, LineChart } from "lucide-react";
 import type { CaraSavedOutput, CaraChildLearningProfile } from "@/lib/cara-studio/cara-types";
 
+import { api } from "@/hooks/use-api";
 interface ChildWorkspace {
   child: { id: string; name: string; preferred_name: string | null };
   learning_profile: CaraChildLearningProfile | null;
@@ -29,7 +30,7 @@ export default function CaraChildPage({ params }: { params: Promise<{ childId: s
   const [tab, setTab] = useState<(typeof TABS)[number]>("Learning Profile");
   const { data, isLoading } = useQuery<ChildWorkspace>({
     queryKey: ["cara-child", childId],
-    queryFn: async () => (await (await fetch(`/api/cara/child/${childId}`)).json()).data,
+    queryFn: async () => (await api.get<any>(`/api/cara/child/${childId}`)).data,
   });
 
   const lists: Record<string, CaraSavedOutput[]> = data

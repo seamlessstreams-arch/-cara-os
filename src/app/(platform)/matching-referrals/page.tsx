@@ -33,7 +33,7 @@ const MATCHING_REFERRALS_API = "/api/v1/matching-referrals";
 function useMatchingReferrals() {
   return useQuery<{ data: MatchingReferral[] }>({
     queryKey: [MATCHING_REFERRALS_KEY],
-    queryFn: () => fetch(MATCHING_REFERRALS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MatchingReferral[] }>(MATCHING_REFERRALS_API),
   });
 }
 

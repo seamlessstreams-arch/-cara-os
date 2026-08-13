@@ -18,6 +18,7 @@ import type {
   CaraStudioGap,
 } from "@/types/cara-studio";
 
+import { api } from "@/hooks/use-api";
 // ── Climate badge styling ───────────────────────────────────────────────────
 
 const CLIMATE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -46,10 +47,10 @@ export default function HomeDynamicsDashboard() {
     queryKey: ["cara-studio", "home-dynamics"],
     queryFn: async () => {
       const [snapRes, warnRes, patternRes, gapRes] = await Promise.all([
-        fetch("/api/cara-studio/home-dynamics").then((r) => r.json()),
-        fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
-        fetch("/api/cara-studio/safeguarding-patterns").then((r) => r.json()),
-        fetch("/api/cara-studio/gaps").then((r) => r.json()),
+        api.get<any>("/api/cara-studio/home-dynamics"),
+        api.get<any>("/api/cara-studio/early-warnings"),
+        api.get<any>("/api/cara-studio/safeguarding-patterns"),
+        api.get<any>("/api/cara-studio/gaps"),
       ]);
       return {
         snapshot: (snapRes.data ?? null) as CaraStudioHomeDynamics | null,

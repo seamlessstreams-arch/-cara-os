@@ -72,8 +72,7 @@ export function DailyLogSummaryCard() {
     queryFn: async () => {
       const query = new URLSearchParams();
       query.set("date", today);
-      const res = await fetch(`/api/v1/daily-log?${query}`);
-      return res.json() as Promise<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>;
+      return api.get<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>(`/api/v1/daily-log?${query}`);
     },
   });
   const { data: ypData, isLoading: ypLoading }   = useYoungPeople();

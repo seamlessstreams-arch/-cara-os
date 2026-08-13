@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const categoryColour: Record<ExtracurricularCategory, string> = {
   sport: "bg-sky-100 text-sky-800",
   music: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
@@ -90,7 +91,7 @@ const parseFreqHours = (frequency: string): number => {
 export default function ChildExtracurricularClubsPage() {
   const { data: res, isLoading } = useQuery<{ data: ExtracurricularClubRecord[] }>({
     queryKey: ["extracurricular-club-records"],
-    queryFn: () => fetch("/api/v1/extracurricular-club-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ExtracurricularClubRecord[] }>("/api/v1/extracurricular-club-records"),
   });
   const items = res?.data ?? [];
 

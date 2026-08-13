@@ -85,7 +85,7 @@ export default function PersonalBelongingsPage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: BelongingsRecord[] }>({
     queryKey: ["belongings-records"],
-    queryFn: () => fetch("/api/v1/belongings-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: BelongingsRecord[] }>("/api/v1/belongings-records"),
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<BelongingsRecord>) =>

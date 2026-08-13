@@ -39,7 +39,7 @@ export default function ClothingAllowancesPage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: ClothingAllowanceRecord[] }>({
     queryKey: ["clothing-allowance-records"],
-    queryFn: () => fetch("/api/v1/clothing-allowance-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ClothingAllowanceRecord[] }>("/api/v1/clothing-allowance-records"),
   });
   const items = res?.data ?? [];
   const createMut = useMutation({

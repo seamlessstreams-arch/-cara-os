@@ -42,7 +42,7 @@ export default function FoodHygienePage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: FoodHygieneRecord[] }>({
     queryKey: ["food-hygiene-records"],
-    queryFn: () => fetch("/api/v1/food-hygiene-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FoodHygieneRecord[] }>("/api/v1/food-hygiene-records"),
   });
   const records = res?.data ?? [];
   const createMutation = useMutation({

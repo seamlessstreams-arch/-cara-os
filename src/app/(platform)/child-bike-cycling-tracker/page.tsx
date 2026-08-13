@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const levelOrder: Record<BikeabilityLevel, number> = {
   not_started: 0,
   level_1_off_road: 1,
@@ -83,7 +84,7 @@ const exportCols: ExportColumn<CyclingBikeRecord>[] = [
 export default function ChildBikeCyclingTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: CyclingBikeRecord[] }>({
     queryKey: ["cycling-bike-records"],
-    queryFn: () => fetch("/api/v1/cycling-bike-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CyclingBikeRecord[] }>("/api/v1/cycling-bike-records"),
   });
   const data = res?.data ?? [];
 

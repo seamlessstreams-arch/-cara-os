@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Query Config ─────────────────────────────────────────────────────────── */
 const ASPIRATION_RECORDS_KEY = "aspiration-records";
 const ASPIRATION_RECORDS_API = "/api/v1/aspiration-records";
@@ -70,7 +71,7 @@ const REALISM_ORDER: Record<AspirationRealism, number> = {
 export default function ChildAspirationsTrackerPage() {
   const { data: resp, isLoading } = useQuery<{ data: AspirationRecord[] }>({
     queryKey: [ASPIRATION_RECORDS_KEY],
-    queryFn: () => fetch(ASPIRATION_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AspirationRecord[] }>(ASPIRATION_RECORDS_API),
   });
   const data = resp?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);

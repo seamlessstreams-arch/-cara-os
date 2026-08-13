@@ -126,7 +126,7 @@ export default function ContactSupervisionPage() {
   const homeName = useHomeName();
   const { data, isLoading } = useQuery<{ data: ContactSupervisionSession[] }>({
     queryKey: ["contact-supervision-sessions"],
-    queryFn: () => fetch("/api/v1/contact-supervision-sessions").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ContactSupervisionSession[] }>("/api/v1/contact-supervision-sessions"),
   });
   const sessions = data?.data ?? [];
   const qc = useQueryClient();

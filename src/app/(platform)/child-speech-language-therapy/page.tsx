@@ -37,12 +37,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SALT_RECORDS_KEY = "salt-records";
 
 function useSaltRecords() {
   return useQuery<{ data: SaltRecord[] }>({
     queryKey: [SALT_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/salt-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: SaltRecord[] }>("/api/v1/salt-records"),
   });
 }
 

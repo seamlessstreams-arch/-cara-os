@@ -52,9 +52,7 @@ function useMedicationErrors(childId?: string) {
   return useQuery<{ data: MedicationError[] }>({
     queryKey: childId ? [MEDICATION_ERRORS_KEY, childId] : [MEDICATION_ERRORS_KEY],
     queryFn: () =>
-      fetch(
-        childId ? `${MEDICATION_ERRORS_API}?child_id=${childId}` : MEDICATION_ERRORS_API,
-      ).then((r) => r.json()),
+      api.get<{ data: MedicationError[] }>(childId ? `${MEDICATION_ERRORS_API}?child_id=${childId}` : MEDICATION_ERRORS_API,),
   });
 }
 

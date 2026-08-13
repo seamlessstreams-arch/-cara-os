@@ -49,10 +49,8 @@ export default function ImpactAssessmentsPage() {
   // Inlined useImpactAssessments
   const assessmentsQuery = useQuery<{ data: ImpactAssessment[] }>({
     queryKey: ["impact-assessments"],
-    queryFn: async () => {
-      const res = await fetch("/api/v1/impact-assessments");
-      return res.json();
-    },
+    queryFn: () =>
+      api.get<{ data: ImpactAssessment[] }>("/api/v1/impact-assessments"),
   });
   const { data: raw, isLoading } = assessmentsQuery;
   const assessments = useMemo(() => raw?.data ?? [], [raw]);

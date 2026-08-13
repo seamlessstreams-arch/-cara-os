@@ -44,6 +44,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ─── helpers ─── */
 const ragColours = (rag: RagRating) => {
   switch (rag) {
@@ -103,7 +104,7 @@ const exportCols: ExportColumn<BoardReport>[] = [
 export default function BoardReportingPage() {
   const { data: res, isLoading } = useQuery<{ data: import("@/types/extended").BoardReport[] }>({
     queryKey: ["board-reports"],
-    queryFn: () => fetch("/api/v1/board-reports").then((r) => r.json()),
+    queryFn: () => api.get<{ data: import("@/types/extended").BoardReport[] }>("/api/v1/board-reports"),
   });
   const reports = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);

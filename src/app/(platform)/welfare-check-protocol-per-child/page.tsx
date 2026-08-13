@@ -67,13 +67,14 @@ function checkTypeIcon(t: string) {
 import type { WelfareProtocol } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 
+import { api } from "@/hooks/use-api";
 const WELFARE_PROTOCOLS_KEY = "welfare-protocols";
 
 function useWelfareProtocols(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: WelfareProtocol[] }>({
     queryKey: [WELFARE_PROTOCOLS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/welfare-protocols${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: WelfareProtocol[] }>(`/api/v1/welfare-protocols${qs}`),
   });
 }
 

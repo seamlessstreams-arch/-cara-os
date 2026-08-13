@@ -22,7 +22,7 @@ const NIGHT_LOGS_API = "/api/v1/night-logs";
 function useNightLogs() {
   return useQuery<{ data: NightLogEntry[] }>({
     queryKey: [NIGHT_LOGS_KEY],
-    queryFn: () => fetch(NIGHT_LOGS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: NightLogEntry[] }>(NIGHT_LOGS_API),
   });
 }
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const CHECK_STATUS_META: Record<string, { label: string; color: string }> = {

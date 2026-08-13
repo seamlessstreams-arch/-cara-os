@@ -14,6 +14,7 @@ import type {
   EvidenceItem,
 } from "@/lib/evidence/types";
 
+import { api } from "@/hooks/use-api";
 // ── Rating Styles ──────────────────────────────────────────────────────────
 
 const RATING_STYLES: Record<string, string> = {
@@ -58,7 +59,7 @@ export function InspectionEvidencePackView() {
   const { data, isLoading, error } = useQuery<{ data: InspectionEvidencePack }>({
     queryKey: ["inspection-evidence-pack"],
     queryFn: () =>
-      fetch("/api/v1/inspection-evidence-pack").then((r) => r.json()),
+      api.get<{ data: InspectionEvidencePack }>("/api/v1/inspection-evidence-pack"),
     refetchInterval: 60_000,
   });
   const [expandedSections, setExpandedSections] = useState<Set<string>>(

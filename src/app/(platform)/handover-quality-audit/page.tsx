@@ -47,6 +47,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ───────────────────────────────────────────────────── */
 const HANDOVER_AUDITS_KEY = "handover-audits";
 const HANDOVER_AUDITS_API = "/api/v1/handover-audits";
@@ -54,7 +55,7 @@ const HANDOVER_AUDITS_API = "/api/v1/handover-audits";
 function useHandoverAudits() {
   return useQuery<{ data: HandoverAudit[] }>({
     queryKey: [HANDOVER_AUDITS_KEY],
-    queryFn: () => fetch(HANDOVER_AUDITS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: HandoverAudit[] }>(HANDOVER_AUDITS_API),
   });
 }
 

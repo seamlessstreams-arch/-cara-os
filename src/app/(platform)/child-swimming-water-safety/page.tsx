@@ -33,12 +33,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SWIM_RECORDS_KEY = "swim-records";
 
 function useSwimRecords() {
   return useQuery<{ data: SwimRecord[] }>({
     queryKey: [SWIM_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/swim-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: SwimRecord[] }>("/api/v1/swim-records"),
   });
 }
 

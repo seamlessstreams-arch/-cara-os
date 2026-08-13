@@ -38,10 +38,11 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 function useRegistrationChangeRecords() {
   return useQuery<RegistrationChangeRecord[]>({
     queryKey: ["registration-change-records"],
-    queryFn: () => fetch("/api/v1/registration-change-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+    queryFn: () => api.get<RegistrationChangeRecord[] | { data?: RegistrationChangeRecord[] }>("/api/v1/registration-change-records").then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
   });
 }
 

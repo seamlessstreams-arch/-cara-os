@@ -71,7 +71,7 @@ export default function ComplaintsOutcomesPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<{ data: ComplaintOutcomeRecord[] }>({
     queryKey: ["complaint-outcome-records"],
-    queryFn: () => fetch("/api/v1/complaint-outcome-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ComplaintOutcomeRecord[] }>("/api/v1/complaint-outcome-records"),
   });
   const entries = data?.data ?? [];
   const createMutation = useMutation({

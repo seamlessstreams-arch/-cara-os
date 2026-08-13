@@ -47,7 +47,7 @@ export default function GiftsRegisterPage() {
   const qc = useQueryClient();
   const { data: queryData, isLoading } = useQuery<{ data: GiftRecord[] }>({
     queryKey: ["gift-records"],
-    queryFn: () => fetch("/api/v1/gift-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: GiftRecord[] }>("/api/v1/gift-records"),
   });
   const createMutation = useMutation({
     mutationFn: (data: Partial<GiftRecord>) =>

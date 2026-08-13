@@ -37,7 +37,7 @@ const MEAL_PLANS_API = "/api/v1/meal-plans";
 function useMealPlans() {
   return useQuery<{ data: MealPlan[] }>({
     queryKey: [MEAL_PLANS_KEY],
-    queryFn: () => fetch(MEAL_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MealPlan[] }>(MEAL_PLANS_API),
   });
 }
 

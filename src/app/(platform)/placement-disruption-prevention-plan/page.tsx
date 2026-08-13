@@ -26,6 +26,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data hook (inlined from use-disruption-prevention-plans) ────────── */
 const DISRUPTION_PREVENTION_PLANS_KEY = "disruption-prevention-plans";
 const DISRUPTION_PREVENTION_PLANS_API = "/api/v1/disruption-prevention-plans";
@@ -33,7 +34,7 @@ const DISRUPTION_PREVENTION_PLANS_API = "/api/v1/disruption-prevention-plans";
 function useDisruptionPreventionPlans(childId?: string) {
   return useQuery<{ data: DisruptionPreventionPlan[] }>({
     queryKey: childId ? [DISRUPTION_PREVENTION_PLANS_KEY, childId] : [DISRUPTION_PREVENTION_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${DISRUPTION_PREVENTION_PLANS_API}?child_id=${childId}` : DISRUPTION_PREVENTION_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DisruptionPreventionPlan[] }>(childId ? `${DISRUPTION_PREVENTION_PLANS_API}?child_id=${childId}` : DISRUPTION_PREVENTION_PLANS_API),
   });
 }
 

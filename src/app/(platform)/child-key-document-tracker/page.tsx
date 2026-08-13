@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Data (inlined from the former use-child-key-documents hook) ───────────────
 
 const CHILD_KEY_DOCUMENTS_KEY = "child-key-documents";
@@ -43,7 +44,7 @@ function useChildKeyDocuments(childId?: string) {
   return useQuery<{ data: ChildKeyDocument[] }>({
     queryKey: childId ? [CHILD_KEY_DOCUMENTS_KEY, childId] : [CHILD_KEY_DOCUMENTS_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_KEY_DOCUMENTS_API}?child_id=${childId}` : CHILD_KEY_DOCUMENTS_API).then((r) => r.json()),
+      api.get<{ data: ChildKeyDocument[] }>(childId ? `${CHILD_KEY_DOCUMENTS_API}?child_id=${childId}` : CHILD_KEY_DOCUMENTS_API),
   });
 }
 

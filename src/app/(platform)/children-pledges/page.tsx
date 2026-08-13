@@ -33,12 +33,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CHILD_PLEDGES_KEY = "child-pledges";
 
 function useChildPledges() {
   return useQuery<{ data: ChildPledge[] }>({
     queryKey: [CHILD_PLEDGES_KEY],
-    queryFn: () => fetch("/api/v1/child-pledges").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildPledge[] }>("/api/v1/child-pledges"),
   });
 }
 

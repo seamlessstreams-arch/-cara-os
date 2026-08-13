@@ -29,6 +29,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── label maps ──────────────────────────────────────────────────────── */
 
 const LOSS_TYPE_LABEL: Record<BereavementLossType, string> = {
@@ -112,7 +113,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 export default function BereavementLossSupportPage() {
   const { data: brData, isLoading } = useQuery<{ data: BereavementRecord[] }>({
     queryKey: ["bereavement-records"],
-    queryFn: () => fetch("/api/v1/bereavement-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: BereavementRecord[] }>("/api/v1/bereavement-records"),
   });
   const data = brData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

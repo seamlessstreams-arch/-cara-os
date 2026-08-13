@@ -22,6 +22,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ──────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -51,7 +52,7 @@ export default function IroCorrespondencePage() {
   const { data: res, isLoading } = useQuery<{ data: IroCorrespondence[] }>({
     queryKey: ["iro-correspondences"],
     queryFn: () =>
-      fetch("/api/v1/iro-correspondences").then((r) => r.json()),
+      api.get<{ data: IroCorrespondence[] }>("/api/v1/iro-correspondences"),
   });
   const records: IroCorrespondence[] = res?.data ?? [];
   const [ypFilter, setYpFilter] = useState("all");

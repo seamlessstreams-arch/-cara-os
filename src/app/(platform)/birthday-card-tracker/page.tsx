@@ -36,13 +36,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CARD_RECORDS_KEY = "card-records";
 
 function useCardRecords(childId?: string) {
   const qs = childId ? `?child_id=${childId}` : "";
   return useQuery<{ data: CardRecord[] }>({
     queryKey: [CARD_RECORDS_KEY, childId],
-    queryFn: () => fetch(`/api/v1/card-records${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CardRecord[] }>(`/api/v1/card-records${qs}`),
   });
 }
 

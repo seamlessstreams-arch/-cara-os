@@ -21,6 +21,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const MEDIA_PUBLICITY_CONSENTS_KEY = "media-publicity-consents";
 const MEDIA_PUBLICITY_CONSENTS_API = "/api/v1/media-publicity-consents";
 
@@ -28,11 +29,9 @@ function useMediaPublicityConsents(childId?: string) {
   return useQuery<{ data: MediaPublicityConsent[] }>({
     queryKey: childId ? [MEDIA_PUBLICITY_CONSENTS_KEY, childId] : [MEDIA_PUBLICITY_CONSENTS_KEY],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: MediaPublicityConsent[] }>(childId
           ? `${MEDIA_PUBLICITY_CONSENTS_API}?child_id=${childId}`
-          : MEDIA_PUBLICITY_CONSENTS_API,
-      ).then((r) => r.json()),
+          : MEDIA_PUBLICITY_CONSENTS_API,),
   });
 }
 

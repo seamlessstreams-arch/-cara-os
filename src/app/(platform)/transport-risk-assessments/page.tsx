@@ -37,13 +37,14 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 import type { TransportRA, JourneyType } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 const TRANSPORT_RAS_KEY = "transport-risk-assessments";
 
 function useTransportRAs(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: TransportRA[] }>({
     queryKey: [TRANSPORT_RAS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/transport-risk-assessments${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TransportRA[] }>(`/api/v1/transport-risk-assessments${qs}`),
   });
 }
 

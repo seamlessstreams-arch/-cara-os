@@ -48,7 +48,7 @@ export default function HealthMonitoringPage() {
   const qc = useQueryClient();
   const { data: raw, isLoading } = useQuery<{ data: HealthMonitoringEntry[] }>({
     queryKey: ["health-monitoring"],
-    queryFn: () => fetch("/api/v1/health-monitoring").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HealthMonitoringEntry[] }>("/api/v1/health-monitoring"),
   });
   const createMut = useMutation({
     mutationFn: (data: Partial<HealthMonitoringEntry>) =>

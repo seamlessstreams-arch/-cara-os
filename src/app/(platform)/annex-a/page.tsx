@@ -208,7 +208,7 @@ const RESTRAINTS_API = "/api/v1/restraints";
 function useRestraints(childId?: string) {
   return useQuery<{ data: RestraintRecord[] }>({
     queryKey: childId ? [RESTRAINTS_KEY, childId] : [RESTRAINTS_KEY],
-    queryFn: () => fetch(childId ? `${RESTRAINTS_API}?child_id=${childId}` : RESTRAINTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: RestraintRecord[] }>(childId ? `${RESTRAINTS_API}?child_id=${childId}` : RESTRAINTS_API),
   });
 }
 

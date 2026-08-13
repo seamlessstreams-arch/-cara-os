@@ -51,7 +51,7 @@ const ENVIRONMENTAL_RISKS_API = "/api/v1/environmental-risks";
 function useEnvironmentalRisks() {
   return useQuery<{ data: EnvironmentalRisk[] }>({
     queryKey: [ENVIRONMENTAL_RISKS_KEY],
-    queryFn: () => fetch(ENVIRONMENTAL_RISKS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EnvironmentalRisk[] }>(ENVIRONMENTAL_RISKS_API),
   });
 }
 

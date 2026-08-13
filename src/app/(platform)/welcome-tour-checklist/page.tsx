@@ -30,13 +30,14 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import type { WelcomeTour } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 
+import { api } from "@/hooks/use-api";
 const WELCOME_TOURS_KEY = "welcome-tours";
 
 function useWelcomeTours(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: WelcomeTour[] }>({
     queryKey: [WELCOME_TOURS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/welcome-tours${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: WelcomeTour[] }>(`/api/v1/welcome-tours${qs}`),
   });
 }
 

@@ -68,7 +68,7 @@ export default function AdvocacyPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: AdvocacyRecord[] }>({
     queryKey: [ADVOCACY_KEY],
-    queryFn: () => fetch(ADVOCACY_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AdvocacyRecord[] }>(ADVOCACY_API),
   });
   const createAdvocacy = useMutation({
     mutationFn: (data: Partial<AdvocacyRecord>) =>

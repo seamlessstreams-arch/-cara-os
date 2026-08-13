@@ -25,6 +25,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hook (inlined from the former use-mar-entries hook) ─────────── */
 
 const MAR_ENTRIES_KEY = "mar-entries";
@@ -34,7 +35,7 @@ function useMarEntries(childId?: string) {
   return useQuery<{ data: MarEntry[] }>({
     queryKey: childId ? [MAR_ENTRIES_KEY, childId] : [MAR_ENTRIES_KEY],
     queryFn: () =>
-      fetch(childId ? `${MAR_ENTRIES_API}?child_id=${childId}` : MAR_ENTRIES_API).then((r) => r.json()),
+      api.get<{ data: MarEntry[] }>(childId ? `${MAR_ENTRIES_API}?child_id=${childId}` : MAR_ENTRIES_API),
   });
 }
 

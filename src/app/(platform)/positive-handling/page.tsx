@@ -40,7 +40,7 @@ const PH_API = "/api/v1/positive-handling";
 function usePositiveHandling(childId?: string) {
   return useQuery<{ data: PositiveHandlingPlan[] }>({
     queryKey: childId ? [PH_KEY, childId] : [PH_KEY],
-    queryFn: () => fetch(childId ? `${PH_API}?child_id=${childId}` : PH_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PositiveHandlingPlan[] }>(childId ? `${PH_API}?child_id=${childId}` : PH_API),
   });
 }
 

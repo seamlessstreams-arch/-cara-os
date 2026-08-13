@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<VolunteerRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
   { header: "Activity", accessor: (r) => r.activity },
@@ -70,7 +71,7 @@ const categoryColour: Record<string, string> = {
 export default function ChildVolunteeringCharityPage() {
   const { data: res, isLoading } = useQuery<{ data: VolunteerRecord[] }>({
     queryKey: ["volunteer-records"],
-    queryFn: () => fetch("/api/v1/volunteer-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: VolunteerRecord[] }>("/api/v1/volunteer-records"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

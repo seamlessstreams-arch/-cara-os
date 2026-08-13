@@ -30,13 +30,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const EMERGENCY_REFERRALS_KEY = "emergency-referrals";
 const EMERGENCY_REFERRALS_API = "/api/v1/emergency-referrals";
 
 function useEmergencyReferrals() {
   return useQuery<{ data: EmergencyReferral[] }>({
     queryKey: [EMERGENCY_REFERRALS_KEY],
-    queryFn: () => fetch(EMERGENCY_REFERRALS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EmergencyReferral[] }>(EMERGENCY_REFERRALS_API),
   });
 }
 

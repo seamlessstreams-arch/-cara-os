@@ -40,7 +40,7 @@ const NOTIFIABLE_EVENTS_API = "/api/v1/notifiable-events";
 function useNotifiableEvents(childId?: string) {
   return useQuery<{ data: NotifiableEvent[] }>({
     queryKey: childId ? [NOTIFIABLE_EVENTS_KEY, childId] : [NOTIFIABLE_EVENTS_KEY],
-    queryFn: () => fetch(childId ? `${NOTIFIABLE_EVENTS_API}?child_id=${childId}` : NOTIFIABLE_EVENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: NotifiableEvent[] }>(childId ? `${NOTIFIABLE_EVENTS_API}?child_id=${childId}` : NOTIFIABLE_EVENTS_API),
   });
 }
 

@@ -85,7 +85,7 @@ export default function AppointmentsPage() {
 
   const { data: res, isLoading } = useQuery<{ data: Appointment[] }>({
     queryKey: [APPOINTMENTS_KEY],
-    queryFn: () => fetch(APPOINTMENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: Appointment[] }>(APPOINTMENTS_API),
   });
   const entries = res?.data ?? [];
 

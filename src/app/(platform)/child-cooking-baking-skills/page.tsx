@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<CookingBakingRecord>[] = [
   { header: "Young Person", accessor: (r: CookingBakingRecord) => getYPName(r.child_id) },
   { header: "Date", accessor: (r: CookingBakingRecord) => r.recorded_date },
@@ -75,7 +76,7 @@ const outcomeColour: Record<CookingOutcome, string> = {
 export default function ChildCookingBakingSkillsPage() {
   const { data: res, isLoading } = useQuery<{ data: CookingBakingRecord[] }>({
     queryKey: ["cooking-baking-records"],
-    queryFn: () => fetch("/api/v1/cooking-baking-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CookingBakingRecord[] }>("/api/v1/cooking-baking-records"),
   });
   const records = res?.data ?? [];
 

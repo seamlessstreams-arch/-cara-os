@@ -31,7 +31,7 @@ const HATE_INCIDENTS_API = "/api/v1/hate-incidents";
 function useHateIncidents() {
   return useQuery<{ data: HateIncident[] }>({
     queryKey: [HATE_INCIDENTS_KEY],
-    queryFn: () => fetch(HATE_INCIDENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: HateIncident[] }>(HATE_INCIDENTS_API),
   });
 }
 

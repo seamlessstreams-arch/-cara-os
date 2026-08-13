@@ -40,9 +40,7 @@ function useMedicationAudits(childId?: string) {
   return useQuery<{ data: MedicationAuditRecord[] }>({
     queryKey: childId ? [MEDICATION_AUDITS_KEY, childId] : [MEDICATION_AUDITS_KEY],
     queryFn: () =>
-      fetch(
-        childId ? `${MEDICATION_AUDITS_API}?child_id=${childId}` : MEDICATION_AUDITS_API,
-      ).then((r) => r.json()),
+      api.get<{ data: MedicationAuditRecord[] }>(childId ? `${MEDICATION_AUDITS_API}?child_id=${childId}` : MEDICATION_AUDITS_API,),
   });
 }
 

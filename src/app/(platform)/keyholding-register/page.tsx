@@ -32,7 +32,7 @@ const KEY_RECORDS_KEY = "key-records";
 function useKeyRecords() {
   return useQuery<{ data: KeyRecord[] }>({
     queryKey: [KEY_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/key-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: KeyRecord[] }>("/api/v1/key-records"),
   });
 }
 

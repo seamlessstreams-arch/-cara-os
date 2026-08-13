@@ -55,7 +55,7 @@ export default function CommunicationBookPage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: CommunicationBookEntry[] }>({
     queryKey: ["communication-book-entries"],
-    queryFn: () => fetch("/api/v1/communication-book-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CommunicationBookEntry[] }>("/api/v1/communication-book-entries"),
   });
   const items = res?.data ?? [];
   const createMut = useMutation({

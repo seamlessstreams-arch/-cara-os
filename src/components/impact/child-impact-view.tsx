@@ -46,13 +46,14 @@ import {
   Users,
 } from "lucide-react";
 
+import { api } from "@/hooks/use-api";
 // ── Data (inlined from the former use-child-impact hook) ────────────────────
 
 function useChildImpact(childId: string) {
   return useQuery<{ data: ChildImpactViewType }>({
     queryKey: ["child-impact", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-impact/${childId}`).then((r) => r.json()),
+      api.get<{ data: ChildImpactViewType }>(`/api/v1/child-impact/${childId}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

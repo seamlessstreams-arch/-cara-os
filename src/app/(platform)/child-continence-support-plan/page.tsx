@@ -23,10 +23,11 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 export default function ChildContinenceSupportPlanPage() {
   const { data: res, isLoading } = useQuery<{ data: ContinencePlan[] }>({
     queryKey: ["continence-plans"],
-    queryFn: () => fetch("/api/v1/continence-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ContinencePlan[] }>("/api/v1/continence-plans"),
   });
   const data = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

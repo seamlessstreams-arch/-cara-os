@@ -33,6 +33,7 @@ import {
 import { CARA_AUDIT_ACTION_LABELS } from "@/lib/cara/cara-audit-trail";
 import type { CaraAuditAction, CaraStudioAuditLog } from "@/types/cara-studio";
 
+import { api } from "@/hooks/use-api";
 const HOME_ID = "home_oak";
 
 const ACTION_VALUES: CaraAuditAction[] = [
@@ -99,9 +100,7 @@ export default function CaraAuditTrailPage() {
   const actors = useQuery<{ data: string[] }>({
     queryKey: ["cara-audit-actors", HOME_ID],
     queryFn: () =>
-      fetch(
-        `/api/v1/cara-studio/audit-trail?home_id=${encodeURIComponent(HOME_ID)}&actors=1`,
-      ).then((r) => r.json()),
+      api.get<{ data: string[] }>(`/api/v1/cara-studio/audit-trail?home_id=${encodeURIComponent(HOME_ID)}&actors=1`,),
     refetchInterval: 60000,
   });
   const qs = new URLSearchParams({ home_id: HOME_ID });
@@ -119,9 +118,7 @@ export default function CaraAuditTrailPage() {
       200,
     ],
     queryFn: () =>
-      fetch(
-        `/api/v1/cara-studio/audit-trail?${qs.toString()}`,
-      ).then((r) => r.json()),
+      api.get<{ data: CaraStudioAuditLog[] }>(`/api/v1/cara-studio/audit-trail?${qs.toString()}`,),
     refetchInterval: 15000,
   });
 

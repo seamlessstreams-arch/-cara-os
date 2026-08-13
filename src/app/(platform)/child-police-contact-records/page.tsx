@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from use-police-contact-records ──────────────────────────────────
 
 const PCR_KEY = "police-contact-records";
@@ -43,7 +44,7 @@ const PCR_API = "/api/v1/police-contact-records";
 function usePoliceContactRecords(childId?: string) {
   return useQuery<{ data: PoliceContactRecord[] }>({
     queryKey: childId ? [PCR_KEY, childId] : [PCR_KEY],
-    queryFn: () => fetch(childId ? `${PCR_API}?child_id=${childId}` : PCR_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PoliceContactRecord[] }>(childId ? `${PCR_API}?child_id=${childId}` : PCR_API),
   });
 }
 

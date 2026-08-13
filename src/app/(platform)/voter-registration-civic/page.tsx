@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const d = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
@@ -75,7 +76,7 @@ export default function VoterRegistrationCivicPage() {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   const { data: result, isLoading } = useQuery<{ data: CivicRecord[] }>({
     queryKey: ["civic-records", childId, homeId],
-    queryFn: () => fetch(`/api/v1/civic-records${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CivicRecord[] }>(`/api/v1/civic-records${qs}`),
   });
   const records = result?.data ?? [];
 

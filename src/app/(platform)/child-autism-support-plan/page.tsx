@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const STATUS_COLOURS: Record<AutismDiagnosisStatus, string> = {
@@ -117,7 +118,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function ChildAutismSupportPlanPage() {
   const { data: resp, isLoading } = useQuery<{ data: AutismPlan[] }>({
     queryKey: ["autism-plans"],
-    queryFn: () => fetch("/api/v1/autism-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: AutismPlan[] }>("/api/v1/autism-plans"),
   });
   const data = resp?.data ?? [];
 

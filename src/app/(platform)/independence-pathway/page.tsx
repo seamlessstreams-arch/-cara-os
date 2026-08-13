@@ -29,6 +29,7 @@ import type { IndependencePathway, IndependencePathwayStatus } from "@/types/ext
 import { INDEPENDENCE_PATHWAY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const STATUS_COLOURS: Record<IndependencePathwayStatus, string> = {
@@ -44,7 +45,7 @@ export default function IndependencePathwayPage() {
   const pathwaysQuery = useQuery<{ data: IndependencePathway[] }>({
     queryKey: ["independence-pathways"],
     queryFn: () =>
-      fetch("/api/v1/independence-pathways").then((r) => r.json()),
+      api.get<{ data: IndependencePathway[] }>("/api/v1/independence-pathways"),
   });
   const { data: res, isLoading } = pathwaysQuery;
   const data: IndependencePathway[] = res?.data ?? [];

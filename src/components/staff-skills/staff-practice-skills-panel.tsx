@@ -17,6 +17,7 @@ import { ChevronDown, ChevronUp, GraduationCap, Loader2, Sparkles, Compass, Hear
 import { useQuery } from "@tanstack/react-query";
 import type { SkillSignal, StaffSupervisionPrompt, StaffPracticeSkillsProfile } from "@/lib/staff-practice-skills/types";
 
+import { api } from "@/hooks/use-api";
 // ── data hook (inlined from use-staff-practice-skills) ─────────────────────
 // GET /api/v1/staff-practice-skills?staff_id=… — one practitioner's unified
 // practice picture.
@@ -27,7 +28,7 @@ const STAFF_PRACTICE_SKILLS_URL = "/api/v1/staff-practice-skills";
 function useStaffPracticeSkills(staffId?: string) {
   return useQuery<{ data: StaffPracticeSkillsProfile }>({
     queryKey: [STAFF_PRACTICE_SKILLS_KEY, staffId ?? ""],
-    queryFn: () => fetch(`${STAFF_PRACTICE_SKILLS_URL}?staff_id=${encodeURIComponent(staffId!)}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: StaffPracticeSkillsProfile }>(`${STAFF_PRACTICE_SKILLS_URL}?staff_id=${encodeURIComponent(staffId!)}`),
     enabled: !!staffId,
     staleTime: 60 * 1000,
   });

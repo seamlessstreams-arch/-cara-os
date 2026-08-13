@@ -42,7 +42,7 @@ import { api } from "@/hooks/use-api";
 function useLadoReferrals() {
   return useQuery<{ data: LadoReferral[] }>({
     queryKey: ["lado-referrals"],
-    queryFn: () => fetch("/api/v1/lado-referrals").then((r) => r.json()),
+    queryFn: () => api.get<{ data: LadoReferral[] }>("/api/v1/lado-referrals"),
   });
 }
 

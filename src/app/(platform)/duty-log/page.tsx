@@ -41,7 +41,7 @@ const DUTY_LOG_ENTRIES_API = "/api/v1/duty-log-entries";
 function useDutyLogEntries() {
   return useQuery<{ data: DutyLogEntry[] }>({
     queryKey: [DUTY_LOG_ENTRIES_KEY],
-    queryFn: () => fetch(DUTY_LOG_ENTRIES_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DutyLogEntry[] }>(DUTY_LOG_ENTRIES_API),
   });
 }
 

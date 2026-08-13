@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -60,7 +61,7 @@ const RATING_BAR: Record<number, string> = {
 export default function AnnualOutcomesReportPage() {
   const { data: aoData, isLoading } = useQuery<{ data: AnnualOutcome[] }>({
     queryKey: ["annual-outcomes"],
-    queryFn: () => fetch("/api/v1/annual-outcomes").then((r) => r.json()),
+    queryFn: () => api.get<{ data: AnnualOutcome[] }>("/api/v1/annual-outcomes"),
   });
   const data = aoData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

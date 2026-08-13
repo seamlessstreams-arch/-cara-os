@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const RISK_LEVEL_CONFIG: Record<FireRiskLevel, { colour: string; ring: string; icon: React.ElementType }> = {
@@ -64,7 +65,7 @@ const CATEGORY_CONFIG: Record<FireRiskCategory, string> = {
 export default function FireRiskAssessmentPage() {
   const { data: res, isLoading } = useQuery<{ data: FireRiskItem[] }>({
     queryKey: ["fire-risk-items"],
-    queryFn: () => fetch("/api/v1/fire-risk-items").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FireRiskItem[] }>("/api/v1/fire-risk-items"),
   });
   const items = res?.data ?? [];
 

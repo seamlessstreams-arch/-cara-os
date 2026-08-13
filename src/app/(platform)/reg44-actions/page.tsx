@@ -44,7 +44,7 @@ import { api } from "@/hooks/use-api";
 function useReg44ActionRecords() {
   return useQuery<Reg44ActionRecord[]>({
     queryKey: ["reg44-action-records"],
-    queryFn: () => fetch("/api/v1/reg44-action-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+    queryFn: () => api.get<Reg44ActionRecord[] | { data?: Reg44ActionRecord[] }>("/api/v1/reg44-action-records").then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
   });
 }
 

@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const sentimentColour: Record<StaffFeedbackSentiment, string> = {
   positive: "bg-green-100 text-green-800",
   mixed: "bg-blue-100 text-blue-800",
@@ -61,7 +62,7 @@ export default function ChildFeedbackOnStaffPage() {
   const API = "/api/v1/child-staff-feedback";
   const { data: res, isLoading } = useQuery<{ data: ChildStaffFeedback[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildStaffFeedback[] }>(API),
   });
   const items = res?.data ?? [];
 

@@ -67,7 +67,7 @@ function useTherapeuticStaffTraining(homeId?: string) {
   const qs = homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: TherapeuticStaffTraining[] }>({
     queryKey: [THERAPEUTIC_STAFF_TRAINING_KEY, homeId],
-    queryFn: () => fetch(`/api/v1/therapeutic-staff-training${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TherapeuticStaffTraining[] }>(`/api/v1/therapeutic-staff-training${qs}`),
   });
 }
 
@@ -77,7 +77,7 @@ function useTherapeuticChildImpact(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: TherapeuticChildImpact[] }>({
     queryKey: [THERAPEUTIC_CHILD_IMPACT_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/therapeutic-child-impact${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TherapeuticChildImpact[] }>(`/api/v1/therapeutic-child-impact${qs}`),
   });
 }
 

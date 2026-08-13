@@ -14,13 +14,14 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YpJob } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 const YP_JOBS_KEY = "yp-jobs";
 
 function useYpJobs(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: YpJob[] }>({
     queryKey: [YP_JOBS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/yp-jobs${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: YpJob[] }>(`/api/v1/yp-jobs${qs}`),
   });
 }
 

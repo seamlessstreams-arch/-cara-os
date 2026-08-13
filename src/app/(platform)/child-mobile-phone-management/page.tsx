@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const contractTone: Record<PhoneContractType, string> = {
   payg: "bg-slate-100 text-[var(--cs-navy)]",
   sim_only: "bg-sky-100 text-sky-800",
@@ -73,7 +74,7 @@ export default function ChildMobilePhoneManagementPage() {
   const API = "/api/v1/child-phone-records";
   const { data: raw, isLoading } = useQuery<{ data: ChildPhoneRecord[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildPhoneRecord[] }>(API),
   });
   const items = raw?.data ?? [];
 

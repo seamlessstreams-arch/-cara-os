@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 function ratingColour(r: number): string {
   if (r >= 4) return "text-green-600";
   if (r === 3) return "text-amber-600";
@@ -58,7 +59,7 @@ const exportCols: ExportColumn<BedtimeRoutine>[] = [
 // Query config for bedtime routines (inlined from use-bedtime-routines hook)
 const BEDTIME_ROUTINES_QUERY = {
   queryKey: ["bedtime-routines", undefined],
-  queryFn: () => fetch("/api/v1/bedtime-routines").then((r) => r.json()),
+  queryFn: () => api.get<any>("/api/v1/bedtime-routines"),
 };
 
 export default function BedtimeRoutinesPage() {

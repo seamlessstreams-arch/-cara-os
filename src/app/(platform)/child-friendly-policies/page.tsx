@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── data (inlined from the former use-child-friendly-policies hook) ──────────
 
 const CHILD_FRIENDLY_POLICIES_KEY = "child-friendly-policies";
@@ -42,7 +43,7 @@ const CHILD_FRIENDLY_POLICIES_API = "/api/v1/child-friendly-policies";
 function useChildFriendlyPolicies() {
   return useQuery<{ data: ChildFriendlyPolicy[] }>({
     queryKey: [CHILD_FRIENDLY_POLICIES_KEY],
-    queryFn: () => fetch(CHILD_FRIENDLY_POLICIES_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildFriendlyPolicy[] }>(CHILD_FRIENDLY_POLICIES_API),
   });
 }
 

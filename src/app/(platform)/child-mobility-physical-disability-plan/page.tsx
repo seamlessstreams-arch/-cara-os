@@ -40,7 +40,7 @@ const MOBILITY_DISABILITY_PLANS_API = "/api/v1/mobility-disability-plans";
 function useMobilityDisabilityPlans(childId?: string) {
   return useQuery<{ data: MobilityDisabilityPlan[] }>({
     queryKey: childId ? [MOBILITY_DISABILITY_PLANS_KEY, childId] : [MOBILITY_DISABILITY_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${MOBILITY_DISABILITY_PLANS_API}?child_id=${childId}` : MOBILITY_DISABILITY_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MobilityDisabilityPlan[] }>(childId ? `${MOBILITY_DISABILITY_PLANS_API}?child_id=${childId}` : MOBILITY_DISABILITY_PLANS_API),
   });
 }
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -48,6 +48,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── helpers ─────────────────────────────────────────────────────────────────
 function statusColour(s: MobilityStatus): string {
   switch (s) {

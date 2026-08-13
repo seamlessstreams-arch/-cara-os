@@ -23,11 +23,12 @@ import type {
   TherapeuticProgressResult,
 } from "@/lib/engines/therapeutic-progress-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 function useTherapeuticProgress(childId: string | null) {
   return useQuery<{ data: TherapeuticProgressResult }>({
     queryKey: ["therapeutic-progress-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/therapeutic-progress-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: TherapeuticProgressResult }>(`/api/v1/therapeutic-progress-intelligence?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

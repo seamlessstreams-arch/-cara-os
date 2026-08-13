@@ -34,13 +34,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PHYSIO_OT_PLAN_KEY = "physio-ot-plans";
 const PHYSIO_OT_PLAN_API = "/api/v1/physio-ot-plans";
 
 function usePhysioOtPlans(childId?: string) {
   return useQuery<{ data: PhysioOtPlan[] }>({
     queryKey: childId ? [PHYSIO_OT_PLAN_KEY, childId] : [PHYSIO_OT_PLAN_KEY],
-    queryFn: () => fetch(childId ? `${PHYSIO_OT_PLAN_API}?child_id=${childId}` : PHYSIO_OT_PLAN_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PhysioOtPlan[] }>(childId ? `${PHYSIO_OT_PLAN_API}?child_id=${childId}` : PHYSIO_OT_PLAN_API),
   });
 }
 

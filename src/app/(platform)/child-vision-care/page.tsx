@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const STATUS_CLR: Record<VisionStatus, string> = {
@@ -73,7 +74,7 @@ const daysUntil = (dateStr?: string) => {
 export default function ChildVisionCarePage() {
   const { data: res, isLoading } = useQuery<{ data: VisionCareRecord[] }>({
     queryKey: ["vision-care-records"],
-    queryFn: () => fetch("/api/v1/vision-care-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: VisionCareRecord[] }>("/api/v1/vision-care-records"),
   });
   const items = res?.data ?? [];
 

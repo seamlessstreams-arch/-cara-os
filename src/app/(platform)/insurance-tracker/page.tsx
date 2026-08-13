@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
 const statusColour: Record<InsurancePolicyStatus, string> = {
@@ -47,7 +48,7 @@ const statusColour: Record<InsurancePolicyStatus, string> = {
 export default function InsuranceTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: InsurancePolicy[] }>({
     queryKey: ["insurance-policies"],
-    queryFn: () => fetch("/api/v1/insurance-policies").then((r) => r.json()),
+    queryFn: () => api.get<{ data: InsurancePolicy[] }>("/api/v1/insurance-policies"),
   });
   const data: InsurancePolicy[] = res?.data ?? [];
   const [filterType, setFilterType] = useState("all");

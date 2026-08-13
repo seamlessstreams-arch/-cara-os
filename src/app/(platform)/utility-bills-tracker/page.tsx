@@ -42,13 +42,14 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import type { UtilityBill } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 
+import { api } from "@/hooks/use-api";
 const UTILITY_BILLS_KEY = "utility-bills";
 
 function useUtilityBills(homeId?: string) {
   const qs = homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: UtilityBill[] }>({
     queryKey: [UTILITY_BILLS_KEY, homeId],
-    queryFn: () => fetch(`/api/v1/utility-bills${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: UtilityBill[] }>(`/api/v1/utility-bills${qs}`),
   });
 }
 

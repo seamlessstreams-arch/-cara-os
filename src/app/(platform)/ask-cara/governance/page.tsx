@@ -14,6 +14,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import type { GovernanceSummary } from "@/lib/ask-cara/governance-summary";
 import { ShieldCheck, Loader2, Lock, MessageSquare, AlertTriangle, ClipboardList, PoundSterling, Cpu, Server } from "lucide-react";
 
+import { apiFetch } from "@/hooks/use-api";
 const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
 
 function Stat({ label, value, sub, tone = "slate", icon: Icon }: { label: string; value: React.ReactNode; sub?: string; tone?: string; icon: React.ElementType }) {
@@ -36,7 +37,7 @@ function Stat({ label, value, sub, tone = "slate", icon: Icon }: { label: string
 // Query config for governance summary (inlined from use-ask-cara-governance hook)
 const ASK_CARA_GOVERNANCE_QUERY = (role?: string) => ({
   queryKey: ["ask-cara-governance", role],
-  queryFn: () => fetch("/api/v1/ask-cara/governance", { headers: { "x-user-role": String(role ?? "") } }).then((r) => r.json()),
+  queryFn: () => apiFetch<any>("/api/v1/ask-cara/governance", { headers: { "x-user-role": String(role ?? "") } }),
   staleTime: 60 * 1000,
 });
 
@@ -48,7 +49,7 @@ export default function GovernancePage() {
 
   const { data: aiModeRes } = useQuery<{ data: { mode: string; externalAiEnabled: boolean; localConfigured: boolean; providerAvailable: boolean; provider: { kind: string; model: string }; summary: string } }>({
     queryKey: ["cara-ai-mode", currentRole],
-    queryFn: () => fetch("/api/v1/cara/ai-mode", { headers: { "x-user-role": String(currentRole ?? "") } }).then((r) => r.json()),
+    queryFn: () => apiFetch<any>("/api/v1/cara/ai-mode", { headers: { "x-user-role": String(currentRole ?? "") } }),
     enabled: isManager,
     staleTime: 5 * 60 * 1000,
   });

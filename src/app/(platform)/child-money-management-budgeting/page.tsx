@@ -15,7 +15,7 @@ const MONEY_RECORDS_KEY = "money-records";
 function useMoneyRecords() {
   return useQuery<{ data: MoneyRecord[] }>({
     queryKey: [MONEY_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/money-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: MoneyRecord[] }>("/api/v1/money-records"),
   });
 }
 import { MONEY_SKILL_CATEGORY_LABEL, MONEY_COMPETENCY_LABEL } from "@/types/extended";
@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<MoneyRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
   { header: "Date", accessor: (r) => r.recorded_date },

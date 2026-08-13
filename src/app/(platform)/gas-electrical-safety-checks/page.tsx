@@ -44,13 +44,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SAFETY_CHECK_RECORDS_KEY = "safety-check-records";
 const SAFETY_CHECK_RECORDS_API = "/api/v1/safety-check-records";
 
 function useSafetyCheckRecords() {
   return useQuery<{ data: SafetyCheckRecord[] }>({
     queryKey: [SAFETY_CHECK_RECORDS_KEY],
-    queryFn: () => fetch(SAFETY_CHECK_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SafetyCheckRecord[] }>(SAFETY_CHECK_RECORDS_API),
   });
 }
 

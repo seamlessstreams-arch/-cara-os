@@ -43,7 +43,7 @@ export default function InfectionControlPage() {
   const KEY = "infection-records";
   const { data: res, isLoading } = useQuery<{ data: InfectionRecord[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch("/api/v1/infection-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: InfectionRecord[] }>("/api/v1/infection-records"),
   });
   const qc = useQueryClient();
   const createInfection = useMutation({

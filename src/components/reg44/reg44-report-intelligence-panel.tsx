@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import type { QualityStandardAssessment, QualityStandardStatus, StatutoryOpinion, Reg44QualityStandardsAssessment } from "@/lib/reg44-report-intelligence/types";
 import type { Reg44ReportAssembly } from "@/lib/reg44-report-intelligence/report-assembly";
 
+import { api } from "@/hooks/use-api";
 const REG44_REPORT_INTELLIGENCE_KEY = "reg44-report-intelligence";
 const REG44_REPORT_INTELLIGENCE_URL = "/api/v1/reg44-report-intelligence";
 
@@ -26,7 +27,7 @@ function useReg44ReportIntelligence(homeId = "home_oak", month?: string, spokenT
   if (typeof spokenTo === "number") params.set("spoken_to", String(spokenTo));
   return useQuery<{ data: { assessment: Reg44QualityStandardsAssessment; assembly: Reg44ReportAssembly; pack: { id: string; window: { start: string; end: string }; headline: Record<string, number> } } }>({
     queryKey: [REG44_REPORT_INTELLIGENCE_KEY, homeId, month ?? "", spokenTo ?? 0],
-    queryFn: () => fetch(`${REG44_REPORT_INTELLIGENCE_URL}?${params.toString()}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: { assessment: Reg44QualityStandardsAssessment; assembly: Reg44ReportAssembly; pack: { id: string; window: { start: string; end: string }; headline: Record<string, number> } } }>(`${REG44_REPORT_INTELLIGENCE_URL}?${params.toString()}`),
     staleTime: 2 * 60 * 1000,
   });
 }

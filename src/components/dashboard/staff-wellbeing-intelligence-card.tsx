@@ -18,12 +18,13 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { BurnoutRisk, ResilienceLevel, StaffWellbeingResult } from "@/lib/engines/staff-wellbeing-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── data hook (inlined from use-staff-wellbeing-intelligence) ─────────────
 
 function useStaffWellbeingIntelligence() {
   return useQuery<{ data: StaffWellbeingResult }>({
     queryKey: ["staff-wellbeing-intelligence"],
-    queryFn: () => fetch("/api/v1/staff-wellbeing-intelligence").then((r) => r.json()),
+    queryFn: () => api.get<{ data: StaffWellbeingResult }>("/api/v1/staff-wellbeing-intelligence"),
     refetchInterval: 60_000,
   });
 }

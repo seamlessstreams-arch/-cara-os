@@ -70,7 +70,7 @@ import { REG40_QUAL_STATUS_LABEL } from "@/types/extended";
 function useReg40StaffEntries() {
   return useQuery<Reg40StaffEntry[]>({
     queryKey: ["reg40-staff-entries"],
-    queryFn: () => fetch("/api/v1/reg40-staff-entries").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+    queryFn: () => api.get<Reg40StaffEntry[] | { data?: Reg40StaffEntry[] }>("/api/v1/reg40-staff-entries").then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
   });
 }
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

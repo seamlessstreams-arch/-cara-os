@@ -37,13 +37,14 @@ const NEEDS_ASSESSMENTS_API = "/api/v1/needs-assessments";
 function useNeedsAssessments(childId?: string) {
   return useQuery<{ data: NeedsAssessment[] }>({
     queryKey: childId ? [NEEDS_ASSESSMENTS_KEY, childId] : [NEEDS_ASSESSMENTS_KEY],
-    queryFn: () => fetch(childId ? `${NEEDS_ASSESSMENTS_API}?child_id=${childId}` : NEEDS_ASSESSMENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: NeedsAssessment[] }>(childId ? `${NEEDS_ASSESSMENTS_API}?child_id=${childId}` : NEEDS_ASSESSMENTS_API),
   });
 }
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const d = (n: number) => {

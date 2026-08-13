@@ -20,12 +20,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hook (inlined from the former use-lone-working-risk-assessments) ─ */
 
 function useLoneWorkingRiskAssessments() {
   return useQuery<{ data: LoneWorkingRiskAssessment[] }>({
     queryKey: ["lone-working-risk-assessments"],
-    queryFn: () => fetch("/api/v1/lone-working-risk-assessments").then((r) => r.json()),
+    queryFn: () => api.get<{ data: LoneWorkingRiskAssessment[] }>("/api/v1/lone-working-risk-assessments"),
   });
 }
 

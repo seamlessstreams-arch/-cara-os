@@ -37,7 +37,7 @@ const SIGNIFICANT_EVENTS_API = "/api/v1/significant-events";
 function useSignificantEvents(childId?: string) {
   return useQuery<{ data: SignificantEvent[] }>({
     queryKey: childId ? [SIGNIFICANT_EVENTS_KEY, childId] : [SIGNIFICANT_EVENTS_KEY],
-    queryFn: () => fetch(childId ? `${SIGNIFICANT_EVENTS_API}?child_id=${childId}` : SIGNIFICANT_EVENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SignificantEvent[] }>(childId ? `${SIGNIFICANT_EVENTS_API}?child_id=${childId}` : SIGNIFICANT_EVENTS_API),
   });
 }
 

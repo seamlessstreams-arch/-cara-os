@@ -34,13 +34,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const DATA_BREACH_RECORDS_KEY = "data-breach-records";
 const DATA_BREACH_RECORDS_API = "/api/v1/data-breach-records";
 
 function useDataBreachRecords() {
   return useQuery<{ data: DataBreachRecord[] }>({
     queryKey: [DATA_BREACH_RECORDS_KEY],
-    queryFn: () => fetch(DATA_BREACH_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DataBreachRecord[] }>(DATA_BREACH_RECORDS_API),
   });
 }
 

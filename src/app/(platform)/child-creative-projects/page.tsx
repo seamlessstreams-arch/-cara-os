@@ -44,6 +44,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const mediumIcon = (m: CreativeProjectMedium) => {
   if (m === "music_instrument" || m === "music_production" || m === "singing") return Music;
   if (m === "writing_poetry" || m === "writing_prose") return Pen;
@@ -81,7 +82,7 @@ export default function ChildCreativeProjectsPage() {
 
   const { data: response, isLoading } = useQuery<{ data: CreativeProjectRecord[] }>({
     queryKey: ["creative-project-records"],
-    queryFn: () => fetch("/api/v1/creative-project-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CreativeProjectRecord[] }>("/api/v1/creative-project-records"),
   });
   const data = response?.data ?? [];
 

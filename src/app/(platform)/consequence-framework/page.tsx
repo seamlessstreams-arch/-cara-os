@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const levelColour: Record<string, string> = {
   low: "bg-green-100 text-green-800",
   medium: "bg-amber-100 text-amber-800",
@@ -66,7 +67,7 @@ const exportCols: ExportColumn<ConsequenceRecord>[] = [
 export default function ConsequenceFrameworkPage() {
   const { data: res, isLoading } = useQuery<{ data: ConsequenceRecord[] }>({
     queryKey: ["consequence-records"],
-    queryFn: () => fetch("/api/v1/consequence-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ConsequenceRecord[] }>("/api/v1/consequence-records"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

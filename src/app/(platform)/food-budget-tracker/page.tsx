@@ -29,6 +29,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<FoodBudgetWeekRecord>[] = [
   { header: "Week", accessor: (r: FoodBudgetWeekRecord) => r.week_starting },
   { header: "Budget £", accessor: (r: FoodBudgetWeekRecord) => `£${r.weekly_budget}` },
@@ -42,7 +43,7 @@ const exportCols: ExportColumn<FoodBudgetWeekRecord>[] = [
 export default function FoodBudgetTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: FoodBudgetWeekRecord[] }>({
     queryKey: ["food-budget-week-records"],
-    queryFn: () => fetch("/api/v1/food-budget-week-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FoodBudgetWeekRecord[] }>("/api/v1/food-budget-week-records"),
   });
   const records = res?.data ?? [];
   const [sortBy, setSortBy] = useState("date");

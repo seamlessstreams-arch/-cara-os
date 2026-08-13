@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── dietary plans hook (inlined from use-dietary-plans) ───────────────────── */
 
 const DIETARY_PLANS_KEY = "dietary-plans";
@@ -41,7 +42,7 @@ const DIETARY_PLANS_KEY = "dietary-plans";
 function useDietaryPlans() {
   return useQuery<{ data: DietaryPlan[] }>({
     queryKey: [DIETARY_PLANS_KEY],
-    queryFn: () => fetch("/api/v1/dietary-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: DietaryPlan[] }>("/api/v1/dietary-plans"),
   });
 }
 

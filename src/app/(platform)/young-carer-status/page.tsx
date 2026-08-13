@@ -14,13 +14,14 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YoungCarerRecord } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 const YOUNG_CARER_RECORDS_KEY = "young-carer-records";
 
 function useYoungCarerRecords(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: YoungCarerRecord[] }>({
     queryKey: [YOUNG_CARER_RECORDS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/young-carer-records${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: YoungCarerRecord[] }>(`/api/v1/young-carer-records${qs}`),
   });
 }
 

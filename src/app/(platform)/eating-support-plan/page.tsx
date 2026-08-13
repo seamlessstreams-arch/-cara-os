@@ -33,13 +33,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const EATING_SUPPORT_PLANS_KEY = "eating-support-plans";
 const EATING_SUPPORT_PLANS_API = "/api/v1/eating-support-plans";
 
 function useEatingSupportPlans(childId?: string) {
   return useQuery<{ data: EatingSupportPlan[] }>({
     queryKey: childId ? [EATING_SUPPORT_PLANS_KEY, childId] : [EATING_SUPPORT_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${EATING_SUPPORT_PLANS_API}?child_id=${childId}` : EATING_SUPPORT_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EatingSupportPlan[] }>(childId ? `${EATING_SUPPORT_PLANS_API}?child_id=${childId}` : EATING_SUPPORT_PLANS_API),
   });
 }
 

@@ -47,7 +47,7 @@ const DEVICE_POLICY_API = "/api/v1/device-policy-records";
 function useDevicePolicyRecords(childId?: string) {
   return useQuery<{ data: DevicePolicyRecord[] }>({
     queryKey: childId ? [DEVICE_POLICY_KEY, childId] : [DEVICE_POLICY_KEY],
-    queryFn: () => fetch(childId ? `${DEVICE_POLICY_API}?child_id=${childId}` : DEVICE_POLICY_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DevicePolicyRecord[] }>(childId ? `${DEVICE_POLICY_API}?child_id=${childId}` : DEVICE_POLICY_API),
   });
 }
 

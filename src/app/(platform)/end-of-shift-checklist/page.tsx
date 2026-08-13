@@ -56,6 +56,7 @@ import {
 import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from use-shift-checklists (single call site) ──────────────────────
 // useCreateShiftChecklist dropped — zero call sites anywhere in src/
 const SHIFT_CHECKLISTS_KEY = "shift-checklists";
@@ -63,7 +64,7 @@ const SHIFT_CHECKLISTS_KEY = "shift-checklists";
 function useShiftChecklists() {
   return useQuery<{ data: ShiftChecklist[] }>({
     queryKey: [SHIFT_CHECKLISTS_KEY],
-    queryFn: () => fetch("/api/v1/shift-checklists").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ShiftChecklist[] }>("/api/v1/shift-checklists"),
   });
 }
 

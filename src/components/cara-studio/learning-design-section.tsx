@@ -52,7 +52,7 @@ const TOOLS = [
 export function LearningDesignSection() {
   const { data: review } = useQuery<{ queue: unknown[] }>({
     queryKey: ["cara-review-count"],
-    queryFn: async () => (await (await fetch("/api/cara/review")).json()).data,
+    queryFn: async () => (await api.get<any>("/api/cara/review")).data,
     refetchInterval: 120_000,
   });
   const { data: yp } = useYoungPeople();

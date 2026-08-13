@@ -25,6 +25,7 @@ import type {
 } from "@/lib/risk-escalation/types";
 import { cn } from "@/lib/utils";
 
+import { api } from "@/hooks/use-api";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 const KEY = "escalation-decisions";
@@ -218,7 +219,7 @@ export function EscalationDecisionPanel({ childId, childName }: { childId?: stri
   const qs = params.toString();
   const { data, isLoading } = useQuery<ListResponse>({
     queryKey: [KEY, childId ?? "", ""],
-    queryFn: () => fetch(`${URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    queryFn: () => api.get<ListResponse>(`${URL}${qs ? `?${qs}` : ""}`),
     staleTime: 15 * 1000,
   });
 

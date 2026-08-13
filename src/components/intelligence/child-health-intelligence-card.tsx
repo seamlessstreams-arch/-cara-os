@@ -18,13 +18,14 @@ import {
 import { cn } from "@/lib/utils";
 import type { ChildHealthIntelligenceResult, HealthStatus } from "@/lib/engines/child-health-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── Data (inlined from the former use-child-health-intelligence hook) ────────
 
 function useChildHealthIntelligence(childId: string | null) {
   return useQuery<{ data: ChildHealthIntelligenceResult }>({
     queryKey: ["child-health-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-health-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: ChildHealthIntelligenceResult }>(`/api/v1/child-health-intelligence?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

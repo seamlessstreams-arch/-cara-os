@@ -32,13 +32,14 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { TimelineEvent, TimelineEventCategory } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 const TIMELINE_EVENTS_KEY = "timeline-events";
 
 function useTimelineEvents(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: TimelineEvent[] }>({
     queryKey: [TIMELINE_EVENTS_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/timeline-events${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TimelineEvent[] }>(`/api/v1/timeline-events${qs}`),
   });
 }
 

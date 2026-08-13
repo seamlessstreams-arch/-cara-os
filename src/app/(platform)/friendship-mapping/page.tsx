@@ -44,6 +44,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const QUALITY_COLOURS: Record<FriendshipQuality, string> = {
@@ -94,7 +95,7 @@ const EXPORT_COLS: ExportColumn<FriendshipMap>[] = [
 export default function FriendshipMappingPage() {
   const { data: res, isLoading } = useQuery<{ data: FriendshipMap[] }>({
     queryKey: ["friendship-maps"],
-    queryFn: () => fetch("/api/v1/friendship-maps").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FriendshipMap[] }>("/api/v1/friendship-maps"),
   });
   const records = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

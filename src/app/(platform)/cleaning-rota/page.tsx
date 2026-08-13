@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const cleaningTypeColour: Record<string, string> = {
   routine: "bg-blue-100 text-blue-800",
   spot_clean: "bg-emerald-100 text-emerald-800",
@@ -53,7 +54,7 @@ const exportCols: ExportColumn<CleaningEntry>[] = [
 export default function CleaningRotaPage() {
   const { data: res, isLoading } = useQuery<{ data: CleaningEntry[] }>({
     queryKey: ["cleaning-entries"],
-    queryFn: () => fetch("/api/v1/cleaning-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CleaningEntry[] }>("/api/v1/cleaning-entries"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

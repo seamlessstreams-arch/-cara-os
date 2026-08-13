@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<GenogramEntry>[] = [
   { header: "Young Person", accessor: (r: GenogramEntry) => getYPName(r.child_id) },
   { header: "Generations Mapped", accessor: (r: GenogramEntry) => r.generations_represented.length.toString() },
@@ -61,7 +62,7 @@ const contactColour: Record<FamilyContactStatus, string> = {
 export default function FamilyTreeGenogramPage() {
   const { data: res, isLoading } = useQuery<{ data: GenogramEntry[] }>({
     queryKey: ["genogram-entries"],
-    queryFn: () => fetch("/api/v1/genogram-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: GenogramEntry[] }>("/api/v1/genogram-entries"),
   });
   const records = res?.data ?? [];
 

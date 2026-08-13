@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const ICON_MAP: Record<string, LucideIcon> = {
   flame: Flame,
   droplets: Droplets,
@@ -73,7 +74,7 @@ const offsetDate = (n: number) => {
 // Query config for BCP scenarios (inlined from use-bcp-scenarios hook)
 const BCP_SCENARIOS_QUERY = {
   queryKey: ["bcp-scenarios"],
-  queryFn: () => fetch("/api/v1/bcp-scenarios").then((r) => r.json()),
+  queryFn: () => api.get<any>("/api/v1/bcp-scenarios"),
 };
 
 export default function BusinessContinuityPage() {

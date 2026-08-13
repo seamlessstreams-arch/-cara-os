@@ -38,6 +38,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ChildVoiceDimensionsPanel } from "@/components/child-voice/child-voice-dimensions-panel";
 
+import { api } from "@/hooks/use-api";
 // ── data (inlined from the former use-child-feedback-loops hook) ─────────────
 
 const CHILD_FEEDBACK_LOOPS_KEY = "child-feedback-loops";
@@ -47,7 +48,7 @@ function useChildFeedbackLoops(childId?: string) {
   return useQuery<{ data: ChildFeedbackLoop[] }>({
     queryKey: childId ? [CHILD_FEEDBACK_LOOPS_KEY, childId] : [CHILD_FEEDBACK_LOOPS_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_FEEDBACK_LOOPS_API}?child_id=${childId}` : CHILD_FEEDBACK_LOOPS_API).then((r) => r.json()),
+      api.get<{ data: ChildFeedbackLoop[] }>(childId ? `${CHILD_FEEDBACK_LOOPS_API}?child_id=${childId}` : CHILD_FEEDBACK_LOOPS_API),
   });
 }
 

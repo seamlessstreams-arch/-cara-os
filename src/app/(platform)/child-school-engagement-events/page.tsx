@@ -28,13 +28,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SCHOOL_ENGAGEMENT_KEY = "school-engagement-events";
 const SCHOOL_ENGAGEMENT_API = "/api/v1/school-engagement-events";
 
 function useSchoolEngagementEvents(childId?: string) {
   return useQuery<{ data: SchoolEngagementEvent[] }>({
     queryKey: childId ? [SCHOOL_ENGAGEMENT_KEY, childId] : [SCHOOL_ENGAGEMENT_KEY],
-    queryFn: () => fetch(childId ? `${SCHOOL_ENGAGEMENT_API}?child_id=${childId}` : SCHOOL_ENGAGEMENT_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SchoolEngagementEvent[] }>(childId ? `${SCHOOL_ENGAGEMENT_API}?child_id=${childId}` : SCHOOL_ENGAGEMENT_API),
   });
 }
 

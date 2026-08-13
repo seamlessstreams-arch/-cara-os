@@ -26,6 +26,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ─── export columns ─── */
 const exportCols: ExportColumn<DailyRoutinePlan>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -43,7 +44,7 @@ const exportCols: ExportColumn<DailyRoutinePlan>[] = [
 export default function DailyRoutinePlansPage() {
   const { data: res, isLoading } = useQuery<{ data: DailyRoutinePlan[] }>({
     queryKey: ["daily-routine-plans"],
-    queryFn: () => fetch("/api/v1/daily-routine-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: DailyRoutinePlan[] }>("/api/v1/daily-routine-plans"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

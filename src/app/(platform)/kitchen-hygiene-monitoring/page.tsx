@@ -32,12 +32,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Kitchen hygiene checks query (inlined from the former hook wrapper) ─────
 function useKitchenHygieneChecks() {
   return useQuery<{ data: KitchenHygieneCheck[] }>({
     queryKey: ["kitchen-hygiene-checks"],
     queryFn: () =>
-      fetch("/api/v1/kitchen-hygiene-checks").then((r) => r.json()),
+      api.get<{ data: KitchenHygieneCheck[] }>("/api/v1/kitchen-hygiene-checks"),
   });
 }
 
