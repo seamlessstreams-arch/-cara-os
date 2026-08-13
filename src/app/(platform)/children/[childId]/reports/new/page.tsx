@@ -116,7 +116,7 @@ export default function ChildNewReportPage({
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
           <Link href={`/children/${childId}/reports`}>
-            <Button variant="ghost" size="sm">
+            <Button aria-label="Back" variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>

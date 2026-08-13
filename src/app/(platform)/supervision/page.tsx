@@ -334,7 +334,7 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
                   onChange={(e) => setNewAction(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addAction()}
                 />
-                <Button size="sm" variant="outline" onClick={addAction} className="shrink-0">
+                <Button aria-label="Add" size="sm" variant="outline" onClick={addAction} className="shrink-0">
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
               </div>

@@ -71,7 +71,7 @@ export function CaraStudioEvidencePanel({
                   <p className="text-xs font-medium leading-snug line-clamp-2">{source.title}</p>
                 </div>
                 {source.linked_record_id && (
-                  <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" asChild>
+                  <Button aria-label="Open" variant="ghost" size="icon" className="h-5 w-5 shrink-0" asChild>
                     <a href={`#source-${source.linked_record_id}`}>
                       <ExternalLink className="h-3 w-3" />
                     </a>
