@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Fraunces } from "next/font/google";
+import localFont from "next/font/local";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
@@ -7,23 +7,26 @@ import { OfflineBanner } from "@/components/pwa/offline-banner";
 import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
-// ── Typeface: Plus Jakarta Sans, self-hosted at build time by next/font
-// (no runtime Google requests — files are baked into the deployment).
-// Licensed Avenir Next LT Pro takes over automatically if its files are
-// added to /public/fonts (see globals.css).
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+// ── Typefaces: committed variable woff2s in src/fonts, served by next/font.
+// next/font/google only self-hosts at RUNTIME — it still fetches from Google
+// at BUILD time, and a fonts.gstatic rotation 404 failed CI with nine font
+// module errors (#914). These files remove the network from the build
+// entirely. Both faces are OFL-licensed; latin subset covers Western-European
+// diacritics. Licensed Avenir Next LT Pro takes over automatically if its
+// files are added to /public/fonts (see globals.css).
+const jakarta = localFont({
+  src: [{ path: "../fonts/plus-jakarta-sans-latin-wght.woff2", style: "normal", weight: "200 800" }],
   variable: "--font-jakarta",
   display: "swap",
 });
 
 // Marketing display face — warm, confident serif used only by the public
-// pages' mk-display classes. Self-hosted at build like Jakarta.
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+// pages' mk-display classes.
+const fraunces = localFont({
+  src: [
+    { path: "../fonts/fraunces-latin-wght.woff2", style: "normal", weight: "100 900" },
+    { path: "../fonts/fraunces-italic-latin-wght.woff2", style: "italic", weight: "100 900" },
+  ],
   variable: "--font-fraunces",
   display: "swap",
 });
