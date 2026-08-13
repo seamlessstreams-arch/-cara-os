@@ -7,6 +7,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 
+import { londonWeekStart } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
 
@@ -172,12 +173,9 @@ export function computeKeyWorkCompliance(
   childPlacements: { child_id: string; placement_type: string; start_date: string }[],
   now: Date,
 ): KeyWorkComplianceResult {
-  // Calculate start of current week (Monday 00:00)
-  const dayOfWeek = now.getDay();
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - mondayOffset);
-  weekStart.setHours(0, 0, 0, 0);
+  // Start of the current LONDON week (Monday) — the runtime-zone weekday put
+  // the first hour of a London Monday in last week on Vercel.
+  const weekStart = new Date(londonWeekStart(0, now) + "T00:00:00Z");
 
   const byChild: KeyWorkComplianceResult["by_child"] = [];
   let onTrack = 0;

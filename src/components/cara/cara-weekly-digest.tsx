@@ -12,7 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn, londonWeekStart } from "@/lib/utils";
 import Link from "next/link";
 import {
   Sparkles,
@@ -55,11 +55,9 @@ interface WeeklyDigest {
 // ── Demo data ──────────────────────────────────────────────────────────────
 
 function getDemoDigest(): WeeklyDigest {
-  const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay() + 1);
+  const weekStart = new Date(londonWeekStart() + "T00:00:00Z");
   const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
 
   return {
     weekLabel: `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} — ${weekEnd.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`,

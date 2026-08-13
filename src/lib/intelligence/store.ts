@@ -8,7 +8,7 @@
 // Supabase queries. The API route signatures stay identical.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { generateId } from "@/lib/utils";
+import { generateId, addWorkingDays } from "@/lib/utils";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import type {
   ChildExperienceSnapshot,
@@ -2080,15 +2080,6 @@ intelligenceStore.carePlans = [
 
 // ── Seed: Complaints & Representations ───────────────────────────────────────
 
-const addWorkingDays = (dateStr: string, days: number): string => {
-  const d = new Date(dateStr);
-  let added = 0;
-  while (added < days) {
-    d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
-  }
-  return d.toISOString().split("T")[0];
-};
 
 intelligenceStore.complaints = [
   {

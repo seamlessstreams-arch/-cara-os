@@ -23,7 +23,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 // utils.ts is where the London-correct helpers are defined.
-const ALLOWED = new Set(["src/lib/utils.ts"]);
+const ALLOWED = new Set([
+  "src/lib/utils.ts",
+  // Calendar month grids: getDay() on a LOCALLY CONSTRUCTED month start
+  // (new Date(y, m, 1)) is a calendar fact, identical in every zone.
+  "src/app/(platform)/calendar/page.tsx",
+  "src/components/calendar/calendar-month.tsx",
+]);
 
 const BANNED = [
   /new Date\(\)\.toISOString\(\)\.slice\(0,\s*10\)/,
@@ -33,6 +39,12 @@ const BANNED = [
   // 21:00 all summer and shift classification missed the waking-night hour.
   // Use londonHour(d) / londonTimeStr(d) from @/lib/utils.
   /\.getHours\(\)/,
+  // The WEEKDAY face (#909): weekday histograms misbucketed the BST night
+  // hour, week starts put a London Monday's first hour in LAST week, and
+  // working-day deadlines skipped the wrong weekends abroad. Use
+  // londonWeekday / londonWeekStart / addWorkingDays from @/lib/utils
+  // (getUTCDay on a date-only parse is fine and not matched).
+  /\.getDay\(\)/,
 ];
 
 function* walk(dir) {

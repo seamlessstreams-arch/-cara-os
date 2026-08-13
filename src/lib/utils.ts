@@ -166,6 +166,50 @@ export function londonTimeStr(d: Date = new Date()): string {
 }
 
 /**
+ * Weekday (0=Sun…6=Sat, matching getDay) of the London calendar day holding
+ * the instant — or of the date itself for a date-only string. getDay() is the
+ * RUNTIME zone: a 23:30Z Thursday in summer is London FRIDAY, and a date-only
+ * string read in a browser west of UTC reports the previous day's weekday
+ * all day.
+ */
+export function londonWeekday(d: Date | string = new Date()): number {
+  const date =
+    typeof d === "string"
+      ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(d) ? d + "T00:00:00Z" : d)
+      : d;
+  if (Number.isNaN(date.getTime())) return NaN;
+  return new Date(londonDateStr(date) + "T00:00:00Z").getUTCDay();
+}
+
+/**
+ * Monday of the London week containing the anchor, as YYYY-MM-DD, offset by
+ * whole weeks. Replaces five hand-rolled copies that mixed local getDay with a
+ * UTC slice — in the 00:00–00:59 BST window they returned the PREVIOUS week.
+ */
+export function londonWeekStart(offsetWeeks = 0, anchor: Date = new Date()): string {
+  const wd = londonWeekday(anchor);
+  const mondayDelta = wd === 0 ? -6 : 1 - wd;
+  const [y, m, d] = londonDateStr(anchor).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + mondayDelta + offsetWeeks * 7)).toISOString().slice(0, 10);
+}
+
+/**
+ * A working-days deadline from a date-only string (statutory response
+ * timescales). Pure UTC calendar arithmetic — the previous three local copies
+ * evaluated the weekend test in the RUNTIME zone, so a browser west of UTC
+ * skipped the wrong days and the deadline drifted.
+ */
+export function addWorkingDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? "T00:00:00Z" : ""));
+  let added = 0;
+  while (added < days) {
+    d.setUTCDate(d.getUTCDate() + 1);
+    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) added++;
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+/**
  * A date n days from today in London terms. Calendar arithmetic on the date
  * parts (not +n×86400000ms), so the clock changes can't shift the answer.
  */
