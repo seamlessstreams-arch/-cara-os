@@ -12,7 +12,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn, formatDate, generateId } from "@/lib/utils";
+import { cn, formatDate, generateId, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -141,7 +141,7 @@ function lacDaysUntil(dateStr: string | null): number | null {
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(target, today);
 }
 
 function overallRAG(plan: CarePlan): "green" | "amber" | "red" {

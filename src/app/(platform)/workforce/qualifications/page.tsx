@@ -18,7 +18,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import type { QualificationRecord } from "@/types/extended";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
   Award, CheckCircle2, Clock, AlertTriangle, Plus, Calendar,
@@ -113,7 +113,7 @@ const MANDATORY_QUALS = [
 function daysUntil(date: string): number {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const d = new Date(date);  d.setHours(0, 0, 0, 0);
-  return Math.round((d.getTime() - today.getTime()) / 86_400_000);
+  return londonDayDiff(d, today);
 }
 
 function expiryBadge(date: string) {

@@ -21,7 +21,7 @@ import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, FileText, Lock, Shield, Loader2,
 } from "lucide-react";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
@@ -242,7 +242,7 @@ export default function SubjectAccessRequestsPage() {
         <div className="space-y-3">
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
-            const daysRemaining = Math.ceil((new Date(r.deadline_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const daysRemaining = londonDayDiff(r.deadline_date);
             return (
               <Card key={r.id} className={cn("border-l-4", STATUS_BORDER[r.status])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>

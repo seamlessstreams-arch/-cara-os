@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -297,7 +298,7 @@ export function identifyEngagementAlerts(
   for (const c of contacts) {
     if (c.follow_up_date && !c.follow_up_completed && new Date(c.follow_up_date) < now) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(c.follow_up_date).getTime()) / 86400000,
+        -londonDayDiff(c.follow_up_date, now),
       );
       alerts.push({
         type: "follow_up_overdue",
@@ -339,7 +340,7 @@ export function identifyEngagementAlerts(
       .sort((a, b) => new Date(b.contact_date).getTime() - new Date(a.contact_date).getTime())[0];
     if (lastContact) {
       const daysSince = Math.round(
-        (now.getTime() - new Date(lastContact.contact_date).getTime()) / 86400000,
+        -londonDayDiff(lastContact.contact_date, now),
       );
       if (daysSince > 30) {
         alerts.push({

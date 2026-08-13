@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { TrackedDocument, DocExpiryCategory, DocExpiryStatus } from "@/types/extended";
 import { DOC_EXPIRY_CATEGORY_LABEL, DOC_EXPIRY_STATUS_LABEL } from "@/types/extended";
@@ -63,7 +63,7 @@ function computeStatus(expiryDate: string): DocExpiryStatus {
   today.setHours(0, 0, 0, 0);
   const expiry = new Date(expiryDate);
   expiry.setHours(0, 0, 0, 0);
-  const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = londonDayDiff(expiry, today);
   if (diffDays < 0) return "overdue";
   if (diffDays <= 30) return "expiring_soon";
   return "current";
@@ -76,7 +76,7 @@ function daysUntil(iso: string): number {
   today.setHours(0, 0, 0, 0);
   const target = new Date(iso);
   target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(target, today);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { analysePlacementStability } from "@/lib/cara/placement-stability-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { PlacementStabilityInput, PlacementHistory, DisruptionIndicator } from "@/lib/cara/placement-stability-intelligence";
+import { londonDayDiff } from "@/lib/utils";
 
 type SB = any;
 
@@ -80,7 +81,7 @@ async function fetchData(sb: any, childId: string): Promise<PlacementStabilityIn
 
   const currentPlacement = (rawPlacements ?? []).find((p: any) => !p.end_date);
   const currentStartDate = currentPlacement?.start_date ?? "2025-01-01";
-  const currentDays = Math.floor((Date.now() - new Date(currentStartDate).getTime()) / 86400000);
+  const currentDays = -londonDayDiff(currentStartDate);
 
   const { data: config } = await (sb.from("placement_stability_config") as SB)
     .select("*")

@@ -6,13 +6,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { StaffCompetenceRecord, CompetenceWarning, Urgency } from "@/types/intelligence.layer";
+import { londonDayDiff } from "@/lib/utils";
 
 export function getCompetenceWarnings(record: StaffCompetenceRecord): CompetenceWarning[] {
   const warnings: CompetenceWarning[] = [];
   const now = new Date();
   const daysSince = (dateStr?: string) => {
     if (!dateStr) return Infinity;
-    return Math.floor((now.getTime() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+    return -londonDayDiff(dateStr, now);
   };
 
   // Shift lead

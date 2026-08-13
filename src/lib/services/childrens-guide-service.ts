@@ -21,7 +21,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -351,7 +351,7 @@ export function identifyGuideAlerts(
     // ── Review overdue (high) ───────────────────────────────────────
     if (new Date(g.review_date) < now) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(g.review_date).getTime()) / 86400000,
+        -londonDayDiff(g.review_date, now),
       );
       alerts.push({
         type: "review_overdue",

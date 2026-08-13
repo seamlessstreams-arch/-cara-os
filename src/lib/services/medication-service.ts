@@ -6,6 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -293,7 +294,7 @@ export function computeControlledDrugAudit(
       // Never checked — calculate days since prescription start
       const startDate = new Date(p.start_date);
       const daysSinceStart = Math.floor(
-        (now.getTime() - startDate.getTime()) / 86400000,
+        -londonDayDiff(startDate),
       );
       if (daysSinceStart > 7) {
         overdueStockChecks.push({
@@ -306,7 +307,7 @@ export function computeControlledDrugAudit(
     } else {
       const lastCheck = new Date(p.last_stock_check);
       const daysSinceCheck = Math.floor(
-        (now.getTime() - lastCheck.getTime()) / 86400000,
+        -londonDayDiff(lastCheck),
       );
       if (daysSinceCheck > 7) {
         overdueStockChecks.push({
@@ -490,7 +491,7 @@ export function identifyMedicationAlerts(
     if (p.is_active && !p.end_date) {
       const startDate = new Date(p.start_date);
       const daysSinceStart = Math.floor(
-        (now.getTime() - startDate.getTime()) / 86400000,
+        -londonDayDiff(startDate),
       );
       if (daysSinceStart > 84) {
         alerts.push({

@@ -17,7 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -361,7 +361,7 @@ export function identifyTransitionAlerts(
       p.readiness_assessment.length === 0 &&
       p.planned_date
     ) {
-      const daysUntil = (new Date(p.planned_date).getTime() - now.getTime()) / 86400000;
+      const daysUntil = londonDayDiff(p.planned_date, now);
       if (daysUntil <= 30 && daysUntil > 0) {
         alerts.push({
           type: "no_readiness_assessment",
@@ -379,7 +379,7 @@ export function identifyTransitionAlerts(
       new Date(p.planned_date) < now
     ) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(p.planned_date).getTime()) / 86400000,
+        -londonDayDiff(p.planned_date, now),
       );
       alerts.push({
         type: "transition_overdue",

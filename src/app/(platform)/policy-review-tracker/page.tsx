@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import type { PolicyReviewRecord, PolicyReviewCycle, PolicyReviewStatus } from "@/types/extended";
@@ -63,7 +63,7 @@ function daysUntil(iso: string): number {
   today.setHours(0, 0, 0, 0);
   const target = new Date(iso);
   target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(target, today);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

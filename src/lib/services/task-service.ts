@@ -11,6 +11,7 @@ import type {
   ServiceResult,
 } from "@/types/operations";
 import * as fallback from "./task-store-fallback";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -431,7 +432,7 @@ export function computeTaskRiskScore(task: CsTask): TaskRiskAssessment {
 
   // 2. Overdue
   if (task.due_date) {
-    const daysUntilDue = (new Date(task.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    const daysUntilDue = londonDayDiff(task.due_date);
     if (daysUntilDue < 0) {
       const overdueScore = Math.min(30, Math.abs(daysUntilDue) * 3);
       score += overdueScore;

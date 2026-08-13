@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { LeaveRequest } from "@/types";
 import { getStaffName } from "@/lib/seed-data";
-import { cn, formatRelative, todayStr } from "@/lib/utils";
+import { cn, formatRelative, todayStr, londonDayDiff } from "@/lib/utils";
 import {
   CalendarOff, Loader2, CheckCircle2, Palmtree, Stethoscope,
   BookOpen, Clock, ChevronRight,
@@ -85,7 +85,7 @@ export function LeaveOverview() {
   const upcoming = requests.filter((r) => {
     if (r.status !== "approved") return false;
     if (r.start_date <= today) return false;
-    const diff = (new Date(r.start_date).getTime() - Date.now()) / 86400000;
+    const diff = londonDayDiff(r.start_date);
     return diff <= 14;
   }).sort((a, b) => a.start_date.localeCompare(b.start_date));
 

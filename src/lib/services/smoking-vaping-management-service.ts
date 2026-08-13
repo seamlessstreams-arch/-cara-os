@@ -24,6 +24,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -660,7 +661,7 @@ export function computeAlerts(
     ) {
       const reviewDate = new Date(r.next_review_date);
       if (reviewDate < today) {
-        const daysOverdue = Math.floor((today.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysOverdue = -londonDayDiff(reviewDate);
         alerts.push({
           type: "overdue_review",
           severity: "high",

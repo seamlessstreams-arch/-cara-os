@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import type { StaffCommunicationPreferenceRecord, StaffCommsContactMethod, StaffCommsFeedbackStyle } from "@/types/extended";
@@ -88,7 +88,7 @@ export default function StaffCommunicationPreferencesPage() {
   const dueForReview = records.filter((r) => {
     const reviewDate = new Date(r.last_review_date);
     const now = new Date();
-    const diffDays = (now.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = -londonDayDiff(reviewDate, now);
     return diffDays > 60;
   }).length;
   const adjustmentsInPlace = records.filter(
@@ -210,7 +210,7 @@ export default function StaffCommunicationPreferencesPage() {
             const Icon = CONTACT_ICONS[rec.preferred_contact_method];
             const reviewDate = new Date(rec.last_review_date);
             const now = new Date();
-            const daysSinceReview = Math.floor((now.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
+            const daysSinceReview = -londonDayDiff(reviewDate, now);
             const overdue = daysSinceReview > 60;
 
             return (

@@ -32,6 +32,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { londonDayDiff } from "@/lib/utils";
 
 /* ── inlined from @/hooks/use-epilepsy-seizure-plans ───────────────────── */
 
@@ -122,7 +123,7 @@ export default function ChildEpilepsySeizurePlanPage() {
         s +
         p.recent_seizure_log.filter((l) => {
           const dt = new Date(l.date);
-          const diff = (today.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24);
+          const diff = -londonDayDiff(dt);
           return diff <= 30;
         }).length,
       0,

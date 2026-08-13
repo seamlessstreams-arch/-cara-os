@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   BookOpen,
   GraduationCap,
@@ -144,7 +144,7 @@ export default function ChildTutoringPrivateTuitionPage() {
   const today = new Date();
   const reviewsDue90 = items.filter((r) => {
     const rd = new Date(r.review_date);
-    const diff = (rd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    const diff = londonDayDiff(rd, today);
     return diff >= 0 && diff <= 90;
   }).length;
 

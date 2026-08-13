@@ -17,7 +17,7 @@ import {
   ShieldCheck, AlertTriangle, Clock, CheckCircle2, FileText, Users,
   Calendar, Eye, Flame, Building2, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type {
   StatutoryCheckRecord,
@@ -120,7 +120,7 @@ export default function StatutoryChecksSummaryPage() {
   const compliantCount = records.filter(r => r.compliance_status === "compliant").length;
   const compliantPct = totalChecks > 0 ? Math.round((compliantCount / totalChecks) * 100) : null;
   const dueSoonCount = records.filter(r => {
-    const days = Math.ceil((new Date(r.next_due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const days = londonDayDiff(r.next_due_date);
     return days >= 0 && days <= 30;
   }).length;
   const overdueCount = records.filter(r => r.compliance_status === "overdue").length;

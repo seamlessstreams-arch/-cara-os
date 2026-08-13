@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type {
   OfstedEngagementRecord,
@@ -123,7 +123,7 @@ export default function OfstedEngagementLogPage() {
     .sort((a, b) => b.localeCompare(a))[0];
   const daysSinceLast = lastEngagementDate
     ? Math.floor(
-        (today.getTime() - new Date(lastEngagementDate).getTime()) / (1000 * 60 * 60 * 24)
+        -londonDayDiff(lastEngagementDate, today)
       )
     : 0;
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { londonDayDiff } from "@/lib/utils";
 
 export async function GET(
   _req: NextRequest,
@@ -35,7 +36,7 @@ export async function GET(
       email: c.email,
       stage: c.current_stage,
       risk_level: c.risk_level,
-      days_total: Math.max(0, Math.floor((Date.now() - new Date(c.created_at).getTime()) / 86400000)),
+      days_total: Math.max(0, -londonDayDiff(c.created_at)),
       compliance_score: checks.length > 0 ? Math.round((verified / checks.length) * 100) : null,
     };
   });
@@ -47,7 +48,7 @@ export async function GET(
   }
 
   const days_open = Math.max(0, Math.floor(
-    (Date.now() - new Date(vacancy.created_at).getTime()) / 86400000
+    -londonDayDiff(vacancy.created_at)
   ));
 
   return NextResponse.json({

@@ -40,6 +40,7 @@ import { STAFF_COMPETENCY_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { londonDayDiff } from "@/lib/utils";
 
 /* ── data hooks (inlined from use-staff-competency-records) ──────────── */
 
@@ -129,7 +130,7 @@ export default function StaffCompetencyPage() {
 
     const expiringSoon = allEntries.filter((e) => {
       if (!e.expiry_date || e.level === "expired") return false;
-      const days = Math.ceil((new Date(e.expiry_date).getTime() - Date.now()) / 86400000);
+      const days = londonDayDiff(e.expiry_date);
       return days > 0 && days <= 90;
     }).length;
 
@@ -148,7 +149,7 @@ export default function StaffCompetencyPage() {
         if (e.level === "expired") {
           items.push({ staffName: s.staff_name, area: e.area, type: "expired", expiryDate: e.expiry_date || "" });
         } else if (e.expiry_date) {
-          const days = Math.ceil((new Date(e.expiry_date).getTime() - Date.now()) / 86400000);
+          const days = londonDayDiff(e.expiry_date);
           if (days > 0 && days <= 90) {
             items.push({ staffName: s.staff_name, area: e.area, type: "expiring", expiryDate: e.expiry_date });
           }
@@ -449,7 +450,7 @@ export default function StaffCompetencyPage() {
                     const meta = LEVEL_META[entry.level];
                     const Icon = meta.icon;
                     const isExpired = entry.level === "expired";
-                    const isExpiring = entry.expiry_date && entry.level !== "expired" && Math.ceil((new Date(entry.expiry_date).getTime() - Date.now()) / 86400000) <= 90 && Math.ceil((new Date(entry.expiry_date).getTime() - Date.now()) / 86400000) > 0;
+                    const isExpiring = entry.expiry_date && entry.level !== "expired" && londonDayDiff(entry.expiry_date) <= 90 && londonDayDiff(entry.expiry_date) > 0;
 
                     return (
                       <div key={entry.id} className={cn(

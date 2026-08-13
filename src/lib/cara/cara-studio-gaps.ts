@@ -6,6 +6,7 @@
 
 import { db } from "@/lib/db/store";
 import type { CaraGenerationRequest, CaraGap, CaraGapType } from "@/types/cara-studio";
+import { londonDayDiff } from "@/lib/utils";
 
 const HOME_ID = "home_oak";
 const RISK_ASSESSMENT_STALE_DAYS = 90;
@@ -41,7 +42,7 @@ export async function detectGapsForRequest(
         })[0];
 
         const reviewDate = new Date(latest.review_date ?? latest.created_at ?? "");
-        const daysSinceReview = (Date.now() - reviewDate.getTime()) / 86400000;
+        const daysSinceReview = -londonDayDiff(reviewDate);
         if (daysSinceReview > RISK_ASSESSMENT_STALE_DAYS) {
           gaps.push(buildGap({
             home_id: homeId,
@@ -77,7 +78,7 @@ export async function detectGapsForRequest(
         const latest = recentArtifacts.sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
-        const daysSince = (Date.now() - new Date(latest.created_at).getTime()) / 86400000;
+        const daysSince = -londonDayDiff(latest.created_at);
         if (daysSince > OVERSIGHT_MISSING_DAYS) {
           gaps.push(buildGap({
             home_id: homeId,
@@ -111,7 +112,7 @@ export async function detectGapsForRequest(
         const latest = sessions.sort((a, b) =>
           new Date(b.date ?? b.created_at ?? "").getTime() - new Date(a.date ?? a.created_at ?? "").getTime()
         )[0];
-        const daysSince = (Date.now() - new Date(latest.date ?? latest.created_at ?? "").getTime()) / 86400000;
+        const daysSince = -londonDayDiff(latest.date ?? latest.created_at ?? "");
         if (daysSince > KEYWORK_MISSING_DAYS) {
           gaps.push(buildGap({
             home_id: homeId,

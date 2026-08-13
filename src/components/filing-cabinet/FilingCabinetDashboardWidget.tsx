@@ -15,6 +15,7 @@ import {
   getSensitivityLabel,
   getRetentionBasisLabel,
 } from "@/lib/filing-cabinet";
+import { londonDayDiff } from "@/lib/utils";
 
 // ── Types for API Response ──────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ function DocumentRow({
 }) {
   const expiryDate = new Date(doc.retentionExpiresAt);
   const daysRemaining = Math.floor(
-    (expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000),
+    londonDayDiff(expiryDate),
   );
   const daysColor =
     daysRemaining <= 0

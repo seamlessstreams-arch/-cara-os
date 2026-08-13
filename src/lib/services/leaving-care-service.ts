@@ -8,6 +8,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -344,7 +345,7 @@ export function identifyLeavingCareAlerts(
       const reviewDue = new Date(p.next_review_date);
       if (now > reviewDue) {
         const daysOverdue = Math.floor(
-          (now.getTime() - reviewDue.getTime()) / (24 * 60 * 60 * 1000),
+          -londonDayDiff(reviewDue),
         );
         alerts.push({
           type: "overdue_pathway_review",
@@ -407,7 +408,7 @@ export function identifyLeavingCareAlerts(
     if (p.target_leaving_date && p.status === "active") {
       const targetDate = new Date(p.target_leaving_date);
       const daysUntilLeaving = Math.floor(
-        (targetDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000),
+        londonDayDiff(targetDate, now),
       );
       if (daysUntilLeaving >= 0 && daysUntilLeaving <= 30) {
         alerts.push({
@@ -461,7 +462,7 @@ export function identifyLeavingCareAlerts(
       const nextDate = new Date(a.next_assessment_date);
       if (now > nextDate) {
         const daysOverdue = Math.floor(
-          (now.getTime() - nextDate.getTime()) / (24 * 60 * 60 * 1000),
+          -londonDayDiff(nextDate),
         );
         alerts.push({
           type: "overdue_independence_assessment",

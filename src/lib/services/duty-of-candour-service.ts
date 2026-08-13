@@ -14,7 +14,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -259,7 +259,7 @@ export function identifyCandourAlerts(
 
   for (const r of records) {
     const daysSinceIncident = Math.floor(
-      (now.getTime() - new Date(r.incident_date).getTime()) / 86400000,
+-londonDayDiff(new Date(r.incident_date), now),
     );
 
     // No verbal apology within 10 days

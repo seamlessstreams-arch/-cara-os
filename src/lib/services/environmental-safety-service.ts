@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -305,7 +306,7 @@ export function identifySafetyAlerts(
     // Overdue check
     if (c.next_due_date && new Date(c.next_due_date) < now && c.compliance_status !== "not_applicable") {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(c.next_due_date).getTime()) / 86400000,
+        -londonDayDiff(c.next_due_date, now),
       );
       alerts.push({
         type: "check_overdue",

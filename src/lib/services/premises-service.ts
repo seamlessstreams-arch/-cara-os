@@ -6,6 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -149,7 +150,7 @@ export function computePremisesCompliance(checks: PremisesCheck[], now: Date = n
     } else {
       const nextDue = new Date(lastDone);
       nextDue.setDate(nextDue.getDate() + ct.frequency_days);
-      const daysUntil = Math.floor((nextDue.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntil = londonDayDiff(nextDue, now);
 
       if (daysUntil < 0) {
         overdueChecks.push({
@@ -350,7 +351,7 @@ export function identifyPremisesAlerts(
       now.getTime() - new Date(r.reported_date).getTime() > threeDaysMs
     ) {
       const daysOpen = Math.round(
-        (now.getTime() - new Date(r.reported_date).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(r.reported_date), now),
       );
       alerts.push({
         type: "urgent_maintenance",
@@ -413,7 +414,7 @@ export function computeCheckSchedule(checks: PremisesCheck[], now: Date = new Da
     }
 
     const daysUntil = Math.floor(
-      (nextDue.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+londonDayDiff(nextDue, now),
     );
 
     schedule.push({

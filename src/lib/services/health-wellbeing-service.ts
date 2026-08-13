@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -262,7 +263,7 @@ export function computeHealthCompliance(
       });
     } else if (new Date(lastDentist) < twentySixWeeksAgo) {
       const daysOverdue = Math.floor(
-        (now.getTime() - new Date(lastDentist).getTime()) / 86400000 - 26 * 7,
+        -londonDayDiff(lastDentist, now) - 26 * 7,
       );
       overdueAppointments.push({
         child_id: p.child_id,
@@ -283,7 +284,7 @@ export function computeHealthCompliance(
       });
     } else if (new Date(lastOptician) < fiftyTwoWeeksAgo) {
       const daysOverdue = Math.floor(
-        (now.getTime() - new Date(lastOptician).getTime()) / 86400000 - 52 * 7,
+        -londonDayDiff(lastOptician, now) - 52 * 7,
       );
       overdueAppointments.push({
         child_id: p.child_id,

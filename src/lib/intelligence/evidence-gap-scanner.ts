@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { EvidenceGap, EvidenceGapType, Urgency } from "@/types/intelligence.layer";
+import { londonDayDiff } from "@/lib/utils";
 
 export interface EvidenceGapScanInput {
   homeId: string;
@@ -35,7 +36,7 @@ export function scanEvidenceGaps(input: EvidenceGapScanInput): EvidenceGapScanRe
   const now = new Date();
   const daysSince = (dateStr?: string) => {
     if (!dateStr) return Infinity;
-    return Math.floor((now.getTime() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+    return -londonDayDiff(dateStr, now);
   };
 
   // Key work gaps

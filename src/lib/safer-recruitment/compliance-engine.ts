@@ -20,6 +20,7 @@
 
 import type { Role } from "../permissions/types";
 import { rate } from "../metrics/rate";
+import { londonDayDiff } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -464,7 +465,7 @@ function isNearStart(startDate?: string): boolean {
   if (!startDate) return false;
   const start = new Date(startDate);
   const now = new Date();
-  const daysUntilStart = (start.getTime() - now.getTime()) / (24 * 60 * 60 * 1000);
+  const daysUntilStart = londonDayDiff(start, now);
   return daysUntilStart <= 14;
 }
 

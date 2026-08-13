@@ -6,6 +6,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -439,7 +440,7 @@ export function identifyComplaintAlerts(
     // Response overdue: open/investigating complaint older than 20 days
     if ((c.status === "open" || c.status === "investigating") && !c.date_responded) {
       if (now.getTime() - receivedDate > twentyDaysMs) {
-        const daysElapsed = Math.round((now.getTime() - receivedDate) / (1000 * 60 * 60 * 24));
+        const daysElapsed = -londonDayDiff(new Date(receivedDate), now);
         alerts.push({
           type: "response_overdue",
           severity: "high",
@@ -452,7 +453,7 @@ export function identifyComplaintAlerts(
     // Acknowledgement overdue: no date_acknowledged within 2 days
     if (!c.date_acknowledged) {
       if (now.getTime() - receivedDate > twoDaysMs) {
-        const daysElapsed = Math.round((now.getTime() - receivedDate) / (1000 * 60 * 60 * 24));
+        const daysElapsed = -londonDayDiff(new Date(receivedDate), now);
         alerts.push({
           type: "acknowledgement_overdue",
           severity: "medium",

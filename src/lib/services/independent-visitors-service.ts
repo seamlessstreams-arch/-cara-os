@@ -20,7 +20,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -303,7 +303,7 @@ export function identifyIVAlerts(
       new Date(a.next_visit_due) < now
     ) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(a.next_visit_due).getTime()) / (1000 * 60 * 60 * 24),
+        -londonDayDiff(a.next_visit_due, now),
       );
       alerts.push({
         severity: "high",
@@ -319,7 +319,7 @@ export function identifyIVAlerts(
       const assignmentDate = new Date(a.assignment_date).getTime();
       if (now.getTime() - assignmentDate > fourteenDaysMs) {
         const daysPending = Math.round(
-          (now.getTime() - assignmentDate) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(assignmentDate), now),
         );
         alerts.push({
           severity: "high",
@@ -381,7 +381,7 @@ export function identifyIVAlerts(
         const lastVisitDate = new Date(latestVisit.visit_date).getTime();
         if (now.getTime() - lastVisitDate > sixtyDaysMs) {
           const daysSince = Math.round(
-            (now.getTime() - lastVisitDate) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(lastVisitDate), now),
           );
           alerts.push({
             severity: "high",

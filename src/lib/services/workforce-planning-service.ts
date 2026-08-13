@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -316,7 +317,7 @@ export function identifyWorkforceAlerts(
   for (const v of vacancies) {
     if (v.status === "filled" || v.status === "withdrawn") continue;
     const daysSinceOpened = Math.round(
-      (now.getTime() - new Date(v.date_opened).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(v.date_opened), now),
     );
     if (daysSinceOpened > 60) {
       alerts.push({

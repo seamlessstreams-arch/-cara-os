@@ -8,6 +8,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import { matchedKeywords } from "@/lib/keyword-match";
+import { londonDayDiff } from "@/lib/utils";
 
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
@@ -178,7 +179,7 @@ export async function getChildVoiceSummary(childId: string): Promise<ChildVoiceS
   const lastCaptured = sortedByDate[0]?.sourceDate ?? null;
   let gapDays: number | null = null;
   if (lastCaptured) {
-    gapDays = Math.floor((Date.now() - new Date(lastCaptured).getTime()) / (1000 * 60 * 60 * 24));
+    gapDays = -londonDayDiff(lastCaptured);
   }
 
   return {

@@ -21,6 +21,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { getStore } from "@/lib/db/store";
+import { londonDayDiff } from "@/lib/utils";
 
 export type GapSeverity = "critical" | "warning" | "current";
 export type RecordingDomain =
@@ -93,7 +94,7 @@ const DOMAIN_LABELS: Record<RecordingDomain, string> = {
 function daysBetween(dateStr: string, now: Date): number {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 9999;
-  return Math.max(0, Math.floor((now.getTime() - d.getTime()) / 86_400_000));
+  return Math.max(0, -londonDayDiff(d));
 }
 
 function buildGap(

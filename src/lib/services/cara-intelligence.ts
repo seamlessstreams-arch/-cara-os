@@ -11,6 +11,7 @@ import type {
   CaraRecommendationSeverity, CaraRecommendationStatus,
   ServiceResult,
 } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -151,7 +152,7 @@ export function detectOverdueForms(
   );
 
   if (overdue.length > 0) {
-    const daysOverdue = overdue.map((s) => Math.floor((now.getTime() - new Date(s.due_date!).getTime()) / 86400000));
+    const daysOverdue = overdue.map((s) => -londonDayDiff(new Date(s.due_date!), now));
     const maxDays = Math.max(...daysOverdue);
 
     results.push({

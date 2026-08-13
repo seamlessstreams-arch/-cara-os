@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { getYPName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   ClipboardList, Loader2, AlertTriangle, CheckCircle2,
   ChevronRight, Calendar, Target, Flame, Clock,
@@ -43,7 +43,7 @@ function lacDaysUntil(dateStr: string | null): number | null {
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(target, today);
 }
 
 function overallRAG(plan: CarePlan): "green" | "amber" | "red" {

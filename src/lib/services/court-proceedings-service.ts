@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -282,7 +283,7 @@ export function identifyCourtAlerts(
       p.statement_status !== "late"
     ) {
       const deadline = new Date(p.statement_deadline);
-      const daysUntil = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntil = londonDayDiff(deadline, now);
       if (daysUntil <= 7 && daysUntil >= 0) {
         alerts.push({
           type: "statement_deadline_soon",

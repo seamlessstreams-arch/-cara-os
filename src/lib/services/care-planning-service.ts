@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -333,7 +334,7 @@ export function identifyCarePlanAlerts(
   for (const p of activePlans) {
     if (new Date(p.next_review_date) < now) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(p.next_review_date).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(p.next_review_date), now),
       );
       const severity = daysOverdue > 14 ? "critical" as const : "high" as const;
       alerts.push({

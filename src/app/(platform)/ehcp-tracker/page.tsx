@@ -30,7 +30,7 @@ import {
   ClipboardList,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { EhcpRecord, EhcpPlanStatus } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
@@ -135,7 +135,7 @@ export default function EhcpTrackerPage() {
     if (r.next_annual_review_due === "—") return false;
     const dueDate = new Date(r.next_annual_review_due);
     const now = new Date();
-    const days = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const days = londonDayDiff(dueDate, now);
     return days <= 30 && days >= 0;
   });
 

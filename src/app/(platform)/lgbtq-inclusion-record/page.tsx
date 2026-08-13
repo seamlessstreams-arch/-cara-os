@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useQuery } from "@tanstack/react-query";
 import type { LgbtqInclusionRecord, OutStatus } from "@/types/extended";
@@ -101,7 +101,7 @@ export default function LGBTQInclusionRecordPage() {
   const consistencyCount = data.filter((r) => r.pronouns_used_consistently && r.preferred_name_used_consistently).length;
   const activeSupport = data.filter((r) => r.external_support.length > 0).length;
   const reviewsDue = data.filter((r) => {
-    const days = (new Date(r.review_date).getTime() - Date.now()) / 86_400_000;
+    const days = londonDayDiff(r.review_date);
     return days <= 30;
   }).length;
 

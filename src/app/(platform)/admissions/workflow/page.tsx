@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
   ClipboardList, CheckCircle2, Clock, AlertTriangle,
   Users, FileText, Shield, Home, GraduationCap,
@@ -162,7 +162,7 @@ function getPhaseIndex(phase: AdmissionPhase): number {
 }
 
 function getDaysSince(date: string): number {
-  return Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+  return -londonDayDiff(date);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -16,6 +16,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -290,7 +291,7 @@ export function identifyReferralAlerts(
       (r.status === "received" || r.status === "under_review")
     ) {
       const daysSinceReferred = Math.round(
-        (now.getTime() - new Date(r.referral_date).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(r.referral_date), now),
       );
       if (daysSinceReferred > 2) {
         alerts.push({
@@ -310,7 +311,7 @@ export function identifyReferralAlerts(
       r.urgency !== "emergency"
     ) {
       const daysSinceReferred = Math.round(
-        (now.getTime() - new Date(r.referral_date).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(r.referral_date), now),
       );
       if (daysSinceReferred > 7) {
         alerts.push({

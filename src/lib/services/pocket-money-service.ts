@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -345,7 +346,7 @@ export function identifyFinancialAlerts(
     // Audit overdue
     if (p.next_audit_date && new Date(p.next_audit_date) < now) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(p.next_audit_date).getTime()) / 86400000,
+        -londonDayDiff(p.next_audit_date, now),
       );
       alerts.push({
         type: "audit_overdue",

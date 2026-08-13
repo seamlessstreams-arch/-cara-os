@@ -23,6 +23,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -342,7 +343,7 @@ export function identifyReg45Alerts(
       !r.distribution_date
     ) {
       const daysSinceApproval = Math.round(
-        (now.getTime() - new Date(r.approval_date).getTime()) / 86400000,
+        -londonDayDiff(r.approval_date, now),
       );
       if (daysSinceApproval > 28) {
         alerts.push({
@@ -456,7 +457,7 @@ export function identifyReg45Alerts(
       new Date(a.due_date) < now
     ) {
       const daysOverdue = Math.round(
-        (now.getTime() - new Date(a.due_date).getTime()) / 86400000,
+        -londonDayDiff(a.due_date, now),
       );
       alerts.push({
         type: "action_overdue",

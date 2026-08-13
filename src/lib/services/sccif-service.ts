@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -292,7 +293,7 @@ export function identifySCCIFAlerts(
   for (const ev of evaluations) {
     if (ev.status === "draft") {
       const created = new Date(ev.created_at);
-      const daysSinceCreation = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSinceCreation = -londonDayDiff(created);
       if (daysSinceCreation > 30) {
         alerts.push({
           type: "draft_too_long",

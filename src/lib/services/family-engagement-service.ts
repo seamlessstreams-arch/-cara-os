@@ -17,6 +17,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -395,7 +396,7 @@ export function identifyEngagementAlerts(
       new Date(r.last_contact_date) < thirtyDaysAgo
     ) {
       const daysSince = Math.round(
-        (now.getTime() - new Date(r.last_contact_date).getTime()) / (1000 * 60 * 60 * 24),
+-londonDayDiff(new Date(r.last_contact_date), now),
       );
       alerts.push({
         type: "no_recent_contact",

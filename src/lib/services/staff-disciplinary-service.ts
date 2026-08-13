@@ -12,6 +12,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -402,7 +403,7 @@ export function identifyDisciplinaryAlerts(
     // Overdue investigation — under_investigation for more than 28 days
     if (d.status === "under_investigation" && d.investigation_started_date) {
       const started = new Date(d.investigation_started_date).getTime();
-      const daysElapsed = Math.round((now.getTime() - started) / (1000 * 60 * 60 * 24));
+      const daysElapsed = -londonDayDiff(new Date(started), now);
       if (daysElapsed > 28) {
         alerts.push({
           type: "investigation_overdue",
@@ -420,7 +421,7 @@ export function identifyDisciplinaryAlerts(
       d.status === "reported"
     ) {
       const reportedDate = new Date(d.reported_date).getTime();
-      const daysElapsed = Math.round((now.getTime() - reportedDate) / (1000 * 60 * 60 * 24));
+      const daysElapsed = -londonDayDiff(new Date(reportedDate), now);
       if (daysElapsed > 3) {
         alerts.push({
           type: "investigation_not_started",
@@ -434,7 +435,7 @@ export function identifyDisciplinaryAlerts(
     // Long-running case — open for more than 90 days
     if (d.status !== "closed") {
       const reportedDate = new Date(d.reported_date).getTime();
-      const daysElapsed = Math.round((now.getTime() - reportedDate) / (1000 * 60 * 60 * 24));
+      const daysElapsed = -londonDayDiff(new Date(reportedDate), now);
       if (daysElapsed > 90) {
         alerts.push({
           type: "long_running_case",
@@ -465,7 +466,7 @@ export function identifyDisciplinaryAlerts(
       g.status !== "withdrawn"
     ) {
       const raisedDate = new Date(g.date_raised).getTime();
-      const daysElapsed = Math.round((now.getTime() - raisedDate) / (1000 * 60 * 60 * 24));
+      const daysElapsed = -londonDayDiff(new Date(raisedDate), now);
       if (daysElapsed > 28) {
         alerts.push({
           type: "grievance_overdue",

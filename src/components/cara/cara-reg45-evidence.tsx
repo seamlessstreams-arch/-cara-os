@@ -13,7 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import Link from "next/link";
 import {
   Scale,
@@ -74,7 +74,7 @@ const STATUS_CONFIG: Record<EvidenceStatus, { label: string; colour: string; bg:
 function getDemoReg45(): Reg45Summary {
   const now = new Date();
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  const daysLeft = Math.max(0, Math.ceil((monthEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  const daysLeft = Math.max(0, londonDayDiff(monthEnd, now));
 
   return {
     monthLabel: now.toLocaleDateString("en-GB", { month: "long", year: "numeric" }),

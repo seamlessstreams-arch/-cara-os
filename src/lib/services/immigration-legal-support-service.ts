@@ -24,6 +24,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -500,7 +501,7 @@ export function computeAlerts(
     if (r.deadline_date && r.status !== "Resolved" && r.status !== "Archived") {
       const deadline = new Date(r.deadline_date);
       if (deadline >= now && deadline <= sevenDays) {
-        const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+        const daysLeft = londonDayDiff(deadline, now);
         alerts.push({
           type: "deadline_imminent",
           severity: "critical",
@@ -642,7 +643,7 @@ export function computeAlerts(
     if (r.deadline_date && r.status !== "Resolved" && r.status !== "Archived") {
       const deadline = new Date(r.deadline_date);
       if (deadline > sevenDays && deadline <= thirtyDays) {
-        const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+        const daysLeft = londonDayDiff(deadline, now);
         alerts.push({
           type: "deadline_approaching",
           severity: "medium",

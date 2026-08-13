@@ -36,7 +36,7 @@ import {
   Activity,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { HealthcarePlan } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -113,7 +113,7 @@ export default function HealthcarePlansPage() {
     const today = new Date();
     const reviewsDue = plans.filter((p) => {
       const next = new Date(p.next_review_date);
-      const diff = (next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      const diff = londonDayDiff(next, today);
       return diff <= 30;
     }).length;
     return { total, allergiesCritical, regularMeds, reviewsDue };
@@ -206,7 +206,7 @@ export default function HealthcarePlansPage() {
               <p className="text-[--cs-warning]">
                 {plans.filter((p) => {
                   const next = new Date(p.next_review_date);
-                  const diff = (next.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+                  const diff = londonDayDiff(next);
                   return diff <= 30;
                 })
                   .map((p) => `${getYPName(p.child_id)} (due ${p.next_review_date})`)
@@ -247,7 +247,7 @@ export default function HealthcarePlansPage() {
               (a) => a.severity === "severe" || a.severity === "life_threatening",
             );
             const reviewSoon =
-              (new Date(plan.next_review_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 30;
+              londonDayDiff(plan.next_review_date) <= 30;
 
             const rowSev: RowSeverity = hasCriticalAllergy ? "risk" : reviewSoon ? "warning" : "success";
 

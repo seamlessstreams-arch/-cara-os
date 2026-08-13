@@ -7,7 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -292,7 +292,7 @@ export function identifyAdvocacyAlerts(
     if (r.status === "referred" && !r.allocated_date) {
       const referralDate = new Date(r.referral_date).getTime();
       if (now.getTime() - referralDate > fiveDaysMs) {
-        const daysElapsed = Math.round((now.getTime() - referralDate) / (1000 * 60 * 60 * 24));
+        const daysElapsed = -londonDayDiff(new Date(referralDate), now);
         alerts.push({
           severity: "high",
           category: "unallocated_referral",
@@ -309,7 +309,7 @@ export function identifyAdvocacyAlerts(
         ? new Date(r.last_contact_date).getTime()
         : new Date(r.referral_date).getTime();
       if (now.getTime() - lastContact > thirtyDaysMs) {
-        const daysElapsed = Math.round((now.getTime() - lastContact) / (1000 * 60 * 60 * 24));
+        const daysElapsed = -londonDayDiff(new Date(lastContact), now);
         alerts.push({
           severity: "medium",
           category: "no_recent_contact",

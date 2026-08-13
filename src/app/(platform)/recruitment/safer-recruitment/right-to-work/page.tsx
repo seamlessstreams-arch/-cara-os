@@ -12,7 +12,7 @@ import {
   Loader2, Info, Plus, Calendar, Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -286,7 +286,7 @@ function formatDate(d: string | null): string {
 
 function daysUntil(d: string | null): number | null {
   if (!d) return null;
-  return Math.floor((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return londonDayDiff(d);
 }
 
 function expiryChipColor(days: number): string {

@@ -16,7 +16,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -54,7 +54,7 @@ const FREQUENCY_DAYS: Record<NetworkContactFrequency, number> = {
 };
 
 function getContactFreshness(lastContact: string, frequency: NetworkContactFrequency): "green" | "amber" | "red" {
-  const daysSince = Math.floor((Date.now() - new Date(lastContact).getTime()) / (1000 * 60 * 60 * 24));
+  const daysSince = -londonDayDiff(lastContact);
   const expected = FREQUENCY_DAYS[frequency] ?? 30;
   if (daysSince <= expected) return "green";
   if (daysSince <= expected * 1.5) return "amber";

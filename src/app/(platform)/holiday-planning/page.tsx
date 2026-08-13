@@ -29,7 +29,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   MapPin, CheckCircle2, Clock, Calendar, AlertTriangle, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { TripPlan, TripType, TripStatus, TripRiskLevel, TripStaffRole } from "@/types/extended";
 import { TRIP_TYPE_LABEL, TRIP_STATUS_LABEL, TRIP_RISK_LEVEL_LABEL, TRIP_STAFF_ROLE_LABEL } from "@/types/extended";
@@ -124,7 +124,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
   const riskCfg = RISK_CONFIG[trip.risk_assessment.overall_risk];
 
   const daysUntil = useMemo(() => {
-    const diff = Math.ceil((new Date(trip.start_date).getTime() - Date.now()) / 86400000);
+    const diff = londonDayDiff(trip.start_date);
     return diff;
   }, [trip.start_date]);
 
@@ -727,7 +727,7 @@ export default function HolidayPlanningPage() {
             <CardContent>
               <div className="space-y-3">
                 {upcomingTrips.map((trip) => {
-                  const daysAway = Math.ceil((new Date(trip.start_date).getTime() - Date.now()) / 86400000);
+                  const daysAway = londonDayDiff(trip.start_date);
                   const statusCfg = STATUS_CONFIG[trip.status];
                   const allApproved = trip.manager_approval && trip.social_worker_approval.every((a) => a.approved);
                   const allConsent = trip.young_people.every((yp) => yp.consent_obtained);

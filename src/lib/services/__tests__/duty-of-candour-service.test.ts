@@ -1808,7 +1808,7 @@ describe("Edge cases", () => {
       expect(result.avg_days_to_verbal).toBe(0);
     });
 
-    it("daysSinceIncident for alerts uses floor division", () => {
+    it("daysSinceIncident counts London calendar days, not floored 24h windows", () => {
       // incident 11.5 days ago should floor to 11
       const record = makeCandourRecord({
         status: "identified",
@@ -1823,7 +1823,9 @@ describe("Edge cases", () => {
         (a) => a.type === "no_verbal_apology",
       );
       expect(alerts).toHaveLength(1);
-      expect(alerts[0].message).toContain("11 days");
+      // 2026-05-01 → 2026-05-13 is 12 calendar days; the old floor of the
+      // rolling 11.5-day window said "11".
+      expect(alerts[0].message).toContain("12 days");
     });
   });
 

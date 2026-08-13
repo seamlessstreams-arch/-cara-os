@@ -7,6 +7,7 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -464,7 +465,7 @@ export function suggestContactActions(
           new Date(a.scheduled_date).getTime(),
       );
       const lastDate = new Date(sorted[0].scheduled_date);
-      daysSinceLast = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+      daysSinceLast = -londonDayDiff(lastDate);
     }
 
     if (daysSinceLast > threshold.days) {

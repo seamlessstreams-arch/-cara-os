@@ -17,7 +17,7 @@ import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -80,7 +80,7 @@ const STATUS_COLOUR: Record<PIDebriefStatus, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function daysSince(iso: string) {
-  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  return -londonDayDiff(iso);
 }
 
 function debriefOverdue(debrief: PIDebrief) {

@@ -22,6 +22,7 @@
 // ── Types ───────────────────────────────────────────────────────────────────
 
 import { meanOf } from "@/lib/metrics/rate";
+import { londonDayDiff } from "@/lib/utils";
 
 export type ComplaintStatus = "open" | "investigating" | "resolved" | "escalated" | "withdrawn";
 
@@ -281,7 +282,7 @@ function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionR
   // Open complaints lingering
   const open = complaints.filter(c => c.status === "open" || c.status === "investigating");
   const longOpen = open.filter(c => {
-    const daysSince = Math.floor((Date.now() - new Date(c.date).getTime()) / 86400000);
+    const daysSince = -londonDayDiff(c.date);
     return daysSince > 14;
   });
   if (longOpen.length > 0) score -= longOpen.length * 10;

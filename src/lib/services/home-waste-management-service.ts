@@ -27,6 +27,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { londonDayDiff } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -573,7 +574,7 @@ export function computeAlerts(
     if (r.next_audit_date) {
       const nextDate = new Date(r.next_audit_date);
       if (!isNaN(nextDate.getTime()) && nextDate < now) {
-        const daysPast = Math.floor((now.getTime() - nextDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysPast = -londonDayDiff(nextDate);
         alerts.push({
           type: "audit_overdue",
           severity: "medium",

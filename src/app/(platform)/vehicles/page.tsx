@@ -13,7 +13,7 @@ import {
   Calendar, FileText, ChevronRight, AlertCircle,
   Users, MapPin, Gauge,
 } from "lucide-react";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -105,7 +105,7 @@ function daysUntil(date: string | null): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(date);
-  return Math.ceil((d.getTime() - today.getTime()) / 86400000);
+  return londonDayDiff(d, today);
 }
 
 function expiryStatus(date: string | null): "ok" | "warning" | "expired" {

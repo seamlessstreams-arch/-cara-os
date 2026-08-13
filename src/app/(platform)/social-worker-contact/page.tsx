@@ -23,7 +23,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Phone, Loader2,
 } from "lucide-react";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -231,7 +231,7 @@ export default function SocialWorkerContactPage() {
             const recs = records.filter(r => r.child_id === cid).sort((a, b) => b.date.localeCompare(a.date));
             const last = recs[0];
             const next = recs.map(r => r.next_scheduled_contact).filter(Boolean).sort()[0];
-            const daysSince = last ? Math.round((Date.now() - new Date(last.date).getTime()) / 86400000) : 999;
+            const daysSince = last ? -londonDayDiff(last.date) : 999;
             const rag = daysSince <= 7 ? "border-green-400" : daysSince <= 21 ? "border-amber-400" : "border-red-400";
             return (
               <Card key={cid} className={cn("border-l-4", rag)}>
@@ -397,7 +397,7 @@ export default function SocialWorkerContactPage() {
               <tbody>
                 {childIds.map(cid => {
                   const sv = records.filter(r => r.child_id === cid && r.contact_type === "statutory_visit").sort((a, b) => b.date.localeCompare(a.date))[0];
-                  const days = sv ? Math.round((Date.now() - new Date(sv.date).getTime()) / 86400000) : 999;
+                  const days = sv ? -londonDayDiff(sv.date) : 999;
                   const dFn = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
                   return (
                     <tr key={cid} className="border-t">
