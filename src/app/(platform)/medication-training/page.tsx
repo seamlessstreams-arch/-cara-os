@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hooks (inlined from the former use-med-training-records hook) ─ */
 
 const MED_TRAINING_RECORDS_KEY = "med-training-records";
@@ -46,7 +47,7 @@ function useCreateMedTrainingRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MedTrainingRecord>) =>
-      fetch(MED_TRAINING_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(MED_TRAINING_RECORDS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MED_TRAINING_RECORDS_KEY] }),
   });
 }

@@ -31,6 +31,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const TYPE_CLR: Record<HealthMonitoringType, string> = {
@@ -51,7 +52,7 @@ export default function HealthMonitoringPage() {
   });
   const createMut = useMutation({
     mutationFn: (data: Partial<HealthMonitoringEntry>) =>
-      fetch("/api/v1/health-monitoring", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/health-monitoring", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["health-monitoring"] }),
   });
   const records = useMemo(() => raw?.data ?? [], [raw]);

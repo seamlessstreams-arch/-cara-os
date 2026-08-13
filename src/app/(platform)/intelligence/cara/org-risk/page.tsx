@@ -67,7 +67,7 @@ export default function OrgRiskPage() {
   const objectives = objData?.data ?? [];
   const createObjective = useMutation({
     mutationFn: (data: Partial<ImprovementObjective>) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const orgRiskObjectives = objectives.filter((o) => o.source === "org_risk");

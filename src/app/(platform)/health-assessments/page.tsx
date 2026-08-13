@@ -34,6 +34,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ───────────────────────────────────────────────────── */
 const HEALTH_ASSESSMENTS_KEY = "health-assessments";
 const HEALTH_ASSESSMENTS_API = "/api/v1/health-assessments";
@@ -49,7 +50,7 @@ function useCreateHealthAssessment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<HealthAssessment>) =>
-      fetch(HEALTH_ASSESSMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(HEALTH_ASSESSMENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [HEALTH_ASSESSMENTS_KEY] }),
   });
 }
@@ -58,7 +59,7 @@ function useUpdateHealthAssessment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<HealthAssessment> & { id: string }) =>
-      fetch(HEALTH_ASSESSMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(HEALTH_ASSESSMENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [HEALTH_ASSESSMENTS_KEY] }),
   });
 }

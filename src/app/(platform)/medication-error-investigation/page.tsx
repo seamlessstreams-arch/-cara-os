@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_ERROR_INVESTIGATIONS_KEY = "medication-error-investigations";
 const MEDICATION_ERROR_INVESTIGATIONS_API = "/api/v1/medication-error-investigations";
 
@@ -44,11 +45,7 @@ function useCreateMedicationErrorInvestigation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MedicationErrorInvestigation>) =>
-      fetch(MEDICATION_ERROR_INVESTIGATIONS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post(MEDICATION_ERROR_INVESTIGATIONS_API, data),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: [MEDICATION_ERROR_INVESTIGATIONS_KEY] }),
   });

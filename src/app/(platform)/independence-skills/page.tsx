@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const PROF_META: Record<IndependenceSkillProficiency, { label: string; colour: string; order: number }> = {
@@ -64,11 +65,7 @@ export default function IndependenceSkillsPage() {
   const qc = useQueryClient();
   const createRecord = useMutation({
     mutationFn: (data: Partial<IndependenceSkillsRecord>) =>
-      fetch("/api/v1/independence-skills-records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/independence-skills-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const [isForm, setIsForm] = useState({ child_id: "", skill_name: "", category: "cooking" as IndependenceSkillCategory, proficiency: "not_started" as IndependenceSkillProficiency, date: todayStr(), evidence: "", next_step: "" });

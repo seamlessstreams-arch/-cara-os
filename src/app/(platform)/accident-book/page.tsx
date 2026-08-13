@@ -31,6 +31,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const PERSON_TYPE_LABEL: Record<AccidentPersonType, string> = { child: "Child", staff: "Staff", visitor: "Visitor", contractor: "Contractor" };
@@ -56,7 +57,7 @@ export default function AccidentBookPage() {
   });
   const createAccident = useMutation({
     mutationFn: (data: Partial<AccidentRecord>) =>
-      fetch("/api/v1/accident-book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/accident-book", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["accident-book"] }),
   });
   const data = result?.data ?? [];

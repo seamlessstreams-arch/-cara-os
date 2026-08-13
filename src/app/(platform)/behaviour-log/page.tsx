@@ -46,6 +46,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const INTENSITY_CONFIG: Record<BehaviourIntensity, { label: string; colour: string }> = {
@@ -68,7 +69,7 @@ export default function BehaviourLogPage() {
   const entries = result?.data ?? [];
   const createEntry = useMutation({
     mutationFn: (data: Partial<BehaviourEntry>) =>
-      fetch("/api/v1/behaviour-log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/behaviour-log", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-log"] }),
   });
 

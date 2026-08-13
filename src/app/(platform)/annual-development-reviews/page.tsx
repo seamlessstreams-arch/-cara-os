@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ──────────────────────────────────────────────────────────── */
 
 const ADR_KEY = "annual-development-reviews";
@@ -62,7 +63,7 @@ export default function AnnualDevelopmentReviewsPage() {
   const data = res?.data ?? [];
   const createMutation = useMutation({
     mutationFn: (data: Partial<AnnualDevelopmentReview>) =>
-      fetch(ADR_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(ADR_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ADR_KEY] }),
   });
 

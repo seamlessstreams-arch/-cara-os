@@ -44,6 +44,7 @@ import type {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_ERRORS_KEY = "medication-errors";
 const MEDICATION_ERRORS_API = "/api/v1/medication-errors";
 
@@ -61,11 +62,7 @@ function useCreateMedicationError() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MedicationError>) =>
-      fetch(MEDICATION_ERRORS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post(MEDICATION_ERRORS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_ERRORS_KEY] }),
   });
 }

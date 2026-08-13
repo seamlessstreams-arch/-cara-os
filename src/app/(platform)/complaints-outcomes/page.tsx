@@ -47,6 +47,7 @@ import {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── local colour maps ──────────────────────────────────────────────── */
 const OUTCOME_COLOUR: Record<ComplaintOutcome, string> = {
   upheld: "bg-red-50 text-red-700 border-red-200",
@@ -75,7 +76,7 @@ export default function ComplaintsOutcomesPage() {
   const entries = data?.data ?? [];
   const createMutation = useMutation({
     mutationFn: (data: Partial<ComplaintOutcomeRecord>) =>
-      fetch("/api/v1/complaint-outcome-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/complaint-outcome-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["complaint-outcome-records"] }),
   });
 

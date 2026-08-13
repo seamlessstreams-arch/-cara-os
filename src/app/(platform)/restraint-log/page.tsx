@@ -35,6 +35,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { RestraintType, RestraintReason, RestraintReviewStatus, RestraintRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const RESTRAINTS_KEY = "restraints";
 const RESTRAINTS_API = "/api/v1/restraints";
 
@@ -49,7 +50,7 @@ function useCreateRestraint() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<RestraintRecord>) =>
-      fetch(RESTRAINTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(RESTRAINTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [RESTRAINTS_KEY] }),
   });
 }

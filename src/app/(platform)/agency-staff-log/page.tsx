@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ──────────────────────────────────────────────────────────── */
 
 const AGENCY_STAFF_LOG_KEY = "agency-staff-log";
@@ -57,7 +58,7 @@ export default function AgencyStaffLogPage() {
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<AgencyStaffRecord>) =>
-      fetch(AGENCY_STAFF_LOG_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(AGENCY_STAFF_LOG_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [AGENCY_STAFF_LOG_KEY] }),
   });
   const records = result?.data ?? [];

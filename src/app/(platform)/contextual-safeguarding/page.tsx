@@ -42,6 +42,7 @@ import {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── colour / border maps (kept local) ────────────────────────────────────── */
 
 const CONTEXT_CLR: Record<ContextualContextType, string> = { location: "bg-blue-100 text-blue-800", peer_group: "bg-purple-100 text-purple-800", online_space: "bg-indigo-100 text-indigo-800", transport_route: "bg-amber-100 text-amber-800", school: "bg-green-100 text-green-800", community_facility: "bg-teal-100 text-teal-800" };
@@ -74,7 +75,7 @@ export default function ContextualSafeguardingPage() {
   const records = queryData?.data ?? [];
   const createMutation = useMutation({
     mutationFn: (data: Partial<ContextualSafeguardingRisk>) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 

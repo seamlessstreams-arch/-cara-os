@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-lado-referrals ─────────────────────────────── */
 
 function useLadoReferrals() {
@@ -49,11 +50,7 @@ function useCreateLadoReferral() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<LadoReferral>) =>
-      fetch("/api/v1/lado-referrals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/lado-referrals", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lado-referrals"] }),
   });
 }

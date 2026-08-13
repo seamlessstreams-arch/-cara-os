@@ -15,7 +15,12 @@ export async function apiFetch<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  // Absolute app paths ("/api/cara/…", or an "/api/v1/…" constant) pass
+  // through unprefixed, so every caller can route through this client — it is
+  // the one place that throws on a non-2xx instead of parsing the error body
+  // as if it were the result.
+  const url = path.startsWith("/api/") ? path : `${BASE}${path}`;
+  const res = await fetch(url, {
     ...options,
     headers: { "Content-Type": "application/json", ...userHeader(), ...(options?.headers ?? {}) },
   });

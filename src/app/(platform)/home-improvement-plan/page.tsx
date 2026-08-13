@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   reg44: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   ofsted: "bg-blue-50 text-blue-700 border-blue-200",
@@ -84,7 +85,7 @@ export default function HomeImprovementPlanPage() {
   const qc = useQueryClient();
   const createObjective = useMutation({
     mutationFn: (data: Partial<ImprovementObjective>) =>
-      fetch("/api/v1/improvement-objectives", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/improvement-objectives", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["improvement-objectives"] }),
   });
   const [objForm, setObjForm] = useState({ title: "", source: "self" as ObjectiveSource, priority: "medium" as ObjectivePriority, owner: "", target_date: "", notes: "" });

@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── device-policy record hooks (inlined from use-device-policy-records) ───── */
 
 const DEVICE_POLICY_KEY = "device-policy-records";
@@ -54,7 +55,7 @@ function useCreateDevicePolicyRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<DevicePolicyRecord>) =>
-      fetch(DEVICE_POLICY_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(DEVICE_POLICY_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DEVICE_POLICY_KEY] }),
   });
 }

@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data hooks (inlined from use-duty-log-entries) ────────────────────────── */
 
 const DUTY_LOG_ENTRIES_KEY = "duty-log-entries";
@@ -48,7 +49,7 @@ function useCreateDutyLogEntry() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<DutyLogEntry>) =>
-      fetch(DUTY_LOG_ENTRIES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(DUTY_LOG_ENTRIES_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DUTY_LOG_ENTRIES_KEY] }),
   });
 }

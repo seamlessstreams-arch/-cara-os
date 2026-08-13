@@ -39,6 +39,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<FireDrillType, { label: string; colour: string }> = {
@@ -69,7 +70,7 @@ export default function FireDrillsPage() {
   });
   const createDrill = useMutation({
     mutationFn: (data: Partial<FireDrill>) =>
-      fetch("/api/v1/fire-drills", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/fire-drills", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["fire-drills"] }),
   });
   const entries = fdData?.data ?? [];

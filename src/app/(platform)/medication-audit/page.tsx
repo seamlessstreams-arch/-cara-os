@@ -32,6 +32,7 @@ import type { MedicationAuditRecord, MedAuditType, MedAuditResult, MedAuditMedic
 import { MED_AUDIT_TYPE_LABEL, MED_AUDIT_RESULT_LABEL, MED_AUDIT_MEDICATION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_AUDITS_KEY = "medication-audits";
 const MEDICATION_AUDITS_API = "/api/v1/medication-audits";
 
@@ -49,11 +50,7 @@ function useCreateMedicationAudit() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MedicationAuditRecord>) =>
-      fetch(MEDICATION_AUDITS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post(MEDICATION_AUDITS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_AUDITS_KEY] }),
   });
 }

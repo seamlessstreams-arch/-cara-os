@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hooks (inlined from the former use-locality-risks wrapper) ───── */
 
 const LOCALITY_RISKS_KEY = "locality-risks";
@@ -39,11 +40,7 @@ function useUpdateLocalityRisk() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<LocalityRisk> & { id: string }) =>
-      fetch("/api/v1/locality-risks", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.put("/api/v1/locality-risks", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [LOCALITY_RISKS_KEY] }),
   });
 }

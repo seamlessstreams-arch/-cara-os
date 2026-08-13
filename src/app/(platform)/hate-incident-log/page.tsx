@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ───────────────────────────────────────────────────── */
 const HATE_INCIDENTS_KEY = "hate-incidents";
 const HATE_INCIDENTS_API = "/api/v1/hate-incidents";
@@ -38,7 +39,7 @@ function useCreateHateIncident() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<HateIncident>) =>
-      fetch(HATE_INCIDENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(HATE_INCIDENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
   });
 }
@@ -47,7 +48,7 @@ function useUpdateHateIncident() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<HateIncident> & { id: string }) =>
-      fetch(HATE_INCIDENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(HATE_INCIDENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
   });
 }

@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data hooks (inlined from use-dol-records) ─────────────────────────────── */
 
 const DOL_RECORDS_KEY = "dol-records";
@@ -50,7 +51,7 @@ function useCreateDoLRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<DoLRecord>) =>
-      fetch(DOL_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(DOL_RECORDS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DOL_RECORDS_KEY] }),
   });
 }

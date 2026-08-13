@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── local styling maps ───────────────────────────────────────────────────── */
 
 const DIR_CLR: Record<GiftDirection, string> = { received: "bg-green-100 text-green-800", given: "bg-blue-100 text-blue-800" };
@@ -50,7 +51,7 @@ export default function GiftsRegisterPage() {
   });
   const createMutation = useMutation({
     mutationFn: (data: Partial<GiftRecord>) =>
-      fetch("/api/v1/gift-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/gift-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gift-records"] }),
   });
   const data = queryData?.data ?? [];

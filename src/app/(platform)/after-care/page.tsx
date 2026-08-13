@@ -45,6 +45,7 @@ import type {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const LR_LABEL: Record<AfterCareLeftReason, string> = { age_18: "Turned 18", moved_placement: "Moved Placement", reunification: "Reunification", semi_independent: "Semi-Independent", adoption: "Adoption", other: "Other" };
@@ -73,7 +74,7 @@ export default function AfterCarePage() {
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<AfterCareRecord>) =>
-      fetch(AFTER_CARE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(AFTER_CARE_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [AFTER_CARE_KEY] }),
   });
   const records = result?.data ?? [];

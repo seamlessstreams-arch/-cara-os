@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<ActivityCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
@@ -348,7 +349,7 @@ export default function ActivitiesPage() {
   });
   const createActivity = useMutation({
     mutationFn: (data: Partial<Activity>) =>
-      fetch("/api/v1/activities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/activities", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["activities"] }),
   });
 

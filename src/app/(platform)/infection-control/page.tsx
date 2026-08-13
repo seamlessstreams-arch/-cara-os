@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps ─────────────────────────────────────────────────────────── */
 
 const SEV_CLR: Record<InfectionSeverity, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800", outbreak: "bg-red-200 text-red-900" };
@@ -47,7 +48,7 @@ export default function InfectionControlPage() {
   const qc = useQueryClient();
   const createInfection = useMutation({
     mutationFn: (data: Partial<InfectionRecord>) =>
-      fetch("/api/v1/infection-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/infection-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const data: InfectionRecord[] = res?.data ?? [];

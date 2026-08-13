@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
 const STATUS_COLOURS: Record<BelongingItemStatus, string> = {
@@ -88,7 +89,7 @@ export default function PersonalBelongingsPage() {
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<BelongingsRecord>) =>
-      fetch("/api/v1/belongings-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/belongings-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["belongings-records"] }),
   });
   const records: BelongingsRecord[] = res?.data ?? [];

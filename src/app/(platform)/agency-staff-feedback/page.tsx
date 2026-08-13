@@ -25,6 +25,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
+import { api } from "@/hooks/use-api";
 const verdictColour: Record<string, string> = {
   approved_for_repeat: "bg-green-100 text-green-800",
   approved_with_development_plan: "bg-blue-100 text-blue-800",
@@ -54,7 +55,7 @@ function useCreateAgencyFeedbackInline() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<AgencyFeedback>) =>
-      fetch("/api/v1/agency-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/agency-feedback", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [AGENCY_FEEDBACK_KEY] }),
   });
 }

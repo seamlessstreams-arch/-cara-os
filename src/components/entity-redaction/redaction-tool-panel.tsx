@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, ShieldOff, Copy, AlertTriangle, KeyRound } from "lucide-react";
 import type { Codebook, RedactionOutcome } from "@/lib/entity-redaction/types";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-entity-redaction ─────────────────────────── */
 
 const ENTITY_REDACTION_URL = "/api/v1/entity-redaction";
@@ -26,11 +27,7 @@ function useRedactDocuments() {
     { documents: { id: string; text: string }[]; mode?: "redact" | "rehydrate" }
   >({
     mutationFn: (payload) =>
-      fetch(ENTITY_REDACTION_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, useHomeEntities: true }),
-      }).then((r) => r.json()),
+      api.post(ENTITY_REDACTION_URL, { ...payload, useHomeEntities: true }),
   });
 }
 

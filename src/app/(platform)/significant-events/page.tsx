@@ -27,6 +27,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from use-significant-events (single call site) ─────────────────── */
 /* useUpdateSignificantEvent dropped — zero call sites anywhere in src/ */
 
@@ -44,7 +45,7 @@ function useCreateSignificantEvent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<SignificantEvent>) =>
-      fetch(SIGNIFICANT_EVENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(SIGNIFICANT_EVENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [SIGNIFICANT_EVENTS_KEY] }),
   });
 }

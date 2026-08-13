@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hooks (inlined from the former use-matching-referrals hook) ─── */
 
 const MATCHING_REFERRALS_KEY = "matching-referrals";
@@ -40,7 +41,7 @@ function useCreateMatchingReferral() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MatchingReferral>) =>
-      fetch(MATCHING_REFERRALS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(MATCHING_REFERRALS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MATCHING_REFERRALS_KEY] }),
   });
 }

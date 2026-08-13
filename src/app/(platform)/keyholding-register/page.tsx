@@ -40,11 +40,7 @@ function useCreateKeyRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<KeyRecord>) =>
-      fetch("/api/v1/key-records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/key-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY_RECORDS_KEY] }),
   });
 }
@@ -53,6 +49,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
 const KT_CLR: Record<KeyType, string> = {

@@ -41,6 +41,7 @@ import {
   PersonStanding, CircleDot, FileText, Link2,
 } from "lucide-react";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const REGION_LABELS: Record<BodyRegion, string> = {
@@ -106,12 +107,12 @@ export default function BodyMapPage() {
   });
   const createEntry = useMutation({
     mutationFn: (data: Partial<import("@/types/extended").BodyMapEntry>) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["body-map"] }),
   });
   const updateEntry = useMutation({
     mutationFn: (data: Partial<import("@/types/extended").BodyMapEntry> & { id: string }) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["body-map"] }),
   });
   const entries = result?.data ?? [];

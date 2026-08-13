@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from use-positive-handling ───────────────────────────────────────
 
 const PH_KEY = "positive-handling";
@@ -47,7 +48,7 @@ function useCreatePositiveHandlingPlan() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<PositiveHandlingPlan>) =>
-      fetch(PH_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(PH_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [PH_KEY] }),
   });
 }

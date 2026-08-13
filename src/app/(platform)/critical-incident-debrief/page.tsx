@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const IMPACT_CLR: Record<DebriefImpactLevel, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800", critical: "bg-red-200 text-red-900" };
@@ -51,7 +52,7 @@ export default function CriticalIncidentDebriefPage() {
   const records = raw?.data ?? [];
   const createRecord = useMutation({
     mutationFn: (data: Partial<CriticalIncidentDebriefRecord>) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const [cidForm, setCidForm] = useState({ incident_date: "", debrief_date: "", incident_category: "other" as DebriefIncidentCategory, impact_level: "medium" as DebriefImpactLevel, incident_summary: "" });

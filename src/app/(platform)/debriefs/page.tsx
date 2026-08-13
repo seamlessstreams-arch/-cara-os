@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── debrief record hooks (inlined from use-debrief-records) ─────────────── */
 
 const DEBRIEF_KEY = "debrief-records";
@@ -44,7 +45,7 @@ function useCreateDebriefRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<DebriefRecord>) =>
-      fetch(DEBRIEF_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(DEBRIEF_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DEBRIEF_KEY] }),
   });
 }

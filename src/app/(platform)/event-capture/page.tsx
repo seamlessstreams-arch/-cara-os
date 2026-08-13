@@ -143,10 +143,8 @@ function CaptureEventForm() {
     "duplicate-detection", "conflict-detection", "evidence-bank", "manager-inbox",
   ];
   const capture = useMutation({
-    mutationFn: (vars: { draft: any; force?: boolean }) => {
-      const res = fetch("/api/v1/event-capture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: vars.draft, force: vars.force }) });
-      return res.then((r) => r.json());
-    },
+    mutationFn: (vars: { draft: any; force?: boolean }) =>
+      api.post<{ data?: unknown }>("/api/v1/event-capture", { draft: vars.draft, force: vars.force }),
     onSuccess: () => {
       for (const key of SPINE_VIEWS) qc.invalidateQueries({ queryKey: [key] });
     },
