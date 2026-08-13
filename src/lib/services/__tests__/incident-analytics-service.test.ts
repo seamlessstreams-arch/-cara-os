@@ -169,11 +169,14 @@ describe("computeIncidentSummary", () => {
     expect(result.by_day_of_week[mondayIndex]).toBe(1);
   });
 
-  it("tracks by_hour from created_at", () => {
+  it("tracks by_hour from created_at, bucketed by the LONDON hour", () => {
     const inc = incident({ created_at: "2026-04-10T15:30:00Z" });
     const result = computeIncidentSummary([inc], PERIOD_START, PERIOD_END);
-    const hourIndex = new Date("2026-04-10T15:30:00Z").getHours();
-    expect(result.by_hour[hourIndex]).toBe(1);
+    // 15:30Z in April is 16:30 BST. The old expectation used getHours() —
+    // the RUNNER's zone — so it passed on a London machine and failed on
+    // UTC CI, which is exactly the bug the engine had.
+    expect(result.by_hour[16]).toBe(1);
+    expect(result.by_hour[15]).toBe(0);
   });
 
   it("counts physical_interventions from boolean flag", () => {
