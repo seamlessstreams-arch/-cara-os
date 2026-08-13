@@ -28,6 +28,11 @@ const ALLOWED = new Set(["src/lib/utils.ts"]);
 const BANNED = [
   /new Date\(\)\.toISOString\(\)\.slice\(0,\s*10\)/,
   /new Date\(\)\.toISOString\(\)\.split\(["']T["']\)\[0\]/,
+  // The HOUR face of the same class (#908): getHours()/getMinutes() are the
+  // RUNTIME zone — UTC on Vercel — so a 22:00 London incident bucketed as
+  // 21:00 all summer and shift classification missed the waking-night hour.
+  // Use londonHour(d) / londonTimeStr(d) from @/lib/utils.
+  /\.getHours\(\)/,
 ];
 
 function* walk(dir) {

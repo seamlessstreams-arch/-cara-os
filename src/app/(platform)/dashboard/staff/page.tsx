@@ -44,7 +44,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn, formatRelative, isOverdue, londonDisplay } from "@/lib/utils";
+import { cn, formatRelative, isOverdue, londonDisplay, londonHour, londonTimeStr } from "@/lib/utils";
 import type { Task, Shift, YoungPerson } from "@/types";
 import type { BuildingCheck, Vehicle, HandoverEntry } from "@/types/extended";
 import {
@@ -107,7 +107,7 @@ interface StaffDashData {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
-  const h = new Date().getHours();
+  const h = londonHour();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
@@ -120,7 +120,8 @@ function shiftProgress(shift: Shift): number {
   const now = new Date();
   const startMins = sh * 60 + sm;
   const endMins = eh * 60 + em + (eh < sh ? 24 * 60 : 0);
-  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const [lonH, lonM] = londonTimeStr(now).split(":").map(Number);
+  const nowMins = lonH * 60 + lonM;
   const pct = ((nowMins - startMins) / (endMins - startMins)) * 100;
   return Math.min(Math.max(pct, 0), 100);
 }

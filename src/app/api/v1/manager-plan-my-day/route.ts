@@ -10,6 +10,7 @@ import { computeManagerPlanDay, type PlanMyDayInput, type ManagerPlanDayResult }
 import { parsePlanNotes } from "@/lib/plan/plan-notes";
 import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
+import { londonTimeStr } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const FIXED_EXCLUDE = new Set(["task", "training", "shift"]);
@@ -96,7 +97,7 @@ async function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): Promis
     });
 
   // Start the timed plan from "now" (rounded) so it reflects the day remaining.
-  const scheduleFrom = `${String(nowDate.getHours()).padStart(2, "0")}:${String(nowDate.getMinutes()).padStart(2, "0")}`;
+  const scheduleFrom = londonTimeStr(nowDate);
 
   return { today, now, calendar, tasks, incidents, supervisions, training, keyworkGaps, scheduleFrom, addedItems };
 }

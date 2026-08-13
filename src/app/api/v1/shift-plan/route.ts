@@ -8,6 +8,7 @@ import { getCalendarFeed } from "@/lib/calendar/calendar-service";
 import { computeShiftPlan, type ShiftPeriod, type ShiftPlanChildWatchInput } from "@/lib/engines/shift-plan-engine";
 import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
+import { londonHour } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const EVENT_EXCLUDE = new Set(["task", "training", "shift"]);
@@ -16,7 +17,7 @@ function nextDay(date: string): string {
   return new Date(Date.parse(`${date}T00:00:00Z`) + 864e5).toISOString().slice(0, 10);
 }
 function currentPeriod(now: Date): ShiftPeriod {
-  const h = now.getHours();
+  const h = londonHour(now);
   return h >= 20 || h < 8 ? "night" : "day";
 }
 
