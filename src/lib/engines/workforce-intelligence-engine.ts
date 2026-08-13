@@ -200,9 +200,9 @@ function lastMonthEnd(today: string): string {
 
 function weekStart(today: string): string {
   const d = new Date(today + "T00:00:00Z");
-  const day = d.getDay();
+  const day = d.getUTCDay();
   const diff = day === 0 ? 6 : day - 1; // Monday = 0
-  d.setDate(d.getDate() - diff);
+  d.setUTCDate(d.getUTCDate() - diff);
   return d.toISOString().slice(0, 10);
 }
 

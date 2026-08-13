@@ -1,4 +1,4 @@
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonWeekday } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — STAFFING ADEQUACY ANALYSER
 //
@@ -348,7 +348,7 @@ export function analyseStaffingAdequacy(
   // Weekly pattern analysis
   const dayBuckets = new Map<number, { total: number; count: number; shortfalls: number }>();
   for (const assessment of shiftAssessments) {
-    const dow = new Date(assessment.date).getDay();
+    const dow = londonWeekday(assessment.date);
     if (!dayBuckets.has(dow)) dayBuckets.set(dow, { total: 0, count: 0, shortfalls: 0 });
     const bucket = dayBuckets.get(dow)!;
     bucket.total += assessment.assigned;

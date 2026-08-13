@@ -114,16 +114,15 @@ const COMPLAINT_EXPORT_COLS: ExportColumn<Complaint>[] = [
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function workingDaysRemaining(dueDateStr: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(dueDateStr);
-  due.setHours(0, 0, 0, 0);
-  if (due <= today) return 0;
+  // UTC-pure calendar iteration — the local-zone weekday test skipped the
+  // wrong days in a browser west of UTC.
+  const d = new Date(todayStr() + "T00:00:00Z");
+  const due = new Date(dueDateStr.slice(0, 10) + "T00:00:00Z");
+  if (Number.isNaN(due.getTime()) || due <= d) return 0;
   let count = 0;
-  const d = new Date(today);
   while (d < due) {
-    d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+    d.setUTCDate(d.getUTCDate() + 1);
+    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) count++;
   }
   return count;
 }

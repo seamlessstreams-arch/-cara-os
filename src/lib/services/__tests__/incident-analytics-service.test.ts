@@ -165,8 +165,9 @@ describe("computeIncidentSummary", () => {
     // 2026-04-13 is a Monday (getDay() = 1)
     const inc = incident({ created_at: "2026-04-13T10:00:00Z" });
     const result = computeIncidentSummary([inc], PERIOD_START, PERIOD_END);
-    const mondayIndex = new Date("2026-04-13T10:00:00Z").getDay();
-    expect(result.by_day_of_week[mondayIndex]).toBe(1);
+    // 2026-04-13 is a Monday (index 1) — pinned literally so the expectation
+    // can't inherit the runner's zone like the by_hour fixture did.
+    expect(result.by_day_of_week[1]).toBe(1);
   });
 
   it("tracks by_hour from created_at, bucketed by the LONDON hour", () => {

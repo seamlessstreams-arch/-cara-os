@@ -68,7 +68,7 @@ function useYoungPeople(status = "current") {
   });
 }
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow, londonWeekday } from "@/lib/utils";
 import type { CaraSafeguardingFlag, CaraRecommendation, KeyWorkSession, CaraAssessment, CaraOversight, ChildResource, CaraAuditEntry } from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
@@ -315,9 +315,8 @@ export default function CaraHubPage() {
   const pendingRecs = useMemo(() => (recData?.data ?? []).filter((r) => r.status === "pending"), [recData]);
   const urgentRecs = useMemo(() => pendingRecs.filter((r) => r.priority === "urgent"), [pendingRecs]);
 
-  const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay());
+  // Sunday-start week, pinned to the London calendar.
+  const weekStart = new Date(daysFromNow(-londonWeekday()) + "T00:00:00Z");
   const kwThisWeek = useMemo(
     () => (kwData?.data ?? []).filter((s) => new Date(s.created_at) >= weekStart),
     [kwData]

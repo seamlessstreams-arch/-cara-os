@@ -1,4 +1,4 @@
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonWeekday } from "@/lib/utils";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — PATTERN DETECTION ENGINE
 //
@@ -192,7 +192,7 @@ function detectTemporalPatterns(events: TimelineEvent[], childId: string): Detec
   if (negativeEvents.length >= 3) {
     const dayCount: number[] = [0, 0, 0, 0, 0, 0, 0];
     for (const event of negativeEvents) {
-      const day = new Date(event.date).getDay();
+      const day = londonWeekday(event.date);
       dayCount[day]++;
     }
 
@@ -212,8 +212,8 @@ function detectTemporalPatterns(events: TimelineEvent[], childId: string): Detec
         title: `${DAY_NAMES[maxDay]} pattern detected`,
         description: `${maxCount} incidents/concerns occurred on ${DAY_NAMES[maxDay]}s — significantly higher than other days.`,
         evidence: [{
-          eventIds: negativeEvents.filter((e) => new Date(e.date).getDay() === maxDay).map((e) => e.id),
-          dates: negativeEvents.filter((e) => new Date(e.date).getDay() === maxDay).map((e) => e.date),
+          eventIds: negativeEvents.filter((e) => londonWeekday(e.date) === maxDay).map((e) => e.id),
+          dates: negativeEvents.filter((e) => londonWeekday(e.date) === maxDay).map((e) => e.date),
           summary: `${maxCount} events on ${DAY_NAMES[maxDay]}s vs avg ${avgCount.toFixed(1)} per day`,
         }],
         suggestedActions: [
@@ -221,8 +221,8 @@ function detectTemporalPatterns(events: TimelineEvent[], childId: string): Detec
           `Consider additional staffing or support on ${DAY_NAMES[maxDay]}s`,
           `Discuss pattern with young person in key work session`,
         ],
-        firstDetected: negativeEvents.filter((e) => new Date(e.date).getDay() === maxDay)[0]?.date ?? "",
-        lastOccurrence: negativeEvents.filter((e) => new Date(e.date).getDay() === maxDay).slice(-1)[0]?.date ?? "",
+        firstDetected: negativeEvents.filter((e) => londonWeekday(e.date) === maxDay)[0]?.date ?? "",
+        lastOccurrence: negativeEvents.filter((e) => londonWeekday(e.date) === maxDay).slice(-1)[0]?.date ?? "",
         frequency: maxCount,
       });
     }
@@ -537,7 +537,7 @@ function detectCyclicalPatterns(events: TimelineEvent[], childId: string): Detec
   const dayGroups = new Map<number, string[]>();
 
   for (const event of sorted) {
-    const day = new Date(event.date).getDay();
+    const day = londonWeekday(event.date);
     if (!dayGroups.has(day)) dayGroups.set(day, []);
     dayGroups.get(day)!.push(event.date);
   }
@@ -564,7 +564,7 @@ function detectCyclicalPatterns(events: TimelineEvent[], childId: string): Detec
         title: `Weekly cycle — ${DAY_NAMES[day]} concerns`,
         description: `Negative events recur on ${DAY_NAMES[day]}s with weekly regularity (${weeklyCount} weekly recurrences detected).`,
         evidence: [{
-          eventIds: sorted.filter((e) => new Date(e.date).getDay() === day).map((e) => e.id),
+          eventIds: sorted.filter((e) => londonWeekday(e.date) === day).map((e) => e.id),
           dates,
           summary: `${weeklyCount} weekly recurrences on ${DAY_NAMES[day]}s`,
         }],

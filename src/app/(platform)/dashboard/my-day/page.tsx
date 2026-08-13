@@ -126,7 +126,7 @@ function useLeave(params?: {
       api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
   });
 }
-import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday, londonDisplay, londonHour } from "@/lib/utils";
+import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday, londonDisplay, londonHour, londonWeekStart } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 
@@ -185,11 +185,7 @@ function useActionOutcomes(params?: {
 }
 
 function getMondayOfThisWeek(): string {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d.toISOString().slice(0, 10);
+  return londonWeekStart();
 }
 
 export default function MyDayPage() {

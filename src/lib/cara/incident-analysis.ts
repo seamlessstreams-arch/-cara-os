@@ -18,7 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, meets, rate } from "@/lib/metrics/rate";
-import { todayStr } from "@/lib/utils";
+import { todayStr, londonWeekday } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -258,7 +258,7 @@ export function analyseIncidents(
   for (const r of records) {
     const hour = parseInt(r.time.split(":")[0], 10);
     hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1);
-    const dow = new Date(r.date).getDay();
+    const dow = londonWeekday(r.date);
     dayCounts.set(dow, (dayCounts.get(dow) ?? 0) + 1);
     if (dow === 0 || dow === 6) weekendCount++;
     else weekdayCount++;

@@ -4,20 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { generateId, todayStr } from "@/lib/utils";
+import { generateId, todayStr, addWorkingDays } from "@/lib/utils";
 import { runPostSaveIntelligence } from "@/lib/cara/post-save-intelligence";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
-// Working-day calculator
-function addWorkingDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr);
-  let added = 0;
-  while (added < days) {
-    d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
-  }
-  return d.toISOString().split("T")[0];
-}
 
 export async function GET(req: NextRequest) {
   const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";

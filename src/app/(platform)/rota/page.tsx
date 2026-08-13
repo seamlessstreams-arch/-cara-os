@@ -43,7 +43,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { cn, todayStr, formatDate } from "@/lib/utils";
+import { cn, todayStr, formatDate, londonWeekStart } from "@/lib/utils";
 import { SHIFT_TYPES, SHIFT_TYPE_LABELS } from "@/lib/constants";
 import { CaraRotaIntelligence } from "@/components/cara";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -146,11 +146,7 @@ const SHIFT_EXPORT_COLS: ExportColumn<Shift>[] = [
 ];
 
 function getMondayOfWeek(offset: number): string {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff + offset * 7);
-  return d.toISOString().slice(0, 10);
+  return londonWeekStart(offset);
 }
 
 export default function RotaPage() {

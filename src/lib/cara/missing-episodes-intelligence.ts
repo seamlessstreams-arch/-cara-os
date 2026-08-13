@@ -21,6 +21,7 @@
 
 import { weightedMeanOf } from "@/lib/metrics/rate";
 
+import { londonWeekday } from "@/lib/utils";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type EpisodeCategory = "missing" | "absent" | "away_without_permission";
@@ -359,7 +360,7 @@ function identifyPatterns(episodes: MissingEpisode[], input: MissingInput): Miss
   // Day-of-week pattern
   const dayCount: Record<number, number> = {};
   episodes.forEach(e => {
-    const dow = e.dayOfWeek ?? new Date(e.date).getDay();
+    const dow = e.dayOfWeek ?? londonWeekday(e.date);
     dayCount[dow] = (dayCount[dow] || 0) + 1;
   });
   const maxDay = Object.entries(dayCount).sort((a, b) => b[1] - a[1])[0];
