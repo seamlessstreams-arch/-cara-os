@@ -39,6 +39,7 @@ import {
   Eye, Shield, MapPin, XCircle, Phone, Loader2,
 } from "lucide-react";
 
+import { api } from "@/hooks/use-api";
 // ── Query Keys & API ──────────────────────────────────────────────────────────
 
 const APPOINTMENTS_KEY = "appointments";
@@ -90,13 +91,13 @@ export default function AppointmentsPage() {
 
   const createAppointment = useMutation({
     mutationFn: (data: Partial<Appointment>) =>
-      fetch(APPOINTMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(APPOINTMENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [APPOINTMENTS_KEY] }),
   });
 
   const updateAppointment = useMutation({
     mutationFn: (data: Partial<Appointment> & { id: string }) =>
-      fetch(APPOINTMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(APPOINTMENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [APPOINTMENTS_KEY] }),
   });
 

@@ -28,6 +28,7 @@ import type { MedicationStockCheck, StockCheckType, StockCheckStatus, StockCheck
 import { STOCK_CHECK_TYPE_LABEL, STOCK_CHECK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_STOCK_CHECKS_KEY = "medication-stock-checks";
 const MEDICATION_STOCK_CHECKS_API = "/api/v1/medication-stock-checks";
 
@@ -42,11 +43,7 @@ function useCreateMedicationStockCheck() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MedicationStockCheck>) =>
-      fetch(MEDICATION_STOCK_CHECKS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post(MEDICATION_STOCK_CHECKS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_STOCK_CHECKS_KEY] }),
   });
 }

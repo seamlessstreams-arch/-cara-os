@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data-protection record hooks (inlined from use-data-protection-records) ── */
 
 const DATA_PROTECTION_KEY = "data-protection-records";
@@ -58,7 +59,7 @@ function useCreateDataProtectionRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<DataProtectionRecord>) =>
-      fetch(DATA_PROTECTION_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(DATA_PROTECTION_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DATA_PROTECTION_KEY] }),
   });
 }

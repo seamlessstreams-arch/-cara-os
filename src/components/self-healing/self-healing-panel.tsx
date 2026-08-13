@@ -16,6 +16,7 @@ import { Loader2, Wrench, ShieldCheck, UserCheck, CheckCircle2 } from "lucide-re
 import type { HealEvent, IntegrityRepair, RepairSeverity, SelfHealingPlan } from "@/lib/self-healing/types";
 import { cn } from "@/lib/utils";
 
+import { api } from "@/hooks/use-api";
 const SELF_HEALING_KEY = "self-healing";
 const SELF_HEALING_URL = "/api/v1/self-healing";
 
@@ -36,11 +37,7 @@ function useApplySelfHealing() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      fetch(SELF_HEALING_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "apply" }),
-      }).then((r) => r.json()),
+      api.post<{ data?: { applied?: unknown[] } }>(SELF_HEALING_URL, { mode: "apply" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: [SELF_HEALING_KEY] }),
   });
 }
@@ -113,10 +110,10 @@ export function SelfHealingPanel() {
         )}
         {isError && <p className="py-4 text-sm text-[var(--cs-text-muted,#6c7a83)]">Couldn&apos;t run the integrity scan right now.</p>}
 
-        {apply.data?.data?.applied?.length > 0 && (
+        {(apply.data?.data?.applied?.length ?? 0) > 0 && (
           <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)] px-3 py-2.5 text-sm text-[var(--cs-teal)]">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
-            Healed {apply.data.data.applied.length} reference{apply.data.data.applied.length === 1 ? "" : "s"} — logged and reversible.
+            Healed {apply.data?.data?.applied?.length} reference{apply.data?.data?.applied?.length === 1 ? "" : "s"} — logged and reversible.
           </div>
         )}
 

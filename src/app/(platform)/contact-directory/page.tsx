@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<ContactCategory, { label: string; colour: string }> = {
@@ -66,7 +67,7 @@ export default function ContactDirectoryPage() {
   const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: (data: Partial<ContactDirectoryEntry>) =>
-      fetch("/api/v1/contact-directory-entries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/contact-directory-entries", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-directory-entries"] }),
   });
   const contacts: ContactDirectoryEntry[] = data?.data ?? [];

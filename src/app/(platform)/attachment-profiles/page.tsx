@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Query Config ──────────────────────────────────────────────────────── */
 const ATTACHMENT_PROFILES_KEY = "attachment-profiles";
 const ATTACHMENT_PROFILES_API = "/api/v1/attachment-profiles";
@@ -103,7 +104,7 @@ export default function AttachmentProfilesPage() {
 
   const createAP = useMutation({
     mutationFn: (data: Partial<AttachmentProfile>) =>
-      fetch(ATTACHMENT_PROFILES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(ATTACHMENT_PROFILES_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ATTACHMENT_PROFILES_KEY] }),
   });
 

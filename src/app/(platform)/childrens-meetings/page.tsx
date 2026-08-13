@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CHILDRENS_MEETING_RECORDS_KEY = "childrens-meeting-records";
 const CHILDRENS_MEETING_RECORDS_API = "/api/v1/childrens-meeting-records";
 
@@ -56,7 +57,7 @@ function useCreateChildrensMeetingRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<ChildrensMeetingRecord>) =>
-      fetch(CHILDRENS_MEETING_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(CHILDRENS_MEETING_RECORDS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [CHILDRENS_MEETING_RECORDS_KEY] }),
   });
 }

@@ -44,11 +44,7 @@ function useCreateReferralTrackerRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<ReferralTrackerRecord>) =>
-      fetch("/api/v1/referral-tracker-records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/referral-tracker-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["referral-tracker-records"] }),
   });
 }
@@ -60,6 +56,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── local colour map ────────────────────────────────────────────────── */
 
 const STATUS_META: Record<ReferralTrackerStatus, { colour: string }> = {

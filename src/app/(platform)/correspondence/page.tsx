@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const METHOD_CONFIG: Record<CorrespondenceMethod, { label: string; icon: React.ElementType; colour: string }> = {
@@ -79,12 +80,12 @@ export default function CorrespondencePage() {
   const entries = raw?.data ?? [];
   const createEntry = useMutation({
     mutationFn: (data: Partial<CorrespondenceEntry>) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const updateEntry = useMutation({
     mutationFn: (data: Partial<CorrespondenceEntry> & { id: string }) =>
-      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const [search, setSearch] = useState("");

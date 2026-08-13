@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const COMPLIANCE_CLR: Record<FoodHygieneCompliance, string> = { pass: "bg-green-100 text-green-800", fail: "bg-red-100 text-red-800", action_required: "bg-amber-100 text-amber-800", n_a: "bg-slate-100 text-[var(--cs-navy)]" };
@@ -46,7 +47,7 @@ export default function FoodHygienePage() {
   const records = res?.data ?? [];
   const createMutation = useMutation({
     mutationFn: (data: Partial<FoodHygieneRecord>) =>
-      fetch("/api/v1/food-hygiene-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/food-hygiene-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["food-hygiene-records"] }),
   });
 

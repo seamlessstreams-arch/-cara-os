@@ -32,6 +32,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { londonDisplay } from "@/lib/utils";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-cctv-accesses hook) ─────────────── */
 
 const CCTV_ACCESSES_KEY = "cctv-accesses";
@@ -48,7 +49,7 @@ function useCreateCCTVAccess() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<CCTVAccess>) =>
-      fetch(CCTV_ACCESSES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(CCTV_ACCESSES_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [CCTV_ACCESSES_KEY] }),
   });
 }

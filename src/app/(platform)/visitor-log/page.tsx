@@ -39,6 +39,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
+import { api } from "@/hooks/use-api";
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<VisitorCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
@@ -265,7 +266,7 @@ export default function VisitorLogPage() {
   });
   const createVisitor = useMutation({
     mutationFn: (data: Partial<VisitorEntry>) =>
-      fetch("/api/v1/visitors", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/visitors", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["visitors"] }),
   });
   const visitors = visData?.data ?? [];

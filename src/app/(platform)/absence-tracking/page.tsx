@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── local label / colour maps ──────────────────────────────────────── */
 const ABSENCE_TYPES: AbsenceType[] = [
   "authorised", "unauthorised", "medical", "exclusion",
@@ -63,7 +64,7 @@ export default function AbsenceTrackingPage() {
   });
   const createAbsence = useMutation({
     mutationFn: (data: Partial<AbsenceRecord>) =>
-      fetch("/api/v1/absence-tracking", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/absence-tracking", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["absence-tracking"] }),
   });
   const records = result?.data ?? [];

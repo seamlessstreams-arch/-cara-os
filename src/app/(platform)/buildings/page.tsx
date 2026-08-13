@@ -1071,18 +1071,12 @@ export default function BuildingsPage() {
   });
 
   const addCheck = useMutation({
-    mutationFn: async (body: Record<string, string>) => {
-      const res = await fetch("/api/v1/buildings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    mutationFn: (body: Record<string, string>) =>
+      api.post<{ linked_updates?: unknown[] }>("/api/v1/buildings", {
           ...body,
           building_id: "bld_oak_main",
           status: body.result === "pass" ? "completed" : body.result === "fail" ? "failed" : "completed",
         }),
-      });
-      return res.json();
-    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["buildings"] });
       setShowAddCheck(false);

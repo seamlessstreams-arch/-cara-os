@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PEP_KEY = "pep-records";
 const PEP_API = "/api/v1/pep-records";
 
@@ -42,7 +43,7 @@ function useCreatePepRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<PepRecord>) =>
-      fetch(PEP_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(PEP_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [PEP_KEY] }),
   });
 }

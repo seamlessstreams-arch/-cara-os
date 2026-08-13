@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ClothingAllowancesPage() {
@@ -43,7 +44,7 @@ export default function ClothingAllowancesPage() {
   const items = res?.data ?? [];
   const createMut = useMutation({
     mutationFn: (data: Partial<ClothingAllowanceRecord>) =>
-      fetch("/api/v1/clothing-allowance-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/clothing-allowance-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clothing-allowance-records"] }),
   });
 

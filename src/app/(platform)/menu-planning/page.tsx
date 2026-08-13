@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hooks (inlined from the former use-meal-plans hook) ─────────── */
 
 const MEAL_PLANS_KEY = "meal-plans";
@@ -44,7 +45,7 @@ function useCreateMealPlan() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<MealPlan>) =>
-      fetch(MEAL_PLANS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(MEAL_PLANS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MEAL_PLANS_KEY] }),
   });
 }

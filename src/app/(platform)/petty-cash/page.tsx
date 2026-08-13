@@ -27,6 +27,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PETTY_CASH_KEY = "petty-cash-entries";
 const PETTY_CASH_API = "/api/v1/petty-cash-entries";
 
@@ -41,7 +42,7 @@ function useCreatePettyCashEntry() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<PettyCashEntry>) =>
-      fetch(PETTY_CASH_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(PETTY_CASH_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [PETTY_CASH_KEY] }),
   });
 }

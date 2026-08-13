@@ -38,6 +38,7 @@ import type {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ──────────────────────────────────────────────────────────── */
 
 const ADVOCACY_KEY = "advocacy";
@@ -71,7 +72,7 @@ export default function AdvocacyPage() {
   });
   const createAdvocacy = useMutation({
     mutationFn: (data: Partial<AdvocacyRecord>) =>
-      fetch(ADVOCACY_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(ADVOCACY_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ADVOCACY_KEY] }),
   });
   const data = result?.data ?? [];

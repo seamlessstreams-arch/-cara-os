@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── default items per bag ──────────────────────────────────────────── */
 const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = [
   { name: "Placement Plan (copy)", required: true },
@@ -68,7 +69,7 @@ function useCreateGrabBag() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<GrabBag>) =>
-      fetch(GRAB_BAGS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(GRAB_BAGS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [GRAB_BAGS_KEY] }),
   });
 }
@@ -77,7 +78,7 @@ function useUpdateGrabBag() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<GrabBag> & { id: string }) =>
-      fetch(GRAB_BAGS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(GRAB_BAGS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [GRAB_BAGS_KEY] }),
   });
 }

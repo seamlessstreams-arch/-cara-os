@@ -23,6 +23,7 @@ import type {
   CaraAnnexASnapshot,
 } from "@/types/cara-studio";
 
+import { api } from "@/hooks/use-api";
 const HOME_ID = "home_oak";
 
 const READINESS_TONE: Record<CaraAnnexAReadiness, string> = {
@@ -164,7 +165,7 @@ export default function AnnexASnapshotPage() {
       period_end?: string;
       actor_id?: string;
       actor_role?: string;
-    }) => fetch("/api/v1/cara-studio/annex-a-snapshot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }).then((r) => r.json()),
+    }) => api.post("/api/v1/cara-studio/annex-a-snapshot", input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
     },
@@ -175,7 +176,7 @@ export default function AnnexASnapshotPage() {
       lock_note?: string | null;
       actor_id?: string;
       actor_role?: string;
-    }) => fetch("/api/v1/cara-studio/annex-a-snapshot-lock", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }).then((r) => r.json()),
+    }) => api.patch("/api/v1/cara-studio/annex-a-snapshot-lock", input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
     },

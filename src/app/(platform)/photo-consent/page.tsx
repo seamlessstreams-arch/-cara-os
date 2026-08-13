@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PHOTO_CONSENT_KEY = "photo-consent-records";
 const PHOTO_CONSENT_API = "/api/v1/photo-consent-records";
 
@@ -45,7 +46,7 @@ function useCreatePhotoConsentRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<PhotoConsentRecord>) =>
-      fetch(PHOTO_CONSENT_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(PHOTO_CONSENT_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [PHOTO_CONSENT_KEY] }),
   });
 }

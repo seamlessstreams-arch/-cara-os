@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 function useReg44ActionRecords() {
   return useQuery<Reg44ActionRecord[]>({
     queryKey: ["reg44-action-records"],
@@ -51,11 +52,7 @@ function useCreateReg44ActionRecord() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Reg44ActionRecord>) =>
-      fetch("/api/v1/reg44-action-records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/reg44-action-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reg44-action-records"] }),
   });
 }

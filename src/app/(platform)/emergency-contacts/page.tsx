@@ -86,7 +86,7 @@ function useCreateEmergencyChildContact() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<EmergencyChildContact>) =>
-      fetch(EMERGENCY_CHILD_CONTACTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(EMERGENCY_CHILD_CONTACTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EMERGENCY_CHILD_CONTACTS_KEY] }),
   });
 }
@@ -95,7 +95,7 @@ function useUpdateEmergencyChildContact() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<EmergencyChildContact> & { id: string }) =>
-      fetch(EMERGENCY_CHILD_CONTACTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(EMERGENCY_CHILD_CONTACTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EMERGENCY_CHILD_CONTACTS_KEY] }),
   });
 }

@@ -31,6 +31,7 @@ import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, Not
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toast } from "sonner";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from ex-hook use-notifiable-events ─────────────────────────────
 
 const NOTIFIABLE_EVENTS_KEY = "notifiable-events";
@@ -47,7 +48,7 @@ function useCreateNotifiableEvent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<NotifiableEvent>) =>
-      fetch(NOTIFIABLE_EVENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(NOTIFIABLE_EVENTS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [NOTIFIABLE_EVENTS_KEY] }),
   });
 }

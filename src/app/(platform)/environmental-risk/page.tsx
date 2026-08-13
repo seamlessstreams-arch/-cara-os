@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-environmental-risks ──────────────────────── */
 
 const ENVIRONMENTAL_RISKS_KEY = "environmental-risks";
@@ -58,7 +59,7 @@ function useCreateEnvironmentalRisk() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<EnvironmentalRisk>) =>
-      fetch(ENVIRONMENTAL_RISKS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(ENVIRONMENTAL_RISKS_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ENVIRONMENTAL_RISKS_KEY] }),
   });
 }

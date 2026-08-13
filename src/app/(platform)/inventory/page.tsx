@@ -29,6 +29,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const CATEGORIES: InventoryCategory[] = [
@@ -62,7 +63,7 @@ export default function InventoryPage() {
 
   const createItem = useMutation({
     mutationFn: (data: Partial<InventoryItem>) =>
-      fetch("/api/v1/inventory-items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/inventory-items", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
   const [search, setSearch] = useState("");

@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hooks (inlined from the former use-life-story-entries wrapper) ───── */
 
 const LIFE_STORY_ENTRIES_KEY = "life-story-entries";
@@ -51,11 +52,7 @@ function useCreateLifeStoryEntry() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<LifeStoryEntry>) =>
-      fetch("/api/v1/life-story-entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      api.post("/api/v1/life-story-entries", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [LIFE_STORY_ENTRIES_KEY] }),
   });
 }

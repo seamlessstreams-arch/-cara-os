@@ -132,7 +132,7 @@ export default function ContactSupervisionPage() {
   const qc = useQueryClient();
   const createSession = useMutation({
     mutationFn: (data: Partial<ContactSupervisionSession>) =>
-      fetch("/api/v1/contact-supervision-sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/contact-supervision-sessions", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-supervision-sessions"] }),
   });
 

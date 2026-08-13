@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const OBJECTIVE_KEY = "placement-objectives";
 const OBJECTIVE_API = "/api/v1/placement-objectives";
 
@@ -52,7 +53,7 @@ function useCreatePlacementObjective() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<PlacementObjective>) =>
-      fetch(OBJECTIVE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post(OBJECTIVE_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [OBJECTIVE_KEY] }),
   });
 }

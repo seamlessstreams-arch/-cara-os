@@ -21,6 +21,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Vehicle {
@@ -898,14 +899,8 @@ export default function VehiclesPage() {
   });
 
   const logCheck = useMutation({
-    mutationFn: async (body: Record<string, string | number>) => {
-      const res = await fetch("/api/v1/vehicles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      return res.json();
-    },
+    mutationFn: (body: Record<string, string | number>) =>
+      api.post<{ linked_updates?: unknown[] }>("/api/v1/vehicles", body),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       setShowCheckForm(false);

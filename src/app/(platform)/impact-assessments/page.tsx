@@ -29,6 +29,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ─────────────────────────────────────────────────── */
 const STATUSES: ImpactAssessmentStatus[] = ["draft", "in_progress", "completed", "approved", "declined"];
 
@@ -62,14 +63,8 @@ export default function ImpactAssessmentsPage() {
   // Inlined useCreateImpactAssessment
   const qc = useQueryClient();
   const createAssessment = useMutation({
-    mutationFn: async (data: Partial<ImpactAssessment>) => {
-      const res = await fetch("/api/v1/impact-assessments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      return res.json();
-    },
+    mutationFn: (data: Partial<ImpactAssessment>) =>
+      api.post("/api/v1/impact-assessments", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["impact-assessments"] }),
   });
   const [iaForm, setIaForm] = useState({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" as ImpactRecommendation });

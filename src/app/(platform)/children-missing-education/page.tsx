@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour maps (snake_case keys — match DB schema) ─────────────────────── */
 
 const STATUS_CLR: Record<CMEStatus, string> = {
@@ -65,7 +66,7 @@ export default function ChildrenMissingEducationPage() {
   const items = res?.data ?? [];
   const createMut = useMutation({
     mutationFn: (data: Partial<CMERecord>) =>
-      fetch("/api/v1/cme-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/cme-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cme-records"] }),
   });
 

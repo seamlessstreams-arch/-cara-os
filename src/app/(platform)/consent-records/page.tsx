@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Local meta (keeps color / icon info that doesn't belong in shared types) ─
 const CATEGORY_META: Record<ConsentCategory, { label: string; color: string }> = {
   medical:             { label: "Medical Treatment",      color: "bg-red-100 text-red-800" },
@@ -82,12 +83,12 @@ export default function ConsentRecordsPage() {
   const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: (data: Partial<ConsentRecord>) =>
-      fetch("/api/v1/consent-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/consent-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["consent-records"] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: Partial<ConsentRecord> & { id: string }) =>
-      fetch("/api/v1/consent-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+      api.post("/api/v1/consent-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["consent-records"] }),
   });
 
