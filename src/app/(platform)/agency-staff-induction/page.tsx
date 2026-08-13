@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ──────────────────────────────────────────────────────────── */
 
 const AGENCY_INDUCTIONS_KEY = "agency-inductions";
@@ -54,7 +55,7 @@ const TYPE_LABEL: Record<AgencyInductionType, string> = {
 export default function AgencyStaffInductionPage() {
   const { data: result, isLoading } = useQuery<{ data: AgencyInduction[] }>({
     queryKey: [AGENCY_INDUCTIONS_KEY],
-    queryFn: () => fetch(AGENCY_INDUCTIONS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AgencyInduction[] }>(AGENCY_INDUCTIONS_API),
   });
   const data = result?.data ?? [];
 

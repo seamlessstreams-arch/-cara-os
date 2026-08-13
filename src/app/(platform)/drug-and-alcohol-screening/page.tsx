@@ -26,13 +26,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SUBSTANCE_SCREENINGS_KEY = "substance-screenings";
 const SUBSTANCE_SCREENINGS_API = "/api/v1/substance-screenings";
 
 function useSubstanceScreenings(childId?: string) {
   return useQuery<{ data: SubstanceScreening[] }>({
     queryKey: childId ? [SUBSTANCE_SCREENINGS_KEY, childId] : [SUBSTANCE_SCREENINGS_KEY],
-    queryFn: () => fetch(childId ? `${SUBSTANCE_SCREENINGS_API}?child_id=${childId}` : SUBSTANCE_SCREENINGS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SubstanceScreening[] }>(childId ? `${SUBSTANCE_SCREENINGS_API}?child_id=${childId}` : SUBSTANCE_SCREENINGS_API),
   });
 }
 

@@ -66,7 +66,7 @@ export default function FireDrillsPage() {
 
   const { data: fdData, isLoading } = useQuery<{ data: FireDrill[] }>({
     queryKey: ["fire-drills"],
-    queryFn: () => fetch("/api/v1/fire-drills").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FireDrill[] }>("/api/v1/fire-drills"),
   });
   const createDrill = useMutation({
     mutationFn: (data: Partial<FireDrill>) =>

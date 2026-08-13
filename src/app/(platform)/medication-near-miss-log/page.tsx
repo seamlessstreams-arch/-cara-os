@@ -26,6 +26,7 @@ import type { MedicationNearMiss, NearMissType, NearMissRiskGrade } from "@/type
 import { NEAR_MISS_TYPE_LABEL, NEAR_MISS_RISK_GRADE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_NEAR_MISSES_KEY = "medication-near-misses";
 const MEDICATION_NEAR_MISSES_API = "/api/v1/medication-near-misses";
 
@@ -33,11 +34,9 @@ function useMedicationNearMisses(childId?: string) {
   return useQuery<{ data: MedicationNearMiss[] }>({
     queryKey: childId ? [MEDICATION_NEAR_MISSES_KEY, childId] : [MEDICATION_NEAR_MISSES_KEY],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: MedicationNearMiss[] }>(childId
           ? `${MEDICATION_NEAR_MISSES_API}?child_id=${childId}`
-          : MEDICATION_NEAR_MISSES_API,
-      ).then((r) => r.json()),
+          : MEDICATION_NEAR_MISSES_API,),
   });
 }
 

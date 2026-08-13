@@ -17,13 +17,14 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SafetyStatus, ChildBehaviourSafetyResult } from "@/lib/engines/child-behaviour-safety-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── Data (inlined from the former use-child-behaviour-safety-intelligence hook) ──
 
 function useChildBehaviourSafetyIntelligence(childId: string | null) {
   return useQuery<{ data: ChildBehaviourSafetyResult }>({
     queryKey: ["child-behaviour-safety-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-behaviour-safety-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: ChildBehaviourSafetyResult }>(`/api/v1/child-behaviour-safety-intelligence?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

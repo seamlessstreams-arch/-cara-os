@@ -49,7 +49,7 @@ const EQUALITY_INITIATIVES_KEY = "equality-initiatives";
 function useEqualityInitiatives() {
   return useQuery<{ data: EqualityInitiative[] }>({
     queryKey: [EQUALITY_INITIATIVES_KEY],
-    queryFn: () => fetch("/api/v1/equality-initiatives").then((r) => r.json()),
+    queryFn: () => api.get<{ data: EqualityInitiative[] }>("/api/v1/equality-initiatives"),
   });
 }
 
@@ -69,7 +69,7 @@ const EQUALITY_TRAINING_KEY = "equality-training";
 function useEqualityTraining() {
   return useQuery<{ data: EqualityTrainingRecord[] }>({
     queryKey: [EQUALITY_TRAINING_KEY],
-    queryFn: () => fetch("/api/v1/equality-training").then((r) => r.json()),
+    queryFn: () => api.get<{ data: EqualityTrainingRecord[] }>("/api/v1/equality-training"),
   });
 }
 

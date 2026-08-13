@@ -23,7 +23,7 @@ const MEMORIAL_OCCASION_API = "/api/v1/memorial-occasion-records";
 function useMemorialOccasionRecords(childId?: string) {
   return useQuery<{ data: MemorialOccasionRecord[] }>({
     queryKey: childId ? [MEMORIAL_OCCASION_KEY, childId] : [MEMORIAL_OCCASION_KEY],
-    queryFn: () => fetch(childId ? `${MEMORIAL_OCCASION_API}?child_id=${childId}` : MEMORIAL_OCCASION_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MemorialOccasionRecord[] }>(childId ? `${MEMORIAL_OCCASION_API}?child_id=${childId}` : MEMORIAL_OCCASION_API),
   });
 }
 import { MEMORIAL_OCCASION_TYPE_LABEL } from "@/types/extended";
@@ -31,6 +31,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const occasionColour: Record<MemorialOccasionType, string> = {
   bereavement_death: "bg-purple-100 text-purple-800",
   annual_remembrance: "bg-amber-100 text-amber-800",

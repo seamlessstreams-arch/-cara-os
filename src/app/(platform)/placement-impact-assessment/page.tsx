@@ -35,13 +35,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const IMPACT_KEY = "placement-impact-assessments";
 const IMPACT_API = "/api/v1/placement-impact-assessments";
 
 function usePlacementImpactAssessments() {
   return useQuery<{ data: PlacementImpactAssessment[] }>({
     queryKey: [IMPACT_KEY],
-    queryFn: () => fetch(IMPACT_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementImpactAssessment[] }>(IMPACT_API),
   });
 }
 

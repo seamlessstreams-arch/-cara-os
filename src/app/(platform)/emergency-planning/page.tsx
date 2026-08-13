@@ -58,7 +58,7 @@ const EMERGENCY_PLANS_API = "/api/v1/emergency-plans";
 function useEmergencyPlans() {
   return useQuery<{ data: EmergencyPlan[] }>({
     queryKey: [EMERGENCY_PLANS_KEY],
-    queryFn: () => fetch(EMERGENCY_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EmergencyPlan[] }>(EMERGENCY_PLANS_API),
   });
 }
 

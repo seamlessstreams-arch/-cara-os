@@ -53,7 +53,7 @@ export default function AccidentBookPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: AccidentRecord[] }>({
     queryKey: ["accident-book"],
-    queryFn: () => fetch("/api/v1/accident-book").then((r) => r.json()),
+    queryFn: () => api.get<{ data: AccidentRecord[] }>("/api/v1/accident-book"),
   });
   const createAccident = useMutation({
     mutationFn: (data: Partial<AccidentRecord>) =>

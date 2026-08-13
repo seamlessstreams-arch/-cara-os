@@ -70,7 +70,7 @@ export default function ContextualSafeguardingPage() {
 
   const { data: queryData, isLoading } = useQuery<{ data: ContextualSafeguardingRisk[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ContextualSafeguardingRisk[] }>(API),
   });
   const records = queryData?.data ?? [];
   const createMutation = useMutation({

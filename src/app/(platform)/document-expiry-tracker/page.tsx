@@ -29,13 +29,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const TRACKED_DOCUMENTS_KEY = "tracked-documents";
 const TRACKED_DOCUMENTS_API = "/api/v1/tracked-documents";
 
 function useTrackedDocuments() {
   return useQuery<{ data: TrackedDocument[] }>({
     queryKey: [TRACKED_DOCUMENTS_KEY],
-    queryFn: () => fetch(TRACKED_DOCUMENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TrackedDocument[] }>(TRACKED_DOCUMENTS_API),
   });
 }
 

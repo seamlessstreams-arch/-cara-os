@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { FamilyRelationshipsResult, RelationshipHealth } from "@/lib/engines/family-relationships-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
 const HEALTH_STYLES: Record<RelationshipHealth, { bg: string; text: string; border: string; label: string }> = {
@@ -45,7 +46,7 @@ export function FamilyRelationshipsCard({ childId }: { childId: string }) {
   const { data, isLoading } = useQuery<{ data: FamilyRelationshipsResult }>({
     queryKey: ["family-relationships-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/family-relationships-intelligence?childId=${encodeURIComponent(childId)}`).then((r) => r.json()),
+      api.get<{ data: FamilyRelationshipsResult }>(`/api/v1/family-relationships-intelligence?childId=${encodeURIComponent(childId)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

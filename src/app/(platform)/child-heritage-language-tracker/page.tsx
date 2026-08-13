@@ -39,6 +39,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const statusColour: Record<HeritageLanguageStatus, string> = {
   mother_tongue: "bg-amber-100 text-amber-800",
   fluent: "bg-emerald-100 text-emerald-800",
@@ -136,7 +137,7 @@ function SkillBar({ level, label }: { level: HeritageSkillLevel; label: string }
 export default function ChildHeritageLanguageTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: HeritageLanguageRecord[] }>({
     queryKey: ["heritage-language-records"],
-    queryFn: () => fetch("/api/v1/heritage-language-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HeritageLanguageRecord[] }>("/api/v1/heritage-language-records"),
   });
   const items = res?.data ?? [];
 

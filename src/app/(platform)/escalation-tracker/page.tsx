@@ -30,6 +30,7 @@ import { EscalationDecisionPanel } from "@/components/risk-escalation/escalation
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-escalations ──────────────────────────────── */
 
 const ESCALATIONS_KEY = "escalations";
@@ -37,7 +38,7 @@ const ESCALATIONS_KEY = "escalations";
 function useEscalations() {
   return useQuery<{ data: Escalation[] }>({
     queryKey: [ESCALATIONS_KEY],
-    queryFn: () => fetch("/api/v1/escalations").then((r) => r.json()),
+    queryFn: () => api.get<{ data: Escalation[] }>("/api/v1/escalations"),
   });
 }
 

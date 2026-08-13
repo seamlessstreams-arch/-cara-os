@@ -19,6 +19,7 @@ import type { DomainRAG, DomainScore, OverallWellbeingLevel } from "@/lib/engine
 import type { Child360Result } from "@/lib/engines/child-360-intelligence-engine";
 import type { Cpie360Spine } from "@/lib/cpie/child-360-spine";
 
+import { api } from "@/hooks/use-api";
 const WELLBEING_STYLES: Record<OverallWellbeingLevel, { bg: string; text: string; border: string; label: string }> = {
   thriving: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "THRIVING" },
   stable: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300", label: "STABLE" },
@@ -66,7 +67,7 @@ export function Child360IntelligenceCard({ childId }: { childId: string }) {
   // Query config inlined from use-child-360 hook
   const { data, isLoading } = useQuery<{ data: Child360Result; cpie?: Cpie360Spine | null }>({
     queryKey: ["child-360-intelligence", childId],
-    queryFn: () => fetch(`/api/v1/child-360-intelligence?childId=${childId}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: Child360Result; cpie?: Cpie360Spine | null }>(`/api/v1/child-360-intelligence?childId=${childId}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

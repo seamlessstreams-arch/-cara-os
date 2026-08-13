@@ -32,7 +32,7 @@ const LOCALITY_RISKS_KEY = "locality-risks";
 function useLocalityRisks() {
   return useQuery<{ data: LocalityRisk[] }>({
     queryKey: [LOCALITY_RISKS_KEY],
-    queryFn: () => fetch("/api/v1/locality-risks").then((r) => r.json()),
+    queryFn: () => api.get<{ data: LocalityRisk[] }>("/api/v1/locality-risks"),
   });
 }
 

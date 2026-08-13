@@ -18,6 +18,7 @@ import type { ReadinessGrade, InspectionReadinessResult } from "@/lib/engines/in
 
 import { formatRate } from "@/lib/metrics/rate";
 
+import { api } from "@/hooks/use-api";
 const GRADE_STYLES: Record<ReadinessGrade, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
   good: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300", label: "GOOD" },
@@ -52,7 +53,7 @@ const ACTION_STYLES: Record<string, string> = {
 export function InspectionReadinessIntelligenceCard() {
   const { data, isLoading } = useQuery<{ data: InspectionReadinessResult }>({
     queryKey: ["inspection-readiness-intelligence"],
-    queryFn: () => fetch("/api/v1/inspection-readiness-intelligence").then((r) => r.json()),
+    queryFn: () => api.get<{ data: InspectionReadinessResult }>("/api/v1/inspection-readiness-intelligence"),
     refetchInterval: 60_000,
   });
 

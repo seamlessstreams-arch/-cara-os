@@ -16,7 +16,7 @@ const RESOLUTION_MEETINGS_KEY = "resolution-meetings";
 function useResolutionMeetings() {
   return useQuery<{ data: ResolutionMeeting[] }>({
     queryKey: [RESOLUTION_MEETINGS_KEY],
-    queryFn: () => fetch("/api/v1/resolution-meetings").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ResolutionMeeting[] }>("/api/v1/resolution-meetings"),
   });
 }
 import {
@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const meetingTypeColour: Record<string, string> = {
   stage_1_informal: "bg-green-100 text-green-800",
   stage_2_formal: "bg-amber-100 text-amber-800",

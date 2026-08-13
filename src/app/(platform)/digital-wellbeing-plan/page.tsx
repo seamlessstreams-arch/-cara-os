@@ -40,12 +40,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const DIGITAL_PLANS_KEY = "digital-plans";
 
 function useDigitalPlans() {
   return useQuery<{ data: DigitalPlan[] }>({
     queryKey: [DIGITAL_PLANS_KEY],
-    queryFn: () => fetch("/api/v1/digital-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: DigitalPlan[] }>("/api/v1/digital-plans"),
   });
 }
 

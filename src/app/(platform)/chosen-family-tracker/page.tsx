@@ -37,12 +37,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CHOSEN_FAMILY_RECORDS_KEY = "chosen-family-records";
 
 function useChosenFamilyRecords() {
   return useQuery<{ data: ChosenFamilyRecord[] }>({
     queryKey: [CHOSEN_FAMILY_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/chosen-family-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChosenFamilyRecord[] }>("/api/v1/chosen-family-records"),
   });
 }
 

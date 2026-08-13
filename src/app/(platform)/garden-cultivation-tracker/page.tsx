@@ -36,6 +36,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
+import { api } from "@/hooks/use-api";
 const statusColour: Record<CropStatus, string> = {
   growing: "bg-green-100 text-green-800",
   ready: "bg-amber-100 text-amber-800",
@@ -69,7 +70,7 @@ const currentSeason = seasonOf(monthIndex);
 export default function GardenCultivationTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: GardenPlotRecord[] }>({
     queryKey: ["garden-plot-records"],
-    queryFn: () => fetch("/api/v1/garden-plot-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: GardenPlotRecord[] }>("/api/v1/garden-plot-records"),
   });
   const records = res?.data ?? [];
 

@@ -28,13 +28,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const BUDGET_KEY = "placement-budget-trackers";
 const BUDGET_API = "/api/v1/placement-budget-trackers";
 
 function usePlacementBudgetTrackers(childId?: string) {
   return useQuery<{ data: PlacementBudgetTracker[] }>({
     queryKey: childId ? [BUDGET_KEY, childId] : [BUDGET_KEY],
-    queryFn: () => fetch(childId ? `${BUDGET_API}?child_id=${childId}` : BUDGET_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementBudgetTracker[] }>(childId ? `${BUDGET_API}?child_id=${childId}` : BUDGET_API),
   });
 }
 

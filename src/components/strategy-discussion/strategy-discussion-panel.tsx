@@ -21,6 +21,7 @@ import {
 } from "@/lib/strategy-discussion/types";
 import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
 
+import { api } from "@/hooks/use-api";
 const STRATEGY_DISCUSSION_KEY = "strategy-discussion";
 const STRATEGY_DISCUSSION_URL = "/api/v1/strategy-discussion";
 
@@ -53,7 +54,7 @@ function useStrategyRequests(filter?: { childId?: string; status?: string }) {
   const qs = params.toString();
   return useQuery<ListResponse>({
     queryKey: [STRATEGY_DISCUSSION_KEY, filter?.childId ?? "", filter?.status ?? ""],
-    queryFn: () => fetch(`${STRATEGY_DISCUSSION_URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    queryFn: () => api.get<ListResponse>(`${STRATEGY_DISCUSSION_URL}${qs ? `?${qs}` : ""}`),
     staleTime: 15 * 1000,
   });
 }

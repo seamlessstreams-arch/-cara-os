@@ -19,13 +19,14 @@ import {
 import { cn } from "@/lib/utils";
 import type { ChildIndependenceResult, ReadinessStatus, SkillProficiency } from "@/lib/engines/child-independence-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── Data (inlined from the former use-child-independence-intelligence hook) ──
 
 function useChildIndependenceIntelligence(childId: string | null) {
   return useQuery<{ data: ChildIndependenceResult }>({
     queryKey: ["child-independence-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-independence-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: ChildIndependenceResult }>(`/api/v1/child-independence-intelligence?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

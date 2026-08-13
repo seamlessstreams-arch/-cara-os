@@ -48,7 +48,7 @@ const exportCols: ExportColumn<AgencyFeedback>[] = [
 const AGENCY_FEEDBACK_KEY = "agency-feedback";
 const AGENCY_FEEDBACK_QUERY = {
   queryKey: [AGENCY_FEEDBACK_KEY],
-  queryFn: () => fetch("/api/v1/agency-feedback").then((r) => r.json()),
+  queryFn: () => api.get<any>("/api/v1/agency-feedback"),
 };
 
 function useCreateAgencyFeedbackInline() {

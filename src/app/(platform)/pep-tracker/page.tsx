@@ -35,7 +35,7 @@ const PEP_API = "/api/v1/pep-records";
 function usePepRecords(childId?: string) {
   return useQuery<{ data: PepRecord[] }>({
     queryKey: childId ? [PEP_KEY, childId] : [PEP_KEY],
-    queryFn: () => fetch(childId ? `${PEP_API}?child_id=${childId}` : PEP_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PepRecord[] }>(childId ? `${PEP_API}?child_id=${childId}` : PEP_API),
   });
 }
 

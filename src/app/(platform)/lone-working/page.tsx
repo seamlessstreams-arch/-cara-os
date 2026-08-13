@@ -38,7 +38,7 @@ const LONE_WORKING_RECORDS_KEY = "lone-working-records";
 function useLoneWorkingRecords() {
   return useQuery<{ data: LoneWorkingRecord[] }>({
     queryKey: [LONE_WORKING_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/lone-working-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: LoneWorkingRecord[] }>("/api/v1/lone-working-records"),
   });
 }
 

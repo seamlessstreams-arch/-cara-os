@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<CulturalReligiousMentor>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
   { header: "Mentor", accessor: (r) => r.mentor_name },
@@ -82,7 +83,7 @@ const roleColour: Record<CulturalMentorRole, string> = {
 export default function ChildCulturalReligiousMentorPage() {
   const { data: response, isLoading } = useQuery<{ data: CulturalReligiousMentor[] }>({
     queryKey: ["cultural-religious-mentors"],
-    queryFn: () => fetch("/api/v1/cultural-religious-mentors").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CulturalReligiousMentor[] }>("/api/v1/cultural-religious-mentors"),
   });
   const records = response?.data ?? [];
 

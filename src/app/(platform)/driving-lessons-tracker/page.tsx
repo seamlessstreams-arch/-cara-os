@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data hook (inlined from use-driving-records) ──────────────────────────── */
 
 const DRIVING_RECORDS_KEY = "driving-records";
@@ -32,7 +33,7 @@ const DRIVING_RECORDS_API = "/api/v1/driving-records";
 function useDrivingRecords(childId?: string) {
   return useQuery<{ data: DrivingRecord[] }>({
     queryKey: childId ? [DRIVING_RECORDS_KEY, childId] : [DRIVING_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${DRIVING_RECORDS_API}?child_id=${childId}` : DRIVING_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DrivingRecord[] }>(childId ? `${DRIVING_RECORDS_API}?child_id=${childId}` : DRIVING_RECORDS_API),
   });
 }
 

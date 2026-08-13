@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ─── date helper (for overdue checks) ─── */
 const today = () => todayStr();
 
@@ -61,7 +62,7 @@ const exportCols: ExportColumn<GovernanceMeeting>[] = [
 export default function GovernanceMeetingMinutesPage() {
   const { data: res, isLoading } = useQuery<{ data: GovernanceMeeting[] }>({
     queryKey: ["governance-meetings"],
-    queryFn: () => fetch("/api/v1/governance-meetings").then((r) => r.json()),
+    queryFn: () => api.get<{ data: GovernanceMeeting[] }>("/api/v1/governance-meetings"),
   });
   const records = res?.data ?? [];
 

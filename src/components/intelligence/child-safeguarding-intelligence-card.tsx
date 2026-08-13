@@ -19,11 +19,12 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ChildSafeguardingResult, SafeguardingStatus, RiskLevel, RiskTrend } from "@/lib/engines/child-safeguarding-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 function useChildSafeguardingIntelligence(childId: string | null) {
   return useQuery<{ data: ChildSafeguardingResult }>({
     queryKey: ["child-safeguarding-intelligence", childId],
     queryFn: () =>
-      fetch(`/api/v1/child-safeguarding-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+      api.get<{ data: ChildSafeguardingResult }>(`/api/v1/child-safeguarding-intelligence?childId=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     refetchInterval: 60_000,
   });

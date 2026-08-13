@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const surveyTypeColour: Record<string, string> = {
   management_survey: "bg-indigo-100 text-indigo-800 border-indigo-200",
   refurbishment_demolition_survey: "bg-rose-100 text-rose-800 border-rose-200",
@@ -91,7 +92,7 @@ const exportCols: ExportColumn<AsbestosRecord>[] = [
 // Query config for asbestos records (inlined from use-asbestos-records hook)
 const ASBESTOS_RECORDS_QUERY = {
   queryKey: ["asbestos-records"],
-  queryFn: () => fetch("/api/v1/asbestos-records").then((r) => r.json()),
+  queryFn: () => api.get<any>("/api/v1/asbestos-records"),
 };
 
 export default function BuildingAsbestosRegisterPage() {

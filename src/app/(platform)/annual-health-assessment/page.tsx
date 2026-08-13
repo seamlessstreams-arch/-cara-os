@@ -25,6 +25,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ──────────────────────────────────────────────────────────── */
 
 const AHA_KEY = "annual-health-assessments";
@@ -39,7 +40,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 export default function AnnualHealthAssessmentPage() {
   const { data: res, isLoading } = useQuery<{ data: AnnualHealthAssessment[] }>({
     queryKey: [AHA_KEY],
-    queryFn: () => fetch(AHA_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AnnualHealthAssessment[] }>(AHA_API),
   });
   const data = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

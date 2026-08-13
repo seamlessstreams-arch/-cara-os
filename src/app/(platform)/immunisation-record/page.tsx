@@ -22,6 +22,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const STATUS_COLOUR: Record<VaccineStatus, string> = {
   up_to_date:          "bg-green-100 text-green-700",
   due_now:             "bg-amber-100 text-amber-700",
@@ -36,8 +37,7 @@ export default function ImmunisationRecordPage() {
     queryKey: ["immunisation-records"],
     queryFn: async () => {
       const params = "";
-      const res = await fetch(`/api/v1/immunisation-records${params}`);
-      return res.json();
+      return api.get<any>(`/api/v1/immunisation-records${params}`);
     },
   });
   const records = useMemo(() => raw?.data ?? [], [raw]);

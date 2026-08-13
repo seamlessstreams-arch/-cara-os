@@ -19,6 +19,7 @@ import { ALLERGY_SEVERITY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const SEVERITY_META: Record<AllergySeverity, { label: string; color: string }> = {
@@ -34,7 +35,7 @@ const SEVERITY_META: Record<AllergySeverity, { label: string; color: string }> =
 export default function HealthPassportsPage() {
   const { data: raw, isLoading } = useQuery<{ data: HealthPassport[] }>({
     queryKey: ["health-passports"],
-    queryFn: () => fetch("/api/v1/health-passports").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HealthPassport[] }>("/api/v1/health-passports"),
   });
   const data = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);

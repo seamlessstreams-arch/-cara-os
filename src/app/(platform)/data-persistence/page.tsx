@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { PersistenceEntry } from "@/lib/persistence-manifest";
 
+import { api } from "@/hooks/use-api";
 interface PersistenceStatus {
   mode: "durable" | "demo";
   enabled: boolean;
@@ -35,7 +36,7 @@ const RUNBOOK = [
 export default function DataPersistencePage() {
   const { data, isLoading } = useQuery<PersistenceStatus>({
     queryKey: ["persistence-status"],
-    queryFn: async () => (await (await fetch("/api/v1/system/persistence")).json()).data,
+    queryFn: async () => (await api.get<any>("/api/v1/system/persistence")).data,
   });
 
   const areas = data ? [...new Set(data.manifest.map((m) => m.area))] : [];

@@ -27,13 +27,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SELF_SOOTHING_KEY = "self-soothing-toolkits";
 const SELF_SOOTHING_API = "/api/v1/self-soothing-toolkits";
 
 function useSelfSoothingToolkits(childId?: string) {
   return useQuery<{ data: SelfSoothingToolkit[] }>({
     queryKey: childId ? [SELF_SOOTHING_KEY, childId] : [SELF_SOOTHING_KEY],
-    queryFn: () => fetch(childId ? `${SELF_SOOTHING_API}?child_id=${childId}` : SELF_SOOTHING_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SelfSoothingToolkit[] }>(childId ? `${SELF_SOOTHING_API}?child_id=${childId}` : SELF_SOOTHING_API),
   });
 }
 

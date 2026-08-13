@@ -155,7 +155,7 @@ export default function AnnexASnapshotPage() {
 
   const query = useQuery<{ data: CaraAnnexASnapshot[] }>({
     queryKey: ["cara-annex-a-snapshot", HOME_ID ?? null],
-    queryFn: () => fetch(`/api/v1/cara-studio/annex-a-snapshot?home_id=${encodeURIComponent(HOME_ID)}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CaraAnnexASnapshot[] }>(`/api/v1/cara-studio/annex-a-snapshot?home_id=${encodeURIComponent(HOME_ID)}`),
     refetchInterval: 60000,
   });
   const run = useMutation({

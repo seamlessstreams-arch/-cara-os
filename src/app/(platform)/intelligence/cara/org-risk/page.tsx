@@ -62,7 +62,7 @@ export default function OrgRiskPage() {
 
   const { data: objData } = useQuery<{ data: ImprovementObjective[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ImprovementObjective[] }>(API),
   });
   const objectives = objData?.data ?? [];
   const createObjective = useMutation({

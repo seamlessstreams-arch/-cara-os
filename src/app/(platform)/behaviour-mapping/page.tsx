@@ -19,6 +19,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const TYPE_META: Record<BehaviourMappingType, { label: string; color: string }> = {
@@ -51,7 +52,7 @@ const TOD_META: Record<BMTimeOfDay, { label: string }> = {
 export default function BehaviourMappingPage() {
   const { data: bmeData, isLoading } = useQuery<{ data: BehaviourMapEntry[] }>({
     queryKey: ["behaviour-map-entries"],
-    queryFn: () => fetch("/api/v1/behaviour-map-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: BehaviourMapEntry[] }>("/api/v1/behaviour-map-entries"),
   });
   const data = bmeData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

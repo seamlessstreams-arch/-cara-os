@@ -39,6 +39,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-charity-grant-records hook) ─────── */
 
 const CHARITY_GRANT_RECORDS_KEY = "charity-grant-records";
@@ -48,7 +49,7 @@ function useCharityGrantRecords(childId?: string) {
   return useQuery<{ data: CharityGrantRecord[] }>({
     queryKey: childId ? [CHARITY_GRANT_RECORDS_KEY, childId] : [CHARITY_GRANT_RECORDS_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHARITY_GRANT_RECORDS_API}?child_id=${childId}` : CHARITY_GRANT_RECORDS_API).then((r) => r.json()),
+      api.get<{ data: CharityGrantRecord[] }>(childId ? `${CHARITY_GRANT_RECORDS_API}?child_id=${childId}` : CHARITY_GRANT_RECORDS_API),
   });
 }
 

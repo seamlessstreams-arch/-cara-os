@@ -75,7 +75,7 @@ export default function CorrespondencePage() {
 
   const { data: raw, isLoading } = useQuery<{ data: CorrespondenceEntry[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CorrespondenceEntry[] }>(API),
   });
   const entries = raw?.data ?? [];
   const createEntry = useMutation({

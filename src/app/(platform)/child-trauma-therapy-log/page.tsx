@@ -37,13 +37,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const TRAUMA_THERAPY_LOGS_KEY = "trauma-therapy-logs";
 const TRAUMA_THERAPY_LOGS_API = "/api/v1/trauma-therapy-logs";
 
 function useTraumaTherapyLogs(childId?: string) {
   return useQuery<{ data: TraumaTherapyLog[] }>({
     queryKey: childId ? [TRAUMA_THERAPY_LOGS_KEY, childId] : [TRAUMA_THERAPY_LOGS_KEY],
-    queryFn: () => fetch(childId ? `${TRAUMA_THERAPY_LOGS_API}?child_id=${childId}` : TRAUMA_THERAPY_LOGS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TraumaTherapyLog[] }>(childId ? `${TRAUMA_THERAPY_LOGS_API}?child_id=${childId}` : TRAUMA_THERAPY_LOGS_API),
   });
 }
 

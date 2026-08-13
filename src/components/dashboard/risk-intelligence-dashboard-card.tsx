@@ -22,11 +22,12 @@ import type {
   RiskIntelligenceDashboardResult,
 } from "@/lib/engines/risk-intelligence-dashboard-engine";
 
+import { api } from "@/hooks/use-api";
 function useRiskIntelligenceDashboard() {
   return useQuery<{ data: RiskIntelligenceDashboardResult }>({
     queryKey: ["risk-intelligence-dashboard"],
     queryFn: () =>
-      fetch("/api/v1/risk-intelligence-dashboard").then((r) => r.json()),
+      api.get<{ data: RiskIntelligenceDashboardResult }>("/api/v1/risk-intelligence-dashboard"),
     refetchInterval: 60_000,
   });
 }

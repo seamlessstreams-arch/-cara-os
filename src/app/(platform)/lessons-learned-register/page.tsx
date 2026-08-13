@@ -26,12 +26,13 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { OrgLearningReportPanel } from "@/components/org-learning/org-learning-report-panel";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-lessons-learned ────────────────────────────── */
 
 function useLessonsLearned() {
   return useQuery<{ data: LessonLearned[] }>({
     queryKey: ["lessons-learned"],
-    queryFn: () => fetch("/api/v1/lessons-learned").then((r) => r.json()),
+    queryFn: () => api.get<{ data: LessonLearned[] }>("/api/v1/lessons-learned"),
   });
 }
 

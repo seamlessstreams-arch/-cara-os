@@ -14,13 +14,14 @@ import { Loader2, TrendingUp, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { OrgLearningReport, ReportPeriod, ThemeWeight } from "@/lib/org-learning-report/types";
 
+import { api } from "@/hooks/use-api";
 const ORG_LEARNING_REPORT_KEY = "org-learning-report";
 const ORG_LEARNING_REPORT_URL = "/api/v1/org-learning-report";
 
 function useOrgLearningReport(period: ReportPeriod = "quarter") {
   return useQuery<{ data: OrgLearningReport }>({
     queryKey: [ORG_LEARNING_REPORT_KEY, period],
-    queryFn: () => fetch(`${ORG_LEARNING_REPORT_URL}?period=${period}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: OrgLearningReport }>(`${ORG_LEARNING_REPORT_URL}?period=${period}`),
     staleTime: 5 * 60 * 1000,
   });
 }

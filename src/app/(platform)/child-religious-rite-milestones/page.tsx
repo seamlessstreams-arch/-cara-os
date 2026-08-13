@@ -37,12 +37,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const RITE_RECORDS_KEY = "rite-records";
 
 function useRiteRecords() {
   return useQuery<{ data: RiteRecord[] }>({
     queryKey: [RITE_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/rite-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: RiteRecord[] }>("/api/v1/rite-records"),
   });
 }
 

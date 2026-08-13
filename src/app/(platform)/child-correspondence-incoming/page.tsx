@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const senderColour: Record<CorrespondenceSenderType, string> = {
   mother: "bg-pink-100 text-pink-800",
   father: "bg-blue-100 text-blue-800",
@@ -69,7 +70,7 @@ export default function ChildCorrespondenceIncomingPage() {
   // Inlined useIncomingCorrespondence
   const correspondenceQuery = useQuery<{ data: IncomingCorrespondence[] }>({
     queryKey: ["incoming-correspondence"],
-    queryFn: () => fetch("/api/v1/incoming-correspondence").then((r) => r.json()),
+    queryFn: () => api.get<{ data: IncomingCorrespondence[] }>("/api/v1/incoming-correspondence"),
   });
   const { data: res, isLoading } = correspondenceQuery;
   const data = res?.data ?? [];

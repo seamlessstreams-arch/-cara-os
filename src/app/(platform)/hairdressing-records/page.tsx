@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inline hooks ───────────────────────────────────────────────────── */
 const HAIR_APPOINTMENTS_KEY = "hair-appointments";
 const HAIR_APPOINTMENTS_API = "/api/v1/hair-appointments";
@@ -37,7 +38,7 @@ const HAIR_APPOINTMENTS_API = "/api/v1/hair-appointments";
 function useHairAppointments(childId?: string) {
   return useQuery<{ data: HairAppointment[] }>({
     queryKey: childId ? [HAIR_APPOINTMENTS_KEY, childId] : [HAIR_APPOINTMENTS_KEY],
-    queryFn: () => fetch(childId ? `${HAIR_APPOINTMENTS_API}?child_id=${childId}` : HAIR_APPOINTMENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: HairAppointment[] }>(childId ? `${HAIR_APPOINTMENTS_API}?child_id=${childId}` : HAIR_APPOINTMENTS_API),
   });
 }
 

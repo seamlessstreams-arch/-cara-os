@@ -11,6 +11,7 @@ import type {
 } from "@/lib/engines/appraisal-intelligence-engine";
 import { below, formatRate } from "@/lib/metrics/rate";
 
+import { api } from "@/hooks/use-api";
 // ── Query Config ────────────────────────────────────────────────────────────
 const APPRAISAL_INTELLIGENCE_KEY = "appraisal-intelligence";
 const APPRAISAL_INTELLIGENCE_API = "/api/v1/appraisal-intelligence";
@@ -131,7 +132,7 @@ function StaffCard({ p }: { p: StaffAppraisalProfile }) {
 export default function AppraisalIntelligencePage() {
   const { data, isLoading, isError } = useQuery<AppraisalIntelligenceResponse>({
     queryKey: [APPRAISAL_INTELLIGENCE_KEY],
-    queryFn: () => fetch(APPRAISAL_INTELLIGENCE_API).then((r) => r.json()),
+    queryFn: () => api.get<AppraisalIntelligenceResponse>(APPRAISAL_INTELLIGENCE_API),
     refetchInterval: 60_000,
   });
 

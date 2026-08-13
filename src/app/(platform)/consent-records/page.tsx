@@ -77,7 +77,7 @@ const EXPORT_COLS: ExportColumn<ConsentRecord>[] = [
 export default function ConsentRecordsPage() {
   const { data, isLoading } = useQuery<{ data: ConsentRecord[] }>({
     queryKey: ["consent-records"],
-    queryFn: () => fetch("/api/v1/consent-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ConsentRecord[] }>("/api/v1/consent-records"),
   });
   const records = data?.data ?? [];
   const qc = useQueryClient();

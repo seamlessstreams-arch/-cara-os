@@ -43,13 +43,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PROTOCOL_DRILLS_KEY = "protocol-drills";
 const PROTOCOL_DRILLS_API = "/api/v1/protocol-drills";
 
 function useProtocolDrills() {
   return useQuery<{ data: ProtocolDrill[] }>({
     queryKey: [PROTOCOL_DRILLS_KEY],
-    queryFn: () => fetch(PROTOCOL_DRILLS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ProtocolDrill[] }>(PROTOCOL_DRILLS_API),
   });
 }
 

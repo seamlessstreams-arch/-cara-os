@@ -93,7 +93,7 @@ export default function WarmWelcomePacksPage() {
 
   const { data: result, isLoading } = useQuery<{ data: WarmWelcomePack[] }>({
     queryKey: ["warm-welcome-packs", undefined, "home_oak"],
-    queryFn: () => fetch("/api/v1/warm-welcome-packs?home_id=home_oak").then((r) => r.json()),
+    queryFn: () => api.get<{ data: WarmWelcomePack[] }>("/api/v1/warm-welcome-packs?home_id=home_oak"),
   });
   const packs = result?.data ?? [];
 

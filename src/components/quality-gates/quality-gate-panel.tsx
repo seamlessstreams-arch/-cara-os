@@ -14,13 +14,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
 import type { GateBoard, GateBoardEntry, GateKind } from "@/lib/quality-gates/types";
 
+import { api } from "@/hooks/use-api";
 const QUALITY_GATE_KEY = "quality-gate";
 const QUALITY_GATE_URL = "/api/v1/quality-gate";
 
 function useQualityGateBoard() {
   return useQuery<{ data: GateBoard }>({
     queryKey: [QUALITY_GATE_KEY],
-    queryFn: () => fetch(QUALITY_GATE_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: GateBoard }>(QUALITY_GATE_URL),
     staleTime: 60 * 1000,
   });
 }

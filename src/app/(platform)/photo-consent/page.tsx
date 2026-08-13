@@ -38,7 +38,7 @@ const PHOTO_CONSENT_API = "/api/v1/photo-consent-records";
 function usePhotoConsentRecords(childId?: string) {
   return useQuery<{ data: PhotoConsentRecord[] }>({
     queryKey: childId ? [PHOTO_CONSENT_KEY, childId] : [PHOTO_CONSENT_KEY],
-    queryFn: () => fetch(childId ? `${PHOTO_CONSENT_API}?child_id=${childId}` : PHOTO_CONSENT_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PhotoConsentRecord[] }>(childId ? `${PHOTO_CONSENT_API}?child_id=${childId}` : PHOTO_CONSENT_API),
   });
 }
 

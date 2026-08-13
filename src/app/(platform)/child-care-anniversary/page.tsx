@@ -27,6 +27,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CARE_ANNIVERSARY_KEY = "care-anniversary-records";
 const CARE_ANNIVERSARY_API = "/api/v1/care-anniversary-records";
 
@@ -34,9 +35,7 @@ function useCareAnniversaryRecords(childId?: string) {
   return useQuery<{ data: CareAnniversaryRecord[] }>({
     queryKey: childId ? [CARE_ANNIVERSARY_KEY, childId] : [CARE_ANNIVERSARY_KEY],
     queryFn: () =>
-      fetch(
-        childId ? `${CARE_ANNIVERSARY_API}?child_id=${childId}` : CARE_ANNIVERSARY_API,
-      ).then((r) => r.json()),
+      api.get<{ data: CareAnniversaryRecord[] }>(childId ? `${CARE_ANNIVERSARY_API}?child_id=${childId}` : CARE_ANNIVERSARY_API,),
   });
 }
 

@@ -21,12 +21,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Data hook (inlined from the former use-maintenance-schedule-items) ──── */
 
 function useMaintenanceScheduleItems() {
   return useQuery<{ data: MaintenanceScheduleItem[] }>({
     queryKey: ["maintenance-schedule-items"],
-    queryFn: () => fetch("/api/v1/maintenance-schedule-items").then((r) => r.json()),
+    queryFn: () => api.get<{ data: MaintenanceScheduleItem[] }>("/api/v1/maintenance-schedule-items"),
   });
 }
 

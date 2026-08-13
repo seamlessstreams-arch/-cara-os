@@ -42,6 +42,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Inline hooks ───────────────────────────────────────────────────────────────
 
 const ALLERGY_PLANS_KEY = "allergy-plans";
@@ -96,7 +97,7 @@ export default function ChildAllergiesEpipenPlanPage() {
 
   const { data: resp, isLoading } = useQuery<{ data: AllergyPlan[] }>({
     queryKey: [ALLERGY_PLANS_KEY],
-    queryFn: () => fetch(ALLERGY_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AllergyPlan[] }>(ALLERGY_PLANS_API),
   });
   const records = resp?.data ?? [];
 

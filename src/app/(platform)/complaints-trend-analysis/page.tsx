@@ -32,10 +32,11 @@ import {
 import type { ComplaintTrend } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 export default function ComplaintsTrendAnalysisPage() {
   const { data: res, isLoading } = useQuery<{ data: ComplaintTrend[] }>({
     queryKey: ["complaint-trends"],
-    queryFn: () => fetch("/api/v1/complaint-trends").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ComplaintTrend[] }>("/api/v1/complaint-trends"),
   });
   const data: ComplaintTrend[] = res?.data ?? [];
 

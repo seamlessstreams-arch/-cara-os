@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ───────────────────────────────────────────────────────── */
 
 const levelColour: Record<LivingSkillLevel, string> = {
@@ -72,7 +73,7 @@ export default function IndependentLivingSkillsAssessmentPage() {
   const assessmentsQuery = useQuery<{ data: IndependenceLivingAssessment[] }>({
     queryKey: ["independence-living-assessments"],
     queryFn: () =>
-      fetch("/api/v1/independence-living-assessments").then((r) => r.json()),
+      api.get<{ data: IndependenceLivingAssessment[] }>("/api/v1/independence-living-assessments"),
   });
   const { data: res, isLoading } = assessmentsQuery;
   const data: IndependenceLivingAssessment[] = res?.data ?? [];

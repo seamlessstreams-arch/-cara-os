@@ -51,7 +51,7 @@ const PARTICIPATION_KEY = "participation-entries";
 function useParticipationEntries() {
   return useQuery<{ data: ParticipationEntry[] }>({
     queryKey: [PARTICIPATION_KEY],
-    queryFn: () => fetch("/api/v1/participation-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ParticipationEntry[] }>("/api/v1/participation-entries"),
   });
 }
 import { PARTICIPATION_CATEGORY_LABEL, PARTICIPATION_EVIDENCE_TYPE_LABEL } from "@/types/extended";

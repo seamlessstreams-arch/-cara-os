@@ -26,6 +26,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const STATUS_CLR: Record<FirstAidCertStatus, string> = {
@@ -42,7 +43,7 @@ const CERT_TYPES = Object.keys(FIRST_AID_CERT_TYPE_LABEL) as FirstAidCertType[];
 export default function FirstAidersRosterPage() {
   const { data: res, isLoading } = useQuery<{ data: FirstAiderRecord[] }>({
     queryKey: ["first-aider-records"],
-    queryFn: () => fetch("/api/v1/first-aider-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FirstAiderRecord[] }>("/api/v1/first-aider-records"),
   });
   const records = res?.data ?? [];
   const [search, setSearch] = useState("");

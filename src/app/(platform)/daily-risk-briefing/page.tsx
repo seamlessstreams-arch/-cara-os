@@ -18,6 +18,7 @@ import { DAILY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const riskBorder = (level: DailyRiskLevel) =>
@@ -37,7 +38,7 @@ const AlertIconComponent = ({ severity }: { severity: string }) =>
 export default function DailyRiskBriefingPage() {
   const { data: res, isLoading } = useQuery<{ data: DailyRiskBriefing[] }>({
     queryKey: ["daily-risk-briefings"],
-    queryFn: () => fetch("/api/v1/daily-risk-briefings").then((r) => r.json()),
+    queryFn: () => api.get<{ data: DailyRiskBriefing[] }>("/api/v1/daily-risk-briefings"),
   });
   const briefings = res?.data ?? [];
   const [shift, setShift] = useState<"day" | "night">("day");

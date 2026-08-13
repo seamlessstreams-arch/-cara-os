@@ -45,7 +45,7 @@ const OBJECTIVE_API = "/api/v1/placement-objectives";
 function usePlacementObjectives(childId?: string) {
   return useQuery<{ data: PlacementObjective[] }>({
     queryKey: childId ? [OBJECTIVE_KEY, childId] : [OBJECTIVE_KEY],
-    queryFn: () => fetch(childId ? `${OBJECTIVE_API}?child_id=${childId}` : OBJECTIVE_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementObjective[] }>(childId ? `${OBJECTIVE_API}?child_id=${childId}` : OBJECTIVE_API),
   });
 }
 

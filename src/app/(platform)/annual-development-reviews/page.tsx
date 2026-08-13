@@ -58,7 +58,7 @@ export default function AnnualDevelopmentReviewsPage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: AnnualDevelopmentReview[] }>({
     queryKey: [ADR_KEY],
-    queryFn: () => fetch(ADR_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AnnualDevelopmentReview[] }>(ADR_API),
   });
   const data = res?.data ?? [];
   const createMutation = useMutation({

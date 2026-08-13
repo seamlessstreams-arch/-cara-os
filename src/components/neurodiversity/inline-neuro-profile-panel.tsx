@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Brain, AlertTriangle, Info } from "lucide-react";
 import type { NeuroPrompt, NeuroPromptPriority, NeuroRecordingContext, UnifiedNeuroProfile } from "@/lib/neurodiversity-profile/types";
 
+import { api } from "@/hooks/use-api";
 interface NeuroProfileResponse {
   profile: UnifiedNeuroProfile;
   context: NeuroRecordingContext;
@@ -28,7 +29,7 @@ const NEURODIVERSITY_PROFILE_URL = "/api/v1/neurodiversity-profile";
 function useNeurodiversityProfile(childId?: string, context: NeuroRecordingContext = "overview") {
   return useQuery<{ data: NeuroProfileResponse }>({
     queryKey: [NEURODIVERSITY_PROFILE_KEY, childId ?? "", context],
-    queryFn: () => fetch(`${NEURODIVERSITY_PROFILE_URL}?child_id=${encodeURIComponent(childId!)}&context=${context}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: NeuroProfileResponse }>(`${NEURODIVERSITY_PROFILE_URL}?child_id=${encodeURIComponent(childId!)}&context=${context}`),
     enabled: !!childId,
     staleTime: 60 * 1000,
   });

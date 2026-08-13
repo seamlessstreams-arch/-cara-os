@@ -14,6 +14,7 @@ import { ShieldAlert, Loader2 } from "lucide-react";
 import type { SystemHealthReport } from "@/lib/system-health/types";
 import { mapHealthToVulnerabilities, groupVulnerabilitiesByArea, type InspectionVulnerability } from "@/lib/ofsted-readiness/vulnerability-alerts";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from the former use-system-health hook ────────────────────────────
 const INSPECTION_VULNERABILITIES_HEALTH_KEY = "system-health";
 const INSPECTION_VULNERABILITIES_HEALTH_URL = "/api/v1/system-health";
@@ -21,7 +22,7 @@ const INSPECTION_VULNERABILITIES_HEALTH_URL = "/api/v1/system-health";
 function useSystemHealth() {
   return useQuery<{ data: SystemHealthReport }>({
     queryKey: [INSPECTION_VULNERABILITIES_HEALTH_KEY],
-    queryFn: () => fetch(INSPECTION_VULNERABILITIES_HEALTH_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SystemHealthReport }>(INSPECTION_VULNERABILITIES_HEALTH_URL),
     staleTime: 2 * 60 * 1000,
   });
 }

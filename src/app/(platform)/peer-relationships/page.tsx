@@ -54,7 +54,7 @@ const PEER_GROUP_DYN_API = "/api/v1/peer-group-dynamics";
 function usePeerGroupDynamics() {
   return useQuery<{ data: PeerGroupDynamic[] }>({
     queryKey: [PEER_GROUP_DYN_KEY],
-    queryFn: () => fetch(PEER_GROUP_DYN_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PeerGroupDynamic[] }>(PEER_GROUP_DYN_API),
   });
 }
 
@@ -64,7 +64,7 @@ const PEER_DYNAMICS_API = "/api/v1/peer-dynamics";
 function usePeerDynamics() {
   return useQuery<{ data: PeerDynamic[] }>({
     queryKey: [PEER_DYNAMICS_KEY],
-    queryFn: () => fetch(PEER_DYNAMICS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PeerDynamic[] }>(PEER_DYNAMICS_API),
   });
 }
 

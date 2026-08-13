@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const COURT_TYPES: CourtAttendanceType[] = [
@@ -66,7 +67,7 @@ const ROLE_COLOURS: Record<CourtChildRole, string> = {
 export default function ChildCourtAttendanceSupportPage() {
   const { data: response, isLoading } = useQuery<{ data: CourtAttendanceRecord[] }>({
     queryKey: ["court-attendance-records"],
-    queryFn: () => fetch("/api/v1/court-attendance-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CourtAttendanceRecord[] }>("/api/v1/court-attendance-records"),
   });
   const data = response?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);

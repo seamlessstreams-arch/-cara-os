@@ -78,7 +78,7 @@ const EMERGENCY_CHILD_CONTACTS_API = "/api/v1/emergency-child-contacts";
 function useEmergencyChildContacts(childId?: string) {
   return useQuery<{ data: EmergencyChildContact[] }>({
     queryKey: childId ? [EMERGENCY_CHILD_CONTACTS_KEY, childId] : [EMERGENCY_CHILD_CONTACTS_KEY],
-    queryFn: () => fetch(childId ? `${EMERGENCY_CHILD_CONTACTS_API}?child_id=${childId}` : EMERGENCY_CHILD_CONTACTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EmergencyChildContact[] }>(childId ? `${EMERGENCY_CHILD_CONTACTS_API}?child_id=${childId}` : EMERGENCY_CHILD_CONTACTS_API),
   });
 }
 
@@ -181,7 +181,7 @@ export default function EmergencyContactsPage() {
 
   const { data: homeContactsResult } = useQuery<{ data: HomeEmergencyContact[] }>({
     queryKey: ["home-emergency-contacts", "home_oak"],
-    queryFn: () => fetch("/api/v1/home-emergency-contacts?home_id=home_oak").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HomeEmergencyContact[] }>("/api/v1/home-emergency-contacts?home_id=home_oak"),
   });
   const HOME_CONTACTS = homeContactsResult?.data ?? [];
 

@@ -52,7 +52,7 @@ export default function IndependenceSkillsPage() {
   const { data: res, isLoading } = useQuery<{ data: IndependenceSkillsRecord[] }>({
     queryKey: [KEY],
     queryFn: () =>
-      fetch("/api/v1/independence-skills-records").then((r) => r.json()),
+      api.get<{ data: IndependenceSkillsRecord[] }>("/api/v1/independence-skills-records"),
   });
   const data: IndependenceSkillsRecord[] = res?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);

@@ -54,7 +54,7 @@ export default function AgencyStaffLogPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: AgencyStaffRecord[] }>({
     queryKey: [AGENCY_STAFF_LOG_KEY],
-    queryFn: () => fetch(AGENCY_STAFF_LOG_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AgencyStaffRecord[] }>(AGENCY_STAFF_LOG_API),
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<AgencyStaffRecord>) =>

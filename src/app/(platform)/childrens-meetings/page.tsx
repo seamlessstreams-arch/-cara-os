@@ -49,7 +49,7 @@ const CHILDRENS_MEETING_RECORDS_API = "/api/v1/childrens-meeting-records";
 function useChildrensMeetingRecords() {
   return useQuery<{ data: ChildrensMeetingRecord[] }>({
     queryKey: [CHILDRENS_MEETING_RECORDS_KEY],
-    queryFn: () => fetch(CHILDRENS_MEETING_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildrensMeetingRecord[] }>(CHILDRENS_MEETING_RECORDS_API),
   });
 }
 

@@ -39,6 +39,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<FuneralRecord>[] = [
   { header: "Young Person", accessor: (r: FuneralRecord) => getYPName(r.child_id) },
   { header: "Recorded", accessor: (r: FuneralRecord) => r.recorded_date },
@@ -68,7 +69,7 @@ const decisionColour: Record<FuneralAttendanceDecision, string> = {
 export default function FuneralAttendanceRecordsPage() {
   const { data: res, isLoading } = useQuery<{ data: FuneralRecord[] }>({
     queryKey: ["funeral-records"],
-    queryFn: () => fetch("/api/v1/funeral-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FuneralRecord[] }>("/api/v1/funeral-records"),
   });
   const records = res?.data ?? [];
 

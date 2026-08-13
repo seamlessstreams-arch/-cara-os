@@ -34,13 +34,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const MEETING_KEY = "placement-meetings";
 const MEETING_API = "/api/v1/placement-meetings";
 
 function usePlacementMeetings(childId?: string) {
   return useQuery<{ data: PlacementMeeting[] }>({
     queryKey: childId ? [MEETING_KEY, childId] : [MEETING_KEY],
-    queryFn: () => fetch(childId ? `${MEETING_API}?child_id=${childId}` : MEETING_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementMeeting[] }>(childId ? `${MEETING_API}?child_id=${childId}` : MEETING_API),
   });
 }
 

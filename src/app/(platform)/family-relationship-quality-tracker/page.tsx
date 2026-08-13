@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
 const QUALITY_TONE: Record<FamilyRelationshipQuality, string> = {
@@ -64,7 +65,7 @@ type SortKey = "date" | "quality" | "review" | "child";
 export default function FamilyRelationshipQualityTrackerPage() {
   const { data: res, isLoading } = useQuery<{ data: FamilyRelationshipRecord[] }>({
     queryKey: ["family-relationship-records"],
-    queryFn: () => fetch("/api/v1/family-relationship-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FamilyRelationshipRecord[] }>("/api/v1/family-relationship-records"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

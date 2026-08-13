@@ -61,7 +61,7 @@ const GRAB_BAGS_API = "/api/v1/grab-bags";
 function useGrabBags(childId?: string) {
   return useQuery<{ data: GrabBag[] }>({
     queryKey: childId ? [GRAB_BAGS_KEY, childId] : [GRAB_BAGS_KEY],
-    queryFn: () => fetch(childId ? `${GRAB_BAGS_API}?child_id=${childId}` : GRAB_BAGS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: GrabBag[] }>(childId ? `${GRAB_BAGS_API}?child_id=${childId}` : GRAB_BAGS_API),
   });
 }
 

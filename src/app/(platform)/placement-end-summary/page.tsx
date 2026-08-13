@@ -33,13 +33,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const END_SUMMARY_KEY = "placement-end-summaries";
 const END_SUMMARY_API = "/api/v1/placement-end-summaries";
 
 function usePlacementEndSummaries() {
   return useQuery<{ data: PlacementEndSummary[] }>({
     queryKey: [END_SUMMARY_KEY],
-    queryFn: () => fetch(END_SUMMARY_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementEndSummary[] }>(END_SUMMARY_API),
   });
 }
 

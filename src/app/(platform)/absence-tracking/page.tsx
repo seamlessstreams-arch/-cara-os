@@ -60,7 +60,7 @@ export default function AbsenceTrackingPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: AbsenceRecord[] }>({
     queryKey: ["absence-tracking"],
-    queryFn: () => fetch("/api/v1/absence-tracking").then((r) => r.json()),
+    queryFn: () => api.get<{ data: AbsenceRecord[] }>("/api/v1/absence-tracking"),
   });
   const createAbsence = useMutation({
     mutationFn: (data: Partial<AbsenceRecord>) =>

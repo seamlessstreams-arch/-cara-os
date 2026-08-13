@@ -15,11 +15,12 @@ import { Labelled, TextInput, TextArea } from "@/components/cara-studio/studio-b
 import { BookOpen, CheckCircle2, CircleDashed, Plus, ShieldCheck, Undo2 } from "lucide-react";
 import type { CaraLibraryResource } from "@/lib/cara-studio/cara-types";
 
+import { api } from "@/hooks/use-api";
 export default function CaraLibraryPage() {
   const qc = useQueryClient();
   const { data } = useQuery<{ resources: CaraLibraryResource[] }>({
     queryKey: ["cara-library"],
-    queryFn: async () => (await (await fetch("/api/cara/library")).json()).data,
+    queryFn: async () => (await api.get<any>("/api/cara/library")).data,
   });
   const [filter, setFilter] = useState<"all" | "approved" | "draft">("all");
   const [showForm, setShowForm] = useState(false);

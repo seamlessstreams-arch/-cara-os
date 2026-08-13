@@ -27,13 +27,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PREVENT_SCREENINGS_KEY = "prevent-screenings";
 const PREVENT_SCREENINGS_API = "/api/v1/prevent-screenings";
 
 function usePreventScreenings(childId?: string) {
   return useQuery<{ data: PreventScreeningRecord[] }>({
     queryKey: childId ? [PREVENT_SCREENINGS_KEY, childId] : [PREVENT_SCREENINGS_KEY],
-    queryFn: () => fetch(childId ? `${PREVENT_SCREENINGS_API}?child_id=${childId}` : PREVENT_SCREENINGS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PreventScreeningRecord[] }>(childId ? `${PREVENT_SCREENINGS_API}?child_id=${childId}` : PREVENT_SCREENINGS_API),
   });
 }
 

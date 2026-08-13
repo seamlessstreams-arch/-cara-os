@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const exportCols: ExportColumn<BedroomProfile>[] = [
   { header: "Young Person", accessor: (r: BedroomProfile) => getYPName(r.child_id) },
   { header: "Room", accessor: (r: BedroomProfile) => r.room_number },
@@ -47,7 +48,7 @@ const exportCols: ExportColumn<BedroomProfile>[] = [
 // Query config for bedroom profiles (inlined from use-bedroom-profiles hook)
 const BEDROOM_PROFILES_QUERY = {
   queryKey: ["bedroom-profiles", undefined],
-  queryFn: () => fetch("/api/v1/bedroom-profiles").then((r) => r.json()),
+  queryFn: () => api.get<any>("/api/v1/bedroom-profiles"),
 };
 
 export default function BedroomPersonalisationPage() {

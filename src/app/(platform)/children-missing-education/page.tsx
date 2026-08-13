@@ -61,7 +61,7 @@ export default function ChildrenMissingEducationPage() {
   const qc = useQueryClient();
   const { data: res, isLoading } = useQuery<{ data: CMERecord[] }>({
     queryKey: ["cme-records"],
-    queryFn: () => fetch("/api/v1/cme-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CMERecord[] }>("/api/v1/cme-records"),
   });
   const items = res?.data ?? [];
   const createMut = useMutation({

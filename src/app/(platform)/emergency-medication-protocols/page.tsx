@@ -49,13 +49,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const EMERGENCY_MEDICATION_PROTOCOLS_KEY = "emergency-medication-protocols";
 const EMERGENCY_MEDICATION_PROTOCOLS_API = "/api/v1/emergency-medication-protocols";
 
 function useEmergencyMedicationProtocols(childId?: string) {
   return useQuery<{ data: EmergencyMedicationProtocol[] }>({
     queryKey: childId ? [EMERGENCY_MEDICATION_PROTOCOLS_KEY, childId] : [EMERGENCY_MEDICATION_PROTOCOLS_KEY],
-    queryFn: () => fetch(childId ? `${EMERGENCY_MEDICATION_PROTOCOLS_API}?child_id=${childId}` : EMERGENCY_MEDICATION_PROTOCOLS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EmergencyMedicationProtocol[] }>(childId ? `${EMERGENCY_MEDICATION_PROTOCOLS_API}?child_id=${childId}` : EMERGENCY_MEDICATION_PROTOCOLS_API),
   });
 }
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { CalendarFeed } from "@/lib/calendar/calendar-types";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from the former use-system-health hook ────────────────────────────
 const TODAY_BAND_HEALTH_KEY = "system-health";
 const TODAY_BAND_HEALTH_URL = "/api/v1/system-health";
@@ -30,7 +31,7 @@ const TODAY_BAND_HEALTH_URL = "/api/v1/system-health";
 function useSystemHealth() {
   return useQuery<{ data: SystemHealthReport }>({
     queryKey: [TODAY_BAND_HEALTH_KEY],
-    queryFn: () => fetch(TODAY_BAND_HEALTH_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SystemHealthReport }>(TODAY_BAND_HEALTH_URL),
     staleTime: 2 * 60 * 1000,
   });
 }

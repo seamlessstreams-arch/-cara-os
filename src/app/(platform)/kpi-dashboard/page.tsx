@@ -20,11 +20,12 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── KPI entries query (inlined from the former hook wrapper) ───────────────
 function useKpiEntries() {
   return useQuery<{ data: KpiEntry[] }>({
     queryKey: ["kpi-entries"],
-    queryFn: () => fetch("/api/v1/kpi-entries").then((r) => r.json()),
+    queryFn: () => api.get<{ data: KpiEntry[] }>("/api/v1/kpi-entries"),
   });
 }
 

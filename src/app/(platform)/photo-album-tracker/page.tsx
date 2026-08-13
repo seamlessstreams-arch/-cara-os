@@ -31,13 +31,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PHOTO_ALBUM_KEY = "photo-album-records";
 const PHOTO_ALBUM_API = "/api/v1/photo-album-records";
 
 function usePhotoAlbumRecords(childId?: string) {
   return useQuery<{ data: PhotoAlbumRecord[] }>({
     queryKey: childId ? [PHOTO_ALBUM_KEY, childId] : [PHOTO_ALBUM_KEY],
-    queryFn: () => fetch(childId ? `${PHOTO_ALBUM_API}?child_id=${childId}` : PHOTO_ALBUM_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PhotoAlbumRecord[] }>(childId ? `${PHOTO_ALBUM_API}?child_id=${childId}` : PHOTO_ALBUM_API),
   });
 }
 

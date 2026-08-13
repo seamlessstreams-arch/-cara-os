@@ -41,13 +41,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const TUTORING_RECORDS_KEY = "tutoring-records";
 const TUTORING_RECORDS_API = "/api/v1/tutoring-records";
 
 function useTutoringRecords(childId?: string) {
   return useQuery<{ data: TutoringRecord[] }>({
     queryKey: childId ? [TUTORING_RECORDS_KEY, childId] : [TUTORING_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${TUTORING_RECORDS_API}?child_id=${childId}` : TUTORING_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TutoringRecord[] }>(childId ? `${TUTORING_RECORDS_API}?child_id=${childId}` : TUTORING_RECORDS_API),
   });
 }
 

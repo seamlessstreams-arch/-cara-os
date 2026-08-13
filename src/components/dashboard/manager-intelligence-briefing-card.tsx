@@ -19,11 +19,12 @@ import { cn } from "@/lib/utils";
 import { formatRate } from "@/lib/metrics/rate";
 import type { ManagerBriefingResult } from "@/lib/engines/manager-briefing-intelligence-engine";
 
+import { api } from "@/hooks/use-api";
 // ── Data hook (inlined from the former use-manager-briefing hook) ────────────
 function useManagerBriefing() {
   return useQuery<{ data: ManagerBriefingResult }>({
     queryKey: ["manager-briefing-intelligence"],
-    queryFn: () => fetch("/api/v1/manager-briefing-intelligence").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ManagerBriefingResult }>("/api/v1/manager-briefing-intelligence"),
     refetchInterval: 60_000,
   });
 }

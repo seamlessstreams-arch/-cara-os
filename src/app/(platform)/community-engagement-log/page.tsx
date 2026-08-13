@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const typeIcons: Record<string, typeof Users> = {
   sports_fitness: Activity,
   arts_culture: Palette,
@@ -72,7 +73,7 @@ const exportCols: ExportColumn<CommunityEngagement>[] = [
 export default function CommunityEngagementLogPage() {
   const { data: res, isLoading } = useQuery<{ data: CommunityEngagement[] }>({
     queryKey: ["community-engagements"],
-    queryFn: () => fetch("/api/v1/community-engagements").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CommunityEngagement[] }>("/api/v1/community-engagements"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

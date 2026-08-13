@@ -45,7 +45,7 @@ const TRIP_PLANS_API = "/api/v1/trip-plans";
 function useTripPlans() {
   return useQuery<{ data: TripPlan[] }>({
     queryKey: [TRIP_PLANS_KEY],
-    queryFn: () => fetch(TRIP_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: TripPlan[] }>(TRIP_PLANS_API),
   });
 }
 

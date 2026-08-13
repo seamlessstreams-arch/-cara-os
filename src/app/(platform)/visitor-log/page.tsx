@@ -262,7 +262,7 @@ export default function VisitorLogPage() {
   const qc = useQueryClient();
   const { data: visData, isLoading } = useQuery<{ data: VisitorEntry[] }>({
     queryKey: ["visitors"],
-    queryFn: () => fetch("/api/v1/visitors").then((r) => r.json()),
+    queryFn: () => api.get<{ data: VisitorEntry[] }>("/api/v1/visitors"),
   });
   const createVisitor = useMutation({
     mutationFn: (data: Partial<VisitorEntry>) =>

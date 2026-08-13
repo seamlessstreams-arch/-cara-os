@@ -68,7 +68,7 @@ const PET_API = "/api/v1/pet-records";
 function usePetRecords() {
   return useQuery<{ data: PetRecord[] }>({
     queryKey: [PET_KEY],
-    queryFn: () => fetch(PET_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PetRecord[] }>(PET_API),
   });
 }
 

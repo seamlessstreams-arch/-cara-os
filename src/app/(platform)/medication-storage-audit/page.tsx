@@ -28,13 +28,14 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 
+import { api } from "@/hooks/use-api";
 const MEDICATION_STORAGE_AUDITS_KEY = "medication-storage-audits";
 const MEDICATION_STORAGE_AUDITS_API = "/api/v1/medication-storage-audits";
 
 function useMedicationStorageAudits() {
   return useQuery<{ data: MedicationStorageAudit[] }>({
     queryKey: [MEDICATION_STORAGE_AUDITS_KEY],
-    queryFn: () => fetch(MEDICATION_STORAGE_AUDITS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MedicationStorageAudit[] }>(MEDICATION_STORAGE_AUDITS_API),
   });
 }
 

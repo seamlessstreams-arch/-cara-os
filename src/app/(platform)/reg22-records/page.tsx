@@ -20,13 +20,14 @@ import { REG22_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
 function useReg22Records() {
   return useQuery<Reg22Record[]>({
     queryKey: ["reg22-records"],
-    queryFn: () => fetch("/api/v1/reg22-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+    queryFn: () => api.get<Reg22Record[] | { data?: Reg22Record[] }>("/api/v1/reg22-records").then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
   });
 }
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
 const fmt = (iso: string) => {

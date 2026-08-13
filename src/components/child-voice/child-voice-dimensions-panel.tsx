@@ -35,6 +35,7 @@ import type {
   VoiceTrend,
 } from "@/lib/child-voice-dimensions/types";
 
+import { api } from "@/hooks/use-api";
 const CHILD_VOICE_DIMENSIONS_KEY = "child-voice-dimensions";
 const CHILD_VOICE_DIMENSIONS_URL = "/api/v1/child-voice-dimensions";
 
@@ -42,7 +43,7 @@ const CHILD_VOICE_DIMENSIONS_URL = "/api/v1/child-voice-dimensions";
 function useChildVoiceDimensions(childId?: string) {
   return useQuery<{ data: ChildVoiceDimensionProfile }>({
     queryKey: [CHILD_VOICE_DIMENSIONS_KEY, childId ?? ""],
-    queryFn: () => fetch(`${CHILD_VOICE_DIMENSIONS_URL}?child_id=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: ChildVoiceDimensionProfile }>(`${CHILD_VOICE_DIMENSIONS_URL}?child_id=${encodeURIComponent(childId!)}`),
     enabled: !!childId,
     staleTime: 30 * 1000,
   });

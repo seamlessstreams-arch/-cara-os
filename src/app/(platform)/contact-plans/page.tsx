@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 /* ─── export columns ─── */
 const exportCols: ExportColumn<ContactPlan>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -51,7 +52,7 @@ const exportCols: ExportColumn<ContactPlan>[] = [
 export default function ContactPlansPage() {
   const { data: res, isLoading } = useQuery<{ data: ContactPlan[] }>({
     queryKey: ["contact-plans"],
-    queryFn: () => fetch("/api/v1/contact-plans").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ContactPlan[] }>("/api/v1/contact-plans"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

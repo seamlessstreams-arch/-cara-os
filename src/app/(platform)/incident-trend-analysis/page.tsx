@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const STATUS_CLR: Record<TrendActionStatus, string> = {
@@ -91,10 +92,8 @@ export default function IncidentTrendAnalysisPage() {
   // Inlined useIncidentTrends
   const trendsQuery = useQuery<{ data: IncidentTrendRecord[] }>({
     queryKey: ["incident-trends"],
-    queryFn: async () => {
-      const res = await fetch("/api/v1/incident-trends");
-      return res.json();
-    },
+    queryFn: () =>
+      api.get<{ data: IncidentTrendRecord[] }>("/api/v1/incident-trends"),
   });
   const { data: raw, isLoading } = trendsQuery;
   const allData = useMemo(() => raw?.data ?? [], [raw]);

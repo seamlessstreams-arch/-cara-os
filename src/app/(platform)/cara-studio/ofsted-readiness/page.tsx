@@ -17,6 +17,7 @@ import type {
   CaraStudioContradiction,
 } from "@/types/cara-studio";
 
+import { api } from "@/hooks/use-api";
 // ── Regulation mapping ──────────────────────────────────────────────────────
 
 interface RegulationArea {
@@ -55,9 +56,9 @@ export default function OfstedReadinessDashboard() {
     queryKey: ["cara-studio", "ofsted-readiness"],
     queryFn: async () => {
       const [gapRes, warnRes, contraRes] = await Promise.all([
-        fetch("/api/cara-studio/gaps").then((r) => r.json()),
-        fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
-        fetch("/api/cara-studio/contradictions").then((r) => r.json()),
+        api.get<any>("/api/cara-studio/gaps"),
+        api.get<any>("/api/cara-studio/early-warnings"),
+        api.get<any>("/api/cara-studio/contradictions"),
       ]);
       return {
         gaps: (gapRes.data ?? []) as CaraStudioGap[],

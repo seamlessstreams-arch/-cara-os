@@ -39,7 +39,7 @@ const MED_TRAINING_RECORDS_API = "/api/v1/med-training-records";
 function useMedTrainingRecords() {
   return useQuery<{ data: MedTrainingRecord[] }>({
     queryKey: [MED_TRAINING_RECORDS_KEY],
-    queryFn: () => fetch(MED_TRAINING_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: MedTrainingRecord[] }>(MED_TRAINING_RECORDS_API),
   });
 }
 

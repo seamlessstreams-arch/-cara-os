@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data hook (inlined from use-diversity-calendar-events) ──────────── */
 const DIVERSITY_CALENDAR_EVENTS_KEY = "diversity-calendar-events";
 const DIVERSITY_CALENDAR_EVENTS_API = "/api/v1/diversity-calendar-events";
@@ -42,7 +43,7 @@ const DIVERSITY_CALENDAR_EVENTS_API = "/api/v1/diversity-calendar-events";
 function useDiversityCalendarEvents() {
   return useQuery<{ data: DiversityCalendarEvent[] }>({
     queryKey: [DIVERSITY_CALENDAR_EVENTS_KEY],
-    queryFn: () => fetch(DIVERSITY_CALENDAR_EVENTS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DiversityCalendarEvent[] }>(DIVERSITY_CALENDAR_EVENTS_API),
   });
 }
 

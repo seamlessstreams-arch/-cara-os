@@ -44,13 +44,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── data hook (inlined from use-disclosures) ────────────────────────────────
 const DISCLOSURES_KEY = "disclosures";
 
 function useDisclosures() {
   return useQuery<{ data: Disclosure[] }>({
     queryKey: [DISCLOSURES_KEY],
-    queryFn: () => fetch("/api/v1/disclosures").then((r) => r.json()),
+    queryFn: () => api.get<{ data: Disclosure[] }>("/api/v1/disclosures"),
   });
 }
 

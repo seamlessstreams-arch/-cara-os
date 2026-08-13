@@ -38,6 +38,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── Dental records hook (inlined from use-dental-records) ─────────────────────
 
 const DENTAL_KEY = "dental-records";
@@ -46,7 +47,7 @@ const DENTAL_API = "/api/v1/dental-records";
 function useDentalRecords(childId?: string) {
   return useQuery<{ data: DentalRecord[] }>({
     queryKey: childId ? [DENTAL_KEY, childId] : [DENTAL_KEY],
-    queryFn: () => fetch(childId ? `${DENTAL_API}?child_id=${childId}` : DENTAL_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DentalRecord[] }>(childId ? `${DENTAL_API}?child_id=${childId}` : DENTAL_API),
   });
 }
 

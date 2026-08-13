@@ -18,11 +18,12 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ChildVoiceParticipationResult, VoiceHealth } from "@/lib/engines/child-voice-participation-engine";
 
+import { api } from "@/hooks/use-api";
 function useChildVoiceParticipation() {
   return useQuery<{ data: ChildVoiceParticipationResult }>({
     queryKey: ["child-voice-participation"],
     queryFn: () =>
-      fetch("/api/v1/child-voice-participation").then((r) => r.json()),
+      api.get<{ data: ChildVoiceParticipationResult }>("/api/v1/child-voice-participation"),
     refetchInterval: 60_000,
   });
 }

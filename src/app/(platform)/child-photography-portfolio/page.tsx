@@ -37,6 +37,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const CHILD_PHOTO_ENTRIES_KEY = "child-photo-entries";
 const CHILD_PHOTO_ENTRIES_API = "/api/v1/child-photo-entries";
 
@@ -44,7 +45,7 @@ function useChildPhotoEntries(childId?: string) {
   return useQuery<{ data: ChildPhotoEntry[] }>({
     queryKey: childId ? [CHILD_PHOTO_ENTRIES_KEY, childId] : [CHILD_PHOTO_ENTRIES_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_PHOTO_ENTRIES_API}?child_id=${childId}` : CHILD_PHOTO_ENTRIES_API).then((r) => r.json()),
+      api.get<{ data: ChildPhotoEntry[] }>(childId ? `${CHILD_PHOTO_ENTRIES_API}?child_id=${childId}` : CHILD_PHOTO_ENTRIES_API),
   });
 }
 

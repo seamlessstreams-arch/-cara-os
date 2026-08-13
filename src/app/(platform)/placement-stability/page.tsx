@@ -26,13 +26,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const STABILITY_RECORD_KEY = "placement-stability-records";
 const STABILITY_RECORD_API = "/api/v1/placement-stability-records";
 
 function usePlacementStabilityRecords(childId?: string) {
   return useQuery<{ data: PlacementStabilityRecord[] }>({
     queryKey: childId ? [STABILITY_RECORD_KEY, childId] : [STABILITY_RECORD_KEY],
-    queryFn: () => fetch(childId ? `${STABILITY_RECORD_API}?child_id=${childId}` : STABILITY_RECORD_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementStabilityRecord[] }>(childId ? `${STABILITY_RECORD_API}?child_id=${childId}` : STABILITY_RECORD_API),
   });
 }
 

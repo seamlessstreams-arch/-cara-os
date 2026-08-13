@@ -103,7 +103,7 @@ export default function BodyMapPage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: import("@/types/extended").BodyMapEntry[] }>({
     queryKey: ["body-map"],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: import("@/types/extended").BodyMapEntry[] }>(API),
   });
   const createEntry = useMutation({
     mutationFn: (data: Partial<import("@/types/extended").BodyMapEntry>) =>

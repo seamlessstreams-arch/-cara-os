@@ -40,13 +40,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SPLD_SUPPORT_PLANS_KEY = "spld-support-plans";
 const SPLD_SUPPORT_PLANS_API = "/api/v1/spld-support-plans";
 
 function useSpldSupportPlans(childId?: string) {
   return useQuery<{ data: SpldSupportPlan[] }>({
     queryKey: childId ? [SPLD_SUPPORT_PLANS_KEY, childId] : [SPLD_SUPPORT_PLANS_KEY],
-    queryFn: () => fetch(childId ? `${SPLD_SUPPORT_PLANS_API}?child_id=${childId}` : SPLD_SUPPORT_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SpldSupportPlan[] }>(childId ? `${SPLD_SUPPORT_PLANS_API}?child_id=${childId}` : SPLD_SUPPORT_PLANS_API),
   });
 }
 

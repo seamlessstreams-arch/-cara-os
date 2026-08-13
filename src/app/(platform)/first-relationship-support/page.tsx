@@ -37,6 +37,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const statusColour: Record<string, string> = {
   expressing_interest: "bg-purple-100 text-purple-800 border-purple-200",
   first_crush: "bg-pink-100 text-pink-800 border-pink-200",
@@ -81,7 +82,7 @@ const exportCols: ExportColumn<FirstRelationshipRecord>[] = [
 export default function FirstRelationshipSupportPage() {
   const { data: res, isLoading } = useQuery<{ data: FirstRelationshipRecord[] }>({
     queryKey: ["first-relationship-records"],
-    queryFn: () => fetch("/api/v1/first-relationship-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FirstRelationshipRecord[] }>("/api/v1/first-relationship-records"),
   });
   const records = useMemo(() => res?.data ?? [], [res]);
 

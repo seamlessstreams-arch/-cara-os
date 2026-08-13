@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── local lookup maps ──────────────────────────────────────────────── */
 const TYPE_COLOURS: Record<CommunityFeedbackType, string> = {
   compliment: "bg-green-100 text-green-800",
@@ -55,7 +56,7 @@ const SOURCE_ICON: Record<CommunityFeedbackSource, typeof Home> = {
 export default function CommunityFeedbackPage() {
   const { data, isLoading } = useQuery<{ data: CommunityFeedbackRecord[] }>({
     queryKey: ["community-feedback-records"],
-    queryFn: () => fetch("/api/v1/community-feedback-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CommunityFeedbackRecord[] }>("/api/v1/community-feedback-records"),
   });
   const records = data?.data ?? [];
 

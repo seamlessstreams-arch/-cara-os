@@ -41,7 +41,7 @@ const CCTV_ACCESSES_API = "/api/v1/cctv-accesses";
 function useCCTVAccesses() {
   return useQuery<{ data: CCTVAccess[] }>({
     queryKey: [CCTV_ACCESSES_KEY],
-    queryFn: () => fetch(CCTV_ACCESSES_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CCTVAccess[] }>(CCTV_ACCESSES_API),
   });
 }
 

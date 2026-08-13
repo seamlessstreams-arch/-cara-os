@@ -37,7 +37,7 @@ const DEBRIEF_API = "/api/v1/debrief-records";
 function useDebriefRecords(childId?: string) {
   return useQuery<{ data: DebriefRecord[] }>({
     queryKey: childId ? [DEBRIEF_KEY, childId] : [DEBRIEF_KEY],
-    queryFn: () => fetch(childId ? `${DEBRIEF_API}?child_id=${childId}` : DEBRIEF_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DebriefRecord[] }>(childId ? `${DEBRIEF_API}?child_id=${childId}` : DEBRIEF_API),
   });
 }
 

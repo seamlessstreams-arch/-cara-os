@@ -64,7 +64,7 @@ export default function BehaviourLogPage() {
 
   const { data: result, isLoading } = useQuery<{ data: BehaviourEntry[] }>({
     queryKey: ["behaviour-log"],
-    queryFn: () => fetch("/api/v1/behaviour-log").then((r) => r.json()),
+    queryFn: () => api.get<{ data: BehaviourEntry[] }>("/api/v1/behaviour-log"),
   });
   const entries = result?.data ?? [];
   const createEntry = useMutation({

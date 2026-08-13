@@ -57,7 +57,7 @@ export default function InventoryPage() {
 
   const { data: res, isLoading } = useQuery<{ data: InventoryItem[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch("/api/v1/inventory-items").then((r) => r.json()),
+    queryFn: () => api.get<{ data: InventoryItem[] }>("/api/v1/inventory-items"),
   });
   const items: InventoryItem[] = res?.data ?? [];
 

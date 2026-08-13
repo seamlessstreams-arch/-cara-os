@@ -19,6 +19,7 @@ import {
   ArrowRight, Users, HeartHandshake, ShieldCheck, CalendarDays, Sparkles,
 } from "lucide-react";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from the former use-system-health hook ────────────────────────────
 const COMMAND_CENTRE_HEALTH_KEY = "system-health";
 const COMMAND_CENTRE_HEALTH_URL = "/api/v1/system-health";
@@ -26,7 +27,7 @@ const COMMAND_CENTRE_HEALTH_URL = "/api/v1/system-health";
 function useSystemHealth() {
   return useQuery<{ data: SystemHealthReport }>({
     queryKey: [COMMAND_CENTRE_HEALTH_KEY],
-    queryFn: () => fetch(COMMAND_CENTRE_HEALTH_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SystemHealthReport }>(COMMAND_CENTRE_HEALTH_URL),
     staleTime: 2 * 60 * 1000,
   });
 }

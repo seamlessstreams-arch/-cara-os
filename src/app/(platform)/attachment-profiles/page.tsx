@@ -99,7 +99,7 @@ export default function AttachmentProfilesPage() {
 
   const { data: apData, isLoading } = useQuery<{ data: AttachmentProfile[] }>({
     queryKey: [ATTACHMENT_PROFILES_KEY],
-    queryFn: () => fetch(ATTACHMENT_PROFILES_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AttachmentProfile[] }>(ATTACHMENT_PROFILES_API),
   });
 
   const createAP = useMutation({

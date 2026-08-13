@@ -34,7 +34,7 @@ const PETTY_CASH_API = "/api/v1/petty-cash-entries";
 function usePettyCashEntries() {
   return useQuery<{ data: PettyCashEntry[] }>({
     queryKey: [PETTY_CASH_KEY],
-    queryFn: () => fetch(PETTY_CASH_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PettyCashEntry[] }>(PETTY_CASH_API),
   });
 }
 

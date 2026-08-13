@@ -37,12 +37,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const ORTHO_RECORDS_KEY = "ortho-records";
 
 function useOrthoRecords() {
   return useQuery<{ data: OrthoRecord[] }>({
     queryKey: [ORTHO_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/ortho-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: OrthoRecord[] }>("/api/v1/ortho-records"),
   });
 }
 

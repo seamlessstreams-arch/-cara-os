@@ -8,6 +8,7 @@ import { OutputView, type CaraApiResult } from "@/components/cara-studio/studio-
 import { AlertTriangle, ShieldCheck, CheckCircle2, Archive, MessageSquare } from "lucide-react";
 import type { CaraSavedOutput, CaraGuardrailEvent } from "@/lib/cara-studio/cara-types";
 
+import { api } from "@/hooks/use-api";
 interface ReviewData {
   queue: CaraSavedOutput[];
   recent: CaraSavedOutput[];
@@ -18,7 +19,7 @@ export default function CaraReviewPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<ReviewData>({
     queryKey: ["cara-review"],
-    queryFn: async () => (await (await fetch("/api/cara/review")).json()).data,
+    queryFn: async () => (await api.get<any>("/api/cara/review")).data,
     refetchInterval: 60_000,
   });
   const [openId, setOpenId] = useState<string | null>(null);

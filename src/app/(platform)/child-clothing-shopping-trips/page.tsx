@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const moodColour: Record<ShoppingMood, string> = {
   excited: "bg-amber-100 text-amber-800",
   engaged: "bg-green-100 text-green-800",
@@ -54,7 +55,7 @@ const exportCols: ExportColumn<ClothingShoppingTrip>[] = [
 export default function ChildClothingShoppingTripsPage() {
   const { data: res, isLoading } = useQuery<{ data: ClothingShoppingTrip[] }>({
     queryKey: ["clothing-shopping-trips"],
-    queryFn: () => fetch("/api/v1/clothing-shopping-trips").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ClothingShoppingTrip[] }>("/api/v1/clothing-shopping-trips"),
   });
   const data = res?.data ?? [];
 

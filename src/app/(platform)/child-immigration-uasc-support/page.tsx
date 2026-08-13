@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const STATUS_CLR: Record<ImmigrationStatus, string> = {
@@ -61,7 +62,7 @@ const STATUS_BORDER: Record<ImmigrationStatus, string> = {
 export default function ChildImmigrationUascSupportPage() {
   const { data: queryData, isLoading } = useQuery<{ data: ImmigrationUascRecord[] }>({
     queryKey: ["immigration-uasc-records"],
-    queryFn: () => fetch("/api/v1/immigration-uasc-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: ImmigrationUascRecord[] }>("/api/v1/immigration-uasc-records"),
   });
   const items = queryData?.data ?? [];
   const [search, setSearch] = useState("");

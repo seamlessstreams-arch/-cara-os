@@ -26,13 +26,14 @@ import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { api } from "@/hooks/use-api";
 const EDU_ATTENDANCE_RECORDS_KEY = "edu-attendance-records";
 const EDU_ATTENDANCE_RECORDS_API = "/api/v1/edu-attendance-records";
 
 function useEduAttendanceRecords(childId?: string) {
   return useQuery<{ data: EduAttendanceRecord[] }>({
     queryKey: childId ? [EDU_ATTENDANCE_RECORDS_KEY, childId] : [EDU_ATTENDANCE_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${EDU_ATTENDANCE_RECORDS_API}?child_id=${childId}` : EDU_ATTENDANCE_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: EduAttendanceRecord[] }>(childId ? `${EDU_ATTENDANCE_RECORDS_API}?child_id=${childId}` : EDU_ATTENDANCE_RECORDS_API),
   });
 }
 

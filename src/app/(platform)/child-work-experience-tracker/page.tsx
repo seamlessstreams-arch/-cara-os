@@ -32,12 +32,13 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const WORK_EXP_RECORDS_KEY = "work-exp-records";
 
 function useWorkExpRecords() {
   return useQuery<{ data: WorkExpRecord[] }>({
     queryKey: [WORK_EXP_RECORDS_KEY],
-    queryFn: () => fetch("/api/v1/work-exp-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: WorkExpRecord[] }>("/api/v1/work-exp-records"),
   });
 }
 

@@ -24,6 +24,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── colour map ─────────────────────────────────────────────────────── */
 const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
   annual_review: "bg-blue-100 text-blue-800",
@@ -37,7 +38,7 @@ const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
 export default function CommissioningFeedbackPage() {
   const { data: res, isLoading } = useQuery<{ data: CommissioningFeedbackRecord[] }>({
     queryKey: ["commissioning-feedback-records"],
-    queryFn: () => fetch("/api/v1/commissioning-feedback-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CommissioningFeedbackRecord[] }>("/api/v1/commissioning-feedback-records"),
   });
   const entries = res?.data ?? [];
 

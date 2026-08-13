@@ -39,16 +39,15 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 // ── inlined from @/hooks/use-laundry-self-care-records ──────────────────────
 function useLaundrySelfCareRecords(childId?: string) {
   return useQuery<{ data: LaundrySelfCareRecord[] }>({
     queryKey: childId ? ["laundry-self-care-records", childId] : ["laundry-self-care-records"],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: LaundrySelfCareRecord[] }>(childId
           ? `/api/v1/laundry-self-care-records?child_id=${childId}`
-          : "/api/v1/laundry-self-care-records"
-      ).then((r) => r.json()),
+          : "/api/v1/laundry-self-care-records"),
   });
 }
 

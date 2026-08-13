@@ -41,6 +41,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const statusColour: Record<FireComplianceStatus, string> = {
   compliant: "bg-green-100 text-green-800",
   due_now: "bg-blue-100 text-blue-800",
@@ -62,7 +63,7 @@ const exportCols: ExportColumn<FireEquipmentCheck>[] = [
 export default function FireSafetyEquipmentChecksPage() {
   const { data: res, isLoading } = useQuery<{ data: FireEquipmentCheck[] }>({
     queryKey: ["fire-equipment-checks"],
-    queryFn: () => fetch("/api/v1/fire-equipment-checks").then((r) => r.json()),
+    queryFn: () => api.get<{ data: FireEquipmentCheck[] }>("/api/v1/fire-equipment-checks"),
   });
   const records = res?.data ?? [];
 

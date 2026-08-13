@@ -33,11 +33,9 @@ function useMedicationErrorInvestigations(childId?: string) {
       ? [MEDICATION_ERROR_INVESTIGATIONS_KEY, childId]
       : [MEDICATION_ERROR_INVESTIGATIONS_KEY],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: MedicationErrorInvestigation[] }>(childId
           ? `${MEDICATION_ERROR_INVESTIGATIONS_API}?child_id=${childId}`
-          : MEDICATION_ERROR_INVESTIGATIONS_API,
-      ).then((r) => r.json()),
+          : MEDICATION_ERROR_INVESTIGATIONS_API,),
   });
 }
 

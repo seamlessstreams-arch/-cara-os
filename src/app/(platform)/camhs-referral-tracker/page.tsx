@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── label maps ───────────────────────────────────────────────────────── */
 
 const PATHWAY_LABEL: Record<CamhsPathway, string> = {
@@ -101,7 +102,7 @@ const ENGAGEMENT_META: Record<CamhsEngagementLevel, { colour: string }> = {
 export default function CamhsReferralTrackerPage() {
   const { data: crData, isLoading } = useQuery<{ data: CamhsReferral[] }>({
     queryKey: ["camhs-referrals"],
-    queryFn: () => fetch("/api/v1/camhs-referrals").then((r) => r.json()),
+    queryFn: () => api.get<{ data: CamhsReferral[] }>("/api/v1/camhs-referrals"),
   });
   const data = crData?.data ?? [];
 

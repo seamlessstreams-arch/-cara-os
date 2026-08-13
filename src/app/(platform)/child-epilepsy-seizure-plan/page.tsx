@@ -34,6 +34,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { londonDayDiff } from "@/lib/utils";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-epilepsy-seizure-plans ───────────────────── */
 
 const EPILEPSY_PLANS_KEY = "epilepsy-seizure-plans";
@@ -43,7 +44,7 @@ function useEpilepsySeizurePlans(childId?: string) {
   return useQuery<{ data: EpilepsySeizurePlan[] }>({
     queryKey: childId ? [EPILEPSY_PLANS_KEY, childId] : [EPILEPSY_PLANS_KEY],
     queryFn: () =>
-      fetch(childId ? `${EPILEPSY_PLANS_API}?child_id=${childId}` : EPILEPSY_PLANS_API).then((r) => r.json()),
+      api.get<{ data: EpilepsySeizurePlan[] }>(childId ? `${EPILEPSY_PLANS_API}?child_id=${childId}` : EPILEPSY_PLANS_API),
   });
 }
 

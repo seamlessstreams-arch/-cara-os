@@ -38,13 +38,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PHYSICAL_ACTIVITY_KEY = "physical-activity-entries";
 const PHYSICAL_ACTIVITY_API = "/api/v1/physical-activity-entries";
 
 function usePhysicalActivityEntries(childId?: string) {
   return useQuery<{ data: PhysicalActivityEntry[] }>({
     queryKey: childId ? [PHYSICAL_ACTIVITY_KEY, childId] : [PHYSICAL_ACTIVITY_KEY],
-    queryFn: () => fetch(childId ? `${PHYSICAL_ACTIVITY_API}?child_id=${childId}` : PHYSICAL_ACTIVITY_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PhysicalActivityEntry[] }>(childId ? `${PHYSICAL_ACTIVITY_API}?child_id=${childId}` : PHYSICAL_ACTIVITY_API),
   });
 }
 

@@ -30,13 +30,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const SMOKING_VAPING_RECORDS_KEY = "smoking-vaping-records";
 const SMOKING_VAPING_RECORDS_API = "/api/v1/smoking-vaping-records";
 
 function useSmokingVapingRecords(childId?: string) {
   return useQuery<{ data: SmokingVapingRecord[] }>({
     queryKey: childId ? [SMOKING_VAPING_RECORDS_KEY, childId] : [SMOKING_VAPING_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${SMOKING_VAPING_RECORDS_API}?child_id=${childId}` : SMOKING_VAPING_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SmokingVapingRecord[] }>(childId ? `${SMOKING_VAPING_RECORDS_API}?child_id=${childId}` : SMOKING_VAPING_RECORDS_API),
   });
 }
 

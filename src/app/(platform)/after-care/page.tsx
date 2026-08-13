@@ -70,7 +70,7 @@ export default function AfterCarePage() {
   const qc = useQueryClient();
   const { data: result, isLoading } = useQuery<{ data: AfterCareRecord[] }>({
     queryKey: [AFTER_CARE_KEY],
-    queryFn: () => fetch(AFTER_CARE_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AfterCareRecord[] }>(AFTER_CARE_API),
   });
   const createRecord = useMutation({
     mutationFn: (data: Partial<AfterCareRecord>) =>

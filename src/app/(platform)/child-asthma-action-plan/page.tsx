@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── Query Config ─────────────────────────────────────────────────────────── */
 const ASTHMA_PLANS_KEY = "asthma-plans";
 const ASTHMA_PLANS_API = "/api/v1/asthma-plans";
@@ -40,7 +41,7 @@ function addDays(n: number): string {
 export default function ChildAsthmaActionPlanPage() {
   const { data: resp, isLoading } = useQuery<{ data: AsthmaPlan[] }>({
     queryKey: [ASTHMA_PLANS_KEY],
-    queryFn: () => fetch(ASTHMA_PLANS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AsthmaPlan[] }>(ASTHMA_PLANS_API),
   });
   const data = resp?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);

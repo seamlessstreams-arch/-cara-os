@@ -19,6 +19,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
 const COMM_LEVEL_CLR: Record<CommLevel, string> = {
@@ -46,7 +47,7 @@ export default function LanguageCommunicationPage() {
   const { data: res, isLoading } = useQuery<{ data: CommunicationProfile[] }>({
     queryKey: ["communication-profiles"],
     queryFn: () =>
-      fetch("/api/v1/communication-profiles").then((r) => r.json()),
+      api.get<{ data: CommunicationProfile[] }>("/api/v1/communication-profiles"),
   });
   const data: CommunicationProfile[] = res?.data ?? [];
 

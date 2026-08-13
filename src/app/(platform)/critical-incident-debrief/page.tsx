@@ -47,7 +47,7 @@ export default function CriticalIncidentDebriefPage() {
 
   const { data: raw, isLoading } = useQuery<{ data: CriticalIncidentDebriefRecord[] }>({
     queryKey: [KEY],
-    queryFn: () => fetch(API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: CriticalIncidentDebriefRecord[] }>(API),
   });
   const records = raw?.data ?? [];
   const createRecord = useMutation({

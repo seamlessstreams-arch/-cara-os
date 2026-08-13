@@ -35,17 +35,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── inlined from @/hooks/use-leaving-care-packages ───────────────────────── */
 
 function useLeavingCarePackages(childId?: string) {
   return useQuery<{ data: LeavingCarePackage[] }>({
     queryKey: childId ? ["leaving-care-packages", childId] : ["leaving-care-packages"],
     queryFn: () =>
-      fetch(
-        childId
+      api.get<{ data: LeavingCarePackage[] }>(childId
           ? `/api/v1/leaving-care-packages?child_id=${childId}`
-          : "/api/v1/leaving-care-packages"
-      ).then((r) => r.json()),
+          : "/api/v1/leaving-care-packages"),
   });
 }
 

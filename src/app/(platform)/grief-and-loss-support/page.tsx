@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── constants ────────────────────────────────────────────────────────── */
 
 const LOSS_TYPE_COLOURS: Record<LossType, string> = {
@@ -73,7 +74,7 @@ const GRIEF_RECORDS_API = "/api/v1/grief-records";
 function useGriefRecords(childId?: string) {
   return useQuery<{ data: GriefRecord[] }>({
     queryKey: childId ? [GRIEF_RECORDS_KEY, childId] : [GRIEF_RECORDS_KEY],
-    queryFn: () => fetch(childId ? `${GRIEF_RECORDS_API}?child_id=${childId}` : GRIEF_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: GriefRecord[] }>(childId ? `${GRIEF_RECORDS_API}?child_id=${childId}` : GRIEF_RECORDS_API),
   });
 }
 

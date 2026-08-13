@@ -24,13 +24,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const PHOTO_ID_KEY = "photo-id-records";
 const PHOTO_ID_API = "/api/v1/photo-id-records";
 
 function usePhotoIdRecords(childId?: string) {
   return useQuery<{ data: PhotoIdRecord[] }>({
     queryKey: childId ? [PHOTO_ID_KEY, childId] : [PHOTO_ID_KEY],
-    queryFn: () => fetch(childId ? `${PHOTO_ID_API}?child_id=${childId}` : PHOTO_ID_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PhotoIdRecord[] }>(childId ? `${PHOTO_ID_API}?child_id=${childId}` : PHOTO_ID_API),
   });
 }
 

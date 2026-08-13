@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Loader2, Activity, ShieldCheck, AlertTriangle } from "lucide-react";
 import type { HealthSeverity, HealthCheckCategory, SystemHealthReport } from "@/lib/system-health/types";
 
+import { api } from "@/hooks/use-api";
 // ── Inlined from the former use-system-health hook ────────────────────────────
 const SYSTEM_HEALTH_PANEL_KEY = "system-health";
 const SYSTEM_HEALTH_PANEL_URL = "/api/v1/system-health";
@@ -23,7 +24,7 @@ const SYSTEM_HEALTH_PANEL_URL = "/api/v1/system-health";
 function useSystemHealth() {
   return useQuery<{ data: SystemHealthReport }>({
     queryKey: [SYSTEM_HEALTH_PANEL_KEY],
-    queryFn: () => fetch(SYSTEM_HEALTH_PANEL_URL).then((r) => r.json()),
+    queryFn: () => api.get<{ data: SystemHealthReport }>(SYSTEM_HEALTH_PANEL_URL),
     staleTime: 2 * 60 * 1000,
   });
 }

@@ -105,7 +105,7 @@ export default function AdoptionSupportRecordsPage() {
   const homeName = useHomeName();
   const { data: result, isLoading } = useQuery<{ data: AdoptionRecord[] }>({
     queryKey: [ADOPTION_RECORDS_KEY],
-    queryFn: () => fetch(ADOPTION_RECORDS_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: AdoptionRecord[] }>(ADOPTION_RECORDS_API),
   });
   const records = result?.data ?? [];
 

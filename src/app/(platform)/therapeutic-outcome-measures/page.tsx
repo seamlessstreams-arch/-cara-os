@@ -32,13 +32,14 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { useQuery } from "@tanstack/react-query";
 import type { OutcomeMeasure } from "@/types/extended";
 
+import { api } from "@/hooks/use-api";
 const OUTCOME_MEASURES_KEY = "outcome-measures";
 
 function useOutcomeMeasures(childId?: string, homeId?: string) {
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
   return useQuery<{ data: OutcomeMeasure[] }>({
     queryKey: [OUTCOME_MEASURES_KEY, childId, homeId],
-    queryFn: () => fetch(`/api/v1/outcome-measures${qs}`).then((r) => r.json()),
+    queryFn: () => api.get<{ data: OutcomeMeasure[] }>(`/api/v1/outcome-measures${qs}`),
   });
 }
 

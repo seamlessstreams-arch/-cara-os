@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 const periodColour: Record<HolidayPeriod, string> = {
   summer: "bg-amber-100 text-amber-800 border-amber-200",
   easter: "bg-pink-100 text-pink-800 border-pink-200",
@@ -47,7 +48,7 @@ const periodColour: Record<HolidayPeriod, string> = {
 export default function ChildSummerHolidayRecordPage() {
   const { data: res, isLoading } = useQuery<{ data: HolidayRecord[] }>({
     queryKey: ["holiday-records"],
-    queryFn: () => fetch("/api/v1/holiday-records").then((r) => r.json()),
+    queryFn: () => api.get<{ data: HolidayRecord[] }>("/api/v1/holiday-records"),
   });
   const data: HolidayRecord[] = res?.data ?? [];
 

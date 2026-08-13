@@ -78,7 +78,7 @@ const STABILITY_MEETING_API = "/api/v1/placement-stability-meetings";
 function usePlacementStabilityMeetings(childId?: string) {
   return useQuery<{ data: PlacementStabilityMeeting[] }>({
     queryKey: childId ? [STABILITY_MEETING_KEY, childId] : [STABILITY_MEETING_KEY],
-    queryFn: () => fetch(childId ? `${STABILITY_MEETING_API}?child_id=${childId}` : STABILITY_MEETING_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: PlacementStabilityMeeting[] }>(childId ? `${STABILITY_MEETING_API}?child_id=${childId}` : STABILITY_MEETING_API),
   });
 }
 

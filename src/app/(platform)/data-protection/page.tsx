@@ -51,7 +51,7 @@ const DATA_PROTECTION_API = "/api/v1/data-protection-records";
 function useDataProtectionRecords() {
   return useQuery<{ data: DataProtectionRecord[] }>({
     queryKey: [DATA_PROTECTION_KEY],
-    queryFn: () => fetch(DATA_PROTECTION_API).then((r) => r.json()),
+    queryFn: () => api.get<{ data: DataProtectionRecord[] }>(DATA_PROTECTION_API),
   });
 }
 

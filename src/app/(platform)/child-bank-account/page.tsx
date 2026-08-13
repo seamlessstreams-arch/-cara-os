@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { api } from "@/hooks/use-api";
 /* ── data (inlined from the former use-child-bank-accounts hook) ───────── */
 
 const CHILD_BANK_ACCOUNTS_KEY = "child-bank-accounts";
@@ -49,7 +50,7 @@ function useChildBankAccounts(childId?: string) {
   return useQuery<{ data: ChildBankAccount[] }>({
     queryKey: childId ? [CHILD_BANK_ACCOUNTS_KEY, childId] : [CHILD_BANK_ACCOUNTS_KEY],
     queryFn: () =>
-      fetch(childId ? `${CHILD_BANK_ACCOUNTS_API}?child_id=${childId}` : CHILD_BANK_ACCOUNTS_API).then((r) => r.json()),
+      api.get<{ data: ChildBankAccount[] }>(childId ? `${CHILD_BANK_ACCOUNTS_API}?child_id=${childId}` : CHILD_BANK_ACCOUNTS_API),
   });
 }
 
