@@ -7,6 +7,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 
+import { londonHour } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
 
@@ -143,7 +144,7 @@ export function computeIncidentSummary(
 
     const date = new Date(inc.created_at);
     by_day_of_week[date.getDay()] += 1;
-    by_hour[date.getHours()] += 1;
+    by_hour[londonHour(date)] += 1;
 
     if (inc.physical_intervention_used) {
       physical_interventions++;

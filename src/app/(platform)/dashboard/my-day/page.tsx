@@ -126,7 +126,7 @@ function useLeave(params?: {
       api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
   });
 }
-import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday, londonDisplay } from "@/lib/utils";
+import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday, londonDisplay, londonHour } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 
@@ -258,7 +258,7 @@ export default function MyDayPage() {
   const nextSupervision = staff?.next_supervision_due;
   const nextAppraisal = staff?.next_appraisal_due;
 
-  const hour = new Date().getHours();
+  const hour = londonHour();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const displayName = staff?.first_name ?? "Darren";
 

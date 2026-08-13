@@ -44,7 +44,7 @@ function useYoungPeople(status = "current") {
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, todayStr, daysFromNow, formatRelative } from "@/lib/utils";
+import { cn, todayStr, daysFromNow, formatRelative, londonTimeStr } from "@/lib/utils";
 import {
   Moon, Sun, Shield, CheckCircle2, AlertTriangle, Clock,
   Eye, Loader2, Plus, ChevronDown, ChevronUp, Heart,
@@ -131,7 +131,7 @@ function NewCheckForm({
 
   const children = ypData?.data ?? [];
   const now = new Date();
-  const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const timeStr = londonTimeStr(now);
 
   const [checkData, setCheckData] = useState<Record<string, {
     status: WelfareCheckStatus;

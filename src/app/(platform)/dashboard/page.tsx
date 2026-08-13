@@ -52,7 +52,7 @@ import type { CareEvent, CareEventStatus, CareEventCategory } from "@/types/care
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { careToast } from "@/lib/toast";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, todayStr, formatRelative, isOverdue, isDueToday, londonDisplay } from "@/lib/utils";
+import { cn, todayStr, formatRelative, isOverdue, isDueToday, londonDisplay, londonHour } from "@/lib/utils";
 import type { Task, Incident, YoungPerson, Shift } from "@/types";
 import {
   AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, Clock,
@@ -574,7 +574,7 @@ const HomeDataProtectionGdprComplianceIntelligenceCard = dynamic(() => import("@
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
-  const h = new Date().getHours();
+  const h = londonHour();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";

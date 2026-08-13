@@ -7,6 +7,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CsAuditLogEntry, AuditAction, ServiceResult } from "@/types/operations";
 
+import { londonHour } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
 
@@ -274,7 +275,7 @@ export async function getAuditStats(
     byEntityType[e.entity_type] = (byEntityType[e.entity_type] ?? 0) + 1;
     if (e.performed_by) byUser[e.performed_by] = (byUser[e.performed_by] ?? 0) + 1;
     if (e.performed_at) {
-      const hour = new Date(e.performed_at).getHours();
+      const hour = londonHour(new Date(e.performed_at));
       hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
     }
   }

@@ -9,6 +9,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { checkShiftSafety, type ShiftContext } from "@/lib/cara/shift-safety";
 
+import { londonHour } from "@/lib/utils";
 // ── Demo context ────────────────────────────────────────────────────────────
 
 function getDemoContext(): ShiftContext {
@@ -18,7 +19,7 @@ function getDemoContext(): ShiftContext {
 
   return {
     homeId: "home_oak",
-    shiftType: now.getHours() < 14 ? "day" : now.getHours() < 22 ? "evening" : "waking_night",
+    shiftType: londonHour(now) < 14 ? "day" : londonHour(now) < 22 ? "evening" : "waking_night",
     staffOnDuty: [
       {
         id: "staff_darren",

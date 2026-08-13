@@ -143,6 +143,28 @@ export function londonMonthName(d: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-GB", { timeZone: LONDON_TZ, month: "long" }).format(d);
 }
 
+// hourCycle "h23", not hour12:false — the latter can render midnight as "24".
+const londonClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LONDON_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/**
+ * Hour of day (0–23) in London for an instant. `getHours()` is the RUNTIME
+ * zone — UTC on Vercel — so a 22:00 London incident bucketed as 21:00 all
+ * summer, and the 22:00–22:59 waking-night hour classified as "evening".
+ */
+export function londonHour(d: Date = new Date()): number {
+  return Number(londonClock.format(d).slice(0, 2));
+}
+
+/** "HH:MM" in London for an instant — for times persisted onto records. */
+export function londonTimeStr(d: Date = new Date()): string {
+  return londonClock.format(d);
+}
+
 /**
  * A date n days from today in London terms. Calendar arithmetic on the date
  * parts (not +n×86400000ms), so the clock changes can't shift the answer.

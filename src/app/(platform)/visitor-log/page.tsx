@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
+import { cn, formatDate, todayStr, daysFromNow, londonTimeStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -167,7 +167,7 @@ function NewVisitorDialog({
   function handleSubmit() {
     if (!name.trim() || !purpose.trim()) return;
     const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const time = londonTimeStr(now);
     const entry: Partial<VisitorEntry> = {
       date: todayStr(),
       visitor_name: name.trim(),

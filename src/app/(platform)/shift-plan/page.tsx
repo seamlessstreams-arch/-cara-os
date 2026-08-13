@@ -15,12 +15,13 @@ import { api } from "@/hooks/use-api";
 import { Sun, Moon, Clock, Users, Pill, ShieldAlert, CheckCircle2, Sparkles, AlertTriangle, Eye } from "lucide-react";
 import type { ShiftPlanMustDo, ShiftPlanResult } from "@/lib/engines/shift-plan-engine";
 
+import { londonHour } from "@/lib/utils";
 function todayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 function defaultPeriod(): "day" | "night" {
-  const h = new Date().getHours();
+  const h = londonHour();
   return h >= 20 || h < 8 ? "night" : "day";
 }
 
