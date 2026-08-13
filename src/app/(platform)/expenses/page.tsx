@@ -161,7 +161,7 @@ function ExpenseRow({
           <Button size="sm" onClick={onApprove} className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700">
             <CheckCircle2 className="h-3 w-3 mr-1" />Approve
           </Button>
-          <Button size="sm" variant="outline" onClick={onReject} className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50">
+          <Button aria-label="Close" size="sm" variant="outline" onClick={onReject} className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50">
             <XCircle className="h-3 w-3" />
           </Button>
         </div>

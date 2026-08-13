@@ -203,7 +203,7 @@ function OversightTaskCard({
           <div className="flex items-center gap-2 shrink-0">
             {task.care_event && (
               <Link href={`/care-events/${task.care_event.id}`} title="View care event">
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Button aria-label="View" variant="ghost" size="sm" className="h-7 w-7 p-0">
                   <Eye className="h-3.5 w-3.5" />
                 </Button>
               </Link>
