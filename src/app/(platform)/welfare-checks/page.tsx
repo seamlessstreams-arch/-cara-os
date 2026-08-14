@@ -58,6 +58,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface WelfareChecksResponse {
@@ -781,21 +782,12 @@ export default function WelfareChecksPage() {
 
         {/* Check rounds by date */}
         {groupedRounds.length === 0 ? (
-          <div className="py-12 text-center">
-            <Moon className="h-10 w-10 text-[var(--cs-text-gentle)] mx-auto mb-3" />
-            <p className="text-sm font-medium text-[var(--cs-text-secondary)]">No welfare checks recorded yet</p>
-            <p className="text-xs text-[var(--cs-text-muted)] mt-1">
-              Start a new check round to document tonight&apos;s welfare monitoring
-            </p>
-            <Button
-              size="sm"
-              className="mt-4 gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90"
-              onClick={() => setShowForm(true)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Start First Check
-            </Button>
-          </div>
+          <EmptyState
+            icon={Moon}
+            title="No welfare checks recorded yet"
+            description="Start a new check round to document tonight's welfare monitoring — every round evidences Quality Standard 6.3 and Reg 34 supervision."
+            actions={[{ label: "Start First Check", icon: Plus, onClick: () => setShowForm(true) }]}
+          />
         ) : (
           <div className="space-y-6">
             {groupedRounds.map(([date, dateRounds]) => (

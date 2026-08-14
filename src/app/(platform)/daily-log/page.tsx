@@ -59,6 +59,7 @@ import type { DailyLogEntry, YoungPerson, StaffMember } from "@/types";
 import type { TrainingNeedPriority, TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type SingleResponse<T> = { data: T };
 
 function useCreateTrainingNeed() {
@@ -861,14 +862,12 @@ export default function DailyLogPage() {
             </div>
           </div>
         ) : entries.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 p-16 text-center text-slate-400">
-            <BookOpen className="h-12 w-12 mx-auto mb-3 text-slate-200" />
-            <div className="text-sm font-medium">No log entries found</div>
-            <div className="text-xs mt-1">Try a different filter or add a new entry</div>
-            <Button size="sm" className="mt-4" onClick={() => setShowForm(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1" />Add Entry
-            </Button>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="No log entries found"
+            description="Daily logs feed each child's chronology, mood trends and the whole-home picture — try a different filter or add the first entry."
+            actions={[{ label: "Add Entry", icon: Plus, onClick: () => setShowForm(true) }]}
+          />
         ) : (
           <div className="space-y-6">
             {sortedDates.map((date) => (
