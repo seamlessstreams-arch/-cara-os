@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type GapSeverity = "critical" | "warning" | "current";
 type RecordingDomain = "daily_log" | "key_working" | "lac_review" | "welfare_check";
 
@@ -288,9 +289,7 @@ export default function RecordingGapIntelligencePage() {
 
             {/* ── Child cards ───────────────────────────────────────────── */}
             {visible.length === 0 ? (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center text-sm text-emerald-700">
-                No children in this category.
-              </div>
+              <EmptyState compact title="No children in this category." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {visible.map((profile) => (

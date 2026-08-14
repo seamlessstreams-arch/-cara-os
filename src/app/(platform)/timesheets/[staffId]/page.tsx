@@ -51,6 +51,7 @@ import type { Shift, LeaveRequest, StaffMember } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // Types from use-rota
 export interface RotaMeta {
   week_start: string;
@@ -452,9 +453,7 @@ export default function TimesheetDetailPage({
             </CardHeader>
             <CardContent>
               {staffShifts.length === 0 ? (
-                <div className="py-10 text-center text-sm text-[var(--cs-text-muted)]">
-                  No shifts found for this period.
-                </div>
+                <EmptyState compact title="No shifts found for this period." />
               ) : (
                 <div className="divide-y divide-slate-100">
                   {/* Column headers */}

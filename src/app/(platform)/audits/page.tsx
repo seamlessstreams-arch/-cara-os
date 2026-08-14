@@ -72,6 +72,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Audit category → training need type ──────────────────────────────────────
 const AUDIT_CATEGORY_NEED: Record<string, string> = {
   medication: "medication_management",
@@ -557,9 +558,7 @@ export default function AuditsPage() {
                   ))}
 
                   {filtered.length === 0 && (
-                    <div className="py-8 text-center text-sm text-[var(--cs-text-muted)]">
-                      {hasFilters ? "No audits match your filters." : "No audits yet. Schedule your first audit to get started."}
-                    </div>
+                    <EmptyState compact title={hasFilters ? "No audits match your filters." : "No audits yet. Schedule your first audit to get started."} />
                   )}
                 </div>
               )}

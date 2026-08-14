@@ -45,6 +45,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── helpers ─────────────────────────────────────────────────────────────────
 const d = (n: number) => {
   const dt = new Date();
@@ -509,9 +510,7 @@ export default function NightTimeAnxietySupportPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No plans match the current filters.
-          </div>
+          <EmptyState compact title="No plans match the current filters." />
         )}
       </div>
 

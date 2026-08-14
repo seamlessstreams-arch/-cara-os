@@ -40,6 +40,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data (inlined from the former use-charity-grant-records hook) ─────── */
 
 const CHARITY_GRANT_RECORDS_KEY = "charity-grant-records";
@@ -506,9 +507,7 @@ export default function ChildCharityGrantsApplicationsPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-muted-foreground">
-            No grant applications match the current filters.
-          </div>
+          <EmptyState compact title="No grant applications match the current filters." />
         )}
 
         <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 text-sm text-amber-900">

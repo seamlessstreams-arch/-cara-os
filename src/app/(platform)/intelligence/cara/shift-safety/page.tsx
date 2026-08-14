@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Clock, Users, Moon, CheckCircle } from "lucide-react";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inlined from use-shift-safety-intelligence (single call site) ──────────── */
 
 type StaffShiftSignal = "at_risk" | "monitoring" | "good";
@@ -364,9 +365,7 @@ export default function ShiftSafetyPage() {
 
         {/* Staff cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No staff match this filter.
-          </div>
+          <EmptyState compact title="No staff match this filter." />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filtered.map((profile) => (

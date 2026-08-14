@@ -14,6 +14,7 @@ import {
 import type { RegisteredAction, ActionUrgency } from "@/lib/engines/actions-register-engine";
 import type { ActionsRegisterResult } from "@/lib/engines/actions-register-engine";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const URGENCY_META: Record<ActionUrgency, { label: string; dot: string; badge: string; rag: string }> = {
   overdue: { label: "Overdue", dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", rag: "cs-rag-red" },
   due_soon: { label: "Due soon", dot: "bg-amber-400", badge: "bg-amber-100 text-amber-800 border-amber-200", rag: "cs-rag-amber" },
@@ -174,9 +175,7 @@ export default function ActionsRegisterPage() {
             {/* Action list */}
             <div className="space-y-2">
               {filtered.length === 0 ? (
-                <div className="rounded-xl border border-[var(--cs-border)] bg-white px-4 py-10 text-center text-sm text-slate-500">
-                  {data.actions.length === 0 ? "No open actions — everything agreed is complete." : "No actions match this filter."}
-                </div>
+                <EmptyState compact title={data.actions.length === 0 ? "No open actions — everything agreed is complete." : "No actions match this filter."} />
               ) : (
                 filtered.map((a) => <ActionRow key={a.id} a={a} />)
               )}

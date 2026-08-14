@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type RelationshipSignal = "good" | "attention" | "concern";
 
 type StaffInteraction = {
@@ -354,9 +355,7 @@ export default function StaffChildRelationshipIndexPage() {
       </div>
 
       {profiles.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 text-sm">
-          No children found in current placement.
-        </div>
+        <EmptyState compact title="No children found in current placement." />
       )}
     </div>
   );

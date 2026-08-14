@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useProfessionalNetworkContacts(childId?: string) {
   return useQuery<ProfessionalNetworkContact[]>({
     queryKey: ["professional-network-contacts", childId],
@@ -278,7 +279,7 @@ export default function ProfessionalNetworkMapPage() {
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">No professionals match the current filters.</div>
+          <EmptyState compact title="No professionals match the current filters." />
         )}
 
         {/* ── regulatory note ── */}

@@ -45,6 +45,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data (inlined from the former use-case-file-audits hook) ──────────── */
 
 const CASE_FILE_AUDITS_KEY = "case-file-audits";
@@ -361,7 +362,7 @@ export default function CaseFileAuditPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-10">No audits match the current filters.</div>
+          <EmptyState compact title="No audits match the current filters." />
         )}
       </FlatList>
 

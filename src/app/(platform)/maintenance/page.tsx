@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Data hooks (inlined from the former use-maintenance wrapper) ──────────────
 
 interface MaintenanceResponse {
@@ -521,7 +522,7 @@ export default function MaintenancePage() {
                     </div>
                   ))}
                   {grouped.size === 0 && (
-                    <div className="py-8 text-center text-sm text-[var(--cs-text-muted)]">No items in this view.</div>
+                    <EmptyState compact title="No items in this view." />
                   )}
                 </div>
               ) : (
@@ -536,7 +537,7 @@ export default function MaintenancePage() {
                     />
                   ))}
                   {filtered.length === 0 && (
-                    <div className="py-8 text-center text-sm text-[var(--cs-text-muted)]">No items match your search or filter.</div>
+                    <EmptyState compact title="No items match your search or filter." />
                   )}
                 </div>
               )}

@@ -24,6 +24,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -271,9 +272,7 @@ export default function AnnualOutcomesReportPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No outcomes match the current filters.
-          </div>
+          <EmptyState compact title="No outcomes match the current filters." />
         )}
 
         {/* ── regulatory reference ── */}

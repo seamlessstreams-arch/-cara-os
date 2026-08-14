@@ -36,6 +36,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data hook (inlined from use-diversity-calendar-events) ──────────── */
 const DIVERSITY_CALENDAR_EVENTS_KEY = "diversity-calendar-events";
 const DIVERSITY_CALENDAR_EVENTS_API = "/api/v1/diversity-calendar-events";
@@ -207,9 +208,7 @@ export default function DiversityCalendarPage() {
         {/* ── event cards ────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
-              No events match the current filters.
-            </div>
+            <EmptyState compact title="No events match the current filters." />
           )}
 
           {filtered.map((event) => {

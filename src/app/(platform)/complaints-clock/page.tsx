@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { ComplaintClock, ClockUrgency, StageClock, ComplaintsClockResult } from "@/lib/engines/complaints-clock-engine";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const URGENCY_META: Record<ClockUrgency, { label: string; dot: string; badge: string; rag: string; border: string }> = {
   breached: { label: "Past deadline", dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", rag: "cs-rag-red", border: "border-l-red-500" },
   due_soon: { label: "Due soon", dot: "bg-amber-400", badge: "bg-amber-100 text-amber-800 border-amber-200", rag: "cs-rag-amber", border: "border-l-amber-400" },
@@ -131,7 +132,7 @@ export default function ComplaintsClockPage() {
 
             <div className="space-y-2.5">
               {data.complaints.length === 0 ? (
-                <div className="rounded-xl border border-[var(--cs-border)] bg-white px-4 py-10 text-center text-sm text-slate-500">No complaints recorded.</div>
+                <EmptyState compact title="No complaints recorded." />
               ) : (
                 data.complaints.map((c) => <ComplaintCard key={c.id} c={c} />)
               )}

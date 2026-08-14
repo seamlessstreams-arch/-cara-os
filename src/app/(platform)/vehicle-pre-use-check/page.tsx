@@ -51,6 +51,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const VEHICLE_PRE_USE_CHECKS_KEY = "vehicle-pre-use-checks";
 
 function useVehiclePreUseChecks(homeId?: string) {
@@ -897,9 +898,7 @@ export default function VehiclePreUseCheckPage() {
         })}
 
         {visible.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No pre-use checks match the current filters.
-          </div>
+          <EmptyState compact title="No pre-use checks match the current filters." />
         )}
       </div>
 

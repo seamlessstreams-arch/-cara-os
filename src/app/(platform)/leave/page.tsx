@@ -57,6 +57,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Leave queries (inlined from use-leave) ───────────────────────────────────
 
 interface LeaveMeta {
@@ -664,7 +665,7 @@ export default function LeavePage() {
                 <CardContent>
                   <div className="divide-y divide-slate-100">
                     {filteredRequests.length === 0 ? (
-                      <div className="py-12 text-center text-sm text-[var(--cs-text-muted)]">No leave requests match your filter</div>
+                      <EmptyState compact title="No leave requests match your filter" />
                     ) : (
                       filteredRequests.map((req) => (
                         <LeaveRow key={req.id} req={req} onClick={() => setSelectedReq(req)} />

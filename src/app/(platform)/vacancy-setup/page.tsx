@@ -17,6 +17,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { useQuery } from "@tanstack/react-query";
 import type { VacancySetupPack } from "@/lib/engines/vacancy-setup-engine";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface VacancySetupResponse {
   vacancies: { id: string; title: string; status: string; approval_status: string }[];
   pack: VacancySetupPack | null;
@@ -50,9 +51,7 @@ export default function VacancySetupPage() {
       {error && <p className="text-sm text-red-600">Couldn&rsquo;t load the vacancy pack. Try refreshing.</p>}
 
       {data && data.vacancies.length === 0 && (
-        <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-          No vacancies recorded yet — create one from the Safer Recruitment module.
-        </div>
+        <EmptyState compact title="No vacancies recorded yet — create one from the Safer Recruitment module." />
       )}
 
       {data && pack && (

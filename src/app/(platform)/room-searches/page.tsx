@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useRoomSearchRecords(childId?: string) {
   return useQuery<RoomSearchRecord[]>({
     queryKey: ["room-search-records", childId],
@@ -561,9 +562,7 @@ export default function RoomSearchesPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No room searches match your filters.
-          </div>
+          <EmptyState compact title="No room searches match your filters." />
         )}
         </FlatList>
 

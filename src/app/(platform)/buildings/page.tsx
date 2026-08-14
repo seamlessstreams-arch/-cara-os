@@ -58,6 +58,7 @@ import { api } from "@/hooks/use-api";
 import type { MaintenanceItem } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Data hook (inlined from the former use-maintenance wrapper) ───────────────
 
 interface MaintenanceResponse {
@@ -727,7 +728,7 @@ function CheckHistoryTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck
 
       <div className="space-y-2">
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">No checks match your filters.</div>
+          <EmptyState compact title="No checks match your filters." />
         )}
         {filtered.map((check) => {
           const isFail = check.result === "fail";

@@ -34,6 +34,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
 const QUALITY_TONE: Record<FamilyRelationshipQuality, string> = {
@@ -463,9 +464,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
         })}
 
         {visible.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No relationships match the current filters.
-          </div>
+          <EmptyState compact title="No relationships match the current filters." />
         )}
       </div>
 

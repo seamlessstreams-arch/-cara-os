@@ -35,6 +35,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const PHYSIO_OT_PLAN_KEY = "physio-ot-plans";
 const PHYSIO_OT_PLAN_API = "/api/v1/physio-ot-plans";
 
@@ -314,9 +315,7 @@ export default function ChildPhysioOtPlanPage() {
       {/* ── plans ──────────────────────────────────────────────────── */}
       <div className="space-y-4 mb-8">
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-gray-500">
-            No therapy plans match the current filters.
-          </div>
+          <EmptyState compact title="No therapy plans match the current filters." />
         )}
 
         {filtered.map((r) => {

@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inlined from ex-hook use-occupational-therapy-records ─────────────── */
 
 const OCCUPATIONAL_THERAPY_RECORDS_KEY = "occupational-therapy-records";
@@ -348,9 +349,7 @@ export default function OccupationalTherapyRecordsPage() {
       {/* ── records ────────────────────────────────────────────────── */}
       <div className="space-y-4 mb-8">
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-gray-500">
-            No OT records match the current filters.
-          </div>
+          <EmptyState compact title="No OT records match the current filters." />
         )}
 
         {filtered.map((r) => {
