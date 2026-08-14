@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inlined from ex-hook use-ofsted-engagement-log ────────────────── */
 
 const OFSTED_ENGAGEMENT_RECORDS_KEY = "ofsted-engagement-records";
@@ -324,9 +325,7 @@ export default function OfstedEngagementLogPage() {
         {/* ── engagement cards ───────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              No engagements match your filters.
-            </div>
+            <EmptyState compact title="No engagements match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

@@ -41,6 +41,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface BSPResponse {
   data: BehaviourSupportPlan[];
   meta: { total: number; active: number; overdue_reviews: number };
@@ -322,7 +323,7 @@ export default function BehaviourSupportPlansPage() {
         {/* -- BSP Detail Cards ---------------------------------------------- */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No behaviour support plans match your filters.</p>
+            <EmptyState compact title="No behaviour support plans match your filters." />
           )}
           {filtered.map((plan) => {
             const isExpanded = !!expanded[plan.id];

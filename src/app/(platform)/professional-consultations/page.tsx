@@ -26,6 +26,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useProfessionalConsultations(childId?: string) {
   return useQuery<ProfessionalConsultation[]>({
     queryKey: ["professional-consultations", childId],
@@ -220,7 +221,7 @@ export default function ProfessionalConsultationsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No consultations match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No consultations match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const typeColor = TYPE_COLOR[r.type];

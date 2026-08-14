@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { PostIncidentReflectionAnalysis, IncidentReflection, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchPostIncidentReflection(): Promise<PostIncidentReflectionAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/post-incident-reflection");
   if (!res.ok) throw new Error("Failed to fetch post-incident reflection data");
@@ -196,9 +197,7 @@ export default function PostIncidentReflectionPage() {
           Incidents & reflections ({data.totalIncidents})
         </h2>
         {data.reflections.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No incidents recorded yet.
-          </div>
+          <EmptyState compact title="No incidents recorded yet." />
         ) : (
           <div className="flex flex-col gap-4">
             {data.reflections.map((r) => (

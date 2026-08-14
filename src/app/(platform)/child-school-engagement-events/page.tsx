@@ -29,6 +29,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const SCHOOL_ENGAGEMENT_KEY = "school-engagement-events";
 const SCHOOL_ENGAGEMENT_API = "/api/v1/school-engagement-events";
 
@@ -378,9 +379,7 @@ export default function ChildSchoolEngagementEventsPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed bg-white p-8 text-center text-sm text-gray-500">
-            No records match these filters.
-          </div>
+          <EmptyState compact title="No records match these filters." />
         )}
       </div>
 

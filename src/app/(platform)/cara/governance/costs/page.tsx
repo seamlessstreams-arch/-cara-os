@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { CaraCostEstimate } from "@/components/cara/CaraCostEstimate";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface CostSummary {
   period: string;
   organisationId: string;
@@ -154,7 +155,7 @@ export default function CaraCostsPage() {
           )}
         </>
       ) : (
-        <div className="text-center py-12 text-muted-foreground">No cost data available</div>
+        <EmptyState compact title="No cost data available" />
       )}
     </div>
   );

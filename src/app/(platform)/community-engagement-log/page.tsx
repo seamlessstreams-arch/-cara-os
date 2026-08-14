@@ -35,6 +35,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const typeIcons: Record<string, typeof Users> = {
   sports_fitness: Activity,
   arts_culture: Palette,
@@ -191,7 +192,7 @@ export default function CommunityEngagementLogPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No activities match your filters.</div>
+          <EmptyState compact title="No activities match your filters." />
         )}
         {filtered.map((evt) => {
           const isExpanded = expandedId === evt.id;

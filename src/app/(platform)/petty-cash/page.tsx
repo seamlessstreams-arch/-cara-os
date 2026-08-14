@@ -28,6 +28,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const PETTY_CASH_KEY = "petty-cash-entries";
 const PETTY_CASH_API = "/api/v1/petty-cash-entries";
 
@@ -224,7 +225,7 @@ export default function PettyCashPage() {
         </div>
 
         <div className="space-y-2">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No transactions match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No transactions match your filters." />}
           {filtered.map((e) => {
             const open = !!expanded[e.id];
             const isIncome = e.type === "top_up" || e.type === "refund";

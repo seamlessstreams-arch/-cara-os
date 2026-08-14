@@ -28,6 +28,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const PREVENT_SCREENINGS_KEY = "prevent-screenings";
 const PREVENT_SCREENINGS_API = "/api/v1/prevent-screenings";
 
@@ -422,9 +423,7 @@ export default function ChildPreventRadicalisationScreeningPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed bg-white p-8 text-center text-sm text-gray-500">
-            No screenings match these filters.
-          </div>
+          <EmptyState compact title="No screenings match these filters." />
         )}
       </div>
 

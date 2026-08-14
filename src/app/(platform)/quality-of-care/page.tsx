@@ -43,6 +43,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useQualityOfCareReviews() {
   return useQuery<QualityOfCareReview[]>({
     queryKey: ["quality-of-care-reviews"],
@@ -255,7 +256,7 @@ export default function QualityOfCarePage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No reviews match your filters.</div>
+            <EmptyState compact title="No reviews match your filters." />
           )}
           {filtered.map((review) => {
             const isExpanded = expanded === review.id;

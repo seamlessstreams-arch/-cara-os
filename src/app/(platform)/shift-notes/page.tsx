@@ -28,6 +28,7 @@ import type { ShiftNoteRecord, ShiftNoteShiftType } from "@/types/extended";
 import { SHIFT_NOTE_SHIFT_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inlined from use-shift-note-records (single call site) ─────────────────── */
 
 function useShiftNoteRecords() {
@@ -218,7 +219,7 @@ export default function ShiftNotesPage() {
 
         {/* ── Shift notes list ─────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No shift notes match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No shift notes match your filters." />}
           {filtered.map((n) => {
             const open = !!expanded[n.id];
             const shiftM = SHIFT_META[n.shift];

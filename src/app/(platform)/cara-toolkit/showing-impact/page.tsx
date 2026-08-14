@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { ChildImpactSummary, ShowingImpactAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchShowingImpact(): Promise<ShowingImpactAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/showing-impact");
   if (!res.ok) throw new Error("Failed to fetch showing impact data");
@@ -177,9 +178,7 @@ export default function ShowingImpactPage() {
           Per-child impact ({data.totalChildren})
         </h2>
         {data.childSummaries.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No children currently in placement.
-          </div>
+          <EmptyState compact title="No children currently in placement." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.childSummaries.map((s) => (

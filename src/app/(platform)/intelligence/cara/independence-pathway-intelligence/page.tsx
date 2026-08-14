@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 export type PathwayDomainSummary = {
   name: string;
   score: number;
@@ -227,9 +228,7 @@ export default function IndependencePathwayIntelligencePage() {
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Per-child pathway profiles</h2>
         {data.childProfiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No pathway assessments found.
-          </div>
+          <EmptyState compact title="No pathway assessments found." />
         ) : (
           <div className="flex flex-col gap-4">
             {data.childProfiles.map((p) => (

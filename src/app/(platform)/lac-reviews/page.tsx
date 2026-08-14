@@ -28,6 +28,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── inlined from @/hooks/use-lac-reviews ────────────────────────────────────
 interface LACResponse {
   data: LACReview[];
@@ -241,7 +242,7 @@ export default function LACReviewsPage() {
 
         {/* ── Review list ──────────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No reviews match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No reviews match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const typeM = TYPE_META[r.review_type];

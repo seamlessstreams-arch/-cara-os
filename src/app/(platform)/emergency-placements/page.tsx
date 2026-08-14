@@ -31,6 +31,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const EMERGENCY_REFERRALS_KEY = "emergency-referrals";
 const EMERGENCY_REFERRALS_API = "/api/v1/emergency-referrals";
 
@@ -208,7 +209,7 @@ export default function EmergencyPlacementsPage() {
         {/* ── Referral List ─────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No emergency referrals match your filters.</p>
+            <EmptyState compact title="No emergency referrals match your filters." />
           )}
           {filtered.map((r) => {
             const open = expandedId === r.id;

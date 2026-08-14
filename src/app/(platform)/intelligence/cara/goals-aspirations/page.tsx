@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 export type VoiceEntry = {
   source: "outcome_target" | "key_work";
   date: string;
@@ -229,9 +230,7 @@ export default function GoalsAspirationsPage() {
           Voice by child ({data.totalChildren})
         </h2>
         {data.childVoiceProfiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No children currently in placement.
-          </div>
+          <EmptyState compact title="No children currently in placement." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.childVoiceProfiles.map((p) => (

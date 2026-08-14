@@ -25,6 +25,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inlined from ex-hook use-notification-log ──────────────────────────────
 
 const NOTIFICATION_LOG_KEY = "notification-log-entries";
@@ -234,7 +235,7 @@ export default function NotificationLogPage() {
         {/* ── notification cards ──────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No notifications match your filters.</div>
+            <EmptyState compact title="No notifications match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

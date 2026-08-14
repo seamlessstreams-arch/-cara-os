@@ -40,6 +40,7 @@ import {
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useSocialWorkerContactRecords(childId?: string) {
   return useQuery<SocialWorkerContactRecord[]>({
     queryKey: ["social-worker-contact-records", childId],
@@ -385,7 +386,7 @@ export default function SocialWorkerContactPage() {
               </Card>
             );
           })}
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No contacts match filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No contacts match filters." />}
         </div>
 
         {/* statutory visit tracker */}

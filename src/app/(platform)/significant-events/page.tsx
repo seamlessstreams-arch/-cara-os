@@ -28,6 +28,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inlined from use-significant-events (single call site) ─────────────────── */
 /* useUpdateSignificantEvent dropped — zero call sites anywhere in src/ */
 
@@ -267,7 +268,7 @@ export default function SignificantEventsPage() {
 
         {/* ── Event list ───────────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No events match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No events match your filters." />}
           {filtered.map((e) => {
             const open = !!expanded[e.id];
             const catM = CATEGORY_META[e.category];

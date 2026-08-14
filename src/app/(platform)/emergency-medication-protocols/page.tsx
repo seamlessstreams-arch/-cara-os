@@ -50,6 +50,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const EMERGENCY_MEDICATION_PROTOCOLS_KEY = "emergency-medication-protocols";
 const EMERGENCY_MEDICATION_PROTOCOLS_API = "/api/v1/emergency-medication-protocols";
 
@@ -383,9 +384,7 @@ export default function EmergencyMedicationProtocolsPage() {
       {/* ── Protocol Cards ─────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">
-            No protocols match your filters.
-          </p>
+          <EmptyState compact title="No protocols match your filters." />
         )}
 
         {filtered.map((protocol) => {

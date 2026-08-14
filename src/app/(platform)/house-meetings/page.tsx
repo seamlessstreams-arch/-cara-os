@@ -27,6 +27,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const TYPE_META: Record<HouseMeetingType, { label: string; color: string }> = {
   regular:   { label: "Regular",     color: "bg-blue-100 text-blue-800" },
   special:   { label: "Special",     color: "bg-purple-100 text-purple-800" },
@@ -193,7 +194,7 @@ export default function HouseMeetingsPage() {
 
         {/* ── Meeting list ─────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No meetings match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No meetings match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const typeM = TYPE_META[m.meeting_type];

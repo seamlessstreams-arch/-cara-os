@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { ReferralIntakeDialog } from "@/components/admissions/referral-intake-dialog";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const STATUS_COLOR: Record<AdmissionReferralStatus, string> = {
@@ -230,7 +231,7 @@ export default function AdmissionsPage() {
 
         {/* ── Referral list ────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No referrals match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No referrals match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             return (

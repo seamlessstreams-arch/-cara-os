@@ -33,6 +33,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data hooks (inlined from use-duty-log-entries) ────────────────────────── */
 
 const DUTY_LOG_ENTRIES_KEY = "duty-log-entries";
@@ -274,7 +275,7 @@ export default function DutyLogPage() {
               </div>
             );
           })}
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No entries match filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No entries match filters." />}
         </FlatList>
 
         {/* daily summary */}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type OutcomeProgressChild = {
   childId: string;
   childName: string;
@@ -277,9 +278,7 @@ export default function OutcomeProgressPage() {
           Per-child summary ({data.totalChildren})
         </h2>
         {data.childSummaries.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No children currently in placement.
-          </div>
+          <EmptyState compact title="No children currently in placement." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.childSummaries.map((c) => (

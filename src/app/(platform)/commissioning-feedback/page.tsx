@@ -25,6 +25,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── colour map ─────────────────────────────────────────────────────── */
 const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
   annual_review: "bg-blue-100 text-blue-800",
@@ -256,9 +257,7 @@ export default function CommissioningFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              No commissioning feedback matches your filters.
-            </div>
+            <EmptyState compact title="No commissioning feedback matches your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expandedId === entry.id;

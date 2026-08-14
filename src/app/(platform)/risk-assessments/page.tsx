@@ -33,6 +33,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface RAResponse {
   data: RiskAssessment[];
   meta: { total: number; current: number; high_very_high: number; overdue_reviews: number };
@@ -256,7 +257,7 @@ export default function RiskAssessmentsPage() {
         </div>
 
         <FlatList>
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No assessments match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No assessments match your filters." />}
           {filtered.map((a) => {
             const open = !!expanded[a.id];
             const domainM = DOMAIN_META[a.domain];

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type MedicationChildProfile = {
   childId: string;
   childName: string;
@@ -230,9 +231,7 @@ export default function MedicationSafetyPage() {
       )}
 
       {data.childProfiles.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-          No medication administration records found for the last 30 days.
-        </div>
+        <EmptyState compact title="No medication administration records found for the last 30 days." />
       )}
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">

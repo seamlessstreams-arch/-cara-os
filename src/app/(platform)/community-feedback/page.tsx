@@ -31,6 +31,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── local lookup maps ──────────────────────────────────────────────── */
 const TYPE_COLOURS: Record<CommunityFeedbackType, string> = {
   compliment: "bg-green-100 text-green-800",
@@ -232,9 +233,7 @@ export default function CommunityFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              No community feedback matches your filters.
-            </div>
+            <EmptyState compact title="No community feedback matches your filters." />
           )}
           {filtered.map((r) => {
             const isExpanded = expandedId === r.id;

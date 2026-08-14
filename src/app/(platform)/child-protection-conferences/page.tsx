@@ -40,6 +40,7 @@ import { StrategyDiscussionPanel } from "@/components/strategy-discussion/strate
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── config ──────────────────────────────────────────────────────────────────
 const outcomeColour: Record<string, string> = {
   subject_to_cp_plan: "bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -207,7 +208,7 @@ export default function ChildProtectionConferencesPage() {
       {/* ── conference cards ───────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No conferences match your filters.</div>
+          <EmptyState compact title="No conferences match your filters." />
         )}
         {filtered.map((conf) => {
           const isExpanded = expandedId === conf.id;

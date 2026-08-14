@@ -26,6 +26,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data hooks (inlined from use-staff-meeting-records) ─────────────────── */
 
 function useStaffMeetingRecords() {
@@ -208,7 +209,7 @@ export default function StaffMeetingsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No meetings match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No meetings match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const pendingActions = (m.new_actions ?? []).filter((a) => !a.completed).length;

@@ -36,6 +36,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const levelColour: Record<string, string> = {
   low: "bg-green-100 text-green-800",
   medium: "bg-amber-100 text-amber-800",
@@ -186,7 +187,7 @@ export default function ConsequenceFrameworkPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No records match your filters.</div>
+          <EmptyState compact title="No records match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;
