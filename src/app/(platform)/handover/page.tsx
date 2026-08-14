@@ -35,6 +35,7 @@ import { HandoverPrintContext } from "@/components/handover/handover-print-conte
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface ShiftSummaryEvent {
@@ -1135,14 +1136,12 @@ export default function HandoverPage() {
               {latest ? (
                 <LatestHandoverCard handover={latest} />
               ) : (
-                <div className="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-slate-400">
-                  <ArrowRightLeft className="h-10 w-10 mx-auto mb-3 text-slate-200" />
-                  <div className="text-sm font-medium">No handovers yet</div>
-                  <div className="text-xs mt-1">Write the first handover for today</div>
-                  <Button size="sm" className="mt-4" onClick={() => setShowForm(true)}>
-                    <Plus className="h-3.5 w-3.5 mr-1" />Write Handover
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={ArrowRightLeft}
+                  title="No handovers yet"
+                  description="Write the first handover for today — the incoming shift reads this before anything else."
+                  actions={[{ label: "Write Handover", icon: Plus, onClick: () => setShowForm(true) }]}
+                />
               )}
 
               {/* History */}

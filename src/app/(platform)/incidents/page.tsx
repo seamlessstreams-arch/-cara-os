@@ -17,7 +17,7 @@ import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { CaraIncidentAnalytics } from "@/components/cara/cara-incident-analytics";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
-  AlertTriangle, Shield, Eye, Clock, CheckCircle2, FileText,
+  AlertTriangle, Shield, ShieldAlert, Eye, Clock, CheckCircle2, FileText,
   Users, MapPin, Calendar, Plus, Search, Sparkles, Phone,
   UserCheck, X, ChevronRight, Bell, ClipboardList, Loader2,
   TrendingUp, ArrowUpRight, Brain, Link as LinkIcon, ArrowUpDown,
@@ -68,6 +68,7 @@ import type { Incident, IncidentNotification, YoungPerson, StaffMember } from "@
 import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type SingleResponse<T> = { data: T };
 
 function useCreateTrainingNeed() {
@@ -379,7 +380,7 @@ const INCIDENT_EXPORT_COLS: ExportColumn<Incident>[] = [
 
 // ── Tab 1: All Incidents ──────────────────────────────────────────────────────
 
-function AllIncidentsTab() {
+function AllIncidentsTab({ onLogNew }: { onLogNew: () => void }) {
   const { currentUser } = useAuthContext();
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
@@ -595,12 +596,20 @@ function AllIncidentsTab() {
       </div>
 
       <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-12 text-center">
-            <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-            <div className="text-sm font-semibold text-[var(--cs-navy)]">No incidents match your filters</div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-1">Try adjusting your filters to see more records</div>
-          </div>
+        {incidents.length === 0 ? (
+          <EmptyState
+            icon={ShieldAlert}
+            title="No incidents recorded"
+            description="When something happens, log it here — incidents feed management oversight, post-incident debriefs and each child's chronology."
+            actions={[{ label: "Log New Incident", icon: Plus, onClick: onLogNew }]}
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            compact
+            icon={CheckCircle2}
+            title="No incidents match your filters"
+            description="Try adjusting your filters to see more records."
+          />
         ) : (
           filtered.map((inc) => (
             <IncidentCard
@@ -1472,7 +1481,7 @@ export default function IncidentsPage() {
         </div>
 
         {/* Tab content */}
-        {activeTab === "all" && <AllIncidentsTab />}
+        {activeTab === "all" && <AllIncidentsTab onLogNew={() => setActiveTab("log")} />}
         {activeTab === "oversight" && <OversightQueueTab />}
         {activeTab === "log" && <LogIncidentTab onSuccess={() => setActiveTab("all")} />}
 
