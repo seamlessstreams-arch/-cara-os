@@ -33,6 +33,7 @@ import { generateCaraJSON, generateCaraContent } from "@/lib/cara/ai/provider";
 import { challengeOutputSchema } from "@/lib/cara/ai/schemas";
 import { isDemoReportId } from "@/lib/cara/reports/demo-report-id";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Severity ordering for sort ────────────────────────────────────────────
 
 const SEVERITY_ORDER: Record<ChallengeSeverity, number> = {
@@ -943,8 +944,8 @@ function getDemoReportDataForChallenge(reportId: string): {
     status: "draft",
     version: 1,
     parent_report_id: null,
-    date_range_start: "2026-05-05",
-    date_range_end: "2026-05-11",
+    date_range_start: seedDay(-34),
+    date_range_end: seedDay(-28),
     overall_summary: "Jayden has had a broadly positive week.",
     overall_confidence_score: 68,
     risk_tier: "low",
@@ -1070,7 +1071,7 @@ function getDemoReportDataForChallenge(reportId: string): {
       report_id: reportId,
       source_table: "incidents",
       source_record_id: "demo-inc-1",
-      source_date: "2026-05-08",
+      source_date: seedDay(-31),
       excerpt: "Verbal altercation — low severity — Jayden argued with a peer over the TV remote.",
       reasoning: null,
       relevance_score: 0.9,

@@ -8,6 +8,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -255,35 +256,35 @@ function getDemoPathway(staffId: string): StaffLearningPathway {
         id: "obj-demo-1", title: "Trauma-Informed Practice Refresher",
         description: "Recent incidents suggest a refresher on trauma-informed approaches would strengthen practice.",
         priority: "high", status: "in_progress", sourceEvidence: ["inc-1", "inc-2"],
-        linkedArtifactIds: ["art-train-1"], dueDate: "2026-05-20",
+        linkedArtifactIds: ["art-train-1"], dueDate: seedDay(-19),
         completedDate: null, competencyArea: "trauma_informed_practice",
       },
       {
         id: "obj-demo-2", title: "De-escalation Techniques",
         description: "Two physical interventions this month — review de-escalation approach.",
         priority: "critical", status: "not_started", sourceEvidence: ["inc-3"],
-        linkedArtifactIds: [], dueDate: "2026-05-15",
+        linkedArtifactIds: [], dueDate: seedDay(-24),
         completedDate: null, competencyArea: "de_escalation",
       },
       {
         id: "obj-demo-3", title: "Recording Practice Standards",
         description: "Key work records need more detail and evidence of child voice.",
         priority: "medium", status: "completed", sourceEvidence: [],
-        linkedArtifactIds: ["art-train-2"], dueDate: "2026-05-01",
-        completedDate: "2026-04-28", competencyArea: "recording_practice",
+        linkedArtifactIds: ["art-train-2"], dueDate: seedDay(-38),
+        completedDate: seedDay(-41), competencyArea: "recording_practice",
       },
       {
         id: "obj-demo-4", title: "Attachment Theory Foundations",
         description: "Core training for all residential care workers.",
         priority: "medium", status: "completed", sourceEvidence: [],
-        linkedArtifactIds: [], dueDate: "2026-04-15",
-        completedDate: "2026-04-10", competencyArea: "attachment_theory",
+        linkedArtifactIds: [], dueDate: seedDay(-54),
+        completedDate: seedDay(-59), competencyArea: "attachment_theory",
       },
       {
         id: "obj-demo-5", title: "Safeguarding Level 3 Update",
         description: "Annual safeguarding refresher due.",
         priority: "high", status: "overdue", sourceEvidence: [],
-        linkedArtifactIds: [], dueDate: "2026-04-30",
+        linkedArtifactIds: [], dueDate: seedDay(-39),
         completedDate: null, competencyArea: "safeguarding",
       },
     ],

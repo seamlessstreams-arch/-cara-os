@@ -15,6 +15,7 @@ import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
 import { todayStr } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoInputs(): RiScoreInputs {
@@ -63,42 +64,42 @@ function getDemoInputs(): RiScoreInputs {
     trainingRecords: [
       {
         id: "tr-demo-1", staff_id: "staff-sarah", course_name: "Advanced Safeguarding L3",
-        category: "safeguarding", provider: "Local Authority", completed_date: "2026-02-10",
-        expiry_date: "2027-02-10", certificate_url: null, status: "compliant",
+        category: "safeguarding", provider: "Local Authority", completed_date: seedDay(-97),
+        expiry_date: seedDay(268), certificate_url: null, status: "compliant",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
       },
       {
         id: "tr-demo-2", staff_id: "staff-tom", course_name: "Safeguarding L2",
-        category: "safeguarding", provider: "External", completed_date: "2026-01-15",
-        expiry_date: "2027-01-15", certificate_url: null, status: "compliant",
+        category: "safeguarding", provider: "External", completed_date: seedDay(-123),
+        expiry_date: seedDay(242), certificate_url: null, status: "compliant",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
       },
       {
         id: "tr-demo-3", staff_id: "staff-lisa", course_name: "First Aid at Work",
-        category: "first_aid", provider: "Red Cross", completed_date: "2025-08-20",
-        expiry_date: "2026-06-20", certificate_url: null, status: "expiring_soon",
+        category: "first_aid", provider: "Red Cross", completed_date: seedDay(-271),
+        expiry_date: seedDay(33), certificate_url: null, status: "expiring_soon",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
       },
       {
         id: "tr-demo-4", staff_id: "staff-darren", course_name: "Fire Safety",
-        category: "fire_safety", provider: "In-house", completed_date: "2026-01-10",
+        category: "fire_safety", provider: "In-house", completed_date: seedDay(-128),
         expiry_date: null, certificate_url: null, status: "compliant",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
       },
       {
         id: "tr-demo-5", staff_id: "staff-sarah", course_name: "PRICE Physical Intervention",
-        category: "restraint", provider: "PRICE", completed_date: "2026-03-20",
-        expiry_date: "2027-03-20", certificate_url: null, status: "compliant",
+        category: "restraint", provider: "PRICE", completed_date: seedDay(-59),
+        expiry_date: seedDay(306), certificate_url: null, status: "compliant",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
       },
       {
         id: "tr-demo-6", staff_id: "staff-tom", course_name: "Medication Administration",
-        category: "medication", provider: "In-house", completed_date: "2026-04-01",
+        category: "medication", provider: "In-house", completed_date: seedDay(-47),
         expiry_date: null, certificate_url: null, status: "compliant",
         is_mandatory: true, notes: null, home_id: "oak-house",
         created_at: now, updated_at: now, created_by: "sys", updated_by: "sys",
@@ -237,7 +238,7 @@ function getDemoInputs(): RiScoreInputs {
     reg45Items: [
       {
         id: "reg45-demo-1", home_id: "oak-house", report_period: "Q1 2026",
-        period_start: "2026-01-01", period_end: "2026-03-31",
+        period_start: seedDay(-137), period_end: seedDay(-48),
         evidence_items: [{ area: "safeguarding", summary: "Two referrals made" }],
         status: "reviewed", submitted_to_ofsted: false,
         created_by: "staff-darren", created_at: fiveDaysAgo, updated_at: twoDaysAgo,
@@ -324,7 +325,7 @@ function getDemoInputs(): RiScoreInputs {
         submitted_at: null, submitted_by: null,
         reviewed_by: null, reviewed_at: null, review_notes: null,
         approved_at: null, approved_by: null,
-        due_date: "2026-05-10", priority: "low", tags: ["education"],
+        due_date: seedDay(-8), priority: "low", tags: ["education"],
         home_id: "oak-house", created_at: fiveDaysAgo, updated_at: fiveDaysAgo,
         created_by: "staff-tom", updated_by: "staff-tom",
       },

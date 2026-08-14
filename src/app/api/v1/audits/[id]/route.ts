@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Contextual findings seeded per audit ID ───────────────────────────────────
 // Since the Audit model stores finding/action counts but no detail, we derive
 // meaningful per-audit narratives here so the detail page is substantive.
@@ -29,7 +30,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       standard_ref: "SCCIF: Health — Standard 3.4",
       action_required: "Staff to complete medication error reporting form and clinical review requested. Manager to audit MAR sheets weekly for 4 weeks.",
       owner: "staff_ryan",
-      due_date: "2026-05-01",
+      due_date: seedDay(-3),
       status: "in_progress",
     },
   ],
@@ -42,7 +43,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       standard_ref: "Regulatory Reform (Fire Safety) Order 2005",
       action_required: "Replace both evacuation signs within 7 days. Include in monthly premises check.",
       owner: "staff_ryan",
-      due_date: "2026-04-25",
+      due_date: seedDay(-9),
       status: "open",
     },
     {
@@ -53,7 +54,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       standard_ref: "BS EN 14351 / CSCI Guidance",
       action_required: "Maintenance team to tighten restrictor today. Re-test and document.",
       owner: "staff_darren",
-      due_date: "2026-04-18",
+      due_date: seedDay(-16),
       status: "resolved",
     },
   ],
@@ -65,7 +66,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "medium",
       action_required: "Locate or replace missing receipts. Introduce counter-signature requirement for all petty cash disbursements over £5.",
       owner: "staff_darren",
-      due_date: "2026-04-30",
+      due_date: seedDay(-4),
       status: "open",
     },
     {
@@ -75,7 +76,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "low",
       action_required: "Remind team of pre-approval policy. Add to next team meeting agenda.",
       owner: "staff_ryan",
-      due_date: "2026-04-30",
+      due_date: seedDay(-4),
       status: "open",
     },
     {
@@ -85,7 +86,7 @@ const AUDIT_FINDINGS: Record<string, AuditFinding[]> = {
       severity: "medium",
       action_required: "Replenish emergency fund to £150. Review cash flow management procedures.",
       owner: "staff_darren",
-      due_date: "2026-04-25",
+      due_date: seedDay(-9),
       status: "resolved",
     },
   ],

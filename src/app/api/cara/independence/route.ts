@@ -11,6 +11,7 @@ import { analyseIndependence } from "@/lib/cara/independence-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { IndependenceInput, LifeSkill, SkillCategory, SkillLevel, EETStatus } from "@/lib/cara/independence-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -198,8 +199,8 @@ function buildDemoData(childId: string): IndependenceInput {
     pathwayPlan: {
       exists: true,
       upToDate: true,
-      lastReviewDate: "2026-04-20",
-      nextReviewDue: "2026-10-20",
+      lastReviewDate: seedDay(-49),
+      nextReviewDue: seedDay(134),
       youngPersonParticipated: true,
       personalAdviserAssigned: true,
       goalsSet: true,

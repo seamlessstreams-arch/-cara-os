@@ -16,6 +16,7 @@ import {
   ShieldAlert, MessageCircle,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type QualityLevel = "excellent" | "good" | "needs_improvement" | "poor";
@@ -87,7 +88,7 @@ const TREND_CONFIG = {
 
 function getDemoHandoverQuality(): HandoverQualityData {
   return {
-    shiftDate: "2026-05-12",
+    shiftDate: seedDay(-27),
     shiftType: "Day shift",
     qualityScore: 72,
     qualityLevel: "good",

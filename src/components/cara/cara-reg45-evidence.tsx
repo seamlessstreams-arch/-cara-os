@@ -33,6 +33,7 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type EvidenceStatus = "complete" | "partial" | "missing" | "not_applicable";
@@ -94,7 +95,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 4,
         requiredCount: 1,
         gaps: [],
-        lastUpdated: "2026-05-10T14:00:00Z",
+        lastUpdated: `${seedDay(-29)}T14:00:00Z`,
       },
       {
         id: "complaints",
@@ -106,7 +107,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 1,
         requiredCount: 1,
         gaps: [],
-        lastUpdated: "2026-05-08T10:00:00Z",
+        lastUpdated: `${seedDay(-31)}T10:00:00Z`,
       },
       {
         id: "significant_events",
@@ -118,7 +119,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 7,
         requiredCount: 1,
         gaps: [],
-        lastUpdated: "2026-05-11T16:00:00Z",
+        lastUpdated: `${seedDay(-28)}T16:00:00Z`,
       },
       {
         id: "medication",
@@ -142,7 +143,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 3,
         requiredCount: 5,
         gaps: ["Training compliance summary not yet generated", "Vacancy status not recorded"],
-        lastUpdated: "2026-05-09T12:00:00Z",
+        lastUpdated: `${seedDay(-30)}T12:00:00Z`,
       },
       {
         id: "education",
@@ -154,7 +155,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 12,
         requiredCount: 3,
         gaps: [],
-        lastUpdated: "2026-05-11T09:00:00Z",
+        lastUpdated: `${seedDay(-28)}T09:00:00Z`,
       },
       {
         id: "health",
@@ -166,7 +167,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 2,
         requiredCount: 3,
         gaps: ["Missing wellbeing check for Jordan M"],
-        lastUpdated: "2026-05-07T15:00:00Z",
+        lastUpdated: `${seedDay(-32)}T15:00:00Z`,
       },
       {
         id: "quality",
@@ -178,7 +179,7 @@ function getDemoReg45(): Reg45Summary {
         itemCount: 5,
         requiredCount: 8,
         gaps: ["Child voice not captured for 1 young person this month", "Missing key work session for Jordan M", "Outcomes tracker not updated"],
-        lastUpdated: "2026-05-10T11:00:00Z",
+        lastUpdated: `${seedDay(-29)}T11:00:00Z`,
       },
       {
         id: "development",

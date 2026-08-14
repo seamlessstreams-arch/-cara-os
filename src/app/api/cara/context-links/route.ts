@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Pure helpers (exported for testing) ────────────────────────────────────
 
 export function validateTableName(table: unknown): boolean {
@@ -35,7 +36,7 @@ export function getDemoLinks(sourceTable: string, recordId: string) {
         description: "Incident may indicate risk assessment needs updating.",
         confidence: 87,
         status: "active",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
       {
@@ -49,7 +50,7 @@ export function getDemoLinks(sourceTable: string, recordId: string) {
         description: "Incident should be discussed in next supervision.",
         confidence: 91,
         status: "verified",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
     ];

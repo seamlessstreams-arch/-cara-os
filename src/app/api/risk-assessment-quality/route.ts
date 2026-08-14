@@ -24,6 +24,7 @@ import type {
 } from "@/lib/risk-assessment-quality";
 import { readJsonBody } from "@/lib/http/read-json";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
@@ -36,7 +37,7 @@ function generateDemoData(): {
       id: "ra-001",
       childId: "child-alex",
       childName: "Alex",
-      assessmentDate: "2026-05-05",
+      assessmentDate: seedDay(-13),
       riskCategory: "self_harm",
       riskLevel: "medium",
       mitigationPlanInPlace: true,
@@ -50,7 +51,7 @@ function generateDemoData(): {
       id: "ra-002",
       childId: "child-alex",
       childName: "Alex",
-      assessmentDate: "2026-05-08",
+      assessmentDate: seedDay(-10),
       riskCategory: "absconding",
       riskLevel: "low",
       mitigationPlanInPlace: true,
@@ -64,7 +65,7 @@ function generateDemoData(): {
       id: "ra-003",
       childId: "child-alex",
       childName: "Alex",
-      assessmentDate: "2026-05-10",
+      assessmentDate: seedDay(-8),
       riskCategory: "online_safety",
       riskLevel: "low",
       mitigationPlanInPlace: true,
@@ -78,7 +79,7 @@ function generateDemoData(): {
       id: "ra-004",
       childId: "child-jordan",
       childName: "Jordan",
-      assessmentDate: "2026-05-06",
+      assessmentDate: seedDay(-12),
       riskCategory: "aggression",
       riskLevel: "high",
       mitigationPlanInPlace: true,
@@ -92,7 +93,7 @@ function generateDemoData(): {
       id: "ra-005",
       childId: "child-jordan",
       childName: "Jordan",
-      assessmentDate: "2026-05-09",
+      assessmentDate: seedDay(-9),
       riskCategory: "bullying",
       riskLevel: "medium",
       mitigationPlanInPlace: true,
@@ -106,7 +107,7 @@ function generateDemoData(): {
       id: "ra-006",
       childId: "child-morgan",
       childName: "Morgan",
-      assessmentDate: "2026-05-07",
+      assessmentDate: seedDay(-11),
       riskCategory: "exploitation",
       riskLevel: "critical",
       mitigationPlanInPlace: true,
@@ -120,7 +121,7 @@ function generateDemoData(): {
       id: "ra-007",
       childId: "child-morgan",
       childName: "Morgan",
-      assessmentDate: "2026-05-11",
+      assessmentDate: seedDay(-7),
       riskCategory: "substance_misuse",
       riskLevel: "medium",
       mitigationPlanInPlace: true,
@@ -134,7 +135,7 @@ function generateDemoData(): {
       id: "ra-008",
       childId: "child-morgan",
       childName: "Morgan",
-      assessmentDate: "2026-05-12",
+      assessmentDate: seedDay(-6),
       riskCategory: "fire_setting",
       riskLevel: "low",
       mitigationPlanInPlace: true,

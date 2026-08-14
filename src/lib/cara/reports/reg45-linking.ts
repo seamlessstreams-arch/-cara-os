@@ -25,6 +25,7 @@ import type {
 } from "@/types/cara-reports";
 import { writeCaraAudit } from "@/lib/cara/audit/cara-audit";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Section → Reg 45 Category Mapping ─────────────────────────────────────
 
 interface Reg45Mapping {
@@ -530,8 +531,8 @@ function getDemoReportAndSections(reportId: string): {
     status: "approved",
     version: 1,
     parent_report_id: null,
-    date_range_start: "2026-05-05",
-    date_range_end: "2026-05-11",
+    date_range_start: seedDay(-34),
+    date_range_end: seedDay(-28),
     overall_summary: "Jayden has had a broadly positive week.",
     overall_confidence_score: 72,
     risk_tier: "low",
@@ -637,7 +638,7 @@ function getDemoReg45Evidence(homeId: string): Regulation45EvidenceItem[] {
       description: "Jayden has had a settled and positive week with engagement in routines and activities.",
       source_table: "child_report_sections",
       source_record_id: "demo-sec-r45-1",
-      source_date: "2026-05-11",
+      source_date: seedDay(-28),
       quality_score: 80,
       is_child_voice: false,
       is_safeguarding: false,
@@ -660,7 +661,7 @@ function getDemoReg45Evidence(homeId: string): Regulation45EvidenceItem[] {
       description: "Full attendance, merit certificate for artwork, PEP review showing progress.",
       source_table: "child_report_sections",
       source_record_id: "demo-sec-r45-2",
-      source_date: "2026-05-11",
+      source_date: seedDay(-28),
       quality_score: 85,
       is_child_voice: false,
       is_safeguarding: false,
@@ -683,7 +684,7 @@ function getDemoReg45Evidence(homeId: string): Regulation45EvidenceItem[] {
       description: "Jayden shared that he feels safe and mostly happy at the home.",
       source_table: "child_report_sections",
       source_record_id: "demo-sec-r45-3",
-      source_date: "2026-05-11",
+      source_date: seedDay(-28),
       quality_score: 78,
       is_child_voice: true,
       is_safeguarding: false,

@@ -25,6 +25,7 @@ import {
 } from "@/types/cara-studio";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Status config ───────────────────────────────────────────────────────────
 
 const STATUS_ICON: Record<string, React.ElementType> = {
@@ -53,56 +54,56 @@ const DEMO_ARTIFACTS: CaraStudioArtifact[] = [
   {
     id: "hist-1", home_id: "home-1", artifact_type: "keywork_session", title: "Key Work Session — Jayden — Identity & Belonging",
     status: "committed", child_id: "child_1", created_by: "user-1",
-    created_at: "2026-05-10T09:00:00Z", committed_at: "2026-05-10T14:00:00Z",
+    created_at: `${seedDay(-29)}T09:00:00Z`, committed_at: `${seedDay(-29)}T14:00:00Z`,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 82,
   } as CaraStudioArtifact,
   {
     id: "hist-2", home_id: "home-1", artifact_type: "management_oversight", title: "Weekly Management Oversight — w/c 5 May",
     status: "committed", child_id: null, created_by: "user-1",
-    created_at: "2026-05-09T08:30:00Z", committed_at: "2026-05-09T16:00:00Z",
+    created_at: `${seedDay(-30)}T08:30:00Z`, committed_at: `${seedDay(-30)}T16:00:00Z`,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 78,
   } as CaraStudioArtifact,
   {
     id: "hist-3", home_id: "home-1", artifact_type: "risk_review", title: "Risk Review — Amara — Self-Harm Indicators",
     status: "approved", child_id: "child_2", created_by: "user-1",
-    created_at: "2026-05-08T11:00:00Z", committed_at: null,
+    created_at: `${seedDay(-31)}T11:00:00Z`, committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 71,
   } as CaraStudioArtifact,
   {
     id: "hist-4", home_id: "home-1", artifact_type: "staff_training", title: "De-escalation Refresher — Practice-Based Scenarios",
     status: "in_review", child_id: null, created_by: "user-2",
-    created_at: "2026-05-08T10:00:00Z", committed_at: null,
+    created_at: `${seedDay(-31)}T10:00:00Z`, committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 65,
   } as CaraStudioArtifact,
   {
     id: "hist-5", home_id: "home-1", artifact_type: "incident_learning_review", title: "Incident Learning — Window Damage 6 May",
     status: "draft", child_id: "child_3", created_by: "user-1",
-    created_at: "2026-05-07T15:00:00Z", committed_at: null,
+    created_at: `${seedDay(-32)}T15:00:00Z`, committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 55,
   } as CaraStudioArtifact,
   {
     id: "hist-6", home_id: "home-1", artifact_type: "social_worker_update", title: "Social Worker Update — Jayden — April Progress",
     status: "committed", child_id: "child_1", created_by: "user-1",
-    created_at: "2026-05-06T09:00:00Z", committed_at: "2026-05-06T17:00:00Z",
+    created_at: `${seedDay(-33)}T09:00:00Z`, committed_at: `${seedDay(-33)}T17:00:00Z`,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 88,
   } as CaraStudioArtifact,
   {
     id: "hist-7", home_id: "home-1", artifact_type: "child_friendly_explanation", title: "What Happens at a Review — Amara",
     status: "committed", child_id: "child_2", created_by: "user-1",
-    created_at: "2026-05-05T14:00:00Z", committed_at: "2026-05-05T16:30:00Z",
+    created_at: `${seedDay(-34)}T14:00:00Z`, committed_at: `${seedDay(-34)}T16:30:00Z`,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 92,
   } as CaraStudioArtifact,
   {
     id: "hist-8", home_id: "home-1", artifact_type: "reg45_summary", title: "Regulation 45 Summary — April 2026",
     status: "committed", child_id: null, created_by: "user-1",
-    created_at: "2026-05-03T09:00:00Z", committed_at: "2026-05-04T11:00:00Z",
+    created_at: `${seedDay(-36)}T09:00:00Z`, committed_at: `${seedDay(-35)}T11:00:00Z`,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 85,
   } as CaraStudioArtifact,

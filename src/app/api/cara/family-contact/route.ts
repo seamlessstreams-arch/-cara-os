@@ -11,6 +11,7 @@ import { analyseFamilyContact } from "@/lib/cara/family-contact-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { FamilyContact, ContactPlanRequirement, FamilyContactInput } from "@/lib/cara/family-contact-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -123,26 +124,26 @@ function buildDemoData(childId: string): FamilyContactInput {
 
   const contacts: FamilyContact[] = isJordan ? [
     // Mum — weekly, mixed quality, some cancellations
-    { id: "fc_1", date: "2026-03-22", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
-    { id: "fc_2", date: "2026-03-29", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 3 },
-    { id: "fc_3", date: "2026-04-05", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: false, cancelledBy: "family", cancellationReason: "Mum unwell" },
-    { id: "fc_4", date: "2026-04-12", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 5 },
-    { id: "fc_5", date: "2026-04-19", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 2, incidentAfter: true },
-    { id: "fc_6", date: "2026-04-26", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: false, cancelledBy: "family" },
-    { id: "fc_7", date: "2026-05-03", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 4, childMoodAfter: 4 },
-    { id: "fc_8", date: "2026-05-10", contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: false, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
+    { id: "fc_1", date: seedDay(-78), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
+    { id: "fc_2", date: seedDay(-71), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 3 },
+    { id: "fc_3", date: seedDay(-64), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: false, cancelledBy: "family", cancellationReason: "Mum unwell" },
+    { id: "fc_4", date: seedDay(-57), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 5 },
+    { id: "fc_5", date: seedDay(-50), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 2, incidentAfter: true },
+    { id: "fc_6", date: seedDay(-43), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: false, cancelledBy: "family" },
+    { id: "fc_7", date: seedDay(-36), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 4, childMoodAfter: 4 },
+    { id: "fc_8", date: seedDay(-29), contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: false, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
     // Dad — fortnightly, limited engagement
-    { id: "fc_9", date: "2026-03-30", contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
-    { id: "fc_10", date: "2026-04-13", contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 2 },
-    { id: "fc_11", date: "2026-04-27", contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
-    { id: "fc_12", date: "2026-05-11", contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
+    { id: "fc_9", date: seedDay(-70), contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
+    { id: "fc_10", date: seedDay(-56), contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: true, quality: "mixed", childMoodBefore: 3, childMoodAfter: 2 },
+    { id: "fc_11", date: seedDay(-42), contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
+    { id: "fc_12", date: seedDay(-28), contactType: "face_to_face", familyMember: "Dad", familyMemberRelation: "father", planned: true, occurred: false, cancelledBy: "family" },
     // Sister — sporadic
-    { id: "fc_13", date: "2026-04-20", contactType: "video", familyMember: "Chloe (sister)", familyMemberRelation: "sibling", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 5 },
+    { id: "fc_13", date: seedDay(-49), contactType: "video", familyMember: "Chloe (sister)", familyMemberRelation: "sibling", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 5 },
   ] : [
     // Sam — minimal contact
-    { id: "fc_1", date: "2026-04-05", contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
-    { id: "fc_2", date: "2026-04-19", contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
-    { id: "fc_3", date: "2026-05-03", contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 2, childMoodAfter: 4 },
+    { id: "fc_1", date: seedDay(-64), contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
+    { id: "fc_2", date: seedDay(-50), contactType: "phone", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 3, childMoodAfter: 4 },
+    { id: "fc_3", date: seedDay(-36), contactType: "face_to_face", familyMember: "Mum", familyMemberRelation: "mother", planned: true, occurred: true, quality: "positive", childMoodBefore: 2, childMoodAfter: 4 },
   ];
 
   const planRequirements: ContactPlanRequirement[] = isJordan ? [
@@ -158,6 +159,6 @@ function buildDemoData(childId: string): FamilyContactInput {
     childName,
     contacts,
     planRequirements,
-    placementStartDate: "2025-09-01",
+    placementStartDate: seedDay(-280),
   };
 }

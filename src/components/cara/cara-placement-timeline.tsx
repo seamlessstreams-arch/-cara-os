@@ -16,6 +16,7 @@ import {
   ChevronDown, ChevronUp, MessageCircle, Award,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type EventType =
@@ -82,83 +83,83 @@ function getDemoPlacementTimeline(): PlacementTimelineData {
   return {
     childName: "Alex W",
     childId: "yp_001",
-    placementStart: "2025-09-15",
+    placementStart: seedDay(-266),
     placementDays: 239,
     caraOverview: "Overall trajectory shows early settling followed by a behaviour escalation pattern emerging in the last 6 weeks. Key worker engagement is strong and education attendance is improving. Risk assessment review is recommended based on the recent incident pattern.",
     events: [
       {
-        id: "pe_001", type: "placement_start", date: "2025-09-15",
+        id: "pe_001", type: "placement_start", date: seedDay(-266),
         title: "Placement commenced at the home",
         detail: "Admitted following placement breakdown. Initial risk assessment completed.",
         significance: "high",
       },
       {
-        id: "pe_002", type: "care_plan_update", date: "2025-09-22",
+        id: "pe_002", type: "care_plan_update", date: seedDay(-259),
         title: "Initial care plan created",
         detail: "Care plan developed with social worker. Key targets: school re-engagement, behaviour support, family contact.",
         significance: "medium",
       },
       {
-        id: "pe_003", type: "key_work", date: "2025-10-10",
+        id: "pe_003", type: "key_work", date: seedDay(-241),
         title: "First key work session",
         detail: "Positive engagement. Expressed wishes about school and contact with mother.",
         significance: "medium",
         caraNarrative: "Early engagement with key worker is a positive indicator for placement stability.",
       },
       {
-        id: "pe_004", type: "lac_review", date: "2025-11-20",
+        id: "pe_004", type: "lac_review", date: seedDay(-200),
         title: "First LAC review",
         detail: "Care plan progressing. Education placement secured. Good settling period noted by all professionals.",
         significance: "high",
       },
       {
-        id: "pe_005", type: "education_update", date: "2025-12-05",
+        id: "pe_005", type: "education_update", date: seedDay(-185),
         title: "Started attending new school",
         detail: "Enrolled at Meadow Park Academy. Initial settling week went well.",
         significance: "medium",
       },
       {
-        id: "pe_006", type: "achievement", date: "2026-01-15",
+        id: "pe_006", type: "achievement", date: seedDay(-144),
         title: "Completed first full term at school",
         detail: "86% attendance in first term. Positive report from school.",
         significance: "medium",
         caraNarrative: "Strong educational engagement in first term — positive evidence for Reg 45 report.",
       },
       {
-        id: "pe_007", type: "milestone", date: "2026-02-15",
+        id: "pe_007", type: "milestone", date: seedDay(-113),
         title: "6-month placement milestone",
         detail: "Successfully completed 6 months in placement. No disruptions.",
         significance: "high",
         caraNarrative: "6-month milestone with no placement disruptions is strong evidence of stability.",
       },
       {
-        id: "pe_008", type: "incident", date: "2026-04-28",
+        id: "pe_008", type: "incident", date: seedDay(-41),
         title: "Incident — verbal altercation with peer",
         detail: "Argument with Casey T over shared space. De-escalated by staff. No physical intervention.",
         significance: "medium",
       },
       {
-        id: "pe_009", type: "incident", date: "2026-05-05",
+        id: "pe_009", type: "incident", date: seedDay(-34),
         title: "Incident — refusal and property damage",
         detail: "Refused to attend school. Kicked bedroom door causing minor damage.",
         significance: "high",
         caraNarrative: "Second incident within 7 days — Cara flags escalation pattern for risk review.",
       },
       {
-        id: "pe_010", type: "risk_change", date: "2026-05-06",
+        id: "pe_010", type: "risk_change", date: seedDay(-33),
         title: "Risk level increased: Behaviour",
         detail: "Behaviour risk increased from Low to Medium following incident pattern.",
         significance: "high",
       },
       {
-        id: "pe_011", type: "incident", date: "2026-05-10",
+        id: "pe_011", type: "incident", date: seedDay(-29),
         title: "Incident — peer conflict escalation",
         detail: "Physical altercation with peer. Brief restraint used (2 minutes). No injuries.",
         significance: "high",
         caraNarrative: "Third incident in 12 days with physical intervention. Behaviour support plan review urgently recommended.",
       },
       {
-        id: "pe_012", type: "key_work", date: "2026-05-12",
+        id: "pe_012", type: "key_work", date: seedDay(-27),
         title: "Key work session — exploring triggers",
         detail: "Discussed recent incidents. Identified anxiety about upcoming LAC review as potential trigger.",
         significance: "medium",

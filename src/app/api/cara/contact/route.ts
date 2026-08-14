@@ -11,6 +11,7 @@ import { analyseContact } from "@/lib/cara/contact-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ContactInput, ContactSession, ContactArrangement } from "@/lib/cara/contact-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -137,48 +138,48 @@ function buildDemoData(childId: string): ContactInput {
       age: 14,
       contactSessions: [
         {
-          id: "ct_1", date: "2026-03-05", person: "mother", personName: "Mum",
+          id: "ct_1", date: seedDay(-95), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 60, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_2", date: "2026-03-19", person: "mother", personName: "Mum",
+          id: "ct_2", date: seedDay(-81), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 55, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_3", date: "2026-04-02", person: "mother", personName: "Mum",
+          id: "ct_3", date: seedDay(-67), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 60, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_4", date: "2026-04-16", person: "mother", personName: "Mum",
+          id: "ct_4", date: seedDay(-53), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 0, occurred: false,
           cancelledBy: "parent", cancellationReason: "Mum unwell",
           outcome: "not_recorded", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_5", date: "2026-04-30", person: "mother", personName: "Mum",
+          id: "ct_5", date: seedDay(-39), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 60, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_6", date: "2026-05-14", person: "mother", personName: "Mum",
+          id: "ct_6", date: seedDay(-25), person: "mother", personName: "Mum",
           type: "face_to_face", plannedDuration: 60, actualDuration: 60, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_7", date: "2026-03-10", person: "sibling", personName: "Ella",
+          id: "ct_7", date: seedDay(-90), person: "sibling", personName: "Ella",
           type: "face_to_face", plannedDuration: 120, actualDuration: 120, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_8", date: "2026-04-10", person: "sibling", personName: "Ella",
+          id: "ct_8", date: seedDay(-59), person: "sibling", personName: "Ella",
           type: "face_to_face", plannedDuration: 120, actualDuration: 120, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
         {
-          id: "ct_9", date: "2026-05-10", person: "sibling", personName: "Ella",
+          id: "ct_9", date: seedDay(-29), person: "sibling", personName: "Ella",
           type: "face_to_face", plannedDuration: 120, actualDuration: 110, occurred: true,
           outcome: "positive", childWanted: true, supervisedRequired: false,
         },
@@ -196,7 +197,7 @@ function buildDemoData(childId: string): ContactInput {
         },
       ],
       contactPlanReviewed: true,
-      contactPlanLastReviewDate: "2026-04-01",
+      contactPlanLastReviewDate: seedDay(-68),
       childConsultedOnPlan: true,
       advocateAvailableForContact: true,
       lifestoryWorkStarted: true,
@@ -212,54 +213,54 @@ function buildDemoData(childId: string): ContactInput {
     age: 15,
     contactSessions: [
       {
-        id: "ct_1", date: "2026-03-08", person: "mother", personName: "Mum",
+        id: "ct_1", date: seedDay(-92), person: "mother", personName: "Mum",
         type: "supervised", plannedDuration: 60, actualDuration: 60, occurred: true,
         outcome: "neutral", childWanted: true, supervisedRequired: true, supervisorPresent: true,
       },
       {
-        id: "ct_2", date: "2026-03-22", person: "mother", personName: "Mum",
+        id: "ct_2", date: seedDay(-78), person: "mother", personName: "Mum",
         type: "supervised", plannedDuration: 60, actualDuration: 0, occurred: false,
         cancelledBy: "parent", cancellationReason: "Did not attend",
         outcome: "not_recorded", childWanted: true, supervisedRequired: true,
       },
       {
-        id: "ct_3", date: "2026-04-05", person: "mother", personName: "Mum",
+        id: "ct_3", date: seedDay(-64), person: "mother", personName: "Mum",
         type: "supervised", plannedDuration: 60, actualDuration: 45, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: true, supervisorPresent: true,
       },
       {
-        id: "ct_4", date: "2026-04-19", person: "mother", personName: "Mum",
+        id: "ct_4", date: seedDay(-50), person: "mother", personName: "Mum",
         type: "supervised", plannedDuration: 60, actualDuration: 60, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: true, supervisorPresent: true,
       },
       {
-        id: "ct_5", date: "2026-05-03", person: "mother", personName: "Mum",
+        id: "ct_5", date: seedDay(-36), person: "mother", personName: "Mum",
         type: "supervised", plannedDuration: 60, actualDuration: 0, occurred: false,
         cancelledBy: "parent", cancellationReason: "Mum unwell",
         outcome: "not_recorded", childWanted: true, supervisedRequired: true,
       },
       {
-        id: "ct_6", date: "2026-04-12", person: "father", personName: "Dad",
+        id: "ct_6", date: seedDay(-57), person: "father", personName: "Dad",
         type: "phone_call", plannedDuration: 30, actualDuration: 20, occurred: true,
         outcome: "neutral", childWanted: true, supervisedRequired: false,
       },
       {
-        id: "ct_7", date: "2026-05-10", person: "father", personName: "Dad",
+        id: "ct_7", date: seedDay(-29), person: "father", personName: "Dad",
         type: "phone_call", plannedDuration: 30, actualDuration: 25, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: false,
       },
       {
-        id: "ct_8", date: "2026-03-15", person: "sibling", personName: "Tyler",
+        id: "ct_8", date: seedDay(-85), person: "sibling", personName: "Tyler",
         type: "face_to_face", plannedDuration: 120, actualDuration: 120, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: false,
       },
       {
-        id: "ct_9", date: "2026-04-20", person: "sibling", personName: "Tyler",
+        id: "ct_9", date: seedDay(-49), person: "sibling", personName: "Tyler",
         type: "face_to_face", plannedDuration: 120, actualDuration: 120, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: false,
       },
       {
-        id: "ct_10", date: "2026-05-11", person: "grandparent", personName: "Nan",
+        id: "ct_10", date: seedDay(-28), person: "grandparent", personName: "Nan",
         type: "face_to_face", plannedDuration: 90, actualDuration: 90, occurred: true,
         outcome: "positive", childWanted: true, supervisedRequired: false,
       },
@@ -287,7 +288,7 @@ function buildDemoData(childId: string): ContactInput {
       },
     ],
     contactPlanReviewed: true,
-    contactPlanLastReviewDate: "2026-04-10",
+    contactPlanLastReviewDate: seedDay(-59),
     childConsultedOnPlan: true,
     advocateAvailableForContact: true,
     lifestoryWorkStarted: true,

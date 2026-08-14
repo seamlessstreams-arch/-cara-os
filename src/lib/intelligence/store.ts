@@ -8,18 +8,9 @@
 // Supabase queries. The API route signatures stay identical.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { generateId, addWorkingDays, londonWeekStart } from "@/lib/utils";
+import { generateId, addWorkingDays } from "@/lib/utils";
+import { seedDay } from "@/lib/seed-date";
 
-// Seed dates float with the calendar: each is an offset in days from the
-// current London week's Monday, so the demo's "recent activity" stays recent,
-// its history stays deep, its "upcoming" reviews stay upcoming, and CPIE
-// weekly periods stay Monday-aligned. Offsets preserve the authored layout,
-// whose "present" was the week of Monday 20 April 2026 — fixed strings from
-// that era had already decayed four months by August.
-const seedDay = (offset: number): string => {
-  const [y, m, d] = londonWeekStart(0).split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d + offset)).toISOString().slice(0, 10);
-};
 
 import { isLiveTenant } from "@/lib/db/live-mode";
 import type {

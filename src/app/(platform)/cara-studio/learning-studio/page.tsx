@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Demo resources ─────────────────────────────────────────────────────────
 
 interface DemoResource {
@@ -28,14 +29,14 @@ interface DemoResource {
 }
 
 const DEMO_RESOURCES: DemoResource[] = [
-  { id: "lr-1", title: "De-escalation Techniques — Trauma-Informed Approach", resource_type: "staff_training", type_label: "Staff Training", target_audience: "staff", framework: "Trauma-Informed", status: "published", use_count: 4, created_at: "2026-05-05T09:00:00Z", description: "Training session generated from recent incident patterns." },
-  { id: "lr-2", title: "PACE Language — Quick Reference", resource_type: "quick_reference_card", type_label: "Quick Reference Card", target_audience: "staff", framework: "PACE", status: "published", use_count: 12, created_at: "2026-04-20T10:00:00Z", description: "Pocket card with PACE language alternatives for daily use." },
-  { id: "lr-3", title: "Safeguarding Level 3 — Knowledge Check", resource_type: "quiz", type_label: "Knowledge Quiz", target_audience: "staff", framework: null, status: "published", use_count: 8, created_at: "2026-04-25T14:00:00Z", description: "Quick quiz on safeguarding responsibilities." },
-  { id: "lr-4", title: "Recording Practice — What Good Looks Like", resource_type: "infographic", type_label: "Infographic", target_audience: "staff", framework: null, status: "draft", use_count: 0, created_at: "2026-05-10T11:00:00Z", description: "Visual guide to recording standards." },
-  { id: "lr-5", title: "Handling Disclosures — Role Play", resource_type: "role_play_scenario", type_label: "Role-Play Scenario", target_audience: "staff", framework: "Safeguarding-Led", status: "published", use_count: 3, created_at: "2026-05-01T09:00:00Z", description: "Scenario-based training on receiving and responding to disclosures." },
-  { id: "lr-6", title: "ARC Framework — Formulation Cards", resource_type: "arc_formulation_cards", type_label: "ARC Formulation Cards", target_audience: "staff", framework: "ARC", status: "published", use_count: 6, created_at: "2026-04-15T12:00:00Z", description: "Portable reference cards covering Attachment, Regulation, and Competency." },
-  { id: "lr-7", title: "New Staff Induction — Therapeutic Approach", resource_type: "induction_guide", type_label: "Induction Guide", target_audience: "staff", framework: "Therapeutic Parenting", status: "published", use_count: 2, created_at: "2026-03-01T08:00:00Z", description: "Induction guide covering the home's therapeutic approach for new staff." },
-  { id: "lr-8", title: "My Feelings Workbook", resource_type: "reflective_workbook", type_label: "Reflective Workbook", target_audience: "child", framework: "PACE", status: "published", use_count: 5, created_at: "2026-04-10T10:00:00Z", description: "Child-friendly workbook for exploring feelings." },
+  { id: "lr-1", title: "De-escalation Techniques — Trauma-Informed Approach", resource_type: "staff_training", type_label: "Staff Training", target_audience: "staff", framework: "Trauma-Informed", status: "published", use_count: 4, created_at: `${seedDay(-34)}T09:00:00Z`, description: "Training session generated from recent incident patterns." },
+  { id: "lr-2", title: "PACE Language — Quick Reference", resource_type: "quick_reference_card", type_label: "Quick Reference Card", target_audience: "staff", framework: "PACE", status: "published", use_count: 12, created_at: `${seedDay(-49)}T10:00:00Z`, description: "Pocket card with PACE language alternatives for daily use." },
+  { id: "lr-3", title: "Safeguarding Level 3 — Knowledge Check", resource_type: "quiz", type_label: "Knowledge Quiz", target_audience: "staff", framework: null, status: "published", use_count: 8, created_at: `${seedDay(-44)}T14:00:00Z`, description: "Quick quiz on safeguarding responsibilities." },
+  { id: "lr-4", title: "Recording Practice — What Good Looks Like", resource_type: "infographic", type_label: "Infographic", target_audience: "staff", framework: null, status: "draft", use_count: 0, created_at: `${seedDay(-29)}T11:00:00Z`, description: "Visual guide to recording standards." },
+  { id: "lr-5", title: "Handling Disclosures — Role Play", resource_type: "role_play_scenario", type_label: "Role-Play Scenario", target_audience: "staff", framework: "Safeguarding-Led", status: "published", use_count: 3, created_at: `${seedDay(-38)}T09:00:00Z`, description: "Scenario-based training on receiving and responding to disclosures." },
+  { id: "lr-6", title: "ARC Framework — Formulation Cards", resource_type: "arc_formulation_cards", type_label: "ARC Formulation Cards", target_audience: "staff", framework: "ARC", status: "published", use_count: 6, created_at: `${seedDay(-54)}T12:00:00Z`, description: "Portable reference cards covering Attachment, Regulation, and Competency." },
+  { id: "lr-7", title: "New Staff Induction — Therapeutic Approach", resource_type: "induction_guide", type_label: "Induction Guide", target_audience: "staff", framework: "Therapeutic Parenting", status: "published", use_count: 2, created_at: `${seedDay(-99)}T08:00:00Z`, description: "Induction guide covering the home's therapeutic approach for new staff." },
+  { id: "lr-8", title: "My Feelings Workbook", resource_type: "reflective_workbook", type_label: "Reflective Workbook", target_audience: "child", framework: "PACE", status: "published", use_count: 5, created_at: `${seedDay(-59)}T10:00:00Z`, description: "Child-friendly workbook for exploring feelings." },
 ];
 
 const RESOURCE_TYPE_GROUPS = [

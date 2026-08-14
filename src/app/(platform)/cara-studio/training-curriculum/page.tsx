@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface StaffCompetency {
@@ -47,33 +48,33 @@ const DEMO_STAFF: StaffCompetency[] = [
     staffId: "staff-1", staffName: "Sarah Thompson", role: "Senior Residential Care Worker",
     overallProgress: 80, criticalGaps: 0, overdueItems: 0, completedCount: 12,
     competencies: [
-      { area: "Safeguarding", level: "proficient", nextReview: "2026-09-01" },
-      { area: "Therapeutic Care", level: "competent", nextReview: "2026-08-01" },
-      { area: "De-escalation", level: "proficient", nextReview: "2026-10-01" },
-      { area: "Recording Practice", level: "competent", nextReview: "2026-07-01" },
-      { area: "Medication Management", level: "competent", nextReview: "2026-08-15" },
+      { area: "Safeguarding", level: "proficient", nextReview: seedDay(85) },
+      { area: "Therapeutic Care", level: "competent", nextReview: seedDay(54) },
+      { area: "De-escalation", level: "proficient", nextReview: seedDay(115) },
+      { area: "Recording Practice", level: "competent", nextReview: seedDay(23) },
+      { area: "Medication Management", level: "competent", nextReview: seedDay(68) },
     ],
   },
   {
     staffId: "staff-2", staffName: "Marcus Williams", role: "Residential Care Worker",
     overallProgress: 45, criticalGaps: 1, overdueItems: 2, completedCount: 5,
     competencies: [
-      { area: "Safeguarding", level: "developing", nextReview: "2026-06-01" },
-      { area: "Therapeutic Care", level: "developing", nextReview: "2026-06-15" },
+      { area: "Safeguarding", level: "developing", nextReview: seedDay(-7) },
+      { area: "Therapeutic Care", level: "developing", nextReview: seedDay(7) },
       { area: "De-escalation", level: "not_assessed", nextReview: null },
-      { area: "Recording Practice", level: "developing", nextReview: "2026-06-01" },
-      { area: "Medication Management", level: "competent", nextReview: "2026-09-01" },
+      { area: "Recording Practice", level: "developing", nextReview: seedDay(-7) },
+      { area: "Medication Management", level: "competent", nextReview: seedDay(85) },
     ],
   },
   {
     staffId: "staff-3", staffName: "Jamie Chen", role: "Residential Care Worker",
     overallProgress: 65, criticalGaps: 0, overdueItems: 1, completedCount: 8,
     competencies: [
-      { area: "Safeguarding", level: "competent", nextReview: "2026-07-01" },
-      { area: "Therapeutic Care", level: "competent", nextReview: "2026-08-01" },
-      { area: "De-escalation", level: "developing", nextReview: "2026-06-15" },
-      { area: "Recording Practice", level: "developing", nextReview: "2026-06-01" },
-      { area: "Medication Management", level: "competent", nextReview: "2026-09-01" },
+      { area: "Safeguarding", level: "competent", nextReview: seedDay(23) },
+      { area: "Therapeutic Care", level: "competent", nextReview: seedDay(54) },
+      { area: "De-escalation", level: "developing", nextReview: seedDay(7) },
+      { area: "Recording Practice", level: "developing", nextReview: seedDay(-7) },
+      { area: "Medication Management", level: "competent", nextReview: seedDay(85) },
     ],
   },
 ];

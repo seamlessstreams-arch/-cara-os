@@ -14,6 +14,7 @@ import type {
   ReportType,
 } from "@/types/cara-reports";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Demo Reports ─────────────────────────────────────────────────────────────
 
 function getDemoReports(): ChildReport[] {
@@ -31,8 +32,8 @@ function getDemoReports(): ChildReport[] {
       status: "draft",
       version: 1,
       parent_report_id: null,
-      date_range_start: "2026-05-05",
-      date_range_end: "2026-05-11",
+      date_range_start: seedDay(-34),
+      date_range_end: seedDay(-28),
       overall_summary:
         "Jayden has had a broadly positive week with engagement in routines and activities.",
       overall_confidence_score: 72,
@@ -64,8 +65,8 @@ function getDemoReports(): ChildReport[] {
       status: "pending_review",
       version: 1,
       parent_report_id: null,
-      date_range_start: "2026-05-05",
-      date_range_end: "2026-05-11",
+      date_range_start: seedDay(-34),
+      date_range_end: seedDay(-28),
       overall_summary:
         "Mia has had a mixed week. Good engagement with education but some difficulties at home.",
       overall_confidence_score: 65,
@@ -97,8 +98,8 @@ function getDemoReports(): ChildReport[] {
       status: "approved",
       version: 1,
       parent_report_id: null,
-      date_range_start: "2026-04-01",
-      date_range_end: "2026-04-30",
+      date_range_start: seedDay(-68),
+      date_range_end: seedDay(-39),
       overall_summary:
         "Jayden has made steady progress across all areas during April.",
       overall_confidence_score: 80,

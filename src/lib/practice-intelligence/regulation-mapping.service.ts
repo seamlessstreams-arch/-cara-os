@@ -15,6 +15,7 @@ import type {
   SCCIFTheme,
 } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -376,14 +377,14 @@ function getDemoMappings(hid: string): FrameworkMapping[] {
       framework: "childrens_homes_regs_2015", regulation: "Regulation 12: Protection of Children",
       quality_standard: "5.1", sccif_theme: "how_well_children_helped_protected",
       evidence_text: "Incident learning review demonstrates thorough analysis of protective measures.",
-      created_at: "2026-05-10T09:00:00Z",
+      created_at: `${seedDay(-1)}T09:00:00Z`,
     },
     {
       id: "demo-fm-2", home_id: hid, artifact_id: "art-2", artifact_type: "management_oversight",
       framework: "childrens_homes_regs_2015", regulation: "Regulation 13: Leadership & Management",
       quality_standard: "6.1", sccif_theme: "effectiveness_leaders_managers",
       evidence_text: "Management oversight demonstrates effective monitoring of quality of care.",
-      created_at: "2026-05-09T14:00:00Z",
+      created_at: `${seedDay(-2)}T14:00:00Z`,
     },
   ];
 }
@@ -401,7 +402,7 @@ function getDemoCoverage(): RegulationCoverage[] {
       regulation: reg.regulation,
       title: reg.title,
       evidenceCount: count,
-      lastEvidenceDate: "2026-05-10T09:00:00Z",
+      lastEvidenceDate: `${seedDay(-1)}T09:00:00Z`,
       coverage: (count >= 5 ? "strong" : count >= 2 ? "adequate" : "weak") as RegulationCoverage["coverage"],
       sccifThemes: reg.sccif_themes,
     };

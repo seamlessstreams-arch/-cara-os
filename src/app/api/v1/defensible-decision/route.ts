@@ -21,6 +21,7 @@ import type { EthicalSourceRef } from "@/lib/ethical-intelligence/types";
 import { readJsonBody } from "@/lib/http/read-json";
 import { todayStr } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 export const dynamic = "force-dynamic";
 
 const DEMO: DefensibleDecisionInput = {
@@ -38,7 +39,7 @@ const DEMO: DefensibleDecisionInput = {
   whyAlternativesRejected: "Pausing community time would be disproportionate and harm trust; current staffing has not been sufficient.",
   actionRequired: "Roster 2:1 for community time and review with Jordan weekly.",
   responsibleRole: "registered_manager",
-  reviewDate: "2026-06-29",
+  reviewDate: seedDay(14),
   whatWouldChangeThisDecision: "Two settled weeks, or clarity that no exploitation risk exists, would allow a return to 1:1.",
   riskLevel: "high",
 };

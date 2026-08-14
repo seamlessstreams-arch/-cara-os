@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface OversightDraft {
@@ -46,7 +47,7 @@ interface OversightDraft {
 const DEMO_DRAFTS: OversightDraft[] = [
   {
     id: "od-1", oversight_type: "incident_oversight", type_label: "Incident Oversight",
-    child_name: "Amara", status: "draft", quality_score: 82, created_at: "2026-05-11T09:00:00Z",
+    child_name: "Amara", status: "draft", quality_score: 82, created_at: `${seedDay(-28)}T09:00:00Z`,
     content: {
       summary: "Incident involving Amara on 10 May. Amara became distressed following a group discussion about upcoming activities.",
       evidence_reviewed: "Incident report, daily log entries for the past 3 days, Amara's therapeutic profile.",
@@ -64,7 +65,7 @@ const DEMO_DRAFTS: OversightDraft[] = [
   },
   {
     id: "od-2", oversight_type: "daily_log_oversight", type_label: "Daily Log Oversight",
-    child_name: null, status: "approved", quality_score: 75, created_at: "2026-05-11T08:00:00Z",
+    child_name: null, status: "approved", quality_score: 75, created_at: `${seedDay(-28)}T08:00:00Z`,
     content: {
       summary: "Weekly daily log oversight review for 5-11 May 2026.",
       evidence_reviewed: "35 daily log entries across the week.",
@@ -81,7 +82,7 @@ const DEMO_DRAFTS: OversightDraft[] = [
   },
   {
     id: "od-3", oversight_type: "missing_from_care_oversight", type_label: "Missing from Care Oversight",
-    child_name: "Jayden", status: "committed", quality_score: 88, created_at: "2026-05-10T22:30:00Z",
+    child_name: "Jayden", status: "committed", quality_score: 88, created_at: `${seedDay(-29)}T22:30:00Z`,
     content: {
       summary: "Missing episode on 10 May. Jayden left the home at 20:15 and was located by staff at 21:30 at a friend's house.",
       evidence_reviewed: "Missing from care report, return home interview, police notification, risk assessment.",

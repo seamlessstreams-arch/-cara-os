@@ -77,6 +77,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { seedDay } from "@/lib/seed-date";
 /* ── local config ─────────────────────────────────────────────────────── */
 
 const STATUS_META: Record<Reg40QualStatus, { colour: string; icon: typeof CheckCircle2 }> = {
@@ -109,9 +110,9 @@ const GAP_ANALYSIS = [
 ];
 
 const RECENT_CHANGES = [
-  { id: "rc1", date: "2026-02-06", description: "Maria — dismissed (conduct)", type: "departure" },
-  { id: "rc2", date: "2026-03-08", description: "Elena Novak — started (replacement for Maria)", type: "arrival" },
-  { id: "rc3", date: "2026-03-08", description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
+  { id: "rc1", date: seedDay(-87), description: "Maria — dismissed (conduct)", type: "departure" },
+  { id: "rc2", date: seedDay(-57), description: "Elena Novak — started (replacement for Maria)", type: "arrival" },
+  { id: "rc3", date: seedDay(-57), description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
 ];
 
 /* ── page ─────────────────────────────────────────────────────────────── */

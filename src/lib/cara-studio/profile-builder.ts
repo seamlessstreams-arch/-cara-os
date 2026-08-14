@@ -20,6 +20,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CaraChildProfile, EvidenceRef } from "./types";
 import { todayStr } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 // ── Main Builder ─────────────────────────────────────────────────────────────
@@ -176,7 +177,7 @@ function buildDemoProfile(childId: string): CaraChildProfile {
     age: isJordan ? 15 : 14,
     gender: isJordan ? "male" : "male",
     pronouns: "he/him",
-    placementStartDate: "2025-09-01",
+    placementStartDate: seedDay(-280),
     strengths: isJordan
       ? ["Creative and artistic", "Loyal to friends", "Good sense of humour", "Enjoys cooking", "Responds well to 1:1 attention", "DofE Bronze nearly complete"]
       : ["Quiet determination", "Kind to younger children", "Enjoys DofE", "Good relationship with key worker"],
@@ -215,9 +216,9 @@ function buildDemoProfile(childId: string): CaraChildProfile {
       ? "Jordan has shown improvement in using coping strategies independently. DofE Bronze nearly complete. School attendance still inconsistent but improving trend."
       : "Sam completed DofE volunteering section. Still struggles with new social settings but is engaging in key work.",
     evidenceRefs: [
-      { type: "care_plan", id: "cp_1", date: "2026-05-01", summary: "Active care plan" },
-      { type: "daily_log", id: "dl_1", date: "2026-05-14", summary: "Recent daily logs" },
-      { type: "incident", id: "inc_1", date: "2026-05-12", summary: "Recent incidents" },
+      { type: "care_plan", id: "cp_1", date: seedDay(-38), summary: "Active care plan" },
+      { type: "daily_log", id: "dl_1", date: seedDay(-25), summary: "Recent daily logs" },
+      { type: "incident", id: "inc_1", date: seedDay(-27), summary: "Recent incidents" },
     ],
   };
 }

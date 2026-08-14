@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Session type groups ────────────────────────────────────────────────────
 
 interface SessionTypeGroup { group: string; icon: React.ElementType; types: { type: string; label: string }[] }
@@ -69,7 +70,7 @@ interface DemoSession {
 const DEMO_SESSIONS: DemoSession[] = [
   {
     id: "s1", title: "Feelings Exploration — Jayden", session_type: "feelings_exploration", child_name: "Jayden", framework: "PACE",
-    status: "approved", created_at: "2026-05-10T09:00:00Z", scheduled_date: "2026-05-12",
+    status: "approved", created_at: `${seedDay(-29)}T09:00:00Z`, scheduled_date: seedDay(-27),
     content: {
       purpose: "Help Jayden explore and name his feelings following a cancelled family contact visit.",
       therapeutic_rationale: "Jayden's therapeutic profile indicates he struggles to express difficult emotions verbally. PACE provides a non-threatening framework for exploration.",
@@ -79,7 +80,7 @@ const DEMO_SESSIONS: DemoSession[] = [
   },
   {
     id: "s2", title: "Contact Debrief — Amara", session_type: "contact_debrief", child_name: "Amara", framework: "DDP",
-    status: "delivered", created_at: "2026-05-08T16:00:00Z", scheduled_date: "2026-05-09",
+    status: "delivered", created_at: `${seedDay(-31)}T16:00:00Z`, scheduled_date: seedDay(-30),
     content: {
       purpose: "Support Amara to process her feelings following family contact.",
       therapeutic_rationale: "Amara finds family contact emotionally intense. DDP's focus on intersubjectivity supports her to process complex feelings.",
@@ -89,7 +90,7 @@ const DEMO_SESSIONS: DemoSession[] = [
   },
   {
     id: "s3", title: "Team Reflective Practice — Contact Support", session_type: "reflective_practice", child_name: null, framework: "Psychologically Informed",
-    status: "draft", created_at: "2026-05-12T08:00:00Z", scheduled_date: "2026-05-14",
+    status: "draft", created_at: `${seedDay(-27)}T08:00:00Z`, scheduled_date: seedDay(-25),
     content: {
       purpose: "Team session to reflect on how we support children through family contact.",
       therapeutic_rationale: "Several children showing distress around family contact. Reflective session to share approaches and learn from each other.",

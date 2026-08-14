@@ -10,6 +10,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { isLiveTenant } from "@/lib/db/live-mode";
 import { todayStr } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
 
@@ -124,7 +125,7 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
   {
     id: "snap-oak-1",
     organisation_id: "org-demo-1",
-    snapshot_date: "2026-05-16",
+    snapshot_date: seedDay(5),
     home_id: "home-oak",
     home_name: "Chamberlain House",
     total_children: 3,
@@ -139,8 +140,8 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     staff_supervision_compliance_pct: 95,
     management_oversight_current: true,
     ofsted_readiness_score: 88,
-    reg45_due_date: "2026-06-01",
-    reg44_due_date: "2026-05-28",
+    reg45_due_date: seedDay(21),
+    reg44_due_date: seedDay(17),
     cara_alerts: [],
     cara_risk_factors: [
       { factor: "Night staff supervision gap", severity: "low", trend: "improving" },
@@ -148,12 +149,12 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     cara_recommendations: [
       { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: "Chamberlain House" },
     ],
-    created_at: "2026-05-16T08:00:00Z",
+    created_at: `${seedDay(5)}T08:00:00Z`,
   },
   {
     id: "snap-willow-1",
     organisation_id: "org-demo-1",
-    snapshot_date: "2026-05-16",
+    snapshot_date: seedDay(5),
     home_id: "home-willow",
     home_name: "Willow Lodge",
     total_children: 4,
@@ -168,12 +169,12 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     staff_supervision_compliance_pct: 58,
     management_oversight_current: false,
     ofsted_readiness_score: 52,
-    reg45_due_date: "2026-05-20",
-    reg44_due_date: "2026-05-10",
+    reg45_due_date: seedDay(9),
+    reg44_due_date: seedDay(-1),
     cara_alerts: [
-      { id: "alert-1", severity: "critical", message: "Reg 44 visit overdue by 6 days", home_id: "home-willow", home_name: "Willow Lodge", category: "compliance", created_at: "2026-05-16T08:00:00Z" },
-      { id: "alert-2", severity: "high", message: "2 open safeguarding concerns require RI oversight", home_id: "home-willow", home_name: "Willow Lodge", category: "safeguarding", created_at: "2026-05-16T08:00:00Z" },
-      { id: "alert-3", severity: "high", message: "Recording compliance below 65% threshold", home_id: "home-willow", home_name: "Willow Lodge", category: "recording", created_at: "2026-05-16T08:00:00Z" },
+      { id: "alert-1", severity: "critical", message: "Reg 44 visit overdue by 6 days", home_id: "home-willow", home_name: "Willow Lodge", category: "compliance", created_at: `${seedDay(5)}T08:00:00Z` },
+      { id: "alert-2", severity: "high", message: "2 open safeguarding concerns require RI oversight", home_id: "home-willow", home_name: "Willow Lodge", category: "safeguarding", created_at: `${seedDay(5)}T08:00:00Z` },
+      { id: "alert-3", severity: "high", message: "Recording compliance below 65% threshold", home_id: "home-willow", home_name: "Willow Lodge", category: "recording", created_at: `${seedDay(5)}T08:00:00Z` },
     ],
     cara_risk_factors: [
       { factor: "Pattern of escalating incidents", severity: "high", trend: "worsening" },
@@ -185,12 +186,12 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
       { recommendation: "Review safeguarding concerns with designated officer", priority: "immediate", home_id: "home-willow", home_name: "Willow Lodge" },
       { recommendation: "Implement supervision recovery plan for all staff", priority: "this_week", home_id: "home-willow", home_name: "Willow Lodge" },
     ],
-    created_at: "2026-05-16T08:00:00Z",
+    created_at: `${seedDay(5)}T08:00:00Z`,
   },
   {
     id: "snap-birch-1",
     organisation_id: "org-demo-1",
-    snapshot_date: "2026-05-16",
+    snapshot_date: seedDay(5),
     home_id: "home-birch",
     home_name: "Birch Cottage",
     total_children: 2,
@@ -205,23 +206,23 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     staff_supervision_compliance_pct: 100,
     management_oversight_current: true,
     ofsted_readiness_score: 94,
-    reg45_due_date: "2026-06-15",
-    reg44_due_date: "2026-06-02",
+    reg45_due_date: seedDay(35),
+    reg44_due_date: seedDay(22),
     cara_alerts: [],
     cara_risk_factors: [],
     cara_recommendations: [
       { recommendation: "Continue current practices - exemplary performance", priority: "this_month", home_id: "home-birch", home_name: "Birch Cottage" },
     ],
-    created_at: "2026-05-16T08:00:00Z",
+    created_at: `${seedDay(5)}T08:00:00Z`,
   },
 ];
 
 const DEMO_TRENDS: HomeTrendPoint[] = [
-  { period_start: "2026-04-16", period_end: "2026-04-22", metric_value: 85 },
-  { period_start: "2026-04-23", period_end: "2026-04-29", metric_value: 82 },
-  { period_start: "2026-04-30", period_end: "2026-05-06", metric_value: 78 },
-  { period_start: "2026-05-07", period_end: "2026-05-13", metric_value: 74 },
-  { period_start: "2026-05-14", period_end: "2026-05-16", metric_value: 71 },
+  { period_start: seedDay(-25), period_end: seedDay(-19), metric_value: 85 },
+  { period_start: seedDay(-18), period_end: seedDay(-12), metric_value: 82 },
+  { period_start: seedDay(-11), period_end: seedDay(-5), metric_value: 78 },
+  { period_start: seedDay(-4), period_end: seedDay(2), metric_value: 74 },
+  { period_start: seedDay(3), period_end: seedDay(5), metric_value: 71 },
 ];
 
 // ── Service Functions ────────────────────────────────────────────────────────

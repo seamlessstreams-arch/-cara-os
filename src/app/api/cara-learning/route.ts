@@ -11,6 +11,7 @@ import {
 } from "@/lib/cara-learning";
 import type { AgentCapabilityProfile } from "@/lib/cara-learning";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Demo Data ─────────────────────────────────────────────────────────────────
 
 const DEMO_PROFILES: AgentCapabilityProfile[] = [
@@ -44,11 +45,11 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     shadowCostSavingEstimate: 95,
     replacementReadinessScore: 82,
     replacementApprovedBy: "Olivia Hayes",
-    replacementApprovedAt: "2026-05-01T10:00:00Z",
+    replacementApprovedAt: `${seedDay(-38)}T10:00:00Z`,
     riskLevel: "medium",
-    lastEvaluatedAt: "2026-05-15T10:00:00Z",
-    createdAt: "2025-11-01T10:00:00Z",
-    updatedAt: "2026-05-15T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-24)}T10:00:00Z`,
+    createdAt: `${seedDay(-219)}T10:00:00Z`,
+    updatedAt: `${seedDay(-24)}T10:00:00Z`,
   },
   {
     id: "agent-report-gen",
@@ -82,9 +83,9 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     replacementApprovedBy: null,
     replacementApprovedAt: null,
     riskLevel: "low",
-    lastEvaluatedAt: "2026-05-10T10:00:00Z",
-    createdAt: "2026-01-15T10:00:00Z",
-    updatedAt: "2026-05-10T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-29)}T10:00:00Z`,
+    createdAt: `${seedDay(-144)}T10:00:00Z`,
+    updatedAt: `${seedDay(-29)}T10:00:00Z`,
   },
   {
     id: "agent-safeguarding",
@@ -118,9 +119,9 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     replacementApprovedBy: null,
     replacementApprovedAt: null,
     riskLevel: "critical",
-    lastEvaluatedAt: "2026-05-12T10:00:00Z",
-    createdAt: "2026-02-01T10:00:00Z",
-    updatedAt: "2026-05-12T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-27)}T10:00:00Z`,
+    createdAt: `${seedDay(-127)}T10:00:00Z`,
+    updatedAt: `${seedDay(-27)}T10:00:00Z`,
   },
   {
     id: "agent-therapeutic",
@@ -154,9 +155,9 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     replacementApprovedBy: null,
     replacementApprovedAt: null,
     riskLevel: "high",
-    lastEvaluatedAt: "2026-05-14T10:00:00Z",
-    createdAt: "2026-01-20T10:00:00Z",
-    updatedAt: "2026-05-14T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-25)}T10:00:00Z`,
+    createdAt: `${seedDay(-139)}T10:00:00Z`,
+    updatedAt: `${seedDay(-25)}T10:00:00Z`,
   },
   {
     id: "agent-comms",
@@ -188,11 +189,11 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     shadowCostSavingEstimate: 65,
     replacementReadinessScore: 88,
     replacementApprovedBy: "Olivia Hayes",
-    replacementApprovedAt: "2026-04-15T10:00:00Z",
+    replacementApprovedAt: `${seedDay(-54)}T10:00:00Z`,
     riskLevel: "low",
-    lastEvaluatedAt: "2026-05-16T10:00:00Z",
-    createdAt: "2025-10-01T10:00:00Z",
-    updatedAt: "2026-05-16T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-23)}T10:00:00Z`,
+    createdAt: `${seedDay(-250)}T10:00:00Z`,
+    updatedAt: `${seedDay(-23)}T10:00:00Z`,
   },
   {
     id: "agent-data-analysis",
@@ -226,9 +227,9 @@ const DEMO_PROFILES: AgentCapabilityProfile[] = [
     replacementApprovedBy: null,
     replacementApprovedAt: null,
     riskLevel: "low",
-    lastEvaluatedAt: "2026-05-16T10:00:00Z",
-    createdAt: "2025-12-01T10:00:00Z",
-    updatedAt: "2026-05-16T10:00:00Z",
+    lastEvaluatedAt: `${seedDay(-23)}T10:00:00Z`,
+    createdAt: `${seedDay(-189)}T10:00:00Z`,
+    updatedAt: `${seedDay(-23)}T10:00:00Z`,
   },
 ];
 

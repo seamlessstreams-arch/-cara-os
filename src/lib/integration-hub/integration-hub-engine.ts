@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { seedDay } from "@/lib/seed-date";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — INTEGRATION HUB (ADAPTER FRAMEWORK) INTELLIGENCE ENGINE
 //
@@ -207,7 +208,7 @@ export const DEFAULT_ADAPTERS: IntegrationAdapter[] = [
     name: "RotaCloud",
     kind: "rota",
     status: "connected",
-    last_sync: "2026-06-03T06:00:00.000Z",
+    last_sync: `${seedDay(2)}T06:00:00.000Z`,
     supports_idempotency: true,
     retry: { max_attempts: 5, backoff_seconds: 30 },
     error_log: [],
@@ -219,7 +220,7 @@ export const DEFAULT_ADAPTERS: IntegrationAdapter[] = [
     name: "Twilio / Email Gateway",
     kind: "notifications",
     status: "connected",
-    last_sync: "2026-06-03T07:15:00.000Z",
+    last_sync: `${seedDay(2)}T07:15:00.000Z`,
     supports_idempotency: true,
     retry: { max_attempts: 6, backoff_seconds: 15 },
     error_log: [],
@@ -255,7 +256,7 @@ export const DEFAULT_ADAPTERS: IntegrationAdapter[] = [
     name: "Microsoft 365 Calendar",
     kind: "calendar",
     status: "disconnected",
-    last_sync: "2026-05-20T09:00:00.000Z",
+    last_sync: `${seedDay(-12)}T09:00:00.000Z`,
     supports_idempotency: true,
     retry: { max_attempts: 3, backoff_seconds: 30 },
     error_log: [],

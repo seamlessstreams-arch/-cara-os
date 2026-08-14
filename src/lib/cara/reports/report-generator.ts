@@ -46,6 +46,7 @@ import { sanitiseOutput, validateOutputSafety } from "@/lib/cara/ai/safety";
 import { writeCaraAudit } from "@/lib/cara/audit/cara-audit";
 import { isDemoReportId } from "./demo-report-id";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function demoId(): string {
@@ -770,8 +771,8 @@ function getDemoReportData(reportId: string): {
     status: "draft",
     version: 1,
     parent_report_id: null,
-    date_range_start: "2026-05-05",
-    date_range_end: "2026-05-11",
+    date_range_start: seedDay(-34),
+    date_range_end: seedDay(-28),
     overall_summary:
       "Jayden has had a broadly positive week with a number of achievements and areas of progress. " +
       "There was one low-level incident which was managed well. Evidence is generally strong " +
@@ -849,7 +850,7 @@ function getDemoReportData(reportId: string): {
       report_id: reportId,
       source_table: "daily_log_entries",
       source_record_id: "demo-dl-5",
-      source_date: "2026-05-09",
+      source_date: seedDay(-30),
       excerpt: "Jayden received a merit certificate at school for his artwork.",
       reasoning: null,
       relevance_score: 0.9,

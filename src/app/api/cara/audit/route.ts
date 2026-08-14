@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraRole } from "@/lib/cara/cara-permissions";
 
+import { seedDay } from "@/lib/seed-date";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = SupabaseClient<any, "public", any>;
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
@@ -60,10 +61,10 @@ export async function GET(req: NextRequest) {
 
 function getDemoAuditEvents() {
   return [
-    { id: "aud_1", event_type: "generated", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "improve_writing" }, created_at: "2026-05-12T10:00:00Z" },
-    { id: "aud_2", event_type: "approved", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "draft_daily_log" }, created_at: "2026-05-12T10:05:00Z" },
-    { id: "aud_3", event_type: "transcribed", actor_user_id: "staff_sarah", actor_role: "team_leader", event_detail: { sourceModule: "incident" }, created_at: "2026-05-12T09:30:00Z" },
-    { id: "aud_4", event_type: "committed", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "draft_management_oversight" }, created_at: "2026-05-12T09:00:00Z" },
-    { id: "aud_5", event_type: "rejected", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "incident_risk_analysis", reason: "Needs more detail on de-escalation" }, created_at: "2026-05-11T16:00:00Z" },
+    { id: "aud_1", event_type: "generated", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "improve_writing" }, created_at: `${seedDay(-27)}T10:00:00Z` },
+    { id: "aud_2", event_type: "approved", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "draft_daily_log" }, created_at: `${seedDay(-27)}T10:05:00Z` },
+    { id: "aud_3", event_type: "transcribed", actor_user_id: "staff_sarah", actor_role: "team_leader", event_detail: { sourceModule: "incident" }, created_at: `${seedDay(-27)}T09:30:00Z` },
+    { id: "aud_4", event_type: "committed", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "draft_management_oversight" }, created_at: `${seedDay(-27)}T09:00:00Z` },
+    { id: "aud_5", event_type: "rejected", actor_user_id: "staff_darren", actor_role: "registered_manager", event_detail: { commandId: "incident_risk_analysis", reason: "Needs more detail on de-escalation" }, created_at: `${seedDay(-28)}T16:00:00Z` },
   ];
 }

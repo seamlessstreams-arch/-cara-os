@@ -15,6 +15,7 @@ import {
   Shield, BookOpen, Award, Briefcase,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type DocStatus = "current" | "expiring_soon" | "expired" | "missing" | "review_due";
@@ -69,21 +70,21 @@ function getDemoDocuments(): TrackedDocument[] {
   return [
     {
       id: "doc_001", category: "policy", name: "Safeguarding Policy", status: "review_due",
-      lastReviewed: "2025-11-10", reviewCycleDays: 180, owner: "Olivia H (RM)",
+      lastReviewed: seedDay(-210), reviewCycleDays: 180, owner: "Olivia H (RM)",
       caraNotes: "Annual review overdue by 2 days. Safeguarding policy should reference latest KCSIE 2026 guidance.",
     },
     {
       id: "doc_002", category: "insurance", name: "Employers Liability Insurance", status: "expiring_soon",
-      expiryDate: "2026-06-01", daysUntilExpiry: 20, owner: "Head Office",
+      expiryDate: seedDay(-7), daysUntilExpiry: 20, owner: "Head Office",
       caraNotes: "Renewal should be arranged 30 days before expiry. Contact insurer.",
     },
     {
       id: "doc_003", category: "dbs_check", name: "DBS — Jordan P", status: "current",
-      expiryDate: "2027-03-15", daysUntilExpiry: 307, owner: "HR",
+      expiryDate: seedDay(280), daysUntilExpiry: 307, owner: "HR",
     },
     {
       id: "doc_004", category: "certificate", name: "Fire Safety Certificate", status: "current",
-      expiryDate: "2026-12-01", daysUntilExpiry: 203, owner: "Olivia H (RM)",
+      expiryDate: seedDay(176), daysUntilExpiry: 203, owner: "Olivia H (RM)",
     },
     {
       id: "doc_005", category: "registration", name: "Ofsted Registration Certificate", status: "current",
@@ -91,28 +92,28 @@ function getDemoDocuments(): TrackedDocument[] {
     },
     {
       id: "doc_006", category: "policy", name: "Behaviour Management Policy", status: "current",
-      lastReviewed: "2026-02-15", reviewCycleDays: 365, owner: "Olivia H (RM)",
+      lastReviewed: seedDay(-113), reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_007", category: "policy", name: "Missing from Care Protocol", status: "current",
-      lastReviewed: "2026-01-20", reviewCycleDays: 365, owner: "Olivia H (RM)",
+      lastReviewed: seedDay(-139), reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_008", category: "training_record", name: "Team Training Matrix", status: "review_due",
-      lastReviewed: "2026-02-01", reviewCycleDays: 90, owner: "Olivia H (RM)",
+      lastReviewed: seedDay(-127), reviewCycleDays: 90, owner: "Olivia H (RM)",
       caraNotes: "Quarterly review due. 2 staff members have training gaps flagged by Cara.",
     },
     {
       id: "doc_009", category: "care_document", name: "Statement of Purpose", status: "current",
-      lastReviewed: "2026-03-01", reviewCycleDays: 365, owner: "Responsible Individual",
+      lastReviewed: seedDay(-99), reviewCycleDays: 365, owner: "Responsible Individual",
     },
     {
       id: "doc_010", category: "policy", name: "Complaints Policy", status: "current",
-      lastReviewed: "2026-04-10", reviewCycleDays: 365, owner: "Olivia H (RM)",
+      lastReviewed: seedDay(-59), reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_011", category: "certificate", name: "First Aid at Work — Pat M", status: "expiring_soon",
-      expiryDate: "2026-05-30", daysUntilExpiry: 18, owner: "Pat M",
+      expiryDate: seedDay(-9), daysUntilExpiry: 18, owner: "Pat M",
     },
     {
       id: "doc_012", category: "policy", name: "Physical Intervention Policy", status: "missing",

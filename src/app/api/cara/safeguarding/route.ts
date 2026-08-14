@@ -18,6 +18,7 @@ import type {
   RiskLevel,
 } from "@/lib/cara/safeguarding-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -190,7 +191,7 @@ function buildDemoData(childId: string): SafeguardingInput {
       radicalisationRiskLevel: "none",
       onlineSafetyRiskLevel: "none",
       riskAssessmentCurrent: true,
-      riskAssessmentDate: "2026-03-10",
+      riskAssessmentDate: seedDay(-90),
       safeguardingPlanInPlace: true,
       locationRiskAssessmentDone: true,
       childAwareOfRisks: true,
@@ -213,7 +214,7 @@ function buildDemoData(childId: string): SafeguardingInput {
     age: 15,
     missingEpisodes: [
       {
-        date: "2026-02-10",
+        date: seedDay(-118),
         durationHours: 6,
         severity: "missing",
         returnInterviewCompleted: true,
@@ -222,7 +223,7 @@ function buildDemoData(childId: string): SafeguardingInput {
         triggerIdentified: true,
       },
       {
-        date: "2026-03-22",
+        date: seedDay(-78),
         durationHours: 3,
         severity: "unauthorised_absence",
         returnInterviewCompleted: true,
@@ -234,7 +235,7 @@ function buildDemoData(childId: string): SafeguardingInput {
     missingTrend: "decreasing",
     restraintIncidents: [
       {
-        date: "2026-01-15",
+        date: seedDay(-144),
         type: "physical",
         durationMinutes: 4,
         debrief: true,
@@ -246,7 +247,7 @@ function buildDemoData(childId: string): SafeguardingInput {
     restraintTrend: "decreasing",
     bullyingIncidents: [
       {
-        date: "2026-02-20",
+        date: seedDay(-108),
         role: "victim",
         type: "verbal",
         actionTaken: true,
@@ -255,7 +256,7 @@ function buildDemoData(childId: string): SafeguardingInput {
     ],
     safeguardingReferrals: [
       {
-        date: "2025-11-01",
+        date: seedDay(-219),
         type: "cse",
         outcome: "no_further_action",
         agencyInvolved: "MACE Panel",
@@ -266,7 +267,7 @@ function buildDemoData(childId: string): SafeguardingInput {
     radicalisationRiskLevel: "none",
     onlineSafetyRiskLevel: "low",
     riskAssessmentCurrent: true,
-    riskAssessmentDate: "2026-04-01",
+    riskAssessmentDate: seedDay(-68),
     safeguardingPlanInPlace: true,
     locationRiskAssessmentDone: true,
     childAwareOfRisks: true,

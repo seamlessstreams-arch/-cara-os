@@ -50,6 +50,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { seedDay } from "@/lib/seed-date";
 /* ── types ───────────────────────────────────────────────────────────── */
 interface GuideSection {
   id: string;
@@ -64,7 +65,7 @@ interface GuideSection {
 const buildSections = (homeName: string): GuideSection[] => [
   {
     id: "welcome", title: `Welcome to ${homeName}`, icon: Home, colour: "text-blue-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       `Welcome to ${homeName}! This is your home and we want you to feel safe, happy, and comfortable here.`,
       "This guide tells you everything you need to know about living here, your rights, and who can help you.",
@@ -73,7 +74,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "rights", title: "Your Rights", icon: Star, colour: "text-amber-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "You have the right to be treated with respect and dignity at all times.",
       "You have the right to privacy — your room is your space and staff will always knock before entering.",
@@ -87,7 +88,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "people", title: "People Who Look After You", icon: Users, colour: "text-purple-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "Darren (Registered Manager) — Darren is in charge of the home and makes sure everything runs well. You can talk to Darren about anything.",
       "Your Key Worker — Your key worker is a special member of staff assigned to you. They'll spend one-to-one time with you regularly and help with things you want to work on.",
@@ -99,7 +100,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "daily_life", title: "Daily Life", icon: Smile, colour: "text-green-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "Mealtimes are together and we'll always try to cook meals you enjoy. You can help plan the menu and learn to cook!",
       "School/college attendance is really important — we'll support you to get there and do your best.",
@@ -112,7 +113,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "safety", title: "Keeping You Safe", icon: Shield, colour: "text-red-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "Your safety is our top priority. If you ever feel unsafe, tell a member of staff immediately.",
       "We do fire drills regularly so you know what to do in an emergency. There's a fire plan in your room.",
@@ -124,7 +125,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "voice", title: "Having Your Say", icon: MessageSquare, colour: "text-pink-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "Your voice matters. We want to hear what you think about your home, your care, and your future.",
       "House meetings happen regularly — this is your chance to suggest changes and share ideas.",
@@ -136,7 +137,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "complaints", title: "If You're Not Happy", icon: HelpCircle, colour: "text-orange-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       "If you're unhappy about anything, you can talk to any member of staff, your key worker, or Darren.",
       "You can make a formal complaint — we'll give you a form and help you fill it in if you need.",
@@ -148,7 +149,7 @@ const buildSections = (homeName: string): GuideSection[] => [
   },
   {
     id: "contacts", title: "Important Phone Numbers", icon: Phone, colour: "text-teal-600",
-    lastUpdated: "2026-01-15",
+    lastUpdated: seedDay(-109),
     content: [
       `${homeName}: 0121 XXX XXXX`,
       "Darren (Registered Manager): Available through staff on shift",

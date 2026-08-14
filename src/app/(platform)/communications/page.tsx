@@ -19,6 +19,7 @@ import {
 } from "@/lib/services/communication-intelligence";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const TYPE_ICONS: Record<CommunicationType, React.ElementType> = {
@@ -64,8 +65,8 @@ const DEMO_DRAFTS = [
     child_id: null,
     cara_generated: true,
     created_by: "Sarah Mitchell",
-    created_at: "2026-05-12T14:30:00Z",
-    updated_at: "2026-05-12T14:30:00Z",
+    created_at: `${seedDay(1)}T14:30:00Z`,
+    updated_at: `${seedDay(1)}T14:30:00Z`,
   },
   {
     id: "d2",
@@ -76,8 +77,8 @@ const DEMO_DRAFTS = [
     child_id: "c2",
     cara_generated: true,
     created_by: "James Wilson",
-    created_at: "2026-05-10T09:15:00Z",
-    updated_at: "2026-05-11T16:45:00Z",
+    created_at: `${seedDay(-1)}T09:15:00Z`,
+    updated_at: `${seedDay(0)}T16:45:00Z`,
   },
   {
     id: "d3",
@@ -88,8 +89,8 @@ const DEMO_DRAFTS = [
     child_id: null,
     cara_generated: false,
     created_by: "Independent Visitor",
-    created_at: "2026-04-28T17:00:00Z",
-    updated_at: "2026-05-02T10:00:00Z",
+    created_at: `${seedDay(-13)}T17:00:00Z`,
+    updated_at: `${seedDay(-9)}T10:00:00Z`,
   },
   {
     id: "d4",
@@ -100,8 +101,8 @@ const DEMO_DRAFTS = [
     child_id: "c3",
     cara_generated: false,
     created_by: "Sarah Mitchell",
-    created_at: "2026-05-11T16:00:00Z",
-    updated_at: "2026-05-11T17:15:00Z",
+    created_at: `${seedDay(0)}T16:00:00Z`,
+    updated_at: `${seedDay(0)}T17:15:00Z`,
   },
   {
     id: "d5",
@@ -112,8 +113,8 @@ const DEMO_DRAFTS = [
     child_id: null,
     cara_generated: true,
     created_by: "Cara",
-    created_at: "2026-05-12T19:30:00Z",
-    updated_at: "2026-05-12T19:30:00Z",
+    created_at: `${seedDay(1)}T19:30:00Z`,
+    updated_at: `${seedDay(1)}T19:30:00Z`,
   },
   {
     id: "d6",
@@ -124,8 +125,8 @@ const DEMO_DRAFTS = [
     child_id: null,
     cara_generated: true,
     created_by: "Sarah Mitchell",
-    created_at: "2026-05-11T18:00:00Z",
-    updated_at: "2026-05-11T19:30:00Z",
+    created_at: `${seedDay(0)}T18:00:00Z`,
+    updated_at: `${seedDay(0)}T19:30:00Z`,
   },
   {
     id: "d7",
@@ -136,8 +137,8 @@ const DEMO_DRAFTS = [
     child_id: "c4",
     cara_generated: true,
     created_by: "James Wilson",
-    created_at: "2026-05-09T11:00:00Z",
-    updated_at: "2026-05-10T14:30:00Z",
+    created_at: `${seedDay(-2)}T11:00:00Z`,
+    updated_at: `${seedDay(-1)}T14:30:00Z`,
   },
 ];
 
