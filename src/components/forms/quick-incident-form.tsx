@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/form-draft";
 import { EnterOnceIndicator } from "@/components/forms/enter-once-indicator";
 import { InlineEmotionalSafetyPanel } from "@/components/emotional-safety/inline-emotional-safety-panel";
 import {
@@ -151,22 +152,16 @@ export function QuickIncidentForm({
   const [submitted, setSubmitted] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
 
-  const draftKey = `${DRAFT_KEY_PREFIX}${childId}`;
   const autosaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Load draft ────────────────────────────────────────────────────
+  // ── Load draft (current user's only; expired/foreign drafts stay unread) ──
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(draftKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as IncidentFormData;
-        setForm(parsed);
-        setIsDraft(true);
-      }
-    } catch {
-      // Ignore
+    const saved = loadDraft<IncidentFormData>(DRAFT_KEY_PREFIX, childId);
+    if (saved) {
+      setForm(saved);
+      setIsDraft(true);
     }
-  }, [draftKey]);
+  }, [childId]);
 
   // ── Auto-fill ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -187,19 +182,15 @@ export function QuickIncidentForm({
     autosaveRef.current = setInterval(() => {
       const hasContent = form.description || form.severity || form.immediateActions;
       if (hasContent && !submitted) {
-        try {
-          localStorage.setItem(draftKey, JSON.stringify(form));
-          setIsDraft(true);
-          setLastSaved(londonDisplay({ hour: "2-digit", minute: "2-digit" }));
-        } catch {
-          // Storage unavailable
-        }
+        saveDraft(DRAFT_KEY_PREFIX, childId, form);
+        setIsDraft(true);
+        setLastSaved(londonDisplay({ hour: "2-digit", minute: "2-digit" }));
       }
     }, 5000);
     return () => {
       if (autosaveRef.current) clearInterval(autosaveRef.current);
     };
-  }, [form, draftKey, submitted]);
+  }, [form, childId, submitted]);
 
   // ── Update helper ─────────────────────────────────────────────────
   const updateField = useCallback(
@@ -245,12 +236,12 @@ export function QuickIncidentForm({
     setSubmitting(true);
     try {
       onSubmit?.(form);
-      localStorage.removeItem(draftKey);
+      clearDraft(DRAFT_KEY_PREFIX, childId);
       setSubmitted(true);
     } finally {
       setSubmitting(false);
     }
-  }, [form, onSubmit, draftKey]);
+  }, [form, onSubmit, childId]);
 
   // ── Reset ─────────────────────────────────────────────────────────
   const handleRecordAnother = useCallback(() => {
