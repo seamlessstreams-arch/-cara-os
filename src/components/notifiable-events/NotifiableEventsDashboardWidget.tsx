@@ -61,6 +61,7 @@ export function NotifiableEventsDashboardWidget({ homeId = "home-oak" }: Props) 
   async function fetchData() {
     try {
       const res = await fetch(`/api/notifiable-events?homeId=${homeId}&view=overview`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

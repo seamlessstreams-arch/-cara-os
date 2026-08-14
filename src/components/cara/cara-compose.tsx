@@ -211,7 +211,7 @@ export function CaraCompose(props: CaraComposeProps) {
       return;
     }
     try {
-      await fetch("/api/cara/generate", {
+      const res = await fetch("/api/cara/generate", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -222,6 +222,7 @@ export function CaraCompose(props: CaraComposeProps) {
           editedText: editing ? resultEdited : undefined,
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
     } catch {
       // best-effort
     }

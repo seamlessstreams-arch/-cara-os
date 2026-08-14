@@ -254,7 +254,7 @@ export default function DocumentWizardPage() {
     setSaving(true);
     setError(null);
     try {
-      await fetch("/api/v1/intelligence/document", {
+      const res = await fetch("/api/v1/intelligence/document", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -267,6 +267,7 @@ export default function DocumentWizardPage() {
           confidence_score: classification?.confidence_score ?? null,
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       setStage("saved");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save document.");

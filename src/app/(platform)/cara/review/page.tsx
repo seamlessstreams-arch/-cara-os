@@ -15,6 +15,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraHealthPanel } from "@/components/cara/cara-health-panel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -346,7 +347,7 @@ function SuggestionRow({
     // If Supabase isn't configured the call will return a graceful error; the
     // optimistic UI update has already happened so the user sees the result.
     try {
-      await fetch("/api/cara/generate", {
+      const res = await fetch("/api/cara/generate", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -356,8 +357,11 @@ function SuggestionRow({
           actorRole: "registered_manager",
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
     } catch {
-      // Swallow — optimistic state already applied
+      // The optimistic state has already applied, so say out loud that the
+      // decision itself didn't reach the record.
+      toast.error("That review decision didn't save — the output is still awaiting review on the server.");
     } finally {
       setActing(null);
     }

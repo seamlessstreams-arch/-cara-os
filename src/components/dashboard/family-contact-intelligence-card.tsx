@@ -103,6 +103,7 @@ export function FamilyContactIntelligenceCard({ childId }: FamilyContactIntellig
     async function fetch_data() {
       try {
         const res = await fetch(`/api/cara/family-contact?childId=${childId}`);
+        if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

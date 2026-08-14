@@ -4,7 +4,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { CaraCostEstimate } from "@/components/cara/CaraCostEstimate";
 
 import { EmptyState } from "@/components/ui/empty-state";
@@ -26,26 +28,12 @@ interface CostSummary {
 }
 
 export default function CaraCostsPage() {
-  const [data, setData] = useState<CostSummary | null>(null);
   const [period, setPeriod] = useState<"day" | "week" | "month">("month");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCosts();
-  }, [period]);
-
-  async function loadCosts() {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/cara/costs?organisationId=org-default&period=${period}`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-costs", period],
+    queryFn: () => api.get<CostSummary>(`/api/cara/costs?organisationId=org-default&period=${period}`),
+  });
 
   return (
     <div className="space-y-6">
@@ -73,6 +61,10 @@ export default function CaraCostsPage() {
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Loading cost data...</div>
+      ) : isError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+          <p className="text-sm text-red-700">Couldn&apos;t load cost data — {error.message}. Spend may still be occurring; retry before reading this as zero usage.</p>
+        </div>
       ) : data?.limits && data?.summary ? (
         <>
           {/* Budget overview */}

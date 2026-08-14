@@ -117,6 +117,7 @@ export default function ReflectiveSupervisionPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ context: aiContext }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const j = (await res.json()).data;
       setAiPrompts(j.prompts || []); setAiMessage(j.message || null);
     } catch { setAiMessage("Couldn't reach Cara. Use the section structure to guide the conversation."); }

@@ -124,6 +124,7 @@ export function OfstedReadinessDashboardWidget({
   async function fetchData() {
     try {
       const res = await fetch(`/api/ofsted-readiness?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

@@ -178,7 +178,7 @@ export function CaraChallengeModePanel({
     setSubmitting(true);
     try {
       // Record the challenge response
-      await fetch("/api/cara/feedback", {
+      const res = await fetch("/api/cara/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -189,6 +189,7 @@ export function CaraChallengeModePanel({
           tags: [`challenge_${action}`],
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       onComplete(combined);
     } catch {
       // Still complete even if recording fails

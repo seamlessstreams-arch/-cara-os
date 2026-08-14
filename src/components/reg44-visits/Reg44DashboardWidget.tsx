@@ -68,6 +68,7 @@ export function Reg44DashboardWidget({ homeId = "home-oak" }: Props) {
   async function fetchData() {
     try {
       const res = await fetch(`/api/reg44-visits?homeId=${homeId}&mode=dashboard`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

@@ -163,6 +163,7 @@ export function OutcomesMeasurementDashboardWidget({ homeId = "home-oak" }: Prop
   async function fetchData() {
     try {
       const res = await fetch(`/api/outcomes-measurement?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

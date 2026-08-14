@@ -7,7 +7,9 @@
 // competency gaps, linked training, progress tracking, and manager oversight.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -88,17 +90,12 @@ const COMPETENCY_LABELS: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function LearningPathwaysPage() {
-  const [summary, setSummary] = useState<PathwaySummary | null>(null);
-  const [loading, setLoading] = useState(true);
   const [expandedStaff, setExpandedStaff] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetch("/api/cara-studio/learning-pathways")
-      .then((r) => r.json())
-      .then((data) => setSummary(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: summary, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-studio-learning-pathways"],
+    queryFn: () => api.get<PathwaySummary>("/api/cara-studio/learning-pathways"),
+  });
 
   const toggleStaff = (staffId: string) => {
     setExpandedStaff((prev) => {
@@ -132,6 +129,10 @@ export default function LearningPathwaysPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
             <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Loading learning pathways...</p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+            <p className="text-sm text-red-700">Couldn&apos;t load learning pathways — {error.message}</p>
           </div>
         ) : summary ? (
           <>

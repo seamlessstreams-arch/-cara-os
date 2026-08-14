@@ -71,6 +71,7 @@ export function PocketMoneyDashboardWidget({ homeId = "home-oak" }: Props) {
   async function fetchData() {
     try {
       const res = await fetch(`/api/pocket-money?homeId=${homeId}&mode=dashboard`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

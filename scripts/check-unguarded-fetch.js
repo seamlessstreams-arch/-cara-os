@@ -12,8 +12,15 @@
 // A queryFn/mutationFn window that calls fetch( is a violation UNLESS it
 // visibly handles failure: it checks .ok / throws, routes through api.* /
 // apiFetch, or calls an in-file helper whose own body checks .ok (jfetch,
-// json, oversightJson, named fetchers). Raw fetch outside query/mutation
-// functions (downloads, blobs, third-party calls) is out of scope.
+// json, oversightJson, named fetchers).
+//
+// Second leg: ANY literal internal-API fetch — fetch("/api…") / fetch(`/api…`)
+// — must show .ok or throw in its window, wherever it sits. The first leg
+// cannot see plain useEffect/handler fetches, which is exactly where the last
+// seven swallow-sites hid (declare queue, four cara-studio panels, costs,
+// providers): .then(r => r.json()).catch(console.error) renders an API
+// failure as an empty page. Non-literal urls (variables, third-party hosts,
+// blobs) stay out of scope.
 //
 // Fix: api.get/post/put/patch/delete from @/hooks/use-api — or apiFetch when
 // custom headers are needed.
@@ -74,9 +81,42 @@ for (const dir of DIRS) {
   }
 }
 
+// Leg 2: literal internal-API fetches anywhere in app client code.
+const RAW_DIRS = ["src/app", "src/components", "src/hooks", "src/lib"];
+const seen = new Set(violations);
+for (const dir of RAW_DIRS) {
+  for (const file of walk(dir)) {
+    const text = fs.readFileSync(file, "utf8");
+    if (!text.includes("fetch(")) continue;
+    const rel = file.split(path.sep).join("/");
+    const helpers = okCheckingHelpers(text);
+    const re = /\bfetch\(\s*[`"']\/api/g;
+    let m;
+    while ((m = re.exec(text))) {
+      // End-anchored window: a multi-line JSON.stringify body can push the
+      // .ok check arbitrarily far from the fetch keyword, so scan to the end
+      // of the fetch statement (first `);`) plus 350 chars — the check must
+      // sit right where the call completes, whatever the body size.
+      const tail = text.slice(m.index);
+      const close = tail.search(/\)\s*;/);
+      const win = tail.slice(0, Math.min(close === -1 ? 1000 : close + 700, 4000));
+      if (/\.ok\b/.test(win) || /\bthrow\b/.test(win)) continue;
+      // In-file ok-checking helper, used as .then(json) or json(res). Must be
+      // reference-aware: a bare includes("json") would match every r.json().
+      if ([...helpers].some((h) => new RegExp(`(?<!\\.)\\b${h}\\s*[(),]`).test(win))) continue;
+      const line = text.slice(0, m.index).split("\n").length;
+      const key = `${rel}:${line}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        violations.push(`${key}  (raw internal fetch)`);
+      }
+    }
+  }
+}
+
 if (violations.length) {
   console.error(
-    `check-unguarded-fetch: ${violations.length} query/mutation function(s) can swallow an HTTP error.\n` +
+    `check-unguarded-fetch: ${violations.length} fetch site(s) can swallow an HTTP error.\n` +
       `fetch() resolves on a 4xx/5xx, so the error body parses as the result —\n` +
       `a failed save looks recorded, a failed read looks empty. Use api.get/post/…\n` +
       `from @/hooks/use-api (or apiFetch for custom headers), or check res.ok and throw.\n`
@@ -84,4 +124,4 @@ if (violations.length) {
   for (const v of violations) console.error("  " + v);
   process.exit(1);
 }
-console.log("check-unguarded-fetch: every query/mutation fetch handles HTTP failure.");
+console.log("check-unguarded-fetch: every query/mutation fetch and raw internal fetch handles HTTP failure.");

@@ -65,6 +65,7 @@ export function RegulatoryDashboardWidget({ homeId = "home-oak" }: Props) {
   async function fetchData() {
     try {
       const res = await fetch(`/api/regulatory?homeId=${homeId}&view=compliance`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {
