@@ -11,6 +11,7 @@ import type {
   PhysicalInterventionPatternResponse,
 } from "@/app/api/v1/physical-intervention-pattern-intelligence/route";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Visual helpers ────────────────────────────────────────────────────────────
 
 const SIGNAL_BADGE: Record<ChildPISignal, string> = {
@@ -331,9 +332,7 @@ export default function PhysicalInterventionPatternsPage() {
                 </div>
 
                 {visible.length === 0 ? (
-                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                    No children in this category.
-                  </div>
+                  <EmptyState compact title="No children in this category." />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {visible.map((p) => <ChildCard key={p.childId} profile={p} />)}
@@ -345,9 +344,7 @@ export default function PhysicalInterventionPatternsPage() {
             {viewMode === "staff" && (
               <>
                 {staffProfiles.length === 0 ? (
-                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                    No staff involvement data recorded.
-                  </div>
+                  <EmptyState compact title="No staff involvement data recorded." />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     {staffProfiles.map((p) => <StaffCard key={p.staffId} profile={p} />)}

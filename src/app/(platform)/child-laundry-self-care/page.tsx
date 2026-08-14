@@ -40,6 +40,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── inlined from @/hooks/use-laundry-self-care-records ──────────────────────
 function useLaundrySelfCareRecords(childId?: string) {
   return useQuery<{ data: LaundrySelfCareRecord[] }>({
@@ -228,9 +229,7 @@ export default function ChildLaundrySelfCarePage() {
       {/* ── records ──────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            No records match your filters.
-          </div>
+          <EmptyState compact title="No records match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;

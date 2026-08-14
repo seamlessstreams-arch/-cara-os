@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { formatRate, meets } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Key worker effectiveness query (inlined from the former hook wrapper) ────
 
 type EffectivenessSignal = "exemplary" | "strong" | "developing" | "needs_support";
@@ -320,9 +321,7 @@ export default function KeyWorkerEffectivenessPage() {
 
             {/* ── Staff cards ───────────────────────────────────────────── */}
             {visible.length === 0 ? (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                No key workers in this category.
-              </div>
+              <EmptyState compact title="No key workers in this category." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {visible.map((profile) => (

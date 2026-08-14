@@ -33,6 +33,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data hooks (inlined from use-staff-exit-interview-records) ──────── */
 
 function useStaffExitInterviewRecords() {
@@ -286,7 +287,7 @@ export default function StaffExitInterviewsPage() {
         {/* ── interview cards ────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No exit interviews match your filters.</div>
+            <EmptyState compact title="No exit interviews match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;

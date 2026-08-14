@@ -34,6 +34,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const CHILD_PLEDGES_KEY = "child-pledges";
 
 function useChildPledges() {
@@ -190,7 +191,7 @@ export default function ChildrenPledgesPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No pledges match your filters.</div>
+          <EmptyState compact title="No pledges match your filters." />
         )}
         {filtered.map((pledge) => {
           const isExpanded = expandedId === pledge.id;

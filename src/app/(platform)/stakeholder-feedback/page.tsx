@@ -40,6 +40,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useStakeholderFeedbackRecords() {
   return useQuery<StakeholderFeedbackRecord[]>({
     queryKey: ["stakeholder-feedback-records"],
@@ -253,7 +254,7 @@ export default function StakeholderFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No feedback matches your filters.</div>
+            <EmptyState compact title="No feedback matches your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;

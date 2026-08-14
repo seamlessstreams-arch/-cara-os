@@ -11,6 +11,7 @@ import type {
   EducationIntelligenceResult,
 } from "@/lib/engines/education-intelligence-engine";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface EducationIntelligenceResponse {
   data: EducationIntelligenceResult;
 }
@@ -262,9 +263,7 @@ export default function EducationIntelligencePage() {
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Per-child education profiles</h2>
         {data.child_profiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No education records found.
-          </div>
+          <EmptyState compact title="No education records found." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.child_profiles.map((p) => (

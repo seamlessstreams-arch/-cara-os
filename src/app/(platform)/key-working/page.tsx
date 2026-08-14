@@ -34,6 +34,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Key-working queries (inlined from the former hook wrapper) ──────────────
 
 type KeyWorkingListResponse = { data: KeyWorkingSession[]; meta: { total: number; this_week: number } };
@@ -417,7 +418,7 @@ export default function KeyWorkingPage() {
 
         {/* ── Session list ─────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No sessions match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No sessions match your filters." />}
           {filtered.map((s) => {
             const open = !!expanded[s.id];
             const typeM = TYPE_META[s.type];

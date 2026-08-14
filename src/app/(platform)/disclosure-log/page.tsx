@@ -45,6 +45,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── data hook (inlined from use-disclosures) ────────────────────────────────
 const DISCLOSURES_KEY = "disclosures";
 
@@ -261,7 +262,7 @@ export default function DisclosureLogPage() {
       {/* ── disclosure cards ──────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No disclosures match your filters.</div>
+          <EmptyState compact title="No disclosures match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;

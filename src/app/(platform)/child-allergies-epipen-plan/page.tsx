@@ -43,6 +43,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inline hooks ───────────────────────────────────────────────────────────────
 
 const ALLERGY_PLANS_KEY = "allergy-plans";
@@ -402,9 +403,7 @@ export default function ChildAllergiesEpipenPlanPage() {
       {/* ── Allergy Plan Cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">
-            No plans match your filters.
-          </p>
+          <EmptyState compact title="No plans match your filters." />
         )}
 
         {filtered.map((plan) => {

@@ -39,6 +39,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 function ratingColour(r: number): string {
   if (r >= 4) return "text-green-600";
   if (r === 3) return "text-amber-600";
@@ -170,7 +171,7 @@ export default function BedtimeRoutinesPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No routines match your filters.</div>
+          <EmptyState compact title="No routines match your filters." />
         )}
         {filtered.map((routine) => {
           const isExpanded = expandedId === routine.id;

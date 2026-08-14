@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type ApproachType = "therapeutic" | "boundary" | "physical" | "undocumented";
 type ConsistencyLevel = "consistent" | "mixed" | "divergent";
 
@@ -283,9 +284,7 @@ export default function TeamApproachConsistencyPage() {
                 No behaviour log entries found. As staff record entries, Cara will build the approach consistency picture here.
               </div>
             ) : visible.length === 0 ? (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                No children in this category.
-              </div>
+              <EmptyState compact title="No children in this category." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {visible.map((profile) => (

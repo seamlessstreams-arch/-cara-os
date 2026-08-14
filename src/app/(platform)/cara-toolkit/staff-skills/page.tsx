@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type { StaffSkillProfile, StaffSkillsAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchStaffSkills(): Promise<StaffSkillsAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/staff-skills");
   if (!res.ok) throw new Error("Failed to fetch staff skills data");
@@ -217,9 +218,7 @@ export default function StaffSkillsPage() {
           Staff profiles ({data.totalStaff})
         </h2>
         {data.staffProfiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No active staff found.
-          </div>
+          <EmptyState compact title="No active staff found." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.staffProfiles.map((p) => (

@@ -33,6 +33,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import type { TimelineEvent, TimelineEventCategory } from "@/types/extended";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const TIMELINE_EVENTS_KEY = "timeline-events";
 
 function useTimelineEvents(childId?: string, homeId?: string) {
@@ -193,7 +194,7 @@ export default function TraumaInformedTimelinePage() {
       {/* ── timeline cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No timeline events match your filters.</div>
+          <EmptyState compact title="No timeline events match your filters." />
         )}
         {filtered.map((evt) => {
           const isExpanded = expandedId === evt.id;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inline types ──────────────────────────────────────────────────── */
 export type HealthChildProfile = {
   childId: string;
@@ -204,9 +205,7 @@ export default function HealthIntelligencePage() {
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Per-child health summary</h2>
         {data.childProfiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No children found.
-          </div>
+          <EmptyState compact title="No children found." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.childProfiles.map((p) => (

@@ -36,6 +36,7 @@ import type { RestraintType, RestraintReason, RestraintReviewStatus, RestraintRe
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const RESTRAINTS_KEY = "restraints";
 const RESTRAINTS_API = "/api/v1/restraints";
 
@@ -211,7 +212,7 @@ export default function RestraintLogPage() {
         </div>
 
         <FlatList>
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No restraint records found.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No restraint records found." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const reviewM = REVIEW_META[r.review_status] ?? { label: String(r.review_status ?? "Unknown"), color: "bg-slate-100 text-slate-700" };

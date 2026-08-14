@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function usePreAdmissionChecklists(childId?: string) {
   return useQuery<PreAdmissionChecklist[]>({
     queryKey: ["pre-admission-checklists", childId],
@@ -168,7 +169,7 @@ export default function PreAdmissionChecklistPage() {
       {/* ── checklist cards ────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No checklists match your filters.</div>
+          <EmptyState compact title="No checklists match your filters." />
         )}
         {filtered.map((checklist) => {
           const isExpanded = expandedId === checklist.id;

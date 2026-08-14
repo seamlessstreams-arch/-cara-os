@@ -20,7 +20,8 @@ export interface EmptyStateAction {
 interface EmptyStateProps {
   icon?:        React.ElementType;
   title:        string;
-  description:  string;
+  /** Optional — a one-line empty state carries its message in the title. */
+  description?: string;
   actions?:     EmptyStateAction[];
   caraPrompt?:  string;   // if set, adds an "Ask Cara" button
   onAskCara?:   (prompt: string) => void;
@@ -55,7 +56,9 @@ export function EmptyState({
       )}
 
       <h3 className="text-[15px] font-semibold text-[var(--cs-navy)] mb-1">{title}</h3>
-      <p className="text-sm text-[var(--cs-text-muted)] max-w-sm leading-relaxed mb-6">{description}</p>
+      {description && (
+        <p className="text-sm text-[var(--cs-text-muted)] max-w-sm leading-relaxed mb-6">{description}</p>
+      )}
 
       {(actions.length > 0 || caraPrompt) && (
         <div className="flex flex-wrap items-center justify-center gap-2">

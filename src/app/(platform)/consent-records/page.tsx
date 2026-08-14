@@ -33,6 +33,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Local meta (keeps color / icon info that doesn't belong in shared types) ─
 const CATEGORY_META: Record<ConsentCategory, { label: string; color: string }> = {
   medical:             { label: "Medical Treatment",      color: "bg-red-100 text-red-800" },
@@ -283,7 +284,7 @@ export default function ConsentRecordsPage() {
 
         {/* ── Record list ──────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No consent records match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No consent records match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const catM = CATEGORY_META[r.category];

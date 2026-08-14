@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inlined from ex-hook use-night-staff-handovers ─────────────────────────
 
 const NIGHT_STAFF_HANDOVERS_KEY = "night-staff-handovers";
@@ -306,9 +307,7 @@ export default function NightStaffHandoverPage() {
         {/* ── List ──────────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              No night handover records match your filters.
-            </p>
+            <EmptyState compact title="No night handover records match your filters." />
           )}
 
           {filtered.map((r) => {

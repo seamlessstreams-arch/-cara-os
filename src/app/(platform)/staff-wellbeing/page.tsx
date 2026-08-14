@@ -30,6 +30,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── data hooks (inlined from use-staff-wellbeing-records) ───────────────── */
 
 function useStaffWellbeingRecords() {
@@ -240,7 +241,7 @@ export default function StaffWellbeingPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No check-ins match your filters.</div>
+            <EmptyState compact title="No check-ins match your filters." />
           )}
           {filtered.map((check) => {
             const isExpanded = expanded === check.id;

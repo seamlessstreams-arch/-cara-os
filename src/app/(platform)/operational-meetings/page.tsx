@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const OPERATIONAL_MEETINGS_KEY = "operational-meetings";
 
 async function fetchOperationalMeetings(): Promise<{ data: OperationalMeeting[] }> {
@@ -212,7 +213,7 @@ export default function OperationalMeetingsPage() {
         {/* Meeting cards */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No meetings match your filters.</p>
+            <EmptyState compact title="No meetings match your filters." />
           )}
           {filtered.map((m) => {
             const open = expandedId === m.id;

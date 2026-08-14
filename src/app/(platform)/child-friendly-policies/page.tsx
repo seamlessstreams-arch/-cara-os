@@ -35,6 +35,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── data (inlined from the former use-child-friendly-policies hook) ──────────
 
 const CHILD_FRIENDLY_POLICIES_KEY = "child-friendly-policies";
@@ -206,7 +207,7 @@ export default function ChildFriendlyPoliciesPage() {
       {/* ── policy cards ───────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No policies match your filters.</div>
+          <EmptyState compact title="No policies match your filters." />
         )}
         {filtered.map((policy) => {
           const isExpanded = expandedId === policy.id;

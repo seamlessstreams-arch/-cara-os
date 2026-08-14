@@ -47,6 +47,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── colour maps ──────────────────────────────────────────────────────── */
 const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: string }> = {
   1: { color: "text-red-600",    bar: "bg-red-400",    label: "Very low" },
@@ -240,7 +241,7 @@ export default function ChildMentalHealthDailyCheckPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No check-ins match your filters.</div>
+            <EmptyState compact title="No check-ins match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

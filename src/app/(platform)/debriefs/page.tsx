@@ -29,6 +29,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── debrief record hooks (inlined from use-debrief-records) ─────────────── */
 
 const DEBRIEF_KEY = "debrief-records";
@@ -162,7 +163,7 @@ export default function DebriefsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No debriefs match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No debriefs match your filters." />}
           {filtered.map((db) => {
             const open = !!expanded[db.id];
             const typeM = TYPE_META[db.type];

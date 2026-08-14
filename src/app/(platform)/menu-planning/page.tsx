@@ -29,6 +29,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── Data hooks (inlined from the former use-meal-plans hook) ─────────── */
 
 const MEAL_PLANS_KEY = "meal-plans";
@@ -212,7 +213,7 @@ export default function MenuPlanningPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No meals match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No meals match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const mealM = MEAL_META[m.meal];

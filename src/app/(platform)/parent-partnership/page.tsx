@@ -69,6 +69,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const CT_ICON: Record<ParentContactType, typeof Phone> = {
@@ -381,7 +382,7 @@ export default function ParentPartnershipPage() {
             );
           })}
           {filtered.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No contacts match filters.</p>
+            <EmptyState compact title="No contacts match filters." />
           )}
         </div>
 

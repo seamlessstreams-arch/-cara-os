@@ -35,6 +35,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useWellbeingPulseSurveyRecords(childId?: string) {
   return useQuery<WellbeingPulseSurveyRecord[]>({
     queryKey: ["wellbeing-pulse-survey-records", childId],
@@ -303,7 +304,7 @@ export default function WellbeingPulseSurveyPage() {
         {/* ── list ───────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No pulse surveys match your filters.</div>
+            <EmptyState compact title="No pulse surveys match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

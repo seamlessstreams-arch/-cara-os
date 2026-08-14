@@ -36,6 +36,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── helpers ─────────────────────────────────────────────────────────────────
 function supportColour(s: SupportLevel): string {
   switch (s) {
@@ -233,7 +234,7 @@ export default function HouseholdTasksRotaPage() {
       {/* ── task cards ─────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No tasks match your filters.</div>
+          <EmptyState compact title="No tasks match your filters." />
         )}
         {filtered.map((task) => {
           const isExpanded = expandedId === task.id;

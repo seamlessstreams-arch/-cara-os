@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── config ──────────────────────────────────────────────────────────── */
 const SOURCES: ComplimentSource[] = [
   "young_person", "parent_carer", "social_worker", "irp",
@@ -215,7 +216,7 @@ export default function ComplimentsPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No compliments match your filters.</div>
+            <EmptyState compact title="No compliments match your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;

@@ -34,6 +34,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function useTransitionPlanningRecords(childId?: string) {
   return useQuery<TransitionPlanningRecord[]>({
     queryKey: ["transition-planning-records", childId],
@@ -316,7 +317,7 @@ export default function TransitionPlanningPage() {
 
         {/* ── Goal list ──────────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No goals match your filters.</p>}
+          {filtered.length === 0 && <EmptyState compact title="No goals match your filters." />}
           {filtered.map((g) => {
             const open = !!expanded[g.id];
             const areaM = AREA_META[g.area];

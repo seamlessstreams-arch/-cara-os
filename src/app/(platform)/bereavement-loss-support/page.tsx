@@ -30,6 +30,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── label maps ──────────────────────────────────────────────────────── */
 
 const LOSS_TYPE_LABEL: Record<BereavementLossType, string> = {
@@ -400,9 +401,7 @@ export default function BereavementLossSupportPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed bg-white p-8 text-center text-sm text-gray-500">
-            No records match these filters.
-          </div>
+          <EmptyState compact title="No records match these filters." />
         )}
       </div>
 

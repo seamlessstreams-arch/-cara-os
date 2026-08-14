@@ -34,6 +34,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const END_SUMMARY_KEY = "placement-end-summaries";
 const END_SUMMARY_API = "/api/v1/placement-end-summaries";
 
@@ -196,7 +197,7 @@ export default function PlacementEndSummaryPage() {
       {/* ── summary cards ──────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No summaries match your filters.</div>
+          <EmptyState compact title="No summaries match your filters." />
         )}
         {filtered.map((s) => {
           const isExpanded = expandedId === s.id;

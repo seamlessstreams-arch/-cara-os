@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { MySafetyPlanAnalysis, ChildSafetyPlan, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchMySafetyPlan(): Promise<MySafetyPlanAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/my-safety-plan");
   if (!res.ok) throw new Error("Failed to fetch safety plan data");
@@ -170,9 +171,7 @@ export default function MySafetyPlanPage() {
           Children ({data.totalChildren})
         </h2>
         {data.childPlans.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No children currently in placement.
-          </div>
+          <EmptyState compact title="No children currently in placement." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.childPlans.map((plan) => (

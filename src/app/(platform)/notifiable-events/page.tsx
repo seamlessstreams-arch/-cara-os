@@ -32,6 +32,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toast } from "sonner";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inlined from ex-hook use-notifiable-events ─────────────────────────────
 
 const NOTIFIABLE_EVENTS_KEY = "notifiable-events";
@@ -608,7 +609,7 @@ export default function NotifiableEventsPage() {
         ) : (
         <FlatList>
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">No events match your filters.</div>
+            <EmptyState compact title="No events match your filters." />
           )}
           {filtered.map((evt) => {
             const isExpanded = expanded === evt.id;

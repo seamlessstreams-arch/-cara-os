@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { BehaviourSupportAnalysis, ChildBehaviourProfile, BehaviourStrategy, BehaviourTrigger, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchBehaviourSupport(): Promise<BehaviourSupportAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/behaviour-support");
   if (!res.ok) throw new Error("Failed to fetch behaviour support data");
@@ -207,9 +208,7 @@ export default function BehaviourSupportPage() {
           Per-child profiles ({data.childProfiles.length})
         </h2>
         {data.childProfiles.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No behaviour log entries recorded yet.
-          </div>
+          <EmptyState compact title="No behaviour log entries recorded yet." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.childProfiles.map((p) => (

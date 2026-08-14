@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { MissingAbscondingAnalysis, MissingEpisodeSummary, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
+import { EmptyState } from "@/components/ui/empty-state";
 async function fetchMissingAbsconding(): Promise<MissingAbscondingAnalysis> {
   const res = await fetch("/api/v1/cara-toolkit/missing-absconding");
   if (!res.ok) throw new Error("Failed to fetch missing/absconding data");
@@ -215,9 +216,7 @@ export default function MissingAbscondingPage() {
           All episodes ({data.totalEpisodes})
         </h2>
         {data.episodes.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            No missing episodes recorded.
-          </div>
+          <EmptyState compact title="No missing episodes recorded." />
         ) : (
           <div className="flex flex-col gap-3">
             {data.episodes.map((ep) => (

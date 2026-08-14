@@ -62,6 +62,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const PET_KEY = "pet-records";
 const PET_API = "/api/v1/pet-records";
 
@@ -447,9 +448,7 @@ export default function HomePetsCareLogPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed bg-white p-8 text-center text-sm text-gray-500">
-            No pets match these filters.
-          </div>
+          <EmptyState compact title="No pets match these filters." />
         )}
       </div>
 

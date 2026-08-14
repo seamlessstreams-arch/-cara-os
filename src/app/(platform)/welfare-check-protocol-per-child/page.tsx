@@ -68,6 +68,7 @@ import type { WelfareProtocol } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const WELFARE_PROTOCOLS_KEY = "welfare-protocols";
 
 function useWelfareProtocols(childId?: string, homeId?: string) {
@@ -216,7 +217,7 @@ export default function WelfareCheckProtocolPerChildPage() {
       {/* ── protocol cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">No protocols match your filters.</div>
+          <EmptyState compact title="No protocols match your filters." />
         )}
         {filtered.map((r) => {
           const open = expandedId === r.id;

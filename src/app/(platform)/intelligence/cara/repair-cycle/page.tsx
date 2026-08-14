@@ -10,6 +10,7 @@ import type {
   RepairStep,
   ChildRepairSummary,
 } from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
+import { EmptyState } from "@/components/ui/empty-state";
 type RepairCycleIntelligenceResponse = { data: RepairCycleData };
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
@@ -266,9 +267,7 @@ export default function RepairCycleIntelligencePage() {
             {/* ── Child view ────────────────────────────────────────────── */}
             {view === "children" && (
               visibleChildren.length === 0 ? (
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                  No children in this category.
-                </div>
+                <EmptyState compact title="No children in this category." />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {visibleChildren.map((cs) => (
@@ -281,9 +280,7 @@ export default function RepairCycleIntelligencePage() {
             {/* ── Incident view ─────────────────────────────────────────── */}
             {view === "incidents" && (
               visibleIncidents.length === 0 ? (
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                  No incidents in this category.
-                </div>
+                <EmptyState compact title="No incidents in this category." />
               ) : (
                 <div className="space-y-3">
                   {visibleIncidents.map((inc) => (

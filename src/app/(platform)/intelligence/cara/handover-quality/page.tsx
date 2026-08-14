@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inline types ──────────────────────────────────────────────────── */
 export type HandoverChildProfile = {
   childId: string;
@@ -271,9 +272,7 @@ export default function HandoverQualityPage() {
       )}
 
       {data.totalHandovers === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
-          No handover records found for the past 7 days.
-        </div>
+        <EmptyState compact title="No handover records found for the past 7 days." />
       )}
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
