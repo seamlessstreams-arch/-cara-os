@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Static reference data ────────────────────────────────────────────────────
 
 interface DirectWorkSession {
@@ -49,7 +50,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
     id: "dw_1",
     youngPerson: "Alex T.",
     worker: "Marcus Bell",
-    date: "2026-05-30",
+    date: seedDay(-2),
     duration: "45 mins",
     type: "life_story",
     title: "Life Story Book — Chapter 3",
@@ -61,7 +62,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
     id: "dw_2",
     youngPerson: "Jordan H.",
     worker: "Priya Sharma",
-    date: "2026-05-29",
+    date: seedDay(-3),
     duration: "30 mins",
     type: "emotional_regulation",
     title: "Zones of Regulation — Session 4",
@@ -73,7 +74,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
     id: "dw_3",
     youngPerson: "Casey L.",
     worker: "Marcus Bell",
-    date: "2026-06-03",
+    date: seedDay(2),
     duration: "60 mins",
     type: "independence",
     title: "Cooking & Budgeting — Meal Planning",
@@ -85,7 +86,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
     id: "dw_4",
     youngPerson: "Alex T.",
     worker: "Olivia Hayes",
-    date: "2026-05-27",
+    date: seedDay(-5),
     duration: "40 mins",
     type: "identity",
     title: "Identity & Heritage Exploration",

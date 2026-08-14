@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface TherapeuticProfile {
@@ -80,14 +81,14 @@ const DEMO_PROFILES: TherapeuticProfile[] = [
     protective_factors: ["Strong relationship with key worker", "Good peer relationships at school", "Enjoys sports", "Can identify feelings when supported"],
     current_presentation: "Generally settled over the past 3 months. Some regression following a cancelled contact visit last week. Engaging well in key work sessions.",
     progress_over_time: [
-      { date: "2026-03-01", area: "School attendance", direction: "improving", note: "Up from 75% to 92%" },
-      { date: "2026-04-01", area: "Emotional regulation", direction: "improving", note: "Fewer incidents of dysregulation" },
-      { date: "2026-05-01", area: "Family contact", direction: "stable", note: "Still finding contact difficult but coping better" },
+      { date: seedDay(-99), area: "School attendance", direction: "improving", note: "Up from 75% to 92%" },
+      { date: seedDay(-68), area: "Emotional regulation", direction: "improving", note: "Fewer incidents of dysregulation" },
+      { date: seedDay(-38), area: "Family contact", direction: "stable", note: "Still finding contact difficult but coping better" },
     ],
     child_voice_entries: [
-      { date: "2026-05-01", context: "Key work session", quote: "I like it here. I feel safe most of the time.", theme: "belonging", sentiment: "positive" },
-      { date: "2026-04-20", context: "After family contact", quote: "I don't know why she didn't come. Maybe she doesn't care.", theme: "family", sentiment: "negative" },
-      { date: "2026-04-15", context: "School review", quote: "Science is my thing. I want to be an engineer.", theme: "aspiration", sentiment: "positive" },
+      { date: seedDay(-38), context: "Key work session", quote: "I like it here. I feel safe most of the time.", theme: "belonging", sentiment: "positive" },
+      { date: seedDay(-49), context: "After family contact", quote: "I don't know why she didn't come. Maybe she doesn't care.", theme: "family", sentiment: "negative" },
+      { date: seedDay(-54), context: "School review", quote: "Science is my thing. I want to be an engineer.", theme: "aspiration", sentiment: "positive" },
     ],
     what_staff_need_to_remember: ["Always give Jayden a choice", "Let him have 5 minutes before key work", "Don't mention family contact without warning", "Music helps him regulate"],
     what_helps: ["PACE approach", "Advance warning of changes", "Choices", "Music", "1:1 time", "Humour", "Sports"],
@@ -97,7 +98,7 @@ const DEMO_PROFILES: TherapeuticProfile[] = [
       { title: "Process family contact feelings", description: "Gentle life story and feelings work around family relationships", framework: "DDP", status: "active" },
       { title: "Build independence skills", description: "Age-appropriate independence work aligned with pathway plan", framework: "Therapeutic Parenting", status: "active" },
     ],
-    approved_by: "Olivia Hayes", approved_at: "2026-04-15T10:00:00Z", updated_at: "2026-05-08T14:30:00Z",
+    approved_by: "Olivia Hayes", approved_at: `${seedDay(-54)}T10:00:00Z`, updated_at: `${seedDay(-31)}T14:30:00Z`,
   },
   {
     id: "prof-2", child_id: "child_2", childName: "Amara", status: "draft", version: 1,
@@ -118,11 +119,11 @@ const DEMO_PROFILES: TherapeuticProfile[] = [
     protective_factors: ["Strong cultural identity", "Artistic ability", "Resilient and thoughtful"],
     current_presentation: "Quieter in recent weeks. Self-isolating more. Engaging well in art therapy.",
     progress_over_time: [
-      { date: "2026-04-01", area: "Art engagement", direction: "improving", note: "Art has become an important outlet" },
-      { date: "2026-05-01", area: "Social engagement", direction: "declining", note: "Self-isolating more in room" },
+      { date: seedDay(-68), area: "Art engagement", direction: "improving", note: "Art has become an important outlet" },
+      { date: seedDay(-38), area: "Social engagement", direction: "declining", note: "Self-isolating more in room" },
     ],
     child_voice_entries: [
-      { date: "2026-05-05", context: "Art session", quote: "When I draw, I don't feel so sad.", theme: "coping", sentiment: "mixed" },
+      { date: seedDay(-34), context: "Art session", quote: "When I draw, I don't feel so sad.", theme: "coping", sentiment: "mixed" },
     ],
     what_staff_need_to_remember: ["Don't force group participation", "Art materials always available", "Respect her space"],
     what_helps: ["Art and drawing", "Quiet 1:1 time", "Cultural food", "Music from home culture", "Patient, gentle approach"],
@@ -131,7 +132,7 @@ const DEMO_PROFILES: TherapeuticProfile[] = [
       { title: "Build felt safety", description: "Help Amara feel safe enough to engage socially again", framework: "Trauma-Informed", status: "active" },
       { title: "Cultural identity support", description: "Strengthen connection to cultural heritage", framework: "Anti-Oppressive", status: "active" },
     ],
-    approved_by: null, approved_at: null, updated_at: "2026-05-10T14:00:00Z",
+    approved_by: null, approved_at: null, updated_at: `${seedDay(-29)}T14:00:00Z`,
   },
 ];
 

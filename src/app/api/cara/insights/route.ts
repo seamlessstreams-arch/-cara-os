@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Pure helpers (exported for testing) ────────────────────────────────────
 
 export type InsightType =
@@ -58,7 +59,7 @@ export function getDemoInsights(limit: number) {
       confidence: 87,
       relatedChildName: "Alex W",
       relatedModule: "incidents",
-      detectedAt: "2026-05-12T08:00:00Z",
+      detectedAt: `${seedDay(-27)}T08:00:00Z`,
     },
     {
       id: "ins_002",
@@ -70,7 +71,7 @@ export function getDemoInsights(limit: number) {
       confidence: 92,
       relatedChildName: "Casey T",
       relatedModule: "daily_log",
-      detectedAt: "2026-05-11T16:00:00Z",
+      detectedAt: `${seedDay(-28)}T16:00:00Z`,
     },
     {
       id: "ins_003",
@@ -81,7 +82,7 @@ export function getDemoInsights(limit: number) {
       recommendation: "Review and add management oversight to outstanding incidents.",
       confidence: 95,
       relatedModule: "incidents",
-      detectedAt: "2026-05-12T07:30:00Z",
+      detectedAt: `${seedDay(-27)}T07:30:00Z`,
     },
     {
       id: "ins_004",
@@ -92,7 +93,7 @@ export function getDemoInsights(limit: number) {
       recommendation: "Schedule supervision within the next 5 working days.",
       confidence: 98,
       relatedModule: "supervision",
-      detectedAt: "2026-05-12T06:00:00Z",
+      detectedAt: `${seedDay(-27)}T06:00:00Z`,
     },
     {
       id: "ins_005",
@@ -104,7 +105,7 @@ export function getDemoInsights(limit: number) {
       confidence: 88,
       relatedChildName: "Jordan M",
       relatedModule: "key_work",
-      detectedAt: "2026-05-11T10:00:00Z",
+      detectedAt: `${seedDay(-28)}T10:00:00Z`,
     },
   ];
 

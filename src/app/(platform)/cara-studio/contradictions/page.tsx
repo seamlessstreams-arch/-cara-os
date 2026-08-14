@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface Contradiction {
@@ -41,25 +42,25 @@ const DEMO_CONTRADICTIONS: Contradiction[] = [
     id: "con-1", type: "risk_level_mismatch", title: "Risk Level Discrepancy — Amara",
     description: "The most recent daily log describes Amara as 'settled and calm' but the risk assessment from the same week rates self-harm risk as 'high'. These may both be accurate at different moments, but the discrepancy needs professional review.",
     sourceA: "Daily Log — 10 May", sourceB: "Risk Assessment — 8 May",
-    severity: "high", status: "unresolved", detectedAt: "2026-05-11T08:00:00Z", resolvedAt: null, childName: "Amara",
+    severity: "high", status: "unresolved", detectedAt: `${seedDay(-28)}T08:00:00Z`, resolvedAt: null, childName: "Amara",
   },
   {
     id: "con-2", type: "behaviour_description_conflict", title: "Behavioural Description Conflict — Reuben",
     description: "Staff member A recorded 'unprovoked aggression' while staff member B recorded the same event as 'defensive response after being startled'. The framing significantly impacts the understanding of the behaviour.",
     sourceA: "Incident Report — Staff A", sourceB: "Incident Report — Staff B",
-    severity: "medium", status: "unresolved", detectedAt: "2026-05-10T14:00:00Z", resolvedAt: null, childName: "Reuben",
+    severity: "medium", status: "unresolved", detectedAt: `${seedDay(-29)}T14:00:00Z`, resolvedAt: null, childName: "Reuben",
   },
   {
     id: "con-3", type: "risk_level_mismatch", title: "Contact Risk Assessment vs Observation — Jayden",
     description: "Contact risk assessment states supervised contact only, but the contact log records an unsupervised phone call. This may be an admin error or a recent change not yet reflected in the assessment.",
     sourceA: "Contact Risk Assessment", sourceB: "Contact Log — 4 May",
-    severity: "medium", status: "acknowledged", detectedAt: "2026-05-05T10:00:00Z", resolvedAt: null, childName: "Jayden",
+    severity: "medium", status: "acknowledged", detectedAt: `${seedDay(-34)}T10:00:00Z`, resolvedAt: null, childName: "Jayden",
   },
   {
     id: "con-4", type: "behaviour_description_conflict", title: "Sleep Pattern Report — Jayden",
     description: "Night staff report 'slept through the night' but the young person told key worker 'I couldn't sleep at all'. Both perspectives may have validity but the discrepancy should be explored.",
     sourceA: "Night Log — 9 May", sourceB: "Key Work Session — 10 May",
-    severity: "low", status: "resolved", detectedAt: "2026-05-10T11:00:00Z", resolvedAt: "2026-05-11T09:00:00Z", childName: "Jayden",
+    severity: "low", status: "resolved", detectedAt: `${seedDay(-29)}T11:00:00Z`, resolvedAt: `${seedDay(-28)}T09:00:00Z`, childName: "Jayden",
   },
 ];
 

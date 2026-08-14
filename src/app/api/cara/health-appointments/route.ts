@@ -12,6 +12,7 @@ import { analyseHealthAppointments } from "@/lib/cara/health-appointments-intell
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { HealthInput, HealthAppointment } from "@/lib/cara/health-appointments-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -122,19 +123,19 @@ function buildDemoData(childId: string): HealthInput {
   const isJordan = childId.includes("jordan") || childId === "child_1";
 
   const baseAppts: HealthAppointment[] = isJordan ? [
-    { id: "a1", type: "gp", date: "2026-02-10", status: "attended", provider: "Dr Smith" },
-    { id: "a2", type: "dental", date: "2026-03-05", status: "attended", provider: "Smile Dental" },
-    { id: "a3", type: "camhs", date: "2026-03-20", status: "dna" },
-    { id: "a4", type: "gp", date: "2026-04-01", status: "attended", provider: "Dr Smith" },
-    { id: "a5", type: "camhs", date: "2026-04-15", status: "attended", provider: "CAMHS Team" },
-    { id: "a6", type: "specialist", date: "2026-05-20", status: "pending", provider: "Paediatrician" },
-    { id: "a7", type: "dental", date: "2026-06-10", status: "pending", provider: "Smile Dental" },
+    { id: "a1", type: "gp", date: seedDay(-118), status: "attended", provider: "Dr Smith" },
+    { id: "a2", type: "dental", date: seedDay(-95), status: "attended", provider: "Smile Dental" },
+    { id: "a3", type: "camhs", date: seedDay(-80), status: "dna" },
+    { id: "a4", type: "gp", date: seedDay(-68), status: "attended", provider: "Dr Smith" },
+    { id: "a5", type: "camhs", date: seedDay(-54), status: "attended", provider: "CAMHS Team" },
+    { id: "a6", type: "specialist", date: seedDay(-19), status: "pending", provider: "Paediatrician" },
+    { id: "a7", type: "dental", date: seedDay(2), status: "pending", provider: "Smile Dental" },
   ] : [
-    { id: "a1", type: "gp", date: "2026-01-15", status: "attended", provider: "Dr Patel" },
-    { id: "a2", type: "dental", date: "2026-02-20", status: "attended", provider: "Bright Dental" },
-    { id: "a3", type: "gp", date: "2026-03-10", status: "attended", provider: "Dr Patel" },
-    { id: "a4", type: "optical", date: "2026-04-05", status: "attended", provider: "Specsavers" },
-    { id: "a5", type: "dental", date: "2026-06-15", status: "pending", provider: "Bright Dental" },
+    { id: "a1", type: "gp", date: seedDay(-144), status: "attended", provider: "Dr Patel" },
+    { id: "a2", type: "dental", date: seedDay(-108), status: "attended", provider: "Bright Dental" },
+    { id: "a3", type: "gp", date: seedDay(-90), status: "attended", provider: "Dr Patel" },
+    { id: "a4", type: "optical", date: seedDay(-64), status: "attended", provider: "Specsavers" },
+    { id: "a5", type: "dental", date: seedDay(7), status: "pending", provider: "Bright Dental" },
   ];
 
   return {

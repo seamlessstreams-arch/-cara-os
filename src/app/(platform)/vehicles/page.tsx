@@ -22,6 +22,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { seedDay } from "@/lib/seed-date";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Vehicle {
@@ -710,12 +711,12 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
   ];
 
   const additionalChecks = [
-    { label: "Driver Licence Verification", description: "All drivers' licences checked against DVLA", status: "ok" as const, lastChecked: "2026-02-01", note: "DVLA online check — all staff verified" },
-    { label: "Transport Risk Assessments", description: "Route and journey risk assessments in place", status: "ok" as const, lastChecked: "2026-01-15", note: "Individual TRAs filed per young person" },
-    { label: "Child Transport Equipment", description: "Seatbelts, booster seats, restraints checked", status: "warning" as const, lastChecked: "2026-03-01", note: "Due for review — check seatbelts in FG23 HIJ" },
-    { label: "Business Use Insurance Confirmed", description: "All drivers confirmed for business use journeys", status: "ok" as const, lastChecked: "2026-04-01", note: "Annual confirmation signed by all staff" },
-    { label: "Driver Emergency Contacts", description: "Emergency procedures and contacts available in vehicles", status: "ok" as const, lastChecked: "2026-01-01", note: "Emergency packs in both vehicles" },
-    { label: "Lone Working Policy (Transport)", description: "Lone transport journey risk protocol in place", status: "ok" as const, lastChecked: "2026-02-15", note: "Check-in procedure active" },
+    { label: "Driver Licence Verification", description: "All drivers' licences checked against DVLA", status: "ok" as const, lastChecked: seedDay(-92), note: "DVLA online check — all staff verified" },
+    { label: "Transport Risk Assessments", description: "Route and journey risk assessments in place", status: "ok" as const, lastChecked: seedDay(-109), note: "Individual TRAs filed per young person" },
+    { label: "Child Transport Equipment", description: "Seatbelts, booster seats, restraints checked", status: "warning" as const, lastChecked: seedDay(-64), note: "Due for review — check seatbelts in FG23 HIJ" },
+    { label: "Business Use Insurance Confirmed", description: "All drivers confirmed for business use journeys", status: "ok" as const, lastChecked: seedDay(-33), note: "Annual confirmation signed by all staff" },
+    { label: "Driver Emergency Contacts", description: "Emergency procedures and contacts available in vehicles", status: "ok" as const, lastChecked: seedDay(-123), note: "Emergency packs in both vehicles" },
+    { label: "Lone Working Policy (Transport)", description: "Lone transport journey risk protocol in place", status: "ok" as const, lastChecked: seedDay(-78), note: "Check-in procedure active" },
   ];
 
   const statusCfg = {

@@ -44,6 +44,7 @@ import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
 import type { CircleRhythm, CircleNote } from "@/lib/relational-rhythm/rhythm-engine";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Relative dates (deterministic per boot, mirrors seed-data.ts) ─────────────
 
 function daysAgo(n: number): string {
@@ -916,7 +917,7 @@ export const PRACTICE_OS_AUTISM_PLANS: AutismPlan[] = [
     child_id: ALEX,
     plan_date: daysAgo(120),
     diagnosis_status: "diagnosed",
-    diagnosis_date: "2023-09-15",
+    diagnosis_date: seedDay(-1018),
     diagnosing_clinician: "Dr Priya Anand, CAMHS",
     special_interests: ["cooking for the house", "trains and railway maps"],
     communication_preferences: ["short, direct sentences", "extra processing time before he answers", "a warning before any change"],
@@ -957,7 +958,7 @@ export const PRACTICE_OS_ADHD_PLANS: ADHDPlan[] = [
     plan_date: daysAgo(90),
     diagnosis_status: "diagnosed",
     presentation: "combined",
-    diagnosis_date: "2024-06-01",
+    diagnosis_date: seedDay(-758),
     diagnosing_clinician: "Dr S. Mensah, CAMHS",
     strengths: ["energetic and creative", "great with the younger residents"],
     challenges: ["mornings and transitions", "time blindness", "medication timing"],

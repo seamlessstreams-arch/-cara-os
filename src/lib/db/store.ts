@@ -453,19 +453,9 @@ import type {
   AdmissionReferral,
   HealthRecordEntry,
 } from "@/types/extended";
-import { generateId, todayStr, daysFromNow, londonWeekStart } from "@/lib/utils";
+import { generateId, todayStr, daysFromNow } from "@/lib/utils";
+import { seedDay } from "@/lib/seed-date";
 
-// Seed dates float with the calendar (same doctrine as the intelligence
-// store): each is an offset in days from the current London week's Monday,
-// preserving the authored layout — history back to 2024, the April-2026
-// "present" cluster, future reviews and 2027 expiries, and the children's
-// ages (a floating date_of_birth keeps every narrative age true forever).
-// Fixed strings had already drifted: due dates and placement starts authored
-// as upcoming were four months in the past.
-const seedDay = (offset: number): string => {
-  const [y, m, d] = londonWeekStart(0).split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d + offset)).toISOString().slice(0, 10);
-};
 
 import type { WritingAssistantSettings, WritingAuditEvent } from "@/lib/writing-assistant/types";
 import { DEFAULT_WA_SETTINGS } from "@/lib/writing-assistant/types";

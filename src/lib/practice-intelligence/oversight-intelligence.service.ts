@@ -20,6 +20,7 @@ import type {
 } from "@/types/practice-intelligence";
 import { OVERSIGHT_TYPE_LABELS } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -348,11 +349,11 @@ function getDemoDrafts(hid: string): ManagementOversightDraft[] {
         safeguarding_considerations: "No immediate safeguarding concerns arising from this incident. Continue to monitor.",
         regulatory_relevance: "Children's Homes Regs 2015, Reg 12 (protection of children). Quality Standards — promoting positive behaviour.",
         actions_required: [
-          { action: "Key work session with Amara to explore what happened", owner: "Sarah Thompson", due_date: "2026-05-13", priority: "high" },
-          { action: "Review group activity planning to ensure inclusion", owner: "Shift Lead", due_date: "2026-05-15", priority: "medium" },
+          { action: "Key work session with Amara to explore what happened", owner: "Sarah Thompson", due_date: seedDay(2), priority: "high" },
+          { action: "Review group activity planning to ensure inclusion", owner: "Shift Lead", due_date: seedDay(4), priority: "medium" },
         ],
         management_decision_support: "Consider whether Amara's therapeutic profile needs updating to reflect this pattern. Discuss at next team meeting.",
-        review_date: "2026-05-20",
+        review_date: seedDay(9),
         human_review_note: "Cara-generated draft. Registered Manager to review, personalise, and approve before committing to the record.",
       },
       evidence_links: [],
@@ -361,7 +362,7 @@ function getDemoDrafts(hid: string): ManagementOversightDraft[] {
       ],
       quality_score: 82,
       approved_by: null, approved_at: null, committed_at: null,
-      created_by: "user-rm-1", created_at: "2026-05-11T09:00:00Z", updated_at: "2026-05-11T09:00:00Z",
+      created_by: "user-rm-1", created_at: `${seedDay(0)}T09:00:00Z`, updated_at: `${seedDay(0)}T09:00:00Z`,
     },
     {
       id: "demo-oversight-2", home_id: hid, oversight_type: "daily_log_oversight",
@@ -376,17 +377,17 @@ function getDemoDrafts(hid: string): ManagementOversightDraft[] {
         safeguarding_considerations: "No safeguarding concerns arising from log review.",
         regulatory_relevance: "Quality Standards 2015 — recording must capture the lived experience of the child.",
         actions_required: [
-          { action: "Team briefing on capturing child voice in daily logs", owner: "Registered Manager", due_date: "2026-05-16", priority: "medium" },
+          { action: "Team briefing on capturing child voice in daily logs", owner: "Registered Manager", due_date: seedDay(5), priority: "medium" },
         ],
         management_decision_support: "Recording quality training recommended. Consider peer review of logs.",
-        review_date: "2026-05-18",
+        review_date: seedDay(7),
         human_review_note: "Reviewed and approved by RM. Committed to management oversight record.",
       },
       evidence_links: [],
       regulatory_refs: [],
       quality_score: 75,
-      approved_by: "user-rm-1", approved_at: "2026-05-11T14:00:00Z", committed_at: null,
-      created_by: "user-rm-1", created_at: "2026-05-11T08:00:00Z", updated_at: "2026-05-11T14:00:00Z",
+      approved_by: "user-rm-1", approved_at: `${seedDay(0)}T14:00:00Z`, committed_at: null,
+      created_by: "user-rm-1", created_at: `${seedDay(0)}T08:00:00Z`, updated_at: `${seedDay(0)}T14:00:00Z`,
     },
   ];
 }

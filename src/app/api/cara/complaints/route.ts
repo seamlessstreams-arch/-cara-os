@@ -11,6 +11,7 @@ import { analyseComplaints } from "@/lib/cara/complaints-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ComplaintsInput, Complaint } from "@/lib/cara/complaints-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -122,11 +123,11 @@ function buildDemoData(childId: string): ComplaintsInput {
       complaints: [
         {
           id: "comp_1",
-          date: "2026-04-10",
+          date: seedDay(-59),
           category: "food",
           description: "Same meals every week",
           status: "resolved",
-          resolvedDate: "2026-04-12",
+          resolvedDate: seedDay(-57),
           resolutionDays: 2,
           outcome: "Menu variety increased",
           childSatisfied: true,
@@ -145,7 +146,7 @@ function buildDemoData(childId: string): ComplaintsInput {
       independentVisitorAssigned: true,
       regulatoryBodyInfoProvided: true,
       complaintsReviewedByRM: true,
-      lastComplaintsAuditDate: "2026-04-01",
+      lastComplaintsAuditDate: seedDay(-68),
     };
   }
 
@@ -156,11 +157,11 @@ function buildDemoData(childId: string): ComplaintsInput {
     complaints: [
       {
         id: "comp_1",
-        date: "2026-03-20",
+        date: seedDay(-80),
         category: "sanctions",
         description: "Felt sanction was unfair for being 5 minutes late",
         status: "resolved",
-        resolvedDate: "2026-03-24",
+        resolvedDate: seedDay(-76),
         resolutionDays: 4,
         outcome: "Sanction reviewed and modified",
         childSatisfied: true,
@@ -173,11 +174,11 @@ function buildDemoData(childId: string): ComplaintsInput {
       },
       {
         id: "comp_2",
-        date: "2026-04-05",
+        date: seedDay(-64),
         category: "privacy",
         description: "Staff entered room without knocking",
         status: "resolved",
-        resolvedDate: "2026-04-07",
+        resolvedDate: seedDay(-62),
         resolutionDays: 2,
         outcome: "Reminder issued to all staff about knocking policy",
         childSatisfied: true,
@@ -190,11 +191,11 @@ function buildDemoData(childId: string): ComplaintsInput {
       },
       {
         id: "comp_3",
-        date: "2026-05-01",
+        date: seedDay(-38),
         category: "activities",
         description: "Wants more outdoor activities at weekends",
         status: "resolved",
-        resolvedDate: "2026-05-08",
+        resolvedDate: seedDay(-31),
         resolutionDays: 7,
         outcome: "Activity schedule revised to include more outdoor options",
         childSatisfied: true,
@@ -213,6 +214,6 @@ function buildDemoData(childId: string): ComplaintsInput {
     independentVisitorAssigned: true,
     regulatoryBodyInfoProvided: true,
     complaintsReviewedByRM: true,
-    lastComplaintsAuditDate: "2026-04-15",
+    lastComplaintsAuditDate: seedDay(-54),
   };
 }

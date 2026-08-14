@@ -29,6 +29,7 @@ import {
   Eye,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type InsightType =
@@ -93,7 +94,7 @@ const DEMO_INSIGHTS: Insight[] = [
     relatedChildId: "demo-child-1",
     relatedChildName: "Alex W",
     relatedModule: "incidents",
-    detectedAt: "2026-05-12T08:00:00Z",
+    detectedAt: `${seedDay(-27)}T08:00:00Z`,
     actionUrl: "/cara/review",
   },
   {
@@ -107,7 +108,7 @@ const DEMO_INSIGHTS: Insight[] = [
     relatedChildId: "demo-child-2",
     relatedChildName: "Casey T",
     relatedModule: "daily_log",
-    detectedAt: "2026-05-11T16:00:00Z",
+    detectedAt: `${seedDay(-28)}T16:00:00Z`,
     actionUrl: "/young-people/demo-child-2",
   },
   {
@@ -119,7 +120,7 @@ const DEMO_INSIGHTS: Insight[] = [
     recommendation: "Review and add management oversight to the outstanding incidents. Cara has prepared draft oversight notes for your review.",
     confidence: 95,
     relatedModule: "incidents",
-    detectedAt: "2026-05-12T07:30:00Z",
+    detectedAt: `${seedDay(-27)}T07:30:00Z`,
     actionUrl: "/cara/review",
   },
   {
@@ -131,7 +132,7 @@ const DEMO_INSIGHTS: Insight[] = [
     recommendation: "Schedule supervision sessions within the next 5 working days. Cara can generate supervision agenda templates.",
     confidence: 98,
     relatedModule: "supervision",
-    detectedAt: "2026-05-12T06:00:00Z",
+    detectedAt: `${seedDay(-27)}T06:00:00Z`,
     actionUrl: "/supervision",
   },
   {
@@ -145,7 +146,7 @@ const DEMO_INSIGHTS: Insight[] = [
     relatedChildId: "demo-child-3",
     relatedChildName: "Jordan M",
     relatedModule: "key_work",
-    detectedAt: "2026-05-11T10:00:00Z",
+    detectedAt: `${seedDay(-28)}T10:00:00Z`,
     actionUrl: "/young-people/demo-child-3",
   },
 ];

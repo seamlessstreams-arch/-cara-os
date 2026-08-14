@@ -13,6 +13,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import type { NormalisedEvidence } from "@/types/cara-reports";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface RetrieveEvidenceOpts {
@@ -438,9 +439,9 @@ export async function retrieveChildProfile(
       id: childId,
       firstName: "Jayden",
       lastName: "Mitchell",
-      dateOfBirth: "2010-03-15",
+      dateOfBirth: seedDay(-5929),
       status: "current",
-      placementStart: "2025-01-06",
+      placementStart: seedDay(-518),
       keyWorker: "Sarah Thompson",
     };
   }

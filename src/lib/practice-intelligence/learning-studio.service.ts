@@ -17,6 +17,7 @@ import type {
 } from "@/types/practice-intelligence";
 import { LEARNING_RESOURCE_TYPE_LABELS } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -377,7 +378,7 @@ function getDemoResources(hid: string): LearningResource[] {
       content: { learning_objectives: ["Understand de-escalation stages", "Apply PACE in crisis moments", "Recognise early warning signs"], trainer_notes: "Use the recent anonymised scenarios for discussion." },
       preferences: {}, tags: ["de-escalation", "trauma-informed"], framework: "trauma_informed",
       reading_level: null, communication_needs: [], neurodiversity_adaptations: [],
-      status: "published", use_count: 4, created_by: "user-rm-1", created_at: "2026-05-05T09:00:00Z", updated_at: "2026-05-05T09:00:00Z",
+      status: "published", use_count: 4, created_by: "user-rm-1", created_at: `${seedDay(-6)}T09:00:00Z`, updated_at: `${seedDay(-6)}T09:00:00Z`,
     },
     {
       id: "demo-lr-2", home_id: hid, resource_type: "quick_reference_card", title: "PACE Language — Quick Reference",
@@ -391,7 +392,7 @@ function getDemoResources(hid: string): LearningResource[] {
       },
       preferences: {}, tags: ["PACE", "language"], framework: "pace",
       reading_level: null, communication_needs: [], neurodiversity_adaptations: [],
-      status: "published", use_count: 12, created_by: "user-rm-1", created_at: "2026-04-20T10:00:00Z", updated_at: "2026-04-20T10:00:00Z",
+      status: "published", use_count: 12, created_by: "user-rm-1", created_at: `${seedDay(-21)}T10:00:00Z`, updated_at: `${seedDay(-21)}T10:00:00Z`,
     },
     {
       id: "demo-lr-3", home_id: hid, resource_type: "quiz", title: "Safeguarding Level 3 — Knowledge Check",
@@ -405,7 +406,7 @@ function getDemoResources(hid: string): LearningResource[] {
       },
       preferences: {}, tags: ["safeguarding", "quiz"], framework: null,
       reading_level: null, communication_needs: [], neurodiversity_adaptations: [],
-      status: "published", use_count: 8, created_by: "user-rm-1", created_at: "2026-04-25T14:00:00Z", updated_at: "2026-04-25T14:00:00Z",
+      status: "published", use_count: 8, created_by: "user-rm-1", created_at: `${seedDay(-16)}T14:00:00Z`, updated_at: `${seedDay(-16)}T14:00:00Z`,
     },
   ];
 }

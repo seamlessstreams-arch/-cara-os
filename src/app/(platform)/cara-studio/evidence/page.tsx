@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface EvidenceSource {
@@ -57,14 +58,14 @@ const SOURCE_LABELS: Record<string, string> = {
 // ── Demo data ───────────────────────────────────────────────────────────────
 
 const DEMO_SOURCES: EvidenceSource[] = [
-  { id: "src-1", sourceType: "daily_log", title: "Daily Log — Jayden — 11 May", summary: "Positive day. Engaged well with activities. Spoke about wanting to see mum.", childId: "child_1", childName: "Jayden", sourceDate: "2026-05-11", indexedAt: "2026-05-11T20:00:00Z", approved: true, confidence: 85, linkedArtifacts: 2 },
-  { id: "src-2", sourceType: "incident", title: "Incident — Window Damage — Reuben", summary: "Reuben became dysregulated after phone call. Staff used de-escalation. Property damage.", childId: "child_3", childName: "Reuben", sourceDate: "2026-05-10", indexedAt: "2026-05-10T16:30:00Z", approved: true, confidence: 92, linkedArtifacts: 3 },
-  { id: "src-3", sourceType: "key_work", title: "Key Work — Amara — Identity & Belonging", summary: "Explored cultural identity using creative activities. Amara shared feelings about placement.", childId: "child_2", childName: "Amara", sourceDate: "2026-05-09", indexedAt: "2026-05-09T15:00:00Z", approved: true, confidence: 88, linkedArtifacts: 1 },
-  { id: "src-4", sourceType: "risk_assessment", title: "Risk Assessment — Jayden — Updated", summary: "Risk level maintained at medium. New protective factors identified from key work.", childId: "child_1", childName: "Jayden", sourceDate: "2026-05-08", indexedAt: "2026-05-08T12:00:00Z", approved: true, confidence: 78, linkedArtifacts: 4 },
-  { id: "src-5", sourceType: "supervision", title: "Supervision — Marcus Williams", summary: "Discussed de-escalation practice. Identified training need for trauma-informed approaches.", childId: null, childName: null, sourceDate: "2026-05-07", indexedAt: "2026-05-07T14:00:00Z", approved: true, confidence: 72, linkedArtifacts: 1 },
-  { id: "src-6", sourceType: "medication", title: "Medication Review — Jayden — May", summary: "Ritalin 10mg — compliance at 95%. No side effects reported.", childId: "child_1", childName: "Jayden", sourceDate: "2026-05-06", indexedAt: "2026-05-06T10:00:00Z", approved: true, confidence: 95, linkedArtifacts: 0 },
-  { id: "src-7", sourceType: "daily_log", title: "Daily Log — Amara — 5 May", summary: "Quiet day. Amara spent time in her room. Declined evening activity.", childId: "child_2", childName: "Amara", sourceDate: "2026-05-05", indexedAt: "2026-05-05T21:00:00Z", approved: false, confidence: 60, linkedArtifacts: 0 },
-  { id: "src-8", sourceType: "contact_log", title: "Contact — Jayden — Phone with Mum", summary: "30-minute phone call. Jayden seemed settled afterwards. Talked about weekend plans.", childId: "child_1", childName: "Jayden", sourceDate: "2026-05-04", indexedAt: "2026-05-04T18:00:00Z", approved: true, confidence: 82, linkedArtifacts: 1 },
+  { id: "src-1", sourceType: "daily_log", title: "Daily Log — Jayden — 11 May", summary: "Positive day. Engaged well with activities. Spoke about wanting to see mum.", childId: "child_1", childName: "Jayden", sourceDate: seedDay(-28), indexedAt: `${seedDay(-28)}T20:00:00Z`, approved: true, confidence: 85, linkedArtifacts: 2 },
+  { id: "src-2", sourceType: "incident", title: "Incident — Window Damage — Reuben", summary: "Reuben became dysregulated after phone call. Staff used de-escalation. Property damage.", childId: "child_3", childName: "Reuben", sourceDate: seedDay(-29), indexedAt: `${seedDay(-29)}T16:30:00Z`, approved: true, confidence: 92, linkedArtifacts: 3 },
+  { id: "src-3", sourceType: "key_work", title: "Key Work — Amara — Identity & Belonging", summary: "Explored cultural identity using creative activities. Amara shared feelings about placement.", childId: "child_2", childName: "Amara", sourceDate: seedDay(-30), indexedAt: `${seedDay(-30)}T15:00:00Z`, approved: true, confidence: 88, linkedArtifacts: 1 },
+  { id: "src-4", sourceType: "risk_assessment", title: "Risk Assessment — Jayden — Updated", summary: "Risk level maintained at medium. New protective factors identified from key work.", childId: "child_1", childName: "Jayden", sourceDate: seedDay(-31), indexedAt: `${seedDay(-31)}T12:00:00Z`, approved: true, confidence: 78, linkedArtifacts: 4 },
+  { id: "src-5", sourceType: "supervision", title: "Supervision — Marcus Williams", summary: "Discussed de-escalation practice. Identified training need for trauma-informed approaches.", childId: null, childName: null, sourceDate: seedDay(-32), indexedAt: `${seedDay(-32)}T14:00:00Z`, approved: true, confidence: 72, linkedArtifacts: 1 },
+  { id: "src-6", sourceType: "medication", title: "Medication Review — Jayden — May", summary: "Ritalin 10mg — compliance at 95%. No side effects reported.", childId: "child_1", childName: "Jayden", sourceDate: seedDay(-33), indexedAt: `${seedDay(-33)}T10:00:00Z`, approved: true, confidence: 95, linkedArtifacts: 0 },
+  { id: "src-7", sourceType: "daily_log", title: "Daily Log — Amara — 5 May", summary: "Quiet day. Amara spent time in her room. Declined evening activity.", childId: "child_2", childName: "Amara", sourceDate: seedDay(-34), indexedAt: `${seedDay(-34)}T21:00:00Z`, approved: false, confidence: 60, linkedArtifacts: 0 },
+  { id: "src-8", sourceType: "contact_log", title: "Contact — Jayden — Phone with Mum", summary: "30-minute phone call. Jayden seemed settled afterwards. Talked about weekend plans.", childId: "child_1", childName: "Jayden", sourceDate: seedDay(-35), indexedAt: `${seedDay(-35)}T18:00:00Z`, approved: true, confidence: 82, linkedArtifacts: 1 },
 ];
 
 const DEMO_CHILDREN = [

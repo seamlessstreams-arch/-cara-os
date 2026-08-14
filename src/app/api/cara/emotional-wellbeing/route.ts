@@ -11,6 +11,7 @@ import { analyseEmotionalWellbeing } from "@/lib/cara/emotional-wellbeing-intell
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { EmotionalWellbeingInput, SDQScore, TherapeuticInput, SelfHarmIncident, MoodRecord } from "@/lib/cara/emotional-wellbeing-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -162,19 +163,19 @@ function buildDemoData(childId: string): EmotionalWellbeingInput {
       childName: "Sam",
       age: 14,
       sdqScores: [
-        { date: "2025-11-01", totalDifficulties: 12, band: "normal", emotionalSymptoms: 3, conductProblems: 2, hyperactivity: 4, peerProblems: 3, prosocial: 8 },
-        { date: "2026-05-01", totalDifficulties: 9, band: "normal", emotionalSymptoms: 2, conductProblems: 1, hyperactivity: 3, peerProblems: 3, prosocial: 9 },
+        { date: seedDay(-219), totalDifficulties: 12, band: "normal", emotionalSymptoms: 3, conductProblems: 2, hyperactivity: 4, peerProblems: 3, prosocial: 8 },
+        { date: seedDay(-38), totalDifficulties: 9, band: "normal", emotionalSymptoms: 2, conductProblems: 1, hyperactivity: 3, peerProblems: 3, prosocial: 9 },
       ],
       therapeuticInputs: [],
       selfHarmIncidents: [],
       moodRecords: [
-        { date: "2026-05-01", level: 4 },
-        { date: "2026-05-03", level: 4 },
-        { date: "2026-05-05", level: 5 },
-        { date: "2026-05-07", level: 4 },
-        { date: "2026-05-09", level: 4 },
-        { date: "2026-05-11", level: 5 },
-        { date: "2026-05-13", level: 4 },
+        { date: seedDay(-38), level: 4 },
+        { date: seedDay(-36), level: 4 },
+        { date: seedDay(-34), level: 5 },
+        { date: seedDay(-32), level: 4 },
+        { date: seedDay(-30), level: 4 },
+        { date: seedDay(-28), level: 5 },
+        { date: seedDay(-26), level: 4 },
       ],
       mentalHealthReferralMade: false,
       waitingForService: false,
@@ -196,9 +197,9 @@ function buildDemoData(childId: string): EmotionalWellbeingInput {
     childName: "Jordan",
     age: 15,
     sdqScores: [
-      { date: "2025-08-01", totalDifficulties: 19, band: "borderline", emotionalSymptoms: 5, conductProblems: 4, hyperactivity: 5, peerProblems: 5, prosocial: 6 },
-      { date: "2026-02-01", totalDifficulties: 16, band: "borderline", emotionalSymptoms: 4, conductProblems: 3, hyperactivity: 5, peerProblems: 4, prosocial: 7 },
-      { date: "2026-05-01", totalDifficulties: 13, band: "normal", emotionalSymptoms: 3, conductProblems: 3, hyperactivity: 4, peerProblems: 3, prosocial: 8 },
+      { date: seedDay(-311), totalDifficulties: 19, band: "borderline", emotionalSymptoms: 5, conductProblems: 4, hyperactivity: 5, peerProblems: 5, prosocial: 6 },
+      { date: seedDay(-127), totalDifficulties: 16, band: "borderline", emotionalSymptoms: 4, conductProblems: 3, hyperactivity: 5, peerProblems: 4, prosocial: 7 },
+      { date: seedDay(-38), totalDifficulties: 13, band: "normal", emotionalSymptoms: 3, conductProblems: 3, hyperactivity: 4, peerProblems: 3, prosocial: 8 },
     ],
     therapeuticInputs: [
       {
@@ -207,27 +208,27 @@ function buildDemoData(childId: string): EmotionalWellbeingInput {
         frequency: "fortnightly",
         sessionsAttended: 10,
         sessionsMissed: 1,
-        startDate: "2025-10-01",
+        startDate: seedDay(-250),
         active: true,
         childEngaged: true,
       },
     ],
     selfHarmIncidents: [
-      { date: "2025-09-15", severity: "ideation", supportProvided: true, safetyPlanUpdated: true },
+      { date: seedDay(-266), severity: "ideation", supportProvided: true, safetyPlanUpdated: true },
     ],
     moodRecords: [
-      { date: "2026-04-20", level: 3 },
-      { date: "2026-04-23", level: 3 },
-      { date: "2026-04-26", level: 4 },
-      { date: "2026-04-29", level: 3 },
-      { date: "2026-05-02", level: 4 },
-      { date: "2026-05-05", level: 4 },
-      { date: "2026-05-08", level: 4 },
-      { date: "2026-05-11", level: 3 },
-      { date: "2026-05-14", level: 4 },
+      { date: seedDay(-49), level: 3 },
+      { date: seedDay(-46), level: 3 },
+      { date: seedDay(-43), level: 4 },
+      { date: seedDay(-40), level: 3 },
+      { date: seedDay(-37), level: 4 },
+      { date: seedDay(-34), level: 4 },
+      { date: seedDay(-31), level: 4 },
+      { date: seedDay(-28), level: 3 },
+      { date: seedDay(-25), level: 4 },
     ],
     mentalHealthReferralMade: true,
-    mentalHealthReferralDate: "2025-09-20",
+    mentalHealthReferralDate: seedDay(-261),
     waitingForService: false,
     hasSafetyPlan: true,
     safetyPlanReviewed: true,

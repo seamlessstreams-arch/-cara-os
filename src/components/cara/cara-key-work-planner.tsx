@@ -15,6 +15,7 @@ import {
   ChevronDown, ChevronUp, Lightbulb, Target,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type TopicPriority = "essential" | "recommended" | "optional";
@@ -64,7 +65,7 @@ function getDemoKeyWorkPlan(): KeyWorkPlan {
   return {
     childName: "Alex W",
     childId: "yp_001",
-    lastSessionDate: "2026-04-28",
+    lastSessionDate: seedDay(-41),
     daysSinceLastSession: 14,
     regulatoryContext: "Reg 6 requires children are enabled to express views about their care. Reg 14 requires key work to evidence care plan progress. Cara has identified 3 priority topics based on recent events.",
     prepChecklist: [

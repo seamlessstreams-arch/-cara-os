@@ -20,6 +20,7 @@ import { generateManagementOversight } from "@/lib/oversight/management-oversigh
 import { OVERSIGHT_DISCLAIMER, type OversightInput } from "@/lib/oversight/types";
 import { readJsonBody } from "@/lib/http/read-json";
 
+import { seedDay } from "@/lib/seed-date";
 export const dynamic = "force-dynamic";
 
 // A representative "mostly complete, one gap" physical-intervention workflow.
@@ -30,7 +31,7 @@ const DEMO_INPUT: OversightInput = {
   childName: "Jordan",
   childAge: 14,
   reviewedByRole: "registered_manager",
-  recordDate: "2026-06-10",
+  recordDate: seedDay(-5),
   therapeuticModel: "PACE",
   childAddressedTone: "older_child",
   summary:

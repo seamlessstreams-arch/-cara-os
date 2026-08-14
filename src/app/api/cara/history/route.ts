@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
+import { seedDay } from "@/lib/seed-date";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = SupabaseClient<any, "public", any>;
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
@@ -101,7 +102,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h1",
       commandId: "improve_writing",
       module: "daily_log",
-      createdAt: "2026-05-12T14:00:00Z",
+      createdAt: `${seedDay(-27)}T14:00:00Z`,
       output: {
         id: "out_h1",
         status: "committed",
@@ -115,7 +116,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h2",
       commandId: "draft_management_oversight",
       module: "incident",
-      createdAt: "2026-05-12T11:30:00Z",
+      createdAt: `${seedDay(-27)}T11:30:00Z`,
       output: {
         id: "out_h2",
         status: "approved",
@@ -129,7 +130,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h3",
       commandId: "incident_risk_analysis",
       module: "incident",
-      createdAt: "2026-05-12T10:00:00Z",
+      createdAt: `${seedDay(-27)}T10:00:00Z`,
       output: {
         id: "out_h3",
         status: "rejected",
@@ -143,7 +144,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h4",
       commandId: "summarise_text",
       module: "key_work",
-      createdAt: "2026-05-11T16:00:00Z",
+      createdAt: `${seedDay(-28)}T16:00:00Z`,
       output: {
         id: "out_h4",
         status: "committed",
@@ -157,7 +158,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h5",
       commandId: "extract_actions",
       module: "supervision",
-      createdAt: "2026-05-11T14:00:00Z",
+      createdAt: `${seedDay(-28)}T14:00:00Z`,
       output: {
         id: "out_h5",
         status: "committed",
@@ -171,7 +172,7 @@ export function getDemoHistory(): HistoryEntry[] {
       requestId: "req_h6",
       commandId: "draft_daily_log",
       module: "daily_log",
-      createdAt: "2026-05-11T09:00:00Z",
+      createdAt: `${seedDay(-28)}T09:00:00Z`,
       output: null,
     },
   ];

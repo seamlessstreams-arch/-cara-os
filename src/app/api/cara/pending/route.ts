@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraRole } from "@/lib/cara/cara-permissions";
 
+import { seedDay } from "@/lib/seed-date";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = SupabaseClient<any, "public", any>;
 function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
@@ -107,7 +108,7 @@ export function getDemoPending(): PendingOutput[] {
       confidence: "high",
       status: "submitted_for_approval",
       userId: "staff_sarah",
-      createdAt: "2026-05-12T11:30:00Z",
+      createdAt: `${seedDay(-27)}T11:30:00Z`,
       guardrailFlagged: false,
       guardrailSummary: null,
     },
@@ -120,7 +121,7 @@ export function getDemoPending(): PendingOutput[] {
       confidence: "medium",
       status: "submitted_for_approval",
       userId: "staff_darren",
-      createdAt: "2026-05-12T10:15:00Z",
+      createdAt: `${seedDay(-27)}T10:15:00Z`,
       guardrailFlagged: true,
       guardrailSummary:
         "Contains safeguarding-related language about missing from care. Mandatory review required.",
@@ -134,7 +135,7 @@ export function getDemoPending(): PendingOutput[] {
       confidence: "high",
       status: "draft",
       userId: "staff_mark",
-      createdAt: "2026-05-12T09:45:00Z",
+      createdAt: `${seedDay(-27)}T09:45:00Z`,
       guardrailFlagged: false,
       guardrailSummary: null,
     },
@@ -147,7 +148,7 @@ export function getDemoPending(): PendingOutput[] {
       confidence: "high",
       status: "edited",
       userId: "staff_sarah",
-      createdAt: "2026-05-11T18:00:00Z",
+      createdAt: `${seedDay(-28)}T18:00:00Z`,
       guardrailFlagged: false,
       guardrailSummary: null,
     },

@@ -12,6 +12,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { PlacementStabilityInput, PlacementHistory, DisruptionIndicator } from "@/lib/cara/placement-stability-intelligence";
 import { londonDayDiff } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -137,11 +138,11 @@ function buildDemoData(childId: string): PlacementStabilityInput {
       childId,
       childName: "Sam",
       age: 14,
-      currentPlacementStartDate: "2025-02-01",
+      currentPlacementStartDate: seedDay(-492),
       currentPlacementDays: 470,
       placementHistory: [
         {
-          id: "pl_1", startDate: "2024-06-01", endDate: "2025-01-31",
+          id: "pl_1", startDate: seedDay(-737), endDate: seedDay(-493),
           type: "foster", durationDays: 245, endReason: "step_up",
           planned: true, matchingScore: 70,
         },
@@ -159,7 +160,7 @@ function buildDemoData(childId: string): PlacementStabilityInput {
       positiveStaffRelationships: true,
       peerRelationshipsGood: true,
       placementReviewCurrent: true,
-      placementReviewLastDate: "2026-04-15",
+      placementReviewLastDate: seedDay(-54),
       matchingAssessmentDone: true,
       impactRiskAssessmentDone: true,
       contingencyPlanInPlace: true,
@@ -171,16 +172,16 @@ function buildDemoData(childId: string): PlacementStabilityInput {
     childId,
     childName: "Jordan",
     age: 15,
-    currentPlacementStartDate: "2025-08-01",
+    currentPlacementStartDate: seedDay(-311),
     currentPlacementDays: 289,
     placementHistory: [
       {
-        id: "pl_1", startDate: "2024-03-01", endDate: "2024-09-30",
+        id: "pl_1", startDate: seedDay(-829), endDate: seedDay(-616),
         type: "foster", durationDays: 214, endReason: "carer_request",
         planned: false, matchingScore: 55,
       },
       {
-        id: "pl_2", startDate: "2024-10-01", endDate: "2025-07-31",
+        id: "pl_2", startDate: seedDay(-615), endDate: seedDay(-312),
         type: "residential", durationDays: 304, endReason: "planned_move",
         planned: true, matchingScore: 75,
       },
@@ -198,7 +199,7 @@ function buildDemoData(childId: string): PlacementStabilityInput {
     positiveStaffRelationships: true,
     peerRelationshipsGood: true,
     placementReviewCurrent: true,
-    placementReviewLastDate: "2026-05-01",
+    placementReviewLastDate: seedDay(-38),
     matchingAssessmentDone: true,
     impactRiskAssessmentDone: true,
     contingencyPlanInPlace: true,

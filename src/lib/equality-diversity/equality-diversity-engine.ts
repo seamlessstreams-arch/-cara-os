@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { seedDay } from "@/lib/seed-date";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Equality & Diversity Intelligence Engine
 //
@@ -992,12 +993,12 @@ export function getDemoProfiles(): ChildDiversityProfile[] {
         { characteristic: "sex", details: "Male", supportStatus: "fully_supported" },
       ],
       culturalPlanStatus: "active",
-      culturalPlanLastReviewed: "2026-04-10",
+      culturalPlanLastReviewed: seedDay(-38),
       dietaryNeedsMet: true,
       religiousPracticeFacilitated: true,
       languageSupportProvided: true,
       identityWorkCompleted: true,
-      lastAssessedDate: "2026-04-10",
+      lastAssessedDate: seedDay(-38),
       assessedBy: "Sarah Johnson",
     },
     {
@@ -1011,12 +1012,12 @@ export function getDemoProfiles(): ChildDiversityProfile[] {
         { characteristic: "age", details: "12 years old", supportStatus: "fully_supported" },
       ],
       culturalPlanStatus: "active",
-      culturalPlanLastReviewed: "2026-03-20",
+      culturalPlanLastReviewed: seedDay(-59),
       dietaryNeedsMet: true,
       religiousPracticeFacilitated: true,
       languageSupportProvided: true,
       identityWorkCompleted: true,
-      lastAssessedDate: "2026-03-20",
+      lastAssessedDate: seedDay(-59),
       assessedBy: "Tom Williams",
     },
     {
@@ -1030,12 +1031,12 @@ export function getDemoProfiles(): ChildDiversityProfile[] {
         { characteristic: "sex", details: "Female", supportStatus: "fully_supported" },
       ],
       culturalPlanStatus: "active",
-      culturalPlanLastReviewed: "2026-04-05",
+      culturalPlanLastReviewed: seedDay(-43),
       dietaryNeedsMet: true,
       religiousPracticeFacilitated: true,
       languageSupportProvided: true,
       identityWorkCompleted: true,
-      lastAssessedDate: "2026-04-05",
+      lastAssessedDate: seedDay(-43),
       assessedBy: "Lisa Chen",
     },
   ];
@@ -1049,8 +1050,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Sarah Johnson",
       trainingType: "Equality Act 2010",
       status: "completed",
-      completedDate: "2026-01-15",
-      expiryDate: "2027-01-15",
+      completedDate: seedDay(-123),
+      expiryDate: seedDay(242),
     },
     {
       id: "etr-2",
@@ -1058,8 +1059,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Sarah Johnson",
       trainingType: "Cultural Competency",
       status: "completed",
-      completedDate: "2026-02-10",
-      expiryDate: "2027-02-10",
+      completedDate: seedDay(-97),
+      expiryDate: seedDay(268),
     },
     {
       id: "etr-3",
@@ -1067,8 +1068,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Tom Williams",
       trainingType: "Equality Act 2010",
       status: "completed",
-      completedDate: "2026-01-20",
-      expiryDate: "2027-01-20",
+      completedDate: seedDay(-118),
+      expiryDate: seedDay(247),
     },
     {
       id: "etr-4",
@@ -1076,8 +1077,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Tom Williams",
       trainingType: "Cultural Competency",
       status: "completed",
-      completedDate: "2026-02-15",
-      expiryDate: "2027-02-15",
+      completedDate: seedDay(-92),
+      expiryDate: seedDay(273),
     },
     {
       id: "etr-5",
@@ -1085,8 +1086,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Tom Williams",
       trainingType: "Unconscious Bias",
       status: "completed",
-      completedDate: "2026-03-01",
-      expiryDate: "2027-03-01",
+      completedDate: seedDay(-78),
+      expiryDate: seedDay(287),
     },
     {
       id: "etr-6",
@@ -1094,8 +1095,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Lisa Chen",
       trainingType: "Equality Act 2010",
       status: "completed",
-      completedDate: "2026-01-25",
-      expiryDate: "2027-01-25",
+      completedDate: seedDay(-113),
+      expiryDate: seedDay(252),
     },
     {
       id: "etr-7",
@@ -1103,8 +1104,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Lisa Chen",
       trainingType: "Cultural Competency",
       status: "completed",
-      completedDate: "2026-02-20",
-      expiryDate: "2027-02-20",
+      completedDate: seedDay(-87),
+      expiryDate: seedDay(278),
     },
     {
       id: "etr-8",
@@ -1112,8 +1113,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Olivia Hayes",
       trainingType: "Equality Act 2010",
       status: "completed",
-      completedDate: "2026-01-28",
-      expiryDate: "2027-01-28",
+      completedDate: seedDay(-110),
+      expiryDate: seedDay(255),
     },
     {
       id: "etr-9",
@@ -1121,8 +1122,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Olivia Hayes",
       trainingType: "Cultural Competency",
       status: "completed",
-      completedDate: "2026-02-25",
-      expiryDate: "2027-02-25",
+      completedDate: seedDay(-82),
+      expiryDate: seedDay(283),
     },
     {
       id: "etr-10",
@@ -1130,8 +1131,8 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
       staffName: "Olivia Hayes",
       trainingType: "Anti-Discriminatory Practice",
       status: "completed",
-      completedDate: "2026-03-10",
-      expiryDate: "2027-03-10",
+      completedDate: seedDay(-69),
+      expiryDate: seedDay(296),
     },
   ];
 }
@@ -1140,7 +1141,7 @@ export function getDemoIncidents(): EDIIncident[] {
   return [
     {
       id: "edi-inc-1",
-      reportDate: "2026-02-15",
+      reportDate: seedDay(-92),
       category: "cultural_insensitivity",
       severity: "low",
       childInvolved: true,
@@ -1156,7 +1157,7 @@ export function getDemoIncidents(): EDIIncident[] {
     },
     {
       id: "edi-inc-2",
-      reportDate: "2026-03-22",
+      reportDate: seedDay(-57),
       category: "bullying",
       severity: "medium",
       childInvolved: true,
@@ -1178,7 +1179,7 @@ export function getDemoAudits(): AccessibilityAudit[] {
   return [
     {
       id: "aa-1",
-      auditDate: "2026-01-20",
+      auditDate: seedDay(-118),
       physicalAccessScore: 8,
       communicationAccessScore: 9,
       informationAccessScore: 8,
@@ -1189,7 +1190,7 @@ export function getDemoAudits(): AccessibilityAudit[] {
     },
     {
       id: "aa-2",
-      auditDate: "2026-04-15",
+      auditDate: seedDay(-33),
       physicalAccessScore: 9,
       communicationAccessScore: 9,
       informationAccessScore: 9,

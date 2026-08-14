@@ -5,6 +5,7 @@ import type { HrCaseType, HrCaseStatus, HrRiskLevel, HrLetterStatus } from "@/li
 import type { HrRole, HrAction } from "@/lib/hr/permissions";
 import { HR_PERMISSIONS } from "@/lib/hr/permissions";
 
+import { seedDay } from "@/lib/seed-date";
 // ══════════════════════════════════════════════════════════════════════════════
 // HR Intelligence Dashboard Widget
 //
@@ -49,27 +50,27 @@ interface DemoLetterPipeline {
 }
 
 const DEMO_CASES: DemoCaseSummary[] = [
-  { ref: "HR-001", caseType: "disciplinary", status: "open", riskLevel: "red", openedAt: "2026-05-02" },
-  { ref: "HR-002", caseType: "grievance", status: "open", riskLevel: "green", openedAt: "2026-05-08" },
-  { ref: "HR-003", caseType: "sickness_absence", status: "investigation", riskLevel: "amber", openedAt: "2026-04-20" },
-  { ref: "HR-004", caseType: "probation", status: "closed", riskLevel: "green", openedAt: "2026-03-10" },
-  { ref: "HR-005", caseType: "informal_concern", status: "meeting_scheduled", riskLevel: "green", openedAt: "2026-05-14" },
+  { ref: "HR-001", caseType: "disciplinary", status: "open", riskLevel: "red", openedAt: seedDay(-16) },
+  { ref: "HR-002", caseType: "grievance", status: "open", riskLevel: "green", openedAt: seedDay(-10) },
+  { ref: "HR-003", caseType: "sickness_absence", status: "investigation", riskLevel: "amber", openedAt: seedDay(-28) },
+  { ref: "HR-004", caseType: "probation", status: "closed", riskLevel: "green", openedAt: seedDay(-69) },
+  { ref: "HR-005", caseType: "informal_concern", status: "meeting_scheduled", riskLevel: "green", openedAt: seedDay(-4) },
 ];
 
 const DEMO_SAFER_RECRUITMENT: DemoSaferRecruitmentRecord[] = [
   { ref: "SR-001", checksCompleted: 14, checksTotal: 14, gateOutcome: "approved" },
   { ref: "SR-002", checksCompleted: 14, checksTotal: 14, gateOutcome: "approved" },
   { ref: "SR-003", checksCompleted: 14, checksTotal: 14, gateOutcome: "approved" },
-  { ref: "SR-004", checksCompleted: 12, checksTotal: 14, gateOutcome: "in_progress", dbsRenewalDue: "2026-06-30" },
+  { ref: "SR-004", checksCompleted: 12, checksTotal: 14, gateOutcome: "in_progress", dbsRenewalDue: seedDay(43) },
 ];
 
 const DEMO_TASKS: DemoHrTask[] = [
-  { id: "T-001", taskType: "supervision", title: "Monthly supervision due", dueDate: "2026-05-22", priority: "medium", status: "open" },
-  { id: "T-002", taskType: "supervision", title: "Monthly supervision due", dueDate: "2026-05-24", priority: "medium", status: "open" },
-  { id: "T-003", taskType: "dbs_renewal", title: "Enhanced DBS renewal", dueDate: "2026-06-30", priority: "high", status: "open" },
-  { id: "T-004", taskType: "probation_review", title: "6-month probation review", dueDate: "2026-05-28", priority: "high", status: "in_progress" },
-  { id: "T-005", taskType: "training_renewal", title: "Mandatory training renewal", dueDate: "2026-06-15", priority: "medium", status: "open" },
-  { id: "T-006", taskType: "investigation_deadline", title: "Investigation target date", dueDate: "2026-05-30", priority: "urgent", status: "in_progress" },
+  { id: "T-001", taskType: "supervision", title: "Monthly supervision due", dueDate: seedDay(4), priority: "medium", status: "open" },
+  { id: "T-002", taskType: "supervision", title: "Monthly supervision due", dueDate: seedDay(6), priority: "medium", status: "open" },
+  { id: "T-003", taskType: "dbs_renewal", title: "Enhanced DBS renewal", dueDate: seedDay(43), priority: "high", status: "open" },
+  { id: "T-004", taskType: "probation_review", title: "6-month probation review", dueDate: seedDay(10), priority: "high", status: "in_progress" },
+  { id: "T-005", taskType: "training_renewal", title: "Mandatory training renewal", dueDate: seedDay(28), priority: "medium", status: "open" },
+  { id: "T-006", taskType: "investigation_deadline", title: "Investigation target date", dueDate: seedDay(12), priority: "urgent", status: "in_progress" },
 ];
 
 const DEMO_LETTER_PIPELINE: DemoLetterPipeline[] = [

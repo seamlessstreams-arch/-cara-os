@@ -11,6 +11,7 @@ import { getUserIdFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { GenerationStatus } from "@/lib/cara-studio/types";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -104,9 +105,9 @@ function getDemoLibrary(childId?: string, generationType?: string, status?: stri
       child_id: "child_jordan",
       model: "claude-sonnet-4-20250514",
       created_by: "staff_darren",
-      created_at: "2026-05-14T10:30:00Z",
+      created_at: `${seedDay(-25)}T10:30:00Z`,
       approved_by: "staff_manager",
-      approved_at: "2026-05-14T11:00:00Z",
+      approved_at: `${seedDay(-25)}T11:00:00Z`,
     },
     {
       id: "gen_demo_2",
@@ -119,7 +120,7 @@ function getDemoLibrary(childId?: string, generationType?: string, status?: stri
       child_id: null,
       model: "claude-sonnet-4-20250514",
       created_by: "staff_darren",
-      created_at: "2026-05-15T08:00:00Z",
+      created_at: `${seedDay(-24)}T08:00:00Z`,
       approved_by: null,
       approved_at: null,
     },
@@ -134,9 +135,9 @@ function getDemoLibrary(childId?: string, generationType?: string, status?: stri
       child_id: "child_jordan",
       model: "claude-sonnet-4-20250514",
       created_by: "staff_darren",
-      created_at: "2026-05-12T14:00:00Z",
+      created_at: `${seedDay(-27)}T14:00:00Z`,
       approved_by: "staff_manager",
-      approved_at: "2026-05-12T15:00:00Z",
+      approved_at: `${seedDay(-27)}T15:00:00Z`,
     },
   ];
 

@@ -68,6 +68,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { seedDay } from "@/lib/seed-date";
 const RISK_APPETITE_KEY = ["risk-appetite-domains"];
 
 async function fetchAll(): Promise<RiskAppetiteDomain[]> {
@@ -102,8 +103,8 @@ const APPETITE_META: Record<RiskAppetiteLevel, { color: string }> = {
 };
 
 const STATEMENT_META = {
-  reviewDate: "2026-03-23",
-  nextReview: "2026-09-19",
+  reviewDate: seedDay(-42),
+  nextReview: seedDay(138),
   approvedBy: "staff_darren",
 };
 

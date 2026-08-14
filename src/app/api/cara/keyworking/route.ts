@@ -11,6 +11,7 @@ import { analyseKeyworking } from "@/lib/cara/keyworking-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { KeyworkingInput, KeyworkSession, SessionTopic } from "@/lib/cara/keyworking-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -123,7 +124,7 @@ function buildDemoData(childId: string): KeyworkingInput {
       age: 14,
       sessions: [
         {
-          id: "kw_1", date: "2026-03-07", keyworkerName: "Emma",
+          id: "kw_1", date: seedDay(-93), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 40, occurred: true,
           topicsCovered: ["wellbeing", "education", "activities"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -132,7 +133,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "activity_based",
         },
         {
-          id: "kw_2", date: "2026-03-14", keyworkerName: "Emma",
+          id: "kw_2", date: seedDay(-86), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 45, occurred: true,
           topicsCovered: ["wellbeing", "goals", "independence"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -141,7 +142,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "in_home",
         },
         {
-          id: "kw_3", date: "2026-03-21", keyworkerName: "Emma",
+          id: "kw_3", date: seedDay(-79), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 45, occurred: true,
           topicsCovered: ["health", "contact", "wishes_feelings"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -150,7 +151,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "in_home",
         },
         {
-          id: "kw_4", date: "2026-03-28", keyworkerName: "Emma",
+          id: "kw_4", date: seedDay(-72), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 0, occurred: false,
           topicsCovered: [], cancelledBy: "child",
           childLed: false, wishesAndFeelingsRecorded: false,
@@ -158,7 +159,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           childEngagement: "low", privateTime: false, location: "in_home",
         },
         {
-          id: "kw_5", date: "2026-04-04", keyworkerName: "Emma",
+          id: "kw_5", date: seedDay(-65), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 50, occurred: true,
           topicsCovered: ["wellbeing", "education", "identity"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -167,7 +168,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "out_of_home",
         },
         {
-          id: "kw_6", date: "2026-04-11", keyworkerName: "Emma",
+          id: "kw_6", date: seedDay(-58), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 45, occurred: true,
           topicsCovered: ["wellbeing", "behaviour", "wishes_feelings"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -176,7 +177,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "in_home",
         },
         {
-          id: "kw_7", date: "2026-04-18", keyworkerName: "Emma",
+          id: "kw_7", date: seedDay(-51), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 40, occurred: true,
           topicsCovered: ["education", "goals", "activities"],
           childLed: false, wishesAndFeelingsRecorded: true,
@@ -185,7 +186,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "in_home",
         },
         {
-          id: "kw_8", date: "2026-04-25", keyworkerName: "Emma",
+          id: "kw_8", date: seedDay(-44), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 45, occurred: true,
           topicsCovered: ["wellbeing", "safety", "wishes_feelings"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -194,7 +195,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "in_home",
         },
         {
-          id: "kw_9", date: "2026-05-02", keyworkerName: "Emma",
+          id: "kw_9", date: seedDay(-37), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 45, occurred: true,
           topicsCovered: ["wellbeing", "contact", "independence"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -203,7 +204,7 @@ function buildDemoData(childId: string): KeyworkingInput {
           privateTime: true, location: "activity_based",
         },
         {
-          id: "kw_10", date: "2026-05-09", keyworkerName: "Emma",
+          id: "kw_10", date: seedDay(-30), keyworkerName: "Emma",
           plannedDuration: 45, actualDuration: 50, occurred: true,
           topicsCovered: ["wellbeing", "education", "goals"],
           childLed: true, wishesAndFeelingsRecorded: true,
@@ -232,7 +233,7 @@ function buildDemoData(childId: string): KeyworkingInput {
     age: 15,
     sessions: [
       {
-        id: "kw_1", date: "2026-03-06", keyworkerName: "Sarah",
+        id: "kw_1", date: seedDay(-94), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 35, occurred: true,
         topicsCovered: ["wellbeing", "education"],
         childLed: false, wishesAndFeelingsRecorded: true,
@@ -241,7 +242,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "in_home",
       },
       {
-        id: "kw_2", date: "2026-03-13", keyworkerName: "Sarah",
+        id: "kw_2", date: seedDay(-87), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 0, occurred: false,
         topicsCovered: [], cancelledBy: "child",
         childLed: false, wishesAndFeelingsRecorded: false,
@@ -249,7 +250,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         childEngagement: "refused", privateTime: false, location: "in_home",
       },
       {
-        id: "kw_3", date: "2026-03-20", keyworkerName: "Sarah",
+        id: "kw_3", date: seedDay(-80), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 45, occurred: true,
         topicsCovered: ["wellbeing", "behaviour", "wishes_feelings"],
         childLed: true, wishesAndFeelingsRecorded: true,
@@ -258,7 +259,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "out_of_home",
       },
       {
-        id: "kw_4", date: "2026-03-27", keyworkerName: "Sarah",
+        id: "kw_4", date: seedDay(-73), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 40, occurred: true,
         topicsCovered: ["education", "goals", "independence"],
         childLed: true, wishesAndFeelingsRecorded: true,
@@ -267,7 +268,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "in_home",
       },
       {
-        id: "kw_5", date: "2026-04-03", keyworkerName: "Sarah",
+        id: "kw_5", date: seedDay(-66), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 0, occurred: false,
         topicsCovered: [], cancelledBy: "staff",
         childLed: false, wishesAndFeelingsRecorded: false,
@@ -275,7 +276,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         childEngagement: "moderate", privateTime: false, location: "in_home",
       },
       {
-        id: "kw_6", date: "2026-04-10", keyworkerName: "Sarah",
+        id: "kw_6", date: seedDay(-59), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 50, occurred: true,
         topicsCovered: ["wellbeing", "health", "contact"],
         childLed: true, wishesAndFeelingsRecorded: true,
@@ -284,7 +285,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "activity_based",
       },
       {
-        id: "kw_7", date: "2026-04-17", keyworkerName: "Sarah",
+        id: "kw_7", date: seedDay(-52), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 45, occurred: true,
         topicsCovered: ["wellbeing", "activities", "wishes_feelings"],
         childLed: true, wishesAndFeelingsRecorded: true,
@@ -293,7 +294,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "in_home",
       },
       {
-        id: "kw_8", date: "2026-04-24", keyworkerName: "Sarah",
+        id: "kw_8", date: seedDay(-45), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 40, occurred: true,
         topicsCovered: ["education", "goals"],
         childLed: false, wishesAndFeelingsRecorded: false,
@@ -302,7 +303,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "in_home",
       },
       {
-        id: "kw_9", date: "2026-05-01", keyworkerName: "Sarah",
+        id: "kw_9", date: seedDay(-38), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 45, occurred: true,
         topicsCovered: ["wellbeing", "identity", "wishes_feelings"],
         childLed: true, wishesAndFeelingsRecorded: true,
@@ -311,7 +312,7 @@ function buildDemoData(childId: string): KeyworkingInput {
         privateTime: true, location: "in_home",
       },
       {
-        id: "kw_10", date: "2026-05-08", keyworkerName: "Sarah",
+        id: "kw_10", date: seedDay(-31), keyworkerName: "Sarah",
         plannedDuration: 45, actualDuration: 45, occurred: true,
         topicsCovered: ["wellbeing", "education", "independence"],
         childLed: true, wishesAndFeelingsRecorded: true,

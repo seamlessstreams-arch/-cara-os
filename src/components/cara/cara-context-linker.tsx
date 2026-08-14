@@ -32,6 +32,7 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type LinkStatus = "active" | "verified" | "dismissed" | "expired";
@@ -102,7 +103,7 @@ function getDemoLinks(sourceTable: string, recordId: string): ContextLink[] {
         description: "This incident may indicate the risk assessment needs updating to reflect the current presentation.",
         confidence: 87,
         status: "active",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
       {
@@ -116,7 +117,7 @@ function getDemoLinks(sourceTable: string, recordId: string): ContextLink[] {
         description: "The behaviour described in this incident is not fully addressed in the current behaviour support plan.",
         confidence: 74,
         status: "active",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
       {
@@ -130,7 +131,7 @@ function getDemoLinks(sourceTable: string, recordId: string): ContextLink[] {
         description: "This incident should be discussed in the next supervision with the involved staff member.",
         confidence: 91,
         status: "verified",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
       {
@@ -144,7 +145,7 @@ function getDemoLinks(sourceTable: string, recordId: string): ContextLink[] {
         description: "Daily log entry mentions contextual factors that preceded this incident.",
         confidence: 68,
         status: "active",
-        createdAt: "2026-05-05T08:30:00Z",
+        createdAt: `${seedDay(-34)}T08:30:00Z`,
         createdBy: "cara",
       },
     ];

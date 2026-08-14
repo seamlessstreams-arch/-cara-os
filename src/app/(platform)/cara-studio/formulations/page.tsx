@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface Formulation {
@@ -47,7 +48,7 @@ interface Formulation {
 const DEMO_FORMULATIONS: Formulation[] = [
   {
     id: "form-1", childId: "child_1", childName: "Jayden", framework: "psychologically_informed",
-    status: "approved", approvedBy: "Olivia Hayes", approvedAt: "2026-05-08T10:00:00Z", updatedAt: "2026-05-08T10:00:00Z",
+    status: "approved", approvedBy: "Olivia Hayes", approvedAt: `${seedDay(-31)}T10:00:00Z`, updatedAt: `${seedDay(-31)}T10:00:00Z`,
     data: {
       presenting_behaviour: ["Withdrawal during family discussions", "Reluctance to engage with new staff", "Positive engagement when given choice"],
       possible_unmet_needs: ["Belonging and identity", "Consistent adult relationships", "Sense of control over own life"],
@@ -62,7 +63,7 @@ const DEMO_FORMULATIONS: Formulation[] = [
   },
   {
     id: "form-2", childId: "child_2", childName: "Amara", framework: "trauma_informed",
-    status: "draft", approvedBy: null, approvedAt: null, updatedAt: "2026-05-10T14:00:00Z",
+    status: "draft", approvedBy: null, approvedAt: null, updatedAt: `${seedDay(-29)}T14:00:00Z`,
     data: {
       presenting_behaviour: ["Self-isolation in room", "Reluctance to eat with others", "Creative expression through art"],
       possible_unmet_needs: ["Cultural identity and belonging", "Safety from past experiences", "Trusted female relationships"],

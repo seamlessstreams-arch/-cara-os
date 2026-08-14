@@ -16,6 +16,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import type { ChildReport, ReportStatus } from "@/types/cara-reports";
 import { writeCaraAudit } from "@/lib/cara/audit/cara-audit";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Valid Transitions ─────────────────────────────────────────────────────
 
 const VALID_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
@@ -301,8 +302,8 @@ function buildDemoReport(
     status,
     version: 1,
     parent_report_id: null,
-    date_range_start: "2026-05-05",
-    date_range_end: "2026-05-11",
+    date_range_start: seedDay(-34),
+    date_range_end: seedDay(-28),
     overall_summary: "Jayden has had a broadly positive week.",
     overall_confidence_score: 72,
     risk_tier: "low",

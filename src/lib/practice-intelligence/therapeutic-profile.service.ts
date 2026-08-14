@@ -16,6 +16,7 @@ import type {
   PracticeIntelligenceFramework,
 } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -419,14 +420,14 @@ function getDemoProfile(childId: string, hid: string): TherapeuticProfile {
     protective_factors: ["Strong relationship with key worker", "Good peer relationships at school", "Enjoys sports", "Can identify feelings when supported"],
     current_presentation: "Generally settled over the past 3 months. Some regression following a cancelled contact visit last week. Engaging well in key work sessions.",
     progress_over_time: [
-      { date: "2026-03-01", area: "School attendance", direction: "improving", note: "Up from 75% to 92%" },
-      { date: "2026-04-01", area: "Emotional regulation", direction: "improving", note: "Fewer incidents of dysregulation" },
-      { date: "2026-05-01", area: "Family contact", direction: "stable", note: "Still finding contact difficult but coping better with support" },
+      { date: seedDay(-71), area: "School attendance", direction: "improving", note: "Up from 75% to 92%" },
+      { date: seedDay(-40), area: "Emotional regulation", direction: "improving", note: "Fewer incidents of dysregulation" },
+      { date: seedDay(-10), area: "Family contact", direction: "stable", note: "Still finding contact difficult but coping better with support" },
     ],
     child_voice_entries: [
-      { date: "2026-05-01", context: "Key work session", quote: "I like it here. I feel safe most of the time.", theme: "belonging", sentiment: "positive" },
-      { date: "2026-04-20", context: "After family contact", quote: "I don't know why she didn't come. Maybe she doesn't care.", theme: "family", sentiment: "negative" },
-      { date: "2026-04-15", context: "School review", quote: "Science is my thing. I want to be an engineer.", theme: "aspiration", sentiment: "positive" },
+      { date: seedDay(-10), context: "Key work session", quote: "I like it here. I feel safe most of the time.", theme: "belonging", sentiment: "positive" },
+      { date: seedDay(-21), context: "After family contact", quote: "I don't know why she didn't come. Maybe she doesn't care.", theme: "family", sentiment: "negative" },
+      { date: seedDay(-26), context: "School review", quote: "Science is my thing. I want to be an engineer.", theme: "aspiration", sentiment: "positive" },
     ],
     what_staff_need_to_remember: [
       "Always give Jayden a choice — never tell him what to do",
@@ -437,15 +438,15 @@ function getDemoProfile(childId: string, hid: string): TherapeuticProfile {
     what_helps: ["PACE approach", "Advance warning of changes", "Choices", "Music", "1:1 time", "Humour", "Sports"],
     what_does_not_help: ["Being told rather than asked", "Sudden topic changes", "Staff showing frustration", "Group confrontation", "Rushing conversations"],
     current_therapeutic_priorities: [
-      { title: "Strengthen emotional vocabulary", description: "Support Jayden to identify and name a wider range of emotions", framework: "pace" as PracticeIntelligenceFramework, targetDate: "2026-07-01", status: "active" },
-      { title: "Process family contact feelings", description: "Gentle life story and feelings work around family relationships", framework: "ddp" as PracticeIntelligenceFramework, targetDate: "2026-08-01", status: "active" },
-      { title: "Build independence skills", description: "Age-appropriate independence work aligned with pathway plan", framework: "therapeutic_parenting" as PracticeIntelligenceFramework, targetDate: "2026-09-01", status: "active" },
+      { title: "Strengthen emotional vocabulary", description: "Support Jayden to identify and name a wider range of emotions", framework: "pace" as PracticeIntelligenceFramework, targetDate: seedDay(51), status: "active" },
+      { title: "Process family contact feelings", description: "Gentle life story and feelings work around family relationships", framework: "ddp" as PracticeIntelligenceFramework, targetDate: seedDay(82), status: "active" },
+      { title: "Build independence skills", description: "Age-appropriate independence work aligned with pathway plan", framework: "therapeutic_parenting" as PracticeIntelligenceFramework, targetDate: seedDay(113), status: "active" },
     ],
     approved_by: "user-rm-1",
-    approved_at: "2026-04-15T10:00:00Z",
+    approved_at: `${seedDay(-26)}T10:00:00Z`,
     created_by: "user-rm-1",
-    created_at: "2026-03-01T09:00:00Z",
-    updated_at: "2026-05-08T14:30:00Z",
+    created_at: `${seedDay(-71)}T09:00:00Z`,
+    updated_at: `${seedDay(-3)}T14:30:00Z`,
   };
 }
 

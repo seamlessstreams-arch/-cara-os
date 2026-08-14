@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface DecisionOption {
@@ -47,7 +48,7 @@ interface DecisionRecord {
 const DEMO_DECISIONS: DecisionRecord[] = [
   {
     id: "dec-1", title: "Placement Move — Amara", childName: "Amara",
-    status: "open", createdAt: "2026-05-10T09:00:00Z", decidedAt: null, decisionMade: null,
+    status: "open", createdAt: `${seedDay(-29)}T09:00:00Z`, decidedAt: null, decisionMade: null,
     knownFacts: [
       "Current placement has been stable for 8 months",
       "Amara has built a strong relationship with key worker Sarah",
@@ -89,7 +90,7 @@ const DEMO_DECISIONS: DecisionRecord[] = [
   },
   {
     id: "dec-2", title: "De-escalation Approach — Reuben", childName: "Reuben",
-    status: "decided", createdAt: "2026-05-08T14:00:00Z", decidedAt: "2026-05-09T10:00:00Z",
+    status: "decided", createdAt: `${seedDay(-31)}T14:00:00Z`, decidedAt: `${seedDay(-30)}T10:00:00Z`,
     decisionMade: "Implement 'phone call protocol' with structured support before, during, and after family calls. Review after 2 weeks.",
     knownFacts: [
       "Three incidents of dysregulation following phone calls in the past month",

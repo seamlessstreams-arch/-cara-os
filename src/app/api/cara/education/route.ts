@@ -17,6 +17,7 @@ import type {
   PEPQuality,
 } from "@/lib/cara/education-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -180,7 +181,7 @@ function buildDemoData(childId: string): EducationInput {
       exclusions: [],
       pepRecords: [
         {
-          date: "2026-01-20",
+          date: seedDay(-139),
           quality: "good",
           targetsSet: 3,
           targetsMet: 3,
@@ -191,7 +192,7 @@ function buildDemoData(childId: string): EducationInput {
           virtualSchoolAttended: true,
         },
         {
-          date: "2026-04-10",
+          date: seedDay(-59),
           quality: "outstanding",
           targetsSet: 4,
           targetsMet: 4,
@@ -240,7 +241,7 @@ function buildDemoData(childId: string): EducationInput {
     attendanceTrend: "improving",
     exclusions: [
       {
-        date: "2026-01-20",
+        date: seedDay(-139),
         type: "fixed_term",
         days: 2,
         reason: "persistent disruption",
@@ -249,7 +250,7 @@ function buildDemoData(childId: string): EducationInput {
     ],
     pepRecords: [
       {
-        date: "2025-12-10",
+        date: seedDay(-180),
         quality: "requires_improvement",
         targetsSet: 4,
         targetsMet: 1,
@@ -260,7 +261,7 @@ function buildDemoData(childId: string): EducationInput {
         virtualSchoolAttended: true,
       },
       {
-        date: "2026-03-20",
+        date: seedDay(-80),
         quality: "good",
         targetsSet: 4,
         targetsMet: 3,

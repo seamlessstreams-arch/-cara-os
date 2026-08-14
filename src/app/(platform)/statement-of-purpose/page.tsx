@@ -52,6 +52,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { seedDay } from "@/lib/seed-date";
 /* ── types ───────────────────────────────────────────────────────────── */
 interface SoPSection {
   id: string;
@@ -67,7 +68,7 @@ interface SoPSection {
 const buildSections = (homeName: string): SoPSection[] => [
   {
     id: "range", title: "Range of Children", icon: Users, colour: "text-blue-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       `${homeName} provides care for up to 4 children aged 10-17 years, of any gender.`,
       "The home specialises in caring for children who have experienced trauma, attachment difficulties, and adverse childhood experiences.",
@@ -77,7 +78,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "ethos", title: "Ethos & Approach", icon: Heart, colour: "text-pink-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       `${homeName} operates within a therapeutic care framework, informed by attachment theory and trauma-informed practice.`,
       "We believe every child deserves to feel safe, valued, and heard. Our approach centres on building trusting relationships as the foundation for healing and growth.",
@@ -88,7 +89,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "arrangements", title: "Care Arrangements", icon: Shield, colour: "text-green-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       "Each child has an allocated key worker who provides consistent one-to-one support through weekly key working sessions.",
       "Care plans are developed collaboratively with the child, their family, social worker, and relevant professionals.",
@@ -100,7 +101,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "education", title: "Education", icon: GraduationCap, colour: "text-purple-600",
-    lastUpdated: "2026-01-15", requiresReview: true,
+    lastUpdated: seedDay(-109), requiresReview: true,
     content: [
       `${homeName} is committed to promoting educational achievement for all children in our care.`,
       "Every child has a Personal Education Plan (PEP) that is reviewed termly.",
@@ -112,7 +113,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "staffing", title: "Staffing & Qualifications", icon: Users, colour: "text-teal-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       "The Registered Manager holds a Level 5 Diploma in Leadership and Management for Residential Childcare and is working towards Level 7.",
       "All residential staff are qualified or working towards the Level 3 Diploma in Residential Childcare.",
@@ -124,7 +125,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "premises", title: "Premises & Location", icon: Home, colour: "text-amber-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       `${homeName} is a 4-bedroom detached property located in a residential area with good transport links.`,
       "Each child has their own bedroom which they are encouraged to personalise.",
@@ -136,7 +137,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "complaints", title: "Complaints & Representations", icon: AlertTriangle, colour: "text-orange-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       "The home has a clear complaints procedure that is accessible to children, families, and professionals.",
       "Children are supported to make complaints and are provided with information about independent advocacy.",
@@ -147,7 +148,7 @@ const buildSections = (homeName: string): SoPSection[] => [
   },
   {
     id: "fire", title: "Fire Safety & Emergency", icon: Shield, colour: "text-red-600",
-    lastUpdated: "2026-01-15", requiresReview: false,
+    lastUpdated: seedDay(-109), requiresReview: false,
     content: [
       "A fire risk assessment is maintained and reviewed annually by a competent person.",
       "Fire drills are conducted monthly and recorded.",

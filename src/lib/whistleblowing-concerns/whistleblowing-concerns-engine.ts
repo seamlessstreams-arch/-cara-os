@@ -19,6 +19,7 @@
 import { withinPeriod } from "@/lib/date-period";
 import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ConcernCategory =
@@ -827,7 +828,7 @@ export function getDemoWhistleblowingConcernsData(): {
   const concerns: WhistleblowingConcern[] = [
     {
       id: "wbc-001",
-      reportDate: "2026-02-15",
+      reportDate: seedDay(-92),
       category: "safeguarding",
       severity: "critical",
       status: "resolved",
@@ -847,7 +848,7 @@ export function getDemoWhistleblowingConcernsData(): {
     },
     {
       id: "wbc-002",
-      reportDate: "2026-03-10",
+      reportDate: seedDay(-69),
       category: "practice_standards",
       severity: "medium",
       status: "resolved",
@@ -893,7 +894,7 @@ export function getDemoWhistleblowingConcernsData(): {
 
   const policy: WhistleblowingPolicy = {
     id: "pol-001",
-    lastReviewedDate: "2026-01-15",
+    lastReviewedDate: seedDay(-123),
     staffAwareOfPolicy: true,
     policyAccessible: true,
     namedContactDesignated: true,
@@ -905,7 +906,7 @@ export function getDemoWhistleblowingConcernsData(): {
 
   const culture: ConcernCulture = {
     id: "cult-001",
-    surveyDate: "2026-01-20",
+    surveyDate: seedDay(-118),
     staffConfidenceToReport: 8,
     staffTrustInProcess: 7.5,
     perceivedFairnessOfOutcomes: 7,

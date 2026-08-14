@@ -11,6 +11,7 @@ import { analyseMissingEpisodes } from "@/lib/cara/missing-episodes-intelligence
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { MissingInput, MissingEpisode } from "@/lib/cara/missing-episodes-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 type SB = any;
 
 export async function GET(req: NextRequest) {
@@ -151,7 +152,7 @@ function buildDemoData(childId: string): MissingInput {
   const episodes: MissingEpisode[] = [
     {
       id: "me_1",
-      date: "2026-03-05",
+      date: seedDay(-95),
       startTime: "19:30",
       endTime: "23:45",
       category: "absent",
@@ -164,9 +165,9 @@ function buildDemoData(childId: string): MissingInput {
     },
     {
       id: "me_2",
-      date: "2026-03-18",
+      date: seedDay(-82),
       startTime: "16:00",
-      endDate: "2026-03-19",
+      endDate: seedDay(-81),
       endTime: "02:30",
       category: "missing",
       durationMinutes: 630,
@@ -180,7 +181,7 @@ function buildDemoData(childId: string): MissingInput {
     },
     {
       id: "me_3",
-      date: "2026-04-02",
+      date: seedDay(-67),
       startTime: "20:00",
       endTime: "22:15",
       category: "absent",
@@ -193,7 +194,7 @@ function buildDemoData(childId: string): MissingInput {
     },
     {
       id: "me_4",
-      date: "2026-04-20",
+      date: seedDay(-49),
       startTime: "18:30",
       endTime: "20:00",
       category: "away_without_permission",
@@ -213,7 +214,7 @@ function buildDemoData(childId: string): MissingInput {
     hasRiskAssessment: true,
     riskAssessmentUpToDate: true,
     hasMissingProtocol: true,
-    missingProtocolReviewDate: "2026-04-01",
+    missingProtocolReviewDate: seedDay(-68),
     knownCSERisk: false,
     knownCCERisk: false,
     knownGangAssociation: false,

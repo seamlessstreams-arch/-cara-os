@@ -14,6 +14,7 @@ import type {
   WorkflowTriggerEvent,
 } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -454,7 +455,7 @@ function getDemoTriggers(hid: string): WorkflowTrigger[] {
         { type: "session", title: "Follow-up Key Work Session", description: "Check in with Amara following this incident.", priority: "medium", target_type: "generated_sessions", target_id: null },
       ],
       status: "pending", actioned_by: null, actioned_at: null,
-      created_at: "2026-05-11T09:00:00Z",
+      created_at: `${seedDay(0)}T09:00:00Z`,
     },
     {
       id: "demo-trigger-2", home_id: hid, trigger_event: "missing_episode_created",
@@ -465,7 +466,7 @@ function getDemoTriggers(hid: string): WorkflowTrigger[] {
         { type: "risk_review", title: "Missing from Care Risk Review", description: "Review missing from care risk assessment.", priority: "high", target_type: "risk_assessment", target_id: null },
       ],
       status: "pending", actioned_by: null, actioned_at: null,
-      created_at: "2026-05-10T22:00:00Z",
+      created_at: `${seedDay(-1)}T22:00:00Z`,
     },
     {
       id: "demo-trigger-3", home_id: hid, trigger_event: "keywork_completed",
@@ -473,8 +474,8 @@ function getDemoTriggers(hid: string): WorkflowTrigger[] {
       suggestions: [
         { type: "plan_update", title: "Consider Plan Updates", description: "Review whether this session's outcomes suggest any plan updates.", priority: "low", target_type: "plan_update_suggestions", target_id: null },
       ],
-      status: "actioned", actioned_by: "user-rm-1", actioned_at: "2026-05-10T15:00:00Z",
-      created_at: "2026-05-10T14:00:00Z",
+      status: "actioned", actioned_by: "user-rm-1", actioned_at: `${seedDay(-1)}T15:00:00Z`,
+      created_at: `${seedDay(-1)}T14:00:00Z`,
     },
   ];
 }

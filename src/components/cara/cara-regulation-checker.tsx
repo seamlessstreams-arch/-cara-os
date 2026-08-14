@@ -14,6 +14,7 @@ import {
   ChevronDown, ChevronUp, Shield, Scale,
 } from "lucide-react";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type ComplianceStatus = "compliant" | "partially_compliant" | "non_compliant" | "not_assessed";
@@ -46,88 +47,88 @@ function getDemoRegulations(): RegulationEntry[] {
     {
       id: "reg_05", number: "Reg 5", title: "Quality and purpose of care standard",
       description: "The quality and purpose of care standard ensures that children receive care designed to meet needs and protect them.",
-      status: "compliant", evidenceCount: 24, lastEvidenced: "2026-05-12", gaps: [],
+      status: "compliant", evidenceCount: 24, lastEvidenced: seedDay(-27), gaps: [],
     },
     {
       id: "reg_06", number: "Reg 6", title: "Children's views, wishes and feelings standard",
       description: "Children must be enabled to express views, wishes and feelings about their care.",
-      status: "partially_compliant", evidenceCount: 18, lastEvidenced: "2026-05-10",
+      status: "partially_compliant", evidenceCount: 18, lastEvidenced: seedDay(-29),
       gaps: ["1 child without key work session in 28 days", "Wishes and feelings forms overdue for 2 children"],
       caraSuggestion: "Schedule key work session for Jordan M and update wishes-and-feelings records.",
     },
     {
       id: "reg_07", number: "Reg 7", title: "Education standard",
       description: "Children must be helped to achieve their education potential.",
-      status: "compliant", evidenceCount: 31, lastEvidenced: "2026-05-11", gaps: [],
+      status: "compliant", evidenceCount: 31, lastEvidenced: seedDay(-28), gaps: [],
     },
     {
       id: "reg_08", number: "Reg 8", title: "Enjoyment and achievement standard",
       description: "Children must have opportunities to participate in activities and develop their talents.",
-      status: "compliant", evidenceCount: 15, lastEvidenced: "2026-05-09", gaps: [],
+      status: "compliant", evidenceCount: 15, lastEvidenced: seedDay(-30), gaps: [],
     },
     {
       id: "reg_09", number: "Reg 9", title: "Health and wellbeing standard",
       description: "Children must receive appropriate healthcare and have their emotional wellbeing supported.",
-      status: "partially_compliant", evidenceCount: 22, lastEvidenced: "2026-05-11",
+      status: "partially_compliant", evidenceCount: 22, lastEvidenced: seedDay(-28),
       gaps: ["CAMHS referral pending for 1 child", "Annual dental check overdue for 1 child"],
       caraSuggestion: "Chase CAMHS referral for Riley P and book dental appointment for Casey T.",
     },
     {
       id: "reg_10", number: "Reg 10", title: "Positive relationships standard",
       description: "Children must be helped to develop and maintain positive relationships.",
-      status: "compliant", evidenceCount: 20, lastEvidenced: "2026-05-12", gaps: [],
+      status: "compliant", evidenceCount: 20, lastEvidenced: seedDay(-27), gaps: [],
     },
     {
       id: "reg_11", number: "Reg 11", title: "Protection of children standard",
       description: "Children must be protected from harm and enabled to keep themselves safe.",
-      status: "compliant", evidenceCount: 28, lastEvidenced: "2026-05-12", gaps: [],
+      status: "compliant", evidenceCount: 28, lastEvidenced: seedDay(-27), gaps: [],
     },
     {
       id: "reg_12", number: "Reg 12", title: "The protection of children standard",
       description: "Ensure children are protected from significant harm through effective safeguarding practices.",
-      status: "partially_compliant", evidenceCount: 19, lastEvidenced: "2026-05-10",
+      status: "partially_compliant", evidenceCount: 19, lastEvidenced: seedDay(-29),
       gaps: ["1 risk assessment review overdue"],
       caraSuggestion: "Complete risk assessment review for Alex W — triggered by recent incident pattern.",
     },
     {
       id: "reg_13", number: "Reg 13", title: "Leadership and management standard",
       description: "The registered person must ensure effective leadership and management.",
-      status: "compliant", evidenceCount: 16, lastEvidenced: "2026-05-12", gaps: [],
+      status: "compliant", evidenceCount: 16, lastEvidenced: seedDay(-27), gaps: [],
     },
     {
       id: "reg_14", number: "Reg 14", title: "Care planning standard",
       description: "Children must have a care plan that sets out how their needs will be met.",
-      status: "compliant", evidenceCount: 12, lastEvidenced: "2026-05-08", gaps: [],
+      status: "compliant", evidenceCount: 12, lastEvidenced: seedDay(-31), gaps: [],
     },
     {
       id: "reg_33", number: "Reg 33", title: "Employment of staff",
       description: "Sufficient, suitably qualified, and competent staff must be deployed.",
-      status: "partially_compliant", evidenceCount: 14, lastEvidenced: "2026-05-11",
+      status: "partially_compliant", evidenceCount: 14, lastEvidenced: seedDay(-28),
       gaps: ["1 supervision overdue beyond 4-week cycle", "1 staff member below 80% training compliance"],
       caraSuggestion: "Schedule supervision for Jordan P and review training plan.",
     },
     {
       id: "reg_34", number: "Reg 34", title: "Staff supervision and appraisal",
       description: "All staff must receive regular supervision and annual appraisal.",
-      status: "partially_compliant", evidenceCount: 11, lastEvidenced: "2026-05-11",
+      status: "partially_compliant", evidenceCount: 11, lastEvidenced: seedDay(-28),
       gaps: ["1 supervision overdue"],
     },
     {
       id: "reg_35", number: "Reg 35", title: "Restraint and deprivation of liberty",
       description: "Restraint must only be used where necessary and recorded fully.",
-      status: "compliant", evidenceCount: 8, lastEvidenced: "2026-05-10", gaps: [],
+      status: "compliant", evidenceCount: 8, lastEvidenced: seedDay(-29), gaps: [],
     },
     {
       id: "reg_40", number: "Reg 40", title: "Notification of significant events",
       description: "Significant events must be notified to the appropriate bodies.",
-      status: "partially_compliant", evidenceCount: 14, lastEvidenced: "2026-05-12",
+      status: "partially_compliant", evidenceCount: 14, lastEvidenced: seedDay(-27),
       gaps: ["3 incidents awaiting management oversight"],
       caraSuggestion: "Complete management oversight for outstanding incidents within 24 hours.",
     },
     {
       id: "reg_45", number: "Reg 45", title: "Review of quality of care",
       description: "Monthly quality of care review covering all 9 subsections.",
-      status: "compliant", evidenceCount: 9, lastEvidenced: "2026-05-01", gaps: [],
+      status: "compliant", evidenceCount: 9, lastEvidenced: seedDay(-38), gaps: [],
     },
   ];
 }

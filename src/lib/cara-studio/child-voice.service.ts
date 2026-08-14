@@ -10,6 +10,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { matchedKeywords } from "@/lib/keyword-match";
 import { londonDayDiff } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -243,21 +244,21 @@ function getDemoVoiceEntries(childId: string): ChildVoiceEntry[] {
   return [
     {
       id: "demo-voice-1", childId, sourceId: "demo-src-1", sourceType: "keywork",
-      sourceTitle: "Key work session — 8 May", sourceDate: "2026-05-08",
+      sourceTitle: "Key work session — 8 May", sourceDate: seedDay(-31),
       quote: "Sometimes I just need five minutes and my headphones",
       context: "When asked what helps during difficult moments, the young person said: \"Sometimes I just need five minutes and my headphones\"",
       sentiment: "neutral", theme: "safety", extractedAt: now,
     },
     {
       id: "demo-voice-2", childId, sourceId: "demo-src-2", sourceType: "daily_log",
-      sourceTitle: "Daily log — 6 May", sourceDate: "2026-05-06",
+      sourceTitle: "Daily log — 6 May", sourceDate: seedDay(-33),
       quote: "I felt really good today, school was brilliant",
       context: "During tea time, the young person said: \"I felt really good today, school was brilliant\"",
       sentiment: "positive", theme: "education", extractedAt: now,
     },
     {
       id: "demo-voice-3", childId, sourceId: "demo-src-3", sourceType: "daily_log",
-      sourceTitle: "Daily log — 4 May", sourceDate: "2026-05-04",
+      sourceTitle: "Daily log — 4 May", sourceDate: seedDay(-35),
       quote: "I miss my mum, I wish I could see her more",
       context: "Before bedtime, the young person told staff: \"I miss my mum, I wish I could see her more\"",
       sentiment: "negative", theme: "family_contact", extractedAt: now,

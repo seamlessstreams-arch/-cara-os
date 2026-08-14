@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Types ───────────────────────────────────────────────────────────────────
 
 interface AuditEntry {
@@ -51,70 +52,70 @@ const ACTION_CONFIG: Record<string, { icon: React.ElementType; colour: string; l
 
 const DEMO_AUDIT: AuditEntry[] = [
   {
-    id: "aud-1", timestamp: "2026-05-12T08:15:00Z", action: "generated",
+    id: "aud-1", timestamp: `${seedDay(-27)}T08:15:00Z`, action: "generated",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Generated with PACE framework, balanced tone, 3 evidence sources linked",
   },
   {
-    id: "aud-2", timestamp: "2026-05-12T08:45:00Z", action: "edited",
+    id: "aud-2", timestamp: `${seedDay(-27)}T08:45:00Z`, action: "edited",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Edited generated content — added specific reference to yesterday's conversation",
   },
   {
-    id: "aud-3", timestamp: "2026-05-12T09:00:00Z", action: "submitted_for_review",
+    id: "aud-3", timestamp: `${seedDay(-27)}T09:00:00Z`, action: "submitted_for_review",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Submitted for peer review",
   },
   {
-    id: "aud-4", timestamp: "2026-05-11T16:30:00Z", action: "generated",
+    id: "aud-4", timestamp: `${seedDay(-28)}T16:30:00Z`, action: "generated",
     actorName: "Sarah Thompson", actorRole: "Deputy Manager",
     artifactId: "art-2", artifactTitle: "Management Oversight — w/c 5 May",
     artifactType: "management_oversight",
     detail: "Generated with inspection-ready tone, 12 evidence sources linked",
   },
   {
-    id: "aud-5", timestamp: "2026-05-11T17:00:00Z", action: "approved",
+    id: "aud-5", timestamp: `${seedDay(-28)}T17:00:00Z`, action: "approved",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-2", artifactTitle: "Management Oversight — w/c 5 May",
     artifactType: "management_oversight",
     detail: "Approved — quality check passed, evidence confidence 78%",
   },
   {
-    id: "aud-6", timestamp: "2026-05-11T17:15:00Z", action: "committed",
+    id: "aud-6", timestamp: `${seedDay(-28)}T17:15:00Z`, action: "committed",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-2", artifactTitle: "Management Oversight — w/c 5 May",
     artifactType: "management_oversight",
     detail: "Committed to official record — filed to governance/management-oversight/2026-05-11",
   },
   {
-    id: "aud-7", timestamp: "2026-05-10T14:00:00Z", action: "generated",
+    id: "aud-7", timestamp: `${seedDay(-29)}T14:00:00Z`, action: "generated",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-3", artifactTitle: "Risk Review — Amara — Self-Harm Indicators",
     artifactType: "risk_review",
     detail: "Generated with trauma-informed framework, 5 evidence sources linked",
   },
   {
-    id: "aud-8", timestamp: "2026-05-10T15:30:00Z", action: "reviewed",
+    id: "aud-8", timestamp: `${seedDay(-29)}T15:30:00Z`, action: "reviewed",
     actorName: "Sarah Thompson", actorRole: "Deputy Manager",
     artifactId: "art-3", artifactTitle: "Risk Review — Amara — Self-Harm Indicators",
     artifactType: "risk_review",
     detail: "Reviewed — requested stronger evidence for protective factors section",
   },
   {
-    id: "aud-9", timestamp: "2026-05-09T10:00:00Z", action: "generated",
+    id: "aud-9", timestamp: `${seedDay(-30)}T10:00:00Z`, action: "generated",
     actorName: "Marcus Williams", actorRole: "Care Worker",
     artifactId: "art-4", artifactTitle: "What Happens at a Review — Amara",
     artifactType: "child_friendly_explanation",
     detail: "Generated with child-friendly tone, language simplified for young person",
   },
   {
-    id: "aud-10", timestamp: "2026-05-09T11:00:00Z", action: "committed",
+    id: "aud-10", timestamp: `${seedDay(-30)}T11:00:00Z`, action: "committed",
     actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-4", artifactTitle: "What Happens at a Review — Amara",
     artifactType: "child_friendly_explanation",

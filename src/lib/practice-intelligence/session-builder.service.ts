@@ -23,6 +23,7 @@ import type {
 import { SESSION_TYPE_LABELS as LABELS } from "@/types/practice-intelligence";
 import { londonLongDate } from "@/lib/utils";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -522,17 +523,17 @@ function getDemoSessions(hid: string): GeneratedSession[] {
       content: getDefaultSessionContent("feelings_exploration"),
       evidence_links: [],
       quality_score: 85,
-      scheduled_date: "2026-05-12",
+      scheduled_date: seedDay(1),
       delivered_at: null,
       delivered_by: null,
       recording_notes: null,
       follow_up_actions: [],
       plan_update_suggestions: [],
       approved_by: "user-rm-1",
-      approved_at: "2026-05-10T14:00:00Z",
+      approved_at: `${seedDay(-1)}T14:00:00Z`,
       created_by: "user-rm-1",
-      created_at: "2026-05-10T09:00:00Z",
-      updated_at: "2026-05-10T14:00:00Z",
+      created_at: `${seedDay(-1)}T09:00:00Z`,
+      updated_at: `${seedDay(-1)}T14:00:00Z`,
     },
     {
       id: "demo-session-2",
@@ -550,20 +551,20 @@ function getDemoSessions(hid: string): GeneratedSession[] {
       },
       evidence_links: [],
       quality_score: 90,
-      scheduled_date: "2026-05-09",
-      delivered_at: "2026-05-09T14:30:00Z",
+      scheduled_date: seedDay(-2),
+      delivered_at: `${seedDay(-2)}T14:30:00Z`,
       delivered_by: "staff-1",
       recording_notes: "Amara was initially reluctant but opened up when drawing. Expressed mixed feelings about seeing mum. Said she felt 'happy but also sad'. Wants to go again.",
       follow_up_actions: [
-        { action: "Update therapeutic profile with Amara's voice from this session", owner: "staff-1", due_date: "2026-05-12", priority: "medium", status: "pending" },
-        { action: "Discuss contact frequency at next review", owner: "user-rm-1", due_date: "2026-05-15", priority: "medium", status: "pending" },
+        { action: "Update therapeutic profile with Amara's voice from this session", owner: "staff-1", due_date: seedDay(1), priority: "medium", status: "pending" },
+        { action: "Discuss contact frequency at next review", owner: "user-rm-1", due_date: seedDay(4), priority: "medium", status: "pending" },
       ],
       plan_update_suggestions: [],
       approved_by: "user-rm-1",
-      approved_at: "2026-05-09T10:00:00Z",
+      approved_at: `${seedDay(-2)}T10:00:00Z`,
       created_by: "user-rm-1",
-      created_at: "2026-05-08T16:00:00Z",
-      updated_at: "2026-05-09T14:30:00Z",
+      created_at: `${seedDay(-3)}T16:00:00Z`,
+      updated_at: `${seedDay(-2)}T14:30:00Z`,
     },
     {
       id: "demo-session-3",
@@ -577,7 +578,7 @@ function getDemoSessions(hid: string): GeneratedSession[] {
       content: getDefaultSessionContent("reflective_practice"),
       evidence_links: [],
       quality_score: null,
-      scheduled_date: "2026-05-14",
+      scheduled_date: seedDay(3),
       delivered_at: null,
       delivered_by: null,
       recording_notes: null,
@@ -586,8 +587,8 @@ function getDemoSessions(hid: string): GeneratedSession[] {
       approved_by: null,
       approved_at: null,
       created_by: "user-rm-1",
-      created_at: "2026-05-12T08:00:00Z",
-      updated_at: "2026-05-12T08:00:00Z",
+      created_at: `${seedDay(1)}T08:00:00Z`,
+      updated_at: `${seedDay(1)}T08:00:00Z`,
     },
   ];
 }

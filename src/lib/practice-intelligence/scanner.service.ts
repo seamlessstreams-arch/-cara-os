@@ -22,6 +22,7 @@ import type {
   TherapeuticPattern,
 } from "@/types/practice-intelligence";
 
+import { seedDay } from "@/lib/seed-date";
 function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
@@ -685,7 +686,7 @@ function getDemoScan(hid: string, scanType: PracticeIntelligenceScan["scan_type"
         trigger: "Family contact",
         frequency: 3,
         period: "30_days",
-        last_occurrence: "2026-05-10",
+        last_occurrence: seedDay(-1),
         suggested_response: "Repeated trigger. Add structured pre/post contact support to care plan.",
       },
     ],

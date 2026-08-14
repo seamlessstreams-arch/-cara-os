@@ -3,21 +3,22 @@ import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateRiskAssessmentIntelligence } from "@/lib/risk-assessment";
 import type { RiskAssessmentRecord, RiskAssessmentPolicy, StaffRiskAssessmentTraining } from "@/lib/risk-assessment";
 
+import { seedDay } from "@/lib/seed-date";
 // ── Demo Data ─────────────────────────────────────────────────────────────
 
 const DEMO_RECORDS: RiskAssessmentRecord[] = [
-  { id: "ra-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "initial_assessment", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-002", homeId: "home-oak", date: "2026-05-07", childId: "child-jordan", childName: "Jordan", category: "review_assessment", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-003", homeId: "home-oak", date: "2026-04-30", childId: "child-morgan", childName: "Morgan", category: "dynamic_risk_update", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: false, documentationComplete: true, timelyRecording: true },
-  { id: "ra-004", homeId: "home-oak", date: "2026-04-23", childId: "child-alex", childName: "Alex", category: "positive_risk_taking", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-005", homeId: "home-oak", date: "2026-04-16", childId: "child-jordan", childName: "Jordan", category: "incident_triggered", outcome: "risk_increased", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-006", homeId: "home-oak", date: "2026-04-09", childId: "child-morgan", childName: "Morgan", category: "placement_risk", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: false, multiAgencyInput: true, documentationComplete: true, timelyRecording: false },
-  { id: "ra-007", homeId: "home-oak", date: "2026-04-02", childId: "child-alex", childName: "Alex", category: "community_risk", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: false, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-008", homeId: "home-oak", date: "2026-03-26", childId: "child-jordan", childName: "Jordan", category: "environmental_risk", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-009", homeId: "home-oak", date: "2026-03-19", childId: "child-morgan", childName: "Morgan", category: "initial_assessment", outcome: "risk_reduced", controlMeasuresIdentified: false, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: false, timelyRecording: true },
-  { id: "ra-010", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "review_assessment", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
-  { id: "ra-011", homeId: "home-oak", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", category: "dynamic_risk_update", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: false, documentationComplete: true, timelyRecording: true },
-  { id: "ra-012", homeId: "home-oak", date: "2026-02-26", childId: "child-morgan", childName: "Morgan", category: "positive_risk_taking", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-001", homeId: "home-oak", date: seedDay(3), childId: "child-alex", childName: "Alex", category: "initial_assessment", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-002", homeId: "home-oak", date: seedDay(-4), childId: "child-jordan", childName: "Jordan", category: "review_assessment", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-003", homeId: "home-oak", date: seedDay(-11), childId: "child-morgan", childName: "Morgan", category: "dynamic_risk_update", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: false, documentationComplete: true, timelyRecording: true },
+  { id: "ra-004", homeId: "home-oak", date: seedDay(-18), childId: "child-alex", childName: "Alex", category: "positive_risk_taking", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-005", homeId: "home-oak", date: seedDay(-25), childId: "child-jordan", childName: "Jordan", category: "incident_triggered", outcome: "risk_increased", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-006", homeId: "home-oak", date: seedDay(-32), childId: "child-morgan", childName: "Morgan", category: "placement_risk", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: false, multiAgencyInput: true, documentationComplete: true, timelyRecording: false },
+  { id: "ra-007", homeId: "home-oak", date: seedDay(-39), childId: "child-alex", childName: "Alex", category: "community_risk", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: false, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-008", homeId: "home-oak", date: seedDay(-46), childId: "child-jordan", childName: "Jordan", category: "environmental_risk", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-009", homeId: "home-oak", date: seedDay(-53), childId: "child-morgan", childName: "Morgan", category: "initial_assessment", outcome: "risk_reduced", controlMeasuresIdentified: false, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: false, timelyRecording: true },
+  { id: "ra-010", homeId: "home-oak", date: seedDay(-60), childId: "child-alex", childName: "Alex", category: "review_assessment", outcome: "controls_adequate", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
+  { id: "ra-011", homeId: "home-oak", date: seedDay(-67), childId: "child-jordan", childName: "Jordan", category: "dynamic_risk_update", outcome: "risk_maintained", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: false, documentationComplete: true, timelyRecording: true },
+  { id: "ra-012", homeId: "home-oak", date: seedDay(-74), childId: "child-morgan", childName: "Morgan", category: "positive_risk_taking", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true },
 ];
 
 const DEMO_POLICY: RiskAssessmentPolicy = {
@@ -54,8 +55,8 @@ export async function GET() {
   };
   const result = generateRiskAssessmentIntelligence({
     homeId: "home-oak",
-    periodStart: "2026-01-01",
-    periodEnd: "2026-05-20",
+    periodStart: seedDay(-130),
+    periodEnd: seedDay(9),
     records: live ? [] : DEMO_RECORDS,
     policy: live ? emptyPolicy : DEMO_POLICY,
     staff: live ? [] : DEMO_STAFF,

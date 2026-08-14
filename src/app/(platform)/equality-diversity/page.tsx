@@ -42,6 +42,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { seedDay } from "@/lib/seed-date";
 /* ── inlined from @/hooks/use-equality-initiatives ─────────────────────── */
 
 const EQUALITY_INITIATIVES_KEY = "equality-initiatives";
@@ -95,8 +96,8 @@ const MONITORING: EqualityMonitoringData = {
     { characteristic: "Disability/SEND", breakdown: { "ADHD": 1, "ASD": 1, "None disclosed": 1 } },
     { characteristic: "Religion", breakdown: { "No religion": 2, "Christian": 1 } },
   ],
-  last_audit_date: "2026-04-07",
-  next_audit_due: "2026-07-06",
+  last_audit_date: seedDay(-27),
+  next_audit_due: seedDay(63),
   audited_by: "staff_darren",
 };
 
