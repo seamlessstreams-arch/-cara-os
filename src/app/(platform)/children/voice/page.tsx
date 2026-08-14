@@ -237,9 +237,9 @@ export default function VoiceOfTheChildPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
+                  <label htmlFor="3658-category" className="text-sm font-medium">Category</label>
                   <Select value={newCategory} onValueChange={(v) => setNewCategory(v as VoiceCategory)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="3658-category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -252,8 +252,8 @@ export default function VoiceOfTheChildPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date</label>
-                  <input
+                  <label htmlFor="3658-date" className="text-sm font-medium">Date</label>
+                  <input id="3658-date"
                     type="date"
                     className="w-full p-2 text-sm border rounded-md"
                     value={newDate}
@@ -262,8 +262,8 @@ export default function VoiceOfTheChildPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Child&apos;s Words</label>
-                <textarea
+                <label htmlFor="3658-child-apos-s-words" className="text-sm font-medium">Child&apos;s Words</label>
+                <textarea id="3658-child-apos-s-words"
                   className="w-full min-h-[80px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Record exactly what the child said, in their own words..."
                   value={newChildWords}
@@ -271,8 +271,8 @@ export default function VoiceOfTheChildPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Summary</label>
-                <textarea
+                <label htmlFor="3658-summary" className="text-sm font-medium">Summary</label>
+                <textarea id="3658-summary"
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Brief summary for records..."
                   value={newSummary}
@@ -280,8 +280,8 @@ export default function VoiceOfTheChildPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Action Taken</label>
-                <textarea
+                <label htmlFor="3658-action-taken" className="text-sm font-medium">Action Taken</label>
+                <textarea id="3658-action-taken"
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="What was done in response..."
                   value={newActionTaken}
@@ -289,8 +289,8 @@ export default function VoiceOfTheChildPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Staff Response (shared with child)</label>
-                <textarea
+                <label htmlFor="3658-staff-response-shared-with-child" className="text-sm font-medium">Staff Response (shared with child)</label>
+                <textarea id="3658-staff-response-shared-with-child"
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Your response to the child..."
                   value={newStaffResponse}

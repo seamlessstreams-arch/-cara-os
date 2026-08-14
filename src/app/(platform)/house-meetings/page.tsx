@@ -346,20 +346,20 @@ export default function HouseMeetingsPage() {
           <form onSubmit={handleCreateMeeting} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input type="date" value={hmForm.date} onChange={(e) => setHM("date", e.target.value)} />
+                <label htmlFor="c419-date" className="text-sm font-medium">Date</label>
+                <Input id="c419-date" type="date" value={hmForm.date} onChange={(e) => setHM("date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={hmForm.meeting_type} onValueChange={(v) => setHM("meeting_type", v)}><SelectTrigger><SelectValue placeholder="Meeting type" /></SelectTrigger>
+                <label htmlFor="c419-type" className="text-sm font-medium">Type</label>
+                <Select value={hmForm.meeting_type} onValueChange={(v) => setHM("meeting_type", v)}><SelectTrigger id="c419-type"><SelectValue placeholder="Meeting type" /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Chair</label>
-                <Select value={hmForm.chair_person} onValueChange={(v) => setHM("chair_person", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="c419-chair" className="text-sm font-medium">Chair</label>
+                <Select value={hmForm.chair_person} onValueChange={(v) => setHM("chair_person", v)}><SelectTrigger id="c419-chair"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                     <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -368,8 +368,8 @@ export default function HouseMeetingsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Minutes Taker</label>
-                <Select value={hmForm.minutes_taker} onValueChange={(v) => setHM("minutes_taker", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="c419-minutes-taker" className="text-sm font-medium">Minutes Taker</label>
+                <Select value={hmForm.minutes_taker} onValueChange={(v) => setHM("minutes_taker", v)}><SelectTrigger id="c419-minutes-taker"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                     <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -379,16 +379,16 @@ export default function HouseMeetingsPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Duration (minutes)</label>
-              <Input type="number" placeholder="30" value={hmForm.duration} onChange={(e) => setHM("duration", e.target.value)} />
+              <label htmlFor="c419-duration-minutes" className="text-sm font-medium">Duration (minutes)</label>
+              <Input id="c419-duration-minutes" type="number" placeholder="30" value={hmForm.duration} onChange={(e) => setHM("duration", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">General Comments *</label>
-              <Textarea placeholder="Overall observations from the meeting…" rows={3} value={hmForm.general_comments} onChange={(e) => setHM("general_comments", e.target.value)} />
+              <label htmlFor="c419-general-comments" className="text-sm font-medium">General Comments *</label>
+              <Textarea id="c419-general-comments" placeholder="Overall observations from the meeting…" rows={3} value={hmForm.general_comments} onChange={(e) => setHM("general_comments", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Next Meeting Date</label>
-              <Input type="date" value={hmForm.next_meeting_date} onChange={(e) => setHM("next_meeting_date", e.target.value)} />
+              <label htmlFor="c419-next-meeting-date" className="text-sm font-medium">Next Meeting Date</label>
+              <Input id="c419-next-meeting-date" type="date" value={hmForm.next_meeting_date} onChange={(e) => setHM("next_meeting_date", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

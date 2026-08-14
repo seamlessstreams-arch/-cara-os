@@ -165,10 +165,10 @@ export default function ProfessionalDevelopmentPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="3da5-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Title, staff, provider…" value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input id="3da5-search" className="pl-8" placeholder="Title, staff, provider…" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-44">
@@ -184,9 +184,9 @@ export default function ProfessionalDevelopmentPage() {
                 </Select>
               </div>
               <div className="w-40">
-                <Label className="text-xs">Staff</Label>
+                <Label htmlFor="3da5-staff" className="text-xs">Staff</Label>
                 <Select value={staffFilter} onValueChange={setStaffFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="3da5-staff"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Staff</SelectItem>
                     {staffIds.map(id => (

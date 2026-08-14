@@ -193,10 +193,10 @@ export default function ProfessionalCuriosityLogPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="cab5-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Assumption, question, staff, child…" value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Input id="cab5-search" className="pl-8" placeholder="Assumption, question, staff, child…" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-52">
@@ -212,9 +212,9 @@ export default function ProfessionalCuriosityLogPage() {
                 </Select>
               </div>
               <div className="w-44">
-                <Label className="text-xs">Raised by</Label>
+                <Label htmlFor="cab5-raised-by" className="text-xs">Raised by</Label>
                 <Select value={staffFilter} onValueChange={setStaffFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="cab5-raised-by"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All staff</SelectItem>
                     {staffIds.map((id) => (

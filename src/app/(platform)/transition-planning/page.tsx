@@ -413,32 +413,32 @@ export default function TransitionPlanningPage() {
           <DialogHeader><DialogTitle>New Transition Goal</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateGoal} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person *</label>
-              <Select value={tpForm.child_id} onValueChange={(v) => setTP("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="de18-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={tpForm.child_id} onValueChange={(v) => setTP("child_id", v)}><SelectTrigger id="de18-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Life Area</label>
-              <Select value={tpForm.area} onValueChange={(v) => setTP("area", v)}><SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+              <label htmlFor="de18-life-area" className="text-sm font-medium">Life Area</label>
+              <Select value={tpForm.area} onValueChange={(v) => setTP("area", v)}><SelectTrigger id="de18-life-area"><SelectValue placeholder="Select area" /></SelectTrigger>
                 <SelectContent>{(Object.entries(TRANSITION_PLANNING_AREA_LABEL) as [TransitionPlanningArea, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Goal *</label>
-              <Input placeholder="What does the young person want to achieve?" value={tpForm.goal} onChange={(e) => setTP("goal", e.target.value)} />
+              <label htmlFor="de18-goal" className="text-sm font-medium">Goal *</label>
+              <Input id="de18-goal" placeholder="What does the young person want to achieve?" value={tpForm.goal} onChange={(e) => setTP("goal", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="Describe the goal and expected outcome…" rows={3} value={tpForm.description} onChange={(e) => setTP("description", e.target.value)} />
+              <label htmlFor="de18-description" className="text-sm font-medium">Description</label>
+              <Textarea id="de18-description" placeholder="Describe the goal and expected outcome…" rows={3} value={tpForm.description} onChange={(e) => setTP("description", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Target Date</label>
-              <Input type="date" value={tpForm.target_date} onChange={(e) => setTP("target_date", e.target.value)} />
+              <label htmlFor="de18-target-date" className="text-sm font-medium">Target Date</label>
+              <Input id="de18-target-date" type="date" value={tpForm.target_date} onChange={(e) => setTP("target_date", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Key Worker</label>
-              <Select value={tpForm.key_worker} onValueChange={(v) => setTP("key_worker", v)}><SelectTrigger><SelectValue placeholder="Assign key worker" /></SelectTrigger>
+              <label htmlFor="de18-key-worker" className="text-sm font-medium">Key Worker</label>
+              <Select value={tpForm.key_worker} onValueChange={(v) => setTP("key_worker", v)}><SelectTrigger id="de18-key-worker"><SelectValue placeholder="Assign key worker" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                   <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -448,8 +448,8 @@ export default function TransitionPlanningPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Initial Notes</label>
-              <Textarea placeholder="Any context or background…" rows={2} value={tpForm.notes} onChange={(e) => setTP("notes", e.target.value)} />
+              <label htmlFor="de18-initial-notes" className="text-sm font-medium">Initial Notes</label>
+              <Textarea id="de18-initial-notes" placeholder="Any context or background…" rows={2} value={tpForm.notes} onChange={(e) => setTP("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

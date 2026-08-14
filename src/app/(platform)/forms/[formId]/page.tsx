@@ -223,8 +223,8 @@ function ApprovePanel({
         <span className="text-sm font-semibold text-emerald-800">Manager Sign-Off</span>
       </div>
       <div>
-        <label className="text-xs font-semibold text-emerald-700 block mb-1.5">Review Notes (optional)</label>
-        <textarea
+        <label htmlFor="0e1e-review-notes-optional" className="text-xs font-semibold text-emerald-700 block mb-1.5">Review Notes (optional)</label>
+        <textarea id="0e1e-review-notes-optional"
           value={reviewNotes}
           onChange={(e) => setReviewNotes(e.target.value)}
           rows={2}
@@ -472,8 +472,8 @@ export default function FormDetailPage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
-              <textarea
+              <label htmlFor="0e1e-description" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
+              <textarea id="0e1e-description"
                 value={(editDraft.description as string) ?? ""}
                 onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
                 rows={3}
@@ -487,8 +487,8 @@ export default function FormDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Form Type</label>
-                <select
+                <label htmlFor="0e1e-form-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Form Type</label>
+                <select id="0e1e-form-type"
                   value={editDraft.form_type ?? form.form_type}
                   onChange={(e) => setEditDraft((d) => ({ ...d, form_type: e.target.value as CareForm["form_type"] }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -499,8 +499,8 @@ export default function FormDetailPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
-                <select
+                <label htmlFor="0e1e-priority" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
+                <select id="0e1e-priority"
                   value={editDraft.priority ?? form.priority}
                   onChange={(e) => setEditDraft((d) => ({ ...d, priority: e.target.value as CareForm["priority"] }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -514,8 +514,8 @@ export default function FormDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
-                <Input
+                <label htmlFor="0e1e-due-date" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
+                <Input id="0e1e-due-date"
                   type="date"
                   value={(editDraft.due_date as string) ?? ""}
                   onChange={(e) => setEditDraft((d) => ({ ...d, due_date: e.target.value }))}
@@ -523,8 +523,8 @@ export default function FormDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Young Person</label>
-                <select
+                <label htmlFor="0e1e-linked-young-person" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Young Person</label>
+                <select id="0e1e-linked-young-person"
                   value={(editDraft.linked_child_id as string) ?? ""}
                   onChange={(e) => setEditDraft((d) => ({ ...d, linked_child_id: e.target.value || null }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -538,8 +538,8 @@ export default function FormDetailPage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Staff Member</label>
-              <select
+              <label htmlFor="0e1e-linked-staff-member" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Staff Member</label>
+              <select id="0e1e-linked-staff-member"
                 value={(editDraft.linked_staff_id as string) ?? ""}
                 onChange={(e) => setEditDraft((d) => ({ ...d, linked_staff_id: e.target.value || null }))}
                 className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"

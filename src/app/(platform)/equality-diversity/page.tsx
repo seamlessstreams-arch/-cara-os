@@ -376,10 +376,10 @@ export default function EqualityDiversityPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Equality Initiative</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateInitiative} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Initiative Title *</label><input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. LGBTQ+ Inclusion Programme" value={eqForm.title} onChange={(e) => setEQ("title", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Description</label><textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What this initiative aims to achieve…" value={eqForm.description} onChange={(e) => setEQ("description", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Lead</label>
-              <Select value={eqForm.lead_by} onValueChange={(v) => setEQ("lead_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+            <div><label htmlFor="39ef-initiative-title" className="text-sm font-medium">Initiative Title *</label><input id="39ef-initiative-title" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. LGBTQ+ Inclusion Programme" value={eqForm.title} onChange={(e) => setEQ("title", e.target.value)} /></div>
+            <div><label htmlFor="39ef-description" className="text-sm font-medium">Description</label><textarea id="39ef-description" rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What this initiative aims to achieve…" value={eqForm.description} onChange={(e) => setEQ("description", e.target.value)} /></div>
+            <div><label htmlFor="39ef-lead" className="text-sm font-medium">Lead</label>
+              <Select value={eqForm.lead_by} onValueChange={(v) => setEQ("lead_by", v)}><SelectTrigger id="39ef-lead" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>

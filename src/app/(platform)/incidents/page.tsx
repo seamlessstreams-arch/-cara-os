@@ -1162,8 +1162,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Severity</label>
-            <select
+            <label htmlFor="d263-severity" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Severity</label>
+            <select id="d263-severity"
               value={form.severity}
               onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value }))}
               className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -1178,8 +1178,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date</label>
-            <Input
+            <label htmlFor="d263-date" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date</label>
+            <Input id="d263-date"
               type="date"
               value={form.date}
               onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
@@ -1187,8 +1187,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Time</label>
-            <Input
+            <label htmlFor="d263-time" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Time</label>
+            <Input id="d263-time"
               type="time"
               value={form.time}
               onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))}
@@ -1196,8 +1196,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Location</label>
-            <Input
+            <label htmlFor="d263-location" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Location</label>
+            <Input id="d263-location"
               value={form.location}
               onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
               placeholder="e.g. Bedroom, Community"
@@ -1304,8 +1304,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
 
         <div className="flex items-end gap-2 flex-wrap">
           <div className="flex-1 min-w-[140px]">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Role</label>
-            <select
+            <label htmlFor="d263-role" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Role</label>
+            <select id="d263-role"
               value={notifRole}
               onChange={(e) => setNotifRole(e.target.value)}
               className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -1315,8 +1315,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             </select>
           </div>
           <div className="flex-1 min-w-[140px]">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Name (optional)</label>
-            <Input
+            <label htmlFor="d263-name-optional" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Name (optional)</label>
+            <Input id="d263-name-optional"
               value={notifName}
               onChange={(e) => setNotifName(e.target.value)}
               placeholder="Contact name"
@@ -1324,8 +1324,8 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             />
           </div>
           <div className="w-28">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Method</label>
-            <select
+            <label htmlFor="d263-method" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Method</label>
+            <select id="d263-method"
               value={notifMethod}
               onChange={(e) => setNotifMethod(e.target.value)}
               className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"

@@ -351,20 +351,20 @@ export default function EnvironmentalRiskPage() {
           <DialogHeader><DialogTitle>New Environmental Risk Assessment</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Category</label>
-                <Select value={formCategory} onValueChange={setFormCategory}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="0d9e-category" className="text-sm font-medium">Category</label>
+                <Select value={formCategory} onValueChange={setFormCategory}><SelectTrigger id="0d9e-category" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Risk Level</label>
-                <Select value={formRiskLevel} onValueChange={setFormRiskLevel}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="0d9e-risk-level" className="text-sm font-medium">Risk Level</label>
+                <Select value={formRiskLevel} onValueChange={setFormRiskLevel}><SelectTrigger id="0d9e-risk-level" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(RISK_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Location</label><input value={formLocation} onChange={(e) => setFormLocation(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Main kitchen" /></div>
-            <div><label className="text-sm font-medium">Hazard Description</label><textarea rows={2} value={formHazard} onChange={(e) => setFormHazard(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the hazard…" /></div>
-            <div><label className="text-sm font-medium">Who is at Risk?</label><input value={formWhoAtRisk} onChange={(e) => setFormWhoAtRisk(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Young people, Staff, Visitors" /></div>
+            <div><label htmlFor="0d9e-location" className="text-sm font-medium">Location</label><input id="0d9e-location" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Main kitchen" /></div>
+            <div><label htmlFor="0d9e-hazard-description" className="text-sm font-medium">Hazard Description</label><textarea id="0d9e-hazard-description" rows={2} value={formHazard} onChange={(e) => setFormHazard(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the hazard…" /></div>
+            <div><label htmlFor="0d9e-who-is-at-risk" className="text-sm font-medium">Who is at Risk?</label><input id="0d9e-who-is-at-risk" value={formWhoAtRisk} onChange={(e) => setFormWhoAtRisk(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Young people, Staff, Visitors" /></div>
           </div>
           <DialogFooter>
             <button onClick={() => { setDialogOpen(false); resetForm(); }} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

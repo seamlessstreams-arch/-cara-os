@@ -544,8 +544,8 @@ export default function CaraStudioDetailPage({
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Comment (optional)</Label>
-              <Textarea
+              <Label htmlFor="d71a-comment-optional" className="text-xs">Comment (optional)</Label>
+              <Textarea id="d71a-comment-optional"
                 value={approveComment}
                 onChange={(e) => setApproveComment(e.target.value)}
                 placeholder="Any notes for the record…"
@@ -577,8 +577,8 @@ export default function CaraStudioDetailPage({
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Changes required *</Label>
-              <Textarea
+              <Label htmlFor="d71a-changes-required" className="text-xs">Changes required *</Label>
+              <Textarea id="d71a-changes-required"
                 value={requestedChanges}
                 onChange={(e) => setRequestedChanges(e.target.value)}
                 placeholder="Describe what needs to change and why…"
@@ -614,8 +614,8 @@ export default function CaraStudioDetailPage({
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Reason *</Label>
-              <Textarea
+              <Label htmlFor="d71a-reason" className="text-xs">Reason *</Label>
+              <Textarea id="d71a-reason"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Why is this artifact being rejected?"

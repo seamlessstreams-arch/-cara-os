@@ -559,8 +559,8 @@ export default function RiskRegisterPage() {
           </DialogHeader>
           <form onSubmit={handleCreateRisk} className="space-y-3 py-2">
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Risk Title *</label>
-              <Input
+              <label htmlFor="9af5-risk-title" className="text-[11px] font-medium text-slate-600 mb-1 block">Risk Title *</label>
+              <Input id="9af5-risk-title"
                 placeholder="Brief title for this risk"
                 className="h-8 text-xs"
                 value={newForm.title}
@@ -570,9 +570,9 @@ export default function RiskRegisterPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Category *</label>
+                <label htmlFor="9af5-category" className="text-[11px] font-medium text-slate-600 mb-1 block">Category *</label>
                 <Select value={newForm.category} onValueChange={(v) => setNF("category", v)}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <SelectTrigger id="9af5-category" className="h-8 text-xs"><SelectValue placeholder="Select…" /></SelectTrigger>
                   <SelectContent>
                     {(Object.keys(CATEGORY_CONFIG) as RiskRegisterCategory[]).map((c) => (
                       <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
@@ -581,9 +581,9 @@ export default function RiskRegisterPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person</label>
+                <label htmlFor="9af5-young-person" className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person</label>
                 <Select value={newForm.child_id} onValueChange={(v) => setNF("child_id", v)}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="9af5-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Home-wide</SelectItem>
                     {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (
@@ -595,16 +595,16 @@ export default function RiskRegisterPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Likelihood (1–5)</label>
+                <label htmlFor="9af5-likelihood-1-5" className="text-[11px] font-medium text-slate-600 mb-1 block">Likelihood (1–5)</label>
                 <Select value={newForm.likelihood} onValueChange={(v) => setNF("likelihood", v)}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="9af5-likelihood-1-5" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>{["1","2","3","4","5"].map((v) => (<SelectItem key={v} value={v}>{v}</SelectItem>))}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Impact (1–5)</label>
+                <label htmlFor="9af5-impact-1-5" className="text-[11px] font-medium text-slate-600 mb-1 block">Impact (1–5)</label>
                 <Select value={newForm.impact} onValueChange={(v) => setNF("impact", v)}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="9af5-impact-1-5" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>{["1","2","3","4","5"].map((v) => (<SelectItem key={v} value={v}>{v}</SelectItem>))}</SelectContent>
                 </Select>
               </div>
@@ -621,19 +621,19 @@ export default function RiskRegisterPage() {
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Owner</label>
+              <label htmlFor="9af5-owner" className="text-[11px] font-medium text-slate-600 mb-1 block">Owner</label>
               <Select value={newForm.owner_id} onValueChange={(v) => setNF("owner_id", v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="9af5-owner" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id} className="text-xs">{s.full_name}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Review Date</label>
-              <Input type="date" className="h-8 text-xs" value={newForm.review_date} onChange={(e) => setNF("review_date", e.target.value)} />
+              <label htmlFor="9af5-review-date" className="text-[11px] font-medium text-slate-600 mb-1 block">Review Date</label>
+              <Input id="9af5-review-date" type="date" className="h-8 text-xs" value={newForm.review_date} onChange={(e) => setNF("review_date", e.target.value)} />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Description *</label>
-              <Textarea
+              <label htmlFor="9af5-description" className="text-[11px] font-medium text-slate-600 mb-1 block">Description *</label>
+              <Textarea id="9af5-description"
                 placeholder="Describe the risk, context, and potential impact…"
                 className="text-xs min-h-[80px]"
                 value={newForm.description}
@@ -642,8 +642,8 @@ export default function RiskRegisterPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Mitigations (one per line)</label>
-              <Textarea
+              <label htmlFor="9af5-mitigations-one-per-line" className="text-[11px] font-medium text-slate-600 mb-1 block">Mitigations (one per line)</label>
+              <Textarea id="9af5-mitigations-one-per-line"
                 placeholder="Enter each mitigation on a new line…"
                 className="text-xs min-h-[60px]"
                 value={newForm.mitigations}

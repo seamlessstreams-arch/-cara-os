@@ -584,9 +584,9 @@ export default function BodyMapPage() {
           <div className="space-y-4 py-2">
             {/* child */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="e1de-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="e1de-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
@@ -595,9 +595,9 @@ export default function BodyMapPage() {
 
             {/* body region */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Body Region *</label>
+              <label htmlFor="e1de-body-region" className="text-sm font-medium mb-1 block">Body Region *</label>
               <Select value={nRegion} onValueChange={(v) => setNRegion(v as BodyRegion)}>
-                <SelectTrigger><SelectValue placeholder="Select region" /></SelectTrigger>
+                <SelectTrigger id="e1de-body-region"><SelectValue placeholder="Select region" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REGION_LABELS) as [BodyRegion, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -609,9 +609,9 @@ export default function BodyMapPage() {
             {/* mark type & colour */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Mark Type *</label>
+                <label htmlFor="e1de-mark-type" className="text-sm font-medium mb-1 block">Mark Type *</label>
                 <Select value={nType} onValueChange={(v) => setNType(v as MarkType)}>
-                  <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectTrigger id="e1de-mark-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(MARK_TYPE_CONFIG) as [MarkType, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -620,9 +620,9 @@ export default function BodyMapPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Colour *</label>
+                <label htmlFor="e1de-colour" className="text-sm font-medium mb-1 block">Colour *</label>
                 <Select value={nColour} onValueChange={(v) => setNColour(v as MarkColour)}>
-                  <SelectTrigger><SelectValue placeholder="Colour" /></SelectTrigger>
+                  <SelectTrigger id="e1de-colour"><SelectValue placeholder="Colour" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(COLOUR_LABELS) as [MarkColour, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -634,8 +634,8 @@ export default function BodyMapPage() {
 
             {/* size */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Size (cm)</label>
-              <Input
+              <label htmlFor="e1de-size-cm" className="text-sm font-medium mb-1 block">Size (cm)</label>
+              <Input id="e1de-size-cm"
                 placeholder="e.g. 3x2"
                 value={nSize}
                 onChange={e => setNSize(e.target.value)}
@@ -644,8 +644,8 @@ export default function BodyMapPage() {
 
             {/* description */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Description of Mark *</label>
-              <Textarea
+              <label htmlFor="e1de-description-of-mark" className="text-sm font-medium mb-1 block">Description of Mark *</label>
+              <Textarea id="e1de-description-of-mark"
                 placeholder="Detailed description of the mark — location, appearance, colour, edges, swelling..."
                 value={nDesc}
                 onChange={e => setNDesc(e.target.value)}
@@ -655,8 +655,8 @@ export default function BodyMapPage() {
 
             {/* child explanation */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Child&apos;s Explanation</label>
-              <Textarea
+              <label htmlFor="e1de-child-apos-s-explanation" className="text-sm font-medium mb-1 block">Child&apos;s Explanation</label>
+              <Textarea id="e1de-child-apos-s-explanation"
                 placeholder="Record what the child said about how the mark occurred, in their own words..."
                 value={nChildExp}
                 onChange={e => setNChildExp(e.target.value)}
@@ -666,8 +666,8 @@ export default function BodyMapPage() {
 
             {/* staff observation */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Staff Observation &amp; Assessment</label>
-              <Textarea
+              <label htmlFor="e1de-staff-observation-amp-assessment" className="text-sm font-medium mb-1 block">Staff Observation &amp; Assessment</label>
+              <Textarea id="e1de-staff-observation-amp-assessment"
                 placeholder="Professional assessment — is the explanation consistent? Any safeguarding concerns?"
                 value={nStaffObs}
                 onChange={e => setNStaffObs(e.target.value)}
@@ -677,8 +677,8 @@ export default function BodyMapPage() {
 
             {/* linked incident */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Linked Incident ID (optional)</label>
-              <Input
+              <label htmlFor="e1de-linked-incident-id-optional" className="text-sm font-medium mb-1 block">Linked Incident ID (optional)</label>
+              <Input id="e1de-linked-incident-id-optional"
                 placeholder="e.g. inc_005"
                 value={nLinkedInc}
                 onChange={e => setNLinkedInc(e.target.value)}

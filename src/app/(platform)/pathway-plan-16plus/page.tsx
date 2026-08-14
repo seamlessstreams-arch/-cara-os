@@ -291,10 +291,10 @@ export default function PathwayPlan16PlusPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="900a-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
+                  <Input id="900a-search"
                     className="pl-8"
                     placeholder="Initials, accommodation, PA…"
                     value={search}
@@ -574,10 +574,10 @@ export default function PathwayPlan16PlusPage() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>New Pathway Plan</DialogTitle></DialogHeader>
           <form onSubmit={handleSavePlan} className="space-y-3 py-2">
-            <div><Label>Young Person *</Label><Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Personal Advisor</Label><Select value={ppForm.personal_advisor} onValueChange={(v) => setPP("personal_advisor", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder={`e.g. ${homeName}`} value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
-            <div><Label>Aspirations (one per line)</Label><Textarea className="mt-1" rows={3} placeholder="Young person's goals and aspirations…" value={ppForm.aspirations} onChange={(e) => setPP("aspirations", e.target.value)} /></div>
+            <div><Label htmlFor="900a-young-person">Young Person *</Label><Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}><SelectTrigger id="900a-young-person" className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="900a-personal-advisor">Personal Advisor</Label><Select value={ppForm.personal_advisor} onValueChange={(v) => setPP("personal_advisor", v)}><SelectTrigger id="900a-personal-advisor" className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="900a-current-accommodation">Current Accommodation</Label><Input id="900a-current-accommodation" className="mt-1" placeholder={`e.g. ${homeName}`} value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
+            <div><Label htmlFor="900a-aspirations-one-per-line">Aspirations (one per line)</Label><Textarea id="900a-aspirations-one-per-line" className="mt-1" rows={3} placeholder="Young person's goals and aspirations…" value={ppForm.aspirations} onChange={(e) => setPP("aspirations", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Saving…" : "Create Plan"}</Button></DialogFooter>
           </form>
         </DialogContent>

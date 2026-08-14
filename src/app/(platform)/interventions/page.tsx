@@ -491,8 +491,8 @@ function NewInterventionDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Review date</label>
-              <Input
+              <label htmlFor="4e78-review-date" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Review date</label>
+              <Input id="4e78-review-date"
                 type="date"
                 value={form.review_date}
                 onChange={(e) => setForm((p) => ({ ...p, review_date: e.target.value }))}
@@ -534,8 +534,8 @@ function NewInterventionDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Intended outcome</label>
-            <Textarea
+            <label htmlFor="4e78-intended-outcome" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Intended outcome</label>
+            <Textarea id="4e78-intended-outcome"
               value={form.intended_outcome}
               onChange={(e) => setForm((p) => ({ ...p, intended_outcome: e.target.value }))}
               placeholder="What measurable change are we looking for?"

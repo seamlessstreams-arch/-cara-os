@@ -78,13 +78,13 @@ export default function CaraComposePage() {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">User id (audit log)</label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <label htmlFor="cccb-user-id-audit-log" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">User id (audit log)</label>
+              <Input id="cccb-user-id-audit-log" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Role</label>
+              <label htmlFor="cccb-role" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Role</label>
               <Select value={actorRole} onValueChange={(v) => setActorRole(v as CaraRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="cccb-role"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -93,8 +93,8 @@ export default function CaraComposePage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Home id</label>
-              <Input value={homeId} onChange={(e) => setHomeId(e.target.value)} />
+              <label htmlFor="cccb-home-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Home id</label>
+              <Input id="cccb-home-id" value={homeId} onChange={(e) => setHomeId(e.target.value)} />
             </div>
           </div>
           <p className="text-xs text-[var(--cs-text-muted)] mt-3">

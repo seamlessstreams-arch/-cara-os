@@ -155,10 +155,10 @@ export default function CaraAuditTrailPage() {
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-3 text-sm">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="f687-actor" className="mb-1 block text-xs font-medium text-muted-foreground">
               Actor
             </label>
-            <select
+            <select id="f687-actor"
               value={actor}
               onChange={(e) => setActor(e.target.value)}
               className="rounded border px-2 py-1 text-sm"
@@ -172,10 +172,10 @@ export default function CaraAuditTrailPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="f687-action" className="mb-1 block text-xs font-medium text-muted-foreground">
               Action
             </label>
-            <select
+            <select id="f687-action"
               value={action}
               onChange={(e) => setAction(e.target.value as CaraAuditAction | "")}
               className="rounded border px-2 py-1 text-sm"

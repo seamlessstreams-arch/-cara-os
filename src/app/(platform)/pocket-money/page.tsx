@@ -220,9 +220,9 @@ function NewTransactionDialog({
         <div className="space-y-3 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person</label>
+              <label htmlFor="6a93-young-person" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person</label>
               <Select value={childId} onValueChange={setChildId}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6a93-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
                   <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
@@ -231,9 +231,9 @@ function NewTransactionDialog({
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Type</label>
+              <label htmlFor="6a93-type" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Type</label>
               <Select value={type} onValueChange={(v) => setType(v as PocketMoneyTransactionType)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6a93-type" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(TYPE_CONFIG) as PocketMoneyTransactionType[]).map((t) => (
                     <SelectItem key={t} value={t}>{TYPE_CONFIG[t].label}</SelectItem>
@@ -245,13 +245,13 @@ function NewTransactionDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Amount (£) *</label>
-              <Input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="h-8 text-xs" />
+              <label htmlFor="6a93-amount" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Amount (£) *</label>
+              <Input id="6a93-amount" type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Category</label>
+              <label htmlFor="6a93-category" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Category</label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6a93-category" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -262,8 +262,8 @@ function NewTransactionDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Description *</label>
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What was the money for?" className="h-8 text-xs" />
+            <label htmlFor="6a93-description" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Description *</label>
+            <Input id="6a93-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What was the money for?" className="h-8 text-xs" />
           </div>
 
           <div className="flex items-center gap-2">
@@ -272,8 +272,8 @@ function NewTransactionDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes…" className="text-xs min-h-[50px]" />
+            <label htmlFor="6a93-notes" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
+            <Textarea id="6a93-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes…" className="text-xs min-h-[50px]" />
           </div>
         </div>
 

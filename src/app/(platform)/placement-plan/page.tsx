@@ -441,18 +441,18 @@ export default function PlacementPlanPage() {
           <DialogHeader><DialogTitle>Add Placement Objective</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="f24a-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="f24a-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Development Area *</label>
+              <label htmlFor="f24a-development-area" className="text-sm font-medium mb-1 block">Development Area *</label>
               <Select value={nArea} onValueChange={v => setNArea(v as ObjectiveArea)}>
-                <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+                <SelectTrigger id="f24a-development-area"><SelectValue placeholder="Select area" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(AREA_CONFIG) as [ObjectiveArea, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -461,16 +461,16 @@ export default function PlacementPlanPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Objective Title *</label>
-              <Input placeholder="e.g. Improve school attendance" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="f24a-objective-title" className="text-sm font-medium mb-1 block">Objective Title *</label>
+              <Input id="f24a-objective-title" placeholder="e.g. Improve school attendance" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description *</label>
-              <Textarea placeholder="Full description of the objective..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <label htmlFor="f24a-description" className="text-sm font-medium mb-1 block">Description *</label>
+              <Textarea id="f24a-description" placeholder="Full description of the objective..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Measurable Target *</label>
-              <Textarea placeholder="SMART target..." value={nTarget} onChange={e => setNTarget(e.target.value)} rows={2} />
+              <label htmlFor="f24a-measurable-target" className="text-sm font-medium mb-1 block">Measurable Target *</label>
+              <Textarea id="f24a-measurable-target" placeholder="SMART target..." value={nTarget} onChange={e => setNTarget(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

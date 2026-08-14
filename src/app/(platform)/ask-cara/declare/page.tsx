@@ -82,13 +82,13 @@ export default function DeclarePage() {
             {(declarationType === "yes" || declarationType === "not_sure") && (
               <>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">What were you trying to use it for?</label>
-                  <input value={declaredTaskType} onChange={(e) => setTask(e.target.value)} placeholder="e.g. make an incident report sound professional" className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
+                  <label htmlFor="0d87-what-were-you-trying-to-use-it-for" className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">What were you trying to use it for?</label>
+                  <input id="0d87-what-were-you-trying-to-use-it-for" value={declaredTaskType} onChange={(e) => setTask(e.target.value)} placeholder="e.g. make an incident report sound professional" className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">Which tool? (if known)</label>
-                    <input value={toolName} onChange={(e) => setTool(e.target.value)} placeholder="e.g. ChatGPT" className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
+                    <label htmlFor="0d87-which-tool-if-known" className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">Which tool? (if known)</label>
+                    <input id="0d87-which-tool-if-known" value={toolName} onChange={(e) => setTool(e.target.value)} placeholder="e.g. ChatGPT" className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
@@ -96,8 +96,8 @@ export default function DeclarePage() {
                   <label className="flex items-center gap-2"><input type="checkbox" checked={copied} onChange={(e) => setCopied(e.target.checked)} /> Did you copy the output into a CARA record?</label>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">Anything else? (optional)</label>
-                  <textarea value={explanation} onChange={(e) => setExplanation(e.target.value)} rows={3} className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
+                  <label htmlFor="0d87-anything-else-optional" className="mb-1 block text-sm font-medium text-[var(--cs-navy,#1e293b)]">Anything else? (optional)</label>
+                  <textarea id="0d87-anything-else-optional" value={explanation} onChange={(e) => setExplanation(e.target.value)} rows={3} className="w-full rounded-lg border border-[var(--cs-border,#e2e8ec)] px-3 py-2 text-sm" />
                 </div>
               </>
             )}

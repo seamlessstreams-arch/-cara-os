@@ -369,18 +369,18 @@ export default function SleepLogPage() {
             });
           }} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Date</Label><Input type="date" name="date" defaultValue={todayStr()} required /></div>
-              <div><Label>Shift Type</Label>
-                <select name="shift_type" required className="w-full rounded-md border px-3 py-2 text-sm">
+              <div><Label htmlFor="ed0f-date">Date</Label><Input id="ed0f-date" type="date" name="date" defaultValue={todayStr()} required /></div>
+              <div><Label htmlFor="ed0f-shift-type">Shift Type</Label>
+                <select id="ed0f-shift-type" name="shift_type" required className="w-full rounded-md border px-3 py-2 text-sm">
                   {SHIFT_TYPES.map((t) => <option key={t} value={t}>{SHIFT_LABELS[t]}</option>)}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Start Time</Label><Input type="time" name="start_time" defaultValue="22:00" required /></div>
-              <div><Label>End Time</Label><Input type="time" name="end_time" defaultValue="07:00" required /></div>
+              <div><Label htmlFor="ed0f-start-time">Start Time</Label><Input id="ed0f-start-time" type="time" name="start_time" defaultValue="22:00" required /></div>
+              <div><Label htmlFor="ed0f-end-time">End Time</Label><Input id="ed0f-end-time" type="time" name="end_time" defaultValue="07:00" required /></div>
             </div>
-            <div><Label>Handover Notes</Label><Textarea name="handover_notes" placeholder="Evening handover notes…" rows={3} /></div>
+            <div><Label htmlFor="ed0f-handover-notes">Handover Notes</Label><Textarea id="ed0f-handover-notes" name="handover_notes" placeholder="Evening handover notes…" rows={3} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createEntry.isPending}>

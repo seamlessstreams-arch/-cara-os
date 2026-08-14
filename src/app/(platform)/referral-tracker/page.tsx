@@ -438,16 +438,16 @@ export default function ReferralTrackerPage() {
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveReferral} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Child Ref</Label><Input className="mt-1" placeholder="e.g. REF-001" value={rfForm.child_ref} onChange={(e) => setRF("child_ref", e.target.value)} /></div>
-              <div><Label>Age</Label><Input type="number" className="mt-1" placeholder="e.g. 14" value={rfForm.age} onChange={(e) => setRF("age", e.target.value)} /></div>
+              <div><Label htmlFor="c3db-child-ref">Child Ref</Label><Input id="c3db-child-ref" className="mt-1" placeholder="e.g. REF-001" value={rfForm.child_ref} onChange={(e) => setRF("child_ref", e.target.value)} /></div>
+              <div><Label htmlFor="c3db-age">Age</Label><Input id="c3db-age" type="number" className="mt-1" placeholder="e.g. 14" value={rfForm.age} onChange={(e) => setRF("age", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Gender</Label><Select value={rfForm.gender} onValueChange={(v) => setRF("gender", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
-              <div><Label>Referral Date</Label><Input type="date" className="mt-1" value={rfForm.referral_date} onChange={(e) => setRF("referral_date", e.target.value)} /></div>
+              <div><Label htmlFor="c3db-gender">Gender</Label><Select value={rfForm.gender} onValueChange={(v) => setRF("gender", v)}><SelectTrigger id="c3db-gender" className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
+              <div><Label htmlFor="c3db-referral-date">Referral Date</Label><Input id="c3db-referral-date" type="date" className="mt-1" value={rfForm.referral_date} onChange={(e) => setRF("referral_date", e.target.value)} /></div>
             </div>
-            <div><Label>Referring Authority *</Label><Input className="mt-1" placeholder="e.g. Essex County Council" value={rfForm.referring_authority} onChange={(e) => setRF("referring_authority", e.target.value)} /></div>
-            <div><Label>Social Worker Name</Label><Input className="mt-1" placeholder="Name of allocated social worker" value={rfForm.social_worker_name} onChange={(e) => setRF("social_worker_name", e.target.value)} /></div>
-            <div><Label>Reason for Placement</Label><Textarea className="mt-1" rows={3} placeholder="Brief reason for placement referral" value={rfForm.reason} onChange={(e) => setRF("reason", e.target.value)} /></div>
+            <div><Label htmlFor="c3db-referring-authority">Referring Authority *</Label><Input id="c3db-referring-authority" className="mt-1" placeholder="e.g. Essex County Council" value={rfForm.referring_authority} onChange={(e) => setRF("referring_authority", e.target.value)} /></div>
+            <div><Label htmlFor="c3db-social-worker-name">Social Worker Name</Label><Input id="c3db-social-worker-name" className="mt-1" placeholder="Name of allocated social worker" value={rfForm.social_worker_name} onChange={(e) => setRF("social_worker_name", e.target.value)} /></div>
+            <div><Label htmlFor="c3db-reason-for-placement">Reason for Placement</Label><Textarea id="c3db-reason-for-placement" className="mt-1" rows={3} placeholder="Brief reason for placement referral" value={rfForm.reason} onChange={(e) => setRF("reason", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createReferral.isPending}>{createReferral.isPending ? "Saving…" : "Add Referral"}</Button></DialogFooter>
           </form>
         </DialogContent>

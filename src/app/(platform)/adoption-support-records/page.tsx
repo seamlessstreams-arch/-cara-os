@@ -225,10 +225,10 @@ export default function AdoptionSupportRecordsPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="b61f-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Initials, local authority, status..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input id="b61f-search" className="pl-8" placeholder="Initials, local authority, status..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-52">

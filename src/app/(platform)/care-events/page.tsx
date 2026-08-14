@@ -618,9 +618,9 @@ function CreateEventDialog({
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Category *</label>
+                <label htmlFor="95a0-category" className="text-xs font-medium text-slate-600">Category *</label>
                 <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as CareEventCategory }))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="95a0-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -631,9 +631,9 @@ function CreateEventDialog({
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Young person</label>
+                <label htmlFor="95a0-young-person" className="text-xs font-medium text-slate-600">Young person</label>
                 <Select value={form.child_id} onValueChange={(v) => setForm((f) => ({ ...f, child_id: v }))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="95a0-young-person">
                     <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -647,27 +647,27 @@ function CreateEventDialog({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Title *</label>
-              <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Brief summary" />
+              <label htmlFor="95a0-title" className="text-xs font-medium text-slate-600">Title *</label>
+              <Input id="95a0-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Brief summary" />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Full account *</label>
-              <Textarea rows={5} value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} placeholder="Describe what happened, when, who was involved, what actions were taken…" />
+              <label htmlFor="95a0-full-account" className="text-xs font-medium text-slate-600">Full account *</label>
+              <Textarea id="95a0-full-account" rows={5} value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} placeholder="Describe what happened, when, who was involved, what actions were taken…" />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Date</label>
-                <Input type="date" value={form.event_date} onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))} />
+                <label htmlFor="95a0-date" className="text-xs font-medium text-slate-600">Date</label>
+                <Input id="95a0-date" type="date" value={form.event_date} onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))} />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Time</label>
-                <Input type="time" value={form.event_time} onChange={(e) => setForm((f) => ({ ...f, event_time: e.target.value }))} />
+                <label htmlFor="95a0-time" className="text-xs font-medium text-slate-600">Time</label>
+                <Input id="95a0-time" type="time" value={form.event_time} onChange={(e) => setForm((f) => ({ ...f, event_time: e.target.value }))} />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Mood (1–10)</label>
-                <Input type="number" min={1} max={10} value={form.mood_score} onChange={(e) => setForm((f) => ({ ...f, mood_score: e.target.value }))} placeholder="—" />
+                <label htmlFor="95a0-mood-1-10" className="text-xs font-medium text-slate-600">Mood (1–10)</label>
+                <Input id="95a0-mood-1-10" type="number" min={1} max={10} value={form.mood_score} onChange={(e) => setForm((f) => ({ ...f, mood_score: e.target.value }))} placeholder="—" />
               </div>
             </div>
 
@@ -889,15 +889,15 @@ function ActionDialog({
 
           {action === "return" && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Reason for return *</label>
-              <Textarea rows={3} value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="What needs to be corrected?" />
+              <label htmlFor="95a0-reason-for-return" className="text-xs font-medium text-slate-600">Reason for return *</label>
+              <Textarea id="95a0-reason-for-return" rows={3} value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="What needs to be corrected?" />
             </div>
           )}
 
           {(action === "verify") && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Manager notes (optional)</label>
-              <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any notes for the record" />
+              <label htmlFor="95a0-manager-notes-optional" className="text-xs font-medium text-slate-600">Manager notes (optional)</label>
+              <Textarea id="95a0-manager-notes-optional" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any notes for the record" />
             </div>
           )}
 

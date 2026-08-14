@@ -311,38 +311,38 @@ export default function ComplimentsPage() {
           }} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Date</Label>
-                <Input type="date" name="date" defaultValue={todayStr()} />
+                <Label htmlFor="3c51-date">Date</Label>
+                <Input id="3c51-date" type="date" name="date" defaultValue={todayStr()} />
               </div>
               <div>
-                <Label>Source Name</Label>
-                <Input name="source_name" placeholder="e.g. Jordan, Sarah Mitchell" required />
+                <Label htmlFor="3c51-source-name">Source Name</Label>
+                <Input id="3c51-source-name" name="source_name" placeholder="e.g. Jordan, Sarah Mitchell" required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Source Type</Label>
-                <select name="source" required className="w-full rounded-md border px-3 py-2 text-sm">
+                <Label htmlFor="3c51-source-type">Source Type</Label>
+                <select id="3c51-source-type" name="source" required className="w-full rounded-md border px-3 py-2 text-sm">
                   {SOURCES.map((s) => <option key={s} value={s}>{SOURCE_LABELS[s]}</option>)}
                 </select>
               </div>
               <div>
-                <Label>Category</Label>
-                <select name="category" required className="w-full rounded-md border px-3 py-2 text-sm">
+                <Label htmlFor="3c51-category">Category</Label>
+                <select id="3c51-category" name="category" required className="w-full rounded-md border px-3 py-2 text-sm">
                   {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
                 </select>
               </div>
             </div>
             <div>
-              <Label>Related Young Person</Label>
-              <select name="related_yp" className="w-full rounded-md border px-3 py-2 text-sm">
+              <Label htmlFor="3c51-related-young-person">Related Young Person</Label>
+              <select id="3c51-related-young-person" name="related_yp" className="w-full rounded-md border px-3 py-2 text-sm">
                 <option value="">None</option>
                 {["yp_alex", "yp_jordan", "yp_casey"].map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}
               </select>
             </div>
             <div>
-              <Label>Compliment</Label>
-              <Textarea name="compliment" placeholder="What was said or observed…" rows={3} required />
+              <Label htmlFor="3c51-compliment">Compliment</Label>
+              <Textarea id="3c51-compliment" name="compliment" placeholder="What was said or observed…" rows={3} required />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

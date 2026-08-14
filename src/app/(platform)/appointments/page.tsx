@@ -462,18 +462,18 @@ export default function AppointmentsPage() {
           <DialogHeader><DialogTitle>New Appointment</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="c705-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="c705-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Appointment Type *</label>
+              <label htmlFor="c705-appointment-type" className="text-sm font-medium mb-1 block">Appointment Type *</label>
               <Select value={nType} onValueChange={v => setNType(v as AppointmentType)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="c705-appointment-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TYPE_CONFIG) as [AppointmentType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -482,30 +482,30 @@ export default function AppointmentsPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="e.g. GP — Annual health check" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="c705-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="c705-title" placeholder="e.g. GP — Annual health check" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Date *</label>
-                <Input type="date" value={nDate} onChange={e => setNDate(e.target.value)} />
+                <label htmlFor="c705-date" className="text-sm font-medium mb-1 block">Date *</label>
+                <Input id="c705-date" type="date" value={nDate} onChange={e => setNDate(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Time *</label>
-                <Input type="time" value={nTime} onChange={e => setNTime(e.target.value)} />
+                <label htmlFor="c705-time" className="text-sm font-medium mb-1 block">Time *</label>
+                <Input id="c705-time" type="time" value={nTime} onChange={e => setNTime(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Location</label>
-              <Input placeholder="Clinic / hospital address" value={nLocation} onChange={e => setNLocation(e.target.value)} />
+              <label htmlFor="c705-location" className="text-sm font-medium mb-1 block">Location</label>
+              <Input id="c705-location" placeholder="Clinic / hospital address" value={nLocation} onChange={e => setNLocation(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Professional Name</label>
-              <Input placeholder="Doctor / therapist name" value={nProfessional} onChange={e => setNProfessional(e.target.value)} />
+              <label htmlFor="c705-professional-name" className="text-sm font-medium mb-1 block">Professional Name</label>
+              <Input id="c705-professional-name" placeholder="Doctor / therapist name" value={nProfessional} onChange={e => setNProfessional(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description</label>
-              <Textarea placeholder="Reason for appointment, preparation needed..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <label htmlFor="c705-description" className="text-sm font-medium mb-1 block">Description</label>
+              <Textarea id="c705-description" placeholder="Reason for appointment, preparation needed..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={nTransport} onChange={e => setNTransport(e.target.checked)} className="rounded" />

@@ -576,8 +576,8 @@ export default function EmergencyContactsPage() {
 
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Contact Name</label>
-              <Input
+              <label htmlFor="b52a-contact-name" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Contact Name</label>
+              <Input id="b52a-contact-name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder="e.g. Dr Smith"
@@ -607,16 +607,16 @@ export default function EmergencyContactsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Organisation</label>
-                <Input
+                <label htmlFor="b52a-organisation" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Organisation</label>
+                <Input id="b52a-organisation"
                   value={formOrg}
                   onChange={(e) => setFormOrg(e.target.value)}
                   placeholder="e.g. Derby City Council"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Phone</label>
-                <Input
+                <label htmlFor="b52a-phone" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Phone</label>
+                <Input id="b52a-phone"
                   value={formPhone}
                   onChange={(e) => setFormPhone(e.target.value)}
                   placeholder="07XXX XXXXXX"
@@ -625,8 +625,8 @@ export default function EmergencyContactsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Email</label>
-              <Input
+              <label htmlFor="b52a-email" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Email</label>
+              <Input id="b52a-email"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
                 placeholder="name@example.com"
@@ -634,8 +634,8 @@ export default function EmergencyContactsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
-              <Textarea
+              <label htmlFor="b52a-notes" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
+              <Textarea id="b52a-notes"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
                 placeholder="Any additional notes (availability, restrictions, etc.)"

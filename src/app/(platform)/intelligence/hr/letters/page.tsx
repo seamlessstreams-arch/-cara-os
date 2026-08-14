@@ -276,9 +276,9 @@ export default function HrLettersPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Letter type</label>
+              <label htmlFor="6a1d-letter-type" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Letter type</label>
               <Select value={letterType} onValueChange={setLetterType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6a1d-letter-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {LETTER_TYPES.map((t) => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
@@ -287,17 +287,17 @@ export default function HrLettersPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
-              <Input value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
+              <label htmlFor="6a1d-staff-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
+              <Input id="6a1d-staff-id" value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case id (optional)</label>
-              <Input value={caseId} onChange={(e) => setCaseId(e.target.value)} />
+              <label htmlFor="6a1d-case-id-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case id (optional)</label>
+              <Input id="6a1d-case-id-optional" value={caseId} onChange={(e) => setCaseId(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
+              <label htmlFor="6a1d-acting-as" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
               <Select value={actorRole} onValueChange={setActorRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6a1d-acting-as"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {HR_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -306,8 +306,8 @@ export default function HrLettersPage() {
               </Select>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id (audit log)</label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <label htmlFor="6a1d-actor-user-id-audit-log" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id (audit log)</label>
+              <Input id="6a1d-actor-user-id-audit-log" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
           </div>
 
@@ -335,24 +335,24 @@ export default function HrLettersPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Concern narrative</label>
-              <Textarea value={concernNarrative} onChange={(e) => setConcernNarrative(e.target.value)} className="min-h-[80px] text-sm" />
+              <label htmlFor="6a1d-concern-narrative" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Concern narrative</label>
+              <Textarea id="6a1d-concern-narrative" value={concernNarrative} onChange={(e) => setConcernNarrative(e.target.value)} className="min-h-[80px] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Outcome narrative</label>
-              <Textarea value={outcomeNarrative} onChange={(e) => setOutcomeNarrative(e.target.value)} className="min-h-[80px] text-sm" />
+              <label htmlFor="6a1d-outcome-narrative" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Outcome narrative</label>
+              <Textarea id="6a1d-outcome-narrative" value={outcomeNarrative} onChange={(e) => setOutcomeNarrative(e.target.value)} className="min-h-[80px] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Basis narrative</label>
-              <Textarea value={basisNarrative} onChange={(e) => setBasisNarrative(e.target.value)} className="min-h-[80px] text-sm" />
+              <label htmlFor="6a1d-basis-narrative" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Basis narrative</label>
+              <Textarea id="6a1d-basis-narrative" value={basisNarrative} onChange={(e) => setBasisNarrative(e.target.value)} className="min-h-[80px] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Improvements expected</label>
-              <Textarea value={improvementsExpected} onChange={(e) => setImprovementsExpected(e.target.value)} className="min-h-[80px] text-sm" />
+              <label htmlFor="6a1d-improvements-expected" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Improvements expected</label>
+              <Textarea id="6a1d-improvements-expected" value={improvementsExpected} onChange={(e) => setImprovementsExpected(e.target.value)} className="min-h-[80px] text-sm" />
             </div>
             <div className="lg:col-span-2">
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Support that will be provided</label>
-              <Textarea value={supportProvided} onChange={(e) => setSupportProvided(e.target.value)} className="min-h-[80px] text-sm" />
+              <label htmlFor="6a1d-support-that-will-be-provided" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Support that will be provided</label>
+              <Textarea id="6a1d-support-that-will-be-provided" value={supportProvided} onChange={(e) => setSupportProvided(e.target.value)} className="min-h-[80px] text-sm" />
             </div>
           </div>
 

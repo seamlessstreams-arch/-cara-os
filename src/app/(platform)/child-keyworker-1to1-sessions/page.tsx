@@ -206,16 +206,16 @@ export default function ChildKeyworker1to1SessionsPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="56b9-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Child, theme, content…" value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input id="56b9-search" className="pl-8" placeholder="Child, theme, content…" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-44">
-                <Label className="text-xs">Child</Label>
+                <Label htmlFor="56b9-child" className="text-xs">Child</Label>
                 <Select value={childFilter} onValueChange={setChildFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="56b9-child"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Children</SelectItem>
                     {childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}
@@ -223,9 +223,9 @@ export default function ChildKeyworker1to1SessionsPage() {
                 </Select>
               </div>
               <div className="w-48">
-                <Label className="text-xs">Format</Label>
+                <Label htmlFor="56b9-format" className="text-xs">Format</Label>
                 <Select value={formatFilter} onValueChange={setFormatFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="56b9-format"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Formats</SelectItem>
                     {Object.entries(KEYWORKER_SESSION_FORMAT_LABEL).map(([key, label]) => <SelectItem key={key} value={key}>{label}</SelectItem>)}

@@ -350,29 +350,29 @@ export default function StakeholderFeedbackPage() {
           </DialogHeader>
           <form onSubmit={handleSaveFeedback} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={sfForm.date} onChange={(e) => setSF("date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Source</label>
-                <Select value={sfForm.source} onValueChange={(v) => setSF("source", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="a2e8-date" className="text-sm font-medium">Date</label><Input id="a2e8-date" type="date" className="mt-1" value={sfForm.date} onChange={(e) => setSF("date", e.target.value)} /></div>
+              <div><label htmlFor="a2e8-source" className="text-sm font-medium">Source</label>
+                <Select value={sfForm.source} onValueChange={(v) => setSF("source", v)}><SelectTrigger id="a2e8-source" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_SOURCE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Source Name</label><Input className="mt-1" placeholder="Name of person or organisation" value={sfForm.source_name} onChange={(e) => setSF("source_name", e.target.value)} /></div>
+            <div><label htmlFor="a2e8-source-name" className="text-sm font-medium">Source Name</label><Input id="a2e8-source-name" className="mt-1" placeholder="Name of person or organisation" value={sfForm.source_name} onChange={(e) => setSF("source_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Method</label>
-                <Select value={sfForm.method} onValueChange={(v) => setSF("method", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="a2e8-method" className="text-sm font-medium">Method</label>
+                <Select value={sfForm.method} onValueChange={(v) => setSF("method", v)}><SelectTrigger id="a2e8-method" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_METHOD_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Sentiment</label>
-                <Select value={sfForm.sentiment} onValueChange={(v) => setSF("sentiment", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="a2e8-sentiment" className="text-sm font-medium">Sentiment</label>
+                <Select value={sfForm.sentiment} onValueChange={(v) => setSF("sentiment", v)}><SelectTrigger id="a2e8-sentiment" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Summary *</label><Textarea className="mt-1" rows={3} placeholder="Summary of feedback…" value={sfForm.summary} onChange={(e) => setSF("summary", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Direct Quote</label><Textarea className="mt-1" rows={2} placeholder="Optional direct quote…" value={sfForm.direct_quote} onChange={(e) => setSF("direct_quote", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Action Taken</label><Textarea className="mt-1" rows={2} placeholder="Response or action…" value={sfForm.action_taken} onChange={(e) => setSF("action_taken", e.target.value)} /></div>
+            <div><label htmlFor="a2e8-summary" className="text-sm font-medium">Summary *</label><Textarea id="a2e8-summary" className="mt-1" rows={3} placeholder="Summary of feedback…" value={sfForm.summary} onChange={(e) => setSF("summary", e.target.value)} /></div>
+            <div><label htmlFor="a2e8-direct-quote" className="text-sm font-medium">Direct Quote</label><Textarea id="a2e8-direct-quote" className="mt-1" rows={2} placeholder="Optional direct quote…" value={sfForm.direct_quote} onChange={(e) => setSF("direct_quote", e.target.value)} /></div>
+            <div><label htmlFor="a2e8-action-taken" className="text-sm font-medium">Action Taken</label><Textarea id="a2e8-action-taken" className="mt-1" rows={2} placeholder="Response or action…" value={sfForm.action_taken} onChange={(e) => setSF("action_taken", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Feedback"}</Button>

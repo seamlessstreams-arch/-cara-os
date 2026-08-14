@@ -289,10 +289,10 @@ export default function PettyCashPage() {
           <DialogHeader><DialogTitle>New Petty Cash Entry</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveEntry} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={pcForm.date} onChange={(e) => setPC2("date", e.target.value)} /></div>
+              <div><label htmlFor="c7ff-date" className="text-sm font-medium">Date</label><Input id="c7ff-date" type="date" value={pcForm.date} onChange={(e) => setPC2("date", e.target.value)} /></div>
               <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={pcForm.type} onValueChange={(v) => setPC2("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <label htmlFor="c7ff-type" className="text-sm font-medium">Type</label>
+                <Select value={pcForm.type} onValueChange={(v) => setPC2("type", v)}><SelectTrigger id="c7ff-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="withdrawal">Withdrawal</SelectItem>
                     <SelectItem value="top_up">Top-Up</SelectItem>
@@ -302,17 +302,17 @@ export default function PettyCashPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Amount (£)</label><Input type="number" step="0.01" placeholder="0.00" value={pcForm.amount} onChange={(e) => setPC2("amount", e.target.value)} /></div>
+              <div><label htmlFor="c7ff-amount" className="text-sm font-medium">Amount (£)</label><Input id="c7ff-amount" type="number" step="0.01" placeholder="0.00" value={pcForm.amount} onChange={(e) => setPC2("amount", e.target.value)} /></div>
               <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select value={pcForm.category} onValueChange={(v) => setPC2("category", v)}><SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                <label htmlFor="c7ff-category" className="text-sm font-medium">Category</label>
+                <Select value={pcForm.category} onValueChange={(v) => setPC2("category", v)}><SelectTrigger id="c7ff-category"><SelectValue placeholder="Category" /></SelectTrigger>
                   <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Description *</label><Input placeholder="What was the purchase for?" value={pcForm.description} onChange={(e) => setPC2("description", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Receipt Reference</label><Input placeholder="Receipt number (if applicable)" value={pcForm.receipt_ref} onChange={(e) => setPC2("receipt_ref", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea placeholder="Any additional notes…" rows={2} value={pcForm.notes} onChange={(e) => setPC2("notes", e.target.value)} /></div>
+            <div><label htmlFor="c7ff-description" className="text-sm font-medium">Description *</label><Input id="c7ff-description" placeholder="What was the purchase for?" value={pcForm.description} onChange={(e) => setPC2("description", e.target.value)} /></div>
+            <div><label htmlFor="c7ff-receipt-reference" className="text-sm font-medium">Receipt Reference</label><Input id="c7ff-receipt-reference" placeholder="Receipt number (if applicable)" value={pcForm.receipt_ref} onChange={(e) => setPC2("receipt_ref", e.target.value)} /></div>
+            <div><label htmlFor="c7ff-notes" className="text-sm font-medium">Notes</label><Textarea id="c7ff-notes" placeholder="Any additional notes…" rows={2} value={pcForm.notes} onChange={(e) => setPC2("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createEntry.isPending}>{createEntry.isPending ? "Saving…" : "Save Entry"}</Button>

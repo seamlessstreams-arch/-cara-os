@@ -293,13 +293,13 @@ export default function ChronologyIntelligencePage() {
 
               {/* Child selector */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block">
+                <label htmlFor="abac-young-person" className="text-xs font-semibold text-[var(--cs-text-secondary)] block">
                   Young Person
                 </label>
                 {ypQuery.isLoading ? (
                   <div className="h-9 rounded-xl bg-slate-100 animate-pulse" />
                 ) : (
-                  <select
+                  <select id="abac-young-person"
                     value={selectedChildId}
                     onChange={(e) => setSelectedChildId(e.target.value)}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"

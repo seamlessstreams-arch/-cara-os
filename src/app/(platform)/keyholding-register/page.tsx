@@ -168,9 +168,9 @@ export default function KeyholdingRegisterPage() {
         {/* filter */}
         <Card><CardContent className="pt-4">
           <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[180px]"><Label className="text-xs">Search</Label><div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" placeholder="Key name, number…" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
+            <div className="flex-1 min-w-[180px]"><Label htmlFor="ba7c-search" className="text-xs">Search</Label><div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input id="ba7c-search" className="pl-8" placeholder="Key name, number…" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
             <div className="w-44"><Label className="text-xs flex items-center gap-1"><Filter className="h-3 w-3" />Type</Label><Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(KEY_TYPE_LABEL) as [KeyType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div className="w-40"><Label className="text-xs">Status</Label><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(KEYHOLDING_STATUS_LABEL) as [KeyholdingStatus, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div className="w-40"><Label htmlFor="ba7c-status" className="text-xs">Status</Label><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger id="ba7c-status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(KEYHOLDING_STATUS_LABEL) as [KeyholdingStatus, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             <div className="w-36"><Label className="text-xs flex items-center gap-1"><ArrowUpDown className="h-3 w-3" />Sort</Label><Select value={sortBy} onValueChange={setSortBy}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="name">Name</SelectItem><SelectItem value="type">Type</SelectItem><SelectItem value="audit">Audit Due</SelectItem></SelectContent></Select></div>
           </div>
         </CardContent></Card>
@@ -305,14 +305,14 @@ export default function KeyholdingRegisterPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Key Record</DialogTitle></DialogHeader>
           <form onSubmit={handleAddKey} className="space-y-3">
-            <div><Label>Key Name *</Label><Input placeholder="e.g. Front Door Master Key" value={krForm.key_name} onChange={(e) => setKR("key_name", e.target.value)} /></div>
+            <div><Label htmlFor="ba7c-key-name">Key Name *</Label><Input id="ba7c-key-name" placeholder="e.g. Front Door Master Key" value={krForm.key_name} onChange={(e) => setKR("key_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Key Number</Label><Input placeholder="e.g. MK-001" value={krForm.key_number} onChange={(e) => setKR("key_number", e.target.value)} /></div>
-              <div><Label>Total Copies</Label><Input type="number" value={krForm.total_copies} onChange={(e) => setKR("total_copies", e.target.value)} /></div>
+              <div><Label htmlFor="ba7c-key-number">Key Number</Label><Input id="ba7c-key-number" placeholder="e.g. MK-001" value={krForm.key_number} onChange={(e) => setKR("key_number", e.target.value)} /></div>
+              <div><Label htmlFor="ba7c-total-copies">Total Copies</Label><Input id="ba7c-total-copies" type="number" value={krForm.total_copies} onChange={(e) => setKR("total_copies", e.target.value)} /></div>
             </div>
-            <div><Label>Key Type</Label><Select value={krForm.key_type} onValueChange={(v) => setKR("key_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.entries(KEY_TYPE_LABEL) as [KeyType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Storage Location</Label><Input placeholder="Where is this key stored?" value={krForm.location} onChange={(e) => setKR("location", e.target.value)} /></div>
-            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" value={krForm.notes} onChange={(e) => setKR("notes", e.target.value)} /></div>
+            <div><Label htmlFor="ba7c-key-type">Key Type</Label><Select value={krForm.key_type} onValueChange={(v) => setKR("key_type", v)}><SelectTrigger id="ba7c-key-type"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.entries(KEY_TYPE_LABEL) as [KeyType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label htmlFor="ba7c-storage-location">Storage Location</Label><Input id="ba7c-storage-location" placeholder="Where is this key stored?" value={krForm.location} onChange={(e) => setKR("location", e.target.value)} /></div>
+            <div><Label htmlFor="ba7c-notes">Notes</Label><Textarea id="ba7c-notes" rows={2} placeholder="Additional notes…" value={krForm.notes} onChange={(e) => setKR("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={createItem.isPending}>{createItem.isPending ? "Saving…" : "Add Key"}</Button>

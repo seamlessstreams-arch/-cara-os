@@ -520,8 +520,8 @@ export default function RightToWorkPage() {
             <div className="text-sm font-semibold text-[var(--cs-navy)] mb-4">Add Right to Work Verification</div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Candidate</label>
-                <select className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                <label htmlFor="fc5a-candidate" className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Candidate</label>
+                <select id="fc5a-candidate" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
                   <option value="">Select candidate...</option>
                   {(data?.candidates ?? []).map((c: CandidateDetail) => (
                     <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
@@ -529,8 +529,8 @@ export default function RightToWorkPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Document Type</label>
-                <select className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                <label htmlFor="fc5a-document-type" className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Document Type</label>
+                <select id="fc5a-document-type" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
                   <option>UK Passport</option>
                   <option>EU Settled Status</option>
                   <option>BRP Card</option>
@@ -539,16 +539,16 @@ export default function RightToWorkPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Verified By</label>
-                <input type="text" placeholder="Name of person who verified" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+                <label htmlFor="fc5a-verified-by" className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Verified By</label>
+                <input id="fc5a-verified-by" type="text" placeholder="Name of person who verified" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Verification Date</label>
-                <input type="date" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+                <label htmlFor="fc5a-verification-date" className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Verification Date</label>
+                <input id="fc5a-verification-date" type="date" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Expiry Date (if time-limited)</label>
-                <input type="date" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+                <label htmlFor="fc5a-expiry-date-if-time-limited" className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Expiry Date (if time-limited)</label>
+                <input id="fc5a-expiry-date-if-time-limited" type="date" className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
               </div>
             </div>
             <div className="flex gap-2 mt-5">

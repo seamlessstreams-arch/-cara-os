@@ -475,28 +475,28 @@ export default function SensoryProfilesPage() {
           <DialogHeader><DialogTitle>New Sensory Profile</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateProfile} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person *</label>
-              <Select value={spForm.child_id} onValueChange={(v) => setSP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="29e4-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={spForm.child_id} onValueChange={(v) => setSP("child_id", v)}><SelectTrigger id="29e4-young-person" className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Diagnosis / Conditions</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. ASD, ADHD, SPD" value={spForm.diagnosis} onChange={(e) => setSP("diagnosis", e.target.value)} />
+              <label htmlFor="29e4-diagnosis-conditions" className="text-sm font-medium">Diagnosis / Conditions</label>
+              <input id="29e4-diagnosis-conditions" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. ASD, ADHD, SPD" value={spForm.diagnosis} onChange={(e) => setSP("diagnosis", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Assessment Date</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.assessment_date} onChange={(e) => setSP("assessment_date", e.target.value)} />
+                <label htmlFor="29e4-assessment-date" className="text-sm font-medium">Assessment Date</label>
+                <input id="29e4-assessment-date" type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.assessment_date} onChange={(e) => setSP("assessment_date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Review Date</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.review_date} onChange={(e) => setSP("review_date", e.target.value)} />
+                <label htmlFor="29e4-review-date" className="text-sm font-medium">Review Date</label>
+                <input id="29e4-review-date" type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.review_date} onChange={(e) => setSP("review_date", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Initial Notes</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key observations and initial sensory presentation…" value={spForm.notes} onChange={(e) => setSP("notes", e.target.value)} />
+              <label htmlFor="29e4-initial-notes" className="text-sm font-medium">Initial Notes</label>
+              <textarea id="29e4-initial-notes" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key observations and initial sensory presentation…" value={spForm.notes} onChange={(e) => setSP("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

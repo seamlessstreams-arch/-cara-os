@@ -239,15 +239,15 @@ export default function ShiftPatternsPage() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs">Staff member</Label>
+              <Label htmlFor="5949-staff-member" className="text-xs">Staff member</Label>
               <Select value={form.staff_id} onValueChange={(v) => set("staff_id", v)}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Choose a staff member…" /></SelectTrigger>
+                <SelectTrigger id="5949-staff-member" className="mt-1"><SelectValue placeholder="Choose a staff member…" /></SelectTrigger>
                 <SelectContent>{(data?.staff ?? []).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Pattern name (optional)</Label>
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. RM — Mon–Fri" className="mt-1 h-9" />
+              <Label htmlFor="5949-pattern-name-optional" className="text-xs">Pattern name (optional)</Label>
+              <Input id="5949-pattern-name-optional" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. RM — Mon–Fri" className="mt-1 h-9" />
             </div>
             <div>
               <Label className="text-xs">Type</Label>
@@ -269,22 +269,22 @@ export default function ShiftPatternsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
-                <div><Label className="text-[11px]">Days on</Label><Input type="number" min={1} max={14} value={form.cycle_on} onChange={(e) => set("cycle_on", Math.max(1, parseInt(e.target.value || "1", 10)))} className="mt-1 h-9" /></div>
-                <div><Label className="text-[11px]">Days off</Label><Input type="number" min={0} max={14} value={form.cycle_off} onChange={(e) => set("cycle_off", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
-                <div><Label className="text-[11px]">Cycle starts</Label><Input type="date" value={form.anchor_date} onChange={(e) => set("anchor_date", e.target.value)} className="mt-1 h-9" /></div>
+                <div><Label htmlFor="5949-days-on" className="text-[11px]">Days on</Label><Input id="5949-days-on" type="number" min={1} max={14} value={form.cycle_on} onChange={(e) => set("cycle_on", Math.max(1, parseInt(e.target.value || "1", 10)))} className="mt-1 h-9" /></div>
+                <div><Label htmlFor="5949-days-off" className="text-[11px]">Days off</Label><Input id="5949-days-off" type="number" min={0} max={14} value={form.cycle_off} onChange={(e) => set("cycle_off", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                <div><Label htmlFor="5949-cycle-starts" className="text-[11px]">Cycle starts</Label><Input id="5949-cycle-starts" type="date" value={form.anchor_date} onChange={(e) => set("anchor_date", e.target.value)} className="mt-1 h-9" /></div>
               </div>
             )}
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-[11px]">Shift</Label>
+                <Label htmlFor="5949-shift" className="text-[11px]">Shift</Label>
                 <Select value={form.shift_type} onValueChange={(v) => set("shift_type", v)}>
-                  <SelectTrigger className="mt-1 h-9"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="5949-shift" className="mt-1 h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>{SHIFT_TYPES.map((s) => <SelectItem key={s.v} value={s.v}>{s.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label className="text-[11px]">Start</Label><Input value={form.start_time} onChange={(e) => set("start_time", e.target.value)} placeholder="08:00" className="mt-1 h-9" /></div>
-              <div><Label className="text-[11px]">End</Label><Input value={form.end_time} onChange={(e) => set("end_time", e.target.value)} placeholder="20:00" className="mt-1 h-9" /></div>
+              <div><Label htmlFor="5949-start" className="text-[11px]">Start</Label><Input id="5949-start" value={form.start_time} onChange={(e) => set("start_time", e.target.value)} placeholder="08:00" className="mt-1 h-9" /></div>
+              <div><Label htmlFor="5949-end" className="text-[11px]">End</Label><Input id="5949-end" value={form.end_time} onChange={(e) => set("end_time", e.target.value)} placeholder="20:00" className="mt-1 h-9" /></div>
             </div>
 
             <PatternPreview form={form} />

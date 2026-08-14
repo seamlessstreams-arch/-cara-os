@@ -128,8 +128,8 @@ export default function HqCustomersPage() {
               <form onSubmit={submit} className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className={labelCls}>Customer / organisation name</label>
-                    <input
+                    <label htmlFor="22ab-customer-organisation-name" className={labelCls}>Customer / organisation name</label>
+                    <input id="22ab-customer-organisation-name"
                       required
                       value={form.org_name}
                       onChange={(e) => set("org_name")(e.target.value)}
@@ -137,8 +137,8 @@ export default function HqCustomersPage() {
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>First home / site name</label>
-                    <input
+                    <label htmlFor="22ab-first-home-site-name" className={labelCls}>First home / site name</label>
+                    <input id="22ab-first-home-site-name"
                       required
                       value={form.first_home_name}
                       onChange={(e) => set("first_home_name")(e.target.value)}
@@ -146,8 +146,8 @@ export default function HqCustomersPage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className={labelCls}>Home address</label>
-                    <input
+                    <label htmlFor="22ab-home-address" className={labelCls}>Home address</label>
+                    <input id="22ab-home-address"
                       required
                       value={form.first_home_address}
                       onChange={(e) => set("first_home_address")(e.target.value)}
@@ -167,8 +167,8 @@ export default function HqCustomersPage() {
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Beds</label>
-                    <input
+                    <label htmlFor="22ab-beds" className={labelCls}>Beds</label>
+                    <input id="22ab-beds"
                       type="number"
                       min={1}
                       max={60}
@@ -178,8 +178,8 @@ export default function HqCustomersPage() {
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Plan</label>
-                    <select
+                    <label htmlFor="22ab-plan" className={labelCls}>Plan</label>
+                    <select id="22ab-plan"
                       value={form.plan}
                       onChange={(e) => set("plan")(e.target.value)}
                       className={inputCls}
@@ -192,8 +192,8 @@ export default function HqCustomersPage() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelCls}>Registered manager name</label>
-                    <input
+                    <label htmlFor="22ab-registered-manager-name" className={labelCls}>Registered manager name</label>
+                    <input id="22ab-registered-manager-name"
                       required
                       value={form.manager_name}
                       onChange={(e) => set("manager_name")(e.target.value)}
@@ -201,8 +201,8 @@ export default function HqCustomersPage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className={labelCls}>Registered manager email</label>
-                    <input
+                    <label htmlFor="22ab-registered-manager-email" className={labelCls}>Registered manager email</label>
+                    <input id="22ab-registered-manager-email"
                       required
                       type="email"
                       value={form.manager_email}

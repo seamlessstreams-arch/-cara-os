@@ -195,8 +195,8 @@ export default function HqCustomerDetailPage({ params }: { params: Promise<{ id:
                   className="space-y-3"
                 >
                   <div>
-                    <label className={labelCls}>Reason (auditable)</label>
-                    <textarea
+                    <label htmlFor="4d99-reason-auditable" className={labelCls}>Reason (auditable)</label>
+                    <textarea id="4d99-reason-auditable"
                       required
                       rows={2}
                       value={reason}
@@ -206,8 +206,8 @@ export default function HqCustomerDetailPage({ params }: { params: Promise<{ id:
                     />
                   </div>
                   <div>
-                    <label className={labelCls}>Time-box (hours, max 72)</label>
-                    <input
+                    <label htmlFor="4d99-time-box-hours-max-72" className={labelCls}>Time-box (hours, max 72)</label>
+                    <input id="4d99-time-box-hours-max-72"
                       type="number"
                       min={1}
                       max={72}

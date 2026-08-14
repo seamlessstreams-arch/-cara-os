@@ -236,9 +236,9 @@ function AddRecordDialog({ open, onClose }: { open: boolean; onClose: () => void
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Staff Member</label>
+            <label htmlFor="7e39-staff-member" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Staff Member</label>
             <Select value={staffId} onValueChange={setStaffId}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger>
+              <SelectTrigger id="7e39-staff-member" className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger>
               <SelectContent>
                 {activeStaff.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.full_name} — {s.job_title}</SelectItem>
@@ -247,14 +247,14 @@ function AddRecordDialog({ open, onClose }: { open: boolean; onClose: () => void
             </Select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Course Name</label>
-            <Input className="mt-1" placeholder="e.g. Safeguarding Level 3" value={courseName} onChange={(e) => setCourseName(e.target.value)} />
+            <label htmlFor="7e39-course-name" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Course Name</label>
+            <Input id="7e39-course-name" className="mt-1" placeholder="e.g. Safeguarding Level 3" value={courseName} onChange={(e) => setCourseName(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Category</label>
+              <label htmlFor="7e39-category" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Category</label>
               <Select value={category} onValueChange={(v) => setCategory(v as TrainingCategory)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="7e39-category" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {TRAINING_CATEGORIES.map((c) => (
                     <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
@@ -263,18 +263,18 @@ function AddRecordDialog({ open, onClose }: { open: boolean; onClose: () => void
               </Select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Provider</label>
-              <Input className="mt-1" placeholder="e.g. SCIE, In-house" value={provider} onChange={(e) => setProvider(e.target.value)} />
+              <label htmlFor="7e39-provider" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Provider</label>
+              <Input id="7e39-provider" className="mt-1" placeholder="e.g. SCIE, In-house" value={provider} onChange={(e) => setProvider(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completed Date</label>
-              <input type="date" className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={completedDate} onChange={(e) => setCompletedDate(e.target.value)} />
+              <label htmlFor="7e39-completed-date" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Completed Date</label>
+              <input id="7e39-completed-date" type="date" className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={completedDate} onChange={(e) => setCompletedDate(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Expiry Date</label>
-              <input type="date" className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+              <label htmlFor="7e39-expiry-date" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Expiry Date</label>
+              <input id="7e39-expiry-date" type="date" className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -288,8 +288,8 @@ function AddRecordDialog({ open, onClose }: { open: boolean; onClose: () => void
             <label htmlFor="mandatory-check" className="text-sm text-slate-700">Mandatory training</label>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Notes (optional)</label>
-            <Textarea className="mt-1 text-sm" rows={2} placeholder="Any notes about this record…" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <label htmlFor="7e39-notes-optional" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Notes (optional)</label>
+            <Textarea id="7e39-notes-optional" className="mt-1 text-sm" rows={2} placeholder="Any notes about this record…" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
         <DialogFooter>

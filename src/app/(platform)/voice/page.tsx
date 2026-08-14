@@ -279,9 +279,9 @@ function NewVoiceDialog({
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
+              <label htmlFor="3772-young-person" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
               <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="3772-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
                     <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
@@ -290,9 +290,9 @@ function NewVoiceDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Theme</label>
+              <label htmlFor="3772-theme" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Theme</label>
               <Select value={form.theme} onValueChange={(v) => setForm((p) => ({ ...p, theme: v as VoiceTheme }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="3772-theme" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(THEME_CONFIG) as [VoiceTheme, typeof THEME_CONFIG[VoiceTheme]][]).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>
@@ -303,9 +303,9 @@ function NewVoiceDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Capture method</label>
+            <label htmlFor="3772-capture-method" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Capture method</label>
             <Select value={form.capture_method} onValueChange={(v) => setForm((p) => ({ ...p, capture_method: v as VoiceRecord["capture_method"] }))}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="3772-capture-method" className="h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(CAPTURE_METHOD_LABELS).map(([k, v]) => (
                   <SelectItem key={k} value={k} className="text-xs">{v}</SelectItem>
@@ -328,8 +328,8 @@ function NewVoiceDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Professional interpretation</label>
-            <Textarea
+            <label htmlFor="3772-professional-interpretation" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Professional interpretation</label>
+            <Textarea id="3772-professional-interpretation"
               value={form.paraphrase}
               onChange={(e) => setForm((p) => ({ ...p, paraphrase: e.target.value }))}
               placeholder="What do you understand this to mean in the context of their care…"
@@ -339,8 +339,8 @@ function NewVoiceDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Action taken</label>
-            <Textarea
+            <label htmlFor="3772-action-taken" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Action taken</label>
+            <Textarea id="3772-action-taken"
               value={form.action_taken}
               onChange={(e) => setForm((p) => ({ ...p, action_taken: e.target.value }))}
               placeholder="What was done in response to this…"
@@ -350,9 +350,9 @@ function NewVoiceDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Action owner</label>
+            <label htmlFor="3772-action-owner" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Action owner</label>
             <Select value={form.action_owner} onValueChange={(v) => setForm((p) => ({ ...p, action_owner: v }))}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select staff member" /></SelectTrigger>
+              <SelectTrigger id="3772-action-owner" className="h-8 text-xs"><SelectValue placeholder="Select staff member" /></SelectTrigger>
               <SelectContent>
                 {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
                   <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>

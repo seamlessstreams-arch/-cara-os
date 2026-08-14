@@ -1290,14 +1290,14 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Session Title *</label>
-                    <input className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                    <label htmlFor="ca73-session-title" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Session Title *</label>
+                    <input id="ca73-session-title" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                       placeholder="e.g. Safety planning session"
                       value={kwForm.title} onChange={(e) => setKwForm((p) => ({ ...p, title: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Theme</label>
-                    <select className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    <label htmlFor="ca73-theme" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Theme</label>
+                    <select id="ca73-theme" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-400"
                       value={kwForm.theme} onChange={(e) => setKwForm((p) => ({ ...p, theme: e.target.value as KeyWorkTheme }))}>
                       {(["staying_safe_online","missing_from_care","exploitation","healthy_relationships","emotional_regulation","trust","identity","self_esteem","education","safety_planning","voice_of_the_child","future_goals","general"] as KeyWorkTheme[]).map((t) => (
                         <option key={t} value={t}>{t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</option>
@@ -1306,35 +1306,35 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Reason for Session</label>
-                  <textarea rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                  <label htmlFor="ca73-reason-for-session" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Reason for Session</label>
+                  <textarea id="ca73-reason-for-session" rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                     placeholder="Why was this session held?"
                     value={kwForm.reason} onChange={(e) => setKwForm((p) => ({ ...p, reason: e.target.value }))} />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Aims</label>
-                    <textarea rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                    <label htmlFor="ca73-aims" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Aims</label>
+                    <textarea id="ca73-aims" rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                       placeholder="What did you aim to achieve?"
                       value={kwForm.aims} onChange={(e) => setKwForm((p) => ({ ...p, aims: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Desired Outcomes</label>
-                    <textarea rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                    <label htmlFor="ca73-desired-outcomes" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Desired Outcomes</label>
+                    <textarea id="ca73-desired-outcomes" rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                       placeholder="What were the hoped-for outcomes?"
                       value={kwForm.desired_outcomes} onChange={(e) => setKwForm((p) => ({ ...p, desired_outcomes: e.target.value }))} />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-teal-700 uppercase tracking-wide block mb-1">Child Voice *</label>
-                  <textarea rows={3} className="w-full rounded-xl border border-teal-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                  <label htmlFor="ca73-child-voice" className="text-[10px] font-semibold text-teal-700 uppercase tracking-wide block mb-1">Child Voice *</label>
+                  <textarea id="ca73-child-voice" rows={3} className="w-full rounded-xl border border-teal-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                     placeholder={`What did ${displayName} say, feel, or express? Use their own words where possible…`}
                     value={kwForm.child_voice} onChange={(e) => setKwForm((p) => ({ ...p, child_voice: e.target.value }))} />
                   <p className="text-[10px] text-teal-600 mt-1">Record faithfully — this is the voice of the child</p>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Staff Reflection</label>
-                  <textarea rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
+                  <label htmlFor="ca73-staff-reflection" className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide block mb-1">Staff Reflection</label>
+                  <textarea id="ca73-staff-reflection" rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 placeholder:text-slate-400"
                     placeholder="How did the session go? What will you do differently next time?"
                     value={kwForm.staff_reflection} onChange={(e) => setKwForm((p) => ({ ...p, staff_reflection: e.target.value }))} />
                 </div>

@@ -256,8 +256,8 @@ function RequestLeaveDialog({
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Staff member</label>
-            <select
+            <label htmlFor="7a94-staff-member" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Staff member</label>
+            <select id="7a94-staff-member"
               value={form.staff_id}
               onChange={(e) => setForm((f) => ({ ...f, staff_id: e.target.value }))}
               className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -268,8 +268,8 @@ function RequestLeaveDialog({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Leave type</label>
-            <select
+            <label htmlFor="7a94-leave-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Leave type</label>
+            <select id="7a94-leave-type"
               value={form.leave_type}
               onChange={(e) => setForm((f) => ({ ...f, leave_type: e.target.value }))}
               className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -282,12 +282,12 @@ function RequestLeaveDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">From</label>
-              <Input type="date" value={form.start_date} onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))} className="text-sm" />
+              <label htmlFor="7a94-from" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">From</label>
+              <Input id="7a94-from" type="date" value={form.start_date} onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))} className="text-sm" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">To</label>
-              <Input type="date" value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} className="text-sm" />
+              <label htmlFor="7a94-to" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">To</label>
+              <Input id="7a94-to" type="date" value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} className="text-sm" />
             </div>
           </div>
 
@@ -338,8 +338,8 @@ function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) 
             {req.reason && <div className="mt-1 text-amber-700">Reason given: {req.reason}</div>}
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Interview notes</label>
-            <textarea
+            <label htmlFor="7a94-interview-notes" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Interview notes</label>
+            <textarea id="7a94-interview-notes"
               className="w-full rounded-xl border border-[var(--cs-border)] p-3 text-sm resize-none h-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Record the return to work interview discussion..."
               value={notes}

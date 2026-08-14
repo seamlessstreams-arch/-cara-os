@@ -303,9 +303,9 @@ export default function GuidanceNotesPage() {
           <CardContent className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
+                <label htmlFor="6632-topic" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
                 <div className="relative mt-1">
-                  <Input
+                  <Input id="6632-topic"
                     list="guidance-topics"
                     placeholder="e.g. Safeguarding procedures"
                     value={topic}
@@ -317,9 +317,9 @@ export default function GuidanceNotesPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="6632-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={setPathway}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="6632-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff">Staff</SelectItem>
                     <SelectItem value="child">Child / Young Person</SelectItem>
@@ -329,8 +329,8 @@ export default function GuidanceNotesPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Additional Context (optional)</label>
-              <Textarea
+              <label htmlFor="6632-additional-context-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Additional Context (optional)</label>
+              <Textarea id="6632-additional-context-optional"
                 className="mt-1 text-sm"
                 rows={2}
                 placeholder="Any specific context, recent incidents, or areas to emphasise…"

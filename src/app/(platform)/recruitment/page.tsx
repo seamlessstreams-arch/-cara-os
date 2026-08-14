@@ -1165,8 +1165,8 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Phone</label>
-              <Input
+              <label htmlFor="80a8-phone" className="text-xs font-medium text-slate-600 block mb-1">Phone</label>
+              <Input id="80a8-phone"
                 value={addCandidateForm.phone}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, phone: e.target.value })}
                 placeholder="07700 000000"
@@ -1174,8 +1174,8 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Role applied for</label>
-              <Input
+              <label htmlFor="80a8-role-applied-for" className="text-xs font-medium text-slate-600 block mb-1">Role applied for</label>
+              <Input id="80a8-role-applied-for"
                 value={addCandidateForm.role_applied}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, role_applied: e.target.value })}
                 placeholder="e.g. Residential Care Worker"
@@ -1183,8 +1183,8 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Source</label>
-              <select
+              <label htmlFor="80a8-source" className="text-xs font-medium text-slate-600 block mb-1">Source</label>
+              <select id="80a8-source"
                 value={addCandidateForm.source}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, source: e.target.value })}
                 className="w-full h-9 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"

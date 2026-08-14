@@ -667,11 +667,11 @@ export default function DocumentAnalysisPage() {
         <CardContent className="space-y-4">
           {/* Document type selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+            <label htmlFor="6271-document-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">
               Document Type
             </label>
             <Select value={documentType} onValueChange={(v) => setDocumentType(v as DocumentType)}>
-              <SelectTrigger className="w-full max-w-xs">
+              <SelectTrigger id="6271-document-type" className="w-full max-w-xs">
                 <SelectValue placeholder="Select document type" />
               </SelectTrigger>
               <SelectContent>
@@ -745,10 +745,10 @@ export default function DocumentAnalysisPage() {
 
           {/* Query field */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+            <label htmlFor="6271-what-would-you-like-cara-to-analys" className="text-xs font-medium text-[var(--cs-text-secondary)]">
               What would you like Cara to analyse?
             </label>
-            <Input
+            <Input id="6271-what-would-you-like-cara-to-analys"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. Extract all actions and recommendations..."

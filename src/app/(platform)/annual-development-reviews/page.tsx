@@ -319,9 +319,9 @@ export default function AnnualDevelopmentReviewsPage() {
           >
           <div className="space-y-3">
             <div>
-              <Label>Staff Member</Label>
+              <Label htmlFor="0e3e-staff-member">Staff Member</Label>
               <Select value={formStaffId} onValueChange={setFormStaffId}>
-                <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
+                <SelectTrigger id="0e3e-staff-member"><SelectValue placeholder="Select staff" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
                   <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
@@ -332,9 +332,9 @@ export default function AnnualDevelopmentReviewsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Review Date</Label><Input type="date" name="review_date" /></div>
-            <div><Label>Review Period</Label><Input placeholder="e.g. April 2024 – March 2025" name="period" /></div>
-            <div><Label>Preparation Notes</Label><Textarea placeholder="Notes for the review..." name="manager_comments" /></div>
+            <div><Label htmlFor="0e3e-review-date">Review Date</Label><Input id="0e3e-review-date" type="date" name="review_date" /></div>
+            <div><Label htmlFor="0e3e-review-period">Review Period</Label><Input id="0e3e-review-period" placeholder="e.g. April 2024 – March 2025" name="period" /></div>
+            <div><Label htmlFor="0e3e-preparation-notes">Preparation Notes</Label><Textarea id="0e3e-preparation-notes" placeholder="Notes for the review..." name="manager_comments" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" type="button" onClick={() => setShowNew(false)}>Cancel</Button>

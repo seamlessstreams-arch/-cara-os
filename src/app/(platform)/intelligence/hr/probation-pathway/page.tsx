@@ -235,21 +235,21 @@ export default function ProbationPathwayPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member name</label>
-                <Input value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
+                <label htmlFor="7c52-staff-member-name" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member name</label>
+                <Input id="7c52-staff-member-name" value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Role</label>
-                <Input value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
+                <label htmlFor="7c52-role" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Role</label>
+                <Input id="7c52-role" value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Start date</label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <label htmlFor="7c52-start-date" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Start date</label>
+                <Input id="7c52-start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Probation length (months)</label>
+                <label htmlFor="7c52-probation-length-months" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Probation length (months)</label>
                 <Select value={probationLength} onValueChange={setProbationLength}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="7c52-probation-length-months"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="3">3 months</SelectItem>
                     <SelectItem value="6">6 months</SelectItem>
@@ -259,8 +259,8 @@ export default function ProbationPathwayPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Line manager</label>
-                <Input value={lineManager} onChange={(e) => setLineManager(e.target.value)} placeholder="Manager name" />
+                <label htmlFor="7c52-line-manager" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Line manager</label>
+                <Input id="7c52-line-manager" value={lineManager} onChange={(e) => setLineManager(e.target.value)} placeholder="Manager name" />
               </div>
             </div>
           </CardContent>
@@ -409,22 +409,22 @@ export default function ProbationPathwayPage() {
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Review date</label>
-                      <Input type="date" value={r.reviewDate} onChange={(e) => updateReview(r.id, { reviewDate: e.target.value })} />
+                      <label htmlFor="7c52-review-date" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Review date</label>
+                      <Input id="7c52-review-date" type="date" value={r.reviewDate} onChange={(e) => updateReview(r.id, { reviewDate: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Review type</label>
+                      <label htmlFor="7c52-review-type" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Review type</label>
                       <Select value={r.reviewType} onValueChange={(v) => updateReview(r.id, { reviewType: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger id="7c52-review-type"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {REVIEW_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Overall rating</label>
+                      <label htmlFor="7c52-overall-rating" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Overall rating</label>
                       <Select value={r.overallRating} onValueChange={(v) => updateReview(r.id, { overallRating: v as ProbationReview["overallRating"] })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger id="7c52-overall-rating"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {Object.entries(RATING_CONFIG).map(([v, c]) => <SelectItem key={v} value={v}>{c.label}</SelectItem>)}
                         </SelectContent>
@@ -432,29 +432,29 @@ export default function ProbationPathwayPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Strengths demonstrated</label>
-                    <Textarea value={r.strengths} onChange={(e) => updateReview(r.id, { strengths: e.target.value })} placeholder="What has the staff member done well?" rows={3} />
+                    <label htmlFor="7c52-strengths-demonstrated" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Strengths demonstrated</label>
+                    <Textarea id="7c52-strengths-demonstrated" value={r.strengths} onChange={(e) => updateReview(r.id, { strengths: e.target.value })} placeholder="What has the staff member done well?" rows={3} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Areas for development</label>
-                    <Textarea value={r.areasForDevelopment} onChange={(e) => updateReview(r.id, { areasForDevelopment: e.target.value })} placeholder="Where does the staff member need to improve?" rows={3} />
+                    <label htmlFor="7c52-areas-for-development" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Areas for development</label>
+                    <Textarea id="7c52-areas-for-development" value={r.areasForDevelopment} onChange={(e) => updateReview(r.id, { areasForDevelopment: e.target.value })} placeholder="Where does the staff member need to improve?" rows={3} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Support provided</label>
-                    <Textarea value={r.supportProvided} onChange={(e) => updateReview(r.id, { supportProvided: e.target.value })} placeholder="What support, training, shadowing or mentoring has been provided?" rows={2} />
+                    <label htmlFor="7c52-support-provided" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Support provided</label>
+                    <Textarea id="7c52-support-provided" value={r.supportProvided} onChange={(e) => updateReview(r.id, { supportProvided: e.target.value })} placeholder="What support, training, shadowing or mentoring has been provided?" rows={2} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Objective progress</label>
-                    <Textarea value={r.objectiveProgress} onChange={(e) => updateReview(r.id, { objectiveProgress: e.target.value })} placeholder="Progress against each probation objective..." rows={3} />
+                    <label htmlFor="7c52-objective-progress" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Objective progress</label>
+                    <Textarea id="7c52-objective-progress" value={r.objectiveProgress} onChange={(e) => updateReview(r.id, { objectiveProgress: e.target.value })} placeholder="Progress against each probation objective..." rows={3} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Manager notes</label>
-                      <Textarea value={r.managerNotes} onChange={(e) => updateReview(r.id, { managerNotes: e.target.value })} placeholder="Manager's observations and notes" rows={3} />
+                      <label htmlFor="7c52-manager-notes" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Manager notes</label>
+                      <Textarea id="7c52-manager-notes" value={r.managerNotes} onChange={(e) => updateReview(r.id, { managerNotes: e.target.value })} placeholder="Manager's observations and notes" rows={3} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member comments</label>
-                      <Textarea value={r.staffComments} onChange={(e) => updateReview(r.id, { staffComments: e.target.value })} placeholder="The staff member's own comments and reflections" rows={3} />
+                      <label htmlFor="7c52-staff-member-comments" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member comments</label>
+                      <Textarea id="7c52-staff-member-comments" value={r.staffComments} onChange={(e) => updateReview(r.id, { staffComments: e.target.value })} placeholder="The staff member's own comments and reflections" rows={3} />
                     </div>
                   </div>
                 </CardContent>
@@ -479,8 +479,8 @@ export default function ProbationPathwayPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Concerns identified</label>
-              <Textarea
+              <label htmlFor="7c52-concerns-identified" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Concerns identified</label>
+              <Textarea id="7c52-concerns-identified"
                 value={concernsDescription}
                 onChange={(e) => setConcernsDescription(e.target.value)}
                 placeholder="Describe any concerns — performance, conduct, safeguarding awareness, attitude, attendance, record keeping..."
@@ -488,8 +488,8 @@ export default function ProbationPathwayPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Support plan</label>
-              <Textarea
+              <label htmlFor="7c52-support-plan" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Support plan</label>
+              <Textarea id="7c52-support-plan"
                 value={supportPlan}
                 onChange={(e) => setSupportPlan(e.target.value)}
                 placeholder="What additional support is being put in place? Additional supervision, training, buddying, adjusted duties..."
@@ -497,8 +497,8 @@ export default function ProbationPathwayPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Informal conversations / check-ins</label>
-              <Textarea
+              <label htmlFor="7c52-informal-conversations-check-ins" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Informal conversations / check-ins</label>
+              <Textarea id="7c52-informal-conversations-check-ins"
                 value={informalConversations}
                 onChange={(e) => setInformalConversations(e.target.value)}
                 placeholder="Record any informal conversations, coaching, or feedback given..."
@@ -569,9 +569,9 @@ export default function ProbationPathwayPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Outcome</label>
+              <label htmlFor="7c52-outcome" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Outcome</label>
               <Select value={outcome} onValueChange={(v) => setOutcome(v as ProbationOutcome)}>
-                <SelectTrigger><SelectValue placeholder="Select outcome" /></SelectTrigger>
+                <SelectTrigger id="7c52-outcome"><SelectValue placeholder="Select outcome" /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(OUTCOME_CONFIG).map(([v, c]) => <SelectItem key={v} value={v}>{c.label}</SelectItem>)}
                 </SelectContent>
@@ -589,8 +589,8 @@ export default function ProbationPathwayPage() {
             )}
 
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Rationale</label>
-              <Textarea
+              <label htmlFor="7c52-rationale" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Rationale</label>
+              <Textarea id="7c52-rationale"
                 value={outcomeRationale}
                 onChange={(e) => setOutcomeRationale(e.target.value)}
                 placeholder="Record the rationale for this decision — evidence considered, objectives met or not met, support provided, and the basis for the decision..."
@@ -601,12 +601,12 @@ export default function ProbationPathwayPage() {
             {outcome === "extended" && (
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Extension length</label>
-                  <Input value={extensionLength} onChange={(e) => setExtensionLength(e.target.value)} placeholder="e.g. 3 months" />
+                  <label htmlFor="7c52-extension-length" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Extension length</label>
+                  <Input id="7c52-extension-length" value={extensionLength} onChange={(e) => setExtensionLength(e.target.value)} placeholder="e.g. 3 months" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Extension objectives</label>
-                  <Textarea
+                  <label htmlFor="7c52-extension-objectives" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Extension objectives</label>
+                  <Textarea id="7c52-extension-objectives"
                     value={extensionObjectives}
                     onChange={(e) => setExtensionObjectives(e.target.value)}
                     placeholder="What specific objectives must be met during the extension? What support will be provided? What does the staff member need to demonstrate?"

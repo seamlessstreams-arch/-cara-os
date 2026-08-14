@@ -493,9 +493,9 @@ export default function ComplaintsOutcomesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Source</Label>
+              <Label htmlFor="b306-source">Source</Label>
               <Select value={newSource} onValueChange={(v) => setNewSource(v as ComplaintSource)}>
-                <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                <SelectTrigger id="b306-source"><SelectValue placeholder="Select source" /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(COMPLAINT_SOURCE_LABEL).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -504,9 +504,9 @@ export default function ComplaintsOutcomesPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Theme</Label>
+              <Label htmlFor="b306-theme">Theme</Label>
               <Select value={newTheme} onValueChange={(v) => setNewTheme(v as ComplaintTheme)}>
-                <SelectTrigger><SelectValue placeholder="Select theme" /></SelectTrigger>
+                <SelectTrigger id="b306-theme"><SelectValue placeholder="Select theme" /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(COMPLAINT_THEME_LABEL).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>

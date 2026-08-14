@@ -339,8 +339,8 @@ function CreateNotifiableEventDialog({
                 {n.notified && (
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <div className="space-y-1">
-                      <Label className="text-xs">Date notified</Label>
-                      <Input
+                      <Label htmlFor="7dd1-date-notified" className="text-xs">Date notified</Label>
+                      <Input id="7dd1-date-notified"
                         type="date"
                         value={n.date}
                         max={today}
@@ -349,9 +349,9 @@ function CreateNotifiableEventDialog({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Method</Label>
+                      <Label htmlFor="7dd1-method" className="text-xs">Method</Label>
                       <Select value={n.method} onValueChange={n.setMethod}>
-                        <SelectTrigger className="h-8 text-xs">
+                        <SelectTrigger id="7dd1-method" className="h-8 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -363,8 +363,8 @@ function CreateNotifiableEventDialog({
                     </div>
                     {n.refField && (
                       <div className="col-span-2 space-y-1">
-                        <Label className="text-xs">Reference / Case number (optional)</Label>
-                        <Input
+                        <Label htmlFor="7dd1-reference-case-number-optional" className="text-xs">Reference / Case number (optional)</Label>
+                        <Input id="7dd1-reference-case-number-optional"
                           value={n.ref}
                           placeholder="Ofsted reference number…"
                           onChange={(e) => n.setRef(e.target.value)}

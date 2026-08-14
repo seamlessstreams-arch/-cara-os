@@ -412,32 +412,32 @@ export default function StaffGrievancesPage() {
           <DialogHeader><DialogTitle>Log Grievance</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateGrievance} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Raised By *</label>
-              <Select value={gForm.raised_by} onValueChange={(v) => setGF("raised_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff member" /></SelectTrigger>
+              <label htmlFor="9605-raised-by" className="text-sm font-medium">Raised By *</label>
+              <Select value={gForm.raised_by} onValueChange={(v) => setGF("raised_by", v)}><SelectTrigger id="9605-raised-by" className="mt-1"><SelectValue placeholder="Select staff member" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Subject *</label>
-              <input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief description of grievance" value={gForm.subject} onChange={(e) => setGF("subject", e.target.value)} />
+              <label htmlFor="9605-subject" className="text-sm font-medium">Subject *</label>
+              <input id="9605-subject" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief description of grievance" value={gForm.subject} onChange={(e) => setGF("subject", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Category *</label>
-                <Select value={gForm.category} onValueChange={(v) => setGF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="9605-category" className="text-sm font-medium">Category *</label>
+                <Select value={gForm.category} onValueChange={(v) => setGF("category", v)}><SelectTrigger id="9605-category" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_GRIEVANCE_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Severity</label>
-                <Select value={gForm.severity} onValueChange={(v) => setGF("severity", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="9605-severity" className="text-sm font-medium">Severity</label>
+                <Select value={gForm.severity} onValueChange={(v) => setGF("severity", v)}><SelectTrigger id="9605-severity" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_GRIEVANCE_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details of the grievance…" value={gForm.description} onChange={(e) => setGF("description", e.target.value)} />
+              <label htmlFor="9605-description" className="text-sm font-medium">Description</label>
+              <textarea id="9605-description" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details of the grievance…" value={gForm.description} onChange={(e) => setGF("description", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

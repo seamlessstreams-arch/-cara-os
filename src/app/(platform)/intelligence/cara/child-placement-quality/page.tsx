@@ -191,9 +191,9 @@ export default function ChildPlacementQualityPage() {
 
         {/* Child selector */}
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">Viewing:</label>
+          <label htmlFor="1c99-viewing" className="text-sm font-medium text-muted-foreground whitespace-nowrap">Viewing:</label>
           <Select value={selectedId ?? ""} onValueChange={setSelectedId}>
-            <SelectTrigger className="w-56">
+            <SelectTrigger id="1c99-viewing" className="w-56">
               <SelectValue placeholder="Select a young person" />
             </SelectTrigger>
             <SelectContent>

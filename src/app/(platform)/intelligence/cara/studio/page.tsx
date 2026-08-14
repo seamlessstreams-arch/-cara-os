@@ -550,8 +550,8 @@ function CaraStudioPageInner() {
               <div className="space-y-3">
                 {/* Title */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Title</Label>
-                  <Input
+                  <Label htmlFor="ccf8-title" className="text-xs font-medium">Title</Label>
+                  <Input id="ccf8-title"
                     value={formData.title}
                     onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
                     placeholder={`e.g. ${CARA_ARTIFACT_TYPE_LABELS[selectedType]} — [child name]`}
@@ -562,9 +562,9 @@ function CaraStudioPageInner() {
                 <div className="grid grid-cols-2 gap-3">
                   {/* Child */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Child (optional)</Label>
+                    <Label htmlFor="ccf8-child-optional" className="text-xs font-medium">Child (optional)</Label>
                     <Select value={formData.child_id} onValueChange={(v) => setFormData((p) => ({ ...p, child_id: v }))}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger id="ccf8-child-optional" className="h-9">
                         <SelectValue placeholder="All / home-level" />
                       </SelectTrigger>
                       <SelectContent>
@@ -580,12 +580,12 @@ function CaraStudioPageInner() {
 
                   {/* Framework */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Framework</Label>
+                    <Label htmlFor="ccf8-framework" className="text-xs font-medium">Framework</Label>
                     <Select
                       value={formData.framework}
                       onValueChange={(v) => setFormData((p) => ({ ...p, framework: v as CaraFramework }))}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger id="ccf8-framework" className="h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -600,12 +600,12 @@ function CaraStudioPageInner() {
 
                   {/* Tone */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Tone</Label>
+                    <Label htmlFor="ccf8-tone" className="text-xs font-medium">Tone</Label>
                     <Select
                       value={formData.tone}
                       onValueChange={(v) => setFormData((p) => ({ ...p, tone: v as CaraTone }))}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger id="ccf8-tone" className="h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -620,12 +620,12 @@ function CaraStudioPageInner() {
 
                   {/* Creative mode */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Mode</Label>
+                    <Label htmlFor="ccf8-mode" className="text-xs font-medium">Mode</Label>
                     <Select
                       value={formData.creative_mode}
                       onValueChange={(v) => setFormData((p) => ({ ...p, creative_mode: v as CaraCreativeMode }))}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger id="ccf8-mode" className="h-9">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

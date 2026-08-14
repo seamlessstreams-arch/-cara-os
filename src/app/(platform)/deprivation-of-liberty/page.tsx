@@ -326,16 +326,16 @@ export default function DeprivationOfLibertyPage() {
           <DialogHeader><DialogTitle>Log Restriction</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateRestriction} className="space-y-3">
             <div>
-              <Label>Young Person *</Label>
+              <Label htmlFor="1877-young-person">Young Person *</Label>
               <Select value={dolForm.child_id} onValueChange={(v) => setDF("child_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Select YP" /></SelectTrigger>
+                <SelectTrigger id="1877-young-person"><SelectValue placeholder="Select YP" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Restriction Type *</Label>
+              <Label htmlFor="1877-restriction-type">Restriction Type *</Label>
               <Select value={dolForm.restriction_type} onValueChange={(v) => setDF("restriction_type", v)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="1877-restriction-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DOL_RESTRICTION_TYPE_LABEL) as [DoLRestrictionType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -343,25 +343,25 @@ export default function DeprivationOfLibertyPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Legal Basis</Label>
+            <div><Label htmlFor="1877-legal-basis">Legal Basis</Label>
               <Select value={dolForm.legal_basis} onValueChange={(v) => setDF("legal_basis", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="1877-legal-basis"><SelectValue /></SelectTrigger>
                 <SelectContent>{(Object.entries(DOL_LEGAL_BASIS_LABEL) as [DoLLegalBasis, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>Authorised By</Label>
+            <div><Label htmlFor="1877-authorised-by">Authorised By</Label>
               <Select value={dolForm.authorised_by_id} onValueChange={(v) => setDF("authorised_by_id", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="1877-authorised-by"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label>Date Imposed</Label><Input type="date" value={dolForm.date_imposed} onChange={(e) => setDF("date_imposed", e.target.value)} /></div>
-              <div><Label>Review Date</Label><Input type="date" value={dolForm.review_date} onChange={(e) => setDF("review_date", e.target.value)} /></div>
+              <div><Label htmlFor="1877-date-imposed">Date Imposed</Label><Input id="1877-date-imposed" type="date" value={dolForm.date_imposed} onChange={(e) => setDF("date_imposed", e.target.value)} /></div>
+              <div><Label htmlFor="1877-review-date">Review Date</Label><Input id="1877-review-date" type="date" value={dolForm.review_date} onChange={(e) => setDF("review_date", e.target.value)} /></div>
             </div>
-            <div><Label>Description *</Label><Textarea placeholder="Describe the restriction in detail..." value={dolForm.description} onChange={(e) => setDF("description", e.target.value)} /></div>
-            <div><Label>Justification</Label><Textarea placeholder="Why is this necessary and proportionate?" value={dolForm.necessary_justification} onChange={(e) => setDF("necessary_justification", e.target.value)} /></div>
-            <div><Label>Child&apos;s Views</Label><Textarea placeholder="What does the child think about this restriction?" value={dolForm.child_views} onChange={(e) => setDF("child_views", e.target.value)} /></div>
+            <div><Label htmlFor="1877-description">Description *</Label><Textarea id="1877-description" placeholder="Describe the restriction in detail..." value={dolForm.description} onChange={(e) => setDF("description", e.target.value)} /></div>
+            <div><Label htmlFor="1877-justification">Justification</Label><Textarea id="1877-justification" placeholder="Why is this necessary and proportionate?" value={dolForm.necessary_justification} onChange={(e) => setDF("necessary_justification", e.target.value)} /></div>
+            <div><Label htmlFor="1877-child-apos-s-views">Child&apos;s Views</Label><Textarea id="1877-child-apos-s-views" placeholder="What does the child think about this restriction?" value={dolForm.child_views} onChange={(e) => setDF("child_views", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRestriction.isPending}>{createRestriction.isPending ? "Logging…" : "Log Restriction"}</Button>

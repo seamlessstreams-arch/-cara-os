@@ -417,42 +417,42 @@ export default function PersonalBelongingsPage() {
           <DialogHeader><DialogTitle>Log Personal Belonging</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateItem} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person *</label>
-              <Select value={pbForm.child_id} onValueChange={(v) => setPBF("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="7b00-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={pbForm.child_id} onValueChange={(v) => setPBF("child_id", v)}><SelectTrigger id="7b00-young-person" className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Item Description *</label>
-              <input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Blue backpack with school supplies" value={pbForm.description} onChange={(e) => setPBF("description", e.target.value)} />
+              <label htmlFor="7b00-item-description" className="text-sm font-medium">Item Description *</label>
+              <input id="7b00-item-description" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Blue backpack with school supplies" value={pbForm.description} onChange={(e) => setPBF("description", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select value={pbForm.category} onValueChange={(v) => setPBF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="7b00-category" className="text-sm font-medium">Category</label>
+                <Select value={pbForm.category} onValueChange={(v) => setPBF("category", v)}><SelectTrigger id="7b00-category" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(BELONGING_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Condition</label>
-                <Select value={pbForm.condition} onValueChange={(v) => setPBF("condition", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="7b00-condition" className="text-sm font-medium">Condition</label>
+                <Select value={pbForm.condition} onValueChange={(v) => setPBF("condition", v)}><SelectTrigger id="7b00-condition" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(BELONGING_CONDITION_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Estimated Value (£)</label>
-                <input type="number" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="0.00" value={pbForm.estimated_value} onChange={(e) => setPBF("estimated_value", e.target.value)} />
+                <label htmlFor="7b00-estimated-value" className="text-sm font-medium">Estimated Value (£)</label>
+                <input id="7b00-estimated-value" type="number" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="0.00" value={pbForm.estimated_value} onChange={(e) => setPBF("estimated_value", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Storage Location</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. YP's room" value={pbForm.storage_location} onChange={(e) => setPBF("storage_location", e.target.value)} />
+                <label htmlFor="7b00-storage-location" className="text-sm font-medium">Storage Location</label>
+                <input id="7b00-storage-location" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. YP's room" value={pbForm.storage_location} onChange={(e) => setPBF("storage_location", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any additional details…" value={pbForm.notes} onChange={(e) => setPBF("notes", e.target.value)} />
+              <label htmlFor="7b00-notes" className="text-sm font-medium">Notes</label>
+              <textarea id="7b00-notes" rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any additional details…" value={pbForm.notes} onChange={(e) => setPBF("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

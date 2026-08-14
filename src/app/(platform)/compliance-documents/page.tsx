@@ -165,11 +165,11 @@ export default function ComplianceDocumentsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div><Label className="text-xs">Title (optional)</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Statement of Purpose 2026" className="mt-1 h-9" /></div>
+              <div><Label htmlFor="b791-title-optional" className="text-xs">Title (optional)</Label><Input id="b791-title-optional" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Statement of Purpose 2026" className="mt-1 h-9" /></div>
               <div>
-                <Label className="text-xs">Type</Label>
+                <Label htmlFor="b791-type" className="text-xs">Type</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="mt-1 h-9"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="b791-type" className="mt-1 h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="auto">Auto-detect</SelectItem>
                     {CATEGORY_OPTIONS.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
@@ -179,9 +179,9 @@ export default function ComplianceDocumentsPage() {
             </div>
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Label className="text-xs">Upload a file or paste the text</Label>
+                <Label htmlFor="b791-upload-a-file-or-paste-the-text" className="text-xs">Upload a file or paste the text</Label>
                 <div className="flex items-center gap-2">
-                  <input ref={fileRef} type="file" accept=".docx,.txt,.md,.csv,.pdf" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+                  <input id="b791-upload-a-file-or-paste-the-text" ref={fileRef} type="file" accept=".docx,.txt,.md,.csv,.pdf" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
                   <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={reading} className="gap-1.5"><Upload className="h-3.5 w-3.5" />{reading ? "Reading…" : "Upload .docx / .txt"}</Button>
                   <DictationButton mode="append" size="sm" onTranscript={(t) => setText((p) => (p.trim() ? `${p}\n${t}` : t))} />
                 </div>

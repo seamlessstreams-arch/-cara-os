@@ -283,9 +283,9 @@ export default function SuspensionDecisionPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
+              <label htmlFor="6d96-acting-as" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
               <Select value={actorRole} onValueChange={setActorRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="6d96-acting-as"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {HR_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -294,21 +294,21 @@ export default function SuspensionDecisionPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id</label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <label htmlFor="6d96-actor-user-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id</label>
+              <Input id="6d96-actor-user-id" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
-              <Input value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
+              <label htmlFor="6d96-staff-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
+              <Input id="6d96-staff-id" value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case id (optional)</label>
-              <Input value={caseId} onChange={(e) => setCaseId(e.target.value)} />
+              <label htmlFor="6d96-case-id-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case id (optional)</label>
+              <Input id="6d96-case-id-optional" value={caseId} onChange={(e) => setCaseId(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Concern summary</label>
-            <Textarea
+            <label htmlFor="6d96-concern-summary" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Concern summary</label>
+            <Textarea id="6d96-concern-summary"
               value={concernSummary}
               onChange={(e) => setConcernSummary(e.target.value)}
               placeholder="What concern has been raised? Stick to the facts. The Process Guardian will review the language of any letter separately."
@@ -378,10 +378,10 @@ export default function SuspensionDecisionPage() {
             ))}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
+            <label htmlFor="6d96-rationale-for-not-proceeding-with-" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
               Rationale for not proceeding with an alternative
             </label>
-            <Textarea
+            <Textarea id="6d96-rationale-for-not-proceeding-with-"
               value={alternativeRejectionRationale}
               onChange={(e) => setAlternativeRejectionRationale(e.target.value)}
               placeholder="Explain why each alternative considered was not adequate to manage the assessed risks."
@@ -464,8 +464,8 @@ export default function SuspensionDecisionPage() {
             <Input type="date" value={firstReviewDate} onChange={(e) => setFirstReviewDate(e.target.value)} placeholder="First review date" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Welfare support offered (one per line)</label>
-            <Textarea
+            <label htmlFor="6d96-welfare-support-offered-one-per-li" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Welfare support offered (one per line)</label>
+            <Textarea id="6d96-welfare-support-offered-one-per-li"
               value={welfareSupportRaw}
               onChange={(e) => setWelfareSupportRaw(e.target.value)}
               placeholder={
@@ -498,8 +498,8 @@ export default function SuspensionDecisionPage() {
           </div>
           {proposedDecision === "alternative_arrangement" ? (
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Alternative arrangement description</label>
-              <Textarea
+              <label htmlFor="6d96-alternative-arrangement-descriptio" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Alternative arrangement description</label>
+              <Textarea id="6d96-alternative-arrangement-descriptio"
                 value={alternativeArrangementDescription}
                 onChange={(e) => setAlternativeArrangementDescription(e.target.value)}
                 placeholder="Describe the duties, hours, supervision, contact with children, and review interval."

@@ -381,9 +381,9 @@ export default function GrabBagPage() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>New Grab Bag</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveBag} className="space-y-3 py-2">
-            <div><Label>Young Person *</Label><Select value={bagForm.child_id} onValueChange={(v) => setBAG("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Storage Location</Label><Input className="mt-1" placeholder="e.g. Secure cupboard, Room 2…" value={bagForm.location} onChange={(e) => setBAG("location", e.target.value)} /></div>
-            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={bagForm.notes} onChange={(e) => setBAG("notes", e.target.value)} /></div>
+            <div><Label htmlFor="196f-young-person">Young Person *</Label><Select value={bagForm.child_id} onValueChange={(v) => setBAG("child_id", v)}><SelectTrigger id="196f-young-person" className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="196f-storage-location">Storage Location</Label><Input id="196f-storage-location" className="mt-1" placeholder="e.g. Secure cupboard, Room 2…" value={bagForm.location} onChange={(e) => setBAG("location", e.target.value)} /></div>
+            <div><Label htmlFor="196f-notes">Notes</Label><Textarea id="196f-notes" className="mt-1" rows={2} value={bagForm.notes} onChange={(e) => setBAG("notes", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createBag.isPending}>{createBag.isPending ? "Saving…" : "Create Bag"}</Button></DialogFooter>
           </form>
         </DialogContent>

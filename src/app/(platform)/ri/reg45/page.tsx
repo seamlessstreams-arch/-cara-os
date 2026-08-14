@@ -675,8 +675,8 @@ function GenerateForm({
       <CardContent className="space-y-4">
         <div className="grid sm:grid-cols-3 gap-3">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Report Period</label>
-            <input
+            <label htmlFor="f9cb-report-period" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Report Period</label>
+            <input id="f9cb-report-period"
               className="mt-1 w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g. Q1 2026"
               value={period}
@@ -684,8 +684,8 @@ function GenerateForm({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Period Start</label>
-            <input
+            <label htmlFor="f9cb-period-start" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Period Start</label>
+            <input id="f9cb-period-start"
               type="date"
               className="mt-1 w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={periodStart}
@@ -693,8 +693,8 @@ function GenerateForm({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Period End</label>
-            <input
+            <label htmlFor="f9cb-period-end" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Period End</label>
+            <input id="f9cb-period-end"
               type="date"
               className="mt-1 w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={periodEnd}
@@ -703,8 +703,8 @@ function GenerateForm({
           </div>
         </div>
         <div>
-          <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Context (optional)</label>
-          <Textarea
+          <label htmlFor="f9cb-evidence-context-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Context (optional)</label>
+          <Textarea id="f9cb-evidence-context-optional"
             className="mt-1 text-sm"
             rows={3}
             placeholder="Paste key evidence, themes, or context for Cara to use when drafting…"

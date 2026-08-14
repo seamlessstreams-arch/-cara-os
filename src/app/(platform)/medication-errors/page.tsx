@@ -765,9 +765,9 @@ function NewErrorDialog({
           {/* Young person + date/time */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person *</label>
+              <label htmlFor="091d-young-person" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person *</label>
               <Select value={child_id} onValueChange={setChildId}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="091d-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
                   <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
@@ -776,21 +776,21 @@ function NewErrorDialog({
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Date Occurred *</label>
-              <Input type="date" value={date_occurred} onChange={(e) => setDateOccurred(e.target.value)} className="h-8 text-xs" />
+              <label htmlFor="091d-date-occurred" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Date Occurred *</label>
+              <Input id="091d-date-occurred" type="date" value={date_occurred} onChange={(e) => setDateOccurred(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Time Occurred</label>
-              <Input type="time" value={time_occurred} onChange={(e) => setTimeOccurred(e.target.value)} className="h-8 text-xs" />
+              <label htmlFor="091d-time-occurred" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Time Occurred</label>
+              <Input id="091d-time-occurred" type="time" value={time_occurred} onChange={(e) => setTimeOccurred(e.target.value)} className="h-8 text-xs" />
             </div>
           </div>
 
           {/* Error type + severity */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Error Type *</label>
+              <label htmlFor="091d-error-type" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Error Type *</label>
               <Select value={error_type} onValueChange={(v) => setErrorType(v as MedErrorType)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="091d-error-type" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(ERROR_TYPE_CONFIG) as MedErrorType[]).map((t) => (
                     <SelectItem key={t} value={t}>{ERROR_TYPE_CONFIG[t].label}</SelectItem>
@@ -799,9 +799,9 @@ function NewErrorDialog({
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Severity</label>
+              <label htmlFor="091d-severity" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Severity</label>
               <Select value={severity} onValueChange={(v) => setSeverity(v as MedErrorSeverity)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="091d-severity" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(SEVERITY_CONFIG) as MedErrorSeverity[]).map((s) => (
                     <SelectItem key={s} value={s}>{SEVERITY_CONFIG[s].label}</SelectItem>
@@ -813,25 +813,25 @@ function NewErrorDialog({
 
           {/* Medication + doses */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Medication *</label>
-            <Input value={medication} onChange={(e) => setMedication(e.target.value)} placeholder="e.g. Melatonin 3mg" className="h-8 text-xs" />
+            <label htmlFor="091d-medication" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Medication *</label>
+            <Input id="091d-medication" value={medication} onChange={(e) => setMedication(e.target.value)} placeholder="e.g. Melatonin 3mg" className="h-8 text-xs" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Prescribed Dose</label>
-              <Input value={prescribed_dose} onChange={(e) => setPrescribedDose(e.target.value)} placeholder="e.g. 3mg" className="h-8 text-xs" />
+              <label htmlFor="091d-prescribed-dose" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Prescribed Dose</label>
+              <Input id="091d-prescribed-dose" value={prescribed_dose} onChange={(e) => setPrescribedDose(e.target.value)} placeholder="e.g. 3mg" className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Actual Dose</label>
-              <Input value={actual_dose} onChange={(e) => setActualDose(e.target.value)} placeholder="e.g. 5mg or Not given" className="h-8 text-xs" />
+              <label htmlFor="091d-actual-dose" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Actual Dose</label>
+              <Input id="091d-actual-dose" value={actual_dose} onChange={(e) => setActualDose(e.target.value)} placeholder="e.g. 5mg or Not given" className="h-8 text-xs" />
             </div>
           </div>
 
           {/* What happened */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">What Happened *</label>
-            <Textarea
+            <label htmlFor="091d-what-happened" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">What Happened *</label>
+            <Textarea id="091d-what-happened"
               value={what_happened}
               onChange={(e) => setWhatHappened(e.target.value)}
               placeholder="Describe what happened in detail..."
@@ -841,8 +841,8 @@ function NewErrorDialog({
 
           {/* Immediate action */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Immediate Action Taken</label>
-            <Textarea
+            <label htmlFor="091d-immediate-action-taken" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Immediate Action Taken</label>
+            <Textarea id="091d-immediate-action-taken"
               value={immediate_action}
               onChange={(e) => setImmediateAction(e.target.value)}
               placeholder="What was done immediately in response?"
@@ -889,8 +889,8 @@ function NewErrorDialog({
 
           {/* Root cause */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Root Cause</label>
-            <Textarea
+            <label htmlFor="091d-root-cause" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Root Cause</label>
+            <Textarea id="091d-root-cause"
               value={root_cause}
               onChange={(e) => setRootCause(e.target.value)}
               placeholder="What was the root cause of this error?"
@@ -900,8 +900,8 @@ function NewErrorDialog({
 
           {/* Contributing factors */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Contributing Factors (one per line)</label>
-            <Textarea
+            <label htmlFor="091d-contributing-factors-one-per-line" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Contributing Factors (one per line)</label>
+            <Textarea id="091d-contributing-factors-one-per-line"
               value={contributing_factors}
               onChange={(e) => setContributingFactors(e.target.value)}
               placeholder="Enter each factor on a new line..."
@@ -911,8 +911,8 @@ function NewErrorDialog({
 
           {/* Lessons learned */}
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Lessons Learned</label>
-            <Textarea
+            <label htmlFor="091d-lessons-learned" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Lessons Learned</label>
+            <Textarea id="091d-lessons-learned"
               value={lessons_learned}
               onChange={(e) => setLessonsLearned(e.target.value)}
               placeholder="What can be learned from this incident?"

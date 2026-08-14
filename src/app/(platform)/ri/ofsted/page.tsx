@@ -105,8 +105,8 @@ function MockQuestion({ question, index }: { question: string; index: number }) 
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] pt-3">
-          <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Your Practice Answer</label>
-          <Textarea
+          <label htmlFor="d46b-your-practice-answer" className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Your Practice Answer</label>
+          <Textarea id="d46b-your-practice-answer"
             className="mt-1 text-sm"
             rows={4}
             placeholder="Prepare your answer here — what evidence would you cite? What would you say to the inspector?"
@@ -182,8 +182,8 @@ export default function OfstedReadinessPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Service Context (optional)</label>
-              <Textarea
+              <label htmlFor="d46b-service-context-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Service Context (optional)</label>
+              <Textarea id="d46b-service-context-optional"
                 className="mt-1 text-sm"
                 rows={3}
                 placeholder="Describe current position: recent incidents, staffing, last inspection outcome, any concerns or notable strengths…"

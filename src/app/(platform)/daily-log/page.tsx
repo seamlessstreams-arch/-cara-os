@@ -207,8 +207,8 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
           <div className="grid grid-cols-2 gap-3">
             {/* YP selector */}
             <div>
-              <label className="text-xs font-medium text-slate-500 mb-1 block">Young Person</label>
-              <select
+              <label htmlFor="7998-young-person" className="text-xs font-medium text-slate-500 mb-1 block">Young Person</label>
+              <select id="7998-young-person"
                 value={childId}
                 onChange={(e) => setChildId(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -220,8 +220,8 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
             </div>
             {/* Entry type selector */}
             <div>
-              <label className="text-xs font-medium text-slate-500 mb-1 block">Entry Type</label>
-              <select
+              <label htmlFor="7998-entry-type" className="text-xs font-medium text-slate-500 mb-1 block">Entry Type</label>
+              <select id="7998-entry-type"
                 value={entryType}
                 onChange={(e) => setEntryType(e.target.value as DailyLogEntry["entry_type"])}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 capitalize"

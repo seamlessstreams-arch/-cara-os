@@ -631,8 +631,8 @@ export default function DocumentsPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Category</label>
-                    <select
+                    <label htmlFor="31a9-category" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Category</label>
+                    <select id="31a9-category"
                       value={uploadForm.category}
                       onChange={(e) => setUploadForm((f) => ({ ...f, category: e.target.value }))}
                       className="w-full h-9 rounded-xl border border-[var(--cs-border)] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -643,8 +643,8 @@ export default function DocumentsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Description (optional)</label>
-                    <textarea
+                    <label htmlFor="31a9-description-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Description (optional)</label>
+                    <textarea id="31a9-description-optional"
                       value={uploadForm.description}
                       onChange={(e) => setUploadForm((f) => ({ ...f, description: e.target.value }))}
                       className="w-full rounded-xl border border-[var(--cs-border)] p-2.5 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -652,8 +652,8 @@ export default function DocumentsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Expiry date (optional)</label>
-                      <input
+                      <label htmlFor="31a9-expiry-date-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Expiry date (optional)</label>
+                      <input id="31a9-expiry-date-optional"
                         type="date"
                         value={uploadForm.expiryDate}
                         onChange={(e) => setUploadForm((f) => ({ ...f, expiryDate: e.target.value }))}
@@ -673,8 +673,8 @@ export default function DocumentsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Tags (comma-separated)</label>
-                    <Input
+                    <label htmlFor="31a9-tags-comma-separated" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Tags (comma-separated)</label>
+                    <Input id="31a9-tags-comma-separated"
                       placeholder="e.g. safeguarding, mandatory, policy"
                       value={uploadForm.tags}
                       onChange={(e) => setUploadForm((f) => ({ ...f, tags: e.target.value }))}

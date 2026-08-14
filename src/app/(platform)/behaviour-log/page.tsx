@@ -456,18 +456,18 @@ export default function BehaviourLogPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Child *</label>
+                <label htmlFor="407d-child" className="text-sm font-medium mb-1 block">Child *</label>
                 <Select value={nChild} onValueChange={setNChild}>
-                  <SelectTrigger><SelectValue placeholder="Child" /></SelectTrigger>
+                  <SelectTrigger id="407d-child"><SelectValue placeholder="Child" /></SelectTrigger>
                   <SelectContent>
                     {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Direction *</label>
+                <label htmlFor="407d-direction" className="text-sm font-medium mb-1 block">Direction *</label>
                 <Select value={nDir} onValueChange={v => setNDir(v as BehaviourDirection)}>
-                  <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectTrigger id="407d-direction"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="positive">Positive</SelectItem>
                     <SelectItem value="concern">Concern</SelectItem>
@@ -479,9 +479,9 @@ export default function BehaviourLogPage() {
             {nChild && <InlineNeuroProfilePanel childId={nChild} context="behaviour" />}
             {nChild && <InlinePracticeModules childId={nChild} modules={["relationships"]} />}
             <div>
-              <label className="text-sm font-medium mb-1 block">Intensity</label>
+              <label htmlFor="407d-intensity" className="text-sm font-medium mb-1 block">Intensity</label>
               <Select value={nIntensity} onValueChange={v => setNIntensity(v as BehaviourIntensity)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="407d-intensity"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(INTENSITY_CONFIG) as [BehaviourIntensity, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -490,35 +490,35 @@ export default function BehaviourLogPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="407d-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="407d-title" placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">A — Antecedent</label>
-              <Textarea placeholder="What happened before..." value={nAntecedent} onChange={e => setNAntecedent(e.target.value)} rows={2} />
+              <label htmlFor="407d-a-antecedent" className="text-sm font-medium mb-1 block">A — Antecedent</label>
+              <Textarea id="407d-a-antecedent" placeholder="What happened before..." value={nAntecedent} onChange={e => setNAntecedent(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">B — Behaviour *</label>
-              <Textarea placeholder="What the child did..." value={nBehaviour} onChange={e => setNBehaviour(e.target.value)} rows={2} />
+              <label htmlFor="407d-b-behaviour" className="text-sm font-medium mb-1 block">B — Behaviour *</label>
+              <Textarea id="407d-b-behaviour" placeholder="What the child did..." value={nBehaviour} onChange={e => setNBehaviour(e.target.value)} rows={2} />
               <WritingAssistantInline value={nBehaviour} onApplyText={setNBehaviour} recordType="behaviour_log" fieldName="behaviour" childId={nChild || undefined} mode="standard" />
             </div>
             {/* Cara Heart — ABC practice reflection */}
             <InlineCaraHeartPanel record={nHeartRecord} />
             <div>
-              <label className="text-sm font-medium mb-1 block">C — Consequence</label>
-              <Textarea placeholder="What happened after..." value={nConsequence} onChange={e => setNConsequence(e.target.value)} rows={2} />
+              <label htmlFor="407d-c-consequence" className="text-sm font-medium mb-1 block">C — Consequence</label>
+              <Textarea id="407d-c-consequence" placeholder="What happened after..." value={nConsequence} onChange={e => setNConsequence(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Trigger</label>
-              <Input placeholder="Identified trigger" value={nTrigger} onChange={e => setNTrigger(e.target.value)} />
+              <label htmlFor="407d-trigger" className="text-sm font-medium mb-1 block">Trigger</label>
+              <Input id="407d-trigger" placeholder="Identified trigger" value={nTrigger} onChange={e => setNTrigger(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Strategy Used</label>
-              <Textarea placeholder="De-escalation or reinforcement approach..." value={nStrategy} onChange={e => setNStrategy(e.target.value)} rows={2} />
+              <label htmlFor="407d-strategy-used" className="text-sm font-medium mb-1 block">Strategy Used</label>
+              <Textarea id="407d-strategy-used" placeholder="De-escalation or reinforcement approach..." value={nStrategy} onChange={e => setNStrategy(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Outcome</label>
-              <Textarea placeholder="Result..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
+              <label htmlFor="407d-outcome" className="text-sm font-medium mb-1 block">Outcome</label>
+              <Textarea id="407d-outcome" placeholder="Result..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

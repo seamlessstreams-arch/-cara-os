@@ -343,11 +343,11 @@ export default function CriticalIncidentDebriefPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Schedule Debrief</DialogTitle></DialogHeader>
           <form onSubmit={handleScheduleDebrief} className="space-y-3">
-            <div><Label>Incident Date</Label><Input type="date" value={cidForm.incident_date} onChange={(e) => setCID("incident_date", e.target.value)} /></div>
-            <div><Label>Debrief Date</Label><Input type="date" value={cidForm.debrief_date} onChange={(e) => setCID("debrief_date", e.target.value)} /></div>
+            <div><Label htmlFor="1c76-incident-date">Incident Date</Label><Input id="1c76-incident-date" type="date" value={cidForm.incident_date} onChange={(e) => setCID("incident_date", e.target.value)} /></div>
+            <div><Label htmlFor="1c76-debrief-date">Debrief Date</Label><Input id="1c76-debrief-date" type="date" value={cidForm.debrief_date} onChange={(e) => setCID("debrief_date", e.target.value)} /></div>
             <div>
-              <Label>Category</Label>
-              <Select value={cidForm.incident_category} onValueChange={(v) => setCID("incident_category", v)}><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <Label htmlFor="1c76-category">Category</Label>
+              <Select value={cidForm.incident_category} onValueChange={(v) => setCID("incident_category", v)}><SelectTrigger id="1c76-category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DEBRIEF_INCIDENT_CATEGORY_LABEL) as [DebriefIncidentCategory, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -356,8 +356,8 @@ export default function CriticalIncidentDebriefPage() {
               </Select>
             </div>
             <div>
-              <Label>Impact Level</Label>
-              <Select value={cidForm.impact_level} onValueChange={(v) => setCID("impact_level", v)}><SelectTrigger><SelectValue placeholder="Select impact" /></SelectTrigger>
+              <Label htmlFor="1c76-impact-level">Impact Level</Label>
+              <Select value={cidForm.impact_level} onValueChange={(v) => setCID("impact_level", v)}><SelectTrigger id="1c76-impact-level"><SelectValue placeholder="Select impact" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DEBRIEF_IMPACT_LEVEL_LABEL) as [DebriefImpactLevel, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -365,7 +365,7 @@ export default function CriticalIncidentDebriefPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Incident Summary *</Label><Textarea placeholder="Brief description of the incident..." value={cidForm.incident_summary} onChange={(e) => setCID("incident_summary", e.target.value)} /><EntryAssist value={cidForm.incident_summary} onChange={(v) => setCID("incident_summary", v)} sourceRecordType="critical_incident_debrief" className="mt-1" /></div>
+            <div><Label htmlFor="1c76-incident-summary">Incident Summary *</Label><Textarea id="1c76-incident-summary" placeholder="Brief description of the incident..." value={cidForm.incident_summary} onChange={(e) => setCID("incident_summary", e.target.value)} /><EntryAssist value={cidForm.incident_summary} onChange={(v) => setCID("incident_summary", v)} sourceRecordType="critical_incident_debrief" className="mt-1" /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Schedule"}</Button>

@@ -336,17 +336,17 @@ export default function StaffSicknessPage() {
           <DialogHeader><DialogTitle>Log Sickness Absence</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateAbsence} className="space-y-3">
             <div>
-              <Label>Staff Member *</Label>
+              <Label htmlFor="f0ad-staff-member">Staff Member *</Label>
               <Select value={ssForm.staff_id} onValueChange={(v) => setSSF("staff_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
+                <SelectTrigger id="f0ad-staff-member"><SelectValue placeholder="Select staff" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>Date Started</Label><Input type="date" value={ssForm.date_started} onChange={(e) => setSSF("date_started", e.target.value)} /></div>
+            <div><Label htmlFor="f0ad-date-started">Date Started</Label><Input id="f0ad-date-started" type="date" value={ssForm.date_started} onChange={(e) => setSSF("date_started", e.target.value)} /></div>
             <div>
-              <Label>Reason *</Label>
+              <Label htmlFor="f0ad-reason">Reason *</Label>
               <Select value={ssForm.reason} onValueChange={(v) => setSSF("reason", v)}>
-                <SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
+                <SelectTrigger id="f0ad-reason"><SelectValue placeholder="Select reason" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(STAFF_SICKNESS_ABSENCE_REASON_LABEL) as [StaffSicknessAbsenceReason, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -354,8 +354,8 @@ export default function StaffSicknessPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Details</Label><Textarea placeholder="Describe symptoms and circumstances..." value={ssForm.reason_detail} onChange={(e) => setSSF("reason_detail", e.target.value)} /></div>
-            <div><Label>Cover Arrangements</Label><Textarea placeholder="How will shifts be covered?" value={ssForm.cover_arrangements} onChange={(e) => setSSF("cover_arrangements", e.target.value)} /></div>
+            <div><Label htmlFor="f0ad-details">Details</Label><Textarea id="f0ad-details" placeholder="Describe symptoms and circumstances..." value={ssForm.reason_detail} onChange={(e) => setSSF("reason_detail", e.target.value)} /></div>
+            <div><Label htmlFor="f0ad-cover-arrangements">Cover Arrangements</Label><Textarea id="f0ad-cover-arrangements" placeholder="How will shifts be covered?" value={ssForm.cover_arrangements} onChange={(e) => setSSF("cover_arrangements", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createAbsence.isPending}>{createAbsence.isPending ? "Logging…" : "Log Absence"}</Button>

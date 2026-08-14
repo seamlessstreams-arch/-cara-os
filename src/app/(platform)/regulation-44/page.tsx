@@ -399,28 +399,28 @@ function CreateVisitModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Visit date *</label>
-              <Input type="date" required value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} />
+              <label htmlFor="1ff2-visit-date" className="text-xs font-semibold text-slate-700 block mb-1">Visit date *</label>
+              <Input id="1ff2-visit-date" type="date" required value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Visitor name *</label>
-              <Input required placeholder="Independent visitor name" value={form.visitor} onChange={(e) => setForm((f) => ({ ...f, visitor: e.target.value }))} />
+              <label htmlFor="1ff2-visitor-name" className="text-xs font-semibold text-slate-700 block mb-1">Visitor name *</label>
+              <Input id="1ff2-visitor-name" required placeholder="Independent visitor name" value={form.visitor} onChange={(e) => setForm((f) => ({ ...f, visitor: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Duration</label>
-              <Input placeholder="e.g. 3 hours" value={form.duration} onChange={(e) => setForm((f) => ({ ...f, duration: e.target.value }))} />
+              <label htmlFor="1ff2-duration" className="text-xs font-semibold text-slate-700 block mb-1">Duration</label>
+              <Input id="1ff2-duration" placeholder="e.g. 3 hours" value={form.duration} onChange={(e) => setForm((f) => ({ ...f, duration: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Children spoken with</label>
-              <Input placeholder="e.g. All 3 children" value={form.children_spoken} onChange={(e) => setForm((f) => ({ ...f, children_spoken: e.target.value }))} />
+              <label htmlFor="1ff2-children-spoken-with" className="text-xs font-semibold text-slate-700 block mb-1">Children spoken with</label>
+              <Input id="1ff2-children-spoken-with" placeholder="e.g. All 3 children" value={form.children_spoken} onChange={(e) => setForm((f) => ({ ...f, children_spoken: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Number of staff spoken with</label>
-              <Input type="number" min="0" value={form.staff_spoken} onChange={(e) => setForm((f) => ({ ...f, staff_spoken: e.target.value }))} />
+              <label htmlFor="1ff2-number-of-staff-spoken-with" className="text-xs font-semibold text-slate-700 block mb-1">Number of staff spoken with</label>
+              <Input id="1ff2-number-of-staff-spoken-with" type="number" min="0" value={form.staff_spoken} onChange={(e) => setForm((f) => ({ ...f, staff_spoken: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Overall judgement</label>
-              <select value={form.overall_judgement} onChange={(e) => setForm((f) => ({ ...f, overall_judgement: e.target.value }))} className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label htmlFor="1ff2-overall-judgement" className="text-xs font-semibold text-slate-700 block mb-1">Overall judgement</label>
+              <select id="1ff2-overall-judgement" value={form.overall_judgement} onChange={(e) => setForm((f) => ({ ...f, overall_judgement: e.target.value }))} className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 {JUDGEMENT_OPTIONS.map((j) => <option key={j.value} value={j.value}>{j.label}</option>)}
               </select>
             </div>
@@ -440,32 +440,32 @@ function CreateVisitModal({ onClose }: { onClose: () => void }) {
 
           {/* Strengths */}
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Strengths (one per line)</label>
-            <textarea rows={3} value={strengths} onChange={(e) => setStrengths(e.target.value)} placeholder="e.g. Strong staff team culture" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="1ff2-strengths-one-per-line" className="text-xs font-semibold text-slate-700 block mb-1">Strengths (one per line)</label>
+            <textarea id="1ff2-strengths-one-per-line" rows={3} value={strengths} onChange={(e) => setStrengths(e.target.value)} placeholder="e.g. Strong staff team culture" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Areas for development */}
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Areas for development (one per line)</label>
-            <textarea rows={3} value={areasForDevelopment} onChange={(e) => setAreasForDevelopment(e.target.value)} placeholder="e.g. Handover documentation needs improvement" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="1ff2-areas-for-development-one-per-line" className="text-xs font-semibold text-slate-700 block mb-1">Areas for development (one per line)</label>
+            <textarea id="1ff2-areas-for-development-one-per-line" rows={3} value={areasForDevelopment} onChange={(e) => setAreasForDevelopment(e.target.value)} placeholder="e.g. Handover documentation needs improvement" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Recommendations */}
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Recommendations (one per line)</label>
-            <textarea rows={3} value={recommendations} onChange={(e) => setRecommendations(e.target.value)} placeholder="e.g. Review behaviour support plans by March" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="1ff2-recommendations-one-per-line" className="text-xs font-semibold text-slate-700 block mb-1">Recommendations (one per line)</label>
+            <textarea id="1ff2-recommendations-one-per-line" rows={3} value={recommendations} onChange={(e) => setRecommendations(e.target.value)} placeholder="e.g. Review behaviour support plans by March" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Previous actions */}
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Previous visit actions — status update</label>
-            <Input placeholder="e.g. All actions from previous visit completed" value={form.previous_actions_status} onChange={(e) => setForm((f) => ({ ...f, previous_actions_status: e.target.value }))} />
+            <label htmlFor="1ff2-previous-visit-actions-status-upda" className="text-xs font-semibold text-slate-700 block mb-1">Previous visit actions — status update</label>
+            <Input id="1ff2-previous-visit-actions-status-upda" placeholder="e.g. All actions from previous visit completed" value={form.previous_actions_status} onChange={(e) => setForm((f) => ({ ...f, previous_actions_status: e.target.value }))} />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Additional notes</label>
-            <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="1ff2-additional-notes" className="text-xs font-semibold text-slate-700 block mb-1">Additional notes</label>
+            <textarea id="1ff2-additional-notes" rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Ofsted send */}

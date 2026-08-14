@@ -434,31 +434,31 @@ export default function StaffExitInterviewsPage() {
             <DialogTitle>Record Exit Interview</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveInterview} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Staff Name *</label><Input className="mt-1" placeholder="Full name of departing staff member" value={eiForm.staff_name} onChange={(e) => setEI("staff_name", e.target.value)} /></div>
+            <div><label htmlFor="e696-staff-name" className="text-sm font-medium">Staff Name *</label><Input id="e696-staff-name" className="mt-1" placeholder="Full name of departing staff member" value={eiForm.staff_name} onChange={(e) => setEI("staff_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Reason for Leaving</label>
-                <Select value={eiForm.reason} onValueChange={(v) => setEI("reason", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="e696-reason-for-leaving" className="text-sm font-medium">Reason for Leaving</label>
+                <Select value={eiForm.reason} onValueChange={(v) => setEI("reason", v)}><SelectTrigger id="e696-reason-for-leaving" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_EXIT_INTERVIEW_REASON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Status</label>
-                <Select value={eiForm.status} onValueChange={(v) => setEI("status", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="e696-status" className="text-sm font-medium">Status</label>
+                <Select value={eiForm.status} onValueChange={(v) => setEI("status", v)}><SelectTrigger id="e696-status" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_EXIT_INTERVIEW_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Interview Date</label><Input type="date" className="mt-1" value={eiForm.interview_date} onChange={(e) => setEI("interview_date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Overall Rating (1–5)</label><Input type="number" min="1" max="5" className="mt-1" placeholder="Optional" value={eiForm.overall_rating} onChange={(e) => setEI("overall_rating", e.target.value)} /></div>
+              <div><label htmlFor="e696-interview-date" className="text-sm font-medium">Interview Date</label><Input id="e696-interview-date" type="date" className="mt-1" value={eiForm.interview_date} onChange={(e) => setEI("interview_date", e.target.value)} /></div>
+              <div><label htmlFor="e696-overall-rating-1-5" className="text-sm font-medium">Overall Rating (1–5)</label><Input id="e696-overall-rating-1-5" type="number" min="1" max="5" className="mt-1" placeholder="Optional" value={eiForm.overall_rating} onChange={(e) => setEI("overall_rating", e.target.value)} /></div>
             </div>
-            <div><label className="text-sm font-medium">Interviewer</label>
-              <Select value={eiForm.interviewer} onValueChange={(v) => setEI("interviewer", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <div><label htmlFor="e696-interviewer" className="text-sm font-medium">Interviewer</label>
+              <Select value={eiForm.interviewer} onValueChange={(v) => setEI("interviewer", v)}><SelectTrigger id="e696-interviewer" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="What did they value? (one per line)" value={eiForm.positives} onChange={(e) => setEI("positives", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Improvements</label><Textarea className="mt-1" rows={2} placeholder="What could be improved? (one per line)" value={eiForm.improvements} onChange={(e) => setEI("improvements", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes (confidential)…" value={eiForm.notes} onChange={(e) => setEI("notes", e.target.value)} /></div>
+            <div><label htmlFor="e696-positives" className="text-sm font-medium">Positives</label><Textarea id="e696-positives" className="mt-1" rows={2} placeholder="What did they value? (one per line)" value={eiForm.positives} onChange={(e) => setEI("positives", e.target.value)} /></div>
+            <div><label htmlFor="e696-improvements" className="text-sm font-medium">Improvements</label><Textarea id="e696-improvements" className="mt-1" rows={2} placeholder="What could be improved? (one per line)" value={eiForm.improvements} onChange={(e) => setEI("improvements", e.target.value)} /></div>
+            <div><label htmlFor="e696-notes" className="text-sm font-medium">Notes</label><Textarea id="e696-notes" className="mt-1" rows={2} placeholder="Additional notes (confidential)…" value={eiForm.notes} onChange={(e) => setEI("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createInterview.isPending}>{createInterview.isPending ? "Saving…" : "Save Interview"}</Button>

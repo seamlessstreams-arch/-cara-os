@@ -1501,8 +1501,8 @@ export default function CandidateDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Organisation</label>
-                <Input
+                <label htmlFor="428a-organisation" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Organisation</label>
+                <Input id="428a-organisation"
                   value={addRefForm.referee_org}
                   onChange={(e) => setAddRefForm({ ...addRefForm, referee_org: e.target.value })}
                   placeholder="Employer name"
@@ -1510,8 +1510,8 @@ export default function CandidateDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Role/Title</label>
-                <Input
+                <label htmlFor="428a-role-title" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Role/Title</label>
+                <Input id="428a-role-title"
                   value={addRefForm.referee_role}
                   onChange={(e) => setAddRefForm({ ...addRefForm, referee_role: e.target.value })}
                   placeholder="Job title"
@@ -1520,8 +1520,8 @@ export default function CandidateDetailPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Email</label>
-              <Input
+              <label htmlFor="428a-email" className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Email</label>
+              <Input id="428a-email"
                 type="email"
                 value={addRefForm.referee_email}
                 onChange={(e) => setAddRefForm({ ...addRefForm, referee_email: e.target.value })}

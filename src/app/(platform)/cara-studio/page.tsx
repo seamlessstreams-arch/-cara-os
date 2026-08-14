@@ -394,8 +394,8 @@ function CaraStudioContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Child selector */}
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Child (optional)</label>
-                    <select
+                    <label htmlFor="427a-child-optional" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Child (optional)</label>
+                    <select id="427a-child-optional"
                       value={selectedChildId}
                       onChange={(e) => setSelectedChildId(e.target.value)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -409,8 +409,8 @@ function CaraStudioContent() {
 
                   {/* Framework selector */}
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Therapeutic Framework</label>
-                    <select
+                    <label htmlFor="427a-therapeutic-framework" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Therapeutic Framework</label>
+                    <select id="427a-therapeutic-framework"
                       value={selectedFramework ?? ""}
                       onChange={(e) => setSelectedFramework(e.target.value as CaraStudioFramework || undefined)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -424,8 +424,8 @@ function CaraStudioContent() {
 
                   {/* Tone selector */}
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Tone</label>
-                    <select
+                    <label htmlFor="427a-tone" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Tone</label>
+                    <select id="427a-tone"
                       value={selectedTone}
                       onChange={(e) => setSelectedTone(e.target.value as CaraStudioTone)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -438,16 +438,16 @@ function CaraStudioContent() {
 
                   {/* Date range */}
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Date From</label>
-                    <input
+                    <label htmlFor="427a-date-from" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Date From</label>
+                    <input id="427a-date-from"
                       type="date" value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Date To</label>
-                    <input
+                    <label htmlFor="427a-date-to" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Date To</label>
+                    <input id="427a-date-to"
                       type="date" value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -457,8 +457,8 @@ function CaraStudioContent() {
 
                 {/* Additional context */}
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Additional Context (optional)</label>
-                  <textarea
+                  <label htmlFor="427a-additional-context-optional" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Additional Context (optional)</label>
+                  <textarea id="427a-additional-context-optional"
                     value={additionalContext}
                     onChange={(e) => setAdditionalContext(e.target.value)}
                     placeholder="Add any specific focus, theme, or context for this generation..."

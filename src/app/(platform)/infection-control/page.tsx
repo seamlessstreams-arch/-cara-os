@@ -341,20 +341,20 @@ export default function InfectionControlPage() {
           <DialogHeader><DialogTitle>Log Infection / Illness</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateInfection} className="space-y-3">
             <div>
-              <Label>Date Reported</Label>
-              <Input type="date" value={infForm.date_reported} onChange={(e) => setIF("date_reported", e.target.value)} />
+              <Label htmlFor="e013-date-reported">Date Reported</Label>
+              <Input id="e013-date-reported" type="date" value={infForm.date_reported} onChange={(e) => setIF("date_reported", e.target.value)} />
             </div>
             <div>
-              <Label>Reported By</Label>
+              <Label htmlFor="e013-reported-by">Reported By</Label>
               <Select value={infForm.reported_by_id} onValueChange={(v) => setIF("reported_by_id", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="e013-reported-by"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Affected Person Type</Label>
+              <Label htmlFor="e013-affected-person-type">Affected Person Type</Label>
               <Select value={infForm.affected_person_type} onValueChange={(v) => { setIF("affected_person_type", v); setIF("affected_person_id", ""); }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="e013-affected-person-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="child">Young Person</SelectItem>
                   <SelectItem value="staff">Staff Member</SelectItem>
@@ -362,9 +362,9 @@ export default function InfectionControlPage() {
               </Select>
             </div>
             <div>
-              <Label>Affected Person *</Label>
+              <Label htmlFor="e013-affected-person">Affected Person *</Label>
               <Select value={infForm.affected_person_id} onValueChange={(v) => setIF("affected_person_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Select person" /></SelectTrigger>
+                <SelectTrigger id="e013-affected-person"><SelectValue placeholder="Select person" /></SelectTrigger>
                 <SelectContent>
                   {infForm.affected_person_type === "child"
                     ? YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>))
@@ -374,9 +374,9 @@ export default function InfectionControlPage() {
               </Select>
             </div>
             <div>
-              <Label>Infection Type *</Label>
+              <Label htmlFor="e013-infection-type">Infection Type *</Label>
               <Select value={infForm.infection_type} onValueChange={(v) => setIF("infection_type", v)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="e013-infection-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(INFECTION_TYPE_LABEL) as [InfectionType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -385,9 +385,9 @@ export default function InfectionControlPage() {
               </Select>
             </div>
             <div>
-              <Label>Severity *</Label>
+              <Label htmlFor="e013-severity">Severity *</Label>
               <Select value={infForm.severity} onValueChange={(v) => setIF("severity", v)}>
-                <SelectTrigger><SelectValue placeholder="Severity" /></SelectTrigger>
+                <SelectTrigger id="e013-severity"><SelectValue placeholder="Severity" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(INFECTION_SEVERITY_LABEL) as [InfectionSeverity, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -395,8 +395,8 @@ export default function InfectionControlPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Symptoms (one per line)</Label><Textarea placeholder="List symptoms observed..." value={infForm.symptoms} onChange={(e) => setIF("symptoms", e.target.value)} /></div>
-            <div><Label>Notes</Label><Textarea placeholder="Additional notes..." value={infForm.notes} onChange={(e) => setIF("notes", e.target.value)} /></div>
+            <div><Label htmlFor="e013-symptoms-one-per-line">Symptoms (one per line)</Label><Textarea id="e013-symptoms-one-per-line" placeholder="List symptoms observed..." value={infForm.symptoms} onChange={(e) => setIF("symptoms", e.target.value)} /></div>
+            <div><Label htmlFor="e013-notes">Notes</Label><Textarea id="e013-notes" placeholder="Additional notes..." value={infForm.notes} onChange={(e) => setIF("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createInfection.isPending}>

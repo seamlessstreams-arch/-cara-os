@@ -369,14 +369,14 @@ export default function InventoryPage() {
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid gap-1.5">
-              <Label>Item Name *</Label>
-              <Input value={fName} onChange={(e) => setFName(e.target.value)} placeholder="e.g. Dining Table" />
+              <Label htmlFor="0f83-item-name">Item Name *</Label>
+              <Input id="0f83-item-name" value={fName} onChange={(e) => setFName(e.target.value)} placeholder="e.g. Dining Table" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1.5">
-                <Label>Category</Label>
+                <Label htmlFor="0f83-category">Category</Label>
                 <Select value={fCategory} onValueChange={(v) => setFCategory(v as InventoryCategory)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="0f83-category"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c} value={c}>{INVENTORY_CATEGORY_LABEL[c]}</SelectItem>
@@ -385,9 +385,9 @@ export default function InventoryPage() {
                 </Select>
               </div>
               <div className="grid gap-1.5">
-                <Label>Location</Label>
+                <Label htmlFor="0f83-location">Location</Label>
                 <Select value={fLocation} onValueChange={(v) => setFLocation(v as InventoryLocation)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="0f83-location"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {LOCATIONS.map((l) => (
                       <SelectItem key={l} value={l}>{INVENTORY_LOCATION_LABEL[l]}</SelectItem>
@@ -398,9 +398,9 @@ export default function InventoryPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-1.5">
-                <Label>Condition</Label>
+                <Label htmlFor="0f83-condition">Condition</Label>
                 <Select value={fCondition} onValueChange={(v) => setFCondition(v as InventoryCondition)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="0f83-condition"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CONDITIONS.map((c) => (
                       <SelectItem key={c} value={c}>{INVENTORY_CONDITION_LABEL[c]}</SelectItem>
@@ -409,27 +409,27 @@ export default function InventoryPage() {
                 </Select>
               </div>
               <div className="grid gap-1.5">
-                <Label>Quantity</Label>
-                <Input type="number" min={1} value={fQuantity} onChange={(e) => setFQuantity(e.target.value)} />
+                <Label htmlFor="0f83-quantity">Quantity</Label>
+                <Input id="0f83-quantity" type="number" min={1} value={fQuantity} onChange={(e) => setFQuantity(e.target.value)} />
               </div>
               <div className="grid gap-1.5">
-                <Label>Cost (£)</Label>
-                <Input type="number" step="0.01" value={fCost} onChange={(e) => setFCost(e.target.value)} placeholder="0.00" />
+                <Label htmlFor="0f83-cost">Cost (£)</Label>
+                <Input id="0f83-cost" type="number" step="0.01" value={fCost} onChange={(e) => setFCost(e.target.value)} placeholder="0.00" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1.5">
-                <Label>Supplier</Label>
-                <Input value={fSupplier} onChange={(e) => setFSupplier(e.target.value)} />
+                <Label htmlFor="0f83-supplier">Supplier</Label>
+                <Input id="0f83-supplier" value={fSupplier} onChange={(e) => setFSupplier(e.target.value)} />
               </div>
               <div className="grid gap-1.5">
-                <Label>Serial Number</Label>
-                <Input value={fSerial} onChange={(e) => setFSerial(e.target.value)} />
+                <Label htmlFor="0f83-serial-number">Serial Number</Label>
+                <Input id="0f83-serial-number" value={fSerial} onChange={(e) => setFSerial(e.target.value)} />
               </div>
             </div>
             <div className="grid gap-1.5">
-              <Label>Notes</Label>
-              <Textarea value={fNotes} onChange={(e) => setFNotes(e.target.value)} rows={3} />
+              <Label htmlFor="0f83-notes">Notes</Label>
+              <Textarea id="0f83-notes" value={fNotes} onChange={(e) => setFNotes(e.target.value)} rows={3} />
             </div>
           </div>
           <DialogFooter>

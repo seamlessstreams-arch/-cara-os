@@ -380,42 +380,42 @@ export default function LACReviewsPage() {
             });
           }} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select name="child_id"><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="6e4b-young-person" className="text-sm font-medium">Young Person</label>
+              <Select name="child_id"><SelectTrigger id="6e4b-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input name="date" type="date" />
+                <label htmlFor="6e4b-date" className="text-sm font-medium">Date</label>
+                <Input id="6e4b-date" name="date" type="date" />
               </div>
               <div>
-                <label className="text-sm font-medium">Review Type</label>
-                <Select name="review_type"><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <label htmlFor="6e4b-review-type" className="text-sm font-medium">Review Type</label>
+                <Select name="review_type"><SelectTrigger id="6e4b-review-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">IRO Name</label>
-              <Input name="iro" placeholder="Independent Reviewing Officer" />
+              <label htmlFor="6e4b-iro-name" className="text-sm font-medium">IRO Name</label>
+              <Input id="6e4b-iro-name" name="iro" placeholder="Independent Reviewing Officer" />
             </div>
             <div>
-              <label className="text-sm font-medium">Venue</label>
-              <Input name="venue" placeholder="Where was the review held?" />
+              <label htmlFor="6e4b-venue" className="text-sm font-medium">Venue</label>
+              <Input id="6e4b-venue" name="venue" placeholder="Where was the review held?" />
             </div>
             <div>
-              <label className="text-sm font-medium">Child&apos;s Views</label>
-              <Textarea name="child_views" placeholder="Record the child's views in their own words…" rows={3} />
+              <label htmlFor="6e4b-child-apos-s-views" className="text-sm font-medium">Child&apos;s Views</label>
+              <Textarea id="6e4b-child-apos-s-views" name="child_views" placeholder="Record the child's views in their own words…" rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium">Key Discussions</label>
-              <Textarea name="key_discussions" placeholder="Main topics discussed (one per line)" rows={3} />
+              <label htmlFor="6e4b-key-discussions" className="text-sm font-medium">Key Discussions</label>
+              <Textarea id="6e4b-key-discussions" name="key_discussions" placeholder="Main topics discussed (one per line)" rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium">Next Review Date</label>
-              <Input name="next_review_date" type="date" />
+              <label htmlFor="6e4b-next-review-date" className="text-sm font-medium">Next Review Date</label>
+              <Input id="6e4b-next-review-date" name="next_review_date" type="date" />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

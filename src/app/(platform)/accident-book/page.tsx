@@ -334,18 +334,18 @@ export default function AccidentBookPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Accident / Injury</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Date</Label><Input type="date" /></div>
-            <div><Label>Time</Label><Input type="time" /></div>
-            <div><Label>Person Injured</Label><Input placeholder="Name" /></div>
-            <div><Label>Person Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PERSON_TYPE_LABEL) as AccidentPersonType[]).map((k) => (<SelectItem key={k} value={k}>{PERSON_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Category</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CAT_LABEL) as AccidentCategory[]).map((k) => (<SelectItem key={k} value={k}>{CAT_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Severity</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SEVERITY_LABEL) as AccidentSeverity[]).map((k) => (<SelectItem key={k} value={k}>{SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div className="col-span-2"><Label>Location</Label><Input placeholder="Where the accident happened" /></div>
-            <div className="col-span-2"><Label>Description</Label><Textarea placeholder="What happened…" rows={3} /></div>
-            <div className="col-span-2"><Label>Injury Details</Label><Textarea placeholder="Describe the injury…" rows={2} /></div>
-            <div className="col-span-2"><Label>First Aid Given</Label><Textarea placeholder="First aid details…" rows={2} /></div>
-            <div className="col-span-2"><Label>Root Cause</Label><Textarea placeholder="What caused the accident?" rows={2} /></div>
-            <div className="col-span-2"><Label>Preventive Measures</Label><Textarea placeholder="Actions to prevent recurrence…" rows={2} /></div>
+            <div><Label htmlFor="4f1d-date">Date</Label><Input id="4f1d-date" type="date" /></div>
+            <div><Label htmlFor="4f1d-time">Time</Label><Input id="4f1d-time" type="time" /></div>
+            <div><Label htmlFor="4f1d-person-injured">Person Injured</Label><Input id="4f1d-person-injured" placeholder="Name" /></div>
+            <div><Label htmlFor="4f1d-person-type">Person Type</Label><Select><SelectTrigger id="4f1d-person-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PERSON_TYPE_LABEL) as AccidentPersonType[]).map((k) => (<SelectItem key={k} value={k}>{PERSON_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="4f1d-category">Category</Label><Select><SelectTrigger id="4f1d-category"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CAT_LABEL) as AccidentCategory[]).map((k) => (<SelectItem key={k} value={k}>{CAT_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="4f1d-severity">Severity</Label><Select><SelectTrigger id="4f1d-severity"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SEVERITY_LABEL) as AccidentSeverity[]).map((k) => (<SelectItem key={k} value={k}>{SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-location">Location</Label><Input id="4f1d-location" placeholder="Where the accident happened" /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-description">Description</Label><Textarea id="4f1d-description" placeholder="What happened…" rows={3} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-injury-details">Injury Details</Label><Textarea id="4f1d-injury-details" placeholder="Describe the injury…" rows={2} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-first-aid-given">First Aid Given</Label><Textarea id="4f1d-first-aid-given" placeholder="First aid details…" rows={2} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

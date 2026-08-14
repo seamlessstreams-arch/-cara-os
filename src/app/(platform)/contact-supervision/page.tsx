@@ -452,43 +452,43 @@ export default function ContactSupervisionPage() {
           <div className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Young Person</label>
-                <Select value={formChildId} onValueChange={setFormChildId}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="bc07-young-person" className="text-sm font-medium">Young Person</label>
+                <Select value={formChildId} onValueChange={setFormChildId}><SelectTrigger id="bc07-young-person" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Contact Type</label>
-                <Select value={formContactType} onValueChange={setFormContactType}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="bc07-contact-type" className="text-sm font-medium">Contact Type</label>
+                <Select value={formContactType} onValueChange={setFormContactType}><SelectTrigger id="bc07-contact-type" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CONTACT_SESSION_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Contact Person Name</label>
-                <input value={formContactPersonName} onChange={(e) => setFormContactPersonName(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Michelle Thompson" />
+                <label htmlFor="bc07-contact-person-name" className="text-sm font-medium">Contact Person Name</label>
+                <input id="bc07-contact-person-name" value={formContactPersonName} onChange={(e) => setFormContactPersonName(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Michelle Thompson" />
               </div>
               <div>
-                <label className="text-sm font-medium">Relationship</label>
-                <Select value={formContactPerson} onValueChange={setFormContactPerson}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="bc07-relationship" className="text-sm font-medium">Relationship</label>
+                <Select value={formContactPerson} onValueChange={setFormContactPerson}><SelectTrigger id="bc07-relationship" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CONTACT_SESSION_PERSON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Venue</label>
-              <input value={formVenue} onChange={(e) => setFormVenue(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder={`e.g. Contact Centre, ${homeName}`} />
+              <label htmlFor="bc07-venue" className="text-sm font-medium">Venue</label>
+              <input id="bc07-venue" value={formVenue} onChange={(e) => setFormVenue(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder={`e.g. Contact Centre, ${homeName}`} />
             </div>
             <div>
-              <label className="text-sm font-medium">Outcome</label>
-              <Select value={formOutcome} onValueChange={setFormOutcome}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <label htmlFor="bc07-outcome" className="text-sm font-medium">Outcome</label>
+              <Select value={formOutcome} onValueChange={setFormOutcome}><SelectTrigger id="bc07-outcome" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(CONTACT_SESSION_OUTCOME_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <textarea rows={3} value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Session observations…" />
+              <label htmlFor="bc07-notes" className="text-sm font-medium">Notes</label>
+              <textarea id="bc07-notes" rows={3} value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Session observations…" />
             </div>
           </div>
           <DialogFooter>

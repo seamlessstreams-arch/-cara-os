@@ -167,8 +167,8 @@ function IntegrationsTab() {
               <button onClick={() => setModal(null)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-700">API Key</label>
-              <input className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" value={cfg} onChange={(e) => setCfg(e.target.value)} placeholder="Enter API key…" />
+              <label htmlFor="2d3b-api-key" className="text-xs font-medium text-slate-700">API Key</label>
+              <input id="2d3b-api-key" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" value={cfg} onChange={(e) => setCfg(e.target.value)} placeholder="Enter API key…" />
             </div>
             <div className="flex gap-3 pt-1">
               <Button variant="outline" className="flex-1" onClick={() => setModal(null)}>Cancel</Button>
@@ -459,8 +459,8 @@ function BrandingTab() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">Confidentiality notice (document footer)</label>
-            <textarea rows={3} value={orgForm.confidentiality_notice} onChange={(e) => setOrgForm((f) => ({ ...f, confidentiality_notice: e.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="2d3b-confidentiality-notice-document-fo" className="text-xs font-semibold text-slate-700 block mb-1">Confidentiality notice (document footer)</label>
+            <textarea id="2d3b-confidentiality-notice-document-fo" rows={3} value={orgForm.confidentiality_notice} onChange={(e) => setOrgForm((f) => ({ ...f, confidentiality_notice: e.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           <Button onClick={saveOrg} disabled={updateOrg.isPending}>
@@ -517,12 +517,12 @@ function BrandingTab() {
               <ColourField label="System accent" value={sysForm.accent_colour} onChange={(v) => setSysForm((f) => ({ ...f, accent_colour: v }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Default footer text</label>
-              <Input value={sysForm.default_footer_text} onChange={(e) => setSysForm((f) => ({ ...f, default_footer_text: e.target.value }))} />
+              <label htmlFor="2d3b-default-footer-text" className="text-xs font-semibold text-slate-700 block mb-1">Default footer text</label>
+              <Input id="2d3b-default-footer-text" value={sysForm.default_footer_text} onChange={(e) => setSysForm((f) => ({ ...f, default_footer_text: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Support email</label>
-              <Input type="email" value={sysForm.support_email} onChange={(e) => setSysForm((f) => ({ ...f, support_email: e.target.value }))} />
+              <label htmlFor="2d3b-support-email" className="text-xs font-semibold text-slate-700 block mb-1">Support email</label>
+              <Input id="2d3b-support-email" type="email" value={sysForm.support_email} onChange={(e) => setSysForm((f) => ({ ...f, support_email: e.target.value }))} />
             </div>
             <Button onClick={saveSystem} disabled={updateSystem.isPending}>
               <Save className="h-4 w-4 mr-2" />{updateSystem.isPending ? "Saving…" : "Save System Branding"}
@@ -689,8 +689,8 @@ export default function SettingsPage() {
                     </div>
                   ))}
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">Role</label>
-                    <Input value={me.job_title} disabled className="bg-slate-50" />
+                    <label htmlFor="2d3b-role" className="text-xs font-semibold text-slate-700 block mb-1">Role</label>
+                    <Input id="2d3b-role" value={me.job_title} disabled className="bg-slate-50" />
                   </div>
                 </div>
                 <Button className="w-full" onClick={handleSaveProfile}><Save className="h-4 w-4 mr-2" />Save Changes</Button>
@@ -741,21 +741,21 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <SavedBanner show={pwSaved} />
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">Current password</label>
+                    <label htmlFor="2d3b-current-password" className="text-xs font-semibold text-slate-700 block mb-1">Current password</label>
                     <div className="relative">
-                      <Input type={showPw ? "text" : "password"} placeholder="••••••••" value={pwForm.current} onChange={(e) => setPwForm((f) => ({ ...f, current: e.target.value }))} />
+                      <Input id="2d3b-current-password" type={showPw ? "text" : "password"} placeholder="••••••••" value={pwForm.current} onChange={(e) => setPwForm((f) => ({ ...f, current: e.target.value }))} />
                       <button onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                         {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">New password</label>
-                    <Input type="password" placeholder="••••••••" value={pwForm.next} onChange={(e) => setPwForm((f) => ({ ...f, next: e.target.value }))} />
+                    <label htmlFor="2d3b-new-password" className="text-xs font-semibold text-slate-700 block mb-1">New password</label>
+                    <Input id="2d3b-new-password" type="password" placeholder="••••••••" value={pwForm.next} onChange={(e) => setPwForm((f) => ({ ...f, next: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">Confirm new password</label>
-                    <Input type="password" placeholder="••••••••" value={pwForm.confirm} onChange={(e) => setPwForm((f) => ({ ...f, confirm: e.target.value }))} />
+                    <label htmlFor="2d3b-confirm-new-password" className="text-xs font-semibold text-slate-700 block mb-1">Confirm new password</label>
+                    <Input id="2d3b-confirm-new-password" type="password" placeholder="••••••••" value={pwForm.confirm} onChange={(e) => setPwForm((f) => ({ ...f, confirm: e.target.value }))} />
                   </div>
                   {pwError && <p className="text-xs text-red-600 font-medium">{pwError}</p>}
                   <Button onClick={handleUpdatePw}><Lock className="h-4 w-4 mr-2" />Update Password</Button>

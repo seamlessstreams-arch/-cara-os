@@ -268,8 +268,8 @@ export default function SocialWorkerContactPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <Label className="text-xs">Search</Label>
-                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" placeholder="Name, SW, summary…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <Label htmlFor="1f0d-search" className="text-xs">Search</Label>
+                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input id="1f0d-search" className="pl-8" placeholder="Name, SW, summary…" value={search} onChange={e => setSearch(e.target.value)} /></div>
               </div>
               <div className="w-40">
                 <Label className="text-xs flex items-center gap-1"><Filter className="h-3 w-3" />Child</Label>
@@ -279,9 +279,9 @@ export default function SocialWorkerContactPage() {
                 </Select>
               </div>
               <div className="w-44">
-                <Label className="text-xs">Contact Type</Label>
+                <Label htmlFor="1f0d-contact-type" className="text-xs">Contact Type</Label>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="1f0d-contact-type"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="all">All Types</SelectItem>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -426,13 +426,13 @@ export default function SocialWorkerContactPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Social Worker Contact</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateContact} className="space-y-3">
-            <div><Label>Young Person *</Label><Select value={swForm.child_id} onValueChange={(v) => setSWF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" value={swForm.date} onChange={(e) => setSWF("date", e.target.value)} /></div><div><Label>Time</Label><Input type="time" value={swForm.time} onChange={(e) => setSWF("time", e.target.value)} /></div></div>
-            <div><Label>Contact Type *</Label><Select value={swForm.contact_type} onValueChange={(v) => setSWF("contact_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Direction</Label><Select value={swForm.direction} onValueChange={(v) => setSWF("direction", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="incoming">Incoming</SelectItem><SelectItem value="outgoing">Outgoing</SelectItem></SelectContent></Select></div>
-            <div><Label>Purpose</Label><Input placeholder="Purpose of contact" value={swForm.purpose} onChange={(e) => setSWF("purpose", e.target.value)} /></div>
-            <div><Label>Summary *</Label><Textarea rows={3} placeholder="Summary of discussion…" value={swForm.summary} onChange={(e) => setSWF("summary", e.target.value)} /></div>
-            <div><Label>Outcome</Label><Textarea rows={2} placeholder="Outcome / agreed actions…" value={swForm.outcome} onChange={(e) => setSWF("outcome", e.target.value)} /></div>
+            <div><Label htmlFor="1f0d-young-person">Young Person *</Label><Select value={swForm.child_id} onValueChange={(v) => setSWF("child_id", v)}><SelectTrigger id="1f0d-young-person"><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label htmlFor="1f0d-date">Date</Label><Input id="1f0d-date" type="date" value={swForm.date} onChange={(e) => setSWF("date", e.target.value)} /></div><div><Label htmlFor="1f0d-time">Time</Label><Input id="1f0d-time" type="time" value={swForm.time} onChange={(e) => setSWF("time", e.target.value)} /></div></div>
+            <div><Label htmlFor="1f0d-contact-type-2">Contact Type *</Label><Select value={swForm.contact_type} onValueChange={(v) => setSWF("contact_type", v)}><SelectTrigger id="1f0d-contact-type-2"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label htmlFor="1f0d-direction">Direction</Label><Select value={swForm.direction} onValueChange={(v) => setSWF("direction", v)}><SelectTrigger id="1f0d-direction"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="incoming">Incoming</SelectItem><SelectItem value="outgoing">Outgoing</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="1f0d-purpose">Purpose</Label><Input id="1f0d-purpose" placeholder="Purpose of contact" value={swForm.purpose} onChange={(e) => setSWF("purpose", e.target.value)} /></div>
+            <div><Label htmlFor="1f0d-summary">Summary *</Label><Textarea id="1f0d-summary" rows={3} placeholder="Summary of discussion…" value={swForm.summary} onChange={(e) => setSWF("summary", e.target.value)} /></div>
+            <div><Label htmlFor="1f0d-outcome">Outcome</Label><Textarea id="1f0d-outcome" rows={2} placeholder="Outcome / agreed actions…" value={swForm.outcome} onChange={(e) => setSWF("outcome", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={createContact.isPending}>{createContact.isPending ? "Saving…" : "Save Contact"}</Button>

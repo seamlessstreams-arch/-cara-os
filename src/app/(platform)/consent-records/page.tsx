@@ -393,47 +393,47 @@ export default function ConsentRecordsPage() {
           <DialogHeader><DialogTitle>New Consent Record</DialogTitle></DialogHeader>
           <form onSubmit={handleCreate} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
+              <label htmlFor="c79c-young-person" className="text-sm font-medium">Young Person</label>
               <Select value={newChildId} onValueChange={setNewChildId}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="c79c-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Category</label>
+              <label htmlFor="c79c-category" className="text-sm font-medium">Category</label>
               <Select value={newCategory} onValueChange={setNewCategory}>
-                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectTrigger id="c79c-category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="What is being consented to?" rows={3} value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+              <label htmlFor="c79c-description" className="text-sm font-medium">Description</label>
+              <Textarea id="c79c-description" placeholder="What is being consented to?" rows={3} value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Consentor Name</label>
-              <Input placeholder="Name of person giving consent" value={newConsentorName} onChange={(e) => setNewConsentorName(e.target.value)} />
+              <label htmlFor="c79c-consentor-name" className="text-sm font-medium">Consentor Name</label>
+              <Input id="c79c-consentor-name" placeholder="Name of person giving consent" value={newConsentorName} onChange={(e) => setNewConsentorName(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Consentor Type</label>
+              <label htmlFor="c79c-consentor-type" className="text-sm font-medium">Consentor Type</label>
               <Select value={newConsentorType} onValueChange={setNewConsentorType}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger id="c79c-consentor-type"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(CONSENTOR_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date Requested</label>
-                <Input type="date" value={newDateRequested} onChange={(e) => setNewDateRequested(e.target.value)} />
+                <label htmlFor="c79c-date-requested" className="text-sm font-medium">Date Requested</label>
+                <Input id="c79c-date-requested" type="date" value={newDateRequested} onChange={(e) => setNewDateRequested(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Expiry Date</label>
-                <Input type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} />
+                <label htmlFor="c79c-expiry-date" className="text-sm font-medium">Expiry Date</label>
+                <Input id="c79c-expiry-date" type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Conditions</label>
-              <Textarea placeholder="Any conditions or limitations…" rows={2} value={newConditions} onChange={(e) => setNewConditions(e.target.value)} />
+              <label htmlFor="c79c-conditions" className="text-sm font-medium">Conditions</label>
+              <Textarea id="c79c-conditions" placeholder="Any conditions or limitations…" rows={2} value={newConditions} onChange={(e) => setNewConditions(e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => { setShowNew(false); resetForm(); }}>Cancel</Button>

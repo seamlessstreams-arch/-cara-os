@@ -318,43 +318,43 @@ export default function MenuPlanningPage() {
           <form onSubmit={handleAddMeal} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input type="date" value={mealForm.date} onChange={(e) => setMF("date", e.target.value)} />
+                <label htmlFor="e8e0-date" className="text-sm font-medium">Date</label>
+                <Input id="e8e0-date" type="date" value={mealForm.date} onChange={(e) => setMF("date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Meal</label>
-                <Select value={mealForm.meal} onValueChange={(v) => setMF("meal", v)}><SelectTrigger><SelectValue placeholder="Select meal" /></SelectTrigger>
+                <label htmlFor="e8e0-meal" className="text-sm font-medium">Meal</label>
+                <Select value={mealForm.meal} onValueChange={(v) => setMF("meal", v)}><SelectTrigger id="e8e0-meal"><SelectValue placeholder="Select meal" /></SelectTrigger>
                   <SelectContent>{(Object.keys(MEAL_TYPE_LABEL) as MealType[]).map((k) => <SelectItem key={k} value={k}>{MEAL_TYPE_LABEL[k]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Main Dish *</label>
-              <Input placeholder="What's the main course?" value={mealForm.main_dish} onChange={(e) => setMF("main_dish", e.target.value)} />
+              <label htmlFor="e8e0-main-dish" className="text-sm font-medium">Main Dish *</label>
+              <Input id="e8e0-main-dish" placeholder="What's the main course?" value={mealForm.main_dish} onChange={(e) => setMF("main_dish", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Sides</label>
-              <Input placeholder="Comma-separated sides" value={mealForm.sides} onChange={(e) => setMF("sides", e.target.value)} />
+              <label htmlFor="e8e0-sides" className="text-sm font-medium">Sides</label>
+              <Input id="e8e0-sides" placeholder="Comma-separated sides" value={mealForm.sides} onChange={(e) => setMF("sides", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Dessert</label>
-              <Input placeholder="Dessert (optional)" value={mealForm.dessert} onChange={(e) => setMF("dessert", e.target.value)} />
+              <label htmlFor="e8e0-dessert" className="text-sm font-medium">Dessert</label>
+              <Input id="e8e0-dessert" placeholder="Dessert (optional)" value={mealForm.dessert} onChange={(e) => setMF("dessert", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Budget (£)</label>
-              <Input type="number" step="0.01" placeholder="0.00" value={mealForm.budget} onChange={(e) => setMF("budget", e.target.value)} />
+              <label htmlFor="e8e0-budget" className="text-sm font-medium">Budget (£)</label>
+              <Input id="e8e0-budget" type="number" step="0.01" placeholder="0.00" value={mealForm.budget} onChange={(e) => setMF("budget", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Prepared By</label>
-              <Select value={mealForm.prepared_by} onValueChange={(v) => setMF("prepared_by", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <label htmlFor="e8e0-prepared-by" className="text-sm font-medium">Prepared By</label>
+              <Select value={mealForm.prepared_by} onValueChange={(v) => setMF("prepared_by", v)}><SelectTrigger id="e8e0-prepared-by"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea placeholder="Any special notes…" rows={2} value={mealForm.notes} onChange={(e) => setMF("notes", e.target.value)} />
+              <label htmlFor="e8e0-notes" className="text-sm font-medium">Notes</label>
+              <Textarea id="e8e0-notes" placeholder="Any special notes…" rows={2} value={mealForm.notes} onChange={(e) => setMF("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

@@ -332,8 +332,8 @@ function ReviewDialog({
           {/* Barriers & next steps */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Barriers</label>
-              <Textarea
+              <label htmlFor="e2d2-barriers" className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Barriers</label>
+              <Textarea id="e2d2-barriers"
                 value={barriers}
                 onChange={(e) => setBarriers(e.target.value)}
                 rows={2}
@@ -342,8 +342,8 @@ function ReviewDialog({
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Next Steps</label>
-              <Textarea
+              <label htmlFor="e2d2-next-steps" className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Next Steps</label>
+              <Textarea id="e2d2-next-steps"
                 value={nextSteps}
                 onChange={(e) => setNextSteps(e.target.value)}
                 rows={2}
@@ -498,8 +498,8 @@ function NewTargetDialog({
 
           {/* Success criteria */}
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Success Criteria</label>
-            <Textarea
+            <label htmlFor="e2d2-success-criteria" className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Success Criteria</label>
+            <Textarea id="e2d2-success-criteria"
               value={successCriteria}
               onChange={(e) => setSuccessCriteria(e.target.value)}
               rows={2}
@@ -568,8 +568,8 @@ function NewTargetDialog({
 
           {/* Notes */}
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Notes</label>
-            <Textarea
+            <label htmlFor="e2d2-notes" className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">Notes</label>
+            <Textarea id="e2d2-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}

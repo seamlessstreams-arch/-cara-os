@@ -254,8 +254,8 @@ export default function FlashcardsPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
-                <Input
+                <label htmlFor="f758-topic" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
+                <Input id="f758-topic"
                   className="mt-1"
                   placeholder="e.g. Safeguarding thresholds"
                   value={topic}
@@ -263,9 +263,9 @@ export default function FlashcardsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="f758-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={(v) => setPathway(v as LearningPathway)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="f758-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(PATHWAY_LABELS).map(([v, l]) => (
                       <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -274,9 +274,9 @@ export default function FlashcardsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Difficulty</label>
+                <label htmlFor="f758-difficulty" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Difficulty</label>
                 <Select value={difficulty} onValueChange={(v) => setDifficulty(v as "easy" | "mixed" | "hard")}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="f758-difficulty" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="easy">Easy</SelectItem>
                     <SelectItem value="mixed">Mixed</SelectItem>

@@ -274,8 +274,8 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
         <div className="p-6 space-y-5">
           {/* Discussion points */}
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Discussion Points & Notes</label>
-            <textarea
+            <label htmlFor="b2ec-discussion-points-notes" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Discussion Points & Notes</label>
+            <textarea id="b2ec-discussion-points-notes"
               className="mt-1 w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
               rows={6}
               placeholder="Record key discussion points, concerns raised, reflections, and any significant matters discussed…"
@@ -301,8 +301,8 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Duration (minutes)</label>
-              <Input
+              <label htmlFor="b2ec-duration-minutes" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Duration (minutes)</label>
+              <Input id="b2ec-duration-minutes"
                 type="number"
                 className="mt-1"
                 value={duration}
@@ -656,8 +656,8 @@ function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { 
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Supervisor</label>
-                <select
+                <label htmlFor="b2ec-supervisor" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Supervisor</label>
+                <select id="b2ec-supervisor"
                   value={form.supervisor_id}
                   onChange={(e) => setForm((p) => ({ ...p, supervisor_id: e.target.value }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -670,8 +670,8 @@ function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { 
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Type</label>
-                  <select
+                  <label htmlFor="b2ec-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Type</label>
+                  <select id="b2ec-type"
                     value={form.type}
                     onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as Supervision["type"] }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"

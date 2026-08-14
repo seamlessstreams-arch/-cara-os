@@ -406,8 +406,8 @@ function CreateForm({
         {/* Child + type */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
-            <select
+            <label htmlFor="8a9d-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
+            <select id="8a9d-young-person"
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
               className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-pink-300"
@@ -419,8 +419,8 @@ function CreateForm({
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Age Range</label>
-            <input
+            <label htmlFor="8a9d-age-range" className="text-xs font-medium text-[var(--cs-text-secondary)]">Age Range</label>
+            <input id="8a9d-age-range"
               type="text"
               value={ageRange}
               onChange={(e) => setAgeRange(e.target.value)}

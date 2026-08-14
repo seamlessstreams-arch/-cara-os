@@ -229,9 +229,9 @@ function NewRecordDialog({
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
+              <label htmlFor="a70a-young-person" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
               <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="a70a-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
                     <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
@@ -240,9 +240,9 @@ function NewRecordDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Type</label>
+              <label htmlFor="a70a-type" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Type</label>
               <Select value={form.record_type} onValueChange={(v) => setForm((p) => ({ ...p, record_type: v as RelationalRecordType }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="a70a-type" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TYPE_CONFIG) as [RelationalRecordType, typeof TYPE_CONFIG[RelationalRecordType]][]).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>
@@ -264,9 +264,9 @@ function NewRecordDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Related staff member</label>
+              <label htmlFor="a70a-related-staff-member" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Related staff member</label>
               <Select value={form.staff_id} onValueChange={(v) => setForm((p) => ({ ...p, staff_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Optional" /></SelectTrigger>
+                <SelectTrigger id="a70a-related-staff-member" className="h-8 text-xs"><SelectValue placeholder="Optional" /></SelectTrigger>
                 <SelectContent>
                   {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
                     <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>
@@ -275,9 +275,9 @@ function NewRecordDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Confidence</label>
+              <label htmlFor="a70a-confidence" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Confidence</label>
               <Select value={form.confidence} onValueChange={(v) => setForm((p) => ({ ...p, confidence: v as RelationalRecord["confidence"] }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="a70a-confidence" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(CONFIDENCE_CONFIG).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>

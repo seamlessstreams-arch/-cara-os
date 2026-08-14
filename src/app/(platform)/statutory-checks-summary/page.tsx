@@ -218,10 +218,10 @@ export default function StatutoryChecksSummaryPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="368e-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Check name, regulation, evidence…" value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input id="368e-search" className="pl-8" placeholder="Check name, regulation, evidence…" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-44">
