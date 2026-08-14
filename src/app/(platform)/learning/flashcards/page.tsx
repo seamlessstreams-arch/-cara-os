@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
 
@@ -321,7 +322,7 @@ export default function FlashcardsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[var(--cs-text-muted)] text-center py-8">No cards generated</p>
+                <EmptyState compact title="No cards generated" />
               )}
             </CardContent>
           </Card>

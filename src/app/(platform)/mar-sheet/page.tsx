@@ -26,6 +26,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── Data hook (inlined from the former use-mar-entries hook) ─────────── */
 
 const MAR_ENTRIES_KEY = "mar-entries";
@@ -220,7 +221,7 @@ export default function MarSheetPage() {
       <p className="text-[11px] text-[var(--cs-text-muted)] mb-3">Showing {filtered.length} of {entries.length} record{entries.length !== 1 ? "s" : ""}</p>
 
       <div className="space-y-2">
-        {filtered.length === 0 && (<div className="text-center py-12 text-sm text-[var(--cs-text-muted)]">No MAR entries match the current filters.</div>)}
+        {filtered.length === 0 && (<EmptyState compact title="No MAR entries match the current filters." />)}
 
         {filtered.map((entry) => {
           const isExpanded = expandedId === entry.id;

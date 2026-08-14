@@ -57,6 +57,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface ExpensesResponse {
   data: Expense[];
   meta: { total_count: number; pending_count: number; total_amount: number; pending_amount: number };
@@ -465,9 +466,7 @@ export default function ExpensesPage() {
                       />
                     ))}
                     {filtered.length === 0 && (
-                      <div className="py-12 text-center text-sm text-[var(--cs-text-muted)]">
-                        {search || statusFilter !== "all" ? "No expenses match your filters" : "No expenses on record"}
-                      </div>
+                      <EmptyState compact title={search || statusFilter !== "all" ? "No expenses match your filters" : "No expenses on record"} />
                     )}
                   </div>
                 )}

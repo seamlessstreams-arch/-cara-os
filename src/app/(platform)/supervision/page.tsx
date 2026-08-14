@@ -63,6 +63,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type SingleResponse<T> = { data: T };
 
 function useCreateTrainingNeed() {
@@ -1029,7 +1030,7 @@ export default function SupervisionPage() {
                     <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
                   </div>
                 ) : supervisionRecords.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-[var(--cs-text-muted)]">No supervision records yet. Schedule one above.</div>
+                  <EmptyState compact title="No supervision records yet. Schedule one above." />
                 ) : filteredRecords.length === 0 && isFiltered ? (
                   <div className="py-8 text-center text-[var(--cs-text-muted)]">
                     <Search className="h-8 w-8 mx-auto mb-2 text-slate-200" />

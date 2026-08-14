@@ -40,6 +40,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const LEVEL_COLOURS: Record<FamilyTimeSupervisionLevel, string> = {
@@ -393,9 +394,7 @@ export default function FamilyTimeSupervisionPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-gray-500">
-            No family time sessions match the current filters.
-          </div>
+          <EmptyState compact title="No family time sessions match the current filters." />
         )}
       </div>
 

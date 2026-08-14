@@ -20,6 +20,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type FrameworkSignal = "active" | "emerging" | "dormant";
 type FrameworkTrend = "increasing" | "stable" | "declining";
 
@@ -326,9 +327,7 @@ export default function PracticeFrameworkUsagePage() {
 
           {/* Framework grid */}
           {visible.length === 0 ? (
-            <div className="py-10 text-center text-sm text-slate-400">
-              No frameworks match this filter.
-            </div>
+            <EmptyState compact title="No frameworks match this filter." />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visible.map((fw) => (

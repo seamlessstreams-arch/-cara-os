@@ -23,6 +23,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const OUTCOME_METRICS_KEY = "outcome-metrics";
 
 async function fetchOutcomeMetrics(): Promise<{ data: OutcomeMetric[] }> {
@@ -351,9 +352,7 @@ export default function OutcomesDashboardPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No outcome metrics match the current filters.
-          </div>
+          <EmptyState compact title="No outcome metrics match the current filters." />
         )}
 
         {/* ── regulatory note ── */}

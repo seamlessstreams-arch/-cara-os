@@ -15,6 +15,7 @@ import type {
   TrainingSignal,
 } from "@/app/api/v1/staff-training-compliance-intelligence/route";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 
 const SIGNAL_META: Record<TrainingSignal, { label: string; color: string; bg: string }> = {
@@ -363,9 +364,7 @@ export default function StaffTrainingCompliancePage() {
 
         {/* Staff cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No staff match this filter.
-          </div>
+          <EmptyState compact title="No staff match this filter." />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filtered.map((profile) => (

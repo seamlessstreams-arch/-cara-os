@@ -23,6 +23,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 import { api } from "@/hooks/use-api";
 import { seedDay } from "@/lib/seed-date";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Vehicle {
@@ -634,7 +635,7 @@ function CheckHistoryTab({
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">No vehicle checks match your filters.</div>
+          <EmptyState compact title="No vehicle checks match your filters." />
         )}
         {filtered.map((check) => {
           const vehicle = vehicles.find((v) => v.id === check.vehicle_id);

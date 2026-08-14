@@ -23,6 +23,7 @@ import type {
   SaferRecruitmentCommandResult,
 } from "@/lib/engines/safer-recruitment-command-engine";
 
+import { EmptyState } from "@/components/ui/empty-state";
 interface IssuedReferenceLink {
   link: string;
   expires_at: string;
@@ -132,9 +133,7 @@ export default function SaferRecruitmentCommandPage() {
 
           {/* ── Candidate cards ── */}
           {data.candidates.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-              No active candidates in the recruitment pipeline.
-            </div>
+            <EmptyState compact title="No active candidates in the recruitment pipeline." />
           ) : (
             <div className="space-y-4">
               {data.candidates.map((c) => (

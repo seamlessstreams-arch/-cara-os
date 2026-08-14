@@ -10,6 +10,7 @@ import type {
   PracticeSignal,
 } from "@/app/api/v1/practice-quality-intelligence/route";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const SIGNAL_STYLES: Record<PracticeSignal, string> = {
@@ -333,9 +334,7 @@ export default function PracticeQualityIntelligencePage() {
       </div>
 
       {profiles.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 text-sm">
-          No practice quality assessments found.
-        </div>
+        <EmptyState compact title="No practice quality assessments found." />
       )}
     </div>
   );

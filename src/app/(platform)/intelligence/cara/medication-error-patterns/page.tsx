@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Pill, CheckCircle, Clock } from "lucide-react";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type ErrorSignal = "alert" | "attention" | "monitoring" | "safe";
@@ -440,9 +441,7 @@ export default function MedicationErrorPatternsPage() {
 
         {/* Child cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No children match this filter.
-          </div>
+          <EmptyState compact title="No children match this filter." />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filtered.map((profile) => (

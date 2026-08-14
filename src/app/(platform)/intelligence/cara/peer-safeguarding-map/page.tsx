@@ -8,6 +8,7 @@ import type {
   PeerSafeguardingMapResponse,
 } from "@/app/api/v1/peer-safeguarding-map/route";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 type Signal = "concern" | "attention" | "stable";
@@ -425,9 +426,7 @@ export default function PeerSafeguardingMapPage() {
       </div>
 
       {pairs.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 text-sm">
-          No peer relationship data recorded.
-        </div>
+        <EmptyState compact title="No peer relationship data recorded." />
       )}
 
       {/* Group assessment */}

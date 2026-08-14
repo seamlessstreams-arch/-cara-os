@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type IncidentIntensity = "low" | "medium" | "high" | "severe";
@@ -382,9 +383,7 @@ export default function ContactSafeguardingIntelligencePage() {
       </div>
 
       {profiles.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 text-sm">
-          No contact or behaviour data found.
-        </div>
+        <EmptyState compact title="No contact or behaviour data found." />
       )}
     </div>
   );

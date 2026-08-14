@@ -27,6 +27,7 @@ import { NEAR_MISS_TYPE_LABEL, NEAR_MISS_RISK_GRADE_LABEL } from "@/types/extend
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const MEDICATION_NEAR_MISSES_KEY = "medication-near-misses";
 const MEDICATION_NEAR_MISSES_API = "/api/v1/medication-near-misses";
 
@@ -216,7 +217,7 @@ export default function MedicationNearMissLogPage() {
       <p className="text-[11px] text-[var(--cs-text-muted)] mb-3">Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}</p>
 
       <FlatList>
-        {filtered.length === 0 && (<div className="text-center py-12 text-sm text-[var(--cs-text-muted)]">No near-misses match the current filters.</div>)}
+        {filtered.length === 0 && (<EmptyState compact title="No near-misses match the current filters." />)}
 
         {filtered.map((r) => {
           const isExpanded = expandedId === r.id;

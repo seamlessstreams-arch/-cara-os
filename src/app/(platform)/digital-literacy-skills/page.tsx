@@ -37,6 +37,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── digital-literacy skill records hook (inlined from use-digital-literacy-skill-records) ── */
 
 const DIGITAL_LITERACY_KEY = "digital-literacy-skill-records";
@@ -257,9 +258,7 @@ export default function DigitalLiteracySkillsPage() {
         {/* ── records ───────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="rounded-lg border bg-white p-8 text-center text-sm text-muted-foreground">
-              No records match the current filters.
-            </div>
+            <EmptyState compact title="No records match the current filters." />
           )}
           {filtered.map((rec) => {
             const isOpen = expanded === rec.id;

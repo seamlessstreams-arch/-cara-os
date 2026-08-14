@@ -17,6 +17,7 @@ import type {
   DeEscalationStrategyResponse,
 } from "@/app/api/v1/de-escalation-strategy-intelligence/route";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 
 const SIGNAL_META: Record<BehaviourSignal, { label: string; color: string; bg: string }> = {
@@ -375,9 +376,7 @@ export default function DeEscalationStrategyPage() {
 
         {/* Child cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No children match this filter.
-          </div>
+          <EmptyState compact title="No children match this filter." />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filtered.map((profile) => (

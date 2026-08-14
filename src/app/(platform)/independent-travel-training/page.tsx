@@ -34,6 +34,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── helpers ─────────────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -498,9 +499,7 @@ export default function IndependentTravelTrainingPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No travel training records match the current filters.
-          </div>
+          <EmptyState compact title="No travel training records match the current filters." />
         )}
       </div>
 

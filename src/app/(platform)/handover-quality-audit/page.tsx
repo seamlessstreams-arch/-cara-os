@@ -48,6 +48,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 /* ── inline hooks ───────────────────────────────────────────────────── */
 const HANDOVER_AUDITS_KEY = "handover-audits";
 const HANDOVER_AUDITS_API = "/api/v1/handover-audits";
@@ -663,9 +664,7 @@ export default function HandoverQualityAuditPage() {
         })}
 
         {visible.length === 0 && (
-          <div className="p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No audits match the current filters.
-          </div>
+          <EmptyState compact title="No audits match the current filters." />
         )}
       </FlatList>
 

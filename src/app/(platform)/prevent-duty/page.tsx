@@ -36,6 +36,7 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+import { EmptyState } from "@/components/ui/empty-state";
 function usePreventRecords(childId?: string) {
   return useQuery<PreventRecord[]>({
     queryKey: ["prevent-records", childId],
@@ -292,9 +293,7 @@ export default function PreventDutyPage() {
         {/* ── card list ──────────────────────────────────────────── */}
         <FlatList>
           {filtered.length === 0 && (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              No records match the current filters.
-            </div>
+            <EmptyState compact title="No records match the current filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;

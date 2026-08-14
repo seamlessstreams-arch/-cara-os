@@ -66,6 +66,7 @@ import { PATHWAY_PLAN_STATUS_LABEL, PATHWAY_SKILL_LEVEL_LABEL } from "@/types/ex
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+import { EmptyState } from "@/components/ui/empty-state";
 const PATHWAY_PLANS_KEY = "pathway-plans";
 
 async function pathwayFetchRecords(childId?: string): Promise<{ data: PathwayPlan[] }> {
@@ -516,9 +517,7 @@ export default function PathwayPlan16PlusPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-muted/40 p-6 text-center text-sm text-muted-foreground">
-            No pathway plans match your filters.
-          </div>
+          <EmptyState compact title="No pathway plans match your filters." />
         )}
 
         {/* alerts: reviews due */}

@@ -45,6 +45,7 @@ import type {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 const MEDICATION_ERRORS_KEY = "medication-errors";
 const MEDICATION_ERRORS_API = "/api/v1/medication-errors";
 
@@ -434,9 +435,7 @@ export default function MedicationErrorsPage() {
       {/* ── Error Cards ───────────────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-sm text-[var(--cs-text-muted)]">
-            No medication errors match the current filters.
-          </div>
+          <EmptyState compact title="No medication errors match the current filters." />
         )}
 
         {filtered.map((error) => {

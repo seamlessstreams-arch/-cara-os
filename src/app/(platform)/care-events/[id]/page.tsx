@@ -55,6 +55,7 @@ import type {
   CareEvent, VerifyCareEventPayload, ReturnCareEventPayload, AmendCareEventPayload,
 } from "@/types/care-events";
 
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inlined from former hook wrapper: use-care-events (8 of 12 exports) ────
 
 interface CareEventVersionHistoryItem {
@@ -470,9 +471,7 @@ function RoutingTab({
       )}
 
       {routes.length === 0 ? (
-        <div className="text-sm text-slate-500 text-center py-8">
-          No routing records yet — submit the event to trigger routing.
-        </div>
+        <EmptyState compact title="No routing records yet — submit the event to trigger routing." />
       ) : (
         <div className="space-y-2">
           {routes.map((route) => (
@@ -539,9 +538,7 @@ function RoutingTab({
 function AuditTab({ entries }: { entries: CareEventAuditLog[] }) {
   if (entries.length === 0) {
     return (
-      <div className="text-sm text-slate-500 text-center py-8">
-        No audit entries yet.
-      </div>
+      <EmptyState compact title="No audit entries yet." />
     );
   }
 
@@ -636,9 +633,7 @@ function JobsTab({ careEventId }: { careEventId: string }) {
 
   if (jobs.length === 0) {
     return (
-      <div className="text-center py-8 text-slate-400 text-sm">
-        No background jobs for this event.
-      </div>
+      <EmptyState compact title="No background jobs for this event." />
     );
   }
 

@@ -57,6 +57,7 @@ import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 import { api } from "@/hooks/use-api";
+import { EmptyState } from "@/components/ui/empty-state";
 // ── Inlined from use-shift-checklists (single call site) ──────────────────────
 // useCreateShiftChecklist dropped — zero call sites anywhere in src/
 const SHIFT_CHECKLISTS_KEY = "shift-checklists";
@@ -641,9 +642,7 @@ export default function EndOfShiftChecklistPage() {
         })}
 
         {visible.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
-            No checklists match the current filters.
-          </div>
+          <EmptyState compact title="No checklists match the current filters." />
         )}
       </FlatList>
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GraduationCap, AlertTriangle, TrendingUp, Star, School } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
+import { EmptyState } from "@/components/ui/empty-state";
 type EducationSignal = "thriving" | "engaged" | "vulnerable" | "crisis";
 
 interface ChildEducationProfile {
@@ -367,9 +368,7 @@ export default function EducationStabilityPage() {
 
         {/* Child cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No children match this filter.
-          </div>
+          <EmptyState compact title="No children match this filter." />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {filtered.map((profile) => (
