@@ -666,8 +666,8 @@ function ArrangementCard({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">Date</label>
-                  <input
+                  <label htmlFor="936d-date" className="text-xs text-slate-500 mb-1 block">Date</label>
+                  <input id="936d-date"
                     type="date"
                     className="w-full border rounded-md px-2 py-1.5 text-sm"
                     value={logDate}
@@ -675,9 +675,9 @@ function ArrangementCard({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">Outcome</label>
+                  <label htmlFor="936d-outcome" className="text-xs text-slate-500 mb-1 block">Outcome</label>
                   <Select value={logOutcome} onValueChange={(v) => setLogOutcome(v as ContactOutcome)}>
-                    <SelectTrigger className="h-8 text-sm">
+                    <SelectTrigger id="936d-outcome" className="h-8 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -691,9 +691,9 @@ function ArrangementCard({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">YP mood before</label>
+                  <label htmlFor="936d-yp-mood-before" className="text-xs text-slate-500 mb-1 block">YP mood before</label>
                   <Select value={logMoodBefore} onValueChange={setLogMoodBefore}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
+                    <SelectTrigger id="936d-yp-mood-before" className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
                       {["positive","neutral","anxious","reluctant","distressed"].map((m) => (
                         <SelectItem key={m} value={m}>{moodEmoji(m)} {m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>
@@ -702,9 +702,9 @@ function ArrangementCard({
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 mb-1 block">YP mood after</label>
+                  <label htmlFor="936d-yp-mood-after" className="text-xs text-slate-500 mb-1 block">YP mood after</label>
                   <Select value={logMoodAfter} onValueChange={setLogMoodAfter}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
+                    <SelectTrigger id="936d-yp-mood-after" className="h-8 text-sm"><SelectValue placeholder="Select…" /></SelectTrigger>
                     <SelectContent>
                       {["positive","settled","neutral","unsettled","distressed"].map((m) => (
                         <SelectItem key={m} value={m}>{moodEmoji(m)} {m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>
@@ -715,8 +715,8 @@ function ArrangementCard({
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">Contact narrative *</label>
-                <Textarea
+                <label htmlFor="936d-contact-narrative" className="text-xs text-slate-500 mb-1 block">Contact narrative *</label>
+                <Textarea id="936d-contact-narrative"
                   className="h-28 text-sm resize-none"
                   placeholder="What happened during the contact session? How did it go? Be specific about the young person's experience…"
                   value={logNarrative}
@@ -725,8 +725,8 @@ function ArrangementCard({
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">Voice of the child (what did they say about the contact?)</label>
-                <Textarea
+                <label htmlFor="936d-voice-of-the-child-what-did-they-s" className="text-xs text-slate-500 mb-1 block">Voice of the child (what did they say about the contact?)</label>
+                <Textarea id="936d-voice-of-the-child-what-did-they-s"
                   className="h-16 text-sm resize-none"
                   placeholder="Direct quote or paraphrase of what the young person said about contact…"
                   value={logYpVoice}

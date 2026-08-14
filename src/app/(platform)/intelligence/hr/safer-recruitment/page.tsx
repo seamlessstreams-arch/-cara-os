@@ -279,9 +279,9 @@ export default function SaferRecruitmentPage() {
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
+              <label htmlFor="4b0d-acting-as" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
               <Select value={actorRole} onValueChange={setActorRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4b0d-acting-as"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {HR_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -290,12 +290,12 @@ export default function SaferRecruitmentPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id</label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <label htmlFor="4b0d-actor-user-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user id</label>
+              <Input id="4b0d-actor-user-id" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
-              <Input value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
+              <label htmlFor="4b0d-staff-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff id</label>
+              <Input id="4b0d-staff-id" value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
             </div>
           </div>
           <div className="flex justify-end">

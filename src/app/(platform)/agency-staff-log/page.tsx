@@ -369,14 +369,14 @@ export default function AgencyStaffLogPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Agency Shift</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateRecord} className="space-y-3">
-            <div><Label>Agency Name *</Label><Input required placeholder="e.g. CareStaff Solutions" value={asForm.agency_name} onChange={(e) => setASF("agency_name", e.target.value)} /></div>
-            <div><Label>Worker Name *</Label><Input required placeholder="Full name" value={asForm.worker_name} onChange={(e) => setASF("worker_name", e.target.value)} /></div>
-            <div><Label>Worker Reference</Label><Input placeholder="e.g. CSS-4821" value={asForm.worker_ref} onChange={(e) => setASF("worker_ref", e.target.value)} /></div>
-            <div><Label>Date of Shift</Label><Input type="date" value={asForm.date_of_shift} onChange={(e) => setASF("date_of_shift", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-agency-name">Agency Name *</Label><Input id="9c59-agency-name" required placeholder="e.g. CareStaff Solutions" value={asForm.agency_name} onChange={(e) => setASF("agency_name", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-worker-name">Worker Name *</Label><Input id="9c59-worker-name" required placeholder="Full name" value={asForm.worker_name} onChange={(e) => setASF("worker_name", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-worker-reference">Worker Reference</Label><Input id="9c59-worker-reference" placeholder="e.g. CSS-4821" value={asForm.worker_ref} onChange={(e) => setASF("worker_ref", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-date-of-shift">Date of Shift</Label><Input id="9c59-date-of-shift" type="date" value={asForm.date_of_shift} onChange={(e) => setASF("date_of_shift", e.target.value)} /></div>
             <div>
-              <Label>Shift Type</Label>
+              <Label htmlFor="9c59-shift-type">Shift Type</Label>
               <Select value={asForm.shift_type} onValueChange={(v) => setASF("shift_type", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="9c59-shift-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="day">Day Shift (08:00–20:00)</SelectItem>
                   <SelectItem value="night">Waking Night (20:00–08:00)</SelectItem>
@@ -386,9 +386,9 @@ export default function AgencyStaffLogPage() {
               </Select>
             </div>
             <div>
-              <Label>Booking Reason *</Label>
+              <Label htmlFor="9c59-booking-reason">Booking Reason *</Label>
               <Select value={asForm.booking_reason} onValueChange={(v) => setASF("booking_reason", v)}>
-                <SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
+                <SelectTrigger id="9c59-booking-reason"><SelectValue placeholder="Select reason" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REASON_LABEL) as [AgencyBookingReason, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -397,14 +397,14 @@ export default function AgencyStaffLogPage() {
               </Select>
             </div>
             <div>
-              <Label>Authorised By</Label>
+              <Label htmlFor="9c59-authorised-by">Authorised By</Label>
               <Select value={asForm.authorised_by_id} onValueChange={(v) => setASF("authorised_by_id", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="9c59-authorised-by"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>DBS Number</Label><Input placeholder="DBS reference" value={asForm.dbs_number} onChange={(e) => setASF("dbs_number", e.target.value)} /></div>
-            <div><Label>Notes</Label><Textarea placeholder="Shift notes, feedback..." value={asForm.notes} onChange={(e) => setASF("notes", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-dbs-number">DBS Number</Label><Input id="9c59-dbs-number" placeholder="DBS reference" value={asForm.dbs_number} onChange={(e) => setASF("dbs_number", e.target.value)} /></div>
+            <div><Label htmlFor="9c59-notes">Notes</Label><Textarea id="9c59-notes" placeholder="Shift notes, feedback..." value={asForm.notes} onChange={(e) => setASF("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Logging…" : "Log Shift"}</Button>

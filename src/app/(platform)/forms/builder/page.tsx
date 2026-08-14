@@ -457,8 +457,8 @@ export default function FormBuilderPage() {
 
                     {/* Label */}
                     <div>
-                      <label className="text-xs text-gray-500 block mb-1">Label</label>
-                      <Input
+                      <label htmlFor="9903-label" className="text-xs text-gray-500 block mb-1">Label</label>
+                      <Input id="9903-label"
                         value={selectedField.label}
                         onChange={(e) => updateField(selectedField.id, { label: e.target.value })}
                         className="text-sm"
@@ -467,8 +467,8 @@ export default function FormBuilderPage() {
 
                     {/* Name */}
                     <div>
-                      <label className="text-xs text-gray-500 block mb-1">Field Name (API)</label>
-                      <Input
+                      <label htmlFor="9903-field-name-api" className="text-xs text-gray-500 block mb-1">Field Name (API)</label>
+                      <Input id="9903-field-name-api"
                         value={selectedField.name}
                         onChange={(e) => updateField(selectedField.id, { name: e.target.value })}
                         className="text-sm font-mono"
@@ -495,8 +495,8 @@ export default function FormBuilderPage() {
                     {/* Placeholder */}
                     {!["section_header", "info_block", "checkbox", "toggle", "signature", "file_upload"].includes(selectedField.type) && (
                       <div>
-                        <label className="text-xs text-gray-500 block mb-1">Placeholder</label>
-                        <Input
+                        <label htmlFor="9903-placeholder" className="text-xs text-gray-500 block mb-1">Placeholder</label>
+                        <Input id="9903-placeholder"
                           value={selectedField.placeholder ?? ""}
                           onChange={(e) => updateField(selectedField.id, { placeholder: e.target.value || undefined })}
                           className="text-sm"
@@ -507,8 +507,8 @@ export default function FormBuilderPage() {
 
                     {/* Help text */}
                     <div>
-                      <label className="text-xs text-gray-500 block mb-1">Help Text</label>
-                      <Input
+                      <label htmlFor="9903-help-text" className="text-xs text-gray-500 block mb-1">Help Text</label>
+                      <Input id="9903-help-text"
                         value={selectedField.help_text ?? ""}
                         onChange={(e) => updateField(selectedField.id, { help_text: e.target.value || undefined })}
                         className="text-sm"
@@ -519,11 +519,11 @@ export default function FormBuilderPage() {
                     {/* Options (for select/radio/multi_select) */}
                     {selectedField.options && (
                       <div>
-                        <label className="text-xs text-gray-500 block mb-1">Options</label>
+                        <label htmlFor="9903-options" className="text-xs text-gray-500 block mb-1">Options</label>
                         <div className="space-y-1">
                           {selectedField.options.map((opt, i) => (
                             <div key={i} className="flex items-center gap-1">
-                              <Input
+                              <Input id="9903-options"
                                 value={opt.label}
                                 onChange={(e) => {
                                   const newOpts = [...(selectedField.options ?? [])];
@@ -567,8 +567,8 @@ export default function FormBuilderPage() {
                             <>
                               <div className="flex gap-2">
                                 <div className="flex-1">
-                                  <label className="text-[10px] text-gray-400">Min Length</label>
-                                  <Input
+                                  <label htmlFor="9903-min-length" className="text-[10px] text-gray-400">Min Length</label>
+                                  <Input id="9903-min-length"
                                     type="number"
                                     value={selectedField.validation?.min_length ?? ""}
                                     onChange={(e) => updateField(selectedField.id, {
@@ -578,8 +578,8 @@ export default function FormBuilderPage() {
                                   />
                                 </div>
                                 <div className="flex-1">
-                                  <label className="text-[10px] text-gray-400">Max Length</label>
-                                  <Input
+                                  <label htmlFor="9903-max-length" className="text-[10px] text-gray-400">Max Length</label>
+                                  <Input id="9903-max-length"
                                     type="number"
                                     value={selectedField.validation?.max_length ?? ""}
                                     onChange={(e) => updateField(selectedField.id, {
@@ -594,8 +594,8 @@ export default function FormBuilderPage() {
                           {["number", "rating", "scale"].includes(selectedField.type) && (
                             <div className="flex gap-2">
                               <div className="flex-1">
-                                <label className="text-[10px] text-gray-400">Min</label>
-                                <Input
+                                <label htmlFor="9903-min" className="text-[10px] text-gray-400">Min</label>
+                                <Input id="9903-min"
                                   type="number"
                                   value={selectedField.validation?.min ?? ""}
                                   onChange={(e) => updateField(selectedField.id, {
@@ -605,8 +605,8 @@ export default function FormBuilderPage() {
                                 />
                               </div>
                               <div className="flex-1">
-                                <label className="text-[10px] text-gray-400">Max</label>
-                                <Input
+                                <label htmlFor="9903-max" className="text-[10px] text-gray-400">Max</label>
+                                <Input id="9903-max"
                                   type="number"
                                   value={selectedField.validation?.max ?? ""}
                                   onChange={(e) => updateField(selectedField.id, {

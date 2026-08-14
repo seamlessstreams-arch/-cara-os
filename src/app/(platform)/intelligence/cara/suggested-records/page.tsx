@@ -278,20 +278,20 @@ function PendingCard({
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label htmlFor="daa1-title" className="mb-1 block text-xs font-medium text-muted-foreground">
             Title
           </label>
-          <input
+          <input id="daa1-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full rounded border px-2 py-1 text-sm"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label htmlFor="daa1-body-manager-may-edit" className="mb-1 block text-xs font-medium text-muted-foreground">
             Body (manager may edit)
           </label>
-          <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6} />
+          <Textarea id="daa1-body-manager-may-edit" value={body} onChange={(e) => setBody(e.target.value)} rows={6} />
         </div>
         {rec.source_evidence.length > 0 && (
           <div className="text-xs text-muted-foreground">
@@ -304,10 +304,10 @@ function PendingCard({
           </div>
         )}
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label htmlFor="daa1-decision-note-optional" className="mb-1 block text-xs font-medium text-muted-foreground">
             Decision note (optional)
           </label>
-          <input
+          <input id="daa1-decision-note-optional"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className="w-full rounded border px-2 py-1 text-xs"

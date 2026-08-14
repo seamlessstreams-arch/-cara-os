@@ -272,8 +272,8 @@ export default function AuditTrailPage() {
           <CardContent className="p-4">
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Child</label>
-                <select
+                <label htmlFor="dc33-child" className="text-xs font-medium text-[var(--cs-text-secondary)]">Child</label>
+                <select id="dc33-child"
                   value={childFilter}
                   onChange={(e) => setChildFilter(e.target.value)}
                   className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-slate-300"
@@ -284,8 +284,8 @@ export default function AuditTrailPage() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Action Type</label>
-                <select
+                <label htmlFor="dc33-action-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">Action Type</label>
+                <select id="dc33-action-type"
                   value={actionFilter}
                   onChange={(e) => setActionFilter(e.target.value)}
                   className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-slate-300"

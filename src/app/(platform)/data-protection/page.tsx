@@ -369,14 +369,14 @@ export default function DataProtectionPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Data Protection Record</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateRecord} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Type *</label>
-              <Select value={dpForm.type} onValueChange={(v) => setDPF("type", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+            <div><label htmlFor="2b1c-type" className="text-sm font-medium">Type *</label>
+              <Select value={dpForm.type} onValueChange={(v) => setDPF("type", v)}><SelectTrigger id="2b1c-type" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(DATA_PROTECTION_RECORD_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Subject *</label><input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief title" value={dpForm.subject} onChange={(e) => setDPF("subject", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Description</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details…" value={dpForm.description} onChange={(e) => setDPF("description", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Due Date</label><input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dpForm.due_date} onChange={(e) => setDPF("due_date", e.target.value)} /></div>
+            <div><label htmlFor="2b1c-subject" className="text-sm font-medium">Subject *</label><input id="2b1c-subject" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief title" value={dpForm.subject} onChange={(e) => setDPF("subject", e.target.value)} /></div>
+            <div><label htmlFor="2b1c-description" className="text-sm font-medium">Description</label><textarea id="2b1c-description" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details…" value={dpForm.description} onChange={(e) => setDPF("description", e.target.value)} /></div>
+            <div><label htmlFor="2b1c-due-date" className="text-sm font-medium">Due Date</label><input id="2b1c-due-date" type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dpForm.due_date} onChange={(e) => setDPF("due_date", e.target.value)} /></div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
               <button type="submit" disabled={createRecord.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createRecord.isPending ? "Saving…" : "Create Record"}</button>

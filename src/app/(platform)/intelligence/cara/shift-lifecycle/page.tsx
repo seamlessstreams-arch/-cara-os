@@ -218,10 +218,10 @@ export default function ShiftLifecyclePage() {
                             ))}
                           </div>
                         ))}
-                        <label className="block pt-1 text-xs font-semibold text-[var(--cs-text-secondary,#475569)]">
+                        <label htmlFor="9937-what-rsquo-s-outstanding-and-who-r" className="block pt-1 text-xs font-semibold text-[var(--cs-text-secondary,#475569)]">
                           What&rsquo;s outstanding, and who&rsquo;s picking it up?
                         </label>
-                        <textarea
+                        <textarea id="9937-what-rsquo-s-outstanding-and-who-r"
                           value={reason}
                           onChange={(e) => setReason(e.target.value)}
                           rows={2}

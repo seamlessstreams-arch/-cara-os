@@ -355,10 +355,10 @@ export default function SubjectAccessRequestsPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Data Request</DialogTitle></DialogHeader>
           <form onSubmit={handleLogRequest} className="space-y-3">
-            <div><Label>Requester Name *</Label><Input placeholder="Full name of requester" value={sarForm.requester_name} onChange={(e) => setSAR("requester_name", e.target.value)} /></div>
+            <div><Label htmlFor="a5e0-requester-name">Requester Name *</Label><Input id="a5e0-requester-name" placeholder="Full name of requester" value={sarForm.requester_name} onChange={(e) => setSAR("requester_name", e.target.value)} /></div>
             <div>
-              <Label>Requester Type</Label>
-              <Select value={sarForm.requester_type} onValueChange={(v) => setSAR("requester_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Label htmlFor="a5e0-requester-type">Requester Type</Label>
+              <Select value={sarForm.requester_type} onValueChange={(v) => setSAR("requester_type", v)}><SelectTrigger id="a5e0-requester-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(SUBJECT_ACCESS_REQUESTER_TYPE_LABEL) as [SubjectAccessRequesterType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -367,8 +367,8 @@ export default function SubjectAccessRequestsPage() {
               </Select>
             </div>
             <div>
-              <Label>Request Type</Label>
-              <Select value={sarForm.request_type} onValueChange={(v) => setSAR("request_type", v)}><SelectTrigger><SelectValue placeholder="Select request type" /></SelectTrigger>
+              <Label htmlFor="a5e0-request-type">Request Type</Label>
+              <Select value={sarForm.request_type} onValueChange={(v) => setSAR("request_type", v)}><SelectTrigger id="a5e0-request-type"><SelectValue placeholder="Select request type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(SUBJECT_ACCESS_REQUEST_TYPE_LABEL) as [SubjectAccessRequestType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -376,8 +376,8 @@ export default function SubjectAccessRequestsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Date Received</Label><Input type="date" value={sarForm.date_received} onChange={(e) => setSAR("date_received", e.target.value)} /></div>
-            <div><Label>Details</Label><Textarea placeholder="Describe what data is being requested..." value={sarForm.notes} onChange={(e) => setSAR("notes", e.target.value)} /></div>
+            <div><Label htmlFor="a5e0-date-received">Date Received</Label><Input id="a5e0-date-received" type="date" value={sarForm.date_received} onChange={(e) => setSAR("date_received", e.target.value)} /></div>
+            <div><Label htmlFor="a5e0-details">Details</Label><Textarea id="a5e0-details" placeholder="Describe what data is being requested..." value={sarForm.notes} onChange={(e) => setSAR("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createSAR.isPending}>{createSAR.isPending ? "Saving…" : "Log Request"}</Button>

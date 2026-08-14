@@ -205,8 +205,8 @@ function OutcomePanel({ incidentId, currentOutcome, currentLessons, onSaved }: O
         />
       </div>
       <div>
-        <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Lessons Learned</label>
-        <textarea
+        <label htmlFor="a3ef-lessons-learned" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Lessons Learned</label>
+        <textarea id="a3ef-lessons-learned"
           value={lessons}
           onChange={(e) => setLessons(e.target.value)}
           rows={2}

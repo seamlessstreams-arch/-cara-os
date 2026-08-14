@@ -500,9 +500,9 @@ function NewTransactionDialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Young Person</Label>
+              <Label htmlFor="96ff-young-person" className="text-xs">Young Person</Label>
               <Select value={childId} onValueChange={setChildId}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="96ff-young-person" className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
                   <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
@@ -511,9 +511,9 @@ function NewTransactionDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Type</Label>
+              <Label htmlFor="96ff-type" className="text-xs">Type</Label>
               <Select value={transactionType} onValueChange={(v) => { setTransactionType(v as PocketMoneyAccountTxType); setCategory(v === "credit" ? "weekly_allowance" : "purchase_shop"); }}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="96ff-type" className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="credit">Credit</SelectItem>
                   <SelectItem value="debit">Debit</SelectItem>
@@ -524,9 +524,9 @@ function NewTransactionDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Category</Label>
+              <Label htmlFor="96ff-category" className="text-xs">Category</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as PocketMoneyAccountCategory)}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="96ff-category" className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {availableCategories.map((c) => (
                     <SelectItem key={c} value={c}>{POCKET_MONEY_ACCOUNT_CATEGORY_LABEL[c]}</SelectItem>
@@ -535,8 +535,8 @@ function NewTransactionDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Amount (£) *</Label>
-              <Input
+              <Label htmlFor="96ff-amount" className="text-xs">Amount (£) *</Label>
+              <Input id="96ff-amount"
                 type="number"
                 step="0.01"
                 min="0"
@@ -549,8 +549,8 @@ function NewTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Description *</Label>
-            <Input
+            <Label htmlFor="96ff-description" className="text-xs">Description *</Label>
+            <Input id="96ff-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What was this transaction for?"
@@ -559,8 +559,8 @@ function NewTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Receipt Reference</Label>
-            <Input
+            <Label htmlFor="96ff-receipt-reference" className="text-xs">Receipt Reference</Label>
+            <Input id="96ff-receipt-reference"
               value={receiptRef}
               onChange={(e) => setReceiptRef(e.target.value)}
               placeholder="e.g. REC-0123"
@@ -570,9 +570,9 @@ function NewTransactionDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Authorised By</Label>
+              <Label htmlFor="96ff-authorised-by" className="text-xs">Authorised By</Label>
               <Select value={authorisedBy} onValueChange={setAuthorisedBy}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="96ff-authorised-by" className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_lackson", "staff_mirela"].map((s) => (
                     <SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>
@@ -581,9 +581,9 @@ function NewTransactionDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Witnessed By</Label>
+              <Label htmlFor="96ff-witnessed-by" className="text-xs">Witnessed By</Label>
               <Select value={witnessedBy} onValueChange={setWitnessedBy}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="96ff-witnessed-by" className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
                   {["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_lackson", "staff_mirela"].map((s) => (
@@ -595,8 +595,8 @@ function NewTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Notes</Label>
-            <Textarea
+            <Label htmlFor="96ff-notes" className="text-xs">Notes</Label>
+            <Textarea id="96ff-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes..."

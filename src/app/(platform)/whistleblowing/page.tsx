@@ -380,9 +380,9 @@ export default function WhistleblowingPage() {
               <SelectContent>{(Object.keys(SEV_META) as WhistleblowingSeverity[]).map((k) => <SelectItem key={k} value={k}>{WHISTLEBLOWING_SEVERITY_LABEL[k]}</SelectItem>)}</SelectContent>
             </Select>
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned To</label>
+              <label htmlFor="0997-assigned-to" className="text-xs font-medium text-slate-600 mb-1 block">Assigned To</label>
               <Select value={wbForm.assigned_to} onValueChange={(v) => setWF("assigned_to", v)}>
-                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="0997-assigned-to" className="text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent>
               </Select>
             </div>

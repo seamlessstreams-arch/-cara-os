@@ -419,9 +419,9 @@ export default function MedicationStockCheckPage() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>New Stock Check</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveCheck} className="space-y-3 py-2">
-            <div><Label>Check Type</Label><Select value={scForm.check_type} onValueChange={(v) => setSC("check_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(STOCK_CHECK_TYPE_LABEL) as StockCheckType[]).map((k) => (<SelectItem key={k} value={k}>{STOCK_CHECK_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Witnessed By</Label><Select value={scForm.witnessed_by} onValueChange={(v) => setSC("witnessed_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select witness…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={scForm.notes} onChange={(e) => setSC("notes", e.target.value)} /></div>
+            <div><Label htmlFor="2ed3-check-type">Check Type</Label><Select value={scForm.check_type} onValueChange={(v) => setSC("check_type", v)}><SelectTrigger id="2ed3-check-type" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(STOCK_CHECK_TYPE_LABEL) as StockCheckType[]).map((k) => (<SelectItem key={k} value={k}>{STOCK_CHECK_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="2ed3-witnessed-by">Witnessed By</Label><Select value={scForm.witnessed_by} onValueChange={(v) => setSC("witnessed_by", v)}><SelectTrigger id="2ed3-witnessed-by" className="mt-1"><SelectValue placeholder="Select witness…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="2ed3-notes">Notes</Label><Textarea id="2ed3-notes" className="mt-1" rows={2} value={scForm.notes} onChange={(e) => setSC("notes", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createCheck.isPending}>{createCheck.isPending ? "Saving…" : "Log Check"}</Button></DialogFooter>
           </form>
         </DialogContent>

@@ -484,9 +484,9 @@ function ReportMissingDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Young Person *</label>
+            <label htmlFor="d496-young-person" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Young Person *</label>
             <Select value={childId} onValueChange={setChildId}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger>
+              <SelectTrigger id="d496-young-person" className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger>
               <SelectContent>
                 {youngPeople.map((yp) => (
                   <SelectItem key={yp.id} value={yp.id}>
@@ -500,18 +500,18 @@ function ReportMissingDialog({
           {childId && <InlinePracticeModules childId={childId} modules={["safe", "relationships"]} />}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date Missing *</label>
-              <Input type="date" className="mt-1" value={dateMissing} onChange={(e) => setDateMissing(e.target.value)} />
+              <label htmlFor="d496-date-missing" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date Missing *</label>
+              <Input id="d496-date-missing" type="date" className="mt-1" value={dateMissing} onChange={(e) => setDateMissing(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Time</label>
-              <Input type="time" className="mt-1" value={timeMissing} onChange={(e) => setTimeMissing(e.target.value)} />
+              <label htmlFor="d496-time" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Time</label>
+              <Input id="d496-time" type="time" className="mt-1" value={timeMissing} onChange={(e) => setTimeMissing(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Risk Level *</label>
+            <label htmlFor="d496-risk-level" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Risk Level *</label>
             <Select value={riskLevel} onValueChange={(v) => setRiskLevel(v as typeof riskLevel)}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="d496-risk-level" className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
@@ -521,8 +521,8 @@ function ReportMissingDialog({
             </Select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Last seen location</label>
-            <Input className="mt-1" placeholder="e.g. Outside the home — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
+            <label htmlFor="d496-last-seen-location" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Last seen location</label>
+            <Input id="d496-last-seen-location" className="mt-1" placeholder="e.g. Outside the home — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -601,17 +601,17 @@ function LogReturnDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date returned</label>
-              <Input type="date" className="mt-1" value={dateReturned} onChange={(e) => setDateReturned(e.target.value)} />
+              <label htmlFor="d496-date-returned" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date returned</label>
+              <Input id="d496-date-returned" type="date" className="mt-1" value={dateReturned} onChange={(e) => setDateReturned(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Time returned</label>
-              <Input type="time" className="mt-1" value={timeReturned} onChange={(e) => setTimeReturned(e.target.value)} />
+              <label htmlFor="d496-time-returned" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Time returned</label>
+              <Input id="d496-time-returned" type="time" className="mt-1" value={timeReturned} onChange={(e) => setTimeReturned(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Return location</label>
-            <Input className="mt-1" placeholder="e.g. Home voluntarily / Town centre collected by staff" value={returnLocation} onChange={(e) => setReturnLocation(e.target.value)} />
+            <label htmlFor="d496-return-location" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Return location</label>
+            <Input id="d496-return-location" className="mt-1" placeholder="e.g. Home voluntarily / Town centre collected by staff" value={returnLocation} onChange={(e) => setReturnLocation(e.target.value)} />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={csRisk} onChange={(e) => setCsRisk(e.target.checked)} className="rounded" />
@@ -741,10 +741,10 @@ function RhiDialog({
           {/* Context input */}
           {!rhiResult && (
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">
+              <label htmlFor="d496-additional-context-for-cara-option" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">
                 Additional context for Cara (optional)
               </label>
-              <Textarea
+              <Textarea id="d496-additional-context-for-cara-option"
                 className="mt-1 text-sm"
                 rows={3}
                 placeholder="Any observations, what the young person said on return, known contacts, concerns…"
@@ -856,10 +856,10 @@ function RhiDialog({
 
           {/* Interview notes */}
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">
+            <label htmlFor="d496-interview-notes" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">
               Interview Notes *
             </label>
-            <Textarea
+            <Textarea id="d496-interview-notes"
               className="mt-1 text-sm"
               rows={4}
               placeholder="Record what the young person said, their demeanour, disclosures, and your observations…"

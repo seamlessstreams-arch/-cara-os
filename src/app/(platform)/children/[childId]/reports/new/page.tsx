@@ -143,15 +143,15 @@ export default function ChildNewReportPage({
           <CardContent className="space-y-4">
             {/* Child (locked) */}
             <div>
-              <Label>Child</Label>
-              <Input value={childName} disabled className="mt-1 bg-gray-50" />
+              <Label htmlFor="ac28-child">Child</Label>
+              <Input id="ac28-child" value={childName} disabled className="mt-1 bg-gray-50" />
             </div>
 
             {/* Report Type */}
             <div>
-              <Label>Report Type</Label>
+              <Label htmlFor="ac28-report-type">Report Type</Label>
               <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
-                <SelectTrigger className="mt-1">
+                <SelectTrigger id="ac28-report-type" className="mt-1">
                   <SelectValue placeholder="Select report type..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,9 +166,9 @@ export default function ChildNewReportPage({
 
             {/* Audience */}
             <div>
-              <Label>Audience</Label>
+              <Label htmlFor="ac28-audience">Audience</Label>
               <Select value={audience} onValueChange={(v) => setAudience(v as ReportAudience)}>
-                <SelectTrigger className="mt-1">
+                <SelectTrigger id="ac28-audience" className="mt-1">
                   <SelectValue placeholder="Select audience..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -184,8 +184,8 @@ export default function ChildNewReportPage({
             {/* Date Range */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Date From</Label>
-                <Input
+                <Label htmlFor="ac28-date-from">Date From</Label>
+                <Input id="ac28-date-from"
                   type="date"
                   value={dateStart}
                   onChange={(e) => setDateStart(e.target.value)}
@@ -193,8 +193,8 @@ export default function ChildNewReportPage({
                 />
               </div>
               <div>
-                <Label>Date To</Label>
-                <Input
+                <Label htmlFor="ac28-date-to">Date To</Label>
+                <Input id="ac28-date-to"
                   type="date"
                   value={dateEnd}
                   onChange={(e) => setDateEnd(e.target.value)}

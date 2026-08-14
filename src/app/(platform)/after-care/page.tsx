@@ -233,7 +233,7 @@ export default function AfterCarePage() {
         {/* filter */}
         <Card><CardContent className="pt-4">
           <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[180px]"><Label className="text-xs">Search</Label><div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" placeholder="Name, accommodation…" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
+            <div className="flex-1 min-w-[180px]"><Label htmlFor="203e-search" className="text-xs">Search</Label><div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input id="203e-search" className="pl-8" placeholder="Name, accommodation…" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
             <div className="w-36"><Label className="text-xs flex items-center gap-1"><Filter className="h-3 w-3" />RAG</Label><Select value={ragFilter} onValueChange={setRagFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem><SelectItem value="red">Red</SelectItem><SelectItem value="amber">Amber</SelectItem><SelectItem value="green">Green</SelectItem></SelectContent></Select></div>
             <div className="w-36"><Label className="text-xs flex items-center gap-1"><ArrowUpDown className="h-3 w-3" />Sort</Label><Select value={sortBy} onValueChange={setSortBy}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="rag">RAG Priority</SelectItem><SelectItem value="name">Name</SelectItem><SelectItem value="left">Left Date</SelectItem></SelectContent></Select></div>
           </div>
@@ -376,12 +376,12 @@ export default function AfterCarePage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add After-Care Record</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateRecord} className="space-y-3">
-            <div><Label>Young Person *</Label><Select value={acForm.child_id} onValueChange={(v) => setACF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map(y => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Left Date</Label><Input type="date" value={acForm.left_date} onChange={(e) => setACF("left_date", e.target.value)} /></div>
-            <div><Label>Left Reason</Label><Select value={acForm.left_reason} onValueChange={(v) => setACF("left_reason", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(LR_LABEL) as [AfterCareLeftReason, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Current Accommodation *</Label><Input placeholder="Address and provider" value={acForm.current_accommodation} onChange={(e) => setACF("current_accommodation", e.target.value)} /></div>
-            <div><Label>Education / Employment</Label><Input placeholder="Current EET details" value={acForm.education_employment} onChange={(e) => setACF("education_employment", e.target.value)} /></div>
-            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" value={acForm.notes} onChange={(e) => setACF("notes", e.target.value)} /></div>
+            <div><Label htmlFor="203e-young-person">Young Person *</Label><Select value={acForm.child_id} onValueChange={(v) => setACF("child_id", v)}><SelectTrigger id="203e-young-person"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map(y => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label htmlFor="203e-left-date">Left Date</Label><Input id="203e-left-date" type="date" value={acForm.left_date} onChange={(e) => setACF("left_date", e.target.value)} /></div>
+            <div><Label htmlFor="203e-left-reason">Left Reason</Label><Select value={acForm.left_reason} onValueChange={(v) => setACF("left_reason", v)}><SelectTrigger id="203e-left-reason"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(LR_LABEL) as [AfterCareLeftReason, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label htmlFor="203e-current-accommodation">Current Accommodation *</Label><Input id="203e-current-accommodation" placeholder="Address and provider" value={acForm.current_accommodation} onChange={(e) => setACF("current_accommodation", e.target.value)} /></div>
+            <div><Label htmlFor="203e-education-employment">Education / Employment</Label><Input id="203e-education-employment" placeholder="Current EET details" value={acForm.education_employment} onChange={(e) => setACF("education_employment", e.target.value)} /></div>
+            <div><Label htmlFor="203e-notes">Notes</Label><Textarea id="203e-notes" rows={2} placeholder="Additional notes…" value={acForm.notes} onChange={(e) => setACF("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Record"}</Button>

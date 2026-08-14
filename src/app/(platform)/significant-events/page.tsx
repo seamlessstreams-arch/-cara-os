@@ -381,50 +381,50 @@ export default function SignificantEventsPage() {
           <DialogHeader><DialogTitle>Record Significant Event</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateEvent} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person *</label>
-              <Select value={seForm.child_id} onValueChange={(v) => setSEF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="3ee2-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={seForm.child_id} onValueChange={(v) => setSEF("child_id", v)}><SelectTrigger id="3ee2-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input type="date" value={seForm.date} onChange={(e) => setSEF("date", e.target.value)} />
+                <label htmlFor="3ee2-date" className="text-sm font-medium">Date</label>
+                <Input id="3ee2-date" type="date" value={seForm.date} onChange={(e) => setSEF("date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Time</label>
-                <Input type="time" value={seForm.time} onChange={(e) => setSEF("time", e.target.value)} />
+                <label htmlFor="3ee2-time" className="text-sm font-medium">Time</label>
+                <Input id="3ee2-time" type="time" value={seForm.time} onChange={(e) => setSEF("time", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select value={seForm.category} onValueChange={(v) => setSEF("category", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="3ee2-category" className="text-sm font-medium">Category</label>
+                <Select value={seForm.category} onValueChange={(v) => setSEF("category", v)}><SelectTrigger id="3ee2-category"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Severity</label>
-                <Select value={seForm.severity} onValueChange={(v) => setSEF("severity", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="3ee2-severity" className="text-sm font-medium">Severity</label>
+                <Select value={seForm.severity} onValueChange={(v) => setSEF("severity", v)}><SelectTrigger id="3ee2-severity"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(SEVERITY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Title *</label>
-              <Input placeholder="Brief title for the event" value={seForm.title} onChange={(e) => setSEF("title", e.target.value)} />
+              <label htmlFor="3ee2-title" className="text-sm font-medium">Title *</label>
+              <Input id="3ee2-title" placeholder="Brief title for the event" value={seForm.title} onChange={(e) => setSEF("title", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="Full description of what happened…" rows={4} value={seForm.description} onChange={(e) => setSEF("description", e.target.value)} />
+              <label htmlFor="3ee2-description" className="text-sm font-medium">Description</label>
+              <Textarea id="3ee2-description" placeholder="Full description of what happened…" rows={4} value={seForm.description} onChange={(e) => setSEF("description", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Immediate Action Taken</label>
-              <Textarea placeholder="What was done in response?" rows={2} value={seForm.immediate_action} onChange={(e) => setSEF("immediate_action", e.target.value)} />
+              <label htmlFor="3ee2-immediate-action-taken" className="text-sm font-medium">Immediate Action Taken</label>
+              <Textarea id="3ee2-immediate-action-taken" placeholder="What was done in response?" rows={2} value={seForm.immediate_action} onChange={(e) => setSEF("immediate_action", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Child&apos;s Response</label>
-              <Textarea placeholder="Record the child's response in their own words…" rows={2} value={seForm.child_response} onChange={(e) => setSEF("child_response", e.target.value)} />
+              <label htmlFor="3ee2-child-apos-s-response" className="text-sm font-medium">Child&apos;s Response</label>
+              <Textarea id="3ee2-child-apos-s-response" placeholder="Record the child's response in their own words…" rows={2} value={seForm.child_response} onChange={(e) => setSEF("child_response", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

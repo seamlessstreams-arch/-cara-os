@@ -435,9 +435,9 @@ export default function CorrespondencePage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Direction *</label>
+                <label htmlFor="fca4-direction" className="text-sm font-medium mb-1 block">Direction *</label>
                 <Select value={nDir} onValueChange={v => setNDir(v as CorrespondenceDirection)}>
-                  <SelectTrigger><SelectValue placeholder="In / Out" /></SelectTrigger>
+                  <SelectTrigger id="fca4-direction"><SelectValue placeholder="In / Out" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="incoming">Incoming</SelectItem>
                     <SelectItem value="outgoing">Outgoing</SelectItem>
@@ -445,9 +445,9 @@ export default function CorrespondencePage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Method *</label>
+                <label htmlFor="fca4-method" className="text-sm font-medium mb-1 block">Method *</label>
                 <Select value={nMethod} onValueChange={v => setNMethod(v as CorrespondenceMethod)}>
-                  <SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
+                  <SelectTrigger id="fca4-method"><SelectValue placeholder="Method" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(METHOD_CONFIG) as [CorrespondenceMethod, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -457,33 +457,33 @@ export default function CorrespondencePage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Subject *</label>
-              <Input placeholder="Subject line" value={nSubject} onChange={e => setNSubject(e.target.value)} />
+              <label htmlFor="fca4-subject" className="text-sm font-medium mb-1 block">Subject *</label>
+              <Input id="fca4-subject" placeholder="Subject line" value={nSubject} onChange={e => setNSubject(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">From Name</label>
-                <Input placeholder="Sender" value={nFromName} onChange={e => setNFromName(e.target.value)} />
+                <label htmlFor="fca4-from-name" className="text-sm font-medium mb-1 block">From Name</label>
+                <Input id="fca4-from-name" placeholder="Sender" value={nFromName} onChange={e => setNFromName(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">From Role</label>
-                <Input placeholder="Role" value={nFromRole} onChange={e => setNFromRole(e.target.value)} />
+                <label htmlFor="fca4-from-role" className="text-sm font-medium mb-1 block">From Role</label>
+                <Input id="fca4-from-role" placeholder="Role" value={nFromRole} onChange={e => setNFromRole(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">To Name</label>
-                <Input placeholder="Recipient" value={nToName} onChange={e => setNToName(e.target.value)} />
+                <label htmlFor="fca4-to-name" className="text-sm font-medium mb-1 block">To Name</label>
+                <Input id="fca4-to-name" placeholder="Recipient" value={nToName} onChange={e => setNToName(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">To Role</label>
-                <Input placeholder="Role" value={nToRole} onChange={e => setNToRole(e.target.value)} />
+                <label htmlFor="fca4-to-role" className="text-sm font-medium mb-1 block">To Role</label>
+                <Input id="fca4-to-role" placeholder="Role" value={nToRole} onChange={e => setNToRole(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Priority</label>
+              <label htmlFor="fca4-priority" className="text-sm font-medium mb-1 block">Priority</label>
               <Select value={nPriority} onValueChange={v => setNPriority(v as CorrespondencePriority)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="fca4-priority"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="urgent">Urgent</SelectItem>
                   <SelectItem value="normal">Normal</SelectItem>
@@ -492,9 +492,9 @@ export default function CorrespondencePage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Linked Child</label>
+              <label htmlFor="fca4-linked-child" className="text-sm font-medium mb-1 block">Linked Child</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger id="fca4-linked-child"><SelectValue placeholder="None" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
@@ -502,12 +502,12 @@ export default function CorrespondencePage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Summary *</label>
-              <Textarea placeholder="Summary of the communication..." value={nSummary} onChange={e => setNSummary(e.target.value)} rows={3} />
+              <label htmlFor="fca4-summary" className="text-sm font-medium mb-1 block">Summary *</label>
+              <Textarea id="fca4-summary" placeholder="Summary of the communication..." value={nSummary} onChange={e => setNSummary(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Action Required</label>
-              <Textarea placeholder="Any follow-up actions..." value={nAction} onChange={e => setNAction(e.target.value)} rows={2} />
+              <label htmlFor="fca4-action-required" className="text-sm font-medium mb-1 block">Action Required</label>
+              <Textarea id="fca4-action-required" placeholder="Any follow-up actions..." value={nAction} onChange={e => setNAction(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

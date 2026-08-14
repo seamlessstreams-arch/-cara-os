@@ -217,34 +217,34 @@ export default function SafeguardingLADOPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member</label>
-                <Input value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
+                <label htmlFor="864d-staff-member" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member</label>
+                <Input id="864d-staff-member" value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Role</label>
-                <Input value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
+                <label htmlFor="864d-role" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Role</label>
+                <Input id="864d-role" value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Child concerned</label>
-                <Input value={childName} onChange={(e) => setChildName(e.target.value)} placeholder="Child's name" />
+                <label htmlFor="864d-child-concerned" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Child concerned</label>
+                <Input id="864d-child-concerned" value={childName} onChange={(e) => setChildName(e.target.value)} placeholder="Child's name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of concern</label>
-                <Input type="date" value={dateOfConcern} onChange={(e) => setDateOfConcern(e.target.value)} />
+                <label htmlFor="864d-date-of-concern" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of concern</label>
+                <Input id="864d-date-of-concern" type="date" value={dateOfConcern} onChange={(e) => setDateOfConcern(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Source of concern</label>
+                <label htmlFor="864d-source-of-concern" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Source of concern</label>
                 <Select value={concernSource} onValueChange={setConcernSource}>
-                  <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                  <SelectTrigger id="864d-source-of-concern"><SelectValue placeholder="Select source" /></SelectTrigger>
                   <SelectContent>
                     {CONCERN_SOURCES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Is the child safe now?</label>
+                <label htmlFor="864d-is-the-child-safe-now" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Is the child safe now?</label>
                 <Select value={childSafe} onValueChange={(v) => setChildSafe(v as "yes" | "no")}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="864d-is-the-child-safe-now"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="yes">Yes — child is safe</SelectItem>
                     <SelectItem value="no">No — immediate safeguarding action needed</SelectItem>
@@ -280,8 +280,8 @@ export default function SafeguardingLADOPage() {
               </SelectContent>
             </Select>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Description of concern</label>
-              <Textarea
+              <label htmlFor="864d-description-of-concern" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Description of concern</label>
+              <Textarea id="864d-description-of-concern"
                 value={concernDescription}
                 onChange={(e) => setConcernDescription(e.target.value)}
                 placeholder="Describe the concern factually — what is alleged to have happened, when, where, and what is the evidence or basis for the concern..."
@@ -289,8 +289,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Immediate actions taken</label>
-              <Textarea
+              <label htmlFor="864d-immediate-actions-taken" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Immediate actions taken</label>
+              <Textarea id="864d-immediate-actions-taken"
                 value={immediateActions}
                 onChange={(e) => setImmediateActions(e.target.value)}
                 placeholder="What immediate actions have been taken to safeguard the child? Has the staff member been removed from contact with children? Has suspension been considered?"
@@ -324,20 +324,20 @@ export default function SafeguardingLADOPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO name</label>
-                <Input value={ladoName} onChange={(e) => setLadoName(e.target.value)} placeholder="Full name" />
+                <label htmlFor="864d-lado-name" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO name</label>
+                <Input id="864d-lado-name" value={ladoName} onChange={(e) => setLadoName(e.target.value)} placeholder="Full name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Reference number</label>
-                <Input value={ladoReferenceNumber} onChange={(e) => setLadoReferenceNumber(e.target.value)} placeholder="LADO reference" />
+                <label htmlFor="864d-reference-number" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Reference number</label>
+                <Input id="864d-reference-number" value={ladoReferenceNumber} onChange={(e) => setLadoReferenceNumber(e.target.value)} placeholder="LADO reference" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of contact</label>
-                <Input type="date" value={ladoContactDate} onChange={(e) => setLadoContactDate(e.target.value)} />
+                <label htmlFor="864d-date-of-contact" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of contact</label>
+                <Input id="864d-date-of-contact" type="date" value={ladoContactDate} onChange={(e) => setLadoContactDate(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Time of contact</label>
-                <Input type="time" value={ladoContactTime} onChange={(e) => setLadoContactTime(e.target.value)} />
+                <label htmlFor="864d-time-of-contact" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Time of contact</label>
+                <Input id="864d-time-of-contact" type="time" value={ladoContactTime} onChange={(e) => setLadoContactTime(e.target.value)} />
               </div>
             </div>
           </CardContent>
@@ -351,8 +351,8 @@ export default function SafeguardingLADOPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Advice given by LADO</label>
-              <Textarea
+              <label htmlFor="864d-advice-given-by-lado" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Advice given by LADO</label>
+              <Textarea id="864d-advice-given-by-lado"
                 value={ladoAdvice}
                 onChange={(e) => setLadoAdvice(e.target.value)}
                 placeholder="Record the LADO's advice — does this meet the threshold? What actions are agreed? Is a strategy meeting needed? Can the employer investigate?"
@@ -360,8 +360,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Agreed actions</label>
-              <Textarea
+              <label htmlFor="864d-agreed-actions" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Agreed actions</label>
+              <Textarea id="864d-agreed-actions"
                 value={ladoAgreedActions}
                 onChange={(e) => setLadoAgreedActions(e.target.value)}
                 placeholder="List the agreed actions with owners and timescales..."
@@ -370,9 +370,9 @@ export default function SafeguardingLADOPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Police involvement</label>
+                <label htmlFor="864d-police-involvement" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Police involvement</label>
                 <Select value={policeInvolved} onValueChange={(v) => setPoliceInvolved(v as "yes" | "no")}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="864d-police-involvement"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="yes">Yes — police are involved</SelectItem>
                     <SelectItem value="no">No — police not involved</SelectItem>
@@ -381,8 +381,8 @@ export default function SafeguardingLADOPage() {
               </div>
               {policeInvolved === "yes" && (
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Police details</label>
-                  <Input value={policeDetails} onChange={(e) => setPoliceDetails(e.target.value)} placeholder="Officer name, reference number" />
+                  <label htmlFor="864d-police-details" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Police details</label>
+                  <Input id="864d-police-details" value={policeDetails} onChange={(e) => setPoliceDetails(e.target.value)} placeholder="Officer name, reference number" />
                 </div>
               )}
             </div>
@@ -403,12 +403,12 @@ export default function SafeguardingLADOPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of strategy meeting</label>
-              <Input type="date" value={strategyDate} onChange={(e) => setStrategyDate(e.target.value)} />
+              <label htmlFor="864d-date-of-strategy-meeting" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date of strategy meeting</label>
+              <Input id="864d-date-of-strategy-meeting" type="date" value={strategyDate} onChange={(e) => setStrategyDate(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Attendees</label>
-              <Textarea
+              <label htmlFor="864d-attendees" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Attendees</label>
+              <Textarea id="864d-attendees"
                 value={attendees}
                 onChange={(e) => setAttendees(e.target.value)}
                 placeholder="List attendees — LADO, police, social worker, RM, RI, HR..."
@@ -416,8 +416,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Decisions and agreed actions</label>
-              <Textarea
+              <label htmlFor="864d-decisions-and-agreed-actions" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Decisions and agreed actions</label>
+              <Textarea id="864d-decisions-and-agreed-actions"
                 value={strategyDecisions}
                 onChange={(e) => setStrategyDecisions(e.target.value)}
                 placeholder="Record the decisions — who will investigate, what type of investigation (criminal, s47, employer), timescales, information sharing agreements..."
@@ -425,8 +425,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigation plan</label>
-              <Textarea
+              <label htmlFor="864d-investigation-plan" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigation plan</label>
+              <Textarea id="864d-investigation-plan"
                 value={investigationPlan}
                 onChange={(e) => setInvestigationPlan(e.target.value)}
                 placeholder="What is the agreed investigation plan? Who will be interviewed? What evidence will be gathered? Can the employer proceed or must they wait for the police?"
@@ -434,8 +434,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Interim measures</label>
-              <Textarea
+              <label htmlFor="864d-interim-measures" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Interim measures</label>
+              <Textarea id="864d-interim-measures"
                 value={interimMeasures}
                 onChange={(e) => setInterimMeasures(e.target.value)}
                 placeholder="What interim measures are in place? Suspension, adjusted duties, increased supervision? Who is supporting the child and the staff member?"
@@ -459,8 +459,8 @@ export default function SafeguardingLADOPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Progress summary</label>
-              <Textarea
+              <label htmlFor="864d-progress-summary" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Progress summary</label>
+              <Textarea id="864d-progress-summary"
                 value={investigationProgress}
                 onChange={(e) => setInvestigationProgress(e.target.value)}
                 placeholder="Record investigation progress — what has been done, what is outstanding, are timescales being met?"
@@ -468,8 +468,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Evidence gathered</label>
-              <Textarea
+              <label htmlFor="864d-evidence-gathered" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Evidence gathered</label>
+              <Textarea id="864d-evidence-gathered"
                 value={evidenceGathered}
                 onChange={(e) => setEvidenceGathered(e.target.value)}
                 placeholder="List evidence gathered — statements, CCTV, records, documents..."
@@ -477,8 +477,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Interviews conducted</label>
-              <Textarea
+              <label htmlFor="864d-interviews-conducted" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Interviews conducted</label>
+              <Textarea id="864d-interviews-conducted"
                 value={interviewsConducted}
                 onChange={(e) => setInterviewsConducted(e.target.value)}
                 placeholder="Who has been interviewed? Summarise key points from each interview..."
@@ -486,8 +486,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO updates</label>
-              <Textarea
+              <label htmlFor="864d-lado-updates" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO updates</label>
+              <Textarea id="864d-lado-updates"
                 value={ladoUpdates}
                 onChange={(e) => setLadoUpdates(e.target.value)}
                 placeholder="Record any updates to/from the LADO during the investigation..."
@@ -520,9 +520,9 @@ export default function SafeguardingLADOPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO outcome category</label>
+              <label htmlFor="864d-lado-outcome-category" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">LADO outcome category</label>
               <Select value={ladoOutcome} onValueChange={(v) => setLadoOutcome(v as LADOOutcome)}>
-                <SelectTrigger><SelectValue placeholder="Select outcome" /></SelectTrigger>
+                <SelectTrigger id="864d-lado-outcome-category"><SelectValue placeholder="Select outcome" /></SelectTrigger>
                 <SelectContent>
                   {LADO_OUTCOMES.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                 </SelectContent>
@@ -534,8 +534,8 @@ export default function SafeguardingLADOPage() {
               </Badge>
             )}
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Outcome rationale</label>
-              <Textarea
+              <label htmlFor="864d-outcome-rationale" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Outcome rationale</label>
+              <Textarea id="864d-outcome-rationale"
                 value={outcomeRationale}
                 onChange={(e) => setOutcomeRationale(e.target.value)}
                 placeholder="Record the basis for the outcome — the evidence considered, the standard of proof applied, and the reasoning..."
@@ -554,9 +554,9 @@ export default function SafeguardingLADOPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">DBS referral required?</label>
+                <label htmlFor="864d-dbs-referral-required" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">DBS referral required?</label>
                 <Select value={dbsReferral} onValueChange={(v) => setDbsReferral(v as "yes" | "no" | "not_applicable")}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="864d-dbs-referral-required"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="yes">Yes — DBS referral required</SelectItem>
                     <SelectItem value="no">No — DBS referral not required</SelectItem>
@@ -565,9 +565,9 @@ export default function SafeguardingLADOPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Ofsted notified?</label>
+                <label htmlFor="864d-ofsted-notified" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Ofsted notified?</label>
                 <Select value={ofstedNotified} onValueChange={(v) => setOfstedNotified(v as "yes" | "no")}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="864d-ofsted-notified"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="yes">Yes — Ofsted notified (Reg 40)</SelectItem>
                     <SelectItem value="no">No — notification not required</SelectItem>
@@ -577,8 +577,8 @@ export default function SafeguardingLADOPage() {
             </div>
             {dbsReferral === "yes" && (
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">DBS referral rationale</label>
-                <Textarea
+                <label htmlFor="864d-dbs-referral-rationale" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">DBS referral rationale</label>
+                <Textarea id="864d-dbs-referral-rationale"
                   value={dbsRationale}
                   onChange={(e) => setDbsRationale(e.target.value)}
                   placeholder="Record the rationale for the DBS referral — was the person removed from regulated activity, or would they have been removed had they not resigned?"
@@ -597,8 +597,8 @@ export default function SafeguardingLADOPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Disciplinary or HR action</label>
-              <Textarea
+              <label htmlFor="864d-disciplinary-or-hr-action" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Disciplinary or HR action</label>
+              <Textarea id="864d-disciplinary-or-hr-action"
                 value={disciplinaryAction}
                 onChange={(e) => setDisciplinaryAction(e.target.value)}
                 placeholder="What HR or disciplinary action will the employer take? If the allegation was substantiated, what is the outcome? If the person has resigned, what records will be kept?"
@@ -606,8 +606,8 @@ export default function SafeguardingLADOPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Learning points</label>
-              <Textarea
+              <label htmlFor="864d-learning-points" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Learning points</label>
+              <Textarea id="864d-learning-points"
                 value={learningPoints}
                 onChange={(e) => setLearningPoints(e.target.value)}
                 placeholder="What has been learned? Are there practice changes, training needs, policy updates, or recruitment improvements to consider?"

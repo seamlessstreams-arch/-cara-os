@@ -269,8 +269,8 @@ function EscalatePanel({
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3">
       <p className="text-sm font-semibold text-amber-800">Escalate Task</p>
       <div>
-        <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Escalate to</label>
-        <select
+        <label htmlFor="f058-escalate-to" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Escalate to</label>
+        <select id="f058-escalate-to"
           value={to}
           onChange={(e) => setTo(e.target.value)}
           className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
@@ -282,8 +282,8 @@ function EscalatePanel({
         </select>
       </div>
       <div>
-        <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Reason</label>
-        <textarea
+        <label htmlFor="f058-reason" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Reason</label>
+        <textarea id="f058-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={2}
@@ -522,8 +522,8 @@ export default function TaskDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
-                <textarea
+                <label htmlFor="f058-description" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
+                <textarea id="f058-description"
                   value={editForm.description ?? ""}
                   onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
                   rows={3}
@@ -535,8 +535,8 @@ export default function TaskDetailPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
-                  <select
+                  <label htmlFor="f058-priority" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
+                  <select id="f058-priority"
                     value={editForm.priority ?? "medium"}
                     onChange={(e) => setEditForm((f) => ({ ...f, priority: e.target.value as Task["priority"] }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -545,8 +545,8 @@ export default function TaskDetailPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Status</label>
-                  <select
+                  <label htmlFor="f058-status" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Status</label>
+                  <select id="f058-status"
                     value={editForm.status ?? "not_started"}
                     onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value as Task["status"] }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -559,8 +559,8 @@ export default function TaskDetailPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
-                  <select
+                  <label htmlFor="f058-category" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
+                  <select id="f058-category"
                     value={editForm.category ?? "admin"}
                     onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value as Task["category"] }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -569,8 +569,8 @@ export default function TaskDetailPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
-                  <Input
+                  <label htmlFor="f058-due-date" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
+                  <Input id="f058-due-date"
                     type="date"
                     value={editForm.due_date ?? ""}
                     onChange={(e) => setEditForm((f) => ({ ...f, due_date: e.target.value }))}
@@ -579,8 +579,8 @@ export default function TaskDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned To</label>
-                <select
+                <label htmlFor="f058-assigned-to" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned To</label>
+                <select id="f058-assigned-to"
                   value={editForm.assigned_to ?? ""}
                   onChange={(e) => setEditForm((f) => ({ ...f, assigned_to: e.target.value }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"

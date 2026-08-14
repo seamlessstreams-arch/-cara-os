@@ -383,20 +383,20 @@ export default function ChildrenMissingEducationPage() {
             }}
           >
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Young Person</Label><Select name="child_id"><SelectTrigger><SelectValue placeholder="Select young person..." /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
-              <div><Label>School / Setting</Label><Input name="school" placeholder="School name" /></div>
-              <div><Label>Year Group</Label><Input name="year_group" placeholder="e.g. Year 9" /></div>
-              <div><Label>Current Status</Label><Select name="current_status"><SelectTrigger><SelectValue placeholder="Select status..." /></SelectTrigger><SelectContent>{(Object.keys(CME_STATUS_LABEL) as CMEStatus[]).map((k) => (<SelectItem key={k} value={k}>{CME_STATUS_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-              <div><Label>Attendance %</Label><Input name="attendance_percentage" type="number" placeholder="e.g. 85" min={0} max={100} /></div>
-              <div><Label>Attendance Level</Label><Select name="attendance_level"><SelectTrigger><SelectValue placeholder="Select level..." /></SelectTrigger><SelectContent>{(Object.keys(ATTENDANCE_LEVEL_LABEL) as AttendanceLevel[]).map((k) => (<SelectItem key={k} value={k}>{ATTENDANCE_LEVEL_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-              <div><Label>Authorised Absences</Label><Input name="authorised_absences" type="number" placeholder="0" min={0} /></div>
-              <div><Label>Unauthorised Absences</Label><Input name="unauthorised_absences" type="number" placeholder="0" min={0} /></div>
-              <div><Label>SEN Status</Label><Input name="sen_status" placeholder="e.g. No SEN, SEN Support, EHCP" /></div>
-              <div><Label>Virtual School Contact</Label><Input name="virtual_school_contact" placeholder="Name and role" /></div>
-              <div><Label>Last PEP Date</Label><Input name="last_pep_date" type="date" /></div>
-              <div><Label>Next PEP Date</Label><Input name="next_pep_date" type="date" /></div>
-              <div className="col-span-2"><Label>Concerns</Label><Textarea name="concerns" placeholder="Describe any current concerns..." rows={3} /></div>
-              <div className="col-span-2"><Label>Notes</Label><Textarea name="notes" placeholder="Additional notes..." rows={3} /></div>
+              <div><Label htmlFor="63d3-young-person">Young Person</Label><Select name="child_id"><SelectTrigger id="63d3-young-person"><SelectValue placeholder="Select young person..." /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
+              <div><Label htmlFor="63d3-school-setting">School / Setting</Label><Input id="63d3-school-setting" name="school" placeholder="School name" /></div>
+              <div><Label htmlFor="63d3-year-group">Year Group</Label><Input id="63d3-year-group" name="year_group" placeholder="e.g. Year 9" /></div>
+              <div><Label htmlFor="63d3-current-status">Current Status</Label><Select name="current_status"><SelectTrigger id="63d3-current-status"><SelectValue placeholder="Select status..." /></SelectTrigger><SelectContent>{(Object.keys(CME_STATUS_LABEL) as CMEStatus[]).map((k) => (<SelectItem key={k} value={k}>{CME_STATUS_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label htmlFor="63d3-attendance">Attendance %</Label><Input id="63d3-attendance" name="attendance_percentage" type="number" placeholder="e.g. 85" min={0} max={100} /></div>
+              <div><Label htmlFor="63d3-attendance-level">Attendance Level</Label><Select name="attendance_level"><SelectTrigger id="63d3-attendance-level"><SelectValue placeholder="Select level..." /></SelectTrigger><SelectContent>{(Object.keys(ATTENDANCE_LEVEL_LABEL) as AttendanceLevel[]).map((k) => (<SelectItem key={k} value={k}>{ATTENDANCE_LEVEL_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label htmlFor="63d3-authorised-absences">Authorised Absences</Label><Input id="63d3-authorised-absences" name="authorised_absences" type="number" placeholder="0" min={0} /></div>
+              <div><Label htmlFor="63d3-unauthorised-absences">Unauthorised Absences</Label><Input id="63d3-unauthorised-absences" name="unauthorised_absences" type="number" placeholder="0" min={0} /></div>
+              <div><Label htmlFor="63d3-sen-status">SEN Status</Label><Input id="63d3-sen-status" name="sen_status" placeholder="e.g. No SEN, SEN Support, EHCP" /></div>
+              <div><Label htmlFor="63d3-virtual-school-contact">Virtual School Contact</Label><Input id="63d3-virtual-school-contact" name="virtual_school_contact" placeholder="Name and role" /></div>
+              <div><Label htmlFor="63d3-last-pep-date">Last PEP Date</Label><Input id="63d3-last-pep-date" name="last_pep_date" type="date" /></div>
+              <div><Label htmlFor="63d3-next-pep-date">Next PEP Date</Label><Input id="63d3-next-pep-date" name="next_pep_date" type="date" /></div>
+              <div className="col-span-2"><Label htmlFor="63d3-concerns">Concerns</Label><Textarea id="63d3-concerns" name="concerns" placeholder="Describe any current concerns..." rows={3} /></div>
+              <div className="col-span-2"><Label htmlFor="63d3-notes">Notes</Label><Textarea id="63d3-notes" name="notes" placeholder="Additional notes..." rows={3} /></div>
             </div>
             <DialogFooter className="mt-4">
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

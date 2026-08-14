@@ -239,9 +239,9 @@ function NewActivityDialog({
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Young person</label>
+              <label htmlFor="4350-young-person" className="text-xs text-slate-500 font-medium mb-1 block">Young person</label>
               <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4350-young-person" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["yp_alex", "yp_jordan", "yp_casey"].map((id) => (
                     <SelectItem key={id} value={id} className="text-xs">{getYPName(id)}</SelectItem>
@@ -250,9 +250,9 @@ function NewActivityDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Category</label>
+              <label htmlFor="4350-category" className="text-xs text-slate-500 font-medium mb-1 block">Category</label>
               <Select value={form.category} onValueChange={(v) => setForm((p) => ({ ...p, category: v as ActivityCategory }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4350-category" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(CATEGORY_CONFIG) as [ActivityCategory, typeof CATEGORY_CONFIG[ActivityCategory]][]).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>
@@ -264,12 +264,12 @@ function NewActivityDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Date</label>
-              <Input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
+              <label htmlFor="4350-date" className="text-xs text-slate-500 font-medium mb-1 block">Date</label>
+              <Input id="4350-date" type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Duration (mins)</label>
-              <Input type="number" value={form.duration_minutes} onChange={(e) => setForm((p) => ({ ...p, duration_minutes: parseInt(e.target.value) || 0 }))} className="h-8 text-xs" />
+              <label htmlFor="4350-duration-mins" className="text-xs text-slate-500 font-medium mb-1 block">Duration (mins)</label>
+              <Input id="4350-duration-mins" type="number" value={form.duration_minutes} onChange={(e) => setForm((p) => ({ ...p, duration_minutes: parseInt(e.target.value) || 0 }))} className="h-8 text-xs" />
             </div>
           </div>
 
@@ -279,8 +279,8 @@ function NewActivityDialog({
           </div>
 
           <div>
-            <label className="text-xs text-slate-500 font-medium mb-1 block">Location</label>
-            <Input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="e.g. Derby Arena" className="h-8 text-xs" />
+            <label htmlFor="4350-location" className="text-xs text-slate-500 font-medium mb-1 block">Location</label>
+            <Input id="4350-location" value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="e.g. Derby Arena" className="h-8 text-xs" />
           </div>
 
           <div>
@@ -290,9 +290,9 @@ function NewActivityDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Engagement</label>
+              <label htmlFor="4350-engagement" className="text-xs text-slate-500 font-medium mb-1 block">Engagement</label>
               <Select value={form.engagement} onValueChange={(v) => setForm((p) => ({ ...p, engagement: v as ActivityEngagement }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4350-engagement" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(ENGAGEMENT_CONFIG) as [ActivityEngagement, typeof ENGAGEMENT_CONFIG[ActivityEngagement]][]).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>
@@ -301,9 +301,9 @@ function NewActivityDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 font-medium mb-1 block">Staff member</label>
+              <label htmlFor="4350-staff-member" className="text-xs text-slate-500 font-medium mb-1 block">Staff member</label>
               <Select value={form.staff_id} onValueChange={(v) => setForm((p) => ({ ...p, staff_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4350-staff-member" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"].map((id) => (
                     <SelectItem key={id} value={id} className="text-xs">{getStaffName(id)}</SelectItem>
@@ -314,13 +314,13 @@ function NewActivityDialog({
           </div>
 
           <div>
-            <label className="text-xs text-slate-500 font-medium mb-1 block">Young person&apos;s voice</label>
-            <Textarea value={form.yp_feedback} onChange={(e) => setForm((p) => ({ ...p, yp_feedback: e.target.value }))} placeholder="In the young person's own words…" rows={2} className="text-xs" />
+            <label htmlFor="4350-young-person-apos-s-voice" className="text-xs text-slate-500 font-medium mb-1 block">Young person&apos;s voice</label>
+            <Textarea id="4350-young-person-apos-s-voice" value={form.yp_feedback} onChange={(e) => setForm((p) => ({ ...p, yp_feedback: e.target.value }))} placeholder="In the young person's own words…" rows={2} className="text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-slate-500 font-medium mb-1 block">Outcome notes</label>
-            <Textarea value={form.outcome_notes} onChange={(e) => setForm((p) => ({ ...p, outcome_notes: e.target.value }))} placeholder="What was the impact? What did you observe?" rows={2} className="text-xs" />
+            <label htmlFor="4350-outcome-notes" className="text-xs text-slate-500 font-medium mb-1 block">Outcome notes</label>
+            <Textarea id="4350-outcome-notes" value={form.outcome_notes} onChange={(e) => setForm((p) => ({ ...p, outcome_notes: e.target.value }))} placeholder="What was the impact? What did you observe?" rows={2} className="text-xs" />
           </div>
 
           <label className="flex items-center gap-2 cursor-pointer">

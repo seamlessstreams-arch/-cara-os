@@ -370,30 +370,30 @@ export default function AbsenceTrackingPage() {
             <DialogTitle>Record Absence</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleRecordAbsence} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Young Person *</label>
-              <Select value={abForm.child_id} onValueChange={(v) => setAB("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+            <div><label htmlFor="09b6-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={abForm.child_id} onValueChange={(v) => setAB("child_id", v)}><SelectTrigger id="09b6-young-person" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={abForm.date} onChange={(e) => setAB("date", e.target.value)} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Sessions</label><Input type="number" value={abForm.sessions} onChange={(e) => setAB("sessions", e.target.value)} className="mt-1" /></div>
+              <div><label htmlFor="09b6-date" className="text-sm font-medium">Date</label><Input id="09b6-date" type="date" value={abForm.date} onChange={(e) => setAB("date", e.target.value)} className="mt-1" /></div>
+              <div><label htmlFor="09b6-sessions" className="text-sm font-medium">Sessions</label><Input id="09b6-sessions" type="number" value={abForm.sessions} onChange={(e) => setAB("sessions", e.target.value)} className="mt-1" /></div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Type</label>
-                <Select value={abForm.absence_type} onValueChange={(v) => setAB("absence_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="09b6-type" className="text-sm font-medium">Type</label>
+                <Select value={abForm.absence_type} onValueChange={(v) => setAB("absence_type", v)}><SelectTrigger id="09b6-type" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{ABSENCE_TYPES.map((t) => <SelectItem key={t} value={t}>{t.replace(/_/g, " ")}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Setting</label>
-                <Select value={abForm.setting} onValueChange={(v) => setAB("setting", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="09b6-setting" className="text-sm font-medium">Setting</label>
+                <Select value={abForm.setting} onValueChange={(v) => setAB("setting", v)}><SelectTrigger id="09b6-setting" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="school">School</SelectItem><SelectItem value="college">College</SelectItem><SelectItem value="pru">PRU</SelectItem><SelectItem value="tuition">Tuition</SelectItem><SelectItem value="activity">Activity</SelectItem><SelectItem value="appointment">Appointment</SelectItem></SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Setting Name</label><Input className="mt-1" placeholder="Name of school / provider" value={abForm.setting_name} onChange={(e) => setAB("setting_name", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Reason *</label><Textarea className="mt-1" rows={2} placeholder="Why was the child absent?" value={abForm.reason} onChange={(e) => setAB("reason", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Action Taken</label><Textarea className="mt-1" rows={2} placeholder="What action was taken?" value={abForm.action_taken} onChange={(e) => setAB("action_taken", e.target.value)} /></div>
+            <div><label htmlFor="09b6-setting-name" className="text-sm font-medium">Setting Name</label><Input id="09b6-setting-name" className="mt-1" placeholder="Name of school / provider" value={abForm.setting_name} onChange={(e) => setAB("setting_name", e.target.value)} /></div>
+            <div><label htmlFor="09b6-reason" className="text-sm font-medium">Reason *</label><Textarea id="09b6-reason" className="mt-1" rows={2} placeholder="Why was the child absent?" value={abForm.reason} onChange={(e) => setAB("reason", e.target.value)} /></div>
+            <div><label htmlFor="09b6-action-taken" className="text-sm font-medium">Action Taken</label><Textarea id="09b6-action-taken" className="mt-1" rows={2} placeholder="What action was taken?" value={abForm.action_taken} onChange={(e) => setAB("action_taken", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createAbsence.isPending}>{createAbsence.isPending ? "Saving…" : "Record Absence"}</Button>

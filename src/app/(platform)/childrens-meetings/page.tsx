@@ -397,31 +397,31 @@ export default function ChildrensMeetingsPage() {
           <div className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                <label htmlFor="16fa-date" className="text-sm font-medium">Date</label>
+                <input id="16fa-date" type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
               </div>
               <div>
-                <label className="text-sm font-medium">Type</label>
+                <label htmlFor="16fa-type" className="text-sm font-medium">Type</label>
                 <Select value={formType} onValueChange={(v) => setFormType(v as ChildrensMeetingType)}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="16fa-type" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CHILDRENS_MEETING_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Facilitated By</label>
+              <label htmlFor="16fa-facilitated-by" className="text-sm font-medium">Facilitated By</label>
               <Select value={formFacilitator} onValueChange={setFormFacilitator}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Select staff" /></SelectTrigger>
+                <SelectTrigger id="16fa-facilitated-by" className="mt-1"><SelectValue placeholder="Select staff" /></SelectTrigger>
                 <SelectContent>{["staff_darren","staff_ryan","staff_anna","staff_chervelle","staff_edward"].map((id) => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Snack / Meal</label>
-              <input value={formSnack} onChange={(e) => setFormSnack(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Pizza and juice" />
+              <label htmlFor="16fa-snack-meal" className="text-sm font-medium">Snack / Meal</label>
+              <input id="16fa-snack-meal" value={formSnack} onChange={(e) => setFormSnack(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Pizza and juice" />
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <textarea rows={2} value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any preparation notes…" />
+              <label htmlFor="16fa-notes" className="text-sm font-medium">Notes</label>
+              <textarea id="16fa-notes" rows={2} value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any preparation notes…" />
             </div>
           </div>
           <DialogFooter>

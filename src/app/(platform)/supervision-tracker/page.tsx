@@ -276,8 +276,8 @@ export default function SupervisionTrackerPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Staff Member *</Label>
-                <select
+                <Label htmlFor="0d62-staff-member" className="text-xs">Staff Member *</Label>
+                <select id="0d62-staff-member"
                   value={staffId}
                   onChange={(e) => setStaffId(e.target.value)}
                   className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
@@ -291,8 +291,8 @@ export default function SupervisionTrackerPage() {
                 </select>
               </div>
               <div>
-                <Label className="text-xs">Supervisor *</Label>
-                <select
+                <Label htmlFor="0d62-supervisor" className="text-xs">Supervisor *</Label>
+                <select id="0d62-supervisor"
                   value={supervisorId}
                   onChange={(e) => setSupervisorId(e.target.value)}
                   className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
@@ -308,12 +308,12 @@ export default function SupervisionTrackerPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Session Date *</Label>
-                <Input type="date" value={lastDate} onChange={(e) => setLastDate(e.target.value)} className="mt-1 text-sm" />
+                <Label htmlFor="0d62-session-date" className="text-xs">Session Date *</Label>
+                <Input id="0d62-session-date" type="date" value={lastDate} onChange={(e) => setLastDate(e.target.value)} className="mt-1 text-sm" />
               </div>
               <div>
-                <Label className="text-xs">Frequency</Label>
-                <select
+                <Label htmlFor="0d62-frequency" className="text-xs">Frequency</Label>
+                <select id="0d62-frequency"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value)}
                   className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
@@ -327,12 +327,12 @@ export default function SupervisionTrackerPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Sessions This Year</Label>
-                <Input type="number" min={0} value={sessionsYear} onChange={(e) => setSessionsYear(Number(e.target.value))} className="mt-1 text-sm" />
+                <Label htmlFor="0d62-sessions-this-year" className="text-xs">Sessions This Year</Label>
+                <Input id="0d62-sessions-this-year" type="number" min={0} value={sessionsYear} onChange={(e) => setSessionsYear(Number(e.target.value))} className="mt-1 text-sm" />
               </div>
               <div>
-                <Label className="text-xs">Sessions Expected This Year</Label>
-                <Input type="number" min={1} value={sessionsExpected} onChange={(e) => setSessionsExpected(Number(e.target.value))} className="mt-1 text-sm" />
+                <Label htmlFor="0d62-sessions-expected-this-year" className="text-xs">Sessions Expected This Year</Label>
+                <Input id="0d62-sessions-expected-this-year" type="number" min={1} value={sessionsExpected} onChange={(e) => setSessionsExpected(Number(e.target.value))} className="mt-1 text-sm" />
               </div>
             </div>
             <div>
@@ -356,8 +356,8 @@ export default function SupervisionTrackerPage() {
               </div>
             </div>
             <div>
-              <Label className="text-xs">Session Notes</Label>
-              <Textarea
+              <Label htmlFor="0d62-session-notes" className="text-xs">Session Notes</Label>
+              <Textarea id="0d62-session-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Key discussion points, actions agreed, any concerns raised…"

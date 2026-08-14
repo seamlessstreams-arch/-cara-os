@@ -532,69 +532,69 @@ export default function KeyWorkingPage() {
           <DialogHeader><DialogTitle>New Key Working Session</DialogTitle></DialogHeader>
           <form ref={formRef} onSubmit={handleNewSession} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
+              <label htmlFor="da15-young-person" className="text-sm font-medium">Young Person</label>
               <Select value={formChildId} onValueChange={setFormChildId}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="da15-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             {formChildId && <InlinePracticeReasoning childId={formChildId} childName={getYPName(formChildId)} />}
             {formChildId && <InlineRelationalPanel childId={formChildId} />}
             <div>
-              <label className="text-sm font-medium">Session Type</label>
+              <label htmlFor="da15-session-type" className="text-sm font-medium">Session Type</label>
               <Select value={formType} onValueChange={setFormType}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="da15-session-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input type="date" name="date" />
+                <label htmlFor="da15-date" className="text-sm font-medium">Date</label>
+                <Input id="da15-date" type="date" name="date" />
               </div>
               <div>
-                <label className="text-sm font-medium">Duration (mins)</label>
-                <Input type="number" name="duration" placeholder="30" />
+                <label htmlFor="da15-duration-mins" className="text-sm font-medium">Duration (mins)</label>
+                <Input id="da15-duration-mins" type="number" name="duration" placeholder="30" />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Location</label>
-              <Input name="location" placeholder="Where did the session take place?" />
+              <label htmlFor="da15-location" className="text-sm font-medium">Location</label>
+              <Input id="da15-location" name="location" placeholder="Where did the session take place?" />
             </div>
             <div>
-              <label className="text-sm font-medium">Topics Discussed</label>
-              <Input name="topics" placeholder="Comma-separated topics" />
+              <label htmlFor="da15-topics-discussed" className="text-sm font-medium">Topics Discussed</label>
+              <Input id="da15-topics-discussed" name="topics" placeholder="Comma-separated topics" />
             </div>
             <div>
-              <label className="text-sm font-medium">Child&apos;s Voice</label>
-              <Textarea name="child_voice" placeholder="Record what the child said in their own words…" rows={3}
+              <label htmlFor="da15-child-apos-s-voice" className="text-sm font-medium">Child&apos;s Voice</label>
+              <Textarea id="da15-child-apos-s-voice" name="child_voice" placeholder="Record what the child said in their own words…" rows={3}
                 value={childVoiceText} onChange={(e) => setChildVoiceText(e.target.value)} />
               <WritingAssistantInline value={childVoiceText} onApplyText={setChildVoiceText}
                 recordType="key_work" fieldName="child_voice" childId={formChildId || undefined} mode="writing-to-child" />
             </div>
             <div>
-              <label className="text-sm font-medium">Worker Observations</label>
-              <Textarea name="worker_observations" placeholder="Your professional observations…" rows={3}
+              <label htmlFor="da15-worker-observations" className="text-sm font-medium">Worker Observations</label>
+              <Textarea id="da15-worker-observations" name="worker_observations" placeholder="Your professional observations…" rows={3}
                 value={workerObsText} onChange={(e) => setWorkerObsText(e.target.value)} />
               <WritingAssistantInline value={workerObsText} onApplyText={setWorkerObsText}
                 recordType="key_work" fieldName="worker_observations" childId={formChildId || undefined} mode="standard" />
             </div>
             <div>
-              <label className="text-sm font-medium">Actions Agreed</label>
-              <Textarea name="actions" placeholder="One action per line" rows={2} />
+              <label htmlFor="da15-actions-agreed" className="text-sm font-medium">Actions Agreed</label>
+              <Textarea id="da15-actions-agreed" name="actions" placeholder="One action per line" rows={2} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Mood Before (1-5)</label>
+                <label htmlFor="da15-mood-before-1-5" className="text-sm font-medium">Mood Before (1-5)</label>
                 <Select value={formMoodBefore} onValueChange={setFormMoodBefore}>
-                  <SelectTrigger><SelectValue placeholder="Rating" /></SelectTrigger>
+                  <SelectTrigger id="da15-mood-before-1-5"><SelectValue placeholder="Rating" /></SelectTrigger>
                   <SelectContent>{([1,2,3,4,5] as MoodRating[]).map((m) => <SelectItem key={m} value={String(m)}>{MOOD_EMOJI[m]} {MOOD_LABELS[m]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Mood After (1-5)</label>
+                <label htmlFor="da15-mood-after-1-5" className="text-sm font-medium">Mood After (1-5)</label>
                 <Select value={formMoodAfter} onValueChange={setFormMoodAfter}>
-                  <SelectTrigger><SelectValue placeholder="Rating" /></SelectTrigger>
+                  <SelectTrigger id="da15-mood-after-1-5"><SelectValue placeholder="Rating" /></SelectTrigger>
                   <SelectContent>{([1,2,3,4,5] as MoodRating[]).map((m) => <SelectItem key={m} value={String(m)}>{MOOD_EMOJI[m]} {MOOD_LABELS[m]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>

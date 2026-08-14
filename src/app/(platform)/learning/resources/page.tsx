@@ -382,8 +382,8 @@ export default function ResourceGeneratorPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
-                <Input
+                <label htmlFor="65dc-topic" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
+                <Input id="65dc-topic"
                   className="mt-1"
                   placeholder="e.g. County Lines awareness for staff"
                   value={topic}
@@ -391,9 +391,9 @@ export default function ResourceGeneratorPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Resource Type</label>
+                <label htmlFor="65dc-resource-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Resource Type</label>
                 <Select value={resourceType} onValueChange={(v) => setResourceType(v as GeneratedResourceType)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="65dc-resource-type" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {RESOURCE_TYPES.map((r) => (
                       <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -402,9 +402,9 @@ export default function ResourceGeneratorPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="65dc-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={(v) => setPathway(v as LearningPathway)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="65dc-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(PATHWAY_LABELS).map(([v, l]) => (
                       <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -413,9 +413,9 @@ export default function ResourceGeneratorPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Reading Level</label>
+                <label htmlFor="65dc-reading-level" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Reading Level</label>
                 <Select value={readingLevel} onValueChange={(v) => setReadingLevel(v as "standard" | "accessible" | "simple")}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="65dc-reading-level" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="standard">Standard</SelectItem>
                     <SelectItem value="accessible">Accessible</SelectItem>
@@ -424,9 +424,9 @@ export default function ResourceGeneratorPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Tone</label>
+                <label htmlFor="65dc-tone" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Tone</label>
                 <Select value={tone} onValueChange={(v) => setTone(v as "professional" | "warm" | "child_friendly")}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="65dc-tone" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="professional">Professional</SelectItem>
                     <SelectItem value="warm">Warm / Relational</SelectItem>
@@ -436,8 +436,8 @@ export default function ResourceGeneratorPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Additional Context</label>
-              <Textarea
+              <label htmlFor="65dc-additional-context" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Additional Context</label>
+              <Textarea id="65dc-additional-context"
                 className="mt-1 text-sm"
                 rows={3}
                 placeholder="Any specific context, audience details, or focus areas for Cara…"

@@ -317,10 +317,10 @@ export default function Reg35NotificationsPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Reg 35 Notification</DialogTitle></DialogHeader>
           <form onSubmit={handleLogNotification} className="space-y-3">
-            <div><Label>Date of Event</Label><Input type="date" value={r35Form.date_of_event} onChange={(e) => setR35("date_of_event", e.target.value)} /></div>
+            <div><Label htmlFor="b7da-date-of-event">Date of Event</Label><Input id="b7da-date-of-event" type="date" value={r35Form.date_of_event} onChange={(e) => setR35("date_of_event", e.target.value)} /></div>
             <div>
-              <Label>Notification Type</Label>
-              <Select value={r35Form.notification_type} onValueChange={(v) => setR35("notification_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Label htmlFor="b7da-notification-type">Notification Type</Label>
+              <Select value={r35Form.notification_type} onValueChange={(v) => setR35("notification_type", v)}><SelectTrigger id="b7da-notification-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REG35_NOTIFICATION_TYPE_LABEL) as [Reg35NotificationType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -329,16 +329,16 @@ export default function Reg35NotificationsPage() {
               </Select>
             </div>
             <div>
-              <Label>Related Young Person</Label>
-              <Select value={r35Form.child_id} onValueChange={(v) => setR35("child_id", v)}><SelectTrigger><SelectValue placeholder="Select YP (optional)" /></SelectTrigger>
+              <Label htmlFor="b7da-related-young-person">Related Young Person</Label>
+              <Select value={r35Form.child_id} onValueChange={(v) => setR35("child_id", v)}><SelectTrigger id="b7da-related-young-person"><SelectValue placeholder="Select YP (optional)" /></SelectTrigger>
                 <SelectContent>
                   {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Method</Label>
-              <Select value={r35Form.method} onValueChange={(v) => setR35("method", v)}><SelectTrigger><SelectValue placeholder="How was Ofsted notified?" /></SelectTrigger>
+              <Label htmlFor="b7da-method">Method</Label>
+              <Select value={r35Form.method} onValueChange={(v) => setR35("method", v)}><SelectTrigger id="b7da-method"><SelectValue placeholder="How was Ofsted notified?" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REG35_NOTIFICATION_METHOD_LABEL) as [Reg35NotificationMethod, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -346,8 +346,8 @@ export default function Reg35NotificationsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Ofsted Reference</Label><Input placeholder="e.g. OFS-2025-..." value={r35Form.ofsted_ref} onChange={(e) => setR35("ofsted_ref", e.target.value)} /></div>
-            <div><Label>Summary *</Label><Textarea placeholder="Describe the event and actions taken..." value={r35Form.summary} onChange={(e) => setR35("summary", e.target.value)} /></div>
+            <div><Label htmlFor="b7da-ofsted-reference">Ofsted Reference</Label><Input id="b7da-ofsted-reference" placeholder="e.g. OFS-2025-..." value={r35Form.ofsted_ref} onChange={(e) => setR35("ofsted_ref", e.target.value)} /></div>
+            <div><Label htmlFor="b7da-summary">Summary *</Label><Textarea id="b7da-summary" placeholder="Describe the event and actions taken..." value={r35Form.summary} onChange={(e) => setR35("summary", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createNotif.isPending}>{createNotif.isPending ? "Saving…" : "Log Notification"}</Button>

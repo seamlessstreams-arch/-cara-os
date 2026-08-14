@@ -664,8 +664,8 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
           {/* Shift selectors */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-500 mb-1 block">Shift From</label>
-              <select
+              <label htmlFor="4eab-shift-from" className="text-xs font-medium text-slate-500 mb-1 block">Shift From</label>
+              <select id="4eab-shift-from"
                 value={shiftFrom}
                 onChange={(e) => setShiftFrom(e.target.value as ShiftFrom)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -677,8 +677,8 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 mb-1 block">Shift To</label>
-              <select
+              <label htmlFor="4eab-shift-to" className="text-xs font-medium text-slate-500 mb-1 block">Shift To</label>
+              <select id="4eab-shift-to"
                 value={shiftTo}
                 onChange={(e) => setShiftTo(e.target.value as ShiftTo)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -734,8 +734,8 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
                   {/* Key notes */}
                   <div>
-                    <label className="text-[11px] text-slate-500 mb-1 block">Key Notes</label>
-                    <textarea
+                    <label htmlFor="4eab-key-notes" className="text-[11px] text-slate-500 mb-1 block">Key Notes</label>
+                    <textarea id="4eab-key-notes"
                       value={cu.key_notes}
                       onChange={(e) => updateChild(yp.id, { key_notes: e.target.value })}
                       rows={3}
@@ -792,8 +792,8 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
           {/* General notes */}
           <div>
-            <label className="text-xs font-medium text-slate-500 mb-1 block">General Notes</label>
-            <textarea
+            <label htmlFor="4eab-general-notes" className="text-xs font-medium text-slate-500 mb-1 block">General Notes</label>
+            <textarea id="4eab-general-notes"
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               rows={4}

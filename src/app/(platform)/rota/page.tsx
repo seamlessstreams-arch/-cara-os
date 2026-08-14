@@ -862,8 +862,8 @@ export default function RotaPage() {
                 here. Opened from a rota cell, staffId is already set. */}
             {!addShift.staffId && (
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Staff Member</label>
-                <select
+                <label htmlFor="50fe-staff-member" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Staff Member</label>
+                <select id="50fe-staff-member"
                   value={addShift.staffId}
                   onChange={(e) => {
                     const picked = activeStaff.find((s) => s.id === e.target.value);
@@ -879,8 +879,8 @@ export default function RotaPage() {
               </div>
             )}
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Date</label>
-              <input
+              <label htmlFor="50fe-date" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Date</label>
+              <input id="50fe-date"
                 type="date"
                 value={addShift.date}
                 onChange={(e) => setAddShift((prev) => prev ? { ...prev, date: e.target.value } : prev)}
@@ -888,8 +888,8 @@ export default function RotaPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Shift Type</label>
-              <select
+              <label htmlFor="50fe-shift-type" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Shift Type</label>
+              <select id="50fe-shift-type"
                 value={shiftType}
                 onChange={(e) => setShiftType(e.target.value)}
                 className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -902,8 +902,8 @@ export default function RotaPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Start Time</label>
-                <input
+                <label htmlFor="50fe-start-time" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Start Time</label>
+                <input id="50fe-start-time"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
@@ -911,8 +911,8 @@ export default function RotaPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">End Time</label>
-                <input
+                <label htmlFor="50fe-end-time" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">End Time</label>
+                <input id="50fe-end-time"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
@@ -922,8 +922,8 @@ export default function RotaPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Notes (optional)</label>
-              <input
+              <label htmlFor="50fe-notes-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Notes (optional)</label>
+              <input id="50fe-notes-optional"
                 type="text"
                 value={shiftNotes}
                 onChange={(e) => setShiftNotes(e.target.value)}
@@ -976,8 +976,8 @@ export default function RotaPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Assign to staff member</label>
-            <select
+            <label htmlFor="50fe-assign-to-staff-member" className="text-xs font-medium text-[var(--cs-text-secondary)]">Assign to staff member</label>
+            <select id="50fe-assign-to-staff-member"
               className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               value={fillStaffId}
               onChange={(e) => setFillStaffId(e.target.value)}
@@ -1033,8 +1033,8 @@ export default function RotaPage() {
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Swap With</label>
-              <select
+              <label htmlFor="50fe-swap-with" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Swap With</label>
+              <select id="50fe-swap-with"
                 value={swapTargetStaffId}
                 onChange={(e) => setSwapTargetStaffId(e.target.value)}
                 className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
@@ -1048,8 +1048,8 @@ export default function RotaPage() {
 
             {swapTargetStaffId && (
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Target Shift (optional)</label>
-                <select
+                <label htmlFor="50fe-target-shift-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Target Shift (optional)</label>
+                <select id="50fe-target-shift-optional"
                   value={swapTargetShiftId}
                   onChange={(e) => setSwapTargetShiftId(e.target.value)}
                   className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
@@ -1065,8 +1065,8 @@ export default function RotaPage() {
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Reason</label>
-              <input
+              <label htmlFor="50fe-reason" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Reason</label>
+              <input id="50fe-reason"
                 type="text"
                 value={swapReason}
                 onChange={(e) => setSwapReason(e.target.value)}
@@ -1124,8 +1124,8 @@ export default function RotaPage() {
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Reason</label>
-              <select
+              <label htmlFor="50fe-reason-2" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Reason</label>
+              <select id="50fe-reason-2"
                 value={absenceReason}
                 onChange={(e) => setAbsenceReason(e.target.value as "sick" | "emergency" | "no-show" | "other")}
                 className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk)]"
@@ -1138,8 +1138,8 @@ export default function RotaPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Notes (optional)</label>
-              <input
+              <label htmlFor="50fe-notes-optional-2" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Notes (optional)</label>
+              <input id="50fe-notes-optional-2"
                 type="text"
                 value={absenceNotes}
                 onChange={(e) => setAbsenceNotes(e.target.value)}

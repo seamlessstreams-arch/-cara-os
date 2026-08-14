@@ -141,15 +141,15 @@ function CheckTab() {
         <CardContent className="space-y-3 pt-5">
           <div className="grid gap-3 sm:grid-cols-[200px_1fr]">
             <div>
-              <Label className="text-xs">Context</Label>
+              <Label htmlFor="ccc1-context" className="text-xs">Context</Label>
               <Select value={context} onValueChange={(v) => setContext(v as PACEContext)}>
-                <SelectTrigger className="mt-1 h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ccc1-context" className="mt-1 h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>{CONTEXTS.map((c) => <SelectItem key={c.v} value={c.v}>{c.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <div className="flex items-center justify-between"><Label className="text-xs">Record / response text</Label><DictationButton mode="append" size="sm" onTranscript={(t) => setText((p) => (p.trim() ? `${p}\n${t}` : t))} /></div>
-              <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Paste the daily log, incident note or debrief. Cara recognises PACE, scores quality and suggests improvements — it never invents events." className="mt-1 text-sm" />
+              <div className="flex items-center justify-between"><Label htmlFor="ccc1-record-response-text" className="text-xs">Record / response text</Label><DictationButton mode="append" size="sm" onTranscript={(t) => setText((p) => (p.trim() ? `${p}\n${t}` : t))} /></div>
+              <Textarea id="ccc1-record-response-text" value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Paste the daily log, incident note or debrief. Cara recognises PACE, scores quality and suggests improvements — it never invents events." className="mt-1 text-sm" />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -247,8 +247,8 @@ function GuidanceTab() {
   );
   return (
     <div className="space-y-4">
-      <div className="max-w-xs"><Label className="text-xs">Context</Label>
-        <Select value={context} onValueChange={(v) => setContext(v as PACEContext)}><SelectTrigger className="mt-1 h-9"><SelectValue /></SelectTrigger><SelectContent>{CONTEXTS.map((c) => <SelectItem key={c.v} value={c.v}>{c.label}</SelectItem>)}</SelectContent></Select>
+      <div className="max-w-xs"><Label htmlFor="ccc1-context-2" className="text-xs">Context</Label>
+        <Select value={context} onValueChange={(v) => setContext(v as PACEContext)}><SelectTrigger id="ccc1-context-2" className="mt-1 h-9"><SelectValue /></SelectTrigger><SelectContent>{CONTEXTS.map((c) => <SelectItem key={c.v} value={c.v}>{c.label}</SelectItem>)}</SelectContent></Select>
       </div>
       {g && (
         <Card><CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
@@ -333,9 +333,9 @@ function ChildTab() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-2">
-        <div className="max-w-xs flex-1"><Label className="text-xs">Child</Label>
+        <div className="max-w-xs flex-1"><Label htmlFor="ccc1-child" className="text-xs">Child</Label>
           <Select value={childId} onValueChange={(v) => { setChildId(v); setEdit(null); }}>
-            <SelectTrigger className="mt-1 h-9"><SelectValue placeholder="Choose a child…" /></SelectTrigger>
+            <SelectTrigger id="ccc1-child" className="mt-1 h-9"><SelectValue placeholder="Choose a child…" /></SelectTrigger>
             <SelectContent>{children.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.preferred_name || c.first_name || c.id}</SelectItem>)}</SelectContent>
           </Select>
         </div>
@@ -363,7 +363,7 @@ function ChildTab() {
             <div key={f.key as string}><Label className="text-xs">{f.label} <span className="text-[var(--cs-text-gentle)]">(one per line)</span></Label>
               <Textarea value={edit[f.key]} onChange={(e) => setEdit({ ...edit, [f.key]: e.target.value })} rows={2} className="mt-1 text-sm" /></div>
           ))}
-          <div><Label className="text-xs">Preferred debrief style</Label><Input value={edit.preferredDebriefStyle} onChange={(e) => setEdit({ ...edit, preferredDebriefStyle: e.target.value })} className="mt-1 h-9" /></div>
+          <div><Label htmlFor="ccc1-preferred-debrief-style" className="text-xs">Preferred debrief style</Label><Input id="ccc1-preferred-debrief-style" value={edit.preferredDebriefStyle} onChange={(e) => setEdit({ ...edit, preferredDebriefStyle: e.target.value })} className="mt-1 h-9" /></div>
           <div className="flex items-center gap-2"><Button onClick={save} disabled={update.isPending}>{update.isPending ? "Saving…" : "Save profile"}</Button><Button variant="ghost" onClick={() => setEdit(null)}>Cancel</Button></div>
         </CardContent></Card>
       )}

@@ -407,9 +407,9 @@ export default function OnlineSafetyPage() {
               <SelectContent>{Object.entries(SEV_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
             </Select>
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">Discovered By</label>
+              <label htmlFor="ffcf-discovered-by" className="text-xs text-slate-600 mb-1 block">Discovered By</label>
               <Select value={osForm.discovered_by} onValueChange={(v) => setOSF("discovered_by", v)}>
-                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ffcf-discovered-by" className="text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>

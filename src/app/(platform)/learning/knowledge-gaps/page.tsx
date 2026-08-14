@@ -243,8 +243,8 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Gap Area</label>
-            <Input
+            <label htmlFor="390e-gap-area" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Gap Area</label>
+            <Input id="390e-gap-area"
               className="mt-1"
               placeholder="e.g. Understanding of de-escalation techniques"
               value={gapArea}
@@ -253,9 +253,9 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Severity</label>
+              <label htmlFor="390e-severity" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Severity</label>
               <Select value={severity} onValueChange={(v) => setSeverity(v as KnowledgeGapSeverity)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="390e-severity" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="critical">Critical</SelectItem>
                   <SelectItem value="significant">Significant</SelectItem>
@@ -265,9 +265,9 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
               </Select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Identified From</label>
+              <label htmlFor="390e-identified-from" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Identified From</label>
               <Select value={identifiedFrom} onValueChange={setIdentifiedFrom}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="390e-identified-from" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {IDENTIFIED_FROM_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
@@ -277,8 +277,8 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Staff Role (optional)</label>
-            <Input
+            <label htmlFor="390e-staff-role-optional" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Staff Role (optional)</label>
+            <Input id="390e-staff-role-optional"
               className="mt-1"
               placeholder="e.g. Senior Residential Worker"
               value={staffRole}
@@ -286,8 +286,8 @@ function NewGapDialog({ open, onClose }: { open: boolean; onClose: () => void })
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Notes</label>
-            <Textarea
+            <label htmlFor="390e-evidence-notes" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Notes</label>
+            <Textarea id="390e-evidence-notes"
               className="mt-1 text-sm"
               rows={4}
               placeholder="Describe the evidence that identified this gap…"

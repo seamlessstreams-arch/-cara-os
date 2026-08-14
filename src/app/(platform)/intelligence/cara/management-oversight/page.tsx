@@ -306,17 +306,17 @@ export default function ManagementOversightPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record ID</label>
-              <Input
+              <label htmlFor="bf7e-record-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record ID</label>
+              <Input id="bf7e-record-id"
                 value={recordId}
                 onChange={(e) => setRecordId(e.target.value)}
                 placeholder="e.g. inc_2026_0142"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record type</label>
+              <label htmlFor="bf7e-record-type" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record type</label>
               <Select value={recordType} onValueChange={setRecordType}>
-                <SelectTrigger>
+                <SelectTrigger id="bf7e-record-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -327,32 +327,32 @@ export default function ManagementOversightPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child reference (pseudonym / ID)</label>
-              <Input
+              <label htmlFor="bf7e-child-reference-pseudonym-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child reference (pseudonym / ID)</label>
+              <Input id="bf7e-child-reference-pseudonym-id"
                 value={childPseudonym}
                 onChange={(e) => setChildPseudonym(e.target.value)}
                 placeholder="e.g. Casey"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record date</label>
-              <Input
+              <label htmlFor="bf7e-record-date" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record date</label>
+              <Input id="bf7e-record-date"
                 type="date"
                 value={recordDate}
                 onChange={(e) => setRecordDate(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Author role (optional)</label>
-              <Input
+              <label htmlFor="bf7e-author-role-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Author role (optional)</label>
+              <Input id="bf7e-author-role-optional"
                 value={authorRole}
                 onChange={(e) => setAuthorRole(e.target.value)}
                 placeholder="e.g. Senior RCW"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user ID (your sign-in for audit log)</label>
-              <Input
+              <label htmlFor="bf7e-actor-user-id-your-sign-in-for-aud" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user ID (your sign-in for audit log)</label>
+              <Input id="bf7e-actor-user-id-your-sign-in-for-aud"
                 value={actorUserId}
                 onChange={(e) => setActorUserId(e.target.value)}
               />
@@ -648,8 +648,8 @@ export default function ManagementOversightPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rejection reason (required for Reject)</label>
-                  <Textarea
+                  <label htmlFor="bf7e-rejection-reason-required-for-reje" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rejection reason (required for Reject)</label>
+                  <Textarea id="bf7e-rejection-reason-required-for-reje"
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     className="min-h-[60px] text-sm"
@@ -657,8 +657,8 @@ export default function ManagementOversightPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rewrite instructions (required for Request rewrite)</label>
-                  <Textarea
+                  <label htmlFor="bf7e-rewrite-instructions-required-for-" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rewrite instructions (required for Request rewrite)</label>
+                  <Textarea id="bf7e-rewrite-instructions-required-for-"
                     value={rewriteInstructions}
                     onChange={(e) => setRewriteInstructions(e.target.value)}
                     className="min-h-[60px] text-sm"

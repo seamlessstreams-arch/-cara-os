@@ -341,28 +341,28 @@ export default function StaffDisciplinaryPage() {
           <DialogHeader><DialogTitle>New Disciplinary Case</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateCase} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Staff Member *</label>
-              <Select value={sdForm.staff_member} onValueChange={(v) => setSD("staff_member", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <label htmlFor="6529-staff-member" className="text-sm font-medium">Staff Member *</label>
+              <Select value={sdForm.staff_member} onValueChange={(v) => setSD("staff_member", v)}><SelectTrigger id="6529-staff-member" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Category *</label>
-                <Select value={sdForm.category} onValueChange={(v) => setSD("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="6529-category" className="text-sm font-medium">Category *</label>
+                <Select value={sdForm.category} onValueChange={(v) => setSD("category", v)}><SelectTrigger id="6529-category" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_DISCIPLINARY_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Severity</label>
-                <Select value={sdForm.severity} onValueChange={(v) => setSD("severity", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="6529-severity" className="text-sm font-medium">Severity</label>
+                <Select value={sdForm.severity} onValueChange={(v) => setSD("severity", v)}><SelectTrigger id="6529-severity" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_DISCIPLINARY_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Allegation *</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Details of the allegation…" value={sdForm.allegation} onChange={(e) => setSD("allegation", e.target.value)} />
+              <label htmlFor="6529-allegation" className="text-sm font-medium">Allegation *</label>
+              <textarea id="6529-allegation" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Details of the allegation…" value={sdForm.allegation} onChange={(e) => setSD("allegation", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

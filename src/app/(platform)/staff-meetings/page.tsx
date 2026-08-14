@@ -320,17 +320,17 @@ export default function StaffMeetingsPage() {
           <DialogHeader><DialogTitle>New Staff Meeting</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveMeeting} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={smForm.date} onChange={(e) => setSM("date", e.target.value)} /></div>
+              <div><label htmlFor="dcfb-date" className="text-sm font-medium">Date</label><Input id="dcfb-date" type="date" value={smForm.date} onChange={(e) => setSM("date", e.target.value)} /></div>
               <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={smForm.type} onValueChange={(v) => setSM("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <label htmlFor="dcfb-type" className="text-sm font-medium">Type</label>
+                <Select value={smForm.type} onValueChange={(v) => setSM("type", v)}><SelectTrigger id="dcfb-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{(Object.entries(STAFF_MEETING_TYPE_LABEL) as [StaffMeetingType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Title *</label><Input placeholder="Meeting title" value={smForm.title} onChange={(e) => setSM("title", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">General Notes</label><Textarea placeholder="Meeting notes…" rows={4} value={smForm.general_notes} onChange={(e) => setSM("general_notes", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Next Meeting Date</label><Input type="date" value={smForm.next_meeting_date} onChange={(e) => setSM("next_meeting_date", e.target.value)} /></div>
+            <div><label htmlFor="dcfb-title" className="text-sm font-medium">Title *</label><Input id="dcfb-title" placeholder="Meeting title" value={smForm.title} onChange={(e) => setSM("title", e.target.value)} /></div>
+            <div><label htmlFor="dcfb-general-notes" className="text-sm font-medium">General Notes</label><Textarea id="dcfb-general-notes" placeholder="Meeting notes…" rows={4} value={smForm.general_notes} onChange={(e) => setSM("general_notes", e.target.value)} /></div>
+            <div><label htmlFor="dcfb-next-meeting-date" className="text-sm font-medium">Next Meeting Date</label><Input id="dcfb-next-meeting-date" type="date" value={smForm.next_meeting_date} onChange={(e) => setSM("next_meeting_date", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createMeeting.isPending}>{createMeeting.isPending ? "Saving…" : "Save Meeting"}</Button>

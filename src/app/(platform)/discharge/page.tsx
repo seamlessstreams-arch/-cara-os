@@ -446,40 +446,40 @@ export default function DischargePage() {
           <DialogHeader><DialogTitle>New Discharge Plan</DialogTitle></DialogHeader>
           <form onSubmit={handleCreatePlan} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person *</label>
-              <Select value={dcForm.child_id} onValueChange={(v) => setDC("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="8e74-young-person" className="text-sm font-medium">Young Person *</label>
+              <Select value={dcForm.child_id} onValueChange={(v) => setDC("child_id", v)}><SelectTrigger id="8e74-young-person" className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Reason</label>
-                <Select value={dcForm.reason} onValueChange={(v) => setDC("reason", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="8e74-reason" className="text-sm font-medium">Reason</label>
+                <Select value={dcForm.reason} onValueChange={(v) => setDC("reason", v)}><SelectTrigger id="8e74-reason" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(DISCHARGE_REASON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Planned Date *</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dcForm.planned_date} onChange={(e) => setDC("planned_date", e.target.value)} />
+                <label htmlFor="8e74-planned-date" className="text-sm font-medium">Planned Date *</label>
+                <input id="8e74-planned-date" type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dcForm.planned_date} onChange={(e) => setDC("planned_date", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Destination</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Supported Lodgings – 14 Maple Avenue" value={dcForm.destination} onChange={(e) => setDC("destination", e.target.value)} />
+              <label htmlFor="8e74-destination" className="text-sm font-medium">Destination</label>
+              <input id="8e74-destination" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Supported Lodgings – 14 Maple Avenue" value={dcForm.destination} onChange={(e) => setDC("destination", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Social Worker</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Name" value={dcForm.social_worker} onChange={(e) => setDC("social_worker", e.target.value)} />
+                <label htmlFor="8e74-social-worker" className="text-sm font-medium">Social Worker</label>
+                <input id="8e74-social-worker" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Name" value={dcForm.social_worker} onChange={(e) => setDC("social_worker", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">SW Contact</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Email" value={dcForm.social_worker_contact} onChange={(e) => setDC("social_worker_contact", e.target.value)} />
+                <label htmlFor="8e74-sw-contact" className="text-sm font-medium">SW Contact</label>
+                <input id="8e74-sw-contact" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Email" value={dcForm.social_worker_contact} onChange={(e) => setDC("social_worker_contact", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
-              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Additional context…" value={dcForm.notes} onChange={(e) => setDC("notes", e.target.value)} />
+              <label htmlFor="8e74-notes" className="text-sm font-medium">Notes</label>
+              <textarea id="8e74-notes" rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Additional context…" value={dcForm.notes} onChange={(e) => setDC("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

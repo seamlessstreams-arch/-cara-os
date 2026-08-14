@@ -366,8 +366,8 @@ export default function WorkshopPlannerPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
-                <Input
+                <label htmlFor="f493-topic" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
+                <Input id="f493-topic"
                   className="mt-1"
                   placeholder="e.g. Trauma-informed approaches to behaviour"
                   value={topic}
@@ -375,9 +375,9 @@ export default function WorkshopPlannerPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="f493-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={(v) => setPathway(v as LearningPathway)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="f493-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(PATHWAY_LABELS).map(([v, l]) => (
                       <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -387,8 +387,8 @@ export default function WorkshopPlannerPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Audience Description</label>
-              <Input
+              <label htmlFor="f493-audience-description" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Audience Description</label>
+              <Input id="f493-audience-description"
                 className="mt-1"
                 placeholder="e.g. Residential care staff, mixed experience levels"
                 value={audience}
@@ -396,8 +396,8 @@ export default function WorkshopPlannerPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Context / Focus Areas</label>
-              <Textarea
+              <label htmlFor="f493-context-focus-areas" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Context / Focus Areas</label>
+              <Textarea id="f493-context-focus-areas"
                 className="mt-1 text-sm"
                 rows={3}
                 placeholder="Any specific context, recent incidents, or areas to focus on…"

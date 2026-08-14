@@ -294,10 +294,10 @@ function NewCheckForm({
               {/* Concern details */}
               {data.status === "concern" && (
                 <div className="mt-2 rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
-                  <label className="text-[10px] font-semibold text-[--cs-risk] block mb-1">
+                  <label htmlFor="be94-concern-details-required" className="text-[10px] font-semibold text-[--cs-risk] block mb-1">
                     Concern Details (required)
                   </label>
-                  <textarea
+                  <textarea id="be94-concern-details-required"
                     placeholder="Describe the concern..."
                     value={data.concern_details}
                     onChange={(e) => setCheckData((prev) => ({

@@ -358,18 +358,18 @@ export default function LifeStoryPage() {
           <DialogHeader><DialogTitle>Add Life Story Entry</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="c263-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="c263-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Type *</label>
+              <label htmlFor="c263-type" className="text-sm font-medium mb-1 block">Type *</label>
               <Select value={nType} onValueChange={v => setNType(v as LifeStoryEntryType)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="c263-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TYPE_CONFIG) as [LifeStoryEntryType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -378,16 +378,16 @@ export default function LifeStoryPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="Title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="c263-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="c263-title" placeholder="Title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description *</label>
-              <Textarea placeholder="What happened, what was explored..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <label htmlFor="c263-description" className="text-sm font-medium mb-1 block">Description *</label>
+              <Textarea id="c263-description" placeholder="What happened, what was explored..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Child&apos;s Voice</label>
-              <Textarea placeholder="What did the child say? Use their words..." value={nVoice} onChange={e => setNVoice(e.target.value)} rows={2} />
+              <label htmlFor="c263-child-apos-s-voice" className="text-sm font-medium mb-1 block">Child&apos;s Voice</label>
+              <Textarea id="c263-child-apos-s-voice" placeholder="What did the child say? Use their words..." value={nVoice} onChange={e => setNVoice(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

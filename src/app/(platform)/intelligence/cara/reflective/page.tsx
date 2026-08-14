@@ -321,8 +321,8 @@ export default function ReflectivePracticePage() {
                 <div className="grid grid-cols-2 gap-4">
                   {/* Young person */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person (optional)</label>
-                    <select
+                    <label htmlFor="1650-young-person-optional" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person (optional)</label>
+                    <select id="1650-young-person-optional"
                       value={childId}
                       onChange={(e) => setChildId(e.target.value)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-teal-300"
@@ -336,8 +336,8 @@ export default function ReflectivePracticePage() {
 
                   {/* Event type */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Type of Event</label>
-                    <select
+                    <label htmlFor="1650-type-of-event" className="text-xs font-medium text-[var(--cs-text-secondary)]">Type of Event</label>
+                    <select id="1650-type-of-event"
                       value={eventType}
                       onChange={(e) => setEventType(e.target.value)}
                       className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-teal-300"

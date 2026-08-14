@@ -434,9 +434,9 @@ gathered during the investigation.
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigation type</label>
+                <label htmlFor="c553-investigation-type" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigation type</label>
                 <Select value={investigationType} onValueChange={(v) => setInvestigationType(v as InvestigationType)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="c553-investigation-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {INVESTIGATION_TYPES.map((t) => (
                       <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
@@ -445,24 +445,24 @@ gathered during the investigation.
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member name</label>
-                <Input value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
+                <label htmlFor="c553-staff-member-name" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member name</label>
+                <Input id="c553-staff-member-name" value={staffName} onChange={(e) => setStaffName(e.target.value)} placeholder="Full name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member role</label>
-                <Input value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
+                <label htmlFor="c553-staff-member-role" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Staff member role</label>
+                <Input id="c553-staff-member-role" value={staffRole} onChange={(e) => setStaffRole(e.target.value)} placeholder="e.g. Residential Support Worker" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigating officer</label>
-                <Input value={investigatingOfficer} onChange={(e) => setInvestigatingOfficer(e.target.value)} placeholder="Full name" />
+                <label htmlFor="c553-investigating-officer" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigating officer</label>
+                <Input id="c553-investigating-officer" value={investigatingOfficer} onChange={(e) => setInvestigatingOfficer(e.target.value)} placeholder="Full name" />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date commissioned</label>
-                <Input type="date" value={dateCommissioned} onChange={(e) => setDateCommissioned(e.target.value)} />
+                <label htmlFor="c553-date-commissioned" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Date commissioned</label>
+                <Input id="c553-date-commissioned" type="date" value={dateCommissioned} onChange={(e) => setDateCommissioned(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Target completion date</label>
-                <Input type="date" value={targetCompletionDate} onChange={(e) => setTargetCompletionDate(e.target.value)} />
+                <label htmlFor="c553-target-completion-date" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Target completion date</label>
+                <Input id="c553-target-completion-date" type="date" value={targetCompletionDate} onChange={(e) => setTargetCompletionDate(e.target.value)} />
               </div>
             </div>
           </CardContent>
@@ -670,8 +670,8 @@ gathered during the investigation.
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Key points from interview</label>
-                  <Textarea
+                  <label htmlFor="c553-key-points-from-interview" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Key points from interview</label>
+                  <Textarea id="c553-key-points-from-interview"
                     value={w.keyPoints ?? ""}
                     onChange={(e) => updateWitness(w.id, { keyPoints: e.target.value })}
                     placeholder="Summarise the key points — what did the witness say about the allegation(s)? What did they observe?"
@@ -679,8 +679,8 @@ gathered during the investigation.
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigator notes</label>
-                  <Textarea
+                  <label htmlFor="c553-investigator-notes" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Investigator notes</label>
+                  <Textarea id="c553-investigator-notes"
                     value={w.notes ?? ""}
                     onChange={(e) => updateWitness(w.id, { notes: e.target.value })}
                     placeholder="Your observations — credibility assessment, body language, consistency with other evidence..."
@@ -775,9 +775,9 @@ gathered during the investigation.
                 <p className="text-sm text-[var(--cs-text-secondary)]">{a.description}</p>
 
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Finding</label>
+                  <label htmlFor="c553-finding" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Finding</label>
                   <Select value={a.finding ?? ""} onValueChange={(v) => updateAllegation(a.id, { finding: v as Allegation["finding"] })}>
-                    <SelectTrigger><SelectValue placeholder="Select finding" /></SelectTrigger>
+                    <SelectTrigger id="c553-finding"><SelectValue placeholder="Select finding" /></SelectTrigger>
                     <SelectContent>
                       {FINDING_OPTIONS.map((f) => (
                         <SelectItem key={f.value} value={f.value!}>{f.label}</SelectItem>
@@ -787,8 +787,8 @@ gathered during the investigation.
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Rationale</label>
-                  <Textarea
+                  <label htmlFor="c553-rationale" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Rationale</label>
+                  <Textarea id="c553-rationale"
                     value={a.findingRationale ?? ""}
                     onChange={(e) => updateAllegation(a.id, { findingRationale: e.target.value })}
                     placeholder="Explain the basis for this finding — what evidence supports it, what evidence contradicts it, and how you weighed conflicting evidence..."
@@ -806,8 +806,8 @@ gathered during the investigation.
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Summary of findings</label>
-              <Textarea
+              <label htmlFor="c553-summary-of-findings" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Summary of findings</label>
+              <Textarea id="c553-summary-of-findings"
                 value={overallSummary}
                 onChange={(e) => setOverallSummary(e.target.value)}
                 placeholder="Summarise the overall findings — the weight of evidence, credibility of witnesses, and your conclusions..."
@@ -816,8 +816,8 @@ gathered during the investigation.
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Mitigating factors</label>
-                <Textarea
+                <label htmlFor="c553-mitigating-factors" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Mitigating factors</label>
+                <Textarea id="c553-mitigating-factors"
                   value={mitigatingFactors}
                   onChange={(e) => setMitigatingFactors(e.target.value)}
                   placeholder="Length of service, disciplinary record, personal circumstances, remorse, training gaps..."
@@ -825,8 +825,8 @@ gathered during the investigation.
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Aggravating factors</label>
-                <Textarea
+                <label htmlFor="c553-aggravating-factors" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Aggravating factors</label>
+                <Textarea id="c553-aggravating-factors"
                   value={aggravatingFactors}
                   onChange={(e) => setAggravatingFactors(e.target.value)}
                   placeholder="Breach of trust, impact on children, pattern of behaviour, lack of insight, previous warnings..."
@@ -835,8 +835,8 @@ gathered during the investigation.
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Recommended outcome</label>
-              <Textarea
+              <label htmlFor="c553-recommended-outcome" className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Recommended outcome</label>
+              <Textarea id="c553-recommended-outcome"
                 value={recommendedOutcome}
                 onChange={(e) => setRecommendedOutcome(e.target.value)}
                 placeholder="What is your recommendation? Note: the investigating officer recommends — the decision-maker at the hearing decides."

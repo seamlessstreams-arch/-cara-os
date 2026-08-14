@@ -347,27 +347,27 @@ export default function ShiftNotesPage() {
           <form onSubmit={handleCreateNote} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date</label>
-                <Input type="date" value={snForm.date} onChange={(e) => setSNF("date", e.target.value)} />
+                <label htmlFor="7fa3-date" className="text-sm font-medium">Date</label>
+                <Input id="7fa3-date" type="date" value={snForm.date} onChange={(e) => setSNF("date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium">Shift</label>
-                <Select value={snForm.shift} onValueChange={(v) => setSNF("shift", v)}><SelectTrigger><SelectValue placeholder="Select shift" /></SelectTrigger>
+                <label htmlFor="7fa3-shift" className="text-sm font-medium">Shift</label>
+                <Select value={snForm.shift} onValueChange={(v) => setSNF("shift", v)}><SelectTrigger id="7fa3-shift"><SelectValue placeholder="Select shift" /></SelectTrigger>
                   <SelectContent>{(Object.keys(SHIFT_NOTE_SHIFT_TYPE_LABEL) as ShiftNoteShiftType[]).map((k) => <SelectItem key={k} value={k}>{SHIFT_NOTE_SHIFT_TYPE_LABEL[k]} ({SHIFT_META[k].times})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">General Notes *</label>
-              <Textarea placeholder="Overview of the shift…" rows={4} value={snForm.general_notes} onChange={(e) => setSNF("general_notes", e.target.value)} />
+              <label htmlFor="7fa3-general-notes" className="text-sm font-medium">General Notes *</label>
+              <Textarea id="7fa3-general-notes" placeholder="Overview of the shift…" rows={4} value={snForm.general_notes} onChange={(e) => setSNF("general_notes", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Handover Priorities</label>
-              <Textarea placeholder="One priority per line" rows={2} value={snForm.handover} onChange={(e) => setSNF("handover", e.target.value)} />
+              <label htmlFor="7fa3-handover-priorities" className="text-sm font-medium">Handover Priorities</label>
+              <Textarea id="7fa3-handover-priorities" placeholder="One priority per line" rows={2} value={snForm.handover} onChange={(e) => setSNF("handover", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Outstanding Tasks</label>
-              <Textarea placeholder="One task per line" rows={2} value={snForm.outstanding} onChange={(e) => setSNF("outstanding", e.target.value)} />
+              <label htmlFor="7fa3-outstanding-tasks" className="text-sm font-medium">Outstanding Tasks</label>
+              <Textarea id="7fa3-outstanding-tasks" placeholder="One task per line" rows={2} value={snForm.outstanding} onChange={(e) => setSNF("outstanding", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

@@ -610,8 +610,8 @@ export default function TimesheetsPage() {
                       </div>
                     )}
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Staff member</label>
-                      <select
+                      <label htmlFor="8f5c-staff-member" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Staff member</label>
+                      <select id="8f5c-staff-member"
                         value={clockForm.staffId}
                         onChange={(e) => setClockForm((f) => ({ ...f, staffId: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -624,8 +624,8 @@ export default function TimesheetsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Clock in time</label>
-                        <input
+                        <label htmlFor="8f5c-clock-in-time" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Clock in time</label>
+                        <input id="8f5c-clock-in-time"
                           type="time"
                           value={clockForm.clockIn}
                           onChange={(e) => setClockForm((f) => ({ ...f, clockIn: e.target.value }))}
@@ -633,8 +633,8 @@ export default function TimesheetsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Clock out time</label>
-                        <input
+                        <label htmlFor="8f5c-clock-out-time" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Clock out time</label>
+                        <input id="8f5c-clock-out-time"
                           type="time"
                           value={clockForm.clockOut}
                           onChange={(e) => setClockForm((f) => ({ ...f, clockOut: e.target.value }))}
@@ -643,8 +643,8 @@ export default function TimesheetsPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Break duration (minutes)</label>
-                      <input
+                      <label htmlFor="8f5c-break-duration-minutes" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Break duration (minutes)</label>
+                      <input id="8f5c-break-duration-minutes"
                         type="number"
                         value={clockForm.breakMins}
                         onChange={(e) => setClockForm((f) => ({ ...f, breakMins: e.target.value }))}
@@ -652,8 +652,8 @@ export default function TimesheetsPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Reason for manual entry</label>
-                      <textarea
+                      <label htmlFor="8f5c-reason-for-manual-entry" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Reason for manual entry</label>
+                      <textarea id="8f5c-reason-for-manual-entry"
                         value={clockForm.reason}
                         onChange={(e) => setClockForm((f) => ({ ...f, reason: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] p-2.5 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"

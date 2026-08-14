@@ -596,8 +596,8 @@ export default function ProviderOversightPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Add Oversight Comment</label>
-              <textarea
+              <label htmlFor="e8cd-add-oversight-comment" className="text-sm font-medium">Add Oversight Comment</label>
+              <textarea id="e8cd-add-oversight-comment"
                 className="w-full min-h-[80px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-blue-200"
                 placeholder="Record oversight observation, action request, or review note..."
                 value={oversightComment}

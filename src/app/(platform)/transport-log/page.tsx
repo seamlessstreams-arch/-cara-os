@@ -627,13 +627,13 @@ export default function TransportLogPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium mb-1 block">Date *</Label>
-                <Input type="date" value={nDate} onChange={e => setNDate(e.target.value)} />
+                <Label htmlFor="21f0-date" className="text-sm font-medium mb-1 block">Date *</Label>
+                <Input id="21f0-date" type="date" value={nDate} onChange={e => setNDate(e.target.value)} />
               </div>
               <div>
-                <Label className="text-sm font-medium mb-1 block">Driver *</Label>
+                <Label htmlFor="21f0-driver" className="text-sm font-medium mb-1 block">Driver *</Label>
                 <Select value={nDriver} onValueChange={setNDriver}>
-                  <SelectTrigger><SelectValue placeholder="Select driver" /></SelectTrigger>
+                  <SelectTrigger id="21f0-driver"><SelectValue placeholder="Select driver" /></SelectTrigger>
                   <SelectContent>
                     {["staff_darren", "staff_ryan", "staff_edward", "staff_anna", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"].map(id => (
                       <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>
@@ -644,18 +644,18 @@ export default function TransportLogPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium mb-1 block">Vehicle *</Label>
+                <Label htmlFor="21f0-vehicle" className="text-sm font-medium mb-1 block">Vehicle *</Label>
                 <Select value={nVehicle} onValueChange={setNVehicle}>
-                  <SelectTrigger><SelectValue placeholder="Select vehicle" /></SelectTrigger>
+                  <SelectTrigger id="21f0-vehicle"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
                   <SelectContent>
                     {VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-sm font-medium mb-1 block">Purpose *</Label>
+                <Label htmlFor="21f0-purpose" className="text-sm font-medium mb-1 block">Purpose *</Label>
                 <Select value={nPurpose} onValueChange={v => setNPurpose(v as TransportLogPurpose)}>
-                  <SelectTrigger><SelectValue placeholder="Select purpose" /></SelectTrigger>
+                  <SelectTrigger id="21f0-purpose"><SelectValue placeholder="Select purpose" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(TRANSPORT_LOG_PURPOSE_LABEL) as [TransportLogPurpose, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -665,13 +665,13 @@ export default function TransportLogPage() {
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Destination *</Label>
-              <Input placeholder="e.g. Broadfield Academy" value={nDestination} onChange={e => setNDestination(e.target.value)} />
+              <Label htmlFor="21f0-destination" className="text-sm font-medium mb-1 block">Destination *</Label>
+              <Input id="21f0-destination" placeholder="e.g. Broadfield Academy" value={nDestination} onChange={e => setNDestination(e.target.value)} />
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Passengers (YP IDs, comma separated)</Label>
+              <Label htmlFor="21f0-passengers-yp-ids-comma-separated" className="text-sm font-medium mb-1 block">Passengers (YP IDs, comma separated)</Label>
               <Select value={nPassengers} onValueChange={setNPassengers}>
-                <SelectTrigger><SelectValue placeholder="Select young person" /></SelectTrigger>
+                <SelectTrigger id="21f0-passengers-yp-ids-comma-separated"><SelectValue placeholder="Select young person" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
                   <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
@@ -685,33 +685,33 @@ export default function TransportLogPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium mb-1 block">Departure Time *</Label>
-                <Input type="time" value={nDepartureTime} onChange={e => setNDepartureTime(e.target.value)} />
+                <Label htmlFor="21f0-departure-time" className="text-sm font-medium mb-1 block">Departure Time *</Label>
+                <Input id="21f0-departure-time" type="time" value={nDepartureTime} onChange={e => setNDepartureTime(e.target.value)} />
               </div>
               <div>
-                <Label className="text-sm font-medium mb-1 block">Arrival Time</Label>
-                <Input type="time" value={nArrivalTime} onChange={e => setNArrivalTime(e.target.value)} />
+                <Label htmlFor="21f0-arrival-time" className="text-sm font-medium mb-1 block">Arrival Time</Label>
+                <Input id="21f0-arrival-time" type="time" value={nArrivalTime} onChange={e => setNArrivalTime(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium mb-1 block">Mileage Start</Label>
-                <Input type="number" placeholder="e.g. 45230" value={nMileageStart} onChange={e => setNMileageStart(e.target.value)} />
+                <Label htmlFor="21f0-mileage-start" className="text-sm font-medium mb-1 block">Mileage Start</Label>
+                <Input id="21f0-mileage-start" type="number" placeholder="e.g. 45230" value={nMileageStart} onChange={e => setNMileageStart(e.target.value)} />
               </div>
               <div>
-                <Label className="text-sm font-medium mb-1 block">Mileage End</Label>
-                <Input type="number" placeholder="e.g. 45238" value={nMileageEnd} onChange={e => setNMileageEnd(e.target.value)} />
+                <Label htmlFor="21f0-mileage-end" className="text-sm font-medium mb-1 block">Mileage End</Label>
+                <Input id="21f0-mileage-end" type="number" placeholder="e.g. 45238" value={nMileageEnd} onChange={e => setNMileageEnd(e.target.value)} />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Route Taken</Label>
-              <Input placeholder={`e.g. ${homeName} > A52 > School`} value={nRoute} onChange={e => setNRoute(e.target.value)} />
+              <Label htmlFor="21f0-route-taken" className="text-sm font-medium mb-1 block">Route Taken</Label>
+              <Input id="21f0-route-taken" placeholder={`e.g. ${homeName} > A52 > School`} value={nRoute} onChange={e => setNRoute(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium mb-1 block">Behaviour</Label>
+                <Label htmlFor="21f0-behaviour" className="text-sm font-medium mb-1 block">Behaviour</Label>
                 <Select value={nBehaviour} onValueChange={v => setNBehaviour(v as TransportLogBehaviour)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="21f0-behaviour"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(TRANSPORT_LOG_BEHAVIOUR_LABEL) as [TransportLogBehaviour, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -721,12 +721,12 @@ export default function TransportLogPage() {
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Behaviour Notes</Label>
-              <Textarea placeholder="How was the young person during the journey?" value={nBehaviourNotes} onChange={e => setNBehaviourNotes(e.target.value)} rows={2} />
+              <Label htmlFor="21f0-behaviour-notes" className="text-sm font-medium mb-1 block">Behaviour Notes</Label>
+              <Textarea id="21f0-behaviour-notes" placeholder="How was the young person during the journey?" value={nBehaviourNotes} onChange={e => setNBehaviourNotes(e.target.value)} rows={2} />
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Notes</Label>
-              <Textarea placeholder="Any additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
+              <Label htmlFor="21f0-notes" className="text-sm font-medium mb-1 block">Notes</Label>
+              <Textarea id="21f0-notes" placeholder="Any additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

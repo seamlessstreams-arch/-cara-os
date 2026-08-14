@@ -333,8 +333,8 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
       <CardContent className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person *</label>
-            <select
+            <label htmlFor="8197-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person *</label>
+            <select id="8197-young-person"
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
               className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
@@ -370,8 +370,8 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Flag Type *</label>
-          <select
+          <label htmlFor="8197-flag-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">Flag Type *</label>
+          <select id="8197-flag-type"
             value={flagType}
             onChange={(e) => setFlagType(e.target.value as SafeguardingFlagType)}
             className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
@@ -383,8 +383,8 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Description *</label>
-          <textarea
+          <label htmlFor="8197-description" className="text-xs font-medium text-[var(--cs-text-secondary)]">Description *</label>
+          <textarea id="8197-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
@@ -394,8 +394,8 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Recommended Action *</label>
-          <textarea
+          <label htmlFor="8197-recommended-action" className="text-xs font-medium text-[var(--cs-text-secondary)]">Recommended Action *</label>
+          <textarea id="8197-recommended-action"
             value={recommendedAction}
             onChange={(e) => setRecommendedAction(e.target.value)}
             rows={3}

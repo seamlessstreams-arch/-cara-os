@@ -335,14 +335,14 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Challenge Title</label>
-            <Input className="mt-1" placeholder="e.g. Inadequate oversight of medication refusals" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <label htmlFor="75af-challenge-title" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Challenge Title</label>
+            <Input id="75af-challenge-title" className="mt-1" placeholder="e.g. Inadequate oversight of medication refusals" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Area</label>
+              <label htmlFor="75af-area" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Area</label>
               <Select value={area} onValueChange={(v) => setArea(v as RiChallengeArea)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="75af-area" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(AREA_LABELS).map(([v, l]) => (
                     <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -351,9 +351,9 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
               </Select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Escalation</label>
+              <label htmlFor="75af-escalation" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Escalation</label>
               <Select value={escalation} onValueChange={(v) => setEscalation(v as RiEscalationLevel)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="75af-escalation" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="standard">Standard</SelectItem>
                   <SelectItem value="elevated">Elevated</SelectItem>
@@ -364,22 +364,22 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Summary</label>
-            <Textarea className="mt-1 text-sm" rows={3} placeholder="Summarise the evidence or data that underpins this challenge…" value={evidence} onChange={(e) => setEvidence(e.target.value)} />
+            <label htmlFor="75af-evidence-summary" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Evidence Summary</label>
+            <Textarea id="75af-evidence-summary" className="mt-1 text-sm" rows={3} placeholder="Summarise the evidence or data that underpins this challenge…" value={evidence} onChange={(e) => setEvidence(e.target.value)} />
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Challenge to Manager</label>
+              <label htmlFor="75af-challenge-to-manager" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Challenge to Manager</label>
               <Button size="sm" variant="ghost" className="h-6 text-xs text-[var(--cs-cara-gold)] gap-1 px-2" onClick={draftWithCara} disabled={caraDrafting || !evidence.trim()}>
                 <Sparkles className="h-3 w-3" />
                 {caraDrafting ? "Drafting…" : "Cara Draft"}
               </Button>
             </div>
-            <Textarea className="mt-0 text-sm" rows={5} placeholder="Write the formal challenge question or statement for the manager…" value={challenge} onChange={(e) => setChallenge(e.target.value)} />
+            <Textarea id="75af-challenge-to-manager" className="mt-0 text-sm" rows={5} placeholder="Write the formal challenge question or statement for the manager…" value={challenge} onChange={(e) => setChallenge(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Action Required</label>
-            <Input className="mt-1" placeholder="e.g. Provide written action plan within 7 days" value={actionRequired} onChange={(e) => setActionRequired(e.target.value)} />
+            <label htmlFor="75af-action-required" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Action Required</label>
+            <Input id="75af-action-required" className="mt-1" placeholder="e.g. Provide written action plan within 7 days" value={actionRequired} onChange={(e) => setActionRequired(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
@@ -429,12 +429,12 @@ function ResponseDialog({ log, onClose }: { log: RiChallengeLog; onClose: () => 
             <p className="text-sm text-amber-900 line-clamp-3">{log.challenge_text}</p>
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Manager Response</label>
-            <Textarea className="mt-1 text-sm" rows={4} value={response} onChange={(e) => setResponse(e.target.value)} placeholder="Record what the manager said or provided in response…" />
+            <label htmlFor="75af-manager-response" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Manager Response</label>
+            <Textarea id="75af-manager-response" className="mt-1 text-sm" rows={4} value={response} onChange={(e) => setResponse(e.target.value)} placeholder="Record what the manager said or provided in response…" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Action Agreed</label>
-            <Input className="mt-1" value={action} onChange={(e) => setAction(e.target.value)} placeholder="What action did the manager commit to?" />
+            <label htmlFor="75af-action-agreed" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Action Agreed</label>
+            <Input id="75af-action-agreed" className="mt-1" value={action} onChange={(e) => setAction(e.target.value)} placeholder="What action did the manager commit to?" />
           </div>
         </div>
         <DialogFooter>

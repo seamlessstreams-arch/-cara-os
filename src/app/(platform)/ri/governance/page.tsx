@@ -368,9 +368,9 @@ function NewReportDialog({
         <div className="space-y-3 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Report Type</label>
+              <label htmlFor="89e1-report-type" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Report Type</label>
               <Select value={reportType} onValueChange={(v) => setReportType(v as RiReportType)}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger id="89e1-report-type" className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -381,8 +381,8 @@ function NewReportDialog({
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Report Period</label>
-              <Input
+              <label htmlFor="89e1-report-period" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Report Period</label>
+              <Input id="89e1-report-period"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 placeholder="e.g. April 2026, Q1 2026"
@@ -392,8 +392,8 @@ function NewReportDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Summary *</label>
-            <Textarea
+            <label htmlFor="89e1-summary" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Summary *</label>
+            <Textarea id="89e1-summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Executive summary of the report…"
@@ -402,8 +402,8 @@ function NewReportDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Key Findings (one per line)</label>
-            <Textarea
+            <label htmlFor="89e1-key-findings-one-per-line" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Key Findings (one per line)</label>
+            <Textarea id="89e1-key-findings-one-per-line"
               value={findings}
               onChange={(e) => setFindings(e.target.value)}
               placeholder="Enter each finding on a new line…"
@@ -412,8 +412,8 @@ function NewReportDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Strengths (one per line)</label>
-            <Textarea
+            <label htmlFor="89e1-strengths-one-per-line" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Strengths (one per line)</label>
+            <Textarea id="89e1-strengths-one-per-line"
               value={strengths}
               onChange={(e) => setStrengths(e.target.value)}
               placeholder="Enter each strength on a new line…"
@@ -422,8 +422,8 @@ function NewReportDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Concerns (one per line)</label>
-            <Textarea
+            <label htmlFor="89e1-concerns-one-per-line" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Concerns (one per line)</label>
+            <Textarea id="89e1-concerns-one-per-line"
               value={concerns}
               onChange={(e) => setConcerns(e.target.value)}
               placeholder="Enter each concern on a new line…"
@@ -432,8 +432,8 @@ function NewReportDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Actions (one per line)</label>
-            <Textarea
+            <label htmlFor="89e1-actions-one-per-line" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Actions (one per line)</label>
+            <Textarea id="89e1-actions-one-per-line"
               value={actions}
               onChange={(e) => setActions(e.target.value)}
               placeholder="Enter each action on a new line…"

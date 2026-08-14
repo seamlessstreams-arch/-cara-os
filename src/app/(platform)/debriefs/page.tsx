@@ -259,18 +259,18 @@ export default function DebriefsPage() {
           <DialogHeader><DialogTitle>New Debrief</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateDebrief} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={debForm.date} onChange={(e) => setDeb("date", e.target.value)} /></div>
+              <div><label htmlFor="8346-date" className="text-sm font-medium">Date</label><Input id="8346-date" type="date" value={debForm.date} onChange={(e) => setDeb("date", e.target.value)} /></div>
               <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={debForm.type} onValueChange={(v) => setDeb("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <label htmlFor="8346-type" className="text-sm font-medium">Type</label>
+                <Select value={debForm.type} onValueChange={(v) => setDeb("type", v)}><SelectTrigger id="8346-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">What Happened *</label><Textarea placeholder="Describe the incident or event…" rows={3} value={debForm.what_happened} onChange={(e) => setDeb("what_happened", e.target.value)} /><EntryAssist value={debForm.what_happened} onChange={(v) => setDeb("what_happened", v)} sourceRecordType="debrief" className="mt-1" /></div>
-            <div><label className="text-sm font-medium">What Worked Well</label><Textarea placeholder="Positive aspects of the response…" rows={2} value={debForm.what_worked_well} onChange={(e) => setDeb("what_worked_well", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">What Could Improve</label><Textarea placeholder="Areas for improvement…" rows={2} value={debForm.what_could_improve} onChange={(e) => setDeb("what_could_improve", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Lessons Learned</label><Textarea placeholder="Key lessons (one per line)" rows={2} value={debForm.lessons_learned} onChange={(e) => setDeb("lessons_learned", e.target.value)} /></div>
+            <div><label htmlFor="8346-what-happened" className="text-sm font-medium">What Happened *</label><Textarea id="8346-what-happened" placeholder="Describe the incident or event…" rows={3} value={debForm.what_happened} onChange={(e) => setDeb("what_happened", e.target.value)} /><EntryAssist value={debForm.what_happened} onChange={(v) => setDeb("what_happened", v)} sourceRecordType="debrief" className="mt-1" /></div>
+            <div><label htmlFor="8346-what-worked-well" className="text-sm font-medium">What Worked Well</label><Textarea id="8346-what-worked-well" placeholder="Positive aspects of the response…" rows={2} value={debForm.what_worked_well} onChange={(e) => setDeb("what_worked_well", e.target.value)} /></div>
+            <div><label htmlFor="8346-what-could-improve" className="text-sm font-medium">What Could Improve</label><Textarea id="8346-what-could-improve" placeholder="Areas for improvement…" rows={2} value={debForm.what_could_improve} onChange={(e) => setDeb("what_could_improve", e.target.value)} /></div>
+            <div><label htmlFor="8346-lessons-learned" className="text-sm font-medium">Lessons Learned</label><Textarea id="8346-lessons-learned" placeholder="Key lessons (one per line)" rows={2} value={debForm.lessons_learned} onChange={(e) => setDeb("lessons_learned", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createDebrief.isPending}>{createDebrief.isPending ? "Saving…" : "Save Debrief"}</Button>

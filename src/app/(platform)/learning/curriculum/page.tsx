@@ -228,19 +228,19 @@ export default function CurriculumBuilderPage() {
           <CardContent className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic / Theme</label>
-                <Input className="mt-1" placeholder="e.g. Trauma-Informed Practice" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                <label htmlFor="a654-topic-theme" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic / Theme</label>
+                <Input id="a654-topic-theme" className="mt-1" placeholder="e.g. Trauma-Informed Practice" value={topic} onChange={(e) => setTopic(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Duration</label>
-                <Input className="mt-1" placeholder="e.g. 6 weeks, 3 days, 1 month" value={duration} onChange={(e) => setDuration(e.target.value)} />
+                <label htmlFor="a654-duration" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Duration</label>
+                <Input id="a654-duration" className="mt-1" placeholder="e.g. 6 weeks, 3 days, 1 month" value={duration} onChange={(e) => setDuration(e.target.value)} />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="a654-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={setPathway}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="a654-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff">Staff</SelectItem>
                     <SelectItem value="child">Child</SelectItem>
@@ -249,13 +249,13 @@ export default function CurriculumBuilderPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Target Audience</label>
-                <Input className="mt-1" placeholder="e.g. All care staff, new starters, TLs" value={audience} onChange={(e) => setAudience(e.target.value)} />
+                <label htmlFor="a654-target-audience" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Target Audience</label>
+                <Input id="a654-target-audience" className="mt-1" placeholder="e.g. All care staff, new starters, TLs" value={audience} onChange={(e) => setAudience(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Desired Learning Outcomes</label>
-              <Textarea className="mt-1 text-sm" rows={2} placeholder="What should participants know or be able to do after completing this curriculum?" value={outcomes} onChange={(e) => setOutcomes(e.target.value)} />
+              <label htmlFor="a654-desired-learning-outcomes" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Desired Learning Outcomes</label>
+              <Textarea id="a654-desired-learning-outcomes" className="mt-1 text-sm" rows={2} placeholder="What should participants know or be able to do after completing this curriculum?" value={outcomes} onChange={(e) => setOutcomes(e.target.value)} />
             </div>
             <Button onClick={generate} disabled={!topic.trim() || generating} className="gap-1.5 bg-teal-600 hover:bg-teal-700 text-white" size="sm">
               <Sparkles className="h-3.5 w-3.5" />

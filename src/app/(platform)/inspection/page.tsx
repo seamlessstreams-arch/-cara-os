@@ -335,10 +335,10 @@ function NarrativeGenerator() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Report type */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            <label htmlFor="b9ca-report-type" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Report Type
             </label>
-            <select
+            <select id="b9ca-report-type"
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
               disabled={isGenerating}
@@ -351,10 +351,10 @@ function NarrativeGenerator() {
 
           {/* Period */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            <label htmlFor="b9ca-period" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Period
             </label>
-            <select
+            <select id="b9ca-period"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               disabled={isGenerating}

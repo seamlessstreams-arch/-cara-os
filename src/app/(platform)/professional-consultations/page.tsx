@@ -296,27 +296,27 @@ export default function ProfessionalConsultationsPage() {
           <DialogHeader><DialogTitle>Log Professional Consultation</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveConsultation} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={pcForm.date} onChange={(e) => setPC("date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Time</label><Input type="time" value={pcForm.time} onChange={(e) => setPC("time", e.target.value)} /></div>
+              <div><label htmlFor="2064-date" className="text-sm font-medium">Date</label><Input id="2064-date" type="date" value={pcForm.date} onChange={(e) => setPC("date", e.target.value)} /></div>
+              <div><label htmlFor="2064-time" className="text-sm font-medium">Time</label><Input id="2064-time" type="time" value={pcForm.time} onChange={(e) => setPC("time", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={pcForm.type} onValueChange={(v) => setPC("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <label htmlFor="2064-type" className="text-sm font-medium">Type</label>
+                <Select value={pcForm.type} onValueChange={(v) => setPC("type", v)}><SelectTrigger id="2064-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{(Object.entries(PROF_CONSULTATION_TYPE_LABEL) as [ProfConsultationType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Method</label>
-                <Select value={pcForm.method} onValueChange={(v) => setPC("method", v)}><SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
+                <label htmlFor="2064-method" className="text-sm font-medium">Method</label>
+                <Select value={pcForm.method} onValueChange={(v) => setPC("method", v)}><SelectTrigger id="2064-method"><SelectValue placeholder="Method" /></SelectTrigger>
                   <SelectContent>{(Object.entries(PROF_CONSULTATION_METHOD_LABEL) as [ProfConsultationMethod, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Professional Name *</label><Input placeholder="Name of professional" value={pcForm.professional_name} onChange={(e) => setPC("professional_name", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Organisation</label><Input placeholder="Organisation" value={pcForm.organisation} onChange={(e) => setPC("organisation", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Reason *</label><Textarea placeholder="Why was this consultation sought?" rows={2} value={pcForm.reason} onChange={(e) => setPC("reason", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Advice Given</label><Textarea placeholder="What advice or guidance was provided?" rows={3} value={pcForm.advice_given} onChange={(e) => setPC("advice_given", e.target.value)} /></div>
+            <div><label htmlFor="2064-professional-name" className="text-sm font-medium">Professional Name *</label><Input id="2064-professional-name" placeholder="Name of professional" value={pcForm.professional_name} onChange={(e) => setPC("professional_name", e.target.value)} /></div>
+            <div><label htmlFor="2064-organisation" className="text-sm font-medium">Organisation</label><Input id="2064-organisation" placeholder="Organisation" value={pcForm.organisation} onChange={(e) => setPC("organisation", e.target.value)} /></div>
+            <div><label htmlFor="2064-reason" className="text-sm font-medium">Reason *</label><Textarea id="2064-reason" placeholder="Why was this consultation sought?" rows={2} value={pcForm.reason} onChange={(e) => setPC("reason", e.target.value)} /></div>
+            <div><label htmlFor="2064-advice-given" className="text-sm font-medium">Advice Given</label><Textarea id="2064-advice-given" placeholder="What advice or guidance was provided?" rows={3} value={pcForm.advice_given} onChange={(e) => setPC("advice_given", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createConsultation.isPending}>{createConsultation.isPending ? "Saving…" : "Save"}</Button>

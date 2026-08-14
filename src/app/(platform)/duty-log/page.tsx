@@ -184,8 +184,8 @@ export default function DutyLogPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <Label className="text-xs">Search</Label>
-                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" placeholder="Description, staff…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <Label htmlFor="0382-search" className="text-xs">Search</Label>
+                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input id="0382-search" className="pl-8" placeholder="Description, staff…" value={search} onChange={e => setSearch(e.target.value)} /></div>
               </div>
               <div className="w-36">
                 <Label className="text-xs flex items-center gap-1"><Filter className="h-3 w-3" />Shift</Label>
@@ -195,16 +195,16 @@ export default function DutyLogPage() {
                 </Select>
               </div>
               <div className="w-40">
-                <Label className="text-xs">Category</Label>
+                <Label htmlFor="0382-category" className="text-xs">Category</Label>
                 <Select value={catFilter} onValueChange={setCatFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="0382-category"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(DUTY_LOG_CATEGORY_LABEL) as [DutyLogCategory, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="w-36">
-                <Label className="text-xs">Priority</Label>
+                <Label htmlFor="0382-priority" className="text-xs">Priority</Label>
                 <Select value={priFilter} onValueChange={setPriFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="0382-priority"><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="all">All</SelectItem>{(["routine", "important", "urgent", "critical"] as DutyLogPriority[]).map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -304,16 +304,16 @@ export default function DutyLogPage() {
           <DialogHeader><DialogTitle>New Duty Log Entry</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Date</Label><Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} /></div>
-              <div><Label>Time</Label><Input type="time" value={formTime} onChange={e => setFormTime(e.target.value)} /></div>
+              <div><Label htmlFor="0382-date">Date</Label><Input id="0382-date" type="date" value={formDate} onChange={e => setFormDate(e.target.value)} /></div>
+              <div><Label htmlFor="0382-time">Time</Label><Input id="0382-time" type="time" value={formTime} onChange={e => setFormTime(e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Shift</Label><Select value={formShift} onValueChange={v => setFormShift(v as DutyLogShift)}><SelectTrigger><SelectValue placeholder="Select shift" /></SelectTrigger><SelectContent>{(Object.entries(DUTY_LOG_SHIFT_LABEL) as [DutyLogShift, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div><Label>Category</Label><Select value={formCategory} onValueChange={v => setFormCategory(v as DutyLogCategory)}><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{(Object.entries(DUTY_LOG_CATEGORY_LABEL) as [DutyLogCategory, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label htmlFor="0382-shift">Shift</Label><Select value={formShift} onValueChange={v => setFormShift(v as DutyLogShift)}><SelectTrigger id="0382-shift"><SelectValue placeholder="Select shift" /></SelectTrigger><SelectContent>{(Object.entries(DUTY_LOG_SHIFT_LABEL) as [DutyLogShift, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label htmlFor="0382-category-2">Category</Label><Select value={formCategory} onValueChange={v => setFormCategory(v as DutyLogCategory)}><SelectTrigger id="0382-category-2"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{(Object.entries(DUTY_LOG_CATEGORY_LABEL) as [DutyLogCategory, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             </div>
-            <div><Label>Priority</Label><Select value={formPriority} onValueChange={v => setFormPriority(v as DutyLogPriority)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(["routine", "important", "urgent", "critical"] as DutyLogPriority[]).map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Description</Label><Textarea rows={3} placeholder="What happened…" value={formDescription} onChange={e => setFormDescription(e.target.value)} /></div>
-            <div><Label>Action Taken</Label><Textarea rows={2} placeholder="What was done…" value={formActionTaken} onChange={e => setFormActionTaken(e.target.value)} /></div>
+            <div><Label htmlFor="0382-priority-2">Priority</Label><Select value={formPriority} onValueChange={v => setFormPriority(v as DutyLogPriority)}><SelectTrigger id="0382-priority-2"><SelectValue /></SelectTrigger><SelectContent>{(["routine", "important", "urgent", "critical"] as DutyLogPriority[]).map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label htmlFor="0382-description">Description</Label><Textarea id="0382-description" rows={3} placeholder="What happened…" value={formDescription} onChange={e => setFormDescription(e.target.value)} /></div>
+            <div><Label htmlFor="0382-action-taken">Action Taken</Label><Textarea id="0382-action-taken" rows={2} placeholder="What was done…" value={formActionTaken} onChange={e => setFormActionTaken(e.target.value)} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

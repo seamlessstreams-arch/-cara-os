@@ -700,8 +700,8 @@ export default function SituationReviewPage() {
               <CardContent className="space-y-4">
                 {/* Child selector */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
-                  <select
+                  <label htmlFor="3636-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
+                  <select id="3636-young-person"
                     value={childId}
                     onChange={(e) => setChildId(e.target.value)}
                     className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-soft)]"
@@ -715,8 +715,8 @@ export default function SituationReviewPage() {
 
                 {/* Source type */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Source Type</label>
-                  <select
+                  <label htmlFor="3636-source-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">Source Type</label>
+                  <select id="3636-source-type"
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value)}
                     className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-soft)]"

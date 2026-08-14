@@ -338,8 +338,8 @@ export default function ExpensesPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Category</label>
-                  <select
+                  <label htmlFor="e70e-category" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Category</label>
+                  <select id="e70e-category"
                     value={form.category}
                     onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                     className="w-full h-9 rounded-xl border border-[var(--cs-border)] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -371,8 +371,8 @@ export default function ExpensesPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Payment method</label>
-                  <select
+                  <label htmlFor="e70e-payment-method" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Payment method</label>
+                  <select id="e70e-payment-method"
                     value={form.payment_method}
                     onChange={(e) => setForm((f) => ({ ...f, payment_method: e.target.value }))}
                     className="w-full h-9 rounded-xl border border-[var(--cs-border)] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

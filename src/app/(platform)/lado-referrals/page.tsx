@@ -328,14 +328,14 @@ export default function LADOReferralsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New LADO Referral</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Date of Allegation</Label><Input type="date" /></div>
-            <div><Label>Date Referred</Label><Input type="date" /></div>
-            <div><Label>Subject Staff Member</Label><Select><SelectTrigger><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="staff_anna">Priya</SelectItem><SelectItem value="staff_edward">Daniel</SelectItem><SelectItem value="staff_ryan">Marcus</SelectItem><SelectItem value="staff_chervelle">Naomi</SelectItem><SelectItem value="staff_lackson">Samuel</SelectItem><SelectItem value="staff_mirela">Elena</SelectItem></SelectContent></Select></div>
-            <div><Label>Allegation Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LADO_ALLEGATION_TYPE_LABEL) as LadoAllegationType[]).map((k) => (<SelectItem key={k} value={k}>{LADO_ALLEGATION_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Child Involved</Label><Select><SelectTrigger><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
-            <div><Label>LADO Name</Label><Input placeholder="LADO officer name" /></div>
-            <div className="col-span-2"><Label>Allegation Summary</Label><Textarea placeholder="Describe the allegation…" rows={4} /></div>
-            <div className="col-span-2"><Label>Evidence Summary</Label><Textarea placeholder="Evidence gathered so far…" rows={3} /></div>
+            <div><Label htmlFor="6c8e-date-of-allegation">Date of Allegation</Label><Input id="6c8e-date-of-allegation" type="date" /></div>
+            <div><Label htmlFor="6c8e-date-referred">Date Referred</Label><Input id="6c8e-date-referred" type="date" /></div>
+            <div><Label htmlFor="6c8e-subject-staff-member">Subject Staff Member</Label><Select><SelectTrigger id="6c8e-subject-staff-member"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="staff_anna">Priya</SelectItem><SelectItem value="staff_edward">Daniel</SelectItem><SelectItem value="staff_ryan">Marcus</SelectItem><SelectItem value="staff_chervelle">Naomi</SelectItem><SelectItem value="staff_lackson">Samuel</SelectItem><SelectItem value="staff_mirela">Elena</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-allegation-type">Allegation Type</Label><Select><SelectTrigger id="6c8e-allegation-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LADO_ALLEGATION_TYPE_LABEL) as LadoAllegationType[]).map((k) => (<SelectItem key={k} value={k}>{LADO_ALLEGATION_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-child-involved">Child Involved</Label><Select><SelectTrigger id="6c8e-child-involved"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-lado-name">LADO Name</Label><Input id="6c8e-lado-name" placeholder="LADO officer name" /></div>
+            <div className="col-span-2"><Label htmlFor="6c8e-allegation-summary">Allegation Summary</Label><Textarea id="6c8e-allegation-summary" placeholder="Describe the allegation…" rows={4} /></div>
+            <div className="col-span-2"><Label htmlFor="6c8e-evidence-summary">Evidence Summary</Label><Textarea id="6c8e-evidence-summary" placeholder="Evidence gathered so far…" rows={3} /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Submit Referral</Button></DialogFooter>
         </DialogContent>

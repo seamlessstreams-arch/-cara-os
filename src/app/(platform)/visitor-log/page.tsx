@@ -202,19 +202,19 @@ function NewVisitorDialog({
         <div className="space-y-3 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Visitor Name *</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />
+              <label htmlFor="b0f0-visitor-name" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Visitor Name *</label>
+              <Input id="b0f0-visitor-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Organisation</label>
-              <Input value={org} onChange={(e) => setOrg(e.target.value)} placeholder="Organisation" className="h-8 text-xs" />
+              <label htmlFor="b0f0-organisation" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Organisation</label>
+              <Input id="b0f0-organisation" value={org} onChange={(e) => setOrg(e.target.value)} placeholder="Organisation" className="h-8 text-xs" />
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Category</label>
+            <label htmlFor="b0f0-category" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Category</label>
             <Select value={category} onValueChange={(v) => setCategory(v as VisitorCategory)}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="b0f0-category" className="h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.keys(CATEGORY_CONFIG) as VisitorCategory[]).map((c) => (
                   <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
@@ -224,8 +224,8 @@ function NewVisitorDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Purpose of Visit *</label>
-            <Input value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="Reason for visiting" className="h-8 text-xs" />
+            <label htmlFor="b0f0-purpose-of-visit" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Purpose of Visit *</label>
+            <Input id="b0f0-purpose-of-visit" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="Reason for visiting" className="h-8 text-xs" />
           </div>
 
           <div className="flex items-center gap-4">
@@ -240,8 +240,8 @@ function NewVisitorDialog({
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes…" className="text-xs min-h-[50px]" />
+            <label htmlFor="b0f0-notes" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
+            <Textarea id="b0f0-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes…" className="text-xs min-h-[50px]" />
           </div>
         </div>
 

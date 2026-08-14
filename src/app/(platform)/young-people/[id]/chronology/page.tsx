@@ -680,11 +680,11 @@ export default function ChildChronologyPage({
 
               {/* Date range */}
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1.5 block">
+                <label htmlFor="4f88-date-range" className="text-xs font-medium text-slate-600 mb-1.5 block">
                   Date range
                 </label>
                 <div className="flex gap-2">
-                  <input
+                  <input id="4f88-date-range"
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}

@@ -420,25 +420,25 @@ export default function QualityOfCarePage() {
           </DialogHeader>
           <form onSubmit={handleSaveReview} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={qocForm.date} onChange={(e) => setQOC("date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Type</label>
-                <Select value={qocForm.type} onValueChange={(v) => setQOC("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="0929-date" className="text-sm font-medium">Date</label><Input id="0929-date" type="date" className="mt-1" value={qocForm.date} onChange={(e) => setQOC("date", e.target.value)} /></div>
+              <div><label htmlFor="0929-type" className="text-sm font-medium">Type</label>
+                <Select value={qocForm.type} onValueChange={(v) => setQOC("type", v)}><SelectTrigger id="0929-type" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(QOC_REVIEW_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Lead Reviewer *</label><Input className="mt-1" placeholder="Name" value={qocForm.lead_reviewer} onChange={(e) => setQOC("lead_reviewer", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Overall Rating</label>
-              <Select value={qocForm.overall_rating} onValueChange={(v) => setQOC("overall_rating", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <div><label htmlFor="0929-lead-reviewer" className="text-sm font-medium">Lead Reviewer *</label><Input id="0929-lead-reviewer" className="mt-1" placeholder="Name" value={qocForm.lead_reviewer} onChange={(e) => setQOC("lead_reviewer", e.target.value)} /></div>
+            <div><label htmlFor="0929-overall-rating" className="text-sm font-medium">Overall Rating</label>
+              <Select value={qocForm.overall_rating} onValueChange={(v) => setQOC("overall_rating", v)}><SelectTrigger id="0929-overall-rating" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{Object.entries(QOC_RATING_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Strengths</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={qocForm.strengths} onChange={(e) => setQOC("strengths", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Areas for Improvement</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={qocForm.areas_for_improvement} onChange={(e) => setQOC("areas_for_improvement", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Children&apos;s Feedback</label><Textarea className="mt-1" rows={2} placeholder="Summary of children&apos;s views…" value={qocForm.children_feedback} onChange={(e) => setQOC("children_feedback", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Staff Feedback</label><Textarea className="mt-1" rows={2} placeholder="Summary of staff views…" value={qocForm.staff_feedback} onChange={(e) => setQOC("staff_feedback", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Next Review Date</label><Input type="date" className="mt-1" value={qocForm.next_review_date} onChange={(e) => setQOC("next_review_date", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional context…" value={qocForm.notes} onChange={(e) => setQOC("notes", e.target.value)} /></div>
+            <div><label htmlFor="0929-strengths" className="text-sm font-medium">Strengths</label><Textarea id="0929-strengths" className="mt-1" rows={2} placeholder="One per line…" value={qocForm.strengths} onChange={(e) => setQOC("strengths", e.target.value)} /></div>
+            <div><label htmlFor="0929-areas-for-improvement" className="text-sm font-medium">Areas for Improvement</label><Textarea id="0929-areas-for-improvement" className="mt-1" rows={2} placeholder="One per line…" value={qocForm.areas_for_improvement} onChange={(e) => setQOC("areas_for_improvement", e.target.value)} /></div>
+            <div><label htmlFor="0929-children-apos-s-feedback" className="text-sm font-medium">Children&apos;s Feedback</label><Textarea id="0929-children-apos-s-feedback" className="mt-1" rows={2} placeholder="Summary of children&apos;s views…" value={qocForm.children_feedback} onChange={(e) => setQOC("children_feedback", e.target.value)} /></div>
+            <div><label htmlFor="0929-staff-feedback" className="text-sm font-medium">Staff Feedback</label><Textarea id="0929-staff-feedback" className="mt-1" rows={2} placeholder="Summary of staff views…" value={qocForm.staff_feedback} onChange={(e) => setQOC("staff_feedback", e.target.value)} /></div>
+            <div><label htmlFor="0929-next-review-date" className="text-sm font-medium">Next Review Date</label><Input id="0929-next-review-date" type="date" className="mt-1" value={qocForm.next_review_date} onChange={(e) => setQOC("next_review_date", e.target.value)} /></div>
+            <div><label htmlFor="0929-notes" className="text-sm font-medium">Notes</label><Textarea id="0929-notes" className="mt-1" rows={2} placeholder="Additional context…" value={qocForm.notes} onChange={(e) => setQOC("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createReview.isPending}>{createReview.isPending ? "Saving…" : "Save Review"}</Button>

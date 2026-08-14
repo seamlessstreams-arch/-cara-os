@@ -501,9 +501,9 @@ function NewTripDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Trip type</label>
+              <label htmlFor="e7ee-trip-type" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Trip type</label>
               <Select value={form.trip_type} onValueChange={(v) => setForm((p) => ({ ...p, trip_type: v as TripType }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="e7ee-trip-type" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TRIP_TYPE_CONFIG) as [TripType, { label: string }][]).map(([k, cfg]) => (
                     <SelectItem key={k} value={k} className="text-xs">{cfg.label}</SelectItem>
@@ -512,8 +512,8 @@ function NewTripDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Transport</label>
-              <Input value={form.transport} onChange={(e) => setForm((p) => ({ ...p, transport: e.target.value }))} placeholder="e.g. home minibus" className="h-8 text-xs" />
+              <label htmlFor="e7ee-transport" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Transport</label>
+              <Input id="e7ee-transport" value={form.transport} onChange={(e) => setForm((p) => ({ ...p, transport: e.target.value }))} placeholder="e.g. home minibus" className="h-8 text-xs" />
             </div>
           </div>
 
@@ -528,39 +528,39 @@ function NewTripDialog({
               <Input type="date" value={form.start_date} onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">End date</label>
-              <Input type="date" value={form.end_date} onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))} className="h-8 text-xs" />
+              <label htmlFor="e7ee-end-date" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">End date</label>
+              <Input id="e7ee-end-date" type="date" value={form.end_date} onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))} className="h-8 text-xs" />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Departure</label>
-              <Input type="time" value={form.departure_time} onChange={(e) => setForm((p) => ({ ...p, departure_time: e.target.value }))} className="h-8 text-xs" />
+              <label htmlFor="e7ee-departure" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Departure</label>
+              <Input id="e7ee-departure" type="time" value={form.departure_time} onChange={(e) => setForm((p) => ({ ...p, departure_time: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Return</label>
-              <Input type="time" value={form.return_time} onChange={(e) => setForm((p) => ({ ...p, return_time: e.target.value }))} className="h-8 text-xs" />
+              <label htmlFor="e7ee-return" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Return</label>
+              <Input id="e7ee-return" type="time" value={form.return_time} onChange={(e) => setForm((p) => ({ ...p, return_time: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Staff ratio</label>
-              <Input value={form.staff_ratio} onChange={(e) => setForm((p) => ({ ...p, staff_ratio: e.target.value }))} placeholder="1:2" className="h-8 text-xs" />
+              <label htmlFor="e7ee-staff-ratio" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Staff ratio</label>
+              <Input id="e7ee-staff-ratio" value={form.staff_ratio} onChange={(e) => setForm((p) => ({ ...p, staff_ratio: e.target.value }))} placeholder="1:2" className="h-8 text-xs" />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Children&apos;s views</label>
-            <Textarea value={form.children_views} onChange={(e) => setForm((p) => ({ ...p, children_views: e.target.value }))} placeholder="What do the young people want from this trip?" rows={2} className="text-xs" />
+            <label htmlFor="e7ee-children-apos-s-views" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Children&apos;s views</label>
+            <Textarea id="e7ee-children-apos-s-views" value={form.children_views} onChange={(e) => setForm((p) => ({ ...p, children_views: e.target.value }))} placeholder="What do the young people want from this trip?" rows={2} className="text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Emergency plan</label>
-            <Textarea value={form.emergency_plan} onChange={(e) => setForm((p) => ({ ...p, emergency_plan: e.target.value }))} placeholder="Nearest A&E, return plan, medication arrangements..." rows={2} className="text-xs" />
+            <label htmlFor="e7ee-emergency-plan" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Emergency plan</label>
+            <Textarea id="e7ee-emergency-plan" value={form.emergency_plan} onChange={(e) => setForm((p) => ({ ...p, emergency_plan: e.target.value }))} placeholder="Nearest A&E, return plan, medication arrangements..." rows={2} className="text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Notes</label>
-            <Textarea value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Any additional notes..." rows={2} className="text-xs" />
+            <label htmlFor="e7ee-notes" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Notes</label>
+            <Textarea id="e7ee-notes" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Any additional notes..." rows={2} className="text-xs" />
           </div>
         </div>
         <DialogFooter className="gap-2">

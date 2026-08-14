@@ -404,12 +404,12 @@ function NewComplaintDialog({
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Complainant type</label>
+              <label htmlFor="6ecf-complainant-type" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Complainant type</label>
               <Select
                 value={form.complainant_type}
                 onValueChange={(v) => setForm((p) => ({ ...p, complainant_type: v as ComplainantType }))}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger id="6ecf-complainant-type" className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -420,12 +420,12 @@ function NewComplaintDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Category</label>
+              <label htmlFor="6ecf-category" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Category</label>
               <Select
                 value={form.category}
                 onValueChange={(v) => setForm((p) => ({ ...p, category: v as ComplaintCategory }))}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger id="6ecf-category" className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -438,8 +438,8 @@ function NewComplaintDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Complainant name</label>
-            <Input
+            <label htmlFor="6ecf-complainant-name" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Complainant name</label>
+            <Input id="6ecf-complainant-name"
               value={form.complainant_name}
               onChange={(e) => setForm((p) => ({ ...p, complainant_name: e.target.value }))}
               placeholder="Full name or 'Anonymous'"
@@ -449,8 +449,8 @@ function NewComplaintDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Date received</label>
-              <Input
+              <label htmlFor="6ecf-date-received" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Date received</label>
+              <Input id="6ecf-date-received"
                 type="date"
                 value={form.date_received}
                 onChange={(e) => setForm((p) => ({ ...p, date_received: e.target.value }))}
@@ -458,8 +458,8 @@ function NewComplaintDialog({
               />
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person (if applicable)</label>
-              <Input
+              <label htmlFor="6ecf-young-person-if-applicable" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person (if applicable)</label>
+              <Input id="6ecf-young-person-if-applicable"
                 value={form.child_id}
                 onChange={(e) => setForm((p) => ({ ...p, child_id: e.target.value }))}
                 placeholder="YP ID e.g. yp_jordan"

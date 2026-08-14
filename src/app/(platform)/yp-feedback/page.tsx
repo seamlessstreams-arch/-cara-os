@@ -317,35 +317,35 @@ export default function YPFeedbackPage() {
           <DialogHeader><DialogTitle>Record Feedback</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateFeedback} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Young Person *</label>
-                <Select value={fbForm.child_id} onValueChange={(v) => setFF("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="2f24-young-person" className="text-sm font-medium">Young Person *</label>
+                <Select value={fbForm.child_id} onValueChange={(v) => setFF("child_id", v)}><SelectTrigger id="2f24-young-person" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Category</label>
-                <Select value={fbForm.category} onValueChange={(v) => setFF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="2f24-category" className="text-sm font-medium">Category</label>
+                <Select value={fbForm.category} onValueChange={(v) => setFF("category", v)}><SelectTrigger id="2f24-category" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Method</label>
-                <Select value={fbForm.method} onValueChange={(v) => setFF("method", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="2f24-method" className="text-sm font-medium">Method</label>
+                <Select value={fbForm.method} onValueChange={(v) => setFF("method", v)}><SelectTrigger id="2f24-method" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(METHOD_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Sentiment</label>
-                <Select value={fbForm.sentiment} onValueChange={(v) => setFF("sentiment", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="2f24-sentiment" className="text-sm font-medium">Sentiment</label>
+                <Select value={fbForm.sentiment} onValueChange={(v) => setFF("sentiment", v)}><SelectTrigger id="2f24-sentiment" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(SENTIMENT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{SENTIMENT_EMOJIS[k as YPFeedbackSentiment]} {v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Collected By</label>
-              <Select value={fbForm.collected_by} onValueChange={(v) => setFF("collected_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+            <div><label htmlFor="2f24-collected-by" className="text-sm font-medium">Collected By</label>
+              <Select value={fbForm.collected_by} onValueChange={(v) => setFF("collected_by", v)}><SelectTrigger id="2f24-collected-by" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Feedback *</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What did the child say/express?" value={fbForm.feedback} onChange={(e) => setFF("feedback", e.target.value)} /></div>
+            <div><label htmlFor="2f24-feedback" className="text-sm font-medium">Feedback *</label><textarea id="2f24-feedback" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What did the child say/express?" value={fbForm.feedback} onChange={(e) => setFF("feedback", e.target.value)} /></div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
               <button type="submit" disabled={createFeedback.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createFeedback.isPending ? "Saving…" : "Save Feedback"}</button>

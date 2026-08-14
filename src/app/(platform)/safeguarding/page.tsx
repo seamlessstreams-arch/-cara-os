@@ -1024,8 +1024,8 @@ function MFCTab() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Young Person</label>
-                <select
+                <label htmlFor="c7c6-young-person" className="text-xs font-semibold text-slate-600 block mb-1.5">Young Person</label>
+                <select id="c7c6-young-person"
                   value={logForm.yp_id}
                   onChange={(e) => setLogForm((f) => ({ ...f, yp_id: e.target.value }))}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -1046,8 +1046,8 @@ function MFCTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Time Missing</label>
-                  <Input
+                  <label htmlFor="c7c6-time-missing" className="text-xs font-semibold text-slate-600 block mb-1.5">Time Missing</label>
+                  <Input id="c7c6-time-missing"
                     type="time"
                     value={logForm.time}
                     onChange={(e) => setLogForm((f) => ({ ...f, time: e.target.value }))}
@@ -1056,8 +1056,8 @@ function MFCTab() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Risk Level</label>
-                <select
+                <label htmlFor="c7c6-risk-level" className="text-xs font-semibold text-slate-600 block mb-1.5">Risk Level</label>
+                <select id="c7c6-risk-level"
                   value={logForm.risk}
                   onChange={(e) => setLogForm((f) => ({ ...f, risk: e.target.value }))}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -1069,8 +1069,8 @@ function MFCTab() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Last Known Location</label>
-                <Input
+                <label htmlFor="c7c6-last-known-location" className="text-xs font-semibold text-slate-600 block mb-1.5">Last Known Location</label>
+                <Input id="c7c6-last-known-location"
                   value={logForm.location}
                   onChange={(e) => setLogForm((f) => ({ ...f, location: e.target.value }))}
                   placeholder="Where were they last seen?"
@@ -1289,8 +1289,8 @@ function ChronologyTab() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Category</label>
-                  <select
+                  <label htmlFor="c7c6-category" className="text-xs font-semibold text-slate-600 block mb-1.5">Category</label>
+                  <select id="c7c6-category"
                     value={entryForm.category}
                     onChange={(e) => setEntryForm((f) => ({ ...f, category: e.target.value }))}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -1301,8 +1301,8 @@ function ChronologyTab() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Significance</label>
-                  <select
+                  <label htmlFor="c7c6-significance" className="text-xs font-semibold text-slate-600 block mb-1.5">Significance</label>
+                  <select id="c7c6-significance"
                     value={entryForm.significance}
                     onChange={(e) => setEntryForm((f) => ({ ...f, significance: e.target.value }))}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -1323,8 +1323,8 @@ function ChronologyTab() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Description</label>
-                <textarea
+                <label htmlFor="c7c6-description" className="text-xs font-semibold text-slate-600 block mb-1.5">Description</label>
+                <textarea id="c7c6-description"
                   value={entryForm.description}
                   onChange={(e) => setEntryForm((f) => ({ ...f, description: e.target.value }))}
                   rows={4}

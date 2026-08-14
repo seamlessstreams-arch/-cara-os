@@ -357,9 +357,9 @@ export default function FireDrillsPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Type *</label>
+                <label htmlFor="f36d-type" className="text-sm font-medium mb-1 block">Type *</label>
                 <Select value={nType} onValueChange={v => setNType(v as FireDrillType)}>
-                  <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectTrigger id="f36d-type"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(TYPE_CONFIG) as [FireDrillType, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -368,19 +368,19 @@ export default function FireDrillsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Time</label>
-                <Input type="time" value={nTime} onChange={e => setNTime(e.target.value)} />
+                <label htmlFor="f36d-time" className="text-sm font-medium mb-1 block">Time</label>
+                <Input id="f36d-time" type="time" value={nTime} onChange={e => setNTime(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Evacuation Time (seconds)</label>
-                <Input type="number" placeholder="e.g. 120" value={nEvacTime} onChange={e => setNEvacTime(e.target.value)} />
+                <label htmlFor="f36d-evacuation-time-seconds" className="text-sm font-medium mb-1 block">Evacuation Time (seconds)</label>
+                <Input id="f36d-evacuation-time-seconds" type="number" placeholder="e.g. 120" value={nEvacTime} onChange={e => setNEvacTime(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Result *</label>
+                <label htmlFor="f36d-result" className="text-sm font-medium mb-1 block">Result *</label>
                 <Select value={nResult} onValueChange={v => setNResult(v as FireDrillResult)}>
-                  <SelectTrigger><SelectValue placeholder="Result" /></SelectTrigger>
+                  <SelectTrigger id="f36d-result"><SelectValue placeholder="Result" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(RESULT_CONFIG) as [FireDrillResult, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -390,16 +390,16 @@ export default function FireDrillsPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Issues / Observations</label>
-              <Textarea placeholder="Any issues observed..." value={nIssues} onChange={e => setNIssues(e.target.value)} rows={3} />
+              <label htmlFor="f36d-issues-observations" className="text-sm font-medium mb-1 block">Issues / Observations</label>
+              <Textarea id="f36d-issues-observations" placeholder="Any issues observed..." value={nIssues} onChange={e => setNIssues(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Actions Taken</label>
-              <Textarea placeholder="Remedial actions..." value={nActions} onChange={e => setNActions(e.target.value)} rows={2} />
+              <label htmlFor="f36d-actions-taken" className="text-sm font-medium mb-1 block">Actions Taken</label>
+              <Textarea id="f36d-actions-taken" placeholder="Remedial actions..." value={nActions} onChange={e => setNActions(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Notes</label>
-              <Textarea placeholder="Additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
+              <label htmlFor="f36d-notes" className="text-sm font-medium mb-1 block">Notes</label>
+              <Textarea id="f36d-notes" placeholder="Additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

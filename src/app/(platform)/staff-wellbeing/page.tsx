@@ -371,25 +371,25 @@ export default function StaffWellbeingPage() {
             <DialogTitle>New Wellbeing Check-in</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveWellbeing} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Staff Member *</label>
-              <Select value={swForm.staff_id} onValueChange={(v) => setSW("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+            <div><label htmlFor="ff18-staff-member" className="text-sm font-medium">Staff Member *</label>
+              <Select value={swForm.staff_id} onValueChange={(v) => setSW("staff_id", v)}><SelectTrigger id="ff18-staff-member" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={swForm.date} onChange={(e) => setSW("date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Type</label>
-                <Select value={swForm.type} onValueChange={(v) => setSW("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor="ff18-date" className="text-sm font-medium">Date</label><Input id="ff18-date" type="date" className="mt-1" value={swForm.date} onChange={(e) => setSW("date", e.target.value)} /></div>
+              <div><label htmlFor="ff18-type" className="text-sm font-medium">Type</label>
+                <Select value={swForm.type} onValueChange={(v) => setSW("type", v)}><SelectTrigger id="ff18-type" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_WELLBEING_CHECK_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Overall Score (1–10)</label><Input type="number" min="1" max="10" className="mt-1" value={swForm.overall_score} onChange={(e) => setSW("overall_score", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Stressors</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={swForm.stressors} onChange={(e) => setSW("stressors", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={swForm.positives} onChange={(e) => setSW("positives", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Support Needed</label><Textarea className="mt-1" rows={2} placeholder="What support is needed?" value={swForm.support_needed} onChange={(e) => setSW("support_needed", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Action Agreed</label><Textarea className="mt-1" rows={2} placeholder="Agreed actions…" value={swForm.action_agreed} onChange={(e) => setSW("action_agreed", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes…" value={swForm.notes} onChange={(e) => setSW("notes", e.target.value)} /></div>
+            <div><label htmlFor="ff18-overall-score-1-10" className="text-sm font-medium">Overall Score (1–10)</label><Input id="ff18-overall-score-1-10" type="number" min="1" max="10" className="mt-1" value={swForm.overall_score} onChange={(e) => setSW("overall_score", e.target.value)} /></div>
+            <div><label htmlFor="ff18-stressors" className="text-sm font-medium">Stressors</label><Textarea id="ff18-stressors" className="mt-1" rows={2} placeholder="One per line…" value={swForm.stressors} onChange={(e) => setSW("stressors", e.target.value)} /></div>
+            <div><label htmlFor="ff18-positives" className="text-sm font-medium">Positives</label><Textarea id="ff18-positives" className="mt-1" rows={2} placeholder="One per line…" value={swForm.positives} onChange={(e) => setSW("positives", e.target.value)} /></div>
+            <div><label htmlFor="ff18-support-needed" className="text-sm font-medium">Support Needed</label><Textarea id="ff18-support-needed" className="mt-1" rows={2} placeholder="What support is needed?" value={swForm.support_needed} onChange={(e) => setSW("support_needed", e.target.value)} /></div>
+            <div><label htmlFor="ff18-action-agreed" className="text-sm font-medium">Action Agreed</label><Textarea id="ff18-action-agreed" className="mt-1" rows={2} placeholder="Agreed actions…" value={swForm.action_agreed} onChange={(e) => setSW("action_agreed", e.target.value)} /></div>
+            <div><label htmlFor="ff18-notes" className="text-sm font-medium">Notes</label><Textarea id="ff18-notes" className="mt-1" rows={2} placeholder="Additional notes…" value={swForm.notes} onChange={(e) => setSW("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createWellbeing.isPending}>{createWellbeing.isPending ? "Saving…" : "Save Check-in"}</Button>

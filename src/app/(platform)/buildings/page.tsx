@@ -289,14 +289,14 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
         <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Check Type</label>
-              <select value={form.check_type} onChange={(e) => set("check_type", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <label htmlFor="aa93-check-type" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Check Type</label>
+              <select id="aa93-check-type" value={form.check_type} onChange={(e) => set("check_type", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
                 {Object.entries(CHECK_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Area</label>
-              <select value={form.area} onChange={(e) => set("area", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <label htmlFor="aa93-area" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Area</label>
+              <select id="aa93-area" value={form.area} onChange={(e) => set("area", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
                 {["main_building", "kitchen", "garden", "medication_room", "bedrooms", "office", "garage", "external"].map((a) => (
                   <option key={a} value={a}>{a.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</option>
                 ))}
@@ -305,12 +305,12 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Date</label>
-              <input type="date" value={form.check_date} onChange={(e) => set("check_date", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
+              <label htmlFor="aa93-date" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Date</label>
+              <input id="aa93-date" type="date" value={form.check_date} onChange={(e) => set("check_date", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Result</label>
-              <select value={form.result} onChange={(e) => set("result", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <label htmlFor="aa93-result" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Result</label>
+              <select id="aa93-result" value={form.result} onChange={(e) => set("result", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
                 <option value="pass">Pass</option>
                 <option value="fail">Fail</option>
                 <option value="advisory">Advisory</option>
@@ -321,8 +321,8 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
             <div className="rounded-xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3 space-y-3">
               <div className="text-xs font-semibold text-[--cs-risk] flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" />Non-pass result — additional details required</div>
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Risk Level</label>
-                <select value={form.risk_level} onChange={(e) => set("risk_level", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <label htmlFor="aa93-risk-level" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Risk Level</label>
+                <select id="aa93-risk-level" value={form.risk_level} onChange={(e) => set("risk_level", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
                   <option value="">Select risk level</option>
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -331,12 +331,12 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
                 </select>
               </div>
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Action Required</label>
-                <input value={form.action_required} onChange={(e) => set("action_required", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Describe action needed..." />
+                <label htmlFor="aa93-action-required" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Action Required</label>
+                <input id="aa93-action-required" value={form.action_required} onChange={(e) => set("action_required", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Describe action needed..." />
               </div>
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Action Due By</label>
-                <input type="date" value={form.action_due} onChange={(e) => set("action_due", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
+                <label htmlFor="aa93-action-due-by" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Action Due By</label>
+                <input id="aa93-action-due-by" type="date" value={form.action_due} onChange={(e) => set("action_due", e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
               </div>
               <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] px-3 py-2 text-xs text-[--cs-warning]">
                 Submitting will automatically create a maintenance task and notify the manager.
@@ -344,8 +344,8 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
             </div>
           )}
           <div>
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Notes</label>
-            <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm resize-none" placeholder="Any observations or comments..." />
+            <label htmlFor="aa93-notes" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide block mb-1">Notes</label>
+            <textarea id="aa93-notes" value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm resize-none" placeholder="Any observations or comments..." />
           </div>
         </div>
         <div className="px-6 py-4 border-t bg-slate-50 flex justify-end gap-2">

@@ -494,8 +494,8 @@ export default function OversightRadarPage() {
           <CardContent className="p-4">
             <div className="flex items-end gap-4 flex-wrap">
               <div className="space-y-1.5 flex-1 min-w-48">
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Scope</label>
-                <select
+                <label htmlFor="178c-scope" className="text-xs font-medium text-[var(--cs-text-secondary)]">Scope</label>
+                <select id="178c-scope"
                   value={selectedChild}
                   onChange={(e) => setSelectedChild(e.target.value)}
                   className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-blue-300"

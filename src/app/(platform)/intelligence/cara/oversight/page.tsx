@@ -562,8 +562,8 @@ export default function OversightGeneratorPage() {
               <CardContent className="space-y-4">
                 {/* Child selector */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
-                  <select
+                  <label htmlFor="cf52-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
+                  <select id="cf52-young-person"
                     value={childId}
                     onChange={(e) => setChildId(e.target.value)}
                     className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -577,8 +577,8 @@ export default function OversightGeneratorPage() {
 
                 {/* Record type */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Record Type</label>
-                  <select
+                  <label htmlFor="cf52-record-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">Record Type</label>
+                  <select id="cf52-record-type"
                     value={recordType}
                     onChange={(e) => setRecordType(e.target.value)}
                     className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-emerald-300"
@@ -720,9 +720,9 @@ export default function OversightGeneratorPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Edit3 className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
-                      <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Edit Oversight Draft</label>
+                      <label htmlFor="cf52-edit-oversight-draft" className="text-xs font-medium text-[var(--cs-text-secondary)]">Edit Oversight Draft</label>
                     </div>
-                    <textarea
+                    <textarea id="cf52-edit-oversight-draft"
                       value={editedText}
                       onChange={(e) => setEditedText(e.target.value)}
                       rows={12}

@@ -389,49 +389,49 @@ export default function RiskAssessmentsPage() {
             });
           }} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select name="child_id" value={selectedYp} onValueChange={setSelectedYp}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="a5bc-young-person" className="text-sm font-medium">Young Person</label>
+              <Select name="child_id" value={selectedYp} onValueChange={setSelectedYp}><SelectTrigger id="a5bc-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             {selectedYp && <InlinePracticeReasoning childId={selectedYp} childName={getYPName(selectedYp)} />}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Risk Domain</label>
-                <Select name="domain"><SelectTrigger><SelectValue placeholder="Domain" /></SelectTrigger>
+                <label htmlFor="a5bc-risk-domain" className="text-sm font-medium">Risk Domain</label>
+                <Select name="domain"><SelectTrigger id="a5bc-risk-domain"><SelectValue placeholder="Domain" /></SelectTrigger>
                   <SelectContent>{Object.entries(DOMAIN_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Risk Level</label>
-                <Select name="level"><SelectTrigger><SelectValue placeholder="Level" /></SelectTrigger>
+                <label htmlFor="a5bc-risk-level" className="text-sm font-medium">Risk Level</label>
+                <Select name="level"><SelectTrigger id="a5bc-risk-level"><SelectValue placeholder="Level" /></SelectTrigger>
                   <SelectContent>{Object.entries(LEVEL_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Triggers</label>
-              <Textarea name="triggers" placeholder="Known triggers (one per line)" rows={2}
+              <label htmlFor="a5bc-triggers" className="text-sm font-medium">Triggers</label>
+              <Textarea id="a5bc-triggers" name="triggers" placeholder="Known triggers (one per line)" rows={2}
                 value={raTriggers} onChange={(e) => setRaTriggers(e.target.value)} />
               <WritingAssistantInline value={raTriggers} onApplyText={setRaTriggers}
                 recordType="risk_assessment" fieldName="triggers" childId={selectedYp || undefined} mode="standard" />
             </div>
-            <div><label className="text-sm font-medium">Mitigation Strategies</label><Textarea placeholder="Key strategies (one per line)" rows={3} /></div>
+            <div><label htmlFor="a5bc-mitigation-strategies" className="text-sm font-medium">Mitigation Strategies</label><Textarea id="a5bc-mitigation-strategies" placeholder="Key strategies (one per line)" rows={3} /></div>
             <div>
-              <label className="text-sm font-medium">Contingency Plan</label>
-              <Textarea name="contingency_plan" placeholder="What to do if risk escalates…" rows={3}
+              <label htmlFor="a5bc-contingency-plan" className="text-sm font-medium">Contingency Plan</label>
+              <Textarea id="a5bc-contingency-plan" name="contingency_plan" placeholder="What to do if risk escalates…" rows={3}
                 value={raContingencyPlan} onChange={(e) => setRaContingencyPlan(e.target.value)} />
               <WritingAssistantInline value={raContingencyPlan} onApplyText={setRaContingencyPlan}
                 recordType="risk_assessment" fieldName="contingency_plan" childId={selectedYp || undefined} mode="standard" />
             </div>
             <div>
-              <label className="text-sm font-medium">Child&apos;s Views</label>
-              <Textarea name="child_views" placeholder="Child's perspective on this risk…" rows={2}
+              <label htmlFor="a5bc-child-apos-s-views" className="text-sm font-medium">Child&apos;s Views</label>
+              <Textarea id="a5bc-child-apos-s-views" name="child_views" placeholder="Child's perspective on this risk…" rows={2}
                 value={raChildViews} onChange={(e) => setRaChildViews(e.target.value)} />
               <WritingAssistantInline value={raChildViews} onApplyText={setRaChildViews}
                 recordType="risk_assessment" fieldName="child_views" childId={selectedYp || undefined} mode="writing-to-child" />
             </div>
-            <div><label className="text-sm font-medium">Review Date</label><Input name="review_date" type="date" /></div>
+            <div><label htmlFor="a5bc-review-date" className="text-sm font-medium">Review Date</label><Input id="a5bc-review-date" name="review_date" type="date" /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRA.isPending}>{createRA.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Assessment"}</Button>

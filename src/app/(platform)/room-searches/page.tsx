@@ -585,18 +585,18 @@ export default function RoomSearchesPage() {
           <form onSubmit={handleSaveSearch} className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Young Person *</label>
+                <label htmlFor="b2c0-young-person" className="text-sm font-medium mb-1 block">Young Person *</label>
                 <Select value={rsForm.child_id} onValueChange={(v) => setRS("child_id", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                  <SelectTrigger id="b2c0-young-person"><SelectValue placeholder="Select child" /></SelectTrigger>
                   <SelectContent>
                     {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Search Type</label>
+                <label htmlFor="b2c0-search-type" className="text-sm font-medium mb-1 block">Search Type</label>
                 <Select value={rsForm.search_type} onValueChange={(v) => setRS("search_type", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectTrigger id="b2c0-search-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     {(Object.keys(ROOM_SEARCH_TYPE_LABEL) as RoomSearchType[]).map((k) => (
                       <SelectItem key={k} value={k}>{ROOM_SEARCH_TYPE_LABEL[k]}</SelectItem>
@@ -607,17 +607,17 @@ export default function RoomSearchesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Date</label>
-                <Input type="date" value={rsForm.date} onChange={(e) => setRS("date", e.target.value)} />
+                <label htmlFor="b2c0-date" className="text-sm font-medium mb-1 block">Date</label>
+                <Input id="b2c0-date" type="date" value={rsForm.date} onChange={(e) => setRS("date", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Time</label>
-                <Input type="time" value={rsForm.time} onChange={(e) => setRS("time", e.target.value)} />
+                <label htmlFor="b2c0-time" className="text-sm font-medium mb-1 block">Time</label>
+                <Input id="b2c0-time" type="time" value={rsForm.time} onChange={(e) => setRS("time", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Reason for Search *</label>
-              <Textarea placeholder="Describe the reason for this search..." rows={3} value={rsForm.reason} onChange={(e) => setRS("reason", e.target.value)} />
+              <label htmlFor="b2c0-reason-for-search" className="text-sm font-medium mb-1 block">Reason for Search *</label>
+              <Textarea id="b2c0-reason-for-search" placeholder="Describe the reason for this search..." rows={3} value={rsForm.reason} onChange={(e) => setRS("reason", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Areas Searched</label>
@@ -631,12 +631,12 @@ export default function RoomSearchesPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
-              <Textarea placeholder="How did the child respond?" rows={2} value={rsForm.child_response} onChange={(e) => setRS("child_response", e.target.value)} />
+              <label htmlFor="b2c0-child-apos-s-response" className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
+              <Textarea id="b2c0-child-apos-s-response" placeholder="How did the child respond?" rows={2} value={rsForm.child_response} onChange={(e) => setRS("child_response", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Notes</label>
-              <Textarea placeholder="Additional notes, linked incidents, items found details..." rows={3} value={rsForm.notes} onChange={(e) => setRS("notes", e.target.value)} />
+              <label htmlFor="b2c0-notes" className="text-sm font-medium mb-1 block">Notes</label>
+              <Textarea id="b2c0-notes" placeholder="Additional notes, linked incidents, items found details..." rows={3} value={rsForm.notes} onChange={(e) => setRS("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>

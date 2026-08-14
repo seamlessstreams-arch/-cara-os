@@ -336,8 +336,8 @@ function ActiveSessionView({ session, onEnd }: ActiveSessionProps) {
 
           {/* Staff observation */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-muted)]">Staff Observation (optional)</label>
-            <textarea
+            <label htmlFor="57c9-staff-observation-optional" className="text-xs font-medium text-[var(--cs-text-muted)]">Staff Observation (optional)</label>
+            <textarea id="57c9-staff-observation-optional"
               value={staffObs}
               onChange={(e) => setStaffObs(e.target.value)}
               rows={2}
@@ -603,8 +603,8 @@ function SetupForm({ onStart, onClose }: {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
-          <select
+          <label htmlFor="57c9-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
+          <select id="57c9-young-person"
             value={childId}
             onChange={(e) => setChildId(e.target.value)}
             className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-teal-300"
@@ -637,8 +637,8 @@ function SetupForm({ onStart, onClose }: {
 
         {childId && kwData?.data && kwData.data.length > 0 && (
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Link to Key Work Session (optional)</label>
-            <select
+            <label htmlFor="57c9-link-to-key-work-session-optional" className="text-xs font-medium text-[var(--cs-text-secondary)]">Link to Key Work Session (optional)</label>
+            <select id="57c9-link-to-key-work-session-optional"
               value={linkedKW}
               onChange={(e) => setLinkedKW(e.target.value)}
               className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-teal-300"

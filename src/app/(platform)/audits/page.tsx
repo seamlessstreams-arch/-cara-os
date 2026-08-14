@@ -617,8 +617,8 @@ export default function AuditsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
-                <select
+                <label htmlFor="70f8-category" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
+                <select id="70f8-category"
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -629,8 +629,8 @@ export default function AuditsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Scheduled date</label>
-                <Input
+                <label htmlFor="70f8-scheduled-date" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Scheduled date</label>
+                <Input id="70f8-scheduled-date"
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}

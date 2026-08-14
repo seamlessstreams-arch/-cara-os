@@ -222,8 +222,8 @@ function VehicleCheckForm({
           {/* Vehicle + Driver */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Vehicle</label>
-              <select
+              <label htmlFor="b085-vehicle" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Vehicle</label>
+              <select id="b085-vehicle"
                 value={form.vehicle_id as string}
                 onChange={(e) => handleVehicleChange(e.target.value)}
                 className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm"
@@ -234,8 +234,8 @@ function VehicleCheckForm({
               </select>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Driver</label>
-              <input
+              <label htmlFor="b085-driver" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Driver</label>
+              <input id="b085-driver"
                 value={form.driver as string}
                 onChange={(e) => set("driver", e.target.value)}
                 placeholder="Driver name..."
@@ -245,8 +245,8 @@ function VehicleCheckForm({
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Check Date</label>
-            <input type="date" value={form.check_date as string} onChange={(e) => set("check_date", e.target.value)} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
+            <label htmlFor="b085-check-date" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Check Date</label>
+            <input id="b085-check-date" type="date" value={form.check_date as string} onChange={(e) => set("check_date", e.target.value)} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
           </div>
 
           {/* Check items */}
@@ -282,16 +282,16 @@ function VehicleCheckForm({
           {/* Mileage + Fuel */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Mileage Start</label>
-              <input type="number" value={form.mileage_start as number} onChange={(e) => set("mileage_start", Number(e.target.value))} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
+              <label htmlFor="b085-mileage-start" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Mileage Start</label>
+              <input id="b085-mileage-start" type="number" value={form.mileage_start as number} onChange={(e) => set("mileage_start", Number(e.target.value))} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Mileage End</label>
-              <input type="number" value={form.mileage_end as string} onChange={(e) => set("mileage_end", e.target.value)} placeholder="Optional" className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
+              <label htmlFor="b085-mileage-end" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Mileage End</label>
+              <input id="b085-mileage-end" type="number" value={form.mileage_end as string} onChange={(e) => set("mileage_end", e.target.value)} placeholder="Optional" className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Fuel Level</label>
-              <select value={form.fuel_level as string} onChange={(e) => set("fuel_level", e.target.value)} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm">
+              <label htmlFor="b085-fuel-level" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Fuel Level</label>
+              <select id="b085-fuel-level" value={form.fuel_level as string} onChange={(e) => set("fuel_level", e.target.value)} className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm">
                 {FUEL_LEVELS.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
@@ -299,8 +299,8 @@ function VehicleCheckForm({
 
           {/* Defects */}
           <div>
-            <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Defects / Issues</label>
-            <textarea
+            <label htmlFor="b085-defects-issues" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Defects / Issues</label>
+            <textarea id="b085-defects-issues"
               value={form.defects as string}
               onChange={(e) => set("defects", e.target.value)}
               rows={3}
@@ -310,8 +310,8 @@ function VehicleCheckForm({
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Additional Notes</label>
-            <textarea
+            <label htmlFor="b085-additional-notes" className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide block mb-1">Additional Notes</label>
+            <textarea id="b085-additional-notes"
               value={form.notes as string}
               onChange={(e) => set("notes", e.target.value)}
               rows={2}

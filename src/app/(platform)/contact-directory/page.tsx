@@ -443,18 +443,18 @@ export default function ContactDirectoryPage() {
           <DialogHeader><DialogTitle>Add Contact</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Name *</label>
-              <Input placeholder="Full name" value={nName} onChange={e => setNName(e.target.value)} />
+              <label htmlFor="18ce-name" className="text-sm font-medium mb-1 block">Name *</label>
+              <Input id="18ce-name" placeholder="Full name" value={nName} onChange={e => setNName(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Role *</label>
-                <Input placeholder="Job title" value={nRole} onChange={e => setNRole(e.target.value)} />
+                <label htmlFor="18ce-role" className="text-sm font-medium mb-1 block">Role *</label>
+                <Input id="18ce-role" placeholder="Job title" value={nRole} onChange={e => setNRole(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Category *</label>
+                <label htmlFor="18ce-category" className="text-sm font-medium mb-1 block">Category *</label>
                 <Select value={nCategory} onValueChange={v => setNCategory(v as ContactCategory)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="18ce-category"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(CATEGORY_CONFIG) as [ContactCategory, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -464,26 +464,26 @@ export default function ContactDirectoryPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Organisation</label>
-              <Input placeholder="Organisation" value={nOrg} onChange={e => setNOrg(e.target.value)} />
+              <label htmlFor="18ce-organisation" className="text-sm font-medium mb-1 block">Organisation</label>
+              <Input id="18ce-organisation" placeholder="Organisation" value={nOrg} onChange={e => setNOrg(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Phone</label>
-                <Input placeholder="Phone number" value={nPhone} onChange={e => setNPhone(e.target.value)} />
+                <label htmlFor="18ce-phone" className="text-sm font-medium mb-1 block">Phone</label>
+                <Input id="18ce-phone" placeholder="Phone number" value={nPhone} onChange={e => setNPhone(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Email</label>
-                <Input placeholder="Email" value={nEmail} onChange={e => setNEmail(e.target.value)} />
+                <label htmlFor="18ce-email" className="text-sm font-medium mb-1 block">Email</label>
+                <Input id="18ce-email" placeholder="Email" value={nEmail} onChange={e => setNEmail(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Address</label>
-              <Input placeholder="Address" value={nAddress} onChange={e => setNAddress(e.target.value)} />
+              <label htmlFor="18ce-address" className="text-sm font-medium mb-1 block">Address</label>
+              <Input id="18ce-address" placeholder="Address" value={nAddress} onChange={e => setNAddress(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Notes</label>
-              <Textarea placeholder="Additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
+              <label htmlFor="18ce-notes" className="text-sm font-medium mb-1 block">Notes</label>
+              <Textarea id="18ce-notes" placeholder="Additional notes..." value={nNotes} onChange={e => setNNotes(e.target.value)} rows={2} />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={nEmergency} onChange={e => setNEmergency(e.target.checked)} className="rounded" />

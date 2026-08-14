@@ -328,27 +328,27 @@ export default function NightChecksPage() {
           <form onSubmit={handleSaveCheck} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person *</label>
-                <Select value={ncForm.child_id} onValueChange={(v) => setNC("child_id", v)}><SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select>
+                <label htmlFor="15a0-young-person" className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person *</label>
+                <Select value={ncForm.child_id} onValueChange={(v) => setNC("child_id", v)}><SelectTrigger id="15a0-young-person" className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Check Type</label>
-                <Select value={ncForm.check_type} onValueChange={(v) => setNC("check_type", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
+                <label htmlFor="15a0-check-type" className="text-[11px] font-medium text-slate-600 mb-1 block">Check Type</label>
+                <Select value={ncForm.check_type} onValueChange={(v) => setNC("check_type", v)}><SelectTrigger id="15a0-check-type" className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Sleep Status</label>
-                <Select value={ncForm.sleep_status} onValueChange={(v) => setNC("sleep_status", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
+                <label htmlFor="15a0-sleep-status" className="text-[11px] font-medium text-slate-600 mb-1 block">Sleep Status</label>
+                <Select value={ncForm.sleep_status} onValueChange={(v) => setNC("sleep_status", v)}><SelectTrigger id="15a0-sleep-status" className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Door Position</label>
-                <Select value={ncForm.door_position} onValueChange={(v) => setNC("door_position", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
+                <label htmlFor="15a0-door-position" className="text-[11px] font-medium text-slate-600 mb-1 block">Door Position</label>
+                <Select value={ncForm.door_position} onValueChange={(v) => setNC("door_position", v)}><SelectTrigger id="15a0-door-position" className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Notes</label>
-              <Textarea placeholder="Observations during this check…" className="text-xs min-h-[60px]" value={ncForm.notes} onChange={(e) => setNC("notes", e.target.value)} />
+              <label htmlFor="15a0-notes" className="text-[11px] font-medium text-slate-600 mb-1 block">Notes</label>
+              <Textarea id="15a0-notes" placeholder="Observations during this check…" className="text-xs min-h-[60px]" value={ncForm.notes} onChange={(e) => setNC("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button variant="outline" size="sm" className="text-xs" type="button" onClick={() => setShowNew(false)}>Cancel</Button>

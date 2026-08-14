@@ -421,31 +421,31 @@ export default function PeerRelationshipsPage() {
           <form onSubmit={handleSaveEntry} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Child 1 *</label>
-                <Select value={prForm.child_id_1} onValueChange={(v) => setPR("child_id_1", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="eeb0-child-1" className="text-sm font-medium">Child 1 *</label>
+                <Select value={prForm.child_id_1} onValueChange={(v) => setPR("child_id_1", v)}><SelectTrigger id="eeb0-child-1" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Child 2 *</label>
-                <Select value={prForm.child_id_2} onValueChange={(v) => setPR("child_id_2", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="eeb0-child-2" className="text-sm font-medium">Child 2 *</label>
+                <Select value={prForm.child_id_2} onValueChange={(v) => setPR("child_id_2", v)}><SelectTrigger id="eeb0-child-2" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Entry Type</label>
-              <Select value={prForm.entry_type} onValueChange={(v) => setPR("entry_type", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <label htmlFor="eeb0-entry-type" className="text-sm font-medium">Entry Type</label>
+              <Select value={prForm.entry_type} onValueChange={(v) => setPR("entry_type", v)}><SelectTrigger id="eeb0-entry-type" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(PEER_ENTRY_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Description *</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the interaction or observation…" value={prForm.description} onChange={(e) => setPR("description", e.target.value)} />
+              <label htmlFor="eeb0-description" className="text-sm font-medium">Description *</label>
+              <textarea id="eeb0-description" rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the interaction or observation…" value={prForm.description} onChange={(e) => setPR("description", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">Outcome</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What happened as a result?" value={prForm.outcome} onChange={(e) => setPR("outcome", e.target.value)} />
+              <label htmlFor="eeb0-outcome" className="text-sm font-medium">Outcome</label>
+              <input id="eeb0-outcome" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What happened as a result?" value={prForm.outcome} onChange={(e) => setPR("outcome", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>

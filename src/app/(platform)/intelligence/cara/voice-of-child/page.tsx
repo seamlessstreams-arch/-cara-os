@@ -360,26 +360,26 @@ export default function VoiceOfChildPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child ID *</label>
-              <Input value={childId} onChange={(e) => setChildId(e.target.value)} placeholder="e.g. yp_casey" />
+              <label htmlFor="d4de-child-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child ID *</label>
+              <Input id="d4de-child-id" value={childId} onChange={(e) => setChildId(e.target.value)} placeholder="e.g. yp_casey" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child reference (pseudonym)</label>
-              <Input value={childPseudonym} onChange={(e) => setChildPseudonym(e.target.value)} placeholder="e.g. Casey" />
+              <label htmlFor="d4de-child-reference-pseudonym" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child reference (pseudonym)</label>
+              <Input id="d4de-child-reference-pseudonym" value={childPseudonym} onChange={(e) => setChildPseudonym(e.target.value)} placeholder="e.g. Casey" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Period start</label>
-              <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
+              <label htmlFor="d4de-period-start" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Period start</label>
+              <Input id="d4de-period-start" type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Period end</label>
-              <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
+              <label htmlFor="d4de-period-end" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Period end</label>
+              <Input id="d4de-period-end" type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
             </div>
             <div className="lg:col-span-4">
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
+              <label htmlFor="d4de-actor-user-id-your-sign-in-for-aud" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
                 Actor user ID (your sign-in for audit log)
               </label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <Input id="d4de-actor-user-id-your-sign-in-for-aud" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
           </div>
         </CardContent>
@@ -752,10 +752,10 @@ export default function VoiceOfChildPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
+                  <label htmlFor="d4de-rejection-reason-required-for-reje" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
                     Rejection reason (required for Reject)
                   </label>
-                  <Textarea
+                  <Textarea id="d4de-rejection-reason-required-for-reje"
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     className="min-h-[60px] text-sm"
@@ -763,10 +763,10 @@ export default function VoiceOfChildPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
+                  <label htmlFor="d4de-rewrite-instructions-required-for-" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">
                     Rewrite instructions (required for Request rewrite)
                   </label>
-                  <Textarea
+                  <Textarea id="d4de-rewrite-instructions-required-for-"
                     value={rewriteInstructions}
                     onChange={(e) => setRewriteInstructions(e.target.value)}
                     className="min-h-[60px] text-sm"

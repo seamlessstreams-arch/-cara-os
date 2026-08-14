@@ -305,9 +305,9 @@ function NewGoalDialog({
 
         <div className="space-y-3 py-2">
           <div className="space-y-1">
-            <Label className="text-xs text-[var(--cs-text-secondary)]">Domain</Label>
+            <Label htmlFor="3018-domain" className="text-xs text-[var(--cs-text-secondary)]">Domain</Label>
             <Select value={domain} onValueChange={(v) => setDomain(v as CarePlanDomain)}>
-              <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="3018-domain" className="text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.entries(DOMAIN_LABELS) as [CarePlanDomain, string][]).map(([k, v]) => (
                   <SelectItem key={k} value={k} className="text-xs">{v}</SelectItem>
@@ -317,8 +317,8 @@ function NewGoalDialog({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs text-[var(--cs-text-secondary)]">Goal Title</Label>
-            <Input
+            <Label htmlFor="3018-goal-title" className="text-xs text-[var(--cs-text-secondary)]">Goal Title</Label>
+            <Input id="3018-goal-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Improve school attendance to 90%"
@@ -327,8 +327,8 @@ function NewGoalDialog({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs text-[var(--cs-text-secondary)]">Description</Label>
-            <Textarea
+            <Label htmlFor="3018-description" className="text-xs text-[var(--cs-text-secondary)]">Description</Label>
+            <Textarea id="3018-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the goal, context, and rationale..."
@@ -337,8 +337,8 @@ function NewGoalDialog({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs text-[var(--cs-text-secondary)]">Desired Outcome / Success Criteria</Label>
-            <Textarea
+            <Label htmlFor="3018-desired-outcome-success-criteria" className="text-xs text-[var(--cs-text-secondary)]">Desired Outcome / Success Criteria</Label>
+            <Textarea id="3018-desired-outcome-success-criteria"
               value={desiredOutcome}
               onChange={(e) => setDesiredOutcome(e.target.value)}
               placeholder="What does success look like?"
@@ -348,8 +348,8 @@ function NewGoalDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs text-[var(--cs-text-secondary)]">Target Date</Label>
-              <Input
+              <Label htmlFor="3018-target-date" className="text-xs text-[var(--cs-text-secondary)]">Target Date</Label>
+              <Input id="3018-target-date"
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
@@ -358,9 +358,9 @@ function NewGoalDialog({
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs text-[var(--cs-text-secondary)]">Responsible Staff</Label>
+              <Label htmlFor="3018-responsible-staff" className="text-xs text-[var(--cs-text-secondary)]">Responsible Staff</Label>
               <Select value={responsibleStaff} onValueChange={setResponsibleStaff}>
-                <SelectTrigger className="text-xs"><SelectValue placeholder="Select..." /></SelectTrigger>
+                <SelectTrigger id="3018-responsible-staff" className="text-xs"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
                   {staffList.map((s) => (
                     <SelectItem key={s.id} value={s.id} className="text-xs">{s.full_name}</SelectItem>

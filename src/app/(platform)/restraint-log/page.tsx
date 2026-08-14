@@ -331,9 +331,9 @@ export default function RestraintLogPage() {
           <DialogHeader><DialogTitle>Record Physical Intervention</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveRestraint} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Young Person *</label>
-                <Select value={rlForm.child_id} onValueChange={(v) => setRL("child_id", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label htmlFor="8d22-date" className="text-sm font-medium">Date</label><Input id="8d22-date" type="date" value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
+              <div><label htmlFor="8d22-young-person" className="text-sm font-medium">Young Person *</label>
+                <Select value={rlForm.child_id} onValueChange={(v) => setRL("child_id", v)}><SelectTrigger id="8d22-young-person"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                   </SelectContent>
@@ -348,23 +348,23 @@ export default function RestraintLogPage() {
               </>
             )}
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Start Time</label><Input type="time" value={rlForm.start_time} onChange={(e) => setRL("start_time", e.target.value)} /></div>
-              <div><label className="text-sm font-medium">End Time</label><Input type="time" value={rlForm.end_time} onChange={(e) => setRL("end_time", e.target.value)} /></div>
+              <div><label htmlFor="8d22-start-time" className="text-sm font-medium">Start Time</label><Input id="8d22-start-time" type="time" value={rlForm.start_time} onChange={(e) => setRL("start_time", e.target.value)} /></div>
+              <div><label htmlFor="8d22-end-time" className="text-sm font-medium">End Time</label><Input id="8d22-end-time" type="time" value={rlForm.end_time} onChange={(e) => setRL("end_time", e.target.value)} /></div>
             </div>
-            <div><label className="text-sm font-medium">Reason</label>
-              <Select value={rlForm.reason} onValueChange={(v) => setRL("reason", v)}><SelectTrigger><SelectValue placeholder="Reason" /></SelectTrigger>
+            <div><label htmlFor="8d22-reason" className="text-sm font-medium">Reason</label>
+              <Select value={rlForm.reason} onValueChange={(v) => setRL("reason", v)}><SelectTrigger id="8d22-reason"><SelectValue placeholder="Reason" /></SelectTrigger>
                 <SelectContent>{Object.entries(REASON_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Antecedent</label>
-              <Textarea placeholder="What led up to the incident?" rows={2} value={rlForm.antecedent} onChange={(e) => setRL("antecedent", e.target.value)} />
+              <label htmlFor="8d22-antecedent" className="text-sm font-medium">Antecedent</label>
+              <Textarea id="8d22-antecedent" placeholder="What led up to the incident?" rows={2} value={rlForm.antecedent} onChange={(e) => setRL("antecedent", e.target.value)} />
               <WritingAssistantInline value={rlForm.antecedent} onApplyText={(t) => setRL("antecedent", t)} recordType="incident" fieldName="antecedent" childId={rlForm.child_id || undefined} mode="standard" />
             </div>
-            <div><label className="text-sm font-medium">De-escalation Attempts</label><Textarea placeholder="List all de-escalation attempts (one per line)" rows={2} value={rlForm.de_escalation_attempts} onChange={(e) => setRL("de_escalation_attempts", e.target.value)} /></div>
+            <div><label htmlFor="8d22-de-escalation-attempts" className="text-sm font-medium">De-escalation Attempts</label><Textarea id="8d22-de-escalation-attempts" placeholder="List all de-escalation attempts (one per line)" rows={2} value={rlForm.de_escalation_attempts} onChange={(e) => setRL("de_escalation_attempts", e.target.value)} /></div>
             <div>
-              <label className="text-sm font-medium">Description *</label>
-              <Textarea placeholder="Detailed description of the intervention…" rows={3} value={rlForm.description} onChange={(e) => setRL("description", e.target.value)} />
+              <label htmlFor="8d22-description" className="text-sm font-medium">Description *</label>
+              <Textarea id="8d22-description" placeholder="Detailed description of the intervention…" rows={3} value={rlForm.description} onChange={(e) => setRL("description", e.target.value)} />
               <WritingAssistantInline value={rlForm.description} onApplyText={(t) => setRL("description", t)} recordType="incident" fieldName="description" childId={rlForm.child_id || undefined} mode="standard" />
             </div>
             <InlineCaraHeartPanel record={rlHeartRecord} />

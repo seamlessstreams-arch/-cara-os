@@ -455,24 +455,24 @@ export default function AttachmentProfilesPage() {
           <DialogHeader><DialogTitle>New Attachment Profile</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select value={nChild} onValueChange={setNChild}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+              <label htmlFor="693a-young-person" className="text-sm font-medium">Young Person</label>
+              <Select value={nChild} onValueChange={setNChild}><SelectTrigger id="693a-young-person" className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Primary Attachment Style</label>
-              <Select value={nStyle} onValueChange={setNStyle}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <label htmlFor="693a-primary-attachment-style" className="text-sm font-medium">Primary Attachment Style</label>
+              <Select value={nStyle} onValueChange={setNStyle}><SelectTrigger id="693a-primary-attachment-style" className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(STYLE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Assessment Source</label>
-              <input value={nSource} onChange={(e) => setNSource(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Clinical psychologist assessment" />
+              <label htmlFor="693a-assessment-source" className="text-sm font-medium">Assessment Source</label>
+              <input id="693a-assessment-source" value={nSource} onChange={(e) => setNSource(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Clinical psychologist assessment" />
             </div>
             <div>
-              <label className="text-sm font-medium">Early History Summary</label>
-              <textarea value={nHistory} onChange={(e) => setNHistory(e.target.value)} rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key early relational experiences…" />
+              <label htmlFor="693a-early-history-summary" className="text-sm font-medium">Early History Summary</label>
+              <textarea id="693a-early-history-summary" value={nHistory} onChange={(e) => setNHistory(e.target.value)} rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key early relational experiences…" />
             </div>
           </div>
           <DialogFooter>

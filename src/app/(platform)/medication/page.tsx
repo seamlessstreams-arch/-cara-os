@@ -287,8 +287,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
         <>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-slate-500 font-medium block mb-1">Time given</label>
-              <input
+              <label htmlFor="7c4f-time-given" className="text-[10px] text-slate-500 font-medium block mb-1">Time given</label>
+              <input id="7c4f-time-given"
                 type="time"
                 value={formData.actual_time}
                 onChange={(e) => setFormData((f) => ({ ...f, actual_time: e.target.value }))}
@@ -296,8 +296,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-500 font-medium block mb-1">Dose given</label>
-              <input
+              <label htmlFor="7c4f-dose-given" className="text-[10px] text-slate-500 font-medium block mb-1">Dose given</label>
+              <input id="7c4f-dose-given"
                 type="text"
                 value={formData.dose_given}
                 onChange={(e) => setFormData((f) => ({ ...f, dose_given: e.target.value }))}
@@ -308,8 +308,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-slate-500 font-medium block mb-1">Administered by</label>
-              <select
+              <label htmlFor="7c4f-administered-by" className="text-[10px] text-slate-500 font-medium block mb-1">Administered by</label>
+              <select id="7c4f-administered-by"
                 value={formData.administered_by}
                 onChange={(e) => setFormData((f) => ({ ...f, administered_by: e.target.value }))}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -321,8 +321,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-slate-500 font-medium block mb-1">Witnessed by</label>
-              <select
+              <label htmlFor="7c4f-witnessed-by" className="text-[10px] text-slate-500 font-medium block mb-1">Witnessed by</label>
+              <select id="7c4f-witnessed-by"
                 value={formData.witnessed_by}
                 onChange={(e) => setFormData((f) => ({ ...f, witnessed_by: e.target.value }))}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -338,8 +338,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
           {isPRN && (
             <>
               <div>
-                <label className="text-[10px] text-slate-500 font-medium block mb-1">Reason for PRN administration</label>
-                <input
+                <label htmlFor="7c4f-reason-for-prn-administration" className="text-[10px] text-slate-500 font-medium block mb-1">Reason for PRN administration</label>
+                <input id="7c4f-reason-for-prn-administration"
                   type="text"
                   value={formData.prn_reason}
                   onChange={(e) => setFormData((f) => ({ ...f, prn_reason: e.target.value }))}
@@ -348,8 +348,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 font-medium block mb-1">Effectiveness / outcome</label>
-                <input
+                <label htmlFor="7c4f-effectiveness-outcome" className="text-[10px] text-slate-500 font-medium block mb-1">Effectiveness / outcome</label>
+                <input id="7c4f-effectiveness-outcome"
                   type="text"
                   value={formData.prn_effectiveness}
                   onChange={(e) => setFormData((f) => ({ ...f, prn_effectiveness: e.target.value }))}
@@ -376,8 +376,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
       )}
 
       <div>
-        <label className="text-[10px] text-slate-500 font-medium block mb-1">Notes</label>
-        <textarea
+        <label htmlFor="7c4f-notes" className="text-[10px] text-slate-500 font-medium block mb-1">Notes</label>
+        <textarea id="7c4f-notes"
           value={formData.notes}
           onChange={(e) => setFormData((f) => ({ ...f, notes: e.target.value }))}
           placeholder="Any observations, reactions or relevant context…"

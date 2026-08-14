@@ -419,8 +419,8 @@ export default function AuditLogPage() {
       {/* Filters */}
       <div className="flex items-end gap-3 mb-6 flex-wrap">
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">Event Type</label>
-          <select
+          <label htmlFor="f45a-event-type" className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">Event Type</label>
+          <select id="f45a-event-type"
             value={eventTypeFilter}
             onChange={e => setEventTypeFilter(e.target.value)}
             className="rounded-xl border border-[var(--cs-border)] px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -431,8 +431,8 @@ export default function AuditLogPage() {
           </select>
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">Candidate</label>
-          <select
+          <label htmlFor="f45a-candidate" className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">Candidate</label>
+          <select id="f45a-candidate"
             value={candidateFilter}
             onChange={e => setCandidateFilter(e.target.value)}
             className="rounded-xl border border-[var(--cs-border)] px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -444,8 +444,8 @@ export default function AuditLogPage() {
           </select>
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">From</label>
-          <input
+          <label htmlFor="f45a-from" className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">From</label>
+          <input id="f45a-from"
             type="date"
             value={dateFrom}
             onChange={e => setDateFrom(e.target.value)}
@@ -453,8 +453,8 @@ export default function AuditLogPage() {
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">To</label>
-          <input
+          <label htmlFor="f45a-to" className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1 block">To</label>
+          <input id="f45a-to"
             type="date"
             value={dateTo}
             onChange={e => setDateTo(e.target.value)}

@@ -288,9 +288,9 @@ export default function HrProcessGuardianPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Action type</label>
+              <label htmlFor="a08d-action-type" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Action type</label>
               <Select value={draftActionType} onValueChange={setDraftActionType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="a08d-action-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ACTION_TYPES.map((t) => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
@@ -299,21 +299,21 @@ export default function HrProcessGuardianPage() {
               </Select>
             </div>
             <div className="lg:col-span-2">
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Subject line</label>
-              <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} placeholder="e.g. Invitation to disciplinary meeting" />
+              <label htmlFor="a08d-subject-line" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Subject line</label>
+              <Input id="a08d-subject-line" value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} placeholder="e.g. Invitation to disciplinary meeting" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff ID</label>
-              <Input value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
+              <label htmlFor="a08d-staff-id" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Staff ID</label>
+              <Input id="a08d-staff-id" value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="e.g. staff_123" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case ID (optional)</label>
-              <Input value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="e.g. hrc_2026_0007" />
+              <label htmlFor="a08d-case-id-optional" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Case ID (optional)</label>
+              <Input id="a08d-case-id-optional" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="e.g. hrc_2026_0007" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
+              <label htmlFor="a08d-acting-as" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Acting as</label>
               <Select value={actorRole} onValueChange={setActorRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="a08d-acting-as"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {HR_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -322,13 +322,13 @@ export default function HrProcessGuardianPage() {
               </Select>
             </div>
             <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user ID (audit log)</label>
-              <Input value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
+              <label htmlFor="a08d-actor-user-id-audit-log" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Actor user ID (audit log)</label>
+              <Input id="a08d-actor-user-id-audit-log" value={actorUserId} onChange={(e) => setActorUserId(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Draft body</label>
-            <Textarea
+            <label htmlFor="a08d-draft-body" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Draft body</label>
+            <Textarea id="a08d-draft-body"
               value={draftBody}
               onChange={(e) => setDraftBody(e.target.value)}
               placeholder="Paste the draft letter or decision wording. The Guardian will analyse it as written."
@@ -348,9 +348,9 @@ export default function HrProcessGuardianPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Safeguarding status</label>
+                <label htmlFor="a08d-safeguarding-status" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Safeguarding status</label>
                 <Select value={safeguardingStatus} onValueChange={setSafeguardingStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="a08d-safeguarding-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="not_safeguarding">Not safeguarding</SelectItem>
                     <SelectItem value="possible_safeguarding">Possible safeguarding</SelectItem>
@@ -364,9 +364,9 @@ export default function HrProcessGuardianPage() {
                 </Select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child impact status</label>
+                <label htmlFor="a08d-child-impact-status" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Child impact status</label>
                 <Select value={childImpactStatus} onValueChange={setChildImpactStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="a08d-child-impact-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="no_impact">No impact</SelectItem>
                     <SelectItem value="possible_impact">Possible impact</SelectItem>
@@ -377,8 +377,8 @@ export default function HrProcessGuardianPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Prior warnings on file (one per line)</label>
-              <Textarea
+              <label htmlFor="a08d-prior-warnings-on-file-one-per-lin" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Prior warnings on file (one per line)</label>
+              <Textarea id="a08d-prior-warnings-on-file-one-per-lin"
                 value={priorWarningsRaw}
                 onChange={(e) => setPriorWarningsRaw(e.target.value)}
                 placeholder="e.g. 12/01/2026 written warning re recording standards"
@@ -584,12 +584,12 @@ export default function HrProcessGuardianPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rejection reason (required for Reject)</label>
-                  <Textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="min-h-[60px] text-sm" />
+                  <label htmlFor="a08d-rejection-reason-required-for-reje" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rejection reason (required for Reject)</label>
+                  <Textarea id="a08d-rejection-reason-required-for-reje" value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="min-h-[60px] text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rewrite instructions (required for Request rewrite)</label>
-                  <Textarea value={rewriteInstructions} onChange={(e) => setRewriteInstructions(e.target.value)} className="min-h-[60px] text-sm" />
+                  <label htmlFor="a08d-rewrite-instructions-required-for-" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Rewrite instructions (required for Request rewrite)</label>
+                  <Textarea id="a08d-rewrite-instructions-required-for-" value={rewriteInstructions} onChange={(e) => setRewriteInstructions(e.target.value)} className="min-h-[60px] text-sm" />
                 </div>
               </div>
 

@@ -450,10 +450,10 @@ export default function PepTrackerPage() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>New PEP Record</DialogTitle></DialogHeader>
           <form onSubmit={handleSavePep} className="space-y-3 py-2">
-            <div><Label>Young Person *</Label><Select value={pepForm.child_id} onValueChange={(v) => setPEP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>School</Label><Input className="mt-1" placeholder="School name" value={pepForm.school} onChange={(e) => setPEP("school", e.target.value)} /></div>
-            <div><Label>Year Group</Label><Input className="mt-1" type="number" min={7} max={13} placeholder="9" value={pepForm.year_group} onChange={(e) => setPEP("year_group", e.target.value)} /></div>
-            <div><Label>PEP Date</Label><Input className="mt-1" type="date" value={pepForm.pep_date} onChange={(e) => setPEP("pep_date", e.target.value)} /></div>
+            <div><Label htmlFor="18d1-young-person">Young Person *</Label><Select value={pepForm.child_id} onValueChange={(v) => setPEP("child_id", v)}><SelectTrigger id="18d1-young-person" className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="18d1-school">School</Label><Input id="18d1-school" className="mt-1" placeholder="School name" value={pepForm.school} onChange={(e) => setPEP("school", e.target.value)} /></div>
+            <div><Label htmlFor="18d1-year-group">Year Group</Label><Input id="18d1-year-group" className="mt-1" type="number" min={7} max={13} placeholder="9" value={pepForm.year_group} onChange={(e) => setPEP("year_group", e.target.value)} /></div>
+            <div><Label htmlFor="18d1-pep-date">PEP Date</Label><Input id="18d1-pep-date" className="mt-1" type="date" value={pepForm.pep_date} onChange={(e) => setPEP("pep_date", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPep.isPending}>{createPep.isPending ? "Saving…" : "Create PEP"}</Button></DialogFooter>
           </form>
         </DialogContent>

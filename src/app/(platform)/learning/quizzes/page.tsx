@@ -408,8 +408,8 @@ export default function QuizzesPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
-                <Input
+                <label htmlFor="f7a5-topic" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Topic</label>
+                <Input id="f7a5-topic"
                   className="mt-1"
                   placeholder="e.g. Children's rights and legislation"
                   value={topic}
@@ -417,9 +417,9 @@ export default function QuizzesPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
+                <label htmlFor="f7a5-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Pathway</label>
                 <Select value={pathway} onValueChange={(v) => setPathway(v as LearningPathway)}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="f7a5-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(PATHWAY_LABELS).map(([v, l]) => (
                       <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -428,9 +428,9 @@ export default function QuizzesPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Number of Questions</label>
+                <label htmlFor="f7a5-number-of-questions" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Number of Questions</label>
                 <Select value={numberOfQuestions} onValueChange={(v) => setNumberOfQuestions(v as "5" | "10" | "15")}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="f7a5-number-of-questions" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="5">5 questions</SelectItem>
                     <SelectItem value="10">10 questions</SelectItem>

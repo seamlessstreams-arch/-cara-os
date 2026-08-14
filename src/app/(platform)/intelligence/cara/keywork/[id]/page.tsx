@@ -210,13 +210,13 @@ function ActionPanel({ session, onUpdate }: {
         <div className="space-y-3">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Child&apos;s Voice / What they said</label>
+              <label htmlFor="9a75-child-apos-s-voice-what-they-said" className="text-xs font-medium text-[var(--cs-text-secondary)]">Child&apos;s Voice / What they said</label>
               <DictationButton
                 onTranscript={(t) => setChildVoice((p) => p ? `${p} ${t}` : t)}
                 size="sm"
               />
             </div>
-            <textarea
+            <textarea id="9a75-child-apos-s-voice-what-they-said"
               value={childVoice}
               onChange={(e) => setChildVoice(e.target.value)}
               rows={4}
@@ -226,13 +226,13 @@ function ActionPanel({ session, onUpdate }: {
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Staff Reflection</label>
+              <label htmlFor="9a75-staff-reflection" className="text-xs font-medium text-[var(--cs-text-secondary)]">Staff Reflection</label>
               <DictationButton
                 onTranscript={(t) => setStaffReflection((p) => p ? `${p} ${t}` : t)}
                 size="sm"
               />
             </div>
-            <textarea
+            <textarea id="9a75-staff-reflection"
               value={staffReflection}
               onChange={(e) => setStaffReflection(e.target.value)}
               rows={4}

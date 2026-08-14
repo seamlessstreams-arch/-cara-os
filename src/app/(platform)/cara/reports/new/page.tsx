@@ -150,14 +150,14 @@ export default function CaraReportNewPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Child selector */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                <Label htmlFor="91b7-child" className="text-xs font-medium text-[var(--cs-text-secondary)]">
                   Child
                 </Label>
                 <Select
                   value={childId}
                   onValueChange={(v) => setChildId(v)}
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger id="91b7-child" className="h-10">
                     <SelectValue placeholder="Select a child..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -172,14 +172,14 @@ export default function CaraReportNewPage() {
 
               {/* Report type */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                <Label htmlFor="91b7-report-type" className="text-xs font-medium text-[var(--cs-text-secondary)]">
                   Report Type
                 </Label>
                 <Select
                   value={reportType}
                   onValueChange={(v) => setReportType(v as ReportType)}
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger id="91b7-report-type" className="h-10">
                     <SelectValue placeholder="Select report type..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -194,14 +194,14 @@ export default function CaraReportNewPage() {
 
               {/* Audience */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                <Label htmlFor="91b7-audience" className="text-xs font-medium text-[var(--cs-text-secondary)]">
                   Audience
                 </Label>
                 <Select
                   value={audience}
                   onValueChange={(v) => setAudience(v as ReportAudience)}
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger id="91b7-audience" className="h-10">
                     <SelectValue placeholder="Select audience..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -217,10 +217,10 @@ export default function CaraReportNewPage() {
               {/* Date range */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                  <Label htmlFor="91b7-date-range-start" className="text-xs font-medium text-[var(--cs-text-secondary)]">
                     Date Range Start
                   </Label>
-                  <Input
+                  <Input id="91b7-date-range-start"
                     type="date"
                     value={dateStart}
                     onChange={(e) => setDateStart(e.target.value)}
@@ -228,10 +228,10 @@ export default function CaraReportNewPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                  <Label htmlFor="91b7-date-range-end" className="text-xs font-medium text-[var(--cs-text-secondary)]">
                     Date Range End
                   </Label>
-                  <Input
+                  <Input id="91b7-date-range-end"
                     type="date"
                     value={dateEnd}
                     onChange={(e) => setDateEnd(e.target.value)}

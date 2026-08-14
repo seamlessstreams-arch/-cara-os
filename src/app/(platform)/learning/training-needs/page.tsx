@@ -405,9 +405,9 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
           {pipelineStep === "idle" && (
             <>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Resource Type</label>
+                <label htmlFor="4778-resource-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Resource Type</label>
                 <Select value={resourceType} onValueChange={setResourceType}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="4778-resource-type" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="workshop">Workshop Plan</SelectItem>
                     <SelectItem value="flashcard_set">Flashcard Set</SelectItem>
@@ -419,9 +419,9 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Learning Pathway</label>
+                <label htmlFor="4778-learning-pathway" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Learning Pathway</label>
                 <Select value={pathway} onValueChange={setPathway}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="4778-learning-pathway" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff">Staff</SelectItem>
                     <SelectItem value="child">Child</SelectItem>
@@ -566,14 +566,14 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Title</label>
-            <Input className="mt-1" placeholder="e.g. Medication refusal management" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <label htmlFor="4778-title" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Title</label>
+            <Input id="4778-title" className="mt-1" placeholder="e.g. Medication refusal management" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Type</label>
+              <label htmlFor="4778-type" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Type</label>
               <Select value={needType} onValueChange={setNeedType}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4778-type" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {NEED_TYPES.map((t) => (
                     <SelectItem key={t} value={t}>{t.replace(/_/g, " ")}</SelectItem>
@@ -582,9 +582,9 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
               </Select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Priority</label>
+              <label htmlFor="4778-priority" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Priority</label>
               <Select value={priority} onValueChange={(v) => setPriority(v as TrainingNeedPriority)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4778-priority" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="urgent">Urgent</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -594,9 +594,9 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
               </Select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Identified By</label>
+              <label htmlFor="4778-identified-by" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Identified By</label>
               <Select value={identifiedBy} onValueChange={(v) => setIdentifiedBy(v as TrainingNeedIdentifiedBy)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="4778-identified-by" className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Manual</SelectItem>
                   <SelectItem value="cara">Cara</SelectItem>
@@ -611,13 +611,13 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Description / Evidence</label>
+              <label htmlFor="4778-description-evidence" className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Description / Evidence</label>
               <Button size="sm" variant="ghost" className="h-6 text-xs text-[var(--cs-cara-gold)] gap-1 px-2" onClick={analyseWithCara} disabled={caraAnalysing || !description.trim()}>
                 <Sparkles className="h-3 w-3" />
                 {caraAnalysing ? "Analysing…" : "Cara Analyse"}
               </Button>
             </div>
-            <Textarea className="text-sm" rows={4} placeholder="Describe the training need and any supporting evidence…" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea id="4778-description-evidence" className="text-sm" rows={4} placeholder="Describe the training need and any supporting evidence…" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
         </div>
         <DialogFooter>

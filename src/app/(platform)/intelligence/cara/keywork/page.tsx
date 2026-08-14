@@ -266,8 +266,8 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
         {/* Child selector */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
-            <select
+            <label htmlFor="0f97-young-person" className="text-xs font-medium text-[var(--cs-text-secondary)]">Young Person</label>
+            <select id="0f97-young-person"
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
               className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
@@ -279,8 +279,8 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Child Age</label>
-            <input
+            <label htmlFor="0f97-child-age" className="text-xs font-medium text-[var(--cs-text-secondary)]">Child Age</label>
+            <input id="0f97-child-age"
               type="number"
               value={childAge}
               onChange={(e) => setChildAge(e.target.value)}
@@ -294,8 +294,8 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
 
         {/* Theme */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Theme</label>
-          <select
+          <label htmlFor="0f97-theme" className="text-xs font-medium text-[var(--cs-text-secondary)]">Theme</label>
+          <select id="0f97-theme"
             value={theme}
             onChange={(e) => setTheme(e.target.value as KeyWorkTheme)}
             className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
@@ -309,10 +309,10 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
         {/* Reason */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Reason for Session</label>
+            <label htmlFor="0f97-reason-for-session" className="text-xs font-medium text-[var(--cs-text-secondary)]">Reason for Session</label>
             <DictationButton onTranscript={handleReasonDictation} size="sm" />
           </div>
-          <textarea
+          <textarea id="0f97-reason-for-session"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
@@ -324,8 +324,8 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
         {/* Aims and outcomes */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Session Aims</label>
-            <textarea
+            <label htmlFor="0f97-session-aims" className="text-xs font-medium text-[var(--cs-text-secondary)]">Session Aims</label>
+            <textarea id="0f97-session-aims"
               value={aims}
               onChange={(e) => setAims(e.target.value)}
               rows={3}
@@ -334,8 +334,8 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Desired Outcomes</label>
-            <textarea
+            <label htmlFor="0f97-desired-outcomes" className="text-xs font-medium text-[var(--cs-text-secondary)]">Desired Outcomes</label>
+            <textarea id="0f97-desired-outcomes"
               value={desiredOutcomes}
               onChange={(e) => setDesiredOutcomes(e.target.value)}
               rows={3}

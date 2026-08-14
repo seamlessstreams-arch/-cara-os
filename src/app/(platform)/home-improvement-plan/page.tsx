@@ -481,16 +481,16 @@ export default function HomeImprovementPlanPage() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Improvement Objective</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveObjective} className="space-y-3 py-2">
-            <div><Label>Title *</Label><Input className="mt-1" placeholder="e.g. Install keypad on medication room" value={objForm.title} onChange={(e) => setObj("title", e.target.value)} /></div>
+            <div><Label htmlFor="7e57-title">Title *</Label><Input id="7e57-title" className="mt-1" placeholder="e.g. Install keypad on medication room" value={objForm.title} onChange={(e) => setObj("title", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Source</Label><Select value={objForm.source} onValueChange={(v) => setObj("source", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(OBJECTIVE_SOURCE_LABEL) as ObjectiveSource[]).map((k) => (<SelectItem key={k} value={k}>{OBJECTIVE_SOURCE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-              <div><Label>Priority</Label><Select value={objForm.priority} onValueChange={(v) => setObj("priority", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high">High</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="low">Low</SelectItem></SelectContent></Select></div>
+              <div><Label htmlFor="7e57-source">Source</Label><Select value={objForm.source} onValueChange={(v) => setObj("source", v)}><SelectTrigger id="7e57-source" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(OBJECTIVE_SOURCE_LABEL) as ObjectiveSource[]).map((k) => (<SelectItem key={k} value={k}>{OBJECTIVE_SOURCE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label htmlFor="7e57-priority">Priority</Label><Select value={objForm.priority} onValueChange={(v) => setObj("priority", v)}><SelectTrigger id="7e57-priority" className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high">High</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="low">Low</SelectItem></SelectContent></Select></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Owner</Label><Select value={objForm.owner} onValueChange={(v) => setObj("owner", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">Unassigned</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
-              <div><Label>Target Date</Label><Input type="date" className="mt-1" value={objForm.target_date} onChange={(e) => setObj("target_date", e.target.value)} /></div>
+              <div><Label htmlFor="7e57-owner">Owner</Label><Select value={objForm.owner} onValueChange={(v) => setObj("owner", v)}><SelectTrigger id="7e57-owner" className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">Unassigned</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label htmlFor="7e57-target-date">Target Date</Label><Input id="7e57-target-date" type="date" className="mt-1" value={objForm.target_date} onChange={(e) => setObj("target_date", e.target.value)} /></div>
             </div>
-            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={objForm.notes} onChange={(e) => setObj("notes", e.target.value)} /></div>
+            <div><Label htmlFor="7e57-notes">Notes</Label><Textarea id="7e57-notes" className="mt-1" rows={2} value={objForm.notes} onChange={(e) => setObj("notes", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createObjective.isPending}>{createObjective.isPending ? "Saving…" : "Add Objective"}</Button></DialogFooter>
           </form>
         </DialogContent>

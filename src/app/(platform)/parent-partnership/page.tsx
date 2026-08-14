@@ -219,10 +219,10 @@ export default function ParentPartnershipPage() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[180px]">
-                <Label className="text-xs">Search</Label>
+                <Label htmlFor="2aa3-search" className="text-xs">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Name, family member, summary…" value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input id="2aa3-search" className="pl-8" placeholder="Name, family member, summary…" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               <div className="w-40">
@@ -236,9 +236,9 @@ export default function ParentPartnershipPage() {
                 </Select>
               </div>
               <div className="w-44">
-                <Label className="text-xs">Engagement</Label>
+                <Label htmlFor="2aa3-engagement" className="text-xs">Engagement</Label>
                 <Select value={engFilter} onValueChange={setEngFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="2aa3-engagement"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Levels</SelectItem>
                     {(Object.entries(PARENT_ENGAGEMENT_LEVEL_LABEL) as [ParentEngagementLevel, string][]).map(([k, v]) => (
@@ -401,23 +401,23 @@ export default function ParentPartnershipPage() {
           </DialogHeader>
           <form onSubmit={handleSaveContact} className="space-y-3">
             <div>
-              <Label>Young Person *</Label>
+              <Label htmlFor="2aa3-young-person">Young Person *</Label>
               <Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Select young person" /></SelectTrigger>
+                <SelectTrigger id="2aa3-young-person"><SelectValue placeholder="Select young person" /></SelectTrigger>
                 <SelectContent>
                   {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Family Member Name *</Label>
-              <Input placeholder="e.g. Mark (birth father)" value={ppForm.family_member_name} onChange={(e) => setPP("family_member_name", e.target.value)} />
+              <Label htmlFor="2aa3-family-member-name">Family Member Name *</Label>
+              <Input id="2aa3-family-member-name" placeholder="e.g. Mark (birth father)" value={ppForm.family_member_name} onChange={(e) => setPP("family_member_name", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Relationship</Label>
+                <Label htmlFor="2aa3-relationship">Relationship</Label>
                 <Select value={ppForm.relationship_type} onValueChange={(v) => setPP("relationship_type", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="2aa3-relationship"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_RELATIONSHIP_TYPE_LABEL) as [ParentRelationshipType, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -426,9 +426,9 @@ export default function ParentPartnershipPage() {
                 </Select>
               </div>
               <div>
-                <Label>Contact Type</Label>
+                <Label htmlFor="2aa3-contact-type">Contact Type</Label>
                 <Select value={ppForm.contact_type} onValueChange={(v) => setPP("contact_type", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="2aa3-contact-type"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_CONTACT_TYPE_LABEL) as [ParentContactType, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -439,19 +439,19 @@ export default function ParentPartnershipPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Date</Label>
-                <Input type="date" value={ppForm.date} onChange={(e) => setPP("date", e.target.value)} />
+                <Label htmlFor="2aa3-date">Date</Label>
+                <Input id="2aa3-date" type="date" value={ppForm.date} onChange={(e) => setPP("date", e.target.value)} />
               </div>
               <div>
-                <Label>Duration (minutes)</Label>
-                <Input type="number" placeholder="e.g. 30" value={ppForm.duration} onChange={(e) => setPP("duration", e.target.value)} />
+                <Label htmlFor="2aa3-duration-minutes">Duration (minutes)</Label>
+                <Input id="2aa3-duration-minutes" type="number" placeholder="e.g. 30" value={ppForm.duration} onChange={(e) => setPP("duration", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Engagement Level</Label>
+                <Label htmlFor="2aa3-engagement-level">Engagement Level</Label>
                 <Select value={ppForm.engagement_level} onValueChange={(v) => setPP("engagement_level", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="2aa3-engagement-level"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_ENGAGEMENT_LEVEL_LABEL) as [ParentEngagementLevel, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -460,9 +460,9 @@ export default function ParentPartnershipPage() {
                 </Select>
               </div>
               <div>
-                <Label>Initiated By</Label>
+                <Label htmlFor="2aa3-initiated-by">Initiated By</Label>
                 <Select value={ppForm.initiated_by} onValueChange={(v) => setPP("initiated_by", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="2aa3-initiated-by"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_CONTACT_INITIATOR_LABEL) as [ParentContactInitiator, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -472,24 +472,24 @@ export default function ParentPartnershipPage() {
               </div>
             </div>
             <div>
-              <Label>Summary *</Label>
-              <Textarea rows={3} placeholder="Describe the contact, how it went, and the quality of engagement…" value={ppForm.summary} onChange={(e) => setPP("summary", e.target.value)} />
+              <Label htmlFor="2aa3-summary">Summary *</Label>
+              <Textarea id="2aa3-summary" rows={3} placeholder="Describe the contact, how it went, and the quality of engagement…" value={ppForm.summary} onChange={(e) => setPP("summary", e.target.value)} />
             </div>
             <div>
-              <Label>Concerns</Label>
-              <Textarea rows={2} placeholder="Any concerns arising from this contact (leave blank if none)…" value={ppForm.concerns} onChange={(e) => setPP("concerns", e.target.value)} />
+              <Label htmlFor="2aa3-concerns">Concerns</Label>
+              <Textarea id="2aa3-concerns" rows={2} placeholder="Any concerns arising from this contact (leave blank if none)…" value={ppForm.concerns} onChange={(e) => setPP("concerns", e.target.value)} />
             </div>
             <div>
-              <Label>Positive Outcomes</Label>
-              <Textarea rows={2} placeholder="One per line…" value={ppForm.positive_outcomes} onChange={(e) => setPP("positive_outcomes", e.target.value)} />
+              <Label htmlFor="2aa3-positive-outcomes">Positive Outcomes</Label>
+              <Textarea id="2aa3-positive-outcomes" rows={2} placeholder="One per line…" value={ppForm.positive_outcomes} onChange={(e) => setPP("positive_outcomes", e.target.value)} />
             </div>
             <div>
-              <Label>Follow-Up Actions</Label>
-              <Textarea rows={2} placeholder="One per line…" value={ppForm.follow_up_actions} onChange={(e) => setPP("follow_up_actions", e.target.value)} />
+              <Label htmlFor="2aa3-follow-up-actions">Follow-Up Actions</Label>
+              <Textarea id="2aa3-follow-up-actions" rows={2} placeholder="One per line…" value={ppForm.follow_up_actions} onChange={(e) => setPP("follow_up_actions", e.target.value)} />
             </div>
             <div>
-              <Label>Notes</Label>
-              <Textarea rows={2} placeholder="Additional notes…" value={ppForm.notes} onChange={(e) => setPP("notes", e.target.value)} />
+              <Label htmlFor="2aa3-notes">Notes</Label>
+              <Textarea id="2aa3-notes" rows={2} placeholder="Additional notes…" value={ppForm.notes} onChange={(e) => setPP("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

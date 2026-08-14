@@ -367,8 +367,8 @@ export default function AdvocacyPage() {
             <input placeholder="Advocate name" className="rounded border px-3 py-2 text-sm" value={advForm.advocate_name} onChange={(e) => setAF("advocate_name", e.target.value)} />
             <textarea required placeholder="Reason for referral *" rows={3} className="rounded border px-3 py-2 text-sm" value={advForm.reason} onChange={(e) => setAF("reason", e.target.value)} />
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">Review Date</label>
-              <input type="date" className="rounded border px-3 py-2 text-sm w-full" value={advForm.review_date} onChange={(e) => setAF("review_date", e.target.value)} />
+              <label htmlFor="3f3e-review-date" className="text-xs text-slate-600 mb-1 block">Review Date</label>
+              <input id="3f3e-review-date" type="date" className="rounded border px-3 py-2 text-sm w-full" value={advForm.review_date} onChange={(e) => setAF("review_date", e.target.value)} />
             </div>
             <DialogFooter>
               <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
