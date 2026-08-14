@@ -6,12 +6,15 @@ import { GET } from "@/app/api/v1/shift-summary/route";
 // phantom field (`missingFromCareEpisodes`) that never existed on the store, so
 // it was ALWAYS empty even on days with real missing-from-care episodes. It now
 // reads the real `missingEpisodes` collection via dal. Seed `mfc_001`
-// (yp_alex, date_missing 2026-01-15) must surface on its date, and a date with
-// no episode must report none (no over-matching).
+// (yp_alex) must surface on its date — read from the store, because seed
+// dates float with the calendar (#917) — and a date with no episode must
+// report none (no over-matching).
 describe("shift-summary route — missing from care", () => {
   it("surfaces a seeded missing episode on its date", async () => {
+    const { getStore } = await import("@/lib/db/store");
+    const mfc = getStore().missingEpisodes.find((e) => e.id === "mfc_001")!;
     const req = new NextRequest(
-      "http://localhost/api/v1/shift-summary?date=2026-01-15",
+      `http://localhost/api/v1/shift-summary?date=${mfc.date_missing}`,
     );
     const res = await GET(req);
     expect(res.status).toBe(200);
