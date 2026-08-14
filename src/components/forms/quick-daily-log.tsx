@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/form-draft";
 import { EnterOnceIndicator } from "@/components/forms/enter-once-indicator";
 import {
   ChevronDown,
@@ -118,22 +119,16 @@ export function QuickDailyLog({
   const [submitted, setSubmitted] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
 
-  const draftKey = `${DRAFT_KEY_PREFIX}${childId}`;
   const autosaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Load draft from localStorage ──────────────────────────────────
+  // ── Load draft (current user's only; expired/foreign drafts stay unread) ──
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(draftKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as DailyLogFormData;
-        setForm(parsed);
-        setIsDraft(true);
-      }
-    } catch {
-      // Ignore parse errors
+    const saved = loadDraft<DailyLogFormData>(DRAFT_KEY_PREFIX, childId);
+    if (saved) {
+      setForm(saved);
+      setIsDraft(true);
     }
-  }, [draftKey]);
+  }, [childId]);
 
   // ── Auto-fill from context ────────────────────────────────────────
   useEffect(() => {
@@ -155,19 +150,15 @@ export function QuickDailyLog({
       // Only save if user has entered something beyond auto-fill
       const hasContent = form.mood || form.keyEvents || form.concerns || form.engagement;
       if (hasContent && !submitted) {
-        try {
-          localStorage.setItem(draftKey, JSON.stringify(form));
-          setIsDraft(true);
-          setLastSaved(londonDisplay({ hour: "2-digit", minute: "2-digit" }));
-        } catch {
-          // Storage full or unavailable
-        }
+        saveDraft(DRAFT_KEY_PREFIX, childId, form);
+        setIsDraft(true);
+        setLastSaved(londonDisplay({ hour: "2-digit", minute: "2-digit" }));
       }
     }, 5000);
     return () => {
       if (autosaveRef.current) clearInterval(autosaveRef.current);
     };
-  }, [form, draftKey, submitted]);
+  }, [form, childId, submitted]);
 
   // ── Update helpers ────────────────────────────────────────────────
   const updateField = useCallback(
@@ -184,14 +175,13 @@ export function QuickDailyLog({
       setSubmitting(true);
       try {
         onSubmit?.(form);
-        // Clear draft
-        localStorage.removeItem(draftKey);
+        clearDraft(DRAFT_KEY_PREFIX, childId);
         setSubmitted(true);
       } finally {
         setSubmitting(false);
       }
     },
-    [form, onSubmit, draftKey],
+    [form, onSubmit, childId],
   );
 
   // ── Reset for "Record another" ────────────────────────────────────
