@@ -124,6 +124,9 @@ jobs:
       - name: Unguarded-fetch guard (no query/mutation may swallow an HTTP error)
         run: node scripts/check-unguarded-fetch.js
 
+      - name: Seed-decay guard (seed dates float; fixed dates are declared real-world facts)
+        run: node scripts/check-seed-decay.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 
