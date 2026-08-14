@@ -7,9 +7,11 @@
 // review queue.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { useAuthContext } from "@/contexts/auth-context";
+import { apiFetch } from "@/hooks/use-api";
 import { ShieldCheck, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 
 type DeclType = "no" | "yes" | "not_sure" | "spelling_grammar_only";
@@ -22,6 +24,8 @@ const OPTIONS: { value: DeclType; label: string }[] = [
 
 const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
 
+type DeclarationResult = { declaration: Record<string, unknown>; acknowledgement: string };
+
 export default function DeclarePage() {
   const { currentUser, currentRole } = useAuthContext();
   const isManager = MANAGEMENT.has(String(currentRole));
@@ -31,24 +35,24 @@ export default function DeclarePage() {
   const [confidential, setConfidential] = useState(false);
   const [copied, setCopied] = useState(false);
   const [explanation, setExplanation] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ declaration: Record<string, unknown>; acknowledgement: string } | null>(null);
+  const [result, setResult] = useState<DeclarationResult | null>(null);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setResult(null);
-    try {
-      const res = await fetch("/api/v1/ask-cara/declaration", {
+  // The declaration route gates manager actions on x-user-role, so the header
+  // rides along explicitly (apiFetch only adds x-user-id by itself).
+  const submitDeclaration = useMutation({
+    mutationFn: () =>
+      apiFetch<{ data?: DeclarationResult }>("/api/v1/ask-cara/declaration", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-role": String(currentRole) },
+        headers: { "x-user-role": String(currentRole) },
         body: JSON.stringify({ userId: currentUser?.full_name, role: currentRole, declarationType, declaredTaskType, toolName, confidentialDataEntered: confidential, outputCopiedIntoCara: copied, explanation }),
-      });
-      const data = await res.json();
-      setResult(data.data ?? null);
-    } finally {
-      setBusy(false);
-    }
+      }),
+    onSuccess: (d) => setResult(d.data ?? null),
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setResult(null);
+    submitDeclaration.mutate();
   }
 
   const saferRoute = result?.declaration?.saferCaraRoute as { message?: string; routes?: { label: string; href?: string }[] } | undefined;
@@ -98,8 +102,12 @@ export default function DeclarePage() {
               </>
             )}
 
-            <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Submit declaration
+            {submitDeclaration.isError && (
+              <p className="text-sm text-red-600">Your declaration didn&apos;t save — {submitDeclaration.error.message}. Nothing has been recorded; please try again.</p>
+            )}
+
+            <button type="submit" disabled={submitDeclaration.isPending} className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60">
+              {submitDeclaration.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Submit declaration
             </button>
           </form>
         )}
@@ -130,29 +138,27 @@ export default function DeclarePage() {
 }
 
 function ManagerReviewQueue({ role }: { role: string }) {
-  const [items, setItems] = useState<Array<Record<string, unknown>>>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["ask-cara-declarations", role],
+    queryFn: () => apiFetch<{ data?: { declarations?: Array<Record<string, unknown>> } }>("/api/v1/ask-cara/declaration", { headers: { "x-user-role": role } }),
+  });
+  const items = data?.data?.declarations ?? [];
 
-  const load = React.useCallback(() => {
-    setLoading(true);
-    fetch("/api/v1/ask-cara/declaration", { headers: { "x-user-role": role } })
-      .then((r) => r.json())
-      .then((d) => setItems(d.data?.declarations ?? []))
-      .finally(() => setLoading(false));
-  }, [role]);
-  useEffect(() => load(), [load]);
-
-  async function review(id: string, outcome: string) {
-    await fetch("/api/v1/ask-cara/declaration", { method: "PATCH", headers: { "Content-Type": "application/json", "x-user-role": role }, body: JSON.stringify({ id, outcome }) });
-    load();
-  }
+  const review = useMutation({
+    mutationFn: ({ id, outcome }: { id: string; outcome: string }) =>
+      apiFetch("/api/v1/ask-cara/declaration", { method: "PATCH", headers: { "x-user-role": role }, body: JSON.stringify({ id, outcome }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ask-cara-declarations"] }),
+  });
 
   const pending = items.filter((d) => d.managerReviewStatus === "pending");
   return (
     <div className="rounded-xl border border-[var(--cs-border,#e2e8ec)] bg-white p-5">
       <h3 className="mb-3 text-sm font-bold text-[var(--cs-navy,#1e293b)]">Manager review queue {pending.length > 0 && <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-800">{pending.length} pending</span>}</h3>
-      {loading ? (
+      {isLoading ? (
         <p className="text-sm text-slate-400">Loading…</p>
+      ) : isError ? (
+        <p className="text-sm text-red-600">Couldn&apos;t load the review queue — {error.message}. Declarations may be waiting; retry before assuming the queue is clear.</p>
       ) : pending.length === 0 ? (
         <p className="text-sm text-slate-500">No declarations awaiting review.</p>
       ) : (
@@ -161,9 +167,9 @@ function ManagerReviewQueue({ role }: { role: string }) {
             <div key={String(d.id)} className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm">
               <p className="text-[var(--cs-navy,#1e293b)]"><span className="font-semibold">{String(d.userId || "Staff")}</span> · {String(d.declaredTaskType || "unspecified task")}{d.confidentialDataEntered ? " · ⚠ confidential data entered" : ""}</p>
               <div className="mt-1.5 flex gap-2">
-                <button onClick={() => review(String(d.id), "no_concern")} className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] text-white">No concern</button>
-                <button onClick={() => review(String(d.id), "guidance_given")} className="rounded-full bg-teal-600 px-2.5 py-0.5 text-[11px] text-white">Guidance given</button>
-                <button onClick={() => review(String(d.id), "escalated")} className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] text-white">Escalate</button>
+                <button disabled={review.isPending} onClick={() => review.mutate({ id: String(d.id), outcome: "no_concern" })} className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] text-white disabled:opacity-60">No concern</button>
+                <button disabled={review.isPending} onClick={() => review.mutate({ id: String(d.id), outcome: "guidance_given" })} className="rounded-full bg-teal-600 px-2.5 py-0.5 text-[11px] text-white disabled:opacity-60">Guidance given</button>
+                <button disabled={review.isPending} onClick={() => review.mutate({ id: String(d.id), outcome: "escalated" })} className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] text-white disabled:opacity-60">Escalate</button>
               </div>
             </div>
           ))}

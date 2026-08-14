@@ -71,7 +71,7 @@ export function CaraFeedbackWidget({
     if (!finalRating || submitting) return;
     setSubmitting(true);
     try {
-      await fetch("/api/cara/feedback", {
+      const res = await fetch("/api/cara/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,6 +82,7 @@ export function CaraFeedbackWidget({
           tags,
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       setSubmitted(true);
     } catch {
       // Silent fail — feedback is non-critical

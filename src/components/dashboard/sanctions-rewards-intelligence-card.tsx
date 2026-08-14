@@ -74,6 +74,7 @@ export function SanctionsRewardsIntelligenceCard({ childId }: SanctionsRewardsIn
     async function load() {
       try {
         const res = await fetch(`/api/cara/sanctions-rewards?childId=${childId}`);
+        if (!res.ok) throw new Error(`API error ${res.status}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

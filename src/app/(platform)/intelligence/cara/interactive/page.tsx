@@ -421,6 +421,7 @@ function SessionSummary({
           prompt: "Generate a summary of this interactive session, including a child-friendly summary, professional summary, child voice, and staff reflection.",
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       const parsed = json?.data?.parsed;
       if (parsed && typeof parsed === "object") {

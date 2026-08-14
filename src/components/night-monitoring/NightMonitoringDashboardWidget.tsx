@@ -69,6 +69,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
   async function fetchData() {
     try {
       const res = await fetch(`/api/night-monitoring?homeId=${homeId}&mode=dashboard`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

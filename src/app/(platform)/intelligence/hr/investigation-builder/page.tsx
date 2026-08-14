@@ -276,6 +276,7 @@ export default function InvestigationBuilderPage() {
           }),
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const result = await res.json();
       if (result.data?.draft_text) {
         setReportDraft(result.data.draft_text);

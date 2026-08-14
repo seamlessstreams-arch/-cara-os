@@ -47,6 +47,7 @@ export default function InterviewBuilderPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, candidateId: candidateId || null }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = (await res.json()).data;
       setAiQuestions(json.questions || []);
       setAiMessage(json.message || null);

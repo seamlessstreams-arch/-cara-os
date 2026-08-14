@@ -8,6 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -30,25 +32,26 @@ interface FilingFolder {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function FilingCabinetPage() {
-  const [structure, setStructure] = useState<FilingFolder[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { data, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-studio-filing-cabinet"],
+    queryFn: () => api.get<{ structure?: FilingFolder[] }>("/api/cara-studio/filing-cabinet?mode=structure"),
+  });
+  const structure = React.useMemo(() => data?.structure ?? [], [data]);
+
+  // Auto-expand top level once on first load — not on the periodic refetch,
+  // which must not fight folders the user has since collapsed.
+  const didAutoExpand = React.useRef(false);
   useEffect(() => {
-    fetch("/api/cara-studio/filing-cabinet?mode=structure")
-      .then((r) => r.json())
-      .then((data) => {
-        setStructure(data.structure ?? []);
-        // Auto-expand top level
-        const topPaths = new Set<string>((data.structure ?? []).map((f: FilingFolder) => f.path));
-        setExpandedPaths(topPaths);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+    if (structure.length > 0 && !didAutoExpand.current) {
+      didAutoExpand.current = true;
+      setExpandedPaths(new Set(structure.map((f) => f.path)));
+    }
+  }, [structure]);
 
   const toggleExpand = (path: string) => {
     setExpandedPaths((prev) => {
@@ -146,6 +149,10 @@ export default function FilingCabinetPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
             <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Loading filing structure...</p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+            <p className="text-sm text-red-700">Couldn&apos;t load the filing structure — {error.message}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

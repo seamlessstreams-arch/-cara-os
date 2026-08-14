@@ -37,7 +37,10 @@ export function EnablePushButton({ className }: { className?: string }) {
     const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
     if (!supported) { setState("hidden"); return; }
     fetch("/api/v1/push/subscribe")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`API error ${r.status}`);
+        return r.json();
+      })
       .then((d) => {
         if (!d.configured || !d.publicKey) { setState("hidden"); return; }
         setPublicKey(d.publicKey);
@@ -58,11 +61,12 @@ export function EnablePushButton({ className }: { className?: string }) {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
       }));
-      await fetch("/api/v1/push/subscribe", {
+      const res = await fetch("/api/v1/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-User-Id": userId() },
         body: JSON.stringify(sub.toJSON()),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       setState("granted");
     } catch {
       setState("default");

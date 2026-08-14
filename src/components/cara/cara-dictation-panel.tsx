@@ -155,7 +155,10 @@ export function CaraDictationPanel(props: CaraDictationPanelProps) {
       getSpeechCtor() !== null;
 
     fetch("/api/cara/transcribe")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`API error ${r.status}`);
+        return r.json();
+      })
       .then((data: { configured?: boolean }) => {
         if (data.configured) {
           setMode("server");

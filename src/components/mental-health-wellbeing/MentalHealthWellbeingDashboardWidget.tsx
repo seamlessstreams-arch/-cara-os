@@ -122,6 +122,7 @@ export function MentalHealthWellbeingDashboardWidget({ homeId = "home-oak" }: Pr
   async function fetchData() {
     try {
       const res = await fetch(`/api/mental-health-wellbeing?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

@@ -164,7 +164,7 @@ export function CaraOrchestrationPanel({
   const handleSaveDraft = useCallback(
     async (response: CaraResponse) => {
       try {
-        await fetch("/api/cara/orchestrate", {
+        const res = await fetch("/api/cara/orchestrate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -181,6 +181,7 @@ export function CaraOrchestrationPanel({
             requestedAction: "save_draft",
           }),
         });
+        if (!res.ok) throw new Error(`API error ${res.status}`);
       } catch {
         setError("Failed to save draft.");
       }

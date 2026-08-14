@@ -74,6 +74,7 @@ export default function HomeDynamicsDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       await res.json();
       // Server state changed — refetch the query so the fresh snapshot lands
       // in the shared cache (not a locally-diverged copy).

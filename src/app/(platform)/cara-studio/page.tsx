@@ -284,11 +284,12 @@ function CaraStudioContent() {
   const handleWorkflowAction = useCallback(async (action: string) => {
     if (!generatedArtifact) return;
     try {
-      await fetch(`/api/cara-studio/artifacts/${generatedArtifact.id}`, {
+      const res = await fetch(`/api/cara-studio/artifacts/${generatedArtifact.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       setGeneratedArtifact(prev => prev ? { ...prev, status: action === "submit_for_review" ? "in_review" : action === "approve" ? "approved" : action === "commit" ? "committed" : prev.status } as CaraStudioArtifact : null);
     } catch (err) {
       console.error("Workflow action failed:", err);

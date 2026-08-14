@@ -174,6 +174,7 @@ export function CaraStudioWorkspace({
           additionalContext: additionalContext || undefined,
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
 
       const data: GenerationResponse = await res.json();
       setResult(data);
@@ -201,6 +202,7 @@ export function CaraStudioWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ generationId: result.generationId, action: "approve" }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
       if (data.success) {
         setResult((prev) => prev ? { ...prev, success: true } : prev);

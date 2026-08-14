@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -108,7 +109,7 @@ export function CaraSuggestedActionsPanel({
   const handleSendAllToManager = useCallback(async () => {
     setSendingAll(true);
     try {
-      await fetch("/api/cara/create-tasks", {
+      const res = await fetch("/api/cara/create-tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -125,6 +126,9 @@ export function CaraSuggestedActionsPanel({
           })),
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+    } catch {
+      toast.error("Couldn't send the actions to the manager — nothing has been created. Please try again.");
     } finally {
       setSendingAll(false);
     }

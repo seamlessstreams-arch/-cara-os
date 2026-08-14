@@ -72,6 +72,7 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
   async function fetchData() {
     try {
       const res = await fetch(`/api/children-outcomes?homeId=${homeId}&view=overview`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

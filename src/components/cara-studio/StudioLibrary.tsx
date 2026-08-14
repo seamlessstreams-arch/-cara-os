@@ -109,6 +109,7 @@ export function StudioLibrary({ childId, onSelectGeneration }: StudioLibraryProp
       params.set("offset", String(offset));
 
       const res = await fetch(`/api/cara-studio/library?${params.toString()}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
 
       if (data.success) {

@@ -161,6 +161,7 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
           prompt: "Analyse this contact log entry. What does it tell us about how this contact is affecting the young person? Are there patterns emerging? What should the home or keyworker do next? Keep analysis to 3–5 sentences.",
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
       onUpdate(log.id, { cara_analysis: data.response ?? data.content ?? "Analysis unavailable." });
     } finally {

@@ -148,6 +148,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
   async function fetchData() {
     try {
       const res = await fetch(`/api/regulatory-self-assessment?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

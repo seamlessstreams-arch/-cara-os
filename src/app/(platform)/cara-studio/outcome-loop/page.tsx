@@ -8,7 +8,9 @@
 // the real-world impact of Cara-generated content over time.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -46,16 +48,10 @@ const TYPE_LABELS: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function OutcomeLoopPage() {
-  const [summary, setSummary] = useState<OutcomeLoopSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/cara-studio/outcome-loop")
-      .then((r) => r.json())
-      .then((data) => setSummary(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: summary, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-studio-outcome-loop"],
+    queryFn: () => api.get<OutcomeLoopSummary>("/api/cara-studio/outcome-loop"),
+  });
 
   return (
     <PageShell title="Outcome Loop" subtitle="Tracking real-world impact of Cara outputs">
@@ -80,6 +76,10 @@ export default function OutcomeLoopPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
             <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Loading outcome data...</p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+            <p className="text-sm text-red-700">Couldn&apos;t load outcome data — {error.message}</p>
           </div>
         ) : summary ? (
           <>

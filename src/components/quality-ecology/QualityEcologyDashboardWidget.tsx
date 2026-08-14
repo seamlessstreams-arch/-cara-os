@@ -67,6 +67,7 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
   async function fetchData() {
     try {
       const res = await fetch(`/api/quality-ecology?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

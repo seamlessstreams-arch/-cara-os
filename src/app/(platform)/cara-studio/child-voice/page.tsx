@@ -7,7 +7,9 @@
 // sentiment analysis, themes, and gaps in voice capture over time.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -77,19 +79,13 @@ const DEMO_CHILDREN = [
 
 export default function ChildVoicePage() {
   const [selectedChild, setSelectedChild] = useState(demoSeed(DEMO_CHILDREN)[0]?.id ?? "");
-  const [summary, setSummary] = useState<VoiceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
   const [sentimentFilter, setSentimentFilter] = useState<string | null>(null);
   const [themeFilter, setThemeFilter] = useState<string | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/cara-studio/child-voice?childId=${selectedChild}&mode=summary`)
-      .then((r) => r.json())
-      .then((data) => setSummary(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [selectedChild]);
+  const { data: summary, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-studio-child-voice", selectedChild],
+    queryFn: () => api.get<VoiceSummary>(`/api/cara-studio/child-voice?childId=${selectedChild}&mode=summary`),
+  });
 
   const filteredEntries = (summary?.recentEntries ?? []).filter((e) => {
     if (sentimentFilter && e.sentiment !== sentimentFilter) return false;
@@ -131,6 +127,10 @@ export default function ChildVoicePage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
             <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Scanning evidence for child voice...</p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+            <p className="text-sm text-red-700">Couldn&apos;t load child voice data — {error.message}</p>
           </div>
         ) : summary ? (
           <>

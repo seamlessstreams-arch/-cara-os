@@ -74,6 +74,7 @@ export function InspectionReadinessDashboardWidget({ homeId = "home-oak" }: Prop
   async function fetchData() {
     try {
       const res = await fetch(`/api/inspection?homeId=${homeId}`);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch {

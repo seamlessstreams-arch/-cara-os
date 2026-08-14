@@ -4,7 +4,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api, apiFetch } from "@/hooks/use-api";
 
 interface ProviderInfo {
   name: string;
@@ -16,42 +18,28 @@ interface ProviderInfo {
 }
 
 export default function CaraProvidersPage() {
-  const [providers, setProviders] = useState<ProviderInfo[]>([]);
-  const [loading, setLoading] = useState(true);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; latency?: number; error?: string }>>({});
 
-  useEffect(() => {
-    loadProviders();
-  }, []);
-
-  async function loadProviders() {
-    try {
-      const res = await fetch("/api/cara/providers");
-      const data = await res.json();
-      setProviders(data.providers ?? []);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data, isLoading: loading, isError, error } = useQuery({
+    queryKey: ["cara-providers"],
+    queryFn: () => api.get<{ providers?: ProviderInfo[] }>("/api/cara/providers"),
+  });
+  const providers = data?.providers ?? [];
 
   async function testProvider(name: string) {
     setTestingProvider(name);
     try {
-      const res = await fetch("/api/cara/providers/test", {
+      const result = await apiFetch<{ connected?: boolean; latencyMs?: number; error?: string }>("/api/cara/providers/test", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: name }),
       });
-      const data = await res.json();
       setTestResults(prev => ({
         ...prev,
-        [name]: { success: data.connected ?? false, latency: data.latencyMs, error: data.error },
+        [name]: { success: result.connected ?? false, latency: result.latencyMs, error: result.error },
       }));
-    } catch {
-      setTestResults(prev => ({ ...prev, [name]: { success: false, error: "Network error" } }));
+    } catch (e) {
+      setTestResults(prev => ({ ...prev, [name]: { success: false, error: e instanceof Error ? e.message : "Network error" } }));
     } finally {
       setTestingProvider(null);
     }
@@ -68,6 +56,10 @@ export default function CaraProvidersPage() {
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Loading providers...</div>
+      ) : isError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+          <p className="text-sm text-red-700">Couldn&apos;t load providers — {error.message}</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {providers.map(provider => (

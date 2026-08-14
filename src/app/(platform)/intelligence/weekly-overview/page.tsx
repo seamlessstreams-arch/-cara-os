@@ -1159,6 +1159,7 @@ function ChildWeeklyReportSection() {
     setEnhancing(true); setEnhanceNote(null);
     try {
       const res = await fetch(`/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId)}&enhance=true`, { headers: { "x-user-role": "registered_manager" } });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const j = await res.json();
       const e = j?.enhanced?.report;
       if (e?.enhanced && e.text) setEnhancedText(e.text as string);

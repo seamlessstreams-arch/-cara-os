@@ -101,6 +101,7 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
           history: messages.slice(-6).map((m) => ({ role: m.role, text: m.text.slice(0, 400) })),
         }),
       });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
       const a: AskCaraAnswer | undefined = data?.answer;
       if (typeof data?.resolvedChildId === "string") setLastChildId(data.resolvedChildId);
