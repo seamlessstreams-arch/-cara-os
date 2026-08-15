@@ -20,8 +20,16 @@
 // payload also reads component state. Reading state is the evidence that the
 // form reached the request at all.
 //
+// Second leg: a submit-looking button in a dialog whose click handler ONLY
+// closes the dialog. lado-referrals shipped "Submit Referral" as
+// onClick={() => setShowNew(false)} — no mutation at all, while the page's
+// own create hook sat declared and uncalled. An allegation against a staff
+// member was typed in and discarded with no record and NO error, which the
+// first leg cannot see because there is no payload to inspect.
+//
 // Not in scope: payloads made only of ids and enums (a status flip, an
-// acknowledge, a sign-off) legitimately carry no typed text.
+// acknowledge, a sign-off) legitimately carry no typed text; and buttons that
+// only dismiss (Cancel/Close/Back) or export/print.
 // ─────────────────────────────────────────────────────────────────────────────
 const fs = require("node:fs");
 const path = require("node:path");
@@ -80,6 +88,26 @@ for (const file of walk("src/app")) {
     const line = text.slice(0, m.index).split("\n").length;
     violations.push(
       `${rel}:${line}  create payload has ${blanks} empty-string literals and reads no form state — the dialog's fields are being discarded`
+    );
+  }
+}
+
+// ── Leg 2: a submit-looking dialog button whose handler only closes it ──────
+const SUBMITTY = /\b(Save|Submit|Create|Add|Record|Log|Report|Raise)\b/i;
+const DISMISS = /\b(cancel|close|dismiss|back|export|print|download|preview)\b/i;
+for (const file of walk("src/app")) {
+  const text = fs.readFileSync(file, "utf8");
+  if (!text.includes("<Dialog")) continue;
+  const rel = file.split(path.sep).join("/");
+  // onClick={() => setX(false)} directly followed by the button's label
+  const re = /onClick=\{\(\)\s*=>\s*set\w*\(\s*(?:false|null)\s*\)\}[^>]*>([^<]{1,40})</g;
+  let m;
+  while ((m = re.exec(text))) {
+    const label = m[1].trim();
+    if (!label || !SUBMITTY.test(label) || DISMISS.test(label)) continue;
+    const line = text.slice(0, m.index).split("\n").length;
+    violations.push(
+      `${rel}:${line}  "${label}" only closes the dialog — it saves nothing, and says nothing`
     );
   }
 }

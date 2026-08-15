@@ -22,7 +22,8 @@ import {
   AlertTriangle, CheckCircle2, Clock, Shield, UserX, Lock,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
+import { toast } from "sonner";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LadoReferral, LadoAllegationType, LadoOutcome, LadoReferralStatus, LadoStaffAction } from "@/types/extended";
@@ -84,6 +85,28 @@ export default function LADOReferralsPage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  // "Submit Referral" used to call setShowNew(false) and nothing else: the
+  // allegation, the staff member it concerned and the evidence were typed in
+  // and discarded, with no record and no error. The create mutation below was
+  // already declared and never called.
+  const EMPTY_REFERRAL = {
+    date_allegation: todayStr(),
+    date_referred: todayStr(),
+    subject_staff_id: "",
+    allegation_type: "" as LadoAllegationType | "",
+    child_id: "",
+    lado_name: "",
+    allegation_summary: "",
+    evidence_summary: "",
+  };
+  const [ref, setRef] = useState(EMPTY_REFERRAL);
+  const setR = <K extends keyof typeof EMPTY_REFERRAL>(k: K, v: (typeof EMPTY_REFERRAL)[K]) =>
+    setRef((f) => ({ ...f, [k]: v }));
+  // A LADO referral that does not say who it is about, what is alleged, or
+  // what happened is not a referral. Everything else can follow.
+  const canSubmitReferral =
+    ref.subject_staff_id !== "" && ref.allegation_type !== "" && ref.allegation_summary.trim() !== "";
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -328,16 +351,19 @@ export default function LADOReferralsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New LADO Referral</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label htmlFor="6c8e-date-of-allegation">Date of Allegation</Label><Input id="6c8e-date-of-allegation" type="date" /></div>
-            <div><Label htmlFor="6c8e-date-referred">Date Referred</Label><Input id="6c8e-date-referred" type="date" /></div>
-            <div><Label htmlFor="6c8e-subject-staff-member">Subject Staff Member</Label><Select><SelectTrigger id="6c8e-subject-staff-member"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="staff_anna">Priya</SelectItem><SelectItem value="staff_edward">Daniel</SelectItem><SelectItem value="staff_ryan">Marcus</SelectItem><SelectItem value="staff_chervelle">Naomi</SelectItem><SelectItem value="staff_lackson">Samuel</SelectItem><SelectItem value="staff_mirela">Elena</SelectItem></SelectContent></Select></div>
-            <div><Label htmlFor="6c8e-allegation-type">Allegation Type</Label><Select><SelectTrigger id="6c8e-allegation-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LADO_ALLEGATION_TYPE_LABEL) as LadoAllegationType[]).map((k) => (<SelectItem key={k} value={k}>{LADO_ALLEGATION_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label htmlFor="6c8e-child-involved">Child Involved</Label><Select><SelectTrigger id="6c8e-child-involved"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
-            <div><Label htmlFor="6c8e-lado-name">LADO Name</Label><Input id="6c8e-lado-name" placeholder="LADO officer name" /></div>
-            <div className="col-span-2"><Label htmlFor="6c8e-allegation-summary">Allegation Summary</Label><Textarea id="6c8e-allegation-summary" placeholder="Describe the allegation…" rows={4} /></div>
-            <div className="col-span-2"><Label htmlFor="6c8e-evidence-summary">Evidence Summary</Label><Textarea id="6c8e-evidence-summary" placeholder="Evidence gathered so far…" rows={3} /></div>
+            <div><Label htmlFor="6c8e-date-of-allegation">Date of Allegation</Label><Input id="6c8e-date-of-allegation" type="date" max={todayStr()} value={ref.date_allegation} onChange={(e) => setR("date_allegation", e.target.value)} /></div>
+            <div><Label htmlFor="6c8e-date-referred">Date Referred</Label><Input id="6c8e-date-referred" type="date" max={todayStr()} value={ref.date_referred} onChange={(e) => setR("date_referred", e.target.value)} /></div>
+            <div><Label htmlFor="6c8e-subject-staff-member">Subject Staff Member</Label><Select value={ref.subject_staff_id} onValueChange={(v) => setR("subject_staff_id", v)}><SelectTrigger id="6c8e-subject-staff-member"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="staff_anna">Priya</SelectItem><SelectItem value="staff_edward">Daniel</SelectItem><SelectItem value="staff_ryan">Marcus</SelectItem><SelectItem value="staff_chervelle">Naomi</SelectItem><SelectItem value="staff_lackson">Samuel</SelectItem><SelectItem value="staff_mirela">Elena</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-allegation-type">Allegation Type</Label><Select value={ref.allegation_type} onValueChange={(v) => setR("allegation_type", v as LadoAllegationType)}><SelectTrigger id="6c8e-allegation-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LADO_ALLEGATION_TYPE_LABEL) as LadoAllegationType[]).map((k) => (<SelectItem key={k} value={k}>{LADO_ALLEGATION_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-child-involved">Child Involved</Label><Select value={ref.child_id} onValueChange={(v) => setR("child_id", v)}><SelectTrigger id="6c8e-child-involved"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
+            <div><Label htmlFor="6c8e-lado-name">LADO Name</Label><Input id="6c8e-lado-name" placeholder="LADO officer name" value={ref.lado_name} onChange={(e) => setR("lado_name", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="6c8e-allegation-summary">Allegation Summary</Label><Textarea id="6c8e-allegation-summary" placeholder="Describe the allegation…" rows={4} value={ref.allegation_summary} onChange={(e) => setR("allegation_summary", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="6c8e-evidence-summary">Evidence Summary</Label><Textarea id="6c8e-evidence-summary" placeholder="Evidence gathered so far…" rows={3} value={ref.evidence_summary} onChange={(e) => setR("evidence_summary", e.target.value)} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Submit Referral</Button></DialogFooter>
+          {!canSubmitReferral && (
+            <p className="text-xs text-amber-700">Name the staff member, the allegation type and what is alleged before submitting — a LADO referral has to say who it concerns and what happened.</p>
+          )}
+          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button disabled={!canSubmitReferral || createMut.isPending} onClick={() => createMut.mutate({ date_allegation: ref.date_allegation, date_referred: ref.date_referred, referred_by: "staff_darren", subject_staff_id: ref.subject_staff_id, subject_staff_role: "", allegation_type: ref.allegation_type as LadoAllegationType, status: "referred" as LadoReferralStatus, outcome: "pending" as LadoOutcome, staff_action: "normal_duties" as LadoStaffAction, child_ids: ref.child_id ? [ref.child_id] : [], lado_name: ref.lado_name.trim(), lado_contact: "", allegation_summary: ref.allegation_summary.trim(), evidence_summary: ref.evidence_summary.trim() }, { onSuccess: () => { toast.success("LADO referral recorded"); setShowNew(false); setRef(EMPTY_REFERRAL); }, onError: () => toast.error("The referral did not save — nothing has been recorded") })}>{createMut.isPending ? "Submitting…" : "Submit Referral"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
