@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { PrintButton } from "@/components/ui/print-button";
 import { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -2356,10 +2357,13 @@ export default function ManagerControlCentrePage() {
       subtitle="What needs your attention today"
       caraContext={{ pageTitle: "Nothing needs your attention", sourceType: "child_record" }}
       actions={
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <Download className="h-4 w-4" />
-          Export Summary
-        </Button>
+        <PrintButton
+          title="Manager Control Centre"
+          subtitle="What needs your attention today"
+          label="Export Summary"
+          variant="outline"
+          size="sm"
+        />
       }
     >
       {/* ── summary stats bar ─────────────────────────────────────────────── */}

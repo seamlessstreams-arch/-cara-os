@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { PrintButton } from "@/components/ui/print-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -537,10 +538,7 @@ function ReportBuilderTab({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-700">Report Sections</h3>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-              <Download className="w-3.5 h-3.5" />
-              Export draft report
-            </Button>
+            <PrintButton title="Regulation 45 Report" subtitle="Draft" label="Export draft report" variant="outline" size="sm" />
           </div>
 
           {REPORT_THEMES.filter((t) => byTheme[t]?.length > 0).map((theme) => {
