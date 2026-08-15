@@ -5,7 +5,7 @@
 // Mark an action outcome as done, record what changed, rate effectiveness.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +70,7 @@ const EFFECTIVENESS_OPTIONS: { value: Effectiveness; label: string; color: strin
 // ── Modal ─────────────────────────────────────────────────────────────────────
 
 export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpdateModalProps) {
+  const uid = useId();
   const [open, setOpen] = useState(false);
   const [status, setStatus]               = useState<Status>(outcome.status);
   const [whatWasDone, setWhatWasDone]     = useState(outcome.what_was_done ?? "");
@@ -167,10 +168,10 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
 
               {/* What was done */}
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
+                <label htmlFor={`${uid}-what-was-done`} className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
                   What was done
                 </label>
-                <textarea
+                <textarea id={`${uid}-what-was-done`}
                   value={whatWasDone}
                   onChange={(e) => setWhatWasDone(e.target.value)}
                   rows={3}
@@ -181,10 +182,10 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
 
               {/* What changed */}
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
+                <label htmlFor={`${uid}-what-changed-impact`} className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
                   What changed / impact
                 </label>
-                <textarea
+                <textarea id={`${uid}-what-changed-impact`}
                   value={whatChanged}
                   onChange={(e) => setWhatChanged(e.target.value)}
                   rows={3}
@@ -218,10 +219,10 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
 
               {/* Effectiveness notes */}
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
+                <label htmlFor={`${uid}-effectiveness-notes`} className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 block">
                   Effectiveness notes
                 </label>
-                <textarea
+                <textarea id={`${uid}-effectiveness-notes`}
                   value={effNotes}
                   onChange={(e) => setEffNotes(e.target.value)}
                   rows={2}

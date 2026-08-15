@@ -8,7 +8,7 @@
 // mode settings, and per-agent access toggles.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,7 @@ function ToggleSwitch({
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function CaraGovernancePage() {
+  const uid = useId();
   // Report controls
   const [requireApproval, setRequireApproval] = useState(true);
   const [requireEvidence, setRequireEvidence] = useState(true);
@@ -233,11 +234,11 @@ export default function CaraGovernancePage() {
               description="Log every Cara agent execution for the full audit trail."
             />
             <div className="pt-2">
-              <Label className="text-sm">Minimum Confidence Score</Label>
+              <Label htmlFor={`${uid}-minimum-confidence-score`} className="text-sm">Minimum Confidence Score</Label>
               <p className="text-xs mb-2" style={{ color: "var(--cs-text-muted)" }}>
                 Sections below this score are flagged for review ({minConfidence}%)
               </p>
-              <Input
+              <Input id={`${uid}-minimum-confidence-score`}
                 type="number"
                 min={0}
                 max={100}
@@ -247,11 +248,11 @@ export default function CaraGovernancePage() {
               />
             </div>
             <div className="pt-2">
-              <Label className="text-sm">Max Report Age (days)</Label>
+              <Label htmlFor={`${uid}-max-report-age-days`} className="text-sm">Max Report Age (days)</Label>
               <p className="text-xs mb-2" style={{ color: "var(--cs-text-muted)" }}>
                 Reports older than this are flagged as stale
               </p>
-              <Input
+              <Input id={`${uid}-max-report-age-days`}
                 type="number"
                 min={7}
                 max={365}

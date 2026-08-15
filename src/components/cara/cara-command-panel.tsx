@@ -17,7 +17,7 @@
 //   />
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useId, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useCaraCommand } from "@/hooks/use-cara-command";
 import type { CaraCommandId } from "@/lib/cara/cara-types";
@@ -247,6 +247,7 @@ export function CaraCommandPanel({
   className,
   defaultCollapsed = false,
 }: CaraCommandPanelProps) {
+  const uid = useId();
   const cara = useCaraCommand();
 
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -527,12 +528,12 @@ export function CaraCommandPanel({
               {/* Command selector */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">
+                  <label htmlFor={`${uid}-command`} className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">
                     Command
                   </label>
                   <div className="relative flex-1">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[var(--cs-text-muted)]" />
-                    <input
+                    <input id={`${uid}-command`}
                       type="text"
                       value={commandSearch}
                       onChange={(e) => setCommandSearch(e.target.value)}
@@ -579,11 +580,11 @@ export function CaraCommandPanel({
               {selectedCommand && (
                 <>
                   <div>
-                    <label className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider block mb-1">
+                    <label htmlFor={`${uid}-source-text-or-instruction`} className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider block mb-1">
                       Source text or instruction
                     </label>
                     <div className="relative">
-                      <Textarea
+                      <Textarea id={`${uid}-source-text-or-instruction`}
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         placeholder={sourceContent

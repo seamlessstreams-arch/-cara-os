@@ -8,31 +8,27 @@
 // member". A placeholder is not a label either — it disappears on focus, and
 // is not exposed as an accessible name by every AT/browser pairing.
 //
-// 1,251 pairs across 205 page files were associated in one pass; this keeps
-// the next form from regressing. Scope is page files: a page renders once per
-// route, so a file-scoped id is unique in the document.
+// 1,251 pairs across 205 pages (#926) then 67 more across components and the
+// six files that pass deferred (#927). Nothing is excluded now.
 //
 // A label is a violation when it has no htmlFor, contains plain text (not a
 // JSX expression), wraps no control of its own, and is immediately followed
-// by a control that has no id. Fix: give the control an id and the label a
-// matching htmlFor — see any converted page, e.g.
-//   <Label htmlFor="a1b2-visit-date">Visit Date *</Label>
-//   <Input id="a1b2-visit-date" type="date" … />
+// by a control that has no id. Two correct fixes, and which one depends on
+// whether the markup can render more than once:
+//   - Page body (renders once per route): a file-scoped literal id is fine.
+//       <Label htmlFor="a1b2-visit-date">Visit Date *</Label>
+//       <Input id="a1b2-visit-date" type="date" … />
+//   - Anything reusable (a component, a card rendered per row): the id MUST
+//     be instance-scoped, or one instance's label focuses another's field.
+//       const uid = useId();
+//       <Label htmlFor={`${uid}-visit-date`}>Visit Date *</Label>
+//       <Input id={`${uid}-visit-date`} type="date" … />
 //
-// DEFERRED (not fixable this way — a file-scoped id would DUPLICATE at
-// runtime because the component renders many times on one page; these need
-// React.useId()):
-const DEFERRED = new Set([
-  "src/app/(platform)/intelligence/document-wizard/page.tsx", // SectionLabel ×18
-  "src/app/(platform)/maintenance/page.tsx",                  // MaintenanceCard ×2
-  "src/app/(platform)/management/cara/page.tsx",              // ToggleSwitch ×9
-  "src/app/(platform)/staffing-cover/page.tsx",               // PeriodRow ×2
-  "src/app/(platform)/visitors-feedback/page.tsx",            // Stars ×2
-  // Local `Label` here renders a <span>, not a <label> — htmlFor is
-  // meaningless on it (tsc caught the attempt). Needs a real element change,
-  // considered on its own rather than swept.
-  "src/app/(platform)/intelligence/cara/livers/page.tsx",
-]);
+// NOT a violation, and must not be "fixed": a real <label> element that
+// WRAPS its own control is implicitly associated already (23 such sites in
+// young-person-edit-dialog). Wrapping prose captions in <label> is also
+// wrong — it announces read-only text as a form field.
+const DEFERRED = new Set([]);
 // ─────────────────────────────────────────────────────────────────────────────
 const fs = require("node:fs");
 const path = require("node:path");
@@ -45,14 +41,14 @@ function* walk(dir) {
     if (entry.isDirectory()) {
       if (entry.name === "__tests__" || entry.name === "node_modules") continue;
       yield* walk(full);
-    } else if (entry.name === "page.tsx") {
+    } else if (/\.tsx$/.test(entry.name) && !/\.(test|spec)\.tsx$/.test(entry.name)) {
       yield full;
     }
   }
 }
 
 const violations = [];
-for (const file of walk("src/app")) {
+for (const file of [...walk("src/app"), ...walk("src/components")]) {
   const rel = file.split(path.sep).join("/");
   if (DEFERRED.has(rel)) continue;
   const text = fs.readFileSync(file, "utf8");
@@ -69,6 +65,16 @@ for (const file of walk("src/app")) {
     const tagEnd = window.indexOf(">", ctrl.index);
     const tag = window.slice(ctrl.index, tagEnd + 1);
     if (/\bid=/.test(tag)) continue;
+    // Implicit association: a real <label> that opens before this and closes
+    // after the control already names it — leave it alone.
+    const back = text.slice(Math.max(0, m.index - 300), m.index);
+    const open = back.lastIndexOf("<label");
+    if (open !== -1) {
+      const span = text.slice(Math.max(0, m.index - 300) + open, m.index + m[0].length + ctrl.index + 200);
+      const close = span.indexOf("</label>");
+      const cm = CONTROL.exec(span);
+      if (cm && (close === -1 || close > cm.index)) continue;
+    }
     const line = text.slice(0, m.index).split("\n").length;
     violations.push(`${rel}:${line}  "${m[2].trim().slice(0, 40)}"`);
   }

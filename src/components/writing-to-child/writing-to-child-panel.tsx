@@ -5,7 +5,7 @@
 // child-readability. Cara advises; the practitioner owns the final record.
 // Drop <WritingToChildPanel defaultRecordType="daily_log" /> into any editor.
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,7 @@ export function WritingToChildPanel({
   showAdvanced = true,
   showExamples = false,
 }: WritingToChildPanelProps) {
+  const uid = useId();
   const [recordType, setRecordType] = useState<WritingRecordType>(defaultRecordType);
   const [rawText, setRawText] = useState("");
   const [childAge, setChildAge] = useState("");
@@ -139,8 +140,8 @@ export function WritingToChildPanel({
         <p className="text-xs text-[var(--cs-text-muted)]">Write the record as evidence for professionals — but as memory for the child. Cara advises; you decide.</p>
         {showRecordTypeSelect && (
           <div className="flex flex-wrap items-center gap-2">
-            <label className="text-xs font-semibold text-[var(--cs-text-muted)]">Record type</label>
-            <select value={recordType} onChange={(e) => setRecordType(e.target.value as WritingRecordType)}
+            <label htmlFor={`${uid}-record-type`} className="text-xs font-semibold text-[var(--cs-text-muted)]">Record type</label>
+            <select id={`${uid}-record-type`} value={recordType} onChange={(e) => setRecordType(e.target.value as WritingRecordType)}
               className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1.5 text-sm">
               {RECORD_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>

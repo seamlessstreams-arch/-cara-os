@@ -2,7 +2,7 @@
 
 // CARA — CALENDAR event editor (create / edit slide-over)
 
-import React, { useEffect, useState } from "react";
+import React, { useId, useEffect, useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { X, Plus, Trash2 } from "lucide-react";
 import { api } from "@/hooks/use-api";
@@ -100,6 +100,7 @@ export function EventEditor({
   editing?: CalendarEvent | null;
   onSaved?: (id: string) => void;
 }) {
+  const uid = useId();
   const yp = useYoungPeople();
   const staff = useStaff();
   const qc = useQueryClient();
@@ -257,20 +258,20 @@ export function EventEditor({
 
         <form onSubmit={submit} className="space-y-4 px-5 py-4">
           <div>
-            <label className={labelCls}>Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="e.g. Placement planning meeting" />
+            <label htmlFor={`${uid}-title`} className={labelCls}>Title</label>
+            <input id={`${uid}-title`} value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="e.g. Placement planning meeting" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Type</label>
-              <select value={eventType} onChange={(e) => setEventType(e.target.value as EventType)} className={`${inputCls} capitalize`}>
+              <label htmlFor={`${uid}-type`} className={labelCls}>Type</label>
+              <select id={`${uid}-type`} value={eventType} onChange={(e) => setEventType(e.target.value as EventType)} className={`${inputCls} capitalize`}>
                 {EVENT_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Date</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+              <label htmlFor={`${uid}-date`} className={labelCls}>Date</label>
+              <input id={`${uid}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
             </div>
           </div>
 
@@ -282,24 +283,24 @@ export function EventEditor({
           {!allDay && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Start</label>
-                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inputCls} />
+                <label htmlFor={`${uid}-start`} className={labelCls}>Start</label>
+                <input id={`${uid}-start`} type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>End</label>
-                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputCls} />
+                <label htmlFor={`${uid}-end`} className={labelCls}>End</label>
+                <input id={`${uid}-end`} type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputCls} />
               </div>
             </div>
           )}
 
           <div>
-            <label className={labelCls}>Location</label>
-            <input value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} placeholder="Room, address or video link" />
+            <label htmlFor={`${uid}-location`} className={labelCls}>Location</label>
+            <input id={`${uid}-location`} value={location} onChange={(e) => setLocation(e.target.value)} className={inputCls} placeholder="Room, address or video link" />
           </div>
 
           <div>
-            <label className={labelCls}>Linked young person (optional)</label>
-            <select value={childId} onChange={(e) => setChildId(e.target.value)} className={inputCls}>
+            <label htmlFor={`${uid}-linked-young-person-optional`} className={labelCls}>Linked young person (optional)</label>
+            <select id={`${uid}-linked-young-person-optional`} value={childId} onChange={(e) => setChildId(e.target.value)} className={inputCls}>
               <option value="">— None —</option>
               {youngPeople.map((c) => (
                 <option key={c.id} value={c.id}>{c.preferred_name || c.first_name} {c.last_name}</option>
@@ -341,16 +342,16 @@ export function EventEditor({
           </div>
 
           <div>
-            <label className={labelCls}>Reminder</label>
-            <select value={reminder ?? ""} onChange={(e) => setReminder(e.target.value === "" ? null : Number(e.target.value))} className={inputCls}>
+            <label htmlFor={`${uid}-reminder`} className={labelCls}>Reminder</label>
+            <select id={`${uid}-reminder`} value={reminder ?? ""} onChange={(e) => setReminder(e.target.value === "" ? null : Number(e.target.value))} className={inputCls}>
               {REMINDERS.map((r) => <option key={r.label} value={r.value ?? ""}>{r.label}</option>)}
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Repeats</label>
-              <select value={recurFreq} onChange={(e) => setRecurFreq(e.target.value as typeof recurFreq)} className={inputCls}>
+              <label htmlFor={`${uid}-repeats`} className={labelCls}>Repeats</label>
+              <select id={`${uid}-repeats`} value={recurFreq} onChange={(e) => setRecurFreq(e.target.value as typeof recurFreq)} className={inputCls}>
                 <option value="none">Does not repeat</option>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -360,8 +361,8 @@ export function EventEditor({
             </div>
             {recurFreq !== "none" && (
               <div>
-                <label className={labelCls}>Until (optional)</label>
-                <input type="date" value={recurUntil} onChange={(e) => setRecurUntil(e.target.value)} className={inputCls} />
+                <label htmlFor={`${uid}-until-optional`} className={labelCls}>Until (optional)</label>
+                <input id={`${uid}-until-optional`} type="date" value={recurUntil} onChange={(e) => setRecurUntil(e.target.value)} className={inputCls} />
               </div>
             )}
           </div>
@@ -395,8 +396,8 @@ export function EventEditor({
           )}
 
           <div>
-            <label className={labelCls}>Notes</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} placeholder="Agenda, purpose, anything useful…" />
+            <label htmlFor={`${uid}-notes`} className={labelCls}>Notes</label>
+            <textarea id={`${uid}-notes`} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} placeholder="Agenda, purpose, anything useful…" />
           </div>
 
           {error && <p className="text-sm text-[var(--cs-warning)]">{error}</p>}

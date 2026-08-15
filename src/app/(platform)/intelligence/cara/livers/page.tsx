@@ -4,7 +4,7 @@
 // CARA — Cara L.I.V.E.R.S. INTERVENTION INTELLIGENCE
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useId, useState, useMemo } from "react";
 import type { YoungPerson, StaffMember } from "@/types";
 
 interface YPEnriched extends YoungPerson {
@@ -331,11 +331,16 @@ function getLiversRoleAccess(role: AppRole): LiversRoleAccess {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function Label({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span className={cn("text-[10px] font-semibold uppercase tracking-wider", className)}>
-      {children}
-    </span>
+// Most uses here caption read-only content ("Cara Summary" over a paragraph),
+// which is a span, not a label — wrapping those in <label> would announce
+// prose as a form field. Pass htmlFor only where the text really does name a
+// control, and it becomes a real <label> that screen readers can associate.
+function Label({ children, className, htmlFor }: { children: React.ReactNode; className?: string; htmlFor?: string }) {
+  const cls = cn("text-[10px] font-semibold uppercase tracking-wider", className);
+  return htmlFor ? (
+    <label htmlFor={htmlFor} className={cls}>{children}</label>
+  ) : (
+    <span className={cls}>{children}</span>
   );
 }
 
@@ -419,6 +424,9 @@ function AnalysisCard({
   generatingKey: string | null;
   access: LiversRoleAccess;
 }) {
+  // AnalysisCard renders once per analysis, so the field ids must be
+  // instance-scoped — a fixed id would make one card's label focus another's.
+  const uid = useId();
   const updateAnalysis = useUpdateLiversAnalysis();
   const { currentUser, currentRole } = useAuthContext();
   const [auditComment, setAuditComment] = useState("");
@@ -583,8 +591,9 @@ function AnalysisCard({
 
         {access.canAuditComment && (
           <div className="rounded-lg border bg-white p-3 space-y-2">
-            <Label className="text-[var(--cs-text-muted)]">Audit Comment</Label>
+            <Label htmlFor={`${uid}-audit-comment`} className="text-[var(--cs-text-muted)]">Audit Comment</Label>
             <textarea
+              id={`${uid}-audit-comment`}
               rows={2}
               value={auditComment}
               onChange={(e) => setAuditComment(e.target.value)}
@@ -1115,10 +1124,11 @@ export default function LiversPage() {
             {selectedChildId && (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5">
+                  <label htmlFor="livers-records-input" className="block text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5">
                     Paste records / context for Cara to analyse (optional but recommended)
                   </label>
                   <textarea
+                    id="livers-records-input"
                     rows={5}
                     placeholder="Paste key work notes, incident records, missing episode details, risk assessment extracts, chronology entries..."
                     value={recordsInput}
