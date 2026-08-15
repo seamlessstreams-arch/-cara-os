@@ -356,7 +356,7 @@ export default function DeprivationOfLibertyPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label htmlFor="1877-date-imposed">Date Imposed</Label><Input id="1877-date-imposed" type="date" value={dolForm.date_imposed} onChange={(e) => setDF("date_imposed", e.target.value)} /></div>
+              <div><Label htmlFor="1877-date-imposed">Date Imposed</Label><Input id="1877-date-imposed" type="date" max={todayStr()} value={dolForm.date_imposed} onChange={(e) => setDF("date_imposed", e.target.value)} /></div>
               <div><Label htmlFor="1877-review-date">Review Date</Label><Input id="1877-review-date" type="date" value={dolForm.review_date} onChange={(e) => setDF("review_date", e.target.value)} /></div>
             </div>
             <div><Label htmlFor="1877-description">Description *</Label><Textarea id="1877-description" placeholder="Describe the restriction in detail..." value={dolForm.description} onChange={(e) => setDF("description", e.target.value)} /></div>

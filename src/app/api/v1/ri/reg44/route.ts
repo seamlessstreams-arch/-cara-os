@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
   const body = __parsed.data;
   const __missing = requireFields(body, ["visitor_name"]);
   if (__missing) return __missing;
+  const __fd = rejectFutureDates(body, ["visit_date"]); if (__fd) return __fd;
   const record = intelligenceDb.reg44Visits.create({
     home_id: body.home_id ?? "home_oak",
     visit_number: body.visit_number ?? 1,

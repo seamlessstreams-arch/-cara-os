@@ -25,7 +25,7 @@ import {
   ClipboardList, Eye, Plus, Loader2, ArrowRight,
   BarChart3,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { todayStr, cn } from "@/lib/utils";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -154,7 +154,7 @@ function NewVisitDialog({ onCreated }: { onCreated?: () => void }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visit_date">Visit Date *</Label>
-              <Input id="visit_date" type="date" value={form.visit_date} onChange={(e) => set("visit_date", e.target.value)} />
+              <Input id="visit_date" type="date" max={todayStr()} value={form.visit_date} onChange={(e) => set("visit_date", e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="duration">Duration</Label>

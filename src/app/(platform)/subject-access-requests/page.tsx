@@ -376,7 +376,7 @@ export default function SubjectAccessRequestsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label htmlFor="a5e0-date-received">Date Received</Label><Input id="a5e0-date-received" type="date" value={sarForm.date_received} onChange={(e) => setSAR("date_received", e.target.value)} /></div>
+            <div><Label htmlFor="a5e0-date-received">Date Received</Label><Input id="a5e0-date-received" type="date" max={todayStr()} value={sarForm.date_received} onChange={(e) => setSAR("date_received", e.target.value)} /></div>
             <div><Label htmlFor="a5e0-details">Details</Label><Textarea id="a5e0-details" placeholder="Describe what data is being requested..." value={sarForm.notes} onChange={(e) => setSAR("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

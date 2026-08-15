@@ -427,7 +427,7 @@ export default function VoiceOfChildPage() {
                   </SelectContent>
                 </Select>
                 <Input
-                  type="date"
+                  type="date" max={todayStr()}
                   value={r.recordDate}
                   onChange={(e) => updateRecord(i, { recordDate: e.target.value })}
                 />

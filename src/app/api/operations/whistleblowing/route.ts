@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
   if (guard instanceof NextResponse) return guard;
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
+    const __fd = rejectFutureDates(body, ["referralDate"]); if (__fd) return __fd;
     const { action, homeId } = body;
 
     if (!homeId) {

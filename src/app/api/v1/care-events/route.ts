@@ -6,6 +6,7 @@ import { getUserIdFromRequest } from "@/lib/auth-guard";
 import { todayStr } from "@/lib/utils";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Base care-events collection endpoint.
@@ -124,6 +125,7 @@ export async function POST(req: NextRequest) {
     const __parsed = await readJsonBody(req);
     if (!__parsed.ok) return __parsed.response;
     body = __parsed.data as Record<string, unknown>;
+    const __fd = rejectFutureDates(body, ["event_date"]); if (__fd) return __fd;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { todayStr } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -182,7 +183,7 @@ export function YoungPersonEditDialog({
             <label className="block space-y-1"><Label>Last name *</Label><Input value={form.last_name} onChange={set("last_name")} /></label>
             <label className="block space-y-1"><Label>Preferred name</Label><Input value={form.preferred_name} onChange={set("preferred_name")} /></label>
             <label className="block space-y-1"><Label>Gender</Label><Input value={form.gender} onChange={set("gender")} /></label>
-            <label className="block space-y-1"><Label>Date of birth *</Label><Input type="date" value={form.date_of_birth} onChange={set("date_of_birth")} onClick={openPicker} onFocus={openPicker} /></label>
+            <label className="block space-y-1"><Label>Date of birth *</Label><Input type="date" max={todayStr()} value={form.date_of_birth} onChange={set("date_of_birth")} onClick={openPicker} onFocus={openPicker} /></label>
             <label className="block space-y-1"><Label>Ethnicity</Label><Input value={form.ethnicity} onChange={set("ethnicity")} /></label>
             <label className="block space-y-1"><Label>Religion</Label><Input value={form.religion} onChange={set("religion")} /></label>
           </div>

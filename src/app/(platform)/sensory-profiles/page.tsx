@@ -487,7 +487,7 @@ export default function SensoryProfilesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="29e4-assessment-date" className="text-sm font-medium">Assessment Date</label>
-                <input id="29e4-assessment-date" type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.assessment_date} onChange={(e) => setSP("assessment_date", e.target.value)} />
+                <input id="29e4-assessment-date" type="date" max={todayStr()} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.assessment_date} onChange={(e) => setSP("assessment_date", e.target.value)} />
               </div>
               <div>
                 <label htmlFor="29e4-review-date" className="text-sm font-medium">Review Date</label>

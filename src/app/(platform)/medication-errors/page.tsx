@@ -777,7 +777,7 @@ function NewErrorDialog({
             </div>
             <div>
               <label htmlFor="091d-date-occurred" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Date Occurred *</label>
-              <Input id="091d-date-occurred" type="date" value={date_occurred} onChange={(e) => setDateOccurred(e.target.value)} className="h-8 text-xs" />
+              <Input id="091d-date-occurred" type="date" max={todayStr()} value={date_occurred} onChange={(e) => setDateOccurred(e.target.value)} className="h-8 text-xs" />
             </div>
             <div>
               <label htmlFor="091d-time-occurred" className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Time Occurred</label>

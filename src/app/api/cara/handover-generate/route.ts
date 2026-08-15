@@ -15,6 +15,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { orchestrate } from "@/lib/cara/orchestrator";
 import type { CaraRequest } from "@/lib/cara/orchestrator/types";
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { todayStr } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,6 +207,7 @@ export async function POST(req: NextRequest) {
     const __parsed = await readJsonBody(req);
     if (!__parsed.ok) return __parsed.response;
     const body = __parsed.data as HandoverGenerateRequest;
+    const __fd = rejectFutureDates(body as unknown as Record<string, unknown>, ["shiftDate"]); if (__fd) return __fd;
 
     if (!body.homeId || !body.userId || !body.role) {
       return NextResponse.json(

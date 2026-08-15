@@ -404,7 +404,7 @@ export default function VisitorsFeedbackPage() {
                   <SelectContent>{Object.entries(VISITORS_FEEDBACK_ROLE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label htmlFor={`${uid}-visit-date`} className="text-sm font-medium">Visit Date</label><Input id={`${uid}-visit-date`} type="date" className="mt-1" value={vfForm.visit_date} onChange={(e) => setVF("visit_date", e.target.value)} /></div>
+              <div><label htmlFor={`${uid}-visit-date`} className="text-sm font-medium">Visit Date</label><Input id={`${uid}-visit-date`} type="date" max={todayStr()} className="mt-1" value={vfForm.visit_date} onChange={(e) => setVF("visit_date", e.target.value)} /></div>
             </div>
             <div><label htmlFor={`${uid}-rating-1-5`} className="text-sm font-medium">Rating (1–5)</label><Input id={`${uid}-rating-1-5`} type="number" min="1" max="5" className="mt-1" value={vfForm.rating} onChange={(e) => setVF("rating", e.target.value)} /></div>
             <div><label htmlFor={`${uid}-positives`} className="text-sm font-medium">Positives</label><Textarea id={`${uid}-positives`} className="mt-1" rows={2} placeholder="One per line…" value={vfForm.positives} onChange={(e) => setVF("positives", e.target.value)} /></div>

@@ -443,7 +443,7 @@ export default function ReferralTrackerPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label htmlFor="c3db-gender">Gender</Label><Select value={rfForm.gender} onValueChange={(v) => setRF("gender", v)}><SelectTrigger id="c3db-gender" className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
-              <div><Label htmlFor="c3db-referral-date">Referral Date</Label><Input id="c3db-referral-date" type="date" className="mt-1" value={rfForm.referral_date} onChange={(e) => setRF("referral_date", e.target.value)} /></div>
+              <div><Label htmlFor="c3db-referral-date">Referral Date</Label><Input id="c3db-referral-date" type="date" max={todayStr()} className="mt-1" value={rfForm.referral_date} onChange={(e) => setRF("referral_date", e.target.value)} /></div>
             </div>
             <div><Label htmlFor="c3db-referring-authority">Referring Authority *</Label><Input id="c3db-referring-authority" className="mt-1" placeholder="e.g. Essex County Council" value={rfForm.referring_authority} onChange={(e) => setRF("referring_authority", e.target.value)} /></div>
             <div><Label htmlFor="c3db-social-worker-name">Social Worker Name</Label><Input id="c3db-social-worker-name" className="mt-1" placeholder="Name of allocated social worker" value={rfForm.social_worker_name} onChange={(e) => setRF("social_worker_name", e.target.value)} /></div>

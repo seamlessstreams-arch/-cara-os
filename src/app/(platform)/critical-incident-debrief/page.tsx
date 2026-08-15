@@ -343,8 +343,8 @@ export default function CriticalIncidentDebriefPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Schedule Debrief</DialogTitle></DialogHeader>
           <form onSubmit={handleScheduleDebrief} className="space-y-3">
-            <div><Label htmlFor="1c76-incident-date">Incident Date</Label><Input id="1c76-incident-date" type="date" value={cidForm.incident_date} onChange={(e) => setCID("incident_date", e.target.value)} /></div>
-            <div><Label htmlFor="1c76-debrief-date">Debrief Date</Label><Input id="1c76-debrief-date" type="date" value={cidForm.debrief_date} onChange={(e) => setCID("debrief_date", e.target.value)} /></div>
+            <div><Label htmlFor="1c76-incident-date">Incident Date</Label><Input id="1c76-incident-date" type="date" max={todayStr()} value={cidForm.incident_date} onChange={(e) => setCID("incident_date", e.target.value)} /></div>
+            <div><Label htmlFor="1c76-debrief-date">Debrief Date</Label><Input id="1c76-debrief-date" type="date" max={todayStr()} value={cidForm.debrief_date} onChange={(e) => setCID("debrief_date", e.target.value)} /></div>
             <div>
               <Label htmlFor="1c76-category">Category</Label>
               <Select value={cidForm.incident_category} onValueChange={(v) => setCID("incident_category", v)}><SelectTrigger id="1c76-category"><SelectValue placeholder="Select category" /></SelectTrigger>

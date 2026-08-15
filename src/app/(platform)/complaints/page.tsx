@@ -451,7 +451,7 @@ function NewComplaintDialog({
             <div>
               <label htmlFor="6ecf-date-received" className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Date received</label>
               <Input id="6ecf-date-received"
-                type="date"
+                type="date" max={todayStr()}
                 value={form.date_received}
                 onChange={(e) => setForm((p) => ({ ...p, date_received: e.target.value }))}
                 className="h-8 text-xs"
