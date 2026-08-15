@@ -874,10 +874,13 @@ function MARChartTab({
           <div className="text-sm font-semibold text-slate-900">7-Day Medication Administration Record</div>
           <div className="text-xs text-slate-500 mt-0.5">{formatShortDate(days[0])} — {formatShortDate(days[6])}</div>
         </div>
-        <Button variant="outline" size="sm" className="text-xs">
-          <FileText className="h-3.5 w-3.5" />
-          Print MAR Sheet
-        </Button>
+        <PrintButton
+          title="Medication Administration Record"
+          subtitle="7-day MAR sheet"
+          label="Print MAR Sheet"
+          variant="outline"
+          size="sm"
+        />
       </div>
 
       {byYP.map(({ yp, mar: ypMAR }) => (

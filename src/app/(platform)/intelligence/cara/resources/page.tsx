@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useEffect } from "react";
+import { PrintButton } from "@/components/ui/print-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -198,9 +199,7 @@ function ResourceCard({ resource, onApprove }: { resource: ChildResource; onAppr
             <CheckCircle2 className="h-3 w-3" />Approve
           </Button>
         )}
-        <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1">
-          <Printer className="h-3 w-3" />Print
-        </Button>
+        <PrintButton title={resource.title} subtitle="Child resource" label="Print" variant="outline" size="sm" />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { PrintButton } from "@/components/ui/print-button";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -1078,10 +1079,7 @@ export default function OfstedEvidenceRoomPage() {
                 <Button variant="outline" size="sm" onClick={() => setShowPack(false)}>
                   Close
                 </Button>
-                <Button size="sm" className="gap-1.5">
-                  <FileDown className="h-3.5 w-3.5" />
-                  Export as PDF
-                </Button>
+                <PrintButton title="Ofsted Evidence Pack" label="Export as PDF" size="sm" />
               </div>
             </div>
           </div>

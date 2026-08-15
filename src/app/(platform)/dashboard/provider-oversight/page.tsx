@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/hooks/use-api";
+import { PrintButton } from "@/components/ui/print-button";
 
 // ── useHomeName (inlined from use-home-profile) ─────────────────────────────
 
@@ -365,10 +366,7 @@ export default function ProviderOversightPage() {
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-1" />
-              Export Report
-            </Button>
+            <PrintButton title="Provider Oversight" label="Export Report" variant="outline" size="sm" />
           </div>
         </div>
 
@@ -629,10 +627,7 @@ export default function ProviderOversightPage() {
                 <CheckCircle2 className="h-4 w-4 mr-1" />
                 Mark Reviewed
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                Export Report
-              </Button>
+              <PrintButton title="Provider Oversight" label="Export Report" variant="outline" size="sm" />
             </div>
           </CardContent>
         </Card>

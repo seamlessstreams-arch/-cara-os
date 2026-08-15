@@ -27,13 +27,13 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-// Known-inert buttons at the time this guard landed. See the note above:
-// this list is a burn-down. Do not add to it.
+// Known-inert buttons. This list is a burn-down: delete a line when its
+// button is wired, removed, or honestly disabled. Do not add to it.
+// 56 → 43: 7 were false positives (an <a href> wrapper the first version
+// could not see) and 6 were wired to PrintButton in the export batch.
 const BASELINE = new Set([
   "admissions/workflow|New Referral",
   "admissions/workflow|Advance to {PHASE_LABELS[nextPhase",
-  "buildings|View Vehicles",
-  "buildings|View Maintenance",
   "care-events|Review Regulation 45 evidence",
   "children/progress|Copy to Clipboard",
   "children/progress|Add to Report",
@@ -43,12 +43,10 @@ const BASELINE = new Set([
   "communications|Approve",
   "communications|Mark as Sent",
   "communications|Copy",
-  "dashboard/manager-control-centre|Export Summary",
   "dashboard/manager-control-centre|Open Record",
   "dashboard/manager-control-centre|Add Oversight </B",
   "dashboard/manager-control-centre|Assign Task",
   "dashboard/manager-control-centre|Request Cara Draft",
-  "dashboard/provider-oversight|Export Report",
   "dashboard/provider-oversight|Request Action",
   "dashboard/provider-oversight|Mark Reviewed",
   "direct-work|Record a Session",
@@ -57,12 +55,9 @@ const BASELINE = new Set([
   "incidents/learning-review|Review Risk Assessment",
   "incidents/learning-review|Escalate to RI",
   "intelligence/cara/resources|Preview",
-  "intelligence/cara/resources|Print",
   "intelligence/cara/studio|Review gaps",
   "mandatory-training-matrix|Schedule refresher",
-  "medication|Print MAR Sheet",
   "professional-contact|Add Contact",
-  "quality/ofsted-evidence-room|Export as PDF",
   "quality/ofsted-evidence-room|Link Record",
   "quality/ofsted-evidence-room|View Source",
   "quality/reg-44|Add Action",
@@ -71,12 +66,6 @@ const BASELINE = new Set([
   "quality/reg-45|Request Cara D",
   "quality/reg-45|Request Cara Draft",
   "quality/reg-45|Auto-Link Evidence",
-  "recruitment/candidates/[candidateId]|Export",
-  "recruitment|Export",
-  "recruitment|Generate",
-  "recruitment/safer-recruitment/audit|Generate Inspection Bundle",
-  "recruitment/safer-recruitment/checks|Export Grid",
-  "regulation-45|Export draft report",
   "safeguarding|Log Concern",
   "staff/competence-passport|Assign Training",
   "staff/competence-passport|Schedule Supervision",
@@ -136,6 +125,10 @@ for (const file of walk("src/app")) {
     const back = text.slice(Math.max(0, m.index - 500), m.index);
     if (/<Link\b[^>]*>\s*(\{[^}]*\}\s*)?$/s.test(back)) continue;
     if (/<\w*Trigger\b[^>]*>\s*$/s.test(back)) continue;
+    // A plain <a href="…" download> wrapper is real wiring too — the anchor
+    // carries the action. Missing this cost the first baseline 7 false
+    // positives (every recruitment CSV export, both buildings links).
+    if (/<a\s[^>]*href=[^>]*>\s*$/s.test(back)) continue;
 
     if (BASELINE.has(`${page}|${label}`)) continue;
     const line = text.slice(0, m.index).split("\n").length;
