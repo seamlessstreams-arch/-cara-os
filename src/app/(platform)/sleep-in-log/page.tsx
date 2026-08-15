@@ -308,7 +308,7 @@ export default function SleepInLogPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Sleep-In</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateSleepIn} className="space-y-3">
-            <div><Label htmlFor="d4d5-date">Date</Label><Input id="d4d5-date" type="date" value={siForm.date} onChange={(e) => setSI("date", e.target.value)} /></div>
+            <div><Label htmlFor="d4d5-date">Date</Label><Input id="d4d5-date" type="date" max={todayStr()} value={siForm.date} onChange={(e) => setSI("date", e.target.value)} /></div>
             <div><Label htmlFor="d4d5-staff-member">Staff Member</Label><Select value={siForm.staff_member} onValueChange={(v) => setSI("staff_member", v)}><SelectTrigger id="d4d5-staff-member"><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3"><div><Label htmlFor="d4d5-start-time">Start Time</Label><Input id="d4d5-start-time" type="time" value={siForm.start_time} onChange={(e) => setSI("start_time", e.target.value)} /></div><div><Label htmlFor="d4d5-end-time">End Time</Label><Input id="d4d5-end-time" type="time" value={siForm.end_time} onChange={(e) => setSI("end_time", e.target.value)} /></div></div>
             <div><Label htmlFor="d4d5-room-used">Room Used</Label><Input id="d4d5-room-used" value={siForm.room_used} onChange={(e) => setSI("room_used", e.target.value)} /></div>

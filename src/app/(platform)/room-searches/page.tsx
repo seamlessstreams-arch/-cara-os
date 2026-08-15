@@ -608,7 +608,7 @@ export default function RoomSearchesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="b2c0-date" className="text-sm font-medium mb-1 block">Date</label>
-                <Input id="b2c0-date" type="date" value={rsForm.date} onChange={(e) => setRS("date", e.target.value)} />
+                <Input id="b2c0-date" type="date" max={todayStr()} value={rsForm.date} onChange={(e) => setRS("date", e.target.value)} />
               </div>
               <div>
                 <label htmlFor="b2c0-time" className="text-sm font-medium mb-1 block">Time</label>

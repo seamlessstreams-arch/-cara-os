@@ -259,7 +259,7 @@ export default function DebriefsPage() {
           <DialogHeader><DialogTitle>New Debrief</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateDebrief} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label htmlFor="8346-date" className="text-sm font-medium">Date</label><Input id="8346-date" type="date" value={debForm.date} onChange={(e) => setDeb("date", e.target.value)} /></div>
+              <div><label htmlFor="8346-date" className="text-sm font-medium">Date</label><Input id="8346-date" type="date" max={todayStr()} value={debForm.date} onChange={(e) => setDeb("date", e.target.value)} /></div>
               <div>
                 <label htmlFor="8346-type" className="text-sm font-medium">Type</label>
                 <Select value={debForm.type} onValueChange={(v) => setDeb("type", v)}><SelectTrigger id="8346-type"><SelectValue placeholder="Type" /></SelectTrigger>

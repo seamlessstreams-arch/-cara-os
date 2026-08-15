@@ -348,7 +348,7 @@ export default function ShiftNotesPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="7fa3-date" className="text-sm font-medium">Date</label>
-                <Input id="7fa3-date" type="date" value={snForm.date} onChange={(e) => setSNF("date", e.target.value)} />
+                <Input id="7fa3-date" type="date" max={todayStr()} value={snForm.date} onChange={(e) => setSNF("date", e.target.value)} />
               </div>
               <div>
                 <label htmlFor="7fa3-shift" className="text-sm font-medium">Shift</label>

@@ -21,7 +21,7 @@ import {
   CheckCircle2, Clock, Eye, Users, BookOpen,
   ChevronDown, ChevronUp, Activity, FileText, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { todayStr, cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -483,7 +483,7 @@ export default function PreventDutyPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1">
               <Label htmlFor="pd-date">Date</Label>
-              <Input id="pd-date" type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
+              <Input id="pd-date" type="date" max={todayStr()} value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
             </div>
             <div className="space-y-1">
               <Label htmlFor="pd-staff">Reporter</Label>

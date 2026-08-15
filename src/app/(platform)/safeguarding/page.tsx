@@ -39,7 +39,7 @@ function useYoungPeople(status = "current") {
 }
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { todayStr, cn, formatDate, formatRelative } from "@/lib/utils";
 import { careToast } from "@/lib/toast";
 import type { Incident, YoungPerson, StaffMember } from "@/types";
 import type { MissingEpisode, ChronologyEntry, ChronologyCategory, TrainingNeed } from "@/types/extended";
@@ -1039,7 +1039,7 @@ function MFCTab() {
                 <div>
                   <label className="text-xs font-semibold text-slate-600 block mb-1.5">Date Missing <span className="text-[--cs-risk]">*</span></label>
                   <Input
-                    type="date"
+                    type="date" max={todayStr()}
                     value={logForm.date}
                     onChange={(e) => setLogForm((f) => ({ ...f, date: e.target.value }))}
                     className="text-sm"

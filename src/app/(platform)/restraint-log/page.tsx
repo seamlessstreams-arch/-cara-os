@@ -331,7 +331,7 @@ export default function RestraintLogPage() {
           <DialogHeader><DialogTitle>Record Physical Intervention</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveRestraint} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label htmlFor="8d22-date" className="text-sm font-medium">Date</label><Input id="8d22-date" type="date" value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
+              <div><label htmlFor="8d22-date" className="text-sm font-medium">Date</label><Input id="8d22-date" type="date" max={todayStr()} value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
               <div><label htmlFor="8d22-young-person" className="text-sm font-medium">Young Person *</label>
                 <Select value={rlForm.child_id} onValueChange={(v) => setRL("child_id", v)}><SelectTrigger id="8d22-young-person"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>

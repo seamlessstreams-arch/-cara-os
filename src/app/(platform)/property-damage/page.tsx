@@ -237,7 +237,7 @@ export default function PropertyDamagePage() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Report Property Damage</DialogTitle></DialogHeader>
           <form onSubmit={handleSaveDamage} className="grid grid-cols-2 gap-4 py-2">
-            <div><Label htmlFor="137c-date">Date</Label><Input id="137c-date" type="date" className="mt-1" value={pdForm.date} onChange={(e) => setPD("date", e.target.value)} /></div>
+            <div><Label htmlFor="137c-date">Date</Label><Input id="137c-date" type="date" max={todayStr()} className="mt-1" value={pdForm.date} onChange={(e) => setPD("date", e.target.value)} /></div>
             <div><Label htmlFor="137c-time">Time</Label><Input id="137c-time" type="time" className="mt-1" value={pdForm.time} onChange={(e) => setPD("time", e.target.value)} /></div>
             <div><Label htmlFor="137c-location">Location</Label><Select value={pdForm.location} onValueChange={(v) => setPD("location", v)}><SelectTrigger id="137c-location" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_LOCATION_LABEL) as PropertyLocation[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_LOCATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div><Label htmlFor="137c-damage-type">Damage Type</Label><Select value={pdForm.damage_type} onValueChange={(v) => setPD("damage_type", v)}><SelectTrigger id="137c-damage-type" className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_DAMAGE_TYPE_LABEL) as PropertyDamageType[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_DAMAGE_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>

@@ -16,10 +16,16 @@
 // time so the judgement is auditable rather than inferred from a regex.
 //
 // Deliberately NOT in scope, each checked rather than assumed:
-//   - a bare `date` field: ambiguous by name. The same identifier records a
+//   - a bare `date` field is ambiguous BY NAME. The same identifier records a
 //     past event on /incidents and a planned one on /rota, /shift-plan,
-//     /menu-planning and the calendar. Adjudicating it centrally would be a
-//     guess; it belongs to its page.
+//     /menu-planning and the calendar, so no central rule can adjudicate it —
+//     it is adjudicated PER PAGE instead, in BARE_DATE_PAGES below. Every page
+//     on that list was verified by reading its own form: each records
+//     something that already happened (a restraint used, a search conducted,
+//     an event that occurred), never something booked ahead. Pages absent
+//     from the list are not "unchecked" — several were checked and left off
+//     because they legitimately schedule (rota, shift-plan, menu-planning,
+//     house-meetings, staff-meetings, multi-agency-meetings, calendar).
 //   - meetingDate: /api/operations/multi-agency defaults `status` to
 //     "scheduled", so meetings are genuinely booked ahead.
 //   - independent-visitors visitDate: a visit may be planned. Not adjudicated.
@@ -28,6 +34,27 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 // Fields where a future value is definitionally impossible.
+// Surfaces whose bare `date` field records a past event — verified one at a
+// time against the form's own sibling fields, not inferred from the name.
+// A keyword-ratio heuristic was tried and rejected: it scored /rota as
+// "retrospective" (it is forward-planning) and water-hygiene as scheduling
+// (its checks are recorded when done).
+const BARE_DATE_PAGES = [
+  "src/app/(platform)/incidents/page.tsx",
+  "src/app/(platform)/restraint-log/page.tsx",
+  "src/app/(platform)/room-searches/page.tsx",
+  "src/app/(platform)/significant-events/page.tsx",
+  "src/app/(platform)/debriefs/page.tsx",
+  "src/app/(platform)/property-damage/page.tsx",
+  "src/app/(platform)/sleep-in-log/page.tsx",
+  "src/app/(platform)/shift-notes/page.tsx",
+  "src/app/(platform)/medication-audit/page.tsx",
+  "src/app/(platform)/prevent-duty/page.tsx",
+  "src/app/(platform)/safeguarding/page.tsx",
+  "src/components/forms/quick-incident-form.tsx",
+  "src/components/forms/quick-daily-log.tsx",
+];
+
 const PAST_EVENT = [
   "incidentDate", "incident_date",
   "eventDate", "event_date",
@@ -71,7 +98,9 @@ for (const file of walk("src", (n) => /\.tsx$/.test(n) && !/\.(test|spec)\.tsx$/
     const v = /value=\{([^}]{0,80})\}/.exec(tag);
     if (!v) continue;
     const field = v[1].replace(/^.*\./, "").replace(/ \?\? ""/, "").trim();
-    if (!PAST_EVENT.includes(field)) continue;
+    const inScope =
+      PAST_EVENT.includes(field) || (field === "date" && BARE_DATE_PAGES.includes(rel));
+    if (!inScope) continue;
     const line = text.slice(0, m.index).split("\n").length;
     violations.push(`${rel}:${line}  <input type="date"> for ${field} has no max — add max={todayStr()}`);
   }
