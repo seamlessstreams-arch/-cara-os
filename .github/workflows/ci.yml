@@ -136,6 +136,9 @@ jobs:
       - name: Wired-create-dialog guard (a create form submits what the user typed)
         run: node scripts/check-wired-create-dialogs.js
 
+      - name: Dead-button guard (an actionable-looking button does something)
+        run: node scripts/check-dead-buttons.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 
