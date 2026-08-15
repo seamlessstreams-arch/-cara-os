@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useId, useState, useMemo } from "react";
 import {
   MessageSquare, Plus, Search, ArrowUpDown, Filter,
   Star, ChevronDown, ChevronUp, Users, ClipboardCheck,
@@ -64,6 +64,7 @@ function Stars({ rating, max = 5 }: { rating: number; max?: number }) {
 
 /* ── component ──────────────────────────────────────────────────────────── */
 export default function VisitorsFeedbackPage() {
+  const uid = useId();
   const qc = useQueryClient();
   const { data: entries = [], isLoading } = useQuery<VisitorsFeedbackRecord[]>({
     queryKey: ["visitors-feedback-records"],
@@ -396,20 +397,20 @@ export default function VisitorsFeedbackPage() {
             <DialogTitle>Record Visitor Feedback</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveFeedback} className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Visitor Name *</label><Input className="mt-1" placeholder="Full name" value={vfForm.visitor_name} onChange={(e) => setVF("visitor_name", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-visitor-name`} className="text-sm font-medium">Visitor Name *</label><Input id={`${uid}-visitor-name`} className="mt-1" placeholder="Full name" value={vfForm.visitor_name} onChange={(e) => setVF("visitor_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Role</label>
-                <Select value={vfForm.visitor_role} onValueChange={(v) => setVF("visitor_role", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <div><label htmlFor={`${uid}-role`} className="text-sm font-medium">Role</label>
+                <Select value={vfForm.visitor_role} onValueChange={(v) => setVF("visitor_role", v)}><SelectTrigger id={`${uid}-role`} className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(VISITORS_FEEDBACK_ROLE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><label className="text-sm font-medium">Visit Date</label><Input type="date" className="mt-1" value={vfForm.visit_date} onChange={(e) => setVF("visit_date", e.target.value)} /></div>
+              <div><label htmlFor={`${uid}-visit-date`} className="text-sm font-medium">Visit Date</label><Input id={`${uid}-visit-date`} type="date" className="mt-1" value={vfForm.visit_date} onChange={(e) => setVF("visit_date", e.target.value)} /></div>
             </div>
-            <div><label className="text-sm font-medium">Rating (1–5)</label><Input type="number" min="1" max="5" className="mt-1" value={vfForm.rating} onChange={(e) => setVF("rating", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.positives} onChange={(e) => setVF("positives", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Concerns</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.concerns} onChange={(e) => setVF("concerns", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Suggestions</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.suggestions} onChange={(e) => setVF("suggestions", e.target.value)} /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes…" value={vfForm.notes} onChange={(e) => setVF("notes", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-rating-1-5`} className="text-sm font-medium">Rating (1–5)</label><Input id={`${uid}-rating-1-5`} type="number" min="1" max="5" className="mt-1" value={vfForm.rating} onChange={(e) => setVF("rating", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-positives`} className="text-sm font-medium">Positives</label><Textarea id={`${uid}-positives`} className="mt-1" rows={2} placeholder="One per line…" value={vfForm.positives} onChange={(e) => setVF("positives", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-concerns`} className="text-sm font-medium">Concerns</label><Textarea id={`${uid}-concerns`} className="mt-1" rows={2} placeholder="One per line…" value={vfForm.concerns} onChange={(e) => setVF("concerns", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-suggestions`} className="text-sm font-medium">Suggestions</label><Textarea id={`${uid}-suggestions`} className="mt-1" rows={2} placeholder="One per line…" value={vfForm.suggestions} onChange={(e) => setVF("suggestions", e.target.value)} /></div>
+            <div><label htmlFor={`${uid}-notes`} className="text-sm font-medium">Notes</label><Textarea id={`${uid}-notes`} className="mt-1" rows={2} placeholder="Additional notes…" value={vfForm.notes} onChange={(e) => setVF("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createFeedback.isPending}>{createFeedback.isPending ? "Saving…" : "Save Feedback"}</Button>

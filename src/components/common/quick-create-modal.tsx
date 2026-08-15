@@ -7,7 +7,7 @@
 // Used by the QuickCreateActions toolbar present in every page header.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +208,7 @@ export function QuickCreateModal({
   context = {},
   defaultTab = "task",
 }: QuickCreateModalProps) {
+  const uid = useId();
   const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
   const qc = useQueryClient();
@@ -396,8 +397,8 @@ export function QuickCreateModal({
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
-                    <textarea
+                    <label htmlFor={`${uid}-description`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
+                    <textarea id={`${uid}-description`}
                       value={taskForm.description}
                       onChange={(e) => setTaskForm((f) => ({ ...f, description: e.target.value }))}
                       rows={2}
@@ -411,8 +412,8 @@ export function QuickCreateModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
-                      <select
+                      <label htmlFor={`${uid}-priority`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
+                      <select id={`${uid}-priority`}
                         value={taskForm.priority}
                         onChange={(e) => setTaskForm((f) => ({ ...f, priority: e.target.value as Task["priority"] }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -423,8 +424,8 @@ export function QuickCreateModal({
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
-                      <select
+                      <label htmlFor={`${uid}-category`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
+                      <select id={`${uid}-category`}
                         value={taskForm.category}
                         onChange={(e) => setTaskForm((f) => ({ ...f, category: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -438,8 +439,8 @@ export function QuickCreateModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
-                      <Input
+                      <label htmlFor={`${uid}-due-date`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
+                      <Input id={`${uid}-due-date`}
                         type="date"
                         value={taskForm.due_date}
                         onChange={(e) => setTaskForm((f) => ({ ...f, due_date: e.target.value }))}
@@ -447,8 +448,8 @@ export function QuickCreateModal({
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assign To</label>
-                      <select
+                      <label htmlFor={`${uid}-assign-to`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assign To</label>
+                      <select id={`${uid}-assign-to`}
                         value={taskForm.assigned_to}
                         onChange={(e) => setTaskForm((f) => ({ ...f, assigned_to: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -463,8 +464,8 @@ export function QuickCreateModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Child</label>
-                      <select
+                      <label htmlFor={`${uid}-linked-child`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Child</label>
+                      <select id={`${uid}-linked-child`}
                         value={taskForm.linked_child_id}
                         onChange={(e) => setTaskForm((f) => ({ ...f, linked_child_id: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -521,8 +522,8 @@ export function QuickCreateModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Form Type</label>
-                      <select
+                      <label htmlFor={`${uid}-form-type`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Form Type</label>
+                      <select id={`${uid}-form-type`}
                         value={careForm.form_type}
                         onChange={(e) => setCareForm((f) => ({ ...f, form_type: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -533,8 +534,8 @@ export function QuickCreateModal({
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
-                      <select
+                      <label htmlFor={`${uid}-priority-2`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
+                      <select id={`${uid}-priority-2`}
                         value={careForm.priority}
                         onChange={(e) => setCareForm((f) => ({ ...f, priority: e.target.value as CareFormValues["priority"] }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -547,8 +548,8 @@ export function QuickCreateModal({
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description / Notes</label>
-                    <textarea
+                    <label htmlFor={`${uid}-description-notes`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description / Notes</label>
+                    <textarea id={`${uid}-description-notes`}
                       value={careForm.description}
                       onChange={(e) => setCareForm((f) => ({ ...f, description: e.target.value }))}
                       rows={2}
@@ -562,8 +563,8 @@ export function QuickCreateModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Child</label>
-                      <select
+                      <label htmlFor={`${uid}-linked-child-2`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Linked Child</label>
+                      <select id={`${uid}-linked-child-2`}
                         value={careForm.linked_child_id}
                         onChange={(e) => setCareForm((f) => ({ ...f, linked_child_id: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -575,8 +576,8 @@ export function QuickCreateModal({
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned Staff</label>
-                      <select
+                      <label htmlFor={`${uid}-assigned-staff`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned Staff</label>
+                      <select id={`${uid}-assigned-staff`}
                         value={careForm.linked_staff_id}
                         onChange={(e) => setCareForm((f) => ({ ...f, linked_staff_id: e.target.value }))}
                         className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -590,8 +591,8 @@ export function QuickCreateModal({
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
-                    <Input
+                    <label htmlFor={`${uid}-due-date-2`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
+                    <Input id={`${uid}-due-date-2`}
                       type="date"
                       value={careForm.due_date}
                       onChange={(e) => setCareForm((f) => ({ ...f, due_date: e.target.value }))}

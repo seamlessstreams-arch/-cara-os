@@ -5,7 +5,7 @@
 // Multi-step: Select → Paste/Name → Analyse → Review → Action
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useId, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn, formatDate } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -133,6 +133,7 @@ export function DocumentUploadModal({
   uploadContext,
   onClose,
 }: DocumentUploadModalProps) {
+  const uid = useId();
   const router = useRouter();
   const uploadMutation = useUploadDocument();
 
@@ -396,8 +397,8 @@ export function DocumentUploadModal({
               {/* Or manually enter file name */}
               {!fileName && (
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Or enter document name manually</label>
-                  <input
+                  <label htmlFor={`${uid}-or-enter-document-name-manuall`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Or enter document name manually</label>
+                  <input id={`${uid}-or-enter-document-name-manuall`}
                     type="text"
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}

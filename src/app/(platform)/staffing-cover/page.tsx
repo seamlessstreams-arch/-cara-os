@@ -4,7 +4,7 @@
 // Day-by-day, day/night cover vs the home policy — under, over (with/without a
 // reason), no-waking-night and phantom (scheduled-but-off) gaps, worst-first.
 
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -190,6 +190,7 @@ function PeriodRow({ p, showDate, onAddReason }: { p: PeriodCover; showDate?: bo
 }
 
 export default function StaffingCoverPage() {
+  const uid = useId();
   const { data: resp, isLoading, error } = useStaffingCover();
   const o = resp?.data;
 
@@ -339,17 +340,17 @@ export default function StaffingCoverPage() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs">Reason</Label>
+              <Label htmlFor={`${uid}-reason`} className="text-xs">Reason</Label>
               <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Choose a reason…" /></SelectTrigger>
+                <SelectTrigger id={`${uid}-reason`} className="mt-1"><SelectValue placeholder="Choose a reason…" /></SelectTrigger>
                 <SelectContent>
                   {COVER_REASONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Comment (optional)</Label>
-              <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder="e.g. Shadowing a new starter on days this week." className="mt-1 text-sm" />
+              <Label htmlFor={`${uid}-comment-optional`} className="text-xs">Comment (optional)</Label>
+              <Textarea id={`${uid}-comment-optional`} value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder="e.g. Shadowing a new starter on days this week." className="mt-1 text-sm" />
             </div>
             {logReason.isError && <p className="text-xs text-[var(--cs-risk)]">Couldn&apos;t log that just now — please try again.</p>}
           </div>
@@ -374,13 +375,13 @@ export default function StaffingCoverPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 rounded-lg bg-[var(--cs-surface)] p-3">
                   <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-navy)]"><Sun className="h-3.5 w-3.5 text-[var(--cs-warning)]" /> Day</p>
-                  <div><Label className="text-[11px]">Minimum</Label><Input type="number" min={0} max={20} value={form.min_day} onChange={(e) => setField("min_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
-                  <div><Label className="text-[11px]">Norm</Label><Input type="number" min={0} max={20} value={form.expected_day} onChange={(e) => setField("expected_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label htmlFor={`${uid}-minimum`} className="text-[11px]">Minimum</Label><Input id={`${uid}-minimum`} type="number" min={0} max={20} value={form.min_day} onChange={(e) => setField("min_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label htmlFor={`${uid}-norm`} className="text-[11px]">Norm</Label><Input id={`${uid}-norm`} type="number" min={0} max={20} value={form.expected_day} onChange={(e) => setField("expected_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
                 </div>
                 <div className="space-y-2 rounded-lg bg-[var(--cs-surface)] p-3">
                   <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-navy)]"><Moon className="h-3.5 w-3.5 text-[var(--cs-teal)]" /> Night</p>
-                  <div><Label className="text-[11px]">Minimum</Label><Input type="number" min={0} max={20} value={form.min_night} onChange={(e) => setField("min_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
-                  <div><Label className="text-[11px]">Norm</Label><Input type="number" min={0} max={20} value={form.expected_night} onChange={(e) => setField("expected_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label htmlFor={`${uid}-minimum-2`} className="text-[11px]">Minimum</Label><Input id={`${uid}-minimum-2`} type="number" min={0} max={20} value={form.min_night} onChange={(e) => setField("min_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label htmlFor={`${uid}-norm-2`} className="text-[11px]">Norm</Label><Input id={`${uid}-norm-2`} type="number" min={0} max={20} value={form.expected_night} onChange={(e) => setField("expected_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
                 </div>
               </div>
               <div>

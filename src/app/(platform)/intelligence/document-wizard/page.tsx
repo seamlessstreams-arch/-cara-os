@@ -5,7 +5,7 @@
 // Upload · Classify · Review · Place — powered by Cara
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useRef, useState } from "react";
+import React, { useId, useRef, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -142,6 +142,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function DocumentWizardPage() {
+  const uid = useId();
   const [stage, setStage]               = useState<WizardStage>("upload");
   const [file, setFile]                 = useState<File | null>(null);
   const [pasteMode, setPasteMode]       = useState(false);
@@ -407,10 +408,10 @@ export default function DocumentWizardPage() {
               <>
                 {/* Paste mode */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block">
+                  <label htmlFor={`${uid}-paste-document-text`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block">
                     Paste document text
                   </label>
-                  <textarea
+                  <textarea id={`${uid}-paste-document-text`}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)] min-h-[180px]"
                     placeholder="Paste the text from your document here..."
                     value={pastedText}

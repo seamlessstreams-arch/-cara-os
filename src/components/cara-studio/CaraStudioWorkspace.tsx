@@ -12,7 +12,7 @@
 //   - Approval/commit workflow buttons
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback } from "react";
+import React, { useId, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -140,6 +140,7 @@ export function CaraStudioWorkspace({
   currentRole,
   onGenerationComplete,
 }: CaraStudioWorkspaceProps) {
+  const uid = useId();
   // ── State ─────────────────────────────────────────────────────────────────
   const [selectedType, setSelectedType] = useState<GenerationType | null>(null);
   const [title, setTitle] = useState("");
@@ -303,8 +304,8 @@ export function CaraStudioWorkspace({
 
           {/* Title */}
           <div>
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Title *</label>
-            <input
+            <label htmlFor={`${uid}-title`} className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Title *</label>
+            <input id={`${uid}-title`}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -315,8 +316,8 @@ export function CaraStudioWorkspace({
 
           {/* Brief */}
           <div>
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Brief *</label>
-            <textarea
+            <label htmlFor={`${uid}-brief`} className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Brief *</label>
+            <textarea id={`${uid}-brief`}
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
               rows={3}
@@ -328,8 +329,8 @@ export function CaraStudioWorkspace({
           {/* Tone + Audience row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Tone</label>
-              <select
+              <label htmlFor={`${uid}-tone`} className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Tone</label>
+              <select id={`${uid}-tone`}
                 value={tone}
                 onChange={(e) => setTone(e.target.value as Tone)}
                 className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -340,8 +341,8 @@ export function CaraStudioWorkspace({
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Audience</label>
-              <select
+              <label htmlFor={`${uid}-audience`} className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Audience</label>
+              <select id={`${uid}-audience`}
                 value={audience}
                 onChange={(e) => setAudience(e.target.value as Audience)}
                 className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
@@ -355,8 +356,8 @@ export function CaraStudioWorkspace({
 
           {/* Additional context */}
           <div>
-            <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Additional Context (optional)</label>
-            <textarea
+            <label htmlFor={`${uid}-additional-context-optional`} className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1 block">Additional Context (optional)</label>
+            <textarea id={`${uid}-additional-context-optional`}
               value={additionalContext}
               onChange={(e) => setAdditionalContext(e.target.value)}
               rows={2}

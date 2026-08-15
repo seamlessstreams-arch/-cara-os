@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Brain, ShieldCheck, Sparkles, AlertTriangle, CheckCircle2, FileSearch, Wand2, XCircle } from "lucide-react";
 import type { CaraRoleMode } from "@/lib/cara/types";
 
@@ -38,6 +38,7 @@ export function CaraCommandCentre({
   userId,
   defaultRoleMode = "registered_manager",
 }: Props) {
+  const uid = useId();
   const [question, setQuestion] = useState(quickPrompts[0]);
   const [roleMode, setRoleMode] = useState<CaraRoleMode>(defaultRoleMode);
   const [includeStaff, setIncludeStaff] = useState(false);
@@ -113,8 +114,8 @@ export function CaraCommandCentre({
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[260px_1fr]">
         <aside className="rounded-2xl bg-slate-50 p-4">
-          <label className="text-sm font-medium">Mode</label>
-          <select
+          <label htmlFor={`${uid}-mode`} className="text-sm font-medium">Mode</label>
+          <select id={`${uid}-mode`}
             className="mt-2 w-full rounded-xl border bg-white px-3 py-2 text-sm"
             value={roleMode}
             onChange={(e) => setRoleMode(e.target.value as CaraRoleMode)}
@@ -150,8 +151,8 @@ export function CaraCommandCentre({
 
         <main className="space-y-4">
           <div className="rounded-2xl border p-4">
-            <label className="text-sm font-medium">Ask Cara</label>
-            <textarea
+            <label htmlFor={`${uid}-ask-cara`} className="text-sm font-medium">Ask Cara</label>
+            <textarea id={`${uid}-ask-cara`}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="mt-2 min-h-[110px] w-full rounded-2xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-300"

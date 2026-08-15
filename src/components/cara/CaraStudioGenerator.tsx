@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { CaraRole, CaraTaskResult } from "@/lib/cara/core/types";
 import { CaraModelDecisionBadge } from "./CaraModelDecisionBadge";
 import { CaraHumanApprovalBanner } from "./CaraHumanApprovalBanner";
@@ -45,6 +45,7 @@ export function CaraStudioGenerator({
   childAge,
   onGenerated,
 }: Props) {
+  const uid = useId();
   const [sessionType, setSessionType] = useState<SessionType>("keywork_plan");
   const [context, setContext] = useState("");
   const [goals, setGoals] = useState("");
@@ -138,10 +139,10 @@ export function CaraStudioGenerator({
 
         {/* Context */}
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+          <label htmlFor={`${uid}-additional-context-optional`} className="block text-xs font-medium text-muted-foreground mb-1.5">
             Additional Context (optional)
           </label>
-          <textarea
+          <textarea id={`${uid}-additional-context-optional`}
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="Recent events, mood, triggers, or anything relevant to this session..."
@@ -152,10 +153,10 @@ export function CaraStudioGenerator({
 
         {/* Goals */}
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+          <label htmlFor={`${uid}-session-goals-one-per-line-opt`} className="block text-xs font-medium text-muted-foreground mb-1.5">
             Session Goals (one per line, optional)
           </label>
-          <textarea
+          <textarea id={`${uid}-session-goals-one-per-line-opt`}
             value={goals}
             onChange={(e) => setGoals(e.target.value)}
             placeholder="Build trust around difficult conversations&#10;Explore feelings about contact with family&#10;Develop coping strategies for school anxiety"

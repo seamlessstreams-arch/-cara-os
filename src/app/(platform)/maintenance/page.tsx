@@ -7,7 +7,7 @@
 // maintenance for Ofsted Reg 25 (premises) requirements.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useId, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -202,6 +202,7 @@ function MaintenanceCard({
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MaintenancePage() {
+  const uid = useId();
   const maintenanceQuery = useMaintenance();
   const items: MaintenanceItem[] = maintenanceQuery.data?.data ?? [];
   const createItem = useCreateMaintenanceItem();
@@ -600,8 +601,8 @@ export default function MaintenancePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
-                  <select
+                  <label htmlFor={`${uid}-category`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
+                  <select id={`${uid}-category`}
                     value={form.category}
                     onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as MaintenanceCategory }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -612,8 +613,8 @@ export default function MaintenancePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
-                  <select
+                  <label htmlFor={`${uid}-priority`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Priority</label>
+                  <select id={`${uid}-priority`}
                     value={form.priority}
                     onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value as MaintenancePriority }))}
                     className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-400"
@@ -628,8 +629,8 @@ export default function MaintenancePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
-                  <Input
+                  <label htmlFor={`${uid}-due-date`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Due Date</label>
+                  <Input id={`${uid}-due-date`}
                     type="date"
                     value={form.due_date}
                     onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
@@ -637,8 +638,8 @@ export default function MaintenancePage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned To</label>
-                  <Input
+                  <label htmlFor={`${uid}-assigned-to`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Assigned To</label>
+                  <Input id={`${uid}-assigned-to`}
                     value={form.assigned_to ?? ""}
                     onChange={(e) => setForm((f) => ({ ...f, assigned_to: e.target.value }))}
                     placeholder="Contractor or staff"
@@ -648,8 +649,8 @@ export default function MaintenancePage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Notes</label>
-                <textarea
+                <label htmlFor={`${uid}-notes`} className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Notes</label>
+                <textarea id={`${uid}-notes`}
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   rows={3}

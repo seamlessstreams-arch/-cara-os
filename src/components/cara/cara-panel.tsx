@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useId, useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { CaraMode, CaraStyle } from "@/types/extended";
 import {
@@ -184,6 +184,7 @@ export function CaraPanel({
   onInsert,
   className,
 }: CaraPanelProps) {
+  const uid = useId();
   const [mode, setMode] = useState<CaraMode>(defaultMode);
   const [style, setStyle] = useState<CaraStyle>(defaultStyle);
   const [prompt, setPrompt] = useState("");
@@ -270,8 +271,8 @@ export function CaraPanel({
 
           {/* Style selector */}
           <div>
-            <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Writing style</label>
-            <select
+            <label htmlFor={`${uid}-writing-style`} className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Writing style</label>
+            <select id={`${uid}-writing-style`}
               value={style}
               onChange={(e) => setStyle(e.target.value as CaraStyle)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -285,10 +286,10 @@ export function CaraPanel({
           {/* Document text area — only for document modes */}
           {isDocumentMode && (
             <div>
-              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+              <label htmlFor={`${uid}-paste-document-text`} className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
                 Paste document text
               </label>
-              <textarea
+              <textarea id={`${uid}-paste-document-text`}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                 rows={4}
                 placeholder="Paste text from the document you want to classify..."

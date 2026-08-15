@@ -7,7 +7,7 @@
 // the resulting audit entry. A Registered Manager may override with a reason.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { Button } from "@/components/ui/button";
@@ -89,6 +89,7 @@ export function OversightSignOffPanel({
   childAddressedOversight?: string;
   recordId?: string;
 }) {
+  const uid = useId();
   const [actionsAssigned, setActionsAssigned] = useState(false);
   const [timescalesRecorded, setTimescalesRecorded] = useState(false);
   const [risksEscalated, setRisksEscalated] = useState(false);
@@ -135,10 +136,10 @@ export function OversightSignOffPanel({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-[var(--cs-text-muted)]">
+        <label htmlFor={`${uid}-override-reason-registered-man`} className="text-xs font-medium text-[var(--cs-text-muted)]">
           Override reason (Registered Manager only — required to sign off past a mandatory blocker)
         </label>
-        <input
+        <input id={`${uid}-override-reason-registered-man`}
           type="text"
           value={overrideReason}
           onChange={(e) => setOverrideReason(e.target.value)}

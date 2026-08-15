@@ -6,7 +6,7 @@
 // chronology by date automatically. Deterministic parse (works with no AI key);
 // nothing is saved until the user confirms the preview.
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { X, Sparkles, Trash2, CheckCircle2, FileUp } from "lucide-react";
@@ -39,6 +39,7 @@ export function ChronologyImportDialog({
   open: boolean;
   onClose: () => void;
 }) {
+  const uid = useId();
   const qc = useQueryClient();
   const [text, setText] = useState("");
   const [sourceLabel, setSourceLabel] = useState("Imported — prior chronology");
@@ -128,8 +129,8 @@ export function ChronologyImportDialog({
                 </p>
               )}
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]">Source label</label>
-                <input value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]" />
+                <label htmlFor={`${uid}-source-label`} className="mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]">Source label</label>
+                <input id={`${uid}-source-label`} value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]" />
               </div>
               <div className="max-h-[46vh] space-y-1.5 overflow-y-auto">
                 {entries.map((e, i) => (
@@ -160,8 +161,8 @@ export function ChronologyImportDialog({
                 Paste the chronology from {childName}&apos;s prior placement or local authority. Cara converts each dated line into a chronology entry, infers the category and significance, and merges it into the timeline by date — so pre-placement history sits alongside everything recorded since.
               </p>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]">Source label</label>
-                <input value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} placeholder="e.g. Imported — Derby City Council chronology" className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]" />
+                <label htmlFor={`${uid}-source-label-2`} className="mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]">Source label</label>
+                <input id={`${uid}-source-label-2`} value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} placeholder="e.g. Imported — Derby City Council chronology" className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]" />
               </div>
               <textarea
                 value={text}
