@@ -1259,6 +1259,14 @@ export const dal = {
     async findByChild(childId: string) { return db.behaviourSupportPlans.findByChild(childId); },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) { return db.behaviourSupportPlans.create(data); },
+    // Amending a plan has to be possible: the clinical sections (behaviours,
+    // triggers, de-escalation, strategies, safety plan) are recorded after
+    // creation, because each item needs judgement the create step cannot ask
+    // for. Store-backed, exactly like create above — this collection has no
+    // Supabase table yet, so both a create and an update live only as long as
+    // the serverless instance does.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.behaviourSupportPlans.update(id, data); },
   },
 
   carePlans: {

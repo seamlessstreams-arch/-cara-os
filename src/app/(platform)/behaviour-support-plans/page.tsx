@@ -37,6 +37,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import Link from "next/link";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeEscalationStage, BSPPositiveStrategy, BSPReward, BSPBoundary, BSPSafetyPlanItem, BSPProfessionalInput, BSPRestrictiveIntervention, BSPReviewHistoryEntry } from "@/types/extended";
+import { BspClinicalEditor } from "@/components/behaviour-support/bsp-clinical-editor";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -134,12 +135,19 @@ export default function BehaviourSupportPlansPage() {
     mutationFn: (data: Partial<BehaviourSupportPlan>) => api.post<{ data: BehaviourSupportPlan }>("/behaviour-support-plans", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-support-plans"] }),
   });
+  // The v1 dispatcher's PATCH takes the id in the BODY, not the path.
+  const updateBSP = useMutation({
+    mutationFn: ({ id, ...updates }: { id: string } & Partial<BehaviourSupportPlan>) =>
+      api.patch<{ data: BehaviourSupportPlan }>("/behaviour-support-plans", { id, ...updates }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-support-plans"] }),
+  });
   const plans = bspData?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [childFilter, setChildFilter] = useState("all");
   const [showNew, setShowNew] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Every field in the create dialog was unbound, so "Create BSP" discarded
   // the whole form and posted child_id "yp_alex" with empty clinical arrays —
@@ -404,6 +412,31 @@ export default function BehaviourSupportPlansPage() {
                 {/* -- Expanded Content -------------------------------------- */}
                 {isExpanded && (
                   <div className="border-t bg-slate-50 p-4 space-y-4">
+                    {/* Clinical sections: recorded here, not at create time —
+                        each item needs judgement the create step cannot ask for. */}
+                    {editingId === plan.id ? (
+                      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3">
+                        <p className="mb-3 text-sm font-semibold text-[var(--cs-navy)]">Behaviours, triggers, de-escalation, strategies and safety plan</p>
+                        <BspClinicalEditor
+                          plan={plan}
+                          saving={updateBSP.isPending}
+                          onCancel={() => setEditingId(null)}
+                          onSave={(updates) =>
+                            updateBSP.mutate({ id: plan.id, ...updates }, {
+                              onSuccess: () => { toast.success("Plan updated"); setEditingId(null); },
+                              onError: () => toast.error("Couldn't save the plan — nothing has changed"),
+                            })
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-end">
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(plan.id)}>
+                          Edit clinical sections
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Diagnoses */}
                     <div className="flex flex-wrap gap-1">
                       {plan.diagnosis.map((dx) => (
@@ -794,7 +827,7 @@ export default function BehaviourSupportPlansPage() {
               </div>
             </div>
           </div>
-          <p className="text-xs text-[var(--cs-text-muted)]">Behaviours, triggers, de-escalation stages, positive strategies and the safety plan each need per-item detail (frequency, severity, likelihood, staff numbers) that this step does not ask for, so they are not captured here — recording them without that detail would state a severity nobody assessed.</p>
+          <p className="text-xs text-[var(--cs-text-muted)]">Behaviours, triggers, de-escalation stages, positive strategies and the safety plan each need per-item detail (frequency, severity, likelihood, staff numbers). Create the plan first, then open it and choose “Edit clinical sections” — recording them without that detail would state a severity nobody assessed.</p>
           {!canCreateBsp && (
             <p className="text-xs text-amber-700">Choose the young person before creating the plan — a plan filed against the wrong child is worse than no plan.</p>
           )}
