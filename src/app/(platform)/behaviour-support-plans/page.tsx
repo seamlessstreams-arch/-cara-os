@@ -141,6 +141,30 @@ export default function BehaviourSupportPlansPage() {
   const [childFilter, setChildFilter] = useState("all");
   const [showNew, setShowNew] = useState(false);
 
+  // Every field in the create dialog was unbound, so "Create BSP" discarded
+  // the whole form and posted child_id "yp_alex" with empty clinical arrays —
+  // a plan filed against a child nobody chose. The form is the plan now.
+  const EMPTY_BSP = {
+    child_id: "",
+    status: "draft" as BehaviourSupportPlan["status"],
+    diagnosis: "",
+    early_warnings: "",
+    child_views: "",
+    communication_needs: "",
+    sensory_considerations: "",
+    staff_guidance: "",
+    review_date: "",
+    created_by: "",
+  };
+  const [bsp, setBsp] = useState(EMPTY_BSP);
+  const setB = <K extends keyof typeof EMPTY_BSP>(k: K, v: (typeof EMPTY_BSP)[K]) =>
+    setBsp((f) => ({ ...f, [k]: v }));
+  /** "a, b, c" or one per line → ["a","b","c"]; blanks dropped. */
+  const toList = (s: string) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
+  // A plan must belong to a named child and say what it is for. Everything
+  // else can genuinely be filled in later as the plan develops.
+  const canCreateBsp = bsp.child_id !== "";
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
   const today = todayStr();
 
@@ -699,7 +723,7 @@ export default function BehaviourSupportPlansPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="bsp-child">Young Person</Label>
-                <Select>
+                <Select value={bsp.child_id} onValueChange={(v) => setB("child_id", v)}>
                   <SelectTrigger id="bsp-child">
                     <SelectValue placeholder="Select child" />
                   </SelectTrigger>
@@ -712,7 +736,7 @@ export default function BehaviourSupportPlansPage() {
               </div>
               <div>
                 <Label htmlFor="bsp-status">Status</Label>
-                <Select>
+                <Select value={bsp.status} onValueChange={(v) => setB("status", v as BehaviourSupportPlan["status"])}>
                   <SelectTrigger id="bsp-status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -726,56 +750,36 @@ export default function BehaviourSupportPlansPage() {
             </div>
             <div>
               <Label htmlFor="bsp-diagnosis">Diagnoses (comma-separated)</Label>
-              <Input id="bsp-diagnosis" placeholder="e.g. ADHD, Anxiety" />
-            </div>
-            <div>
-              <Label htmlFor="bsp-behaviours">Primary Behaviours</Label>
-              <Textarea id="bsp-behaviours" placeholder="Describe the primary behaviours of concern..." rows={3} />
-            </div>
-            <div>
-              <Label htmlFor="bsp-triggers">Known Triggers</Label>
-              <Textarea id="bsp-triggers" placeholder="List known triggers..." rows={3} />
+              <Input id="bsp-diagnosis" placeholder="e.g. ADHD, Anxiety"  value={bsp.diagnosis} onChange={(e) => setB("diagnosis", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="bsp-warnings">Early Warning Signs</Label>
-              <Textarea id="bsp-warnings" placeholder="Observable signs before escalation..." rows={3} />
-            </div>
-            <div>
-              <Label htmlFor="bsp-deescalation">De-Escalation Strategies</Label>
-              <Textarea id="bsp-deescalation" placeholder="Green / Amber / Red zone strategies..." rows={4} />
-            </div>
-            <div>
-              <Label htmlFor="bsp-positive">Positive Strategies</Label>
-              <Textarea id="bsp-positive" placeholder="Positive reinforcement strategies..." rows={3} />
-            </div>
-            <div>
-              <Label htmlFor="bsp-safety">Safety Plan</Label>
-              <Textarea id="bsp-safety" placeholder="High-risk scenarios and responses..." rows={3} />
+              <Textarea id="bsp-warnings" placeholder="Observable signs before escalation..." rows={3}  value={bsp.early_warnings} onChange={(e) => setB("early_warnings", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="bsp-child-views">Child&apos;s Views</Label>
-              <Textarea id="bsp-child-views" placeholder="What has the child said about their behaviour and support?" rows={3} />
+              <Textarea id="bsp-child-views" placeholder="What has the child said about their behaviour and support?" rows={3}  value={bsp.child_views} onChange={(e) => setB("child_views", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="bsp-comms">Communication Needs</Label>
-              <Textarea id="bsp-comms" placeholder="Communication preferences and needs..." rows={2} />
+              <Textarea id="bsp-comms" placeholder="Communication preferences and needs..." rows={2}  value={bsp.communication_needs} onChange={(e) => setB("communication_needs", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="bsp-sensory">Sensory Considerations</Label>
-              <Textarea id="bsp-sensory" placeholder="Sensory sensitivities and preferences..." rows={2} />
+              <Textarea id="bsp-sensory" placeholder="Sensory sensitivities and preferences..." rows={2}  value={bsp.sensory_considerations} onChange={(e) => setB("sensory_considerations", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="bsp-guidance">Staff Guidance</Label>
-              <Textarea id="bsp-guidance" placeholder="Key points for all staff to follow..." rows={3} />
+              <Textarea id="bsp-guidance" placeholder="Key points for all staff to follow..." rows={3}  value={bsp.staff_guidance} onChange={(e) => setB("staff_guidance", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="bsp-review">Review Date</Label>
-                <Input id="bsp-review" type="date" />
+                <Input id="bsp-review" type="date" value={bsp.review_date} onChange={(e) => setB("review_date", e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="bsp-created-by">Created By</Label>
-                <Select>
+                <Select value={bsp.created_by} onValueChange={(v) => setB("created_by", v)}>
                   <SelectTrigger id="bsp-created-by">
                     <SelectValue placeholder="Select staff" />
                   </SelectTrigger>
@@ -790,9 +794,13 @@ export default function BehaviourSupportPlansPage() {
               </div>
             </div>
           </div>
+          <p className="text-xs text-[var(--cs-text-muted)]">Behaviours, triggers, de-escalation stages, positive strategies and the safety plan each need per-item detail (frequency, severity, likelihood, staff numbers) that this step does not ask for, so they are not captured here — recording them without that detail would state a severity nobody assessed.</p>
+          {!canCreateBsp && (
+            <p className="text-xs text-amber-700">Choose the young person before creating the plan — a plan filed against the wrong child is worse than no plan.</p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createBSP.isPending} onClick={() => { createBSP.mutate({ child_id: "yp_alex", status: "draft", created_date: d(0), created_by: "staff_darren", review_date: d(42), diagnosis: [], primary_behaviours: [], known_triggers: [], early_warnings: [], de_escalation: [], positive_strategies: [], rewards: [], boundaries: [], safety_plan: [], communication_needs: "", sensory_considerations: "", child_views: "", parent_views: "", professional_input: [], staff_guidance: [], restrictive_interventions: [], review_history: [], home_id: "home_oak" }, { onSuccess: () => { toast.success("BSP created"); setShowNew(false); }, onError: () => toast.error("Failed to create BSP") }); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
+            <Button disabled={createBSP.isPending || !canCreateBsp} onClick={() => { createBSP.mutate({ child_id: bsp.child_id, status: bsp.status, created_date: todayStr(), created_by: bsp.created_by || "staff_darren", review_date: bsp.review_date || d(42), diagnosis: toList(bsp.diagnosis), primary_behaviours: [] as BSPPrimaryBehaviour[], known_triggers: [] as BSPKnownTrigger[], early_warnings: toList(bsp.early_warnings), de_escalation: [] as BSPDeEscalationStage[], positive_strategies: [] as BSPPositiveStrategy[], rewards: [] as BSPReward[], boundaries: [] as BSPBoundary[], safety_plan: [] as BSPSafetyPlanItem[], communication_needs: bsp.communication_needs.trim(), sensory_considerations: bsp.sensory_considerations.trim(), child_views: bsp.child_views.trim(), parent_views: "", professional_input: [] as BSPProfessionalInput[], staff_guidance: toList(bsp.staff_guidance), restrictive_interventions: [] as BSPRestrictiveIntervention[], review_history: [] as BSPReviewHistoryEntry[], home_id: "home_oak" }, { onSuccess: () => { toast.success("BSP created"); setShowNew(false); setBsp(EMPTY_BSP); }, onError: () => toast.error("Failed to create BSP") }); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

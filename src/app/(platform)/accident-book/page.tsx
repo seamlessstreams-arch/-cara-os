@@ -70,6 +70,35 @@ export default function AccidentBookPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
+  // The dialog's fields were previously unbound, so Save posted hardcoded
+  // blanks and asserted a severity and category nobody chose. The form is the
+  // record now: what the accident book holds is what was typed here.
+  const EMPTY_FORM = {
+    date: todayStr(),
+    time: new Date().toTimeString().slice(0, 5),
+    person_name: "",
+    person_type: "child" as AccidentPersonType,
+    category: "" as AccidentCategory | "",
+    severity: "" as AccidentSeverity | "",
+    location: "",
+    description: "",
+    injury_details: "",
+    first_aid_details: "",
+    root_cause: "",
+    preventive_measures: "",
+  };
+  const [form, setForm] = useState(EMPTY_FORM);
+  const setF = <K extends keyof typeof EMPTY_FORM>(k: K, v: (typeof EMPTY_FORM)[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  // Severity and category drive RIDDOR routing and the whole-home safety
+  // picture, so neither may be defaulted on the user's behalf.
+  const canSaveAccident =
+    form.person_name.trim() !== "" &&
+    form.description.trim() !== "" &&
+    form.category !== "" &&
+    form.severity !== "";
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   /* ── derived ─────────────────────────────────────────────────────────────── */
@@ -334,22 +363,25 @@ export default function AccidentBookPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Accident / Injury</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label htmlFor="4f1d-date">Date</Label><Input id="4f1d-date" type="date" /></div>
-            <div><Label htmlFor="4f1d-time">Time</Label><Input id="4f1d-time" type="time" /></div>
-            <div><Label htmlFor="4f1d-person-injured">Person Injured</Label><Input id="4f1d-person-injured" placeholder="Name" /></div>
-            <div><Label htmlFor="4f1d-person-type">Person Type</Label><Select><SelectTrigger id="4f1d-person-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PERSON_TYPE_LABEL) as AccidentPersonType[]).map((k) => (<SelectItem key={k} value={k}>{PERSON_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label htmlFor="4f1d-category">Category</Label><Select><SelectTrigger id="4f1d-category"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CAT_LABEL) as AccidentCategory[]).map((k) => (<SelectItem key={k} value={k}>{CAT_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label htmlFor="4f1d-severity">Severity</Label><Select><SelectTrigger id="4f1d-severity"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SEVERITY_LABEL) as AccidentSeverity[]).map((k) => (<SelectItem key={k} value={k}>{SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-location">Location</Label><Input id="4f1d-location" placeholder="Where the accident happened" /></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-description">Description</Label><Textarea id="4f1d-description" placeholder="What happened…" rows={3} /></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-injury-details">Injury Details</Label><Textarea id="4f1d-injury-details" placeholder="Describe the injury…" rows={2} /></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-first-aid-given">First Aid Given</Label><Textarea id="4f1d-first-aid-given" placeholder="First aid details…" rows={2} /></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} /></div>
-            <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} /></div>
+            <div><Label htmlFor="4f1d-date">Date</Label><Input id="4f1d-date" type="date" max={todayStr()} value={form.date} onChange={(e) => setF("date", e.target.value)} /></div>
+            <div><Label htmlFor="4f1d-time">Time</Label><Input id="4f1d-time" type="time" value={form.time} onChange={(e) => setF("time", e.target.value)} /></div>
+            <div><Label htmlFor="4f1d-person-injured">Person Injured *</Label><Input id="4f1d-person-injured" placeholder="Name" value={form.person_name} onChange={(e) => setF("person_name", e.target.value)} /></div>
+            <div><Label htmlFor="4f1d-person-type">Person Type</Label><Select value={form.person_type} onValueChange={(v) => setF("person_type", v as AccidentPersonType)}><SelectTrigger id="4f1d-person-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PERSON_TYPE_LABEL) as AccidentPersonType[]).map((k) => (<SelectItem key={k} value={k}>{PERSON_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="4f1d-category">Category *</Label><Select value={form.category} onValueChange={(v) => setF("category", v as AccidentCategory)}><SelectTrigger id="4f1d-category"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CAT_LABEL) as AccidentCategory[]).map((k) => (<SelectItem key={k} value={k}>{CAT_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label htmlFor="4f1d-severity">Severity *</Label><Select value={form.severity} onValueChange={(v) => setF("severity", v as AccidentSeverity)}><SelectTrigger id="4f1d-severity"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SEVERITY_LABEL) as AccidentSeverity[]).map((k) => (<SelectItem key={k} value={k}>{SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-location">Location</Label><Input id="4f1d-location" placeholder="Where the accident happened" value={form.location} onChange={(e) => setF("location", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-description">Description *</Label><Textarea id="4f1d-description" placeholder="What happened…" rows={3} value={form.description} onChange={(e) => setF("description", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-injury-details">Injury Details</Label><Textarea id="4f1d-injury-details" placeholder="Describe the injury…" rows={2} value={form.injury_details} onChange={(e) => setF("injury_details", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-first-aid-given">First Aid Given</Label><Textarea id="4f1d-first-aid-given" placeholder="First aid details…" rows={2} value={form.first_aid_details} onChange={(e) => setF("first_aid_details", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-root-cause">Root Cause</Label><Textarea id="4f1d-root-cause" placeholder="What caused the accident?" rows={2} value={form.root_cause} onChange={(e) => setF("root_cause", e.target.value)} /></div>
+            <div className="col-span-2"><Label htmlFor="4f1d-preventive-measures">Preventive Measures</Label><Textarea id="4f1d-preventive-measures" placeholder="Actions to prevent recurrence…" rows={2} value={form.preventive_measures} onChange={(e) => setF("preventive_measures", e.target.value)} /></div>
           </div>
+          {!canSaveAccident && (
+            <p className="text-xs text-[var(--cs-text-muted)]">Person injured, category, severity and description are needed before this can be saved — an accident record that asserts a severity nobody chose is worse than no record.</p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createAccident.isPending} onClick={() => { createAccident.mutate({ date: todayStr(), time: new Date().toTimeString().slice(0, 5), reported_by: "staff_darren", person_type: "child", person_id: null, person_name: "", category: "other", severity: "minor", status: "open", location: "", description: "", injury_details: "", first_aid_given: false, first_aid_by: null, first_aid_details: "", medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: "", preventive_measures: "", follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
+            <Button disabled={createAccident.isPending || !canSaveAccident} onClick={() => { createAccident.mutate({ date: form.date, time: form.time, reported_by: "staff_darren", person_type: form.person_type, person_id: null, person_name: form.person_name.trim(), category: form.category as AccidentCategory, severity: form.severity as AccidentSeverity, status: "open", location: form.location.trim(), description: form.description.trim(), injury_details: form.injury_details.trim(), first_aid_given: form.first_aid_details.trim() !== "", first_aid_by: null, first_aid_details: form.first_aid_details.trim(), medical_attention: false, hospital_attendance: false, hospital_name: null, parent_carer_notified: false, parent_notified_time: null, social_worker_notified: false, riddor_reported: false, riddor_ref: null, witnesses: [], root_cause: form.root_cause.trim(), preventive_measures: form.preventive_measures.trim(), follow_up_date: null, photographs_taken: false, body_map_completed: false, signed_off_by: null }, { onSuccess: () => { toast.success("Accident record created"); setShowNew(false); setForm(EMPTY_FORM); }, onError: () => toast.error("Failed to create accident record") }); }}>{createAccident.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
