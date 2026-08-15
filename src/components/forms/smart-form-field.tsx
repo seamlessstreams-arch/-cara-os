@@ -41,9 +41,11 @@ export interface SmartFormFieldProps {
   disabled?: boolean;
   /** Minimum height for textarea (rows) */
   rows?: number;
-  /** Min/max/step for number inputs */
-  min?: number;
-  max?: number;
+  /** Min/max/step. Numbers for type="number"; an ISO date string for
+   *  type="date" (e.g. max={todayStr()} to stop a record of something that
+   *  happened being dated in the future). Both are forwarded to the input. */
+  min?: number | string;
+  max?: number | string;
   step?: number;
 }
 

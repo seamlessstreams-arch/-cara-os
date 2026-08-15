@@ -375,7 +375,7 @@ export function QuickIncidentForm({
             <SmartFormField
               name="date"
               label="Date"
-              type="date"
+              type="date" max={todayStr()}
               autoFillKey="date"
               value={form.date}
               onChange={(v) => updateField("date", v)}

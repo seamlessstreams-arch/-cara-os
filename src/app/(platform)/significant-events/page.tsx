@@ -389,7 +389,7 @@ export default function SignificantEventsPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="3ee2-date" className="text-sm font-medium">Date</label>
-                <Input id="3ee2-date" type="date" value={seForm.date} onChange={(e) => setSEF("date", e.target.value)} />
+                <Input id="3ee2-date" type="date" max={todayStr()} value={seForm.date} onChange={(e) => setSEF("date", e.target.value)} />
               </div>
               <div>
                 <label htmlFor="3ee2-time" className="text-sm font-medium">Time</label>

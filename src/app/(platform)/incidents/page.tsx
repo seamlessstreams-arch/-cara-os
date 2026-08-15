@@ -1180,7 +1180,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           <div>
             <label htmlFor="d263-date" className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date</label>
             <Input id="d263-date"
-              type="date"
+              type="date" max={todayStr()}
               value={form.date}
               onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
               className="text-sm"

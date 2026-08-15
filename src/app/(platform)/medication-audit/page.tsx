@@ -329,7 +329,7 @@ export default function MedicationAuditPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Medication Audit</DialogTitle></DialogHeader>
           <form onSubmit={handleCreateAudit} className="grid grid-cols-2 gap-4">
-            <div><Label htmlFor="8932-date">Date</Label><Input id="8932-date" type="date" value={maForm.date} onChange={(e) => setMA("date", e.target.value)} /></div>
+            <div><Label htmlFor="8932-date">Date</Label><Input id="8932-date" type="date" max={todayStr()} value={maForm.date} onChange={(e) => setMA("date", e.target.value)} /></div>
             <div><Label htmlFor="8932-time">Time</Label><Input id="8932-time" type="time" value={maForm.time} onChange={(e) => setMA("time", e.target.value)} /></div>
             <div><Label htmlFor="8932-young-person">Young Person *</Label><Select value={maForm.child_id} onValueChange={(v) => setMA("child_id", v)}><SelectTrigger id="8932-young-person"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
             <div><Label htmlFor="8932-audit-type">Audit Type *</Label><Select value={maForm.audit_type} onValueChange={(v) => setMA("audit_type", v)}><SelectTrigger id="8932-audit-type"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(MED_AUDIT_TYPE_LABEL) as MedAuditType[]).map((k) => (<SelectItem key={k} value={k}>{MED_AUDIT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
