@@ -133,6 +133,9 @@ jobs:
       - name: Retrospective-date guard (a record of a past event cannot be future-dated)
         run: node scripts/check-retrospective-dates.js
 
+      - name: Wired-create-dialog guard (a create form submits what the user typed)
+        run: node scripts/check-wired-create-dialogs.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 

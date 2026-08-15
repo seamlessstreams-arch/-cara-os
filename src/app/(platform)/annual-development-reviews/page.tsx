@@ -95,7 +95,10 @@ export default function AnnualDevelopmentReviewsPage() {
     { header: "Reviewer", accessor: (r: AnnualDevelopmentReview) => getStaffName(r.reviewer_id) },
     { header: "Date", accessor: (r: AnnualDevelopmentReview) => r.review_date },
     { header: "Period", accessor: (r: AnnualDevelopmentReview) => r.period },
-    { header: "Rating", accessor: (r: AnnualDevelopmentReview) => RATING_LABEL[r.performance_rating] },
+    // A scheduled review has not happened, so it has no rating to report —
+    // the record carries a default the export must not print as a judgement.
+    // (The card view already gates this on status; the export did not.)
+    { header: "Rating", accessor: (r: AnnualDevelopmentReview) => (r.status === "completed" ? RATING_LABEL[r.performance_rating] : "Not yet rated") },
     { header: "Status", accessor: (r: AnnualDevelopmentReview) => STATUS_LABEL[r.status] },
     { header: "Objectives", accessor: (r: AnnualDevelopmentReview) => String(r.objectives_set.length) },
     { header: "Next Review", accessor: (r: AnnualDevelopmentReview) => r.next_review_date },
