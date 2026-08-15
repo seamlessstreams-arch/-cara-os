@@ -130,6 +130,9 @@ jobs:
       - name: Label-association guard (a visible field label is tied to its control)
         run: node scripts/check-label-association.js
 
+      - name: Retrospective-date guard (a record of a past event cannot be future-dated)
+        run: node scripts/check-retrospective-dates.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 

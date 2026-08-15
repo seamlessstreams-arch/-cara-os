@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
 
   const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
+    const __fd = rejectFutureDates(body, ["date_received"]); if (__fd) return __fd;
 
   const missing = requireFields(body, ["summary"]);
   if (missing) return missing;

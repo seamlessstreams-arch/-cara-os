@@ -52,7 +52,7 @@ import {
   CheckCheck, CircleDot, X,
 } from "lucide-react";
 import Link from "next/link";
-import { cn, londonDayDiff } from "@/lib/utils";
+import { todayStr, cn, londonDayDiff } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 
@@ -400,7 +400,7 @@ function CreateVisitModal({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="1ff2-visit-date" className="text-xs font-semibold text-slate-700 block mb-1">Visit date *</label>
-              <Input id="1ff2-visit-date" type="date" required value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} />
+              <Input id="1ff2-visit-date" type="date" max={todayStr()} required value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} />
             </div>
             <div>
               <label htmlFor="1ff2-visitor-name" className="text-xs font-semibold text-slate-700 block mb-1">Visitor name *</label>

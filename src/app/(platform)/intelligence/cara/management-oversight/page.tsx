@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { todayStr, cn } from "@/lib/utils";
 import { CaraCompose } from "@/components/cara/cara-compose";
 import {
   Sparkles,
@@ -337,7 +337,7 @@ export default function ManagementOversightPage() {
             <div>
               <label htmlFor="bf7e-record-date" className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Record date</label>
               <Input id="bf7e-record-date"
-                type="date"
+                type="date" max={todayStr()}
                 value={recordDate}
                 onChange={(e) => setRecordDate(e.target.value)}
               />

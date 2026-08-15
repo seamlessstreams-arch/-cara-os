@@ -659,7 +659,7 @@ function CreateEventDialog({
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label htmlFor="95a0-date" className="text-xs font-medium text-slate-600">Date</label>
-                <Input id="95a0-date" type="date" value={form.event_date} onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))} />
+                <Input id="95a0-date" type="date" max={todayStr()} value={form.event_date} onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))} />
               </div>
               <div className="space-y-1">
                 <label htmlFor="95a0-time" className="text-xs font-medium text-slate-600">Time</label>

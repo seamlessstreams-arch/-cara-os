@@ -367,7 +367,7 @@ export default function NewYoungPersonPage() {
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1">
             <span className="text-xs font-medium text-[var(--cs-slate)]">Date of birth *</span>
-            <Input type="date" value={form.date_of_birth} onChange={set("date_of_birth")} onClick={openPicker} onFocus={openPicker} />
+            <Input type="date" max={todayStr()} value={form.date_of_birth} onChange={set("date_of_birth")} onClick={openPicker} onFocus={openPicker} />
           </label>
           <label className="block space-y-1">
             <span className="text-xs font-medium text-[var(--cs-slate)]">Placement start *</span>

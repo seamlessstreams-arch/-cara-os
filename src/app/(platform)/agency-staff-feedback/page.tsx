@@ -152,7 +152,7 @@ export default function AgencyStaffFeedbackPage() {
               <div><Label htmlFor="7b6e-agency">Agency *</Label><Input id="7b6e-agency" placeholder="Agency name" value={form.agency} onChange={(e) => setForm((f) => ({ ...f, agency: e.target.value }))} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label htmlFor="7b6e-shift-date">Shift Date *</Label><Input id="7b6e-shift-date" type="date" value={form.shift_date} onChange={(e) => setForm((f) => ({ ...f, shift_date: e.target.value }))} /></div>
+              <div><Label htmlFor="7b6e-shift-date">Shift Date *</Label><Input id="7b6e-shift-date" type="date" max={todayStr()} value={form.shift_date} onChange={(e) => setForm((f) => ({ ...f, shift_date: e.target.value }))} /></div>
               <div><Label htmlFor="7b6e-shift-type">Shift Type</Label><Select value={form.shift_type} onValueChange={(v) => setForm((f) => ({ ...f, shift_type: v as AgencyShiftType }))}><SelectTrigger id="7b6e-shift-type"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(AGENCY_SHIFT_TYPE_LABEL) as [AgencyShiftType, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
             </div>
             <div><Label htmlFor="7b6e-permanent-staff-on-shift">Permanent Staff on Shift *</Label><Select value={form.permanent_staff_on_shift} onValueChange={(v) => setForm((f) => ({ ...f, permanent_staff_on_shift: v }))}><SelectTrigger id="7b6e-permanent-staff-on-shift"><SelectValue placeholder="Select staff member" /></SelectTrigger><SelectContent>{STAFF.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>

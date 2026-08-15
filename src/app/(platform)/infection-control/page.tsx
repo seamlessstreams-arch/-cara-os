@@ -342,7 +342,7 @@ export default function InfectionControlPage() {
           <form onSubmit={handleCreateInfection} className="space-y-3">
             <div>
               <Label htmlFor="e013-date-reported">Date Reported</Label>
-              <Input id="e013-date-reported" type="date" value={infForm.date_reported} onChange={(e) => setIF("date_reported", e.target.value)} />
+              <Input id="e013-date-reported" type="date" max={todayStr()} value={infForm.date_reported} onChange={(e) => setIF("date_reported", e.target.value)} />
             </div>
             <div>
               <Label htmlFor="e013-reported-by">Reported By</Label>
