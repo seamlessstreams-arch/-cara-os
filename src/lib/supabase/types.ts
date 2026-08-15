@@ -507,6 +507,46 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["qa_audits"]["Insert"]>;
       };
 
+      // The plan staff read while a child is escalating. The ten clinical
+      // sections are arrays of objects (behaviours, triggers, de-escalation
+      // stages, strategies, rewards, boundaries, safety plan, professional
+      // input, restrictive interventions, review history) — jsonb, defaulting
+      // to [] so an unfilled section reads as empty rather than null.
+      behaviour_support_plans: {
+        Row: {
+          id: string;
+          home_id: string;
+          child_id: string;
+          created_date: string | null;
+          created_by: string | null;
+          review_date: string | null;
+          last_reviewed: string | null;
+          status: string;
+          diagnosis: string[];
+          primary_behaviours: Json;
+          known_triggers: Json;
+          early_warnings: string[];
+          de_escalation: Json;
+          positive_strategies: Json;
+          rewards: Json;
+          boundaries: Json;
+          safety_plan: Json;
+          communication_needs: string;
+          sensory_considerations: string;
+          child_views: string;
+          parent_views: string;
+          professional_input: Json;
+          staff_guidance: string[];
+          restrictive_interventions: Json;
+          review_history: Json;
+          created_at: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: Omit<Database["public"]["Tables"]["behaviour_support_plans"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["behaviour_support_plans"]["Insert"]>;
+      };
+
       maintenance_items: {
         Row: {
           id: string;
