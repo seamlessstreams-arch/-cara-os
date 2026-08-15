@@ -19,6 +19,7 @@ import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
+import type { BehaviourSupportPlan } from "@/types/extended";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -1249,24 +1250,45 @@ export const dal = {
     async create(data: any) { return db.dentalRecords.create(data); },
   },
 
+  // Dual-mode as of the behaviour_support_plans migration: the real table when
+  // Supabase is configured, the in-memory store otherwise. Before the table
+  // existed, a plan and the clinical detail added to it lived only as long as
+  // the serverless instance — for the record staff read while a child is
+  // escalating, that was the wrong place to keep it.
   behaviourSupportPlans: {
     async findAll(filters?: { child_id?: string }) {
+      const c = sb();
+      if (c) return (await sq.getBehaviourSupportPlans(c, { childId: filters?.child_id })) as unknown as BehaviourSupportPlan[];
       let list = db.behaviourSupportPlans.findAll();
       if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
       return list;
     },
-    async findById(id: string) { return db.behaviourSupportPlans.findById(id) ?? null; },
-    async findByChild(childId: string) { return db.behaviourSupportPlans.findByChild(childId); },
+    async findById(id: string) {
+      const c = sb();
+      if (c) return (await sq.getBehaviourSupportPlan(c, id)) as unknown as BehaviourSupportPlan | null;
+      return db.behaviourSupportPlans.findById(id) ?? null;
+    },
+    async findByChild(childId: string) {
+      const c = sb();
+      if (c) return (await sq.getBehaviourSupportPlans(c, { childId })) as unknown as BehaviourSupportPlan[];
+      return db.behaviourSupportPlans.findByChild(childId);
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(data: any) { return db.behaviourSupportPlans.create(data); },
+    async create(data: any) {
+      const c = sb();
+      if (c) return (await sq.createBehaviourSupportPlan(c, data)) as unknown as BehaviourSupportPlan;
+      return db.behaviourSupportPlans.create(data);
+    },
     // Amending a plan has to be possible: the clinical sections (behaviours,
     // triggers, de-escalation, strategies, safety plan) are recorded after
     // creation, because each item needs judgement the create step cannot ask
-    // for. Store-backed, exactly like create above — this collection has no
-    // Supabase table yet, so both a create and an update live only as long as
-    // the serverless instance does.
+    // for.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async update(id: string, data: any) { return db.behaviourSupportPlans.update(id, data); },
+    async update(id: string, data: any) {
+      const c = sb();
+      if (c) return (await sq.updateBehaviourSupportPlan(c, id, data)) as unknown as BehaviourSupportPlan;
+      return db.behaviourSupportPlans.update(id, data);
+    },
   },
 
   carePlans: {

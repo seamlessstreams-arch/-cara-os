@@ -453,6 +453,35 @@ export async function updateQaAudit(sb: SB, id: string, data: Database["public"]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BEHAVIOUR SUPPORT PLANS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getBehaviourSupportPlans(sb: SB, filters?: { childId?: string }) {
+  let query = sb.from("behaviour_support_plans").select("*");
+  if (filters?.childId) query = query.eq("child_id", filters.childId);
+  return unwrap(await query.order("created_at", { ascending: false }));
+}
+
+export async function getBehaviourSupportPlan(sb: SB, id: string) {
+  return unwrap(await sb.from("behaviour_support_plans").select("*").eq("id", id).maybeSingle());
+}
+
+export async function createBehaviourSupportPlan(
+  sb: SB,
+  data: Database["public"]["Tables"]["behaviour_support_plans"]["Insert"],
+) {
+  return unwrap(await sb.from("behaviour_support_plans").insert(data).select().single());
+}
+
+export async function updateBehaviourSupportPlan(
+  sb: SB,
+  id: string,
+  data: Database["public"]["Tables"]["behaviour_support_plans"]["Update"],
+) {
+  return unwrap(await sb.from("behaviour_support_plans").update(data).eq("id", id).select().single());
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAINTENANCE
 // ─────────────────────────────────────────────────────────────────────────────
 
