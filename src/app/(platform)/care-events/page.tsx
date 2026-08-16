@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1070,9 +1071,11 @@ export default function CareEventsPage() {
             <p className="text-xs text-slate-500">
               {events.filter((e) => e.contributes_to_reg45 && e.status === "verified").length} verified record(s) have been suggested as Regulation 45 evidence.
             </p>
-            <Button size="sm" variant="link" className="px-0 text-indigo-600 text-xs mt-1">
-              Review Regulation 45 evidence <ArrowUpRight className="w-3 h-3 ml-1" />
-            </Button>
+            <Link href="/quality/reg-45">
+              <Button size="sm" variant="link" className="px-0 text-indigo-600 text-xs mt-1">
+                Review Regulation 45 evidence <ArrowUpRight className="w-3 h-3 ml-1" />
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}

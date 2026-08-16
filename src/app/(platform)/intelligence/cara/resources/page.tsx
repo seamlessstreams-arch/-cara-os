@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { YoungPerson, StaffMember } from "@/types";
 
 interface YPEnriched extends YoungPerson {
@@ -165,7 +166,7 @@ const STARTER_TEMPLATES = [
 
 // ── Resource card ─────────────────────────────────────────────────────────────
 
-function ResourceCard({ resource, onApprove }: { resource: ChildResource; onApprove: (id: string) => void }) {
+function ResourceCard({ resource, onApprove, onPreview }: { resource: ChildResource; onApprove: (id: string) => void; onPreview: (r: ChildResource) => void }) {
   const childName = getYPName(resource.child_id) || resource.child_id;
   const typeInfo = RESOURCE_TYPES.find((t) => t.value === resource.resource_type);
   return (
@@ -186,7 +187,7 @@ function ResourceCard({ resource, onApprove }: { resource: ChildResource; onAppr
         </div>
       </div>
       <div className="flex items-center gap-2 flex-wrap pt-1">
-        <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1">
+        <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1" onClick={() => onPreview(resource)}>
           <FileText className="h-3 w-3" />Preview
         </Button>
         {resource.status !== "approved" && (
@@ -585,6 +586,7 @@ export default function ChildResourcesPage() {
   const homeId = currentUser?.home_id ?? "home_oak";
   const [paramChildId, setParamChildId] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [previewing, setPreviewing] = useState<ChildResource | null>(null);
   const [starterChild, setStarterChild] = useState<{ id: string; type: ChildResourceType } | null>(null);
 
   // Pre-fill from query params when navigated from a record's Cara quick-actions
@@ -700,7 +702,7 @@ export default function ChildResourcesPage() {
                       </p>
                       <div className="space-y-2">
                         {childResources.map((r) => (
-                          <ResourceCard key={r.id} resource={r} onApprove={handleApprove} />
+                          <ResourceCard key={r.id} resource={r} onApprove={handleApprove} onPreview={setPreviewing} />
                         ))}
                       </div>
                     </div>
@@ -711,6 +713,48 @@ export default function ChildResourcesPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Preview: the resource as the child would meet it. `content` is null
+          until a resource has actually been generated, and the dialog says so
+          rather than rendering empty headings that read like a blank worksheet. */}
+      <Dialog open={!!previewing} onOpenChange={(v) => { if (!v) setPreviewing(null); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{previewing?.title}</DialogTitle></DialogHeader>
+          {previewing?.content ? (
+            <div className="space-y-4 py-1 text-sm">
+              {([
+                ["Purpose", previewing.content.purpose],
+                ["In words the child can meet", previewing.content.child_friendly_explanation],
+                ["Activity", previewing.content.activity],
+                ["Space for their words", previewing.content.child_voice_space],
+                ["For the staff member", previewing.content.staff_guidance],
+                ["Recording prompt", previewing.content.recording_prompt],
+                ["Follow-up", previewing.content.follow_up_prompt],
+              ] as [string, string][])
+                .filter(([, body]) => body?.trim())
+                .map(([heading, body]) => (
+                  <div key={heading}>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">{heading}</p>
+                    <p className="whitespace-pre-wrap text-[var(--cs-navy)]">{body}</p>
+                  </div>
+                ))}
+              {previewing.content.reflection_questions?.length > 0 && (
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Reflection questions</p>
+                  <ul className="list-disc pl-5 text-[var(--cs-navy)]">
+                    {previewing.content.reflection_questions.map((q, i) => <li key={i}>{q}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="py-4 text-sm text-[var(--cs-text-muted)]">
+              This resource has no content yet — it has been listed but not generated, so there is
+              nothing to show a child.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

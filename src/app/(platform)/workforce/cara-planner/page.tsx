@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import { ManualDevelopmentPlanDialog } from "@/components/workflow/manual-development-plan-dialog";
 import type { StaffMember } from "@/types";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -82,6 +83,7 @@ export default function CaraDevPlannerPage() {
   const [selectedStaff, setSelectedStaff] = useState<string>("all");
 
   const plansQuery = useDevelopmentPlans();
+  const [manualPlanOpen, setManualPlanOpen] = useState(false);
   const staffQuery = useStaff();
 
   const allPlans = plansQuery.data?.data ?? [];
@@ -111,7 +113,7 @@ export default function CaraDevPlannerPage() {
             <Sparkles className="h-3.5 w-3.5" />
             Generate Plan with Cara
           </Button>
-          <Button size="sm" variant="outline" className="gap-1.5">
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setManualPlanOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Manual Plan
           </Button>
@@ -298,6 +300,12 @@ export default function CaraDevPlannerPage() {
         </div>
       )}
       </div>{/* close #cara-planner-content */}
+
+      <ManualDevelopmentPlanDialog
+        open={manualPlanOpen}
+        onOpenChange={setManualPlanOpen}
+        staff={staff}
+      />
     </PageShell>
   );
 }

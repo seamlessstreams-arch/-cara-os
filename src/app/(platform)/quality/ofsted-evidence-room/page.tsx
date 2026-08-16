@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/ui/print-button";
 
@@ -63,7 +64,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Plus,
-  Link2,
   Eye,
   PackagePlus,
   FileDown,
@@ -280,6 +280,30 @@ type SourceType =
   | "medication_record"
   | "complaint"
   | "training_record";
+
+/** Where each kind of source record lives. An evidence item carries the type
+ *  always and the id sometimes, so the link falls back to the section — and
+ *  when the type is unknown, no link is offered rather than a dead one. */
+const SOURCE_ROUTES: Record<SourceType, string> = {
+  daily_log: "/daily-log",
+  incident: "/incidents",
+  key_work: "/key-work",
+  reg44_report: "/quality/reg-44",
+  reg45_report: "/quality/reg-45",
+  risk_assessment: "/risk-assessments",
+  child_voice: "/voice",
+  supervision: "/workforce/supervision",
+  placement_plan: "/placement-plan",
+  medication_record: "/medication",
+  complaint: "/complaints",
+  training_record: "/workforce/training-matrix",
+};
+
+function sourceHref(item: InspectionEvidenceItem & { sourceLabel: SourceType }): string | null {
+  const base = SOURCE_ROUTES[item.sourceLabel];
+  if (!base) return null;
+  return item.sourceId ? `${base}?id=${item.sourceId}` : base;
+}
 
 const SOURCE_LABELS: Record<SourceType, string> = {
   daily_log: "Daily Log",
@@ -1167,16 +1191,21 @@ function EvidenceCard({ item, childName, inPack, onTogglePack }: EvidenceCardPro
           )}
         </div>
 
-        {/* actions row */}
+        {/* actions row.
+            "Link Record" was removed rather than wired: linking evidence into
+            an inspection pack is what "Add to Pack" beside it already does,
+            there is no second kind of link for an evidence item to make, and
+            no endpoint behind one. A duplicate control with no action is worth
+            less than the space it takes. */}
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-            <Link2 className="h-3 w-3" />
-            Link Record
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
-            <Eye className="h-3 w-3" />
-            View Source
-          </Button>
+          {sourceHref(item) && (
+            <Link href={sourceHref(item)!}>
+              <Button variant="outline" size="sm" className="gap-1 text-xs h-7">
+                <Eye className="h-3 w-3" />
+                View Source
+              </Button>
+            </Link>
+          )}
           <Button
             variant={inPack ? "secondary" : "outline"}
             size="sm"

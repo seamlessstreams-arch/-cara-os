@@ -46,6 +46,11 @@ const STATUS_STYLES: Record<CommunicationStatus, string> = {
   archived: "bg-slate-100 text-slate-500",
 };
 
+/** Why every state-changing control on this page is off. See #936: the service
+ *  behind it writes to `cs_communication_drafts`, a table no migration creates. */
+const NO_STORE_REASON =
+  "Unavailable until this page has a store — the drafts table does not exist, so a status change would not be saved.";
+
 const STATUS_LABELS: Record<CommunicationStatus, string> = {
   draft: "Draft",
   review: "In Review",
@@ -150,6 +155,7 @@ type FilterTab = "all" | "draft" | "review" | "approved" | "sent";
 export default function CommunicationsPage() {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
 
   const filtered = useMemo(() => {
@@ -319,32 +325,52 @@ export default function CommunicationsPage() {
                     <Badge className={cn(STATUS_STYLES[selected.status])}>{STATUS_LABELS[selected.status]}</Badge>
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Action buttons.
+                      Edit / Submit / Approve / Mark as Sent all change a
+                      draft's STATE, and this page has no store to change it
+                      in — `createDraft` writes to `cs_communication_drafts`,
+                      which no migration creates (#936). They are disabled with
+                      that reason rather than moving a status that will not
+                      survive the next page load. Copy needs no store at all,
+                      so it is the one that works. */}
                   <div className="flex gap-2 mb-4">
                     {selected.status === "draft" && (
                       <>
-                        <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
                           <Edit3 className="h-3.5 w-3.5" /> Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
                           <Eye className="h-3.5 w-3.5" /> Submit for Review
                         </Button>
                       </>
                     )}
                     {selected.status === "review" && (
-                      <Button size="sm" className="gap-1.5 text-xs">
+                      <Button size="sm" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
                         <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                       </Button>
                     )}
                     {selected.status === "approved" && (
-                      <Button size="sm" className="gap-1.5 text-xs">
+                      <Button size="sm" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
                         <Send className="h-3.5 w-3.5" /> Mark as Sent
                       </Button>
                     )}
-                    <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                      <Copy className="h-3.5 w-3.5" /> Copy
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(selected.content);
+                        setCopiedId(selected.id);
+                        setTimeout(() => setCopiedId(null), 2000);
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" /> {copiedId === selected.id ? "Copied" : "Copy"}
                     </Button>
                   </div>
+                  <p className="-mt-2 mb-3 text-[11px] text-gray-500">
+                    Changing a draft&apos;s status is unavailable until this page has a store —
+                    only Copy works here. Nothing you do would be saved.
+                  </p>
 
                   {/* Content preview */}
                   <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto">

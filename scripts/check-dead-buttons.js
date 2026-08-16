@@ -43,26 +43,16 @@ const path = require("node:path");
 // through new fields on their own routes (attention-item oversight note), one
 // navigates to the record the item points at, and one opens the risk-assessment
 // register rather than filing a second copy of the same document.
+// 19 → 4: the navigation/misc batch. What is LEFT is one group — the buttons
+// that ask Cara to generate something, which cannot be honestly wired while
+// the tenant's AI credits are exhausted. reg-45's "Auto-Link Evidence" belongs
+// with them: its own panel says "Cara can automatically suggest evidence
+// links". Those four keys cover five buttons, and they are Darren's call.
 const BASELINE = new Set([
-  "admissions/workflow|Advance to {PHASE_LABELS[nextPhase",
-  "care-events|Review Regulation 45 evidence",
-  "children/progress|Copy to Clipboard",
-  "children/progress|Add to Report",
-  "communications|Edit",
-  "communications|Submit for Review",
-  "communications|Approve",
-  "communications|Mark as Sent",
-  "communications|Copy",
   "dashboard/manager-control-centre|Request Cara Draft",
-  "intelligence/cara/resources|Preview",
-  "intelligence/cara/studio|Review gaps",
-  "mandatory-training-matrix|Schedule refresher",
-  "quality/ofsted-evidence-room|Link Record",
-  "quality/ofsted-evidence-room|View Source",
   "quality/reg-45|Request Cara D",
   "quality/reg-45|Request Cara Draft",
   "quality/reg-45|Auto-Link Evidence",
-  "workforce/cara-planner|Manual Plan",
 ]);
 
 /** Full JSX tag from '<' at `start` — a '>' inside {…} or a string is not the close. */
@@ -92,6 +82,11 @@ function tagAt(text, start) {
  * once broke the retrospective-date codemod; a JSX tag needs a real scanner.
  */
 function isWrapped(text, index) {
+  // Deliberately literal about `Link`: an ALIASED next/link import
+  // (`import NextLink from "next/link"`) is invisible here and its button
+  // reads as dead. That is the safe direction to be wrong — widening to
+  // `\w*Link` would exempt SmartLinkBadge and SmartLinkPanel, which navigate
+  // nowhere. Import next/link as `Link`, as every other page does.
   const OPENERS = /<(Link|a|\w*Trigger)\b/g;
   let last = null, o;
   OPENERS.lastIndex = 0;

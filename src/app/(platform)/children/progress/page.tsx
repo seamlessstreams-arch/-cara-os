@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
+import { todayStr } from "@/lib/utils";
+import { buildProgressSummary, progressSummaryText } from "@/lib/progress/progress-summary";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -171,6 +173,7 @@ export default function ChildProgressPage() {
   const { data: entriesData } = useProgressEntries(selectedChild);
   const { data: snapshotsData } = useProgressSnapshots(selectedChild);
   const createRecord = useCreateProgressRecord();
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (goalsData?.persisted && Array.isArray(goalsData.data)) {
@@ -217,6 +220,29 @@ export default function ChildProgressPage() {
       ]);
     }
   }, [snapshotsData]);
+
+  /* The progress narrative, composed from THIS child's records. It replaced
+   * three hardcoded paragraphs that said the same thing about the same child
+   * whichever child was selected — see src/lib/progress/progress-summary.ts. */
+  const childName = CHILDREN.find((c) => c.id === selectedChild)?.name ?? selectedChild;
+  const summaryInput = useMemo(
+    () => ({
+      childName,
+      goals: goals.map((g) => ({ title: g.title, status: g.status, progress: g.progress, area: g.area as string })),
+      entries: progressEntries.map((e) => ({ date: e.date, area: e.area as string, description: e.description, impactNote: e.impactNote })),
+      // A domain with no score recorded is not a domain scoring zero.
+      outcomes: outcomes.filter((o) => o.score > 0 || o.previousScore > 0),
+    }),
+    [childName, goals, progressEntries, outcomes],
+  );
+  const summary = useMemo(() => buildProgressSummary(summaryInput), [summaryInput]);
+  const summaryText = useMemo(() => progressSummaryText(summaryInput), [summaryInput]);
+
+  const copySummary = () => {
+    void navigator.clipboard.writeText(summaryText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 8) return "bg-green-500";
@@ -447,37 +473,49 @@ export default function ChildProgressPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge className="bg-indigo-100 text-indigo-800 text-xs">
-                    Cara suggested draft
+                    Built from this child&apos;s records
                   </Badge>
                 </div>
                 <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 space-y-3">
-                  <p className="text-sm text-indigo-900">
-                    Over the past month, Child A has demonstrated meaningful progress across several
-                    domains. Education outcomes have improved significantly, with predicted grades
-                    rising from 4 to 5 following consistent tutor engagement. Emotional regulation
-                    continues to develop — the independent use of breathing techniques marks a notable
-                    shift from reactive to reflective behaviour.
-                  </p>
-                  <p className="text-sm text-indigo-900">
-                    The relationship with maternal grandmother has strengthened through consistent
-                    weekly contact, now meeting the established goal. Community engagement has
-                    re-emerged through football club participation, providing positive peer interaction
-                    outside the home.
-                  </p>
-                  <p className="text-sm text-indigo-900">
-                    Areas for continued focus include independence (morning routine remains staff-prompted)
-                    and sustaining the anger management progress beyond the current 5-week period.
-                    Overall trajectory is positive with outcome scores improving in 5 of 7 domains.
-                  </p>
+                  {summary.paragraphs.map((p, i) => (
+                    <p key={i} className="text-sm text-indigo-900">{p}</p>
+                  ))}
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
-                    Copy to Clipboard
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    Add to Report
-                  </Button>
-                </div>
+                {summary.hasContent && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={copySummary}>
+                      {copied ? "Copied" : "Copy to Clipboard"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={createRecord.isPending}
+                      onClick={() =>
+                        createRecord.mutate({
+                          type: "entry",
+                          childId: selectedChild,
+                          homeId: "home_oak",
+                          entryDate: todayStr(),
+                          area: "general",
+                          whatHappened: summaryText,
+                          title: `Progress summary — ${childName}`,
+                        })
+                      }
+                    >
+                      {createRecord.isPending ? "Saving…" : "Add to Report"}
+                    </Button>
+                    {createRecord.isError && (
+                      <span className="text-xs text-red-600">
+                        Not saved — {(createRecord.error as Error).message}. Nothing was recorded.
+                      </span>
+                    )}
+                    {createRecord.isSuccess && (
+                      <span className="text-xs text-emerald-700">
+                        Saved as a progress entry for {childName}.
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
