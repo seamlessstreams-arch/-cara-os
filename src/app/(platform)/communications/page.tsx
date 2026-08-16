@@ -110,7 +110,7 @@ export default function CommunicationsPage() {
   const [composing, setComposing] = useState<CommunicationType | null>(null);
   const [editing, setEditing] = useState<DraftRow | null>(null);
 
-  const { data, isLoading } = useDrafts(homeId);
+  const { data, isLoading, isError, refetch } = useDrafts(homeId);
   const act = useDraftAction(homeId);
   const drafts: DraftRow[] = data?.data ?? [];
 
@@ -213,7 +213,20 @@ export default function CommunicationsPage() {
               </Card>
             )}
 
-            {!isLoading && filtered.length === 0 && (
+            {/* A failed read is NOT an empty store. If the list could not be
+                loaded, saying "no drafts yet" is the fabricate-on-empty bug in
+                its quietest form — it reports an absence Cara did not verify,
+                about letters that may well exist. Say what actually happened. */}
+            {!isLoading && isError && (
+              <EmptyState
+                icon={AlertTriangle}
+                title="Drafts could not be loaded"
+                description="This is not the same as having none — Cara could not reach the store, so it cannot say what is in it. Nothing has been lost; try again, and if it keeps failing the store needs looking at."
+                actions={[{ label: "Try again", onClick: () => { void refetch(); } }]}
+              />
+            )}
+
+            {!isLoading && !isError && filtered.length === 0 && (
               <EmptyState
                 icon={filter === "all" ? Mail : Clock}
                 title={
