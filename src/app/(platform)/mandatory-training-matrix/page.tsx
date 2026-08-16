@@ -31,6 +31,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";
+import { CreateTaskDialog } from "@/components/workflow/create-task-dialog";
 const TRAINING_MATRIX_ROWS_KEY = "training-matrix-rows";
 
 function useTrainingMatrixRows() {
@@ -75,6 +76,7 @@ const CATEGORY_CLR: Record<TrainingCourseCategory, string> = {
 };
 
 export default function MandatoryTrainingMatrixPage() {
+  const [refresherFor, setRefresherFor] = useState<{ staffId: string; staffName: string; courses: string[] } | null>(null);
   const { data: res, isLoading } = useTrainingMatrixRows();
   const data: TrainingMatrixRow[] = res?.data ?? [];
 
@@ -343,7 +345,20 @@ export default function MandatoryTrainingMatrixPage() {
                     </div>
 
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRefresherFor({
+                          staffId: r.staff_id,
+                          staffName: getStaffName(r.staff_id),
+                          // Name the courses that are actually out of date, so
+                          // the task says what needs booking rather than
+                          // "training" in the abstract.
+                          courses: r.training_statuses
+                            .filter((t: TrainingStatusEntry) => t.status === "expired" || t.status === "expiring_soon" || t.status === "not_completed")
+                            .map((t: TrainingStatusEntry) => t.course_name),
+                        })}
+                      >
                         <GraduationCap className="h-3.5 w-3.5 mr-1" />
                         Schedule refresher
                       </Button>
@@ -380,6 +395,26 @@ export default function MandatoryTrainingMatrixPage() {
         recordType="staff_training"
         className="mt-6"
       />
+
+      {refresherFor && (
+        <CreateTaskDialog
+          open
+          onOpenChange={(v) => { if (!v) setRefresherFor(null); }}
+          heading="Schedule a training refresher"
+          blurb="Files a training task. Booking the course itself still happens with the provider."
+          defaults={{
+            title: `Training refresher — ${refresherFor.staffName}`,
+            category: "training",
+            priority: "high",
+            // Only the courses actually out of date. An empty list says so
+            // rather than implying everything needs redoing.
+            description: refresherFor.courses.length
+              ? `Refresher needed for: ${refresherFor.courses.join(", ")}.`
+              : "No course is recorded as expired or expiring for this staff member — check the matrix before booking.",
+          }}
+          staff={[{ id: refresherFor.staffId, full_name: refresherFor.staffName }]}
+        />
+      )}
     </PageShell>
   );
 }

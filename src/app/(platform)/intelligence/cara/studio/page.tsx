@@ -276,6 +276,7 @@ function CaraStudioPageInner() {
     child_id: childFilter === "all" ? undefined : childFilter,
   });
   const { data: gapsData } = useCaraGaps({ status: "open" });
+  const [showGaps, setShowGaps] = useState(false);
   const { data: youngPeopleData } = useYoungPeople();
 
   const generateMutation = useGenerateCaraArtifact();
@@ -373,9 +374,36 @@ function CaraStudioPageInner() {
               {gaps.filter((g) => g.severity === "critical" || g.severity === "high").slice(0, 2).map((g) => g.title).join(" · ")}
             </p>
           </div>
-          <Button variant="outline" size="sm" className="shrink-0 border-red-200 text-red-700 hover:bg-red-50">
-            Review gaps
+          {/* The gaps were fetched and only counted — the button had nowhere
+              to send anyone because the page never listed them. It lists them
+              now, in place, rather than navigating to a screen that would have
+              to be built to receive it. */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 border-red-200 text-red-700 hover:bg-red-50"
+            aria-expanded={showGaps}
+            onClick={() => setShowGaps((v) => !v)}
+          >
+            {showGaps ? "Hide gaps" : "Review gaps"}
           </Button>
+        </div>
+      )}
+
+      {showGaps && (
+        <div className="mb-4 space-y-2 rounded-lg border border-red-200 bg-white p-3">
+          {gaps
+            .filter((g) => g.severity === "high" || g.severity === "critical")
+            .map((g) => (
+              <div key={g.id} className="border-b border-[var(--cs-border-subtle)] pb-2 last:border-0 last:pb-0">
+                <p className="text-sm font-medium text-[var(--cs-navy)]">{g.title}</p>
+                {g.description && <p className="mt-0.5 text-xs text-[var(--cs-text-secondary)]">{g.description}</p>}
+                {g.recommended_action && (
+                  <p className="mt-0.5 text-xs text-[var(--cs-text-muted)]">Recommended: {g.recommended_action}</p>
+                )}
+                <p className="mt-0.5 text-[11px] uppercase tracking-wide text-red-600">{g.severity}</p>
+              </div>
+            ))}
         </div>
       )}
 

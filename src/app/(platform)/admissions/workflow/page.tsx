@@ -398,9 +398,15 @@ function WorkflowDetail({
         </div>
         <div className="flex gap-2">
           {nextPhase && workflow.current_phase !== "completed" && workflow.current_phase !== "withdrawn" && (
-            <Button size="sm" className="gap-1.5">
-              <ArrowRight className="h-4 w-4" /> Advance to {PHASE_LABELS[nextPhase]}
-            </Button>
+            // This view tracks phases; it holds no referral store of its own,
+            // so a phase change here would live in React state until the next
+            // page load. The referral's status is moved on /admissions, which
+            // PATCHes the record. Same reasoning as New Referral (#936).
+            <Link href="/admissions">
+              <Button size="sm" className="gap-1.5">
+                <ArrowRight className="h-4 w-4" /> Advance to {PHASE_LABELS[nextPhase]}
+              </Button>
+            </Link>
           )}
         </div>
       </div>
