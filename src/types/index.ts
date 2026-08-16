@@ -45,6 +45,17 @@ export interface StaffMember extends AuditFields {
   dbs_number: string | null;
   dbs_issue_date: string | null;
   dbs_update_service: boolean;
+  /* ── Safer recruitment (Schedule 2 / KCSIE) ──────────────────────────────
+   * Dates and names, not booleans: "checked on 12 March by the RM" is
+   * evidence; `true` is a claim, and a claim invites the `?? true` that put
+   * fabricated barred-list confirmations on the qualifications screen (#939).
+   * NULL means NOT RECORDED — never "not done". */
+  right_to_work_checked_date: string | null;
+  right_to_work_checked_by: string | null;
+  barred_list_checked_date: string | null;
+  barred_list_checked_by: string | null;
+  prohibition_checked_date: string | null;
+  prohibition_checked_by: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   next_supervision_due: string | null;

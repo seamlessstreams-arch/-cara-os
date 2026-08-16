@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
+import { readJsonBody } from "@/lib/http/read-json";
+import { rejectFutureDates } from "@/lib/http/retrospective-dates";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 
 function daysBetween(dateStr: string | null): number | null {
   if (!dateStr) return null;
@@ -68,4 +72,49 @@ export async function GET(
       tasks: tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled"),
     },
   });
+}
+
+/**
+ * Record a pre-employment check against a staff member.
+ *
+ * Scope is deliberately narrow. This row also carries salary, role and
+ * employment status; the screen that records a barred-list check has no
+ * business reaching any of that, so the allowlist in queries.ts decides what
+ * a caller may write and this route decides who may write it.
+ *
+ * A date and a name, not a boolean: "checked on 12 March by the RM" is the
+ * evidence Schedule 2 asks for. Sending null CLEARS a check — recording one in
+ * error has to be correctable, and a cleared check reads as not recorded,
+ * which is the truth about it.
+ */
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_STAFF);
+  if (auth instanceof NextResponse) return auth;
+
+  const { id } = await params;
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return parsed.response;
+
+  // A check cannot have been made tomorrow.
+  const future = rejectFutureDates(parsed.data, [
+    "right_to_work_checked_date",
+    "barred_list_checked_date",
+    "prohibition_checked_date",
+  ]);
+  if (future) return future;
+
+  const existing = await dal.staff.findById(id);
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const updated = await dal.staff.updateSaferRecruitment(id, parsed.data);
+  if (!updated) {
+    return NextResponse.json(
+      { error: "No recordable pre-employment field was supplied" },
+      { status: 400 },
+    );
+  }
+  return NextResponse.json({ data: updated });
 }

@@ -232,9 +232,12 @@ const SOURCE_TABLES: Record<string, SourceTableConfig[]> = {
       dateColumn: "created_at",
       childScoped: false,
       staffScoped: true,
-      selectColumns: "id, first_name, last_name, role, job_title, employment_type, employment_status, start_date, dbs_number, dbs_date, dbs_update_service",
+      // `dbs_date` is not a column — staff_members has dbs_issue_date. PostgREST
+      // rejects the whole select on an unknown column, so Cara's safer-recruitment
+      // context source was erroring out on every live query that used it.
+      selectColumns: "id, first_name, last_name, role, job_title, employment_type, employment_status, start_date, dbs_number, dbs_issue_date, dbs_update_service, right_to_work_checked_date, barred_list_checked_date, prohibition_checked_date",
       summaryFn: (r) =>
-        `Candidate: ${r.first_name} ${r.last_name}, ${r.job_title ?? r.role}, DBS: ${r.dbs_number ? "held" : "not on file"}, update service: ${r.dbs_update_service ? "yes" : "no"}`,
+        `Candidate: ${r.first_name} ${r.last_name}, ${r.job_title ?? r.role}, DBS: ${r.dbs_number ? "held" : "not on file"}, update service: ${r.dbs_update_service ? "yes" : "no"}, barred list: ${r.barred_list_checked_date ?? "not recorded"}, prohibition: ${r.prohibition_checked_date ?? "not recorded"}`,
       requiredPermission: "cara.recruitment",
     },
   ],
