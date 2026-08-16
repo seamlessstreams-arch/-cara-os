@@ -361,6 +361,45 @@ export function generateManagementSummaryDraft(ctx: ManagementSummaryContext): s
   return lines.join("\n");
 }
 
+
+// ── In-memory fallback ─────────────────────────────────────────────────────
+//
+// Every function below used to answer `{ ok: false, error: "Supabase not
+// configured" }` — or worse, `{ ok: true, data: [] }` for the list — whenever
+// Supabase was absent. The route turned that into `{ ok: true, persisted:
+// false }`, which a caller could not tell from a save, so /communications'
+// controls were disabled rather than lie (#936, #938).
+//
+// With the table created, the demo path needs the same behaviour: create,
+// edit, approve and send have to work, and a draft has to still be there on
+// the next read. Same shape both ways, so the page is not written twice.
+
+const fallbackDrafts: CommunicationDraft[] = [];
+let fallbackSeq = 0;
+const nextId = () => `cmd_${++fallbackSeq}`;
+
+/** Exposed for tests — the module-level array is otherwise unreachable. */
+export const _resetFallbackDrafts = (seed: CommunicationDraft[] = []) => {
+  fallbackDrafts.length = 0;
+  fallbackDrafts.push(...seed);
+  fallbackSeq = seed.length;
+};
+
+const touch = <T extends Partial<CommunicationDraft>>(patch: T) => ({
+  ...patch,
+  updated_at: new Date().toISOString(),
+});
+
+function patchFallback(
+  id: string,
+  patch: Partial<CommunicationDraft>,
+): ServiceResult<CommunicationDraft> {
+  const idx = fallbackDrafts.findIndex((d) => d.id === id);
+  if (idx === -1) return { ok: false, error: "Draft not found" };
+  fallbackDrafts[idx] = { ...fallbackDrafts[idx], ...touch(patch) };
+  return { ok: true, data: fallbackDrafts[idx] };
+}
+
 // ── CRUD ───────────────────────────────────────────────────────────────────
 
 export async function listDrafts(
@@ -373,7 +412,14 @@ export async function listDrafts(
   },
 ): Promise<ServiceResult<CommunicationDraft[]>> {
   const s = sb();
-  if (!s) return { ok: true, data: [] };
+  if (!s) {
+    let rows = fallbackDrafts.filter((d) => d.home_id === homeId);
+    if (opts?.type) rows = rows.filter((d) => d.communication_type === opts.type);
+    if (opts?.status) rows = rows.filter((d) => d.status === opts.status);
+    if (opts?.childId) rows = rows.filter((d) => d.child_id === opts.childId);
+    rows = [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return { ok: true, data: rows.slice(0, opts?.limit ?? 50) };
+  }
 
   let q = (s.from("cs_communication_drafts") as SB).select("*").eq("home_id", homeId);
   if (opts?.type) q = q.eq("communication_type", opts.type);
@@ -388,7 +434,10 @@ export async function listDrafts(
 
 export async function getDraft(id: string): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) {
+    const found = fallbackDrafts.find((d) => d.id === id);
+    return found ? { ok: true, data: found } : { ok: false, error: "Draft not found" };
+  }
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
     .select("*").eq("id", id).single();
@@ -411,7 +460,34 @@ export async function createDraft(input: {
   caraPromptUsed?: string;
 }): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) {
+    const now = new Date().toISOString();
+    const row: CommunicationDraft = {
+      id: nextId(),
+      home_id: input.homeId,
+      communication_type: input.type,
+      title: input.title,
+      content: input.content,
+      recipient_context: input.recipientContext ?? null,
+      child_id: input.childId ?? null,
+      staff_id: input.staffId ?? null,
+      linked_entity_type: input.linkedEntityType ?? null,
+      linked_entity_id: input.linkedEntityId ?? null,
+      status: "draft",
+      cara_generated: input.caraGenerated ?? false,
+      cara_prompt_used: input.caraPromptUsed ?? null,
+      edited_by: null,
+      edited_at: null,
+      approved_by: null,
+      approved_at: null,
+      sent_at: null,
+      created_by: input.createdBy,
+      created_at: now,
+      updated_at: now,
+    };
+    fallbackDrafts.unshift(row);
+    return { ok: true, data: row };
+  }
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
     .insert({
@@ -441,7 +517,14 @@ export async function updateDraft(
   updates: { content?: string; title?: string; editedBy: string },
 ): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) {
+    return patchFallback(id, {
+      ...(updates.content !== undefined && { content: updates.content }),
+      ...(updates.title !== undefined && { title: updates.title }),
+      edited_by: updates.editedBy,
+      edited_at: new Date().toISOString(),
+    });
+  }
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
     .update({
@@ -459,12 +542,50 @@ export async function updateDraft(
   return { ok: true, data };
 }
 
+/**
+ * Hand a draft to someone else to check.
+ *
+ * A separate step from approve on purpose: the person who wrote a
+ * communication about a child should not be the person who signs it off, and a
+ * status the page can move but the store cannot hold is how this page came to
+ * have four disabled buttons.
+ */
+export async function submitDraftForReview(
+  id: string,
+  userId: string,
+): Promise<ServiceResult<CommunicationDraft>> {
+  const s = sb();
+  if (!s) {
+    return patchFallback(id, { status: "review", edited_by: userId, edited_at: new Date().toISOString() });
+  }
+
+  const { data, error } = await (s.from("cs_communication_drafts") as SB)
+    .update({
+      status: "review",
+      edited_by: userId,
+      edited_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data };
+}
+
 export async function approveDraft(
   id: string,
   userId: string,
 ): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) {
+    return patchFallback(id, {
+      status: "approved",
+      approved_by: userId,
+      approved_at: new Date().toISOString(),
+    });
+  }
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
     .update({
@@ -485,7 +606,9 @@ export async function markSent(
   id: string,
 ): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) {
+    return patchFallback(id, { status: "sent", sent_at: new Date().toISOString() });
+  }
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
     .update({
@@ -513,11 +636,11 @@ export async function getCommunicationStats(
   this_week: number;
 }>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
-
-  const { data, error } = await (s.from("cs_communication_drafts") as SB)
-    .select("communication_type, status, cara_generated, created_at")
-    .eq("home_id", homeId);
+  const { data, error } = s
+    ? await (s.from("cs_communication_drafts") as SB)
+        .select("communication_type, status, cara_generated, created_at")
+        .eq("home_id", homeId)
+    : { data: fallbackDrafts.filter((d) => d.home_id === homeId), error: null };
 
   if (error) return { ok: false, error: error.message };
 

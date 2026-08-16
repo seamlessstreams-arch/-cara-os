@@ -1,9 +1,8 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   listDrafts, getDraft, createDraft, updateDraft,
-  approveDraft, markSent, getCommunicationStats,
+  approveDraft, markSent, submitDraftForReview, getCommunicationStats,
   generateHandoverDraft, generateSocialWorkerDraft,
   generateShiftBriefingDraft, generateManagementSummaryDraft,
   COMMUNICATION_TEMPLATES,
@@ -19,10 +18,6 @@ export async function GET(request: NextRequest) {
   // Templates (no DB needed)
   if (type === "templates") {
     return NextResponse.json({ ok: true, data: COMMUNICATION_TEMPLATES });
-  }
-
-  if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, data: [], persisted: false });
   }
 
   // Stats
@@ -88,10 +83,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "homeId, type, title, content, createdBy required" }, { status: 400 });
       }
 
-      if (!isSupabaseEnabled()) {
-        return NextResponse.json({ ok: true, persisted: false });
-      }
-
       const result = await createDraft({
         homeId, type: commType, title, content, createdBy,
         childId, staffId, linkedEntityType, linkedEntityId,
@@ -106,9 +97,16 @@ export async function POST(request: NextRequest) {
       const { id, content, title, editedBy } = body;
       if (!id || !editedBy) return NextResponse.json({ error: "id and editedBy required" }, { status: 400 });
 
-      if (!isSupabaseEnabled()) return NextResponse.json({ ok: true, persisted: false });
-
       const result = await updateDraft(id, { content, title, editedBy });
+      if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+      return NextResponse.json({ ok: true, data: result.data });
+    }
+
+    // Hand to a reviewer
+    if (action === "submit_for_review") {
+      const { id, userId } = body;
+      if (!id || !userId) return NextResponse.json({ error: "id and userId required" }, { status: 400 });
+      const result = await submitDraftForReview(id, userId);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
       return NextResponse.json({ ok: true, data: result.data });
     }
@@ -117,8 +115,6 @@ export async function POST(request: NextRequest) {
     if (action === "approve") {
       const { id, userId } = body;
       if (!id || !userId) return NextResponse.json({ error: "id and userId required" }, { status: 400 });
-
-      if (!isSupabaseEnabled()) return NextResponse.json({ ok: true, persisted: false });
 
       const result = await approveDraft(id, userId);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
@@ -130,14 +126,12 @@ export async function POST(request: NextRequest) {
       const { id } = body;
       if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
-      if (!isSupabaseEnabled()) return NextResponse.json({ ok: true, persisted: false });
-
       const result = await markSent(id);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
       return NextResponse.json({ ok: true, data: result.data });
     }
 
-    return NextResponse.json({ error: "action must be generate, create, update, approve, or mark_sent" }, { status: 400 });
+    return NextResponse.json({ error: "action must be generate, create, update, submit_for_review, approve, or mark_sent" }, { status: 400 });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
