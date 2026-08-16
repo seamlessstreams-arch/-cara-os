@@ -58,6 +58,52 @@ export async function getStaffById(sb: SB, id: string) {
   return unwrap(await sb.from("staff_members").select("*").eq("id", id).single());
 }
 
+/**
+ * The pre-employment fields a manager may record against a staff member.
+ *
+ * An allowlist, and the fourth of this shape in the codebase (reg44 responses
+ * #936, competence columns #939, reg45 sections #940). Staff rows carry salary,
+ * role and employment status; a screen that records a barred-list check has no
+ * business reaching any of that, so it cannot.
+ */
+const SAFER_RECRUITMENT_COLUMNS = [
+  "dbs_number",
+  "dbs_issue_date",
+  "dbs_update_service",
+  "right_to_work_checked_date",
+  "right_to_work_checked_by",
+  "barred_list_checked_date",
+  "barred_list_checked_by",
+  "prohibition_checked_date",
+  "prohibition_checked_by",
+] as const;
+
+/** Only the supplied fields, and only ones on the allowlist. */
+export function saferRecruitmentColumns(input: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const column of SAFER_RECRUITMENT_COLUMNS) {
+    if (!Object.prototype.hasOwnProperty.call(input, column)) continue;
+    const value = input[column];
+    if (value === undefined) continue;
+    // An explicit null CLEARS a check — recording one in error must be
+    // correctable, and clearing is different from never having recorded.
+    out[column] = value;
+  }
+  return out;
+}
+
+export async function updateStaffSaferRecruitment(
+  sb: SB,
+  id: string,
+  input: Record<string, unknown>,
+) {
+  const updates = saferRecruitmentColumns(input);
+  if (Object.keys(updates).length === 0) return null;
+  return unwrap(
+    await sb.from("staff_members").update(updates).eq("id", id).select().single(),
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HOME (the one home this deployment serves — selected by SUPABASE_HOME_ID)
 // ─────────────────────────────────────────────────────────────────────────────

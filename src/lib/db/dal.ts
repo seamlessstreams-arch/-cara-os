@@ -74,6 +74,14 @@ export const dal = {
       if (c) return sq.createStaffMember(c, { ...data, home_id: homeId() });
       return db.staff.create(data);
     },
+    /** Pre-employment checks only — the allowlist lives in queries.ts so both
+     *  modes write exactly the same set of columns. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async updateSaferRecruitment(id: string, data: any) {
+      const c = sb();
+      if (c) return sq.updateStaffSaferRecruitment(c, id, data);
+      return db.staff.update(id, sq.saferRecruitmentColumns(data));
+    },
   },
 
   // ── Young People ──────────────────────────────────────────────────────────

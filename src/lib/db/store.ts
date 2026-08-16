@@ -11747,6 +11747,19 @@ export const db = {
     /** Reverse lookup for the candidate→staff bridge (idempotency). */
     findByCandidate: (candidateId: string) =>
       store.staff.find((s) => (s as StaffMember).candidate_id === candidateId) ?? null,
+    /** Patch a staff record. The CALLER supplies the field allowlist (see
+     *  saferRecruitmentColumns in queries.ts) — this does not police what it is
+     *  handed, so it must never be given a raw request body. */
+    update: (id: string, data: Record<string, unknown>): StaffMember | null => {
+      const idx = store.staff.findIndex((s) => s.id === id);
+      if (idx === -1) return null;
+      store.staff[idx] = {
+        ...store.staff[idx],
+        ...data,
+        updated_at: new Date().toISOString(),
+      } as StaffMember;
+      return store.staff[idx];
+    },
     /** Append a new staff record (Phase 4 candidate→staff bridge). Seed staff are
      *  otherwise read-only; this is the one sanctioned write path. */
     create: (data: Partial<StaffMember>): StaffMember => {

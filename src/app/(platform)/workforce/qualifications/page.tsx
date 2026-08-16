@@ -27,6 +27,10 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NewQualificationDialog } from "@/components/workforce/new-record-dialogs";
+import {
+  RecordPreEmploymentCheckDialog, type PreEmploymentSubject,
+} from "@/components/workforce/record-pre-employment-check-dialog";
+import { useAuthContext } from "@/contexts/auth-context";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
 
@@ -271,39 +275,42 @@ function StaffQualPanel({
 
 function DBSTrackerCard({
   staff,
+  checkedBy,
 }: {
-  staff: Array<{ id: string; full_name: string; job_title: string; dbs_number?: string | null; dbs_date?: string | null; dbs_update_service?: boolean | null; right_to_work_checked?: boolean | null; is_active: boolean }>;
+  staff: StaffEnriched[];
+  checkedBy: string;
 }) {
+  const [recordFor, setRecordFor] = useState<PreEmploymentSubject | null>(null);
   const activeStaff = staff.filter((s) => s.is_active);
-  const dbsClear = activeStaff.filter((s) => s.dbs_number || s.dbs_date).length;
+  // `dbs_date` was a PHANTOM read: the column and the type both say
+  // dbs_issue_date, so this counter and the row date were always undefined.
+  const dbsClear = activeStaff.filter((s) => s.dbs_number || s.dbs_issue_date).length;
   const updateService = activeStaff.filter((s) => s.dbs_update_service === true).length;
 
   // This card used to SIMULATE the row it displays — its own comment said so.
   // It invented a DBS certificate number when none was recorded (a different
-  // one on every render), defaulted the DBS date to a fixed day, coin-flipped
-  // whether the person was on the Update Service, and asserted
-  // barred_list_checked and prohibition_checked TRUE for every staff member
-  // unconditionally.
+  // one per render), fixed the DBS date to a hardcoded day, coin-flipped the
+  // Update Service flag, and asserted barred_list_checked and
+  // prohibition_checked TRUE for every staff member unconditionally (#939).
   //
-  // A home with nothing recorded saw a screen of green ticks, DBS numbers and
-  // barred-list confirmations for its whole team. This is Reg 32 / Schedule 2
-  // evidence — the material an inspector asks for first.
-  //
-  // It now shows what is recorded and nothing else. Barred-list and
-  // prohibition are GONE rather than defaulted: no such field exists on a
-  // staff member, so the app cannot claim them. Tracking those needs the data.
+  // The three checks now have real columns behind them, so the card reads them
+  // instead of claiming them. A date is evidence; NULL is "not recorded", and
+  // it renders as not recorded rather than as a green tick.
   const dbsRecords = activeStaff.map((s) => ({
     staff_id: s.id,
     name: s.full_name,
     role: s.job_title,
     dbs_number: s.dbs_number?.trim() || null,
-    dbs_date: s.dbs_date ?? null,
-    // Strictly true. `?? random` invented it, and `!== false` would make an
-    // unset field read as checked — the same lie by a quieter route.
+    dbs_issue_date: s.dbs_issue_date ?? null,
     update_service: s.dbs_update_service === true,
-    rtw_checked: s.right_to_work_checked === true,
+    rtw_checked_date: s.right_to_work_checked_date ?? null,
+    barred_list_checked_date: s.barred_list_checked_date ?? null,
+    prohibition_checked_date: s.prohibition_checked_date ?? null,
   }));
-  const complete = dbsRecords.filter((r) => r.dbs_number && r.rtw_checked).length;
+  // "Complete" means all four are on file. Nothing is inferred from silence.
+  const complete = dbsRecords.filter(
+    (r) => r.dbs_number && r.rtw_checked_date && r.barred_list_checked_date && r.prohibition_checked_date,
+  ).length;
 
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
@@ -319,19 +326,36 @@ function DBSTrackerCard({
       </div>
       {complete < activeStaff.length && (
         <p className="border-b border-[var(--cs-border-subtle)] bg-amber-50 px-5 py-2 text-[11px] text-amber-800">
-          {activeStaff.length - complete} of {activeStaff.length} active staff have no DBS number or no
-          right-to-work check recorded here. A gap means the record is missing, not that the check was
-          never done — but for Reg 32 it has to be recorded to count as evidence.
+          {activeStaff.length - complete} of {activeStaff.length} active staff have an incomplete
+          pre-employment record — a missing DBS number, right-to-work, barred-list or prohibition
+          check. A gap means the record is missing, not that the check was never done — but for
+          Reg 32 and Schedule 2 it has to be recorded to count as evidence.
         </p>
       )}
       <div className="divide-y divide-slate-50">
         {dbsRecords.map((r) => {
-          const recorded = !!r.dbs_number && r.rtw_checked;
+          const recorded = !!r.dbs_number && !!r.rtw_checked_date
+            && !!r.barred_list_checked_date && !!r.prohibition_checked_date;
+          /* A badge per check, and its DATE in the tooltip — "checked on 12
+             March" is the evidence, the badge is only the shorthand. Absent
+             renders amber and says "not recorded", never green. */
+          const badge = (label: string, date: string | null) => (
+            <Badge
+              key={label}
+              title={date ? `${label} checked ${formatDate(date)}` : `${label}: not recorded`}
+              className={cn(
+                "text-[8px] border-0 rounded-full px-1.5",
+                date ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800",
+              )}
+            >
+              {date ? label : `${label} not recorded`}
+            </Badge>
+          );
           return (
             <div key={r.staff_id} className="flex items-center gap-3 px-5 py-2.5 hover:bg-[var(--cs-surface)]/50 transition-colors">
               {/* The tick used to be unconditional. It now means what it says. */}
               {recorded ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" aria-label="DBS and right to work recorded" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" aria-label="Pre-employment record complete" />
               ) : (
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="Pre-employment record incomplete" />
               )}
@@ -339,31 +363,48 @@ function DBSTrackerCard({
                 <span className="text-xs font-medium text-[var(--cs-text-secondary)]">{r.name}</span>
                 <span className="text-[10px] text-[var(--cs-text-muted)] ml-2">{r.role}</span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
                 {r.dbs_number ? (
                   <span className="text-[10px] text-[var(--cs-text-muted)] font-mono">{r.dbs_number}</span>
                 ) : (
-                  <span className="text-[10px] italic text-amber-700">No DBS number recorded</span>
+                  <span className="text-[10px] italic text-amber-700">No DBS number</span>
                 )}
                 {r.update_service && (
                   <Badge className="text-[8px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 rounded-full px-1.5">
                     Update service
                   </Badge>
                 )}
-                {r.rtw_checked ? (
-                  <Badge className="text-[8px] bg-emerald-100 text-emerald-700 border-0 rounded-full px-1.5">
-                    RTW
-                  </Badge>
-                ) : (
-                  <Badge className="text-[8px] bg-amber-100 text-amber-800 border-0 rounded-full px-1.5">
-                    RTW not recorded
-                  </Badge>
-                )}
+                {badge("RTW", r.rtw_checked_date)}
+                {badge("Barred list", r.barred_list_checked_date)}
+                {badge("Prohibition", r.prohibition_checked_date)}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[10px]"
+                  onClick={() => setRecordFor({
+                    id: r.staff_id,
+                    full_name: r.name,
+                    dbs_number: r.dbs_number,
+                    dbs_issue_date: r.dbs_issue_date,
+                    right_to_work_checked_date: r.rtw_checked_date,
+                    barred_list_checked_date: r.barred_list_checked_date,
+                    prohibition_checked_date: r.prohibition_checked_date,
+                  })}
+                >
+                  Record
+                </Button>
               </div>
             </div>
           );
         })}
       </div>
+
+      <RecordPreEmploymentCheckDialog
+        open={!!recordFor}
+        onOpenChange={(v) => { if (!v) setRecordFor(null); }}
+        subject={recordFor}
+        checkedBy={checkedBy}
+      />
     </div>
   );
 }
@@ -472,6 +513,7 @@ function Minus({ className }: { className?: string }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function QualificationsPage() {
+  const { currentUser } = useAuthContext();
   const [showNew, setShowNew] = useState(false);
   const [view, setView] = useState<"staff" | "list" | "matrix">("staff");
   const [filter, setFilter] = useState<"all" | QualificationStatus | "mandatory">("all");
@@ -759,7 +801,7 @@ export default function QualificationsPage() {
 
         {/* ── DBS Tracker ── */}
         {!isLoading && (
-          <DBSTrackerCard staff={staff} />
+          <DBSTrackerCard staff={staff} checkedBy={currentUser?.full_name ?? ""} />
         )}
 
         {/* ── Regulatory note ── */}
