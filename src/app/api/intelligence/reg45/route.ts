@@ -99,6 +99,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * The twelve narrative sections of a Reg 45 review, camelCase → column.
+ *
+ * An allowlist, not a spread: the PATCH previously accepted only `content`,
+ * `findings` and `recommendations` and mapped all three onto the WRONG
+ * columns (content and title both wrote quality_of_care_summary), so eleven of
+ * the twelve sections could not be saved at all. Naming them makes the section
+ * a caller asks for the section that gets written — and nothing else on the
+ * review is writable through this door.
+ */
+const SECTION_COLUMNS: Record<string, string> = {
+  qualityOfCareSummary: "quality_of_care_summary",
+  childrenExperiencesSummary: "children_experiences_summary",
+  outcomesSummary: "outcomes_summary",
+  safeguardingSummary: "safeguarding_summary",
+  leadershipSummary: "leadership_summary",
+  strengths: "strengths",
+  weaknesses: "weaknesses",
+  improvementActions: "improvement_actions",
+  childrenViews: "children_views",
+  parentsViews: "parents_views",
+  placingAuthorityViews: "placing_authority_views",
+  staffViews: "staff_views",
+};
+
+/** Only the sections the caller actually supplied, as columns. */
+export function reg45SectionColumns(updates: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, column] of Object.entries(SECTION_COLUMNS)) {
+    const value = updates[key];
+    if (typeof value === "string" && value.trim()) out[column] = value;
+  }
+  return out;
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
@@ -119,6 +154,7 @@ export async function PATCH(request: NextRequest) {
         patched.approved_by = updates.approvedBy;
         patched.approved_at = new Date().toISOString();
       }
+      Object.assign(patched, reg45SectionColumns(updates));
       reg45Reviews[idx] = patched;
       return NextResponse.json({ ok: true, review: patched, persisted: true });
     }
@@ -135,6 +171,7 @@ export async function PATCH(request: NextRequest) {
       dbUpdates.approved_by = updates.approvedBy;
       dbUpdates.approved_at = new Date().toISOString();
     }
+    Object.assign(dbUpdates, reg45SectionColumns(updates));
 
     const { data, error } = await supabase.from("reg45_reviews").update(dbUpdates).eq("id", id).select().single();
     if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
