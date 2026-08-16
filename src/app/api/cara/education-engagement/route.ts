@@ -153,7 +153,10 @@ function buildDemoWeeks(childId: string): EducationWeek[] {
     if (isJordan) {
       // Jordan: inconsistent attendance, improving trend
       const baseAttendance = i < 6 ? 7 : 8; // improving from 70% to 80%
-      const attended = Math.min(10, baseAttendance + (Math.random() > 0.7 ? 1 : 0));
+      // Deterministic, not random: this is a DEMO builder, and a random extra
+      // session made the same child's attendance chart change on every request.
+      // A manager comparing two loads saw two different attendance histories.
+      const attended = Math.min(10, baseAttendance + (i % 3 === 0 ? 1 : 0));
       weeks.push({
         weekStart,
         sessionsExpected: 10,

@@ -276,21 +276,34 @@ function DBSTrackerCard({
 }) {
   const activeStaff = staff.filter((s) => s.is_active);
   const dbsClear = activeStaff.filter((s) => s.dbs_number || s.dbs_date).length;
-  const updateService = activeStaff.filter((s) => s.dbs_update_service).length;
-  const rtwChecked = activeStaff.filter((s) => s.right_to_work_checked !== false).length;
+  const updateService = activeStaff.filter((s) => s.dbs_update_service === true).length;
 
-  // Simulate DBS data based on staff
+  // This card used to SIMULATE the row it displays — its own comment said so.
+  // It invented a DBS certificate number when none was recorded (a different
+  // one on every render), defaulted the DBS date to a fixed day, coin-flipped
+  // whether the person was on the Update Service, and asserted
+  // barred_list_checked and prohibition_checked TRUE for every staff member
+  // unconditionally.
+  //
+  // A home with nothing recorded saw a screen of green ticks, DBS numbers and
+  // barred-list confirmations for its whole team. This is Reg 32 / Schedule 2
+  // evidence — the material an inspector asks for first.
+  //
+  // It now shows what is recorded and nothing else. Barred-list and
+  // prohibition are GONE rather than defaulted: no such field exists on a
+  // staff member, so the app cannot claim them. Tracking those needs the data.
   const dbsRecords = activeStaff.map((s) => ({
     staff_id: s.id,
     name: s.full_name,
     role: s.job_title,
-    dbs_number: s.dbs_number || `DBS-${s.id.replace("staff_", "").toUpperCase().slice(0, 3)}${Math.floor(Math.random() * 900 + 100)}`,
-    dbs_date: s.dbs_date || "2025-06-15",
-    update_service: s.dbs_update_service ?? (Math.random() > 0.3),
-    rtw_checked: s.right_to_work_checked !== false,
-    barred_list_checked: true,
-    prohibition_checked: true,
+    dbs_number: s.dbs_number?.trim() || null,
+    dbs_date: s.dbs_date ?? null,
+    // Strictly true. `?? random` invented it, and `!== false` would make an
+    // unset field read as checked — the same lie by a quieter route.
+    update_service: s.dbs_update_service === true,
+    rtw_checked: s.right_to_work_checked === true,
   }));
+  const complete = dbsRecords.filter((r) => r.dbs_number && r.rtw_checked).length;
 
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
@@ -300,38 +313,56 @@ function DBSTrackerCard({
           <h3 className="text-sm font-bold text-[var(--cs-navy)]">DBS & Right to Work</h3>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-[var(--cs-text-muted)]">
-          <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{dbsClear}/{activeStaff.length} DBS clear</span>
+          <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{dbsClear}/{activeStaff.length} DBS recorded</span>
           <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-[var(--cs-cara-gold)]" />{updateService} on update service</span>
         </div>
       </div>
+      {complete < activeStaff.length && (
+        <p className="border-b border-[var(--cs-border-subtle)] bg-amber-50 px-5 py-2 text-[11px] text-amber-800">
+          {activeStaff.length - complete} of {activeStaff.length} active staff have no DBS number or no
+          right-to-work check recorded here. A gap means the record is missing, not that the check was
+          never done — but for Reg 32 it has to be recorded to count as evidence.
+        </p>
+      )}
       <div className="divide-y divide-slate-50">
-        {dbsRecords.map((r) => (
-          <div key={r.staff_id} className="flex items-center gap-3 px-5 py-2.5 hover:bg-[var(--cs-surface)]/50 transition-colors">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="text-xs font-medium text-[var(--cs-text-secondary)]">{r.name}</span>
-              <span className="text-[10px] text-[var(--cs-text-muted)] ml-2">{r.role}</span>
+        {dbsRecords.map((r) => {
+          const recorded = !!r.dbs_number && r.rtw_checked;
+          return (
+            <div key={r.staff_id} className="flex items-center gap-3 px-5 py-2.5 hover:bg-[var(--cs-surface)]/50 transition-colors">
+              {/* The tick used to be unconditional. It now means what it says. */}
+              {recorded ? (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" aria-label="DBS and right to work recorded" />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="Pre-employment record incomplete" />
+              )}
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-medium text-[var(--cs-text-secondary)]">{r.name}</span>
+                <span className="text-[10px] text-[var(--cs-text-muted)] ml-2">{r.role}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {r.dbs_number ? (
+                  <span className="text-[10px] text-[var(--cs-text-muted)] font-mono">{r.dbs_number}</span>
+                ) : (
+                  <span className="text-[10px] italic text-amber-700">No DBS number recorded</span>
+                )}
+                {r.update_service && (
+                  <Badge className="text-[8px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 rounded-full px-1.5">
+                    Update service
+                  </Badge>
+                )}
+                {r.rtw_checked ? (
+                  <Badge className="text-[8px] bg-emerald-100 text-emerald-700 border-0 rounded-full px-1.5">
+                    RTW
+                  </Badge>
+                ) : (
+                  <Badge className="text-[8px] bg-amber-100 text-amber-800 border-0 rounded-full px-1.5">
+                    RTW not recorded
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-[var(--cs-text-muted)] font-mono">{r.dbs_number}</span>
-              {r.update_service && (
-                <Badge className="text-[8px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 rounded-full px-1.5">
-                  Update service
-                </Badge>
-              )}
-              {r.rtw_checked && (
-                <Badge className="text-[8px] bg-emerald-100 text-emerald-700 border-0 rounded-full px-1.5">
-                  RTW
-                </Badge>
-              )}
-              {r.barred_list_checked && (
-                <Badge className="text-[8px] bg-blue-100 text-blue-700 border-0 rounded-full px-1.5">
-                  Barred list
-                </Badge>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
