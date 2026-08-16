@@ -119,11 +119,17 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
-    const { id, status, reviewedBy, escalatedTo, actorUserId, actorRole, homeId } = body;
+    const { id, status, reviewedBy, escalatedTo, oversightNote, actorUserId, actorRole, homeId } = body;
 
     if (!id || !status) {
       return NextResponse.json({ error: "id and status are required" }, { status: 400 });
     }
+
+    // What the manager actually did about the item. Marking something
+    // "reviewed" records that it was looked at; the note records the thinking,
+    // which is the part an inspector asks for and the part that was previously
+    // impossible to store — "Add Oversight" had no field to write to.
+    const note = typeof oversightNote === "string" && oversightNote.trim() ? oversightNote.trim() : null;
 
     if (!isSupabaseEnabled()) {
       const idx = attentionItems.findIndex((r) => r.id === id);
@@ -133,6 +139,7 @@ export async function PATCH(request: NextRequest) {
           ...attentionItems[idx],
           status,
           updated_at: now,
+          ...(note ? { oversight_note: note, oversight_at: now, oversight_by: (actorUserId as string) ?? null } : {}),
           ...(status === "reviewed" ? { reviewed_by: (reviewedBy as string) ?? (actorUserId as string) ?? null, reviewed_at: now } : {}),
           ...(status === "escalated" ? { escalated_to: (escalatedTo as string) ?? "ri", escalated_at: now } : {}),
         };
@@ -152,6 +159,11 @@ export async function PATCH(request: NextRequest) {
     if (status === "escalated") {
       updates.escalated_to = escalatedTo ?? "ri";
       updates.escalated_at = now;
+    }
+    if (note) {
+      updates.oversight_note = note;
+      updates.oversight_at = now;
+      updates.oversight_by = actorUserId ?? null;
     }
 
     const { data, error } = await supabase.from("manager_attention_items").update(updates).eq("id", id).select().single();

@@ -17,7 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { CreateTaskDialog, type CreateTaskDefaults } from "@/components/workflow/create-task-dialog";
 import {
   AlertTriangle,
   ChevronDown,
@@ -119,7 +121,44 @@ const DEFAULT_PROMPTS: ReviewPrompt[] = [
 
 // ── Component ────────────────────────────────────────────────────────────────
 
+/** The three task-shaped follow-ups a learning review can raise. Each prefills
+ *  from the incident it came from, so the task carries its own provenance. */
+type TaskKind = "key_work" | "debrief" | "escalate";
+
+function taskDefaults(incident: Incident, kind: TaskKind): CreateTaskDefaults {
+  const link = { linkedIncidentId: incident.id };
+  if (kind === "key_work") {
+    return {
+      ...link,
+      title: `Key work session — ${incident.child}`,
+      category: "young_person_plans",
+      priority: "medium",
+      description: `Follow-up to the incident on ${incident.date}: ${incident.title}.`,
+    };
+  }
+  if (kind === "debrief") {
+    return {
+      ...link,
+      title: `Debrief — ${incident.title}`,
+      category: "supervision",
+      priority: "medium",
+      description: `Debrief with the staff involved (${incident.staffInvolved.join(", ") || "to be confirmed"}) following the incident on ${incident.date}.`,
+    };
+  }
+  return {
+    ...link,
+    title: `RI escalation — ${incident.title}`,
+    category: "compliance",
+    priority: incident.severity === "critical" ? "urgent" : "high",
+    escalateTo: "responsible_individual",
+    // Left EMPTY on purpose: the reason for an escalation is the manager's to
+    // write, and the dialog will not let it be saved blank.
+    description: "",
+  };
+}
+
 export default function IncidentLearningReviewPage() {
+  const [taskFor, setTaskFor] = useState<{ incident: Incident; kind: TaskKind } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [prompts, setPrompts] = useState<Record<string, ReviewPrompt[]>>({});
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -127,6 +166,7 @@ export default function IncidentLearningReviewPage() {
   /* ── API hook (live data via intelligence-layer fallback store) ─────────── */
   const { data: apiData } = useLearningReviews();
   const updateReview = useUpdateLearningReview();
+  const openTask = (incident: Incident, kind: TaskKind) => setTaskFor({ incident, kind });
 
   useEffect(() => {
     if (apiData?.persisted && Array.isArray(apiData.reviews)) {
@@ -356,19 +396,24 @@ export default function IncidentLearningReviewPage() {
                         Actions
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => openTask(incident, "key_work")}>
                           <MessageSquare className="h-3.5 w-3.5 mr-1" />
                           Create Key Work Task
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => openTask(incident, "debrief")}>
                           <UserCheck className="h-3.5 w-3.5 mr-1" />
                           Create Debrief Task
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <Shield className="h-3.5 w-3.5 mr-1" />
-                          Review Risk Assessment
-                        </Button>
-                        <Button variant="outline" size="sm">
+                        {/* A risk assessment is REVIEWED where it lives, not
+                            re-created here — this opens the register rather
+                            than filing a second version of the same document. */}
+                        <Link href="/risk-assessments">
+                          <Button variant="outline" size="sm">
+                            <Shield className="h-3.5 w-3.5 mr-1" />
+                            Review Risk Assessment
+                          </Button>
+                        </Link>
+                        <Button variant="outline" size="sm" onClick={() => openTask(incident, "escalate")}>
                           <AlertTriangle className="h-3.5 w-3.5 mr-1" />
                           Escalate to RI
                         </Button>
@@ -478,6 +523,20 @@ export default function IncidentLearningReviewPage() {
         recordType="incident"
         className="mt-6"
       />
+
+      {taskFor && (
+        <CreateTaskDialog
+          open
+          onOpenChange={(v) => { if (!v) setTaskFor(null); }}
+          heading={taskFor.kind === "escalate" ? "Escalate to the Responsible Individual" : "Create a follow-up task"}
+          blurb={
+            taskFor.kind === "escalate"
+              ? "Files a task escalated to the RI, linked to this incident. The reason is recorded with it."
+              : "Prefilled from this incident and linked to it. Edit anything before saving."
+          }
+          defaults={taskDefaults(taskFor.incident, taskFor.kind)}
+        />
+      )}
     </PageShell>
   );
 }
