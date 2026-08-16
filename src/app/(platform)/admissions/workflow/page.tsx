@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -214,9 +215,15 @@ export default function AdmissionWorkflowPage() {
               </button>
             ))}
             <div className="flex-1" />
-            <Button size="sm" className="gap-1.5">
-              <Plus className="h-4 w-4" /> New Referral
-            </Button>
+            {/* Referrals are created on /admissions, which posts to the
+                admission-referrals collection. This view tracks their phases;
+                it holds no referral store of its own, so the button navigates
+                to where a referral is actually recorded. */}
+            <Link href="/admissions">
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" /> New Referral
+              </Button>
+            </Link>
           </div>
 
           {/* Workflow cards */}

@@ -5,13 +5,13 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import {
-  HandHeart, Plus, Calendar, Clock, User, Target,
+  HandHeart, Calendar, Clock, User, Target,
   FileText, ChevronRight, Sparkles,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
+import { RecordAnythingButton } from "@/components/forms/record-anything-button";
 
 import { seedDay } from "@/lib/seed-date";
 // ── Static reference data ────────────────────────────────────────────────────
@@ -109,12 +109,7 @@ export default function DirectWorkPage() {
       subtitle="One-to-one therapeutic and developmental work with young people"
       icon={<HandHeart className="h-5 w-5 text-purple-600" />}
       showQuickCreate={false}
-      actions={
-        <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
-          <Plus className="h-3.5 w-3.5" />
-          Record a Session
-        </Button>
-      }
+      actions={<RecordAnythingButton variant="solid" label="Record a Session" />}
     >
       {/* Summary banner */}
       <div className="rounded-xl border border-purple-100 bg-purple-50/50 px-4 py-3 text-sm text-purple-800">
@@ -122,6 +117,15 @@ export default function DirectWorkPage() {
         covering life story work, emotional regulation, independence skills, identity
         exploration, and therapeutic activities. Each session is recorded as evidence for
         care planning and reviews.
+        {/* There is no direct-work collection behind this view, so "Record a
+            Session" opens Cara's capture instead of a form that would write
+            nowhere. Filing it as a keywork 1:1 was the other option and was
+            rejected: a life-story session is not a keyworker check-in, and
+            misfiling it corrupts both records. Say where it lands. */}
+        <span className="mt-1.5 block text-xs text-purple-700">
+          Recording a session writes it to the young person&apos;s record and chronology.
+          This list shows sessions already held.
+        </span>
       </div>
 
       {/* Stats row */}
@@ -165,10 +169,9 @@ export default function DirectWorkPage() {
           <p className="text-xs text-slate-400 mb-4">
             Record your first direct work session to start building evidence.
           </p>
-          <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
-            <Plus className="h-3.5 w-3.5" />
-            Record a Session
-          </Button>
+          <div className="flex justify-center">
+            <RecordAnythingButton variant="solid" label="Record a Session" />
+          </div>
         </div>
       ) : (
         <div className="space-y-3">

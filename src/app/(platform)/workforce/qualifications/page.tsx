@@ -26,6 +26,7 @@ import {
   BarChart3, XCircle, Loader2, ArrowUpDown,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { NewQualificationDialog } from "@/components/workforce/new-record-dialogs";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
 
@@ -440,6 +441,7 @@ function Minus({ className }: { className?: string }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function QualificationsPage() {
+  const [showNew, setShowNew] = useState(false);
   const [view, setView] = useState<"staff" | "list" | "matrix">("staff");
   const [filter, setFilter] = useState<"all" | QualificationStatus | "mandatory">("all");
   const [search, setSearch] = useState("");
@@ -514,7 +516,7 @@ export default function QualificationsPage() {
           <ExportButton data={filtered} columns={QUAL_EXPORT_COLS} filename="qualifications" />
           <PrintButton title="Qualifications Tracker" targetId="quals-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Qualifications — qualification certificate or evidence upload" />
-          <Button size="sm" className="gap-1.5 h-8 text-xs">
+          <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             Add Qualification
           </Button>
@@ -744,6 +746,8 @@ export default function QualificationsPage() {
         recordType="staff_training"
         className="mt-6"
       />
+
+      <NewQualificationDialog open={showNew} onOpenChange={setShowNew} staff={staff} />
     </PageShell>
   );
 }

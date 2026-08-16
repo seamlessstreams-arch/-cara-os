@@ -31,6 +31,8 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useAuthContext } from "@/contexts/auth-context";
+import { NewInductionDialog } from "@/components/workforce/new-record-dialogs";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
 
@@ -376,6 +378,8 @@ function InductionCard({
 // ── Main page ───────────────────────────────────────────────────────────────
 
 export default function InductionTrackerPage() {
+  const { currentUser } = useAuthContext();
+  const [showNew, setShowNew] = useState(false);
   const [filter, setFilter] = useState<"all" | InductionCheckStatus>("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"progress" | "name" | "date" | "status">("progress");
@@ -457,7 +461,7 @@ export default function InductionTrackerPage() {
             targetId="induction-content"
           />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Induction — staff induction evidence or certificate upload" />
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             New Induction
           </Button>
@@ -606,6 +610,13 @@ export default function InductionTrackerPage() {
         pageContext="Staff Induction Tracker — new staff induction records, induction milestones, safeguarding training, medication training, Reg 33 induction compliance, Reg 40 safer recruitment, Ofsted workforce evidence"
         recordType="staff_training"
         className="mt-6"
+      />
+
+      <NewInductionDialog
+        open={showNew}
+        onOpenChange={setShowNew}
+        staff={staff}
+        lineManagerId={currentUser?.id ?? ""}
       />
     </PageShell>
   );

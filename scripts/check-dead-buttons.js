@@ -31,13 +31,17 @@ const path = require("node:path");
 // button is wired, removed, or honestly disabled. Do not add to it.
 // 56 → 43: 7 were false positives (an <a href> wrapper the first version
 // could not see) and 6 were wired to PrintButton in the export batch.
+// 43 → 31: the record/create batch. Eight got a real create or update
+// (four workforce records, a safeguarding concern, a Reg 44 action and the
+// two Reg 44 responses); two navigate to the page that actually stores the
+// record (contact directory, admissions); two direct-work buttons open
+// Cara's capture; and communications' New Draft is disabled with its reason
+// on the page, because the table its service writes to does not exist.
 const BASELINE = new Set([
-  "admissions/workflow|New Referral",
   "admissions/workflow|Advance to {PHASE_LABELS[nextPhase",
   "care-events|Review Regulation 45 evidence",
   "children/progress|Copy to Clipboard",
   "children/progress|Add to Report",
-  "communications|New Draft",
   "communications|Edit",
   "communications|Submit for Review",
   "communications|Approve",
@@ -49,7 +53,6 @@ const BASELINE = new Set([
   "dashboard/manager-control-centre|Request Cara Draft",
   "dashboard/provider-oversight|Request Action",
   "dashboard/provider-oversight|Mark Reviewed",
-  "direct-work|Record a Session",
   "incidents/learning-review|Create Key Work Task",
   "incidents/learning-review|Create Debrief Task",
   "incidents/learning-review|Review Risk Assessment",
@@ -57,24 +60,15 @@ const BASELINE = new Set([
   "intelligence/cara/resources|Preview",
   "intelligence/cara/studio|Review gaps",
   "mandatory-training-matrix|Schedule refresher",
-  "professional-contact|Add Contact",
   "quality/ofsted-evidence-room|Link Record",
   "quality/ofsted-evidence-room|View Source",
-  "quality/reg-44|Add Action",
-  "quality/reg-44|Add Manager Response",
-  "quality/reg-44|Add Response",
   "quality/reg-45|Request Cara D",
   "quality/reg-45|Request Cara Draft",
   "quality/reg-45|Auto-Link Evidence",
-  "safeguarding|Log Concern",
   "staff/competence-passport|Assign Training",
   "staff/competence-passport|Schedule Supervision",
   "staff/competence-passport|Restrict Duty",
-  "workforce/appraisals|New Appraisal",
   "workforce/cara-planner|Manual Plan",
-  "workforce/induction|New Induction",
-  "workforce/observations|New Observation",
-  "workforce/qualifications|Add Qualification",
 ]);
 
 /** Full JSX tag from '<' at `start` — a '>' inside {…} or a string is not the close. */

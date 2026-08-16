@@ -38,6 +38,7 @@ function useYoungPeople(status = "current") {
   });
 }
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
+import { LogConcernDialog } from "@/components/safeguarding/log-concern-dialog";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { todayStr, cn, formatDate, formatRelative } from "@/lib/utils";
 import { careToast } from "@/lib/toast";
@@ -1590,8 +1591,11 @@ const SAFEGUARDING_EXPORT_COLS: ExportColumn<Incident>[] = [
 ];
 
 export default function SafeguardingPage() {
+  const { currentUser } = useAuthContext();
   const [activeTab, setActiveTab] = useState<TabId>("concerns");
+  const [logConcernOpen, setLogConcernOpen] = useState(false);
   const query = useIncidents({ status: "open" });
+  const concernYpQuery = useYoungPeople();
   const { data: mfcTopResult } = useMissingEpisodes({ homeId: "home_oak" });
   const MFC_EPISODES = mfcTopResult?.data ?? [];
 
@@ -1619,7 +1623,7 @@ export default function SafeguardingPage() {
           <PrintButton title="Safeguarding Records" subtitle="Safeguarding & Child Protection" targetId="safeguarding-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Safeguarding — evidence upload" />
           <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
-          <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
+          <Button size="sm" className="bg-rose-600 hover:bg-rose-700" onClick={() => setLogConcernOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Log Concern
           </Button>
@@ -1673,6 +1677,13 @@ export default function SafeguardingPage() {
         category={["safeguarding", "missing_episode"]}
         days={90}
         defaultCollapsed
+      />
+
+      <LogConcernDialog
+        open={logConcernOpen}
+        onOpenChange={setLogConcernOpen}
+        youngPeople={concernYpQuery.data?.data ?? []}
+        reportedBy={currentUser?.id ?? ""}
       />
     </PageShell>
   );
