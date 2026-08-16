@@ -17,6 +17,8 @@ import {
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import { useAuthContext } from "@/contexts/auth-context";
+import { NewObservationDialog } from "@/components/workforce/new-record-dialogs";
 import type { StaffMember } from "@/types";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -85,7 +87,9 @@ const OBS_EXPORT_COLS: ExportColumn<PracticeObservation>[] = [
 type OutcomeFilter = "all" | ObservationOutcome;
 
 export default function PracticeObservationsPage() {
+  const { currentUser } = useAuthContext();
   const [showCara, setShowCara] = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState("all");
   const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("all");
   const [search, setSearch] = useState("");
@@ -186,7 +190,7 @@ export default function PracticeObservationsPage() {
             <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
             Cara Summary
           </Button>
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             New Observation
           </Button>
@@ -451,6 +455,13 @@ export default function PracticeObservationsPage() {
         assess staff practice directly.
       </div>
       </div>{/* close #observations-content */}
+
+      <NewObservationDialog
+        open={showNew}
+        onOpenChange={setShowNew}
+        staff={staff}
+        observerId={currentUser?.id ?? ""}
+      />
     </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,10 +134,18 @@ export default function ProfessionalContactPage() {
       icon={<Users className="h-5 w-5 text-blue-600" />}
       showQuickCreate={false}
       actions={
-        <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
-          <Plus className="h-3.5 w-3.5" />
-          Add Contact
-        </Button>
+        // This page is a read-only view. Professional contacts are recorded in
+        // the Contact Directory, which stores the same fields (name, role,
+        // organisation, category, phone, email, linked children) and persists
+        // them — so the button goes there rather than opening a second form
+        // that would write a second, competing list. The label says where it
+        // goes: it navigates, it does not open a dialog here.
+        <Link href="/contact-directory">
+          <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
+            <Plus className="h-3.5 w-3.5" />
+            Add in Contact Directory
+          </Button>
+        </Link>
       }
     >
       {/* Search + filter row */}

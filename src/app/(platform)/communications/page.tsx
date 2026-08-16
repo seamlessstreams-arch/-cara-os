@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -197,10 +198,30 @@ export default function CommunicationsPage() {
           <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)} className="gap-1.5">
             <Clipboard className="h-4 w-4" /> Templates
           </Button>
-          <Button size="sm" className="gap-1.5">
+          {/* Honestly disabled rather than wired. The service behind this page
+              (createDraft in communication-intelligence) writes to a
+              `cs_communication_drafts` table that no migration creates, so a
+              save would 500 on the live tenant and silently no-op without
+              Supabase. A button that looks like it saves and does not is the
+              thing this page can least afford. The store has to land first —
+              migration, RLS, and a real list read — and that is its own slice.
+              Until then the control says why it cannot be used. */}
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled
+            title="Drafts cannot be saved yet — the communications store is not created. Use Cara Studio or the Communication Book meanwhile."
+          >
             <Plus className="h-4 w-4" /> New Draft
           </Button>
         </div>
+
+        <p className="-mt-1 text-xs text-gray-500">
+          New drafts cannot be saved here yet — this page has no store behind it, so nothing
+          typed would survive. Write the communication in{" "}
+          <Link href="/cara-studio" className="underline">Cara Studio</Link> or the{" "}
+          <Link href="/communication-book" className="underline">Communication Book</Link> for now.
+        </p>
 
         {/* Template picker */}
         {showTemplates && (

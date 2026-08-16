@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useId } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -19,6 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Plus,
   AlertTriangle,
@@ -81,9 +86,100 @@ function useReg44Actions(params?: { homeId?: string; visitId?: string; status?: 
   });
 }
 
+function useCreateReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44-actions", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
+/* The registered person's reply — to an action raised by the visit, or to the
+ * visit report itself. Reg 44(7): the report goes to the registered person,
+ * and the response is the evidence the home did something with it. Both
+ * buttons that asked for one were inert until now. */
+function useRespondToReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, response }: { id: string; response: string }) =>
+      ilFetch("/reg44-actions", {
+        method: "PATCH",
+        body: JSON.stringify({ id, manager_response: response }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
+function useRespondToReg44Visit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, field, response }: { id: string; field: "manager_response" | "ri_response"; response: string }) =>
+      ilFetch("/reg44", { method: "PATCH", body: JSON.stringify({ id, [field]: response }) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44"] });
+    },
+  });
+}
+
 /* Seeded actions reference staff by roster id; Supabase rows may carry free
  * text, so fall back to the raw value rather than "Unknown". */
 const assigneeLabel = (v: string) => getStaffById(v)?.full_name ?? v;
+
+/* ── inline response editor ────────────────────────────────────────────────── */
+
+/** Replaces a dead "Add … Response" button. Nothing is written until Save, and
+ *  a failed save says so and keeps the text rather than closing over it. */
+function ResponseEditor({
+  label, placeholder, pending, error, onSave,
+}: {
+  label: string;
+  placeholder: string;
+  pending: boolean;
+  error: string;
+  onSave: (text: string) => void;
+}) {
+  const uid = useId();
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState("");
+
+  if (!editing) {
+    return (
+      <Button variant="outline" size="sm" className="mt-1 text-xs gap-1.5" onClick={() => setEditing(true)}>
+        <Plus className="h-3 w-3" />
+        {label}
+      </Button>
+    );
+  }
+
+  return (
+    <div className="mt-2 space-y-2">
+      <label htmlFor={`${uid}-response`} className="sr-only">{label}</label>
+      <Textarea
+        id={`${uid}-response`}
+        rows={3}
+        autoFocus
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={placeholder}
+        className="text-xs"
+      />
+      {error && <p className="text-xs text-red-600">Not saved — {error}. Your text is still here.</p>}
+      <div className="flex items-center gap-2">
+        <Button size="sm" className="text-xs" disabled={!text.trim() || pending} onClick={() => onSave(text.trim())}>
+          {pending ? "Saving…" : "Save response"}
+        </Button>
+        <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setEditing(false); setText(""); }}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -163,6 +259,116 @@ function buildMonthTimeline(visits: Reg44Visit[]) {
   return months;
 }
 
+/* ── add-action dialog ─────────────────────────────────────────────────────── */
+
+const PRIORITIES: Reg44ActionPriority[] = ["low", "medium", "high"];
+
+/** An action is raised BY a visit — Reg 44(4) recommendations are the visitor's,
+ *  so the form makes you say which visit it came from rather than letting one
+ *  float free of the report that produced it. */
+function AddActionDialog({
+  open, onOpenChange, visits,
+}: { open: boolean; onOpenChange: (v: boolean) => void; visits: Reg44Visit[] }) {
+  const uid = useId();
+  const create = useCreateReg44Action();
+  const [visitId, setVisitId] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<Reg44ActionPriority>("medium");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [dueDate, setDueDate] = useState("");
+
+  const reset = () => {
+    setVisitId(""); setTitle(""); setDescription("");
+    setPriority("medium"); setAssignedTo(""); setDueDate("");
+  };
+
+  const save = () =>
+    create.mutate(
+      {
+        homeId: visits.find((v) => v.id === visitId)?.homeId ?? "oak-house",
+        visitId,
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        assignedTo: assignedTo.trim(),
+        dueDate,
+      },
+      { onSuccess: () => { reset(); onOpenChange(false); } },
+    );
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) create.reset(); onOpenChange(v); }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Add a Reg 44 action</DialogTitle></DialogHeader>
+        <p className="-mt-2 text-xs text-[var(--cs-text-muted)]">
+          An action tracked against the independent visitor&apos;s report it came from.
+        </p>
+
+        <div className="space-y-4 py-2">
+          <div>
+            <label htmlFor={`${uid}-visit`} className="mb-1 block text-sm font-medium">From which visit? *</label>
+            <Select value={visitId} onValueChange={setVisitId}>
+              <SelectTrigger id={`${uid}-visit`}>
+                <SelectValue placeholder={visits.length ? "Select a visit" : "No visits recorded yet"} />
+              </SelectTrigger>
+              <SelectContent>
+                {visits.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>{fmt(v.visitDate)} — {v.visitorName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label htmlFor={`${uid}-title`} className="mb-1 block text-sm font-medium">Action *</label>
+            <Input id={`${uid}-title`} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What needs to happen" />
+          </div>
+
+          <div>
+            <label htmlFor={`${uid}-description`} className="mb-1 block text-sm font-medium">Detail</label>
+            <Textarea id={`${uid}-description`} rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label htmlFor={`${uid}-priority`} className="mb-1 block text-sm font-medium">Priority</label>
+              <Select value={priority} onValueChange={(v) => setPriority(v as Reg44ActionPriority)}>
+                <SelectTrigger id={`${uid}-priority`}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor={`${uid}-assignee`} className="mb-1 block text-sm font-medium">Assigned to</label>
+              <Input id={`${uid}-assignee`} value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Name" />
+            </div>
+            <div>
+              <label htmlFor={`${uid}-due`} className="mb-1 block text-sm font-medium">Due</label>
+              <Input id={`${uid}-due`} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {create.isError && (
+          <p className="text-sm text-red-600">
+            Nothing was saved — {create.error instanceof Error && create.error.message ? create.error.message : "the request failed"}.
+            Your entries are still here; try again.
+          </p>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={save} disabled={!visitId || !title.trim() || create.isPending}>
+            {create.isPending ? "Saving…" : "Add action"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg44Page() {
@@ -174,6 +380,19 @@ export default function Reg44Page() {
   const { data: apiData } = useReg44Visits();
   const { data: actionsData } = useReg44Actions();
   const createVisit = useCreateReg44Visit();
+  const respondToAction = useRespondToReg44Action();
+  const respondToVisit = useRespondToReg44Visit();
+  const [addActionOpen, setAddActionOpen] = useState(false);
+
+  /* One mutation serves every visit's two response editors, so "saving" and
+   * "not saved" have to be pinned to the row that is actually in flight —
+   * otherwise a failed manager response would show its error under every
+   * other visit on the page as well. */
+  const visitTarget = respondToVisit.variables
+    ? `${respondToVisit.variables.id}:${respondToVisit.variables.field}`
+    : null;
+  const visitError = (target: string) =>
+    respondToVisit.isError && visitTarget === target ? (respondToVisit.error as Error).message : "";
 
   useEffect(() => {
     if (apiData?.persisted && Array.isArray(apiData.visits)) {
@@ -247,7 +466,7 @@ export default function Reg44Page() {
       caraContext={{ pageTitle: "Regulation 44 Reports", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="gap-1.5">
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAddActionOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Add Action
           </Button>
@@ -472,10 +691,13 @@ export default function Reg44Page() {
                             {visit.managerResponse ? (
                               <p className="text-[var(--cs-text-secondary)] text-xs leading-relaxed">{visit.managerResponse}</p>
                             ) : (
-                              <Button variant="outline" size="sm" className="mt-1 text-xs gap-1.5">
-                                <Plus className="h-3 w-3" />
-                                Add Manager Response
-                              </Button>
+                              <ResponseEditor
+                                label="Add Manager Response"
+                                placeholder="What the home has done, or will do, about this report."
+                                pending={visitTarget === `${visit.id}:manager_response` && respondToVisit.isPending}
+                                error={visitError(`${visit.id}:manager_response`)}
+                                onSave={(text) => respondToVisit.mutate({ id: visit.id, field: "manager_response", response: text })}
+                              />
                             )}
                           </div>
 
@@ -488,7 +710,13 @@ export default function Reg44Page() {
                             {visit.riResponse ? (
                               <p className="text-[var(--cs-text-secondary)] text-xs leading-relaxed">{visit.riResponse}</p>
                             ) : (
-                              <p className="text-xs text-[var(--cs-text-muted)] italic">No RI response recorded.</p>
+                              <ResponseEditor
+                                label="Add RI Response"
+                                placeholder="The responsible individual's response to this report."
+                                pending={visitTarget === `${visit.id}:ri_response` && respondToVisit.isPending}
+                                error={visitError(`${visit.id}:ri_response`)}
+                                onSave={(text) => respondToVisit.mutate({ id: visit.id, field: "ri_response", response: text })}
+                              />
                             )}
                           </div>
 
@@ -642,10 +870,17 @@ export default function Reg44Page() {
                           {action.managerResponse ? (
                             <p className="text-muted-foreground max-w-xs truncate">{action.managerResponse}</p>
                           ) : (
-                            <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2 gap-1">
-                              <Plus className="h-3 w-3" />
-                              Add Response
-                            </Button>
+                            <ResponseEditor
+                              label="Add Response"
+                              placeholder="What has been done about this action."
+                              pending={respondToAction.variables?.id === action.id && respondToAction.isPending}
+                              error={
+                                respondToAction.isError && respondToAction.variables?.id === action.id
+                                  ? (respondToAction.error as Error).message
+                                  : ""
+                              }
+                              onSave={(text) => respondToAction.mutate({ id: action.id, response: text })}
+                            />
                           )}
                         </td>
                       </tr>
@@ -672,6 +907,9 @@ export default function Reg44Page() {
         pageContext="Regulation 44 Reports — independent visitor reports, monthly visits, children's views, staff interviews, premises inspection, action plans, RI responses, statutory compliance, Ofsted evidence"
         recordType="reg45"
         className="mt-6"
-      />    </PageShell>
+      />
+
+      <AddActionDialog open={addActionOpen} onOpenChange={setAddActionOpen} visits={visits} />
+    </PageShell>
   );
 }

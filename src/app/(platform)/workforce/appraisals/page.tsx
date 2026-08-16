@@ -60,6 +60,8 @@ import {
   type AppraisalRecord, type CompetencyDomain, type CompetencyLevel,
 } from "@/types/extended";
 import Link from "next/link";
+import { useAuthContext } from "@/contexts/auth-context";
+import { NewAppraisalDialog } from "@/components/workforce/new-record-dialogs";
 import {
   UserCheck, AlertTriangle, CheckCircle2, Clock, Calendar,
   ChevronRight, ChevronDown, ChevronUp, Plus, Search, User,
@@ -480,6 +482,8 @@ function AppraisalRow({
 
 export default function AppraisalsPage() {
   // ── State ────────────────────────────────────────────────────────────────
+  const { currentUser } = useAuthContext();
+  const [showNew, setShowNew]     = useState(false);
   const [viewMode, setViewMode]   = useState<ViewMode>("list");
   const [filter, setFilter]       = useState<"all" | AppraisalStatus>("all");
   const [typeFilter, setTypeFilter] = useState<"all" | AppraisalType>("all");
@@ -568,7 +572,7 @@ export default function AppraisalsPage() {
           <ExportButton data={displayed} columns={APPRAISAL_EXPORT_COLS} filename="appraisals" />
           <PrintButton title="Appraisals Report" subtitle="Staff Development" targetId="appraisals-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Appraisals — appraisal document or evidence upload" />
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             New Appraisal
           </Button>
@@ -780,6 +784,13 @@ export default function AppraisalsPage() {
         pageContext="Staff Appraisals — annual appraisals, performance reviews, professional development, Reg 34 compliance, ILACS workforce quality evidence, management oversight, Ofsted inspection evidence"
         recordType="supervision"
         className="mt-6"
+      />
+
+      <NewAppraisalDialog
+        open={showNew}
+        onOpenChange={setShowNew}
+        staff={staff}
+        appraiserId={currentUser?.id ?? ""}
       />
     </PageShell>
   );
