@@ -39,10 +39,20 @@ export async function POST(req: NextRequest) {
   const missing = requireFields(body, ["summary"]);
   if (missing) return missing;
   const dateReceived = body.date_received ?? todayStr();
-  const nextRef = `CMP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`;
+  // Sequential, not random. `Math.floor(Math.random() * 900) + 100` drew from
+  // 900 values, so by the birthday bound a home logging ~30 complaints a year
+  // had a better-than-one-in-three chance of two complaints sharing a
+  // reference — and a statutory complaint reference that is not unique cannot
+  // be used to trace the complaint it names.
+  const homeId = (body.home_id as string) ?? "home_oak";
+  const year = new Date().getFullYear();
+  const usedThisYear = intelligenceDb.complaints
+    .findAll(homeId)
+    .filter((c) => typeof c.reference === "string" && c.reference.startsWith(`CMP-${year}-`)).length;
+  const nextRef = `CMP-${year}-${String(usedThisYear + 1).padStart(3, "0")}`;
 
   const record = intelligenceDb.complaints.create({
-    home_id:                   body.home_id ?? "home_oak",
+    home_id:                   homeId,
     reference:                 nextRef,
     child_id:                  body.child_id ?? null,
     complainant_type:          body.complainant_type ?? "young_person",

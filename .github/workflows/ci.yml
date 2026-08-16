@@ -139,6 +139,9 @@ jobs:
       - name: Dead-button guard (an actionable-looking button does something)
         run: node scripts/check-dead-buttons.js
 
+      - name: Random-record guard (Math.random may make an id, never a record)
+        run: node scripts/check-random-record-content.js
+
       - name: Dependency-classification guard (shipped code never imports a devDependency)
         run: node scripts/check-dependency-classification.js
 

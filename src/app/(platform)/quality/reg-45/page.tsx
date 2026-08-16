@@ -442,10 +442,6 @@ export default function Reg45Page() {
                                     Request Cara Draft
                                   </Button>
                                 )}
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  <Link2 className="h-3 w-3" />
-                                  {Math.floor(Math.random() * 12) + 3} evidence links
-                                </span>
                               </div>
                             </div>
                           ) : (
@@ -521,10 +517,6 @@ export default function Reg45Page() {
                                     Request Cara Draft
                                   </Button>
                                 )}
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  <Link2 className="h-3 w-3" />
-                                  {Math.floor(Math.random() * 8) + 2} evidence links
-                                </span>
                               </div>
                             </div>
                           ) : (
