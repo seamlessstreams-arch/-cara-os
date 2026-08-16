@@ -22,18 +22,21 @@ import {
 import { Loader2 } from "lucide-react";
 
 export function AddOversightDialog({
-  open, onOpenChange, itemTitle, suggestedAction, pending, error, onSave,
+  open, onOpenChange, itemTitle, suggestedAction, scaffold, pending, error, onSave,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   itemTitle: string;
   suggestedAction?: string;
+  /** Facts read from the item, as a starting point. Never a conclusion —
+   *  see attentionScaffold() in the Manager Control Centre. */
+  scaffold?: string;
   pending: boolean;
   error: string;
   onSave: (note: string) => void;
 }) {
   const uid = useId();
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(scaffold ?? "");
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) setNote(""); onOpenChange(v); }}>
@@ -57,6 +60,7 @@ export function AddOversightDialog({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Your own analysis — not a restatement of the suggestion above."
+            className="font-mono text-xs"
           />
         </div>
 

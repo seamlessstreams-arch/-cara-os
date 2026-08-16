@@ -3,6 +3,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
+import {
+  buildReg45SectionDraft, reg45SectionHasEvidence, type Reg45SectionKey,
+} from "@/lib/reg45/section-draft";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -173,6 +176,28 @@ export default function Reg45Page() {
   const { data: apiData } = useReg45Reviews();
   const { data: evidenceData } = useReg45Evidence({ homeId: "home_oak" });
   const updateReview = useUpdateReg45Review();
+  const [draftingSection, setDraftingSection] = useState<string | null>(null);
+  const [showLinkMap, setShowLinkMap] = useState(false);
+
+  /* Deterministic. Reg 45 asks the registered person to review quality of care
+   * against the home's own records — assembly, not authorship — so this needs
+   * no AI, which matters because this tenant has none. The draft stops at the
+   * evidence: the OPINION is the registered person's under Reg 45(4), and one
+   * Cara wrote would not be theirs. See src/lib/reg45/section-draft.ts. */
+  function requestDraft(sectionKey: string) {
+    if (!selectedReview) return;
+    setDraftingSection(sectionKey);
+    const draft = buildReg45SectionDraft(sectionKey as Reg45SectionKey, {
+      homeName: "Oak House",
+      periodStart: selectedReview.periodStart,
+      periodEnd: selectedReview.periodEnd,
+      evidence,
+    });
+    updateReview.mutate(
+      { id: selectedReview.id, homeId: selectedReview.homeId, [sectionKey]: draft.text },
+      { onSettled: () => setDraftingSection(null) },
+    );
+  }
 
   useEffect(() => {
     if (apiData?.persisted && Array.isArray(apiData.reviews)) {
@@ -437,9 +462,15 @@ export default function Reg45Page() {
                               </div>
                               <div className="flex items-center gap-2 mt-3">
                                 {isDraft && (
-                                  <Button variant="outline" size="sm" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                    disabled={draftingSection === section.key}
+                                    onClick={() => requestDraft(section.key)}
+                                  >
                                     <Sparkles className="h-3 w-3" />
-                                    Request Cara Draft
+                                    {draftingSection === section.key ? "Assembling…" : "Request Cara Draft"}
                                   </Button>
                                 )}
                               </div>
@@ -449,9 +480,15 @@ export default function Reg45Page() {
                               <Circle className="h-8 w-8 text-slate-200 mb-2" />
                               <p className="text-xs text-muted-foreground mb-3">This section has not been started yet.</p>
                               {isDraft && (
-                                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                  disabled={draftingSection === section.key}
+                                  onClick={() => requestDraft(section.key)}
+                                >
                                   <Sparkles className="h-3 w-3" />
-                                  Request Cara Draft
+                                  {draftingSection === section.key ? "Assembling…" : "Request Cara Draft"}
                                 </Button>
                               )}
                             </div>
@@ -512,9 +549,15 @@ export default function Reg45Page() {
                               </div>
                               <div className="flex items-center gap-2 mt-3">
                                 {isDraft && (
-                                  <Button variant="outline" size="sm" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                    disabled={draftingSection === section.key}
+                                    onClick={() => requestDraft(section.key)}
+                                  >
                                     <Sparkles className="h-3 w-3" />
-                                    Request Cara Draft
+                                    {draftingSection === section.key ? "Assembling…" : "Request Cara Draft"}
                                   </Button>
                                 )}
                               </div>
@@ -524,9 +567,15 @@ export default function Reg45Page() {
                               <Circle className="h-8 w-8 text-slate-200 mb-2" />
                               <p className="text-xs text-muted-foreground mb-3">No stakeholder views captured yet.</p>
                               {isDraft && (
-                                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                  disabled={draftingSection === section.key}
+                                  onClick={() => requestDraft(section.key)}
+                                >
                                   <Sparkles className="h-3 w-3" />
-                                  Request Cara Draft
+                                  {draftingSection === section.key ? "Assembling…" : "Request Cara Draft"}
                                 </Button>
                               )}
                             </div>
@@ -632,12 +681,46 @@ export default function Reg45Page() {
                     <div>
                       <p className="text-sm font-medium text-indigo-800">Cara Evidence Linking</p>
                       <p className="text-xs text-indigo-700 mt-1 leading-relaxed">
-                        Cara can automatically suggest evidence links for each section of the review based on the records from this period. Evidence items are tagged to relevant judgement areas (Quality of Care, Help &amp; Protection, Leadership &amp; Management) and linked to specific review sections.
+                        Cara maps each section of the review to the categories of record that bear on it,
+                        and shows which of those the home actually recorded this period. It is a map of
+                        the evidence base, not a judgement about it — deterministic, and the same every
+                        time it is run on the same records.
                       </p>
-                      <Button size="sm" className="mt-3 gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
+                      <Button
+                        size="sm"
+                        className="mt-3 gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+                        onClick={() => setShowLinkMap((v) => !v)}
+                        aria-expanded={showLinkMap}
+                      >
                         <Sparkles className="h-3 w-3" />
-                        Auto-Link Evidence
+                        {showLinkMap ? "Hide evidence map" : "Auto-Link Evidence"}
                       </Button>
+
+                      {showLinkMap && (
+                        <div className="mt-3 space-y-1.5 rounded-lg border border-indigo-200 bg-white p-3">
+                          {[...REVIEW_SECTIONS, ...STAKEHOLDER_SECTIONS].map((s) => {
+                            const backed = reg45SectionHasEvidence(s.key as Reg45SectionKey, evidence);
+                            const { missing } = buildReg45SectionDraft(s.key as Reg45SectionKey, {
+                              homeName: "Oak House",
+                              periodStart: selectedReview?.periodStart ?? "",
+                              periodEnd: selectedReview?.periodEnd ?? "",
+                              evidence,
+                            });
+                            return (
+                              <div key={s.key} className="flex items-start justify-between gap-3 text-xs">
+                                <span className="font-medium text-[var(--cs-navy)]">{s.label}</span>
+                                <span className={cn("text-right", backed ? "text-emerald-700" : "text-amber-700")}>
+                                  {backed
+                                    ? missing.length === 0
+                                      ? "All expected records present"
+                                      : `Partly evidenced — nothing under ${missing.join(", ")}`
+                                    : "No records behind this section"}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>

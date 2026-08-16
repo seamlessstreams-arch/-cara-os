@@ -2147,6 +2147,34 @@ const ATTENTION_TASK_CATEGORY: Partial<Record<AttentionCategory, TaskCategory>> 
 /** A specific record when the item names one, the section when it does not,
  *  and null when it names neither — in which case no link is offered at all
  *  rather than a button that goes nowhere. */
+/**
+ * The facts of an attention item, as a starting point for the manager's own
+ * oversight note. Every line is read from the item; none of it is a judgement,
+ * and the last line says so, because a scaffold that reads like a conclusion
+ * is worse than a blank box.
+ */
+function attentionScaffold(item: AttentionItem): string {
+  const lines = [
+    `${CATEGORY_META[item.category].label} — raised ${formatDate(item.createdAt)}, ${STATUS_LABELS[item.status]}.`,
+  ];
+  if (item.childName) lines.push(`Concerns: ${item.childName}.`);
+  if (item.staffName) lines.push(`Staff involved: ${item.staffName}.`);
+  if (item.dueDate) {
+    lines.push(isOverdue(item.dueDate) ? `Due ${formatDate(item.dueDate)} — OVERDUE.` : `Due ${formatDate(item.dueDate)}.`);
+  }
+  if (item.reason?.trim()) lines.push("", `Why Cara raised it: ${item.reason.trim()}`);
+  lines.push(
+    "",
+    "What I found:",
+    "",
+    "What I did:",
+    "",
+    "(Cara has filled in the facts above from the item. The oversight — what it means and what " +
+      "you decided — is yours to write; that is the part an inspector is asking for.)",
+  );
+  return lines.join("\n");
+}
+
 function attentionHref(item: AttentionItem): string | null {
   if (item.sourceRecordType === "incident" && item.sourceRecordId) return `/incidents?id=${item.sourceRecordId}`;
   if (item.sourceRecordType === "task" && item.sourceRecordId) return `/tasks?id=${item.sourceRecordId}`;
@@ -2258,6 +2286,7 @@ export default function ManagerControlCentrePage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [oversightFor, setOversightFor] = useState<AttentionItem | null>(null);
   const [taskFor, setTaskFor] = useState<AttentionItem | null>(null);
+  const [oversightScaffoldFor, setOversightScaffoldFor] = useState<AttentionItem | null>(null);
   const updateItem = useUpdateAttentionItem();
 
   useEffect(() => {
@@ -2817,9 +2846,21 @@ export default function ManagerControlCentrePage() {
                         <ClipboardList className="h-3.5 w-3.5" />
                         Assign Task
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                      {/* Deterministic, and deliberately incomplete. Cara
+                          assembles the FACTS of the item — what it is, who it
+                          concerns, when it was raised, what is overdue — and
+                          stops. The oversight itself is the manager's analysis;
+                          a note Cara wrote would be a manager's oversight in
+                          name only, which is the one thing this record cannot
+                          be. Scaffold, never verdict. */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                        onClick={(e) => { e.stopPropagation(); setOversightScaffoldFor(item); }}
+                      >
                         <Sparkles className="h-3.5 w-3.5" />
-                        Request Cara Draft
+                        Start from the facts
                       </Button>
                       <Button
                         variant="outline"
@@ -3194,6 +3235,29 @@ export default function ManagerControlCentrePage() {
                 onSuccess: () => {
                   setItems((prev) => prev.map((i) => i.id === oversightFor.id ? { ...i, status: "reviewed" } : i));
                   setOversightFor(null);
+                },
+              },
+            )
+          }
+        />
+      )}
+
+      {oversightScaffoldFor && (
+        <AddOversightDialog
+          open
+          onOpenChange={(v) => { if (!v) { setOversightScaffoldFor(null); updateItem.reset(); } }}
+          itemTitle={oversightScaffoldFor.title}
+          suggestedAction={oversightScaffoldFor.suggestedAction}
+          scaffold={attentionScaffold(oversightScaffoldFor)}
+          pending={updateItem.isPending}
+          error={updateItem.isError ? (updateItem.error as Error).message : ""}
+          onSave={(note) =>
+            updateItem.mutate(
+              { id: oversightScaffoldFor.id, status: "reviewed", oversightNote: note },
+              {
+                onSuccess: () => {
+                  setItems((prev) => prev.map((i) => i.id === oversightScaffoldFor.id ? { ...i, status: "reviewed" } : i));
+                  setOversightScaffoldFor(null);
                 },
               },
             )

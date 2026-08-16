@@ -43,17 +43,15 @@ const path = require("node:path");
 // through new fields on their own routes (attention-item oversight note), one
 // navigates to the record the item points at, and one opens the risk-assessment
 // register rather than filing a second copy of the same document.
-// 19 → 4: the navigation/misc batch. What is LEFT is one group — the buttons
-// that ask Cara to generate something, which cannot be honestly wired while
-// the tenant's AI credits are exhausted. reg-45's "Auto-Link Evidence" belongs
-// with them: its own panel says "Cara can automatically suggest evidence
-// links". Those four keys cover five buttons, and they are Darren's call.
-const BASELINE = new Set([
-  "dashboard/manager-control-centre|Request Cara Draft",
-  "quality/reg-45|Request Cara D",
-  "quality/reg-45|Request Cara Draft",
-  "quality/reg-45|Auto-Link Evidence",
-]);
+// ★ EMPTY — the class is fully burned down. 56 → 0 across five batches:
+// #935 exports (and 7 false positives of my own), #936 record/create,
+// #937 workflow actions, #938 navigation/misc, and this one, which built the
+// last group — the "ask Cara to generate something" buttons — deterministically
+// rather than waiting on AI credits.
+//
+// Do NOT add to this list. A new dead button fails the build, which is the
+// whole point of having spent five batches emptying it.
+const BASELINE = new Set([]);
 
 /** Full JSX tag from '<' at `start` — a '>' inside {…} or a string is not the close. */
 function tagAt(text, start) {
