@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useId } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, londonDisplay } from "@/lib/utils";
 import {
   FileText, Send, CheckCircle2, Clock, Edit3,
   Sparkles, AlertTriangle, ChevronRight, Plus,
@@ -18,9 +18,29 @@ import {
   COMMUNICATION_TEMPLATES,
   type CommunicationType, type CommunicationStatus,
 } from "@/lib/services/communication-intelligence";
-import { demoSeed } from "@/lib/demo/demo-seed";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { useAuthContext } from "@/contexts/auth-context";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 
-import { seedDay } from "@/lib/seed-date";
+/** The row shape the store returns — CommunicationDraft, over the wire. */
+interface DraftRow {
+  id: string;
+  communication_type: CommunicationType;
+  title: string;
+  content: string;
+  status: CommunicationStatus;
+  child_id: string | null;
+  cara_generated: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const TYPE_ICONS: Record<CommunicationType, React.ElementType> = {
@@ -46,11 +66,6 @@ const STATUS_STYLES: Record<CommunicationStatus, string> = {
   archived: "bg-slate-100 text-slate-500",
 };
 
-/** Why every state-changing control on this page is off. See #936: the service
- *  behind it writes to `cs_communication_drafts`, a table no migration creates. */
-const NO_STORE_REASON =
-  "Unavailable until this page has a store — the drafts table does not exist, so a status change would not be saved.";
-
 const STATUS_LABELS: Record<CommunicationStatus, string> = {
   draft: "Draft",
   review: "In Review",
@@ -59,119 +74,59 @@ const STATUS_LABELS: Record<CommunicationStatus, string> = {
   archived: "Archived",
 };
 
-// ── Demo drafts ────────────────────────────────────────────────────────────
-
-const DEMO_DRAFTS = [
-  {
-    id: "d1",
-    communication_type: "handover_summary" as CommunicationType,
-    title: "Day Shift Handover — 12 May 2026",
-    content: "# Handover Summary — Day Shift, 12/05/2026\n\n## Young People Updates\n### Jayden\n**Mood:** Settled, engaged with activities...",
-    status: "draft" as CommunicationStatus,
-    child_id: null,
-    cara_generated: true,
-    created_by: "Sarah Mitchell",
-    created_at: `${seedDay(1)}T14:30:00Z`,
-    updated_at: `${seedDay(1)}T14:30:00Z`,
-  },
-  {
-    id: "d2",
-    communication_type: "social_worker_update" as CommunicationType,
-    title: "Monthly Update — Amara Okafor",
-    content: "# Professional Update: Amara Okafor\n**To:** David Chen (SW)\n\n## Placement Overview\nAmara continues to settle well...",
-    status: "review" as CommunicationStatus,
-    child_id: "c2",
-    cara_generated: true,
-    created_by: "James Wilson",
-    created_at: `${seedDay(-1)}T09:15:00Z`,
-    updated_at: `${seedDay(0)}T16:45:00Z`,
-  },
-  {
-    id: "d3",
-    communication_type: "reg44_section" as CommunicationType,
-    title: "Reg 44 Visit Report — April 2026",
-    content: "# Regulation 44 Independent Visit\n**Date:** 28 April 2026\n\n## Summary of Visit\nVisit conducted...",
-    status: "approved" as CommunicationStatus,
-    child_id: null,
-    cara_generated: false,
-    created_by: "Independent Visitor",
-    created_at: `${seedDay(-13)}T17:00:00Z`,
-    updated_at: `${seedDay(-9)}T10:00:00Z`,
-  },
-  {
-    id: "d4",
-    communication_type: "incident_notification" as CommunicationType,
-    title: "Incident Notification — Tyler Robinson",
-    content: "# Incident Notification\n\n## Incident Summary\nAt approximately 15:30 on 11 May...",
-    status: "sent" as CommunicationStatus,
-    child_id: "c3",
-    cara_generated: false,
-    created_by: "Sarah Mitchell",
-    created_at: `${seedDay(0)}T16:00:00Z`,
-    updated_at: `${seedDay(0)}T17:15:00Z`,
-  },
-  {
-    id: "d5",
-    communication_type: "shift_briefing" as CommunicationType,
-    title: "Night Shift Briefing — 12 May 2026",
-    content: "# Night Shift Briefing — 12/05/2026\n\n## Risk Alerts\n- Tyler remains on enhanced monitoring...",
-    status: "draft" as CommunicationStatus,
-    child_id: null,
-    cara_generated: true,
-    created_by: "Cara",
-    created_at: `${seedDay(1)}T19:30:00Z`,
-    updated_at: `${seedDay(1)}T19:30:00Z`,
-  },
-  {
-    id: "d6",
-    communication_type: "management_summary" as CommunicationType,
-    title: "Weekly Management Summary — W/C 5 May 2026",
-    content: "# Management Summary — Weekly\n**Period:** 5–11 May 2026\n\n## Occupancy\n4/5 places occupied...",
-    status: "sent" as CommunicationStatus,
-    child_id: null,
-    cara_generated: true,
-    created_by: "Sarah Mitchell",
-    created_at: `${seedDay(0)}T18:00:00Z`,
-    updated_at: `${seedDay(0)}T19:30:00Z`,
-  },
-  {
-    id: "d7",
-    communication_type: "multi_agency_brief" as CommunicationType,
-    title: "CLA Review Brief — Sophia Chen",
-    content: "# CLA Review Meeting Brief\n**Meeting:** 15 May 2026\n\n## Meeting Context\nAnnual review...",
-    status: "review" as CommunicationStatus,
-    child_id: "c4",
-    cara_generated: true,
-    created_by: "James Wilson",
-    created_at: `${seedDay(-2)}T11:00:00Z`,
-    updated_at: `${seedDay(-1)}T14:30:00Z`,
-  },
-];
 
 // ── Main page ──────────────────────────────────────────────────────────────
 
 type FilterTab = "all" | "draft" | "review" | "approved" | "sent";
 
+/** The drafts this page shows, from the store that now exists behind it. */
+function useDrafts(homeId: string) {
+  return useQuery({
+    queryKey: ["communications", homeId],
+    queryFn: () =>
+      api.get<{ ok: boolean; data: DraftRow[] }>(`/api/operations/communications?homeId=${homeId}`),
+  });
+}
+
+/** One mutation for every action on a draft — the route dispatches on `action`,
+ *  and each returns the updated row, so the list refetches once and agrees. */
+function useDraftAction(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      api.post("/api/operations/communications", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["communications", homeId] }),
+  });
+}
+
 export default function CommunicationsPage() {
+  const { currentUser } = useAuthContext();
+  const homeId = currentUser?.home_id ?? "home_oak";
+  const author = currentUser?.full_name ?? "";
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [composing, setComposing] = useState<CommunicationType | null>(null);
+  const [editing, setEditing] = useState<DraftRow | null>(null);
 
-  const filtered = useMemo(() => {
-    if (filter === "all") return demoSeed(DEMO_DRAFTS);
-    return demoSeed(DEMO_DRAFTS).filter((d) => d.status === filter);
-  }, [filter]);
+  const { data, isLoading } = useDrafts(homeId);
+  const act = useDraftAction(homeId);
+  const drafts: DraftRow[] = data?.data ?? [];
 
-  const selected = selectedId ? demoSeed(DEMO_DRAFTS).find((d) => d.id === selectedId) : null;
+  const filtered = useMemo(
+    () => (filter === "all" ? drafts : drafts.filter((d) => d.status === filter)),
+    [drafts, filter],
+  );
 
-  // Stats
+  const selected = selectedId ? drafts.find((d) => d.id === selectedId) ?? null : null;
+
   const stats = {
-    total: demoSeed(DEMO_DRAFTS).length,
-    drafts: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "draft").length,
-    inReview: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "review").length,
-    sent: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "sent").length,
-    caraGenerated: demoSeed(DEMO_DRAFTS).filter((d) => d.cara_generated).length,
+    total: drafts.length,
+    drafts: drafts.filter((d) => d.status === "draft").length,
+    inReview: drafts.filter((d) => d.status === "review").length,
+    sent: drafts.filter((d) => d.status === "sent").length,
+    caraGenerated: drafts.filter((d) => d.cara_generated).length,
   };
 
   return (
@@ -204,30 +159,11 @@ export default function CommunicationsPage() {
           <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)} className="gap-1.5">
             <Clipboard className="h-4 w-4" /> Templates
           </Button>
-          {/* Honestly disabled rather than wired. The service behind this page
-              (createDraft in communication-intelligence) writes to a
-              `cs_communication_drafts` table that no migration creates, so a
-              save would 500 on the live tenant and silently no-op without
-              Supabase. A button that looks like it saves and does not is the
-              thing this page can least afford. The store has to land first —
-              migration, RLS, and a real list read — and that is its own slice.
-              Until then the control says why it cannot be used. */}
-          <Button
-            size="sm"
-            className="gap-1.5"
-            disabled
-            title="Drafts cannot be saved yet — the communications store is not created. Use Cara Studio or the Communication Book meanwhile."
-          >
+          <Button size="sm" className="gap-1.5" onClick={() => setShowTemplates(true)}>
             <Plus className="h-4 w-4" /> New Draft
           </Button>
         </div>
 
-        <p className="-mt-1 text-xs text-gray-500">
-          New drafts cannot be saved here yet — this page has no store behind it, so nothing
-          typed would survive. Write the communication in{" "}
-          <Link href="/cara-studio" className="underline">Cara Studio</Link> or the{" "}
-          <Link href="/communication-book" className="underline">Communication Book</Link> for now.
-        </p>
 
         {/* Template picker */}
         {showTemplates && (
@@ -242,6 +178,7 @@ export default function CommunicationsPage() {
                   return (
                     <button
                       key={key}
+                      onClick={() => { setComposing(key); setShowTemplates(false); }}
                       className="text-left p-3 rounded-xl border border-gray-200 hover:border-violet-300 hover:bg-violet-50 transition-colors"
                     >
                       <div className="flex items-start gap-2">
@@ -265,6 +202,38 @@ export default function CommunicationsPage() {
         <div className="flex gap-6">
           {/* Draft list */}
           <div className={cn("space-y-3 transition-all", selected ? "w-1/2" : "w-full")}>
+            {/* The list is a store read now, not a constant — so it has the two
+                states a constant never had. An empty list must say WHY it is
+                empty: nothing written yet, or nothing at this status. */}
+            {isLoading && (
+              <Card>
+                <CardContent className="py-10 text-center text-sm text-[var(--cs-text-muted)]">
+                  Loading drafts…
+                </CardContent>
+              </Card>
+            )}
+
+            {!isLoading && filtered.length === 0 && (
+              <EmptyState
+                icon={filter === "all" ? Mail : Clock}
+                title={
+                  filter === "all"
+                    ? "No communication drafts yet"
+                    : `Nothing at “${STATUS_LABELS[filter]}”`
+                }
+                description={
+                  filter === "all"
+                    ? "Drafts written here — social worker updates, Reg 44 responses, Ofsted notifications — are saved and stay saved, so someone else can review them before they go out."
+                    : `${drafts.length === 0 ? "No drafts have been written yet." : `${drafts.length} draft${drafts.length === 1 ? " is" : "s are"} at another status.`}`
+                }
+                actions={
+                  filter === "all"
+                    ? [{ label: "New draft", onClick: () => setShowTemplates(true), icon: Plus }]
+                    : [{ label: "Show all drafts", onClick: () => setFilter("all"), variant: "outline" }]
+                }
+              />
+            )}
+
             {filtered.map((draft) => {
               const Icon = TYPE_ICONS[draft.communication_type] ?? FileText;
               const template = COMMUNICATION_TEMPLATES[draft.communication_type];
@@ -325,32 +294,45 @@ export default function CommunicationsPage() {
                     <Badge className={cn(STATUS_STYLES[selected.status])}>{STATUS_LABELS[selected.status]}</Badge>
                   </div>
 
-                  {/* Action buttons.
-                      Edit / Submit / Approve / Mark as Sent all change a
-                      draft's STATE, and this page has no store to change it
-                      in — `createDraft` writes to `cs_communication_drafts`,
-                      which no migration creates (#936). They are disabled with
-                      that reason rather than moving a status that will not
-                      survive the next page load. Copy needs no store at all,
-                      so it is the one that works. */}
+                  {/* All four state changes work now. They were disabled in
+                      #936/#938 because cs_communication_drafts did not exist,
+                      so a status move would not have survived the next load —
+                      the table is created and the service is dual-mode. */}
                   <div className="flex gap-2 mb-4">
                     {selected.status === "draft" && (
                       <>
-                        <Button size="sm" variant="outline" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setEditing(selected)}>
                           <Edit3 className="h-3.5 w-3.5" /> Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 text-xs"
+                          disabled={act.isPending}
+                          onClick={() => act.mutate({ action: "submit_for_review", id: selected.id, userId: author })}
+                        >
                           <Eye className="h-3.5 w-3.5" /> Submit for Review
                         </Button>
                       </>
                     )}
                     {selected.status === "review" && (
-                      <Button size="sm" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        disabled={act.isPending || !author}
+                        title={author ? undefined : "Approving records who approved it — sign in first"}
+                        onClick={() => act.mutate({ action: "approve", id: selected.id, userId: author })}
+                      >
                         <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                       </Button>
                     )}
                     {selected.status === "approved" && (
-                      <Button size="sm" className="gap-1.5 text-xs" disabled title={NO_STORE_REASON}>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        disabled={act.isPending}
+                        onClick={() => act.mutate({ action: "mark_sent", id: selected.id })}
+                      >
                         <Send className="h-3.5 w-3.5" /> Mark as Sent
                       </Button>
                     )}
@@ -367,10 +349,6 @@ export default function CommunicationsPage() {
                       <Copy className="h-3.5 w-3.5" /> {copiedId === selected.id ? "Copied" : "Copy"}
                     </Button>
                   </div>
-                  <p className="-mt-2 mb-3 text-[11px] text-gray-500">
-                    Changing a draft&apos;s status is unavailable until this page has a store —
-                    only Copy works here. Nothing you do would be saved.
-                  </p>
 
                   {/* Content preview */}
                   <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
@@ -409,7 +387,160 @@ export default function CommunicationsPage() {
           )}
         </div>
       </div>
+
+      <ComposeDraftDialog
+        type={composing}
+        onClose={() => setComposing(null)}
+        author={author}
+        homeId={homeId}
+        pending={act.isPending}
+        error={act.isError ? (act.error as Error).message : ""}
+        onSave={(title, content) =>
+          act.mutate(
+            { action: "create", homeId, type: composing, title, content, createdBy: author },
+            { onSuccess: () => setComposing(null) },
+          )
+        }
+      />
+
+      <EditDraftDialog
+        draft={editing}
+        onClose={() => setEditing(null)}
+        pending={act.isPending}
+        error={act.isError ? (act.error as Error).message : ""}
+        onSave={(title, content) =>
+          act.mutate(
+            { action: "update", id: editing!.id, title, content, editedBy: author },
+            { onSuccess: () => setEditing(null) },
+          )
+        }
+      />
     </PageShell>
+  );
+}
+
+/* ── Compose ───────────────────────────────────────────────────────────────
+ *
+ * The template supplies the SHAPE — its section headings — and nothing else.
+ * Cara's four deterministic generators (handover, social-worker update, shift
+ * briefing, management summary) need a context object built from records this
+ * page does not load, so offering them here would be a button that half-works.
+ * The scaffold is honest about being a scaffold: headings to write under, and
+ * no sentences nobody wrote. */
+function ComposeDraftDialog({
+  type, onClose, author, homeId, pending, error, onSave,
+}: {
+  type: CommunicationType | null;
+  onClose: () => void;
+  author: string;
+  homeId: string;
+  pending: boolean;
+  error: string;
+  onSave: (title: string, content: string) => void;
+}) {
+  const uid = useId();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (!type) return;
+    const tmpl = COMMUNICATION_TEMPLATES[type];
+    setTitle(`${tmpl.label} — ${londonDisplay({ day: "numeric", month: "long", year: "numeric" })}`);
+    setContent((tmpl.sections ?? []).map((s: string) => `## ${s}\n\n`).join(""));
+  }, [type]);
+
+  if (!type) return null;
+  const tmpl = COMMUNICATION_TEMPLATES[type];
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>New {tmpl.label}</DialogTitle></DialogHeader>
+        <p className="-mt-2 text-xs text-[var(--cs-text-muted)]">
+          {tmpl.description}
+          {tmpl.regulationRef && <span className="ml-1 text-violet-600">{tmpl.regulationRef}</span>}
+        </p>
+
+        <div className="space-y-4 py-2">
+          <div>
+            <label htmlFor={`${uid}-title`} className="mb-1 block text-sm font-medium">Title *</label>
+            <Input id={`${uid}-title`} value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor={`${uid}-content`} className="mb-1 block text-sm font-medium">Content *</label>
+            <Textarea
+              id={`${uid}-content`}
+              rows={14}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="font-mono text-xs"
+              placeholder="The headings are the template's. The words are yours."
+            />
+          </div>
+          <p className="text-xs text-[var(--cs-text-muted)]">
+            Saved as a draft against {homeId}, created by {author || "not signed in"}. Someone else
+            reviews and approves it before it is marked sent.
+          </p>
+        </div>
+
+        {error && <p className="text-sm text-red-600">Nothing was saved — {error}. Your text is still here.</p>}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(title.trim(), content.trim())} disabled={!title.trim() || !content.trim() || !author || pending}>
+            {pending ? "Saving…" : "Save draft"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ── Edit ──────────────────────────────────────────────────────────────── */
+function EditDraftDialog({
+  draft, onClose, pending, error, onSave,
+}: {
+  draft: DraftRow | null;
+  onClose: () => void;
+  pending: boolean;
+  error: string;
+  onSave: (title: string, content: string) => void;
+}) {
+  const uid = useId();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (!draft) return;
+    setTitle(draft.title);
+    setContent(draft.content);
+  }, [draft]);
+
+  if (!draft) return null;
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit draft</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <label htmlFor={`${uid}-etitle`} className="mb-1 block text-sm font-medium">Title *</label>
+            <Input id={`${uid}-etitle`} value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor={`${uid}-econtent`} className="mb-1 block text-sm font-medium">Content *</label>
+            <Textarea id={`${uid}-econtent`} rows={14} value={content} onChange={(e) => setContent(e.target.value)} className="font-mono text-xs" />
+          </div>
+        </div>
+        {error && <p className="text-sm text-red-600">Nothing was saved — {error}. Your edits are still here.</p>}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(title.trim(), content.trim())} disabled={!title.trim() || !content.trim() || pending}>
+            {pending ? "Saving…" : "Save changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

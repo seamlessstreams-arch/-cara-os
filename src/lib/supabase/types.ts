@@ -31,6 +31,38 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["homes"]["Insert"]>;
       };
 
+      cs_communication_drafts: {
+        Row: {
+          id: string;
+          home_id: string;
+          communication_type: string;
+          title: string;
+          content: string;
+          recipient_context: string | null;
+          child_id: string | null;
+          staff_id: string | null;
+          linked_entity_type: string | null;
+          linked_entity_id: string | null;
+          status: string;
+          cara_generated: boolean;
+          cara_prompt_used: string | null;
+          edited_by: string | null;
+          edited_at: string | null;
+          approved_by: string | null;
+          approved_at: string | null;
+          sent_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["cs_communication_drafts"]["Row"]> & {
+          home_id: string;
+          communication_type: string;
+          title: string;
+          content: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["cs_communication_drafts"]["Insert"]>;
+      };
       staff_members: {
         Row: {
           id: string;
