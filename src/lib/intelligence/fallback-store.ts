@@ -1198,6 +1198,11 @@ export interface IntelligenceAttentionItemRow {
   reviewed_at: string | null;
   escalated_to: string | null;
   escalated_at: string | null;
+  /** What the manager decided about this item, and when. Marking it reviewed
+   *  says it was looked at; the note is the reasoning an inspector asks for. */
+  oversight_note?: string | null;
+  oversight_by?: string | null;
+  oversight_at?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

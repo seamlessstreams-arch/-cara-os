@@ -37,6 +37,12 @@ const path = require("node:path");
 // record (contact directory, admissions); two direct-work buttons open
 // Cara's capture; and communications' New Draft is disabled with its reason
 // on the page, because the table its service writes to does not exist.
+// 31 → 19: the workflow-actions batch. Eight now write a real record (three
+// task-shaped follow-ups on a learning review, three manager actions on the
+// competence passport, two typed entries in the RI oversight log), two write
+// through new fields on their own routes (attention-item oversight note), one
+// navigates to the record the item points at, and one opens the risk-assessment
+// register rather than filing a second copy of the same document.
 const BASELINE = new Set([
   "admissions/workflow|Advance to {PHASE_LABELS[nextPhase",
   "care-events|Review Regulation 45 evidence",
@@ -47,16 +53,7 @@ const BASELINE = new Set([
   "communications|Approve",
   "communications|Mark as Sent",
   "communications|Copy",
-  "dashboard/manager-control-centre|Open Record",
-  "dashboard/manager-control-centre|Add Oversight </B",
-  "dashboard/manager-control-centre|Assign Task",
   "dashboard/manager-control-centre|Request Cara Draft",
-  "dashboard/provider-oversight|Request Action",
-  "dashboard/provider-oversight|Mark Reviewed",
-  "incidents/learning-review|Create Key Work Task",
-  "incidents/learning-review|Create Debrief Task",
-  "incidents/learning-review|Review Risk Assessment",
-  "incidents/learning-review|Escalate to RI",
   "intelligence/cara/resources|Preview",
   "intelligence/cara/studio|Review gaps",
   "mandatory-training-matrix|Schedule refresher",
@@ -65,9 +62,6 @@ const BASELINE = new Set([
   "quality/reg-45|Request Cara D",
   "quality/reg-45|Request Cara Draft",
   "quality/reg-45|Auto-Link Evidence",
-  "staff/competence-passport|Assign Training",
-  "staff/competence-passport|Schedule Supervision",
-  "staff/competence-passport|Restrict Duty",
   "workforce/cara-planner|Manual Plan",
 ]);
 
@@ -83,6 +77,37 @@ function tagAt(text, start) {
     else if (c === ">" && depth === 0) return text.slice(start, i + 1);
   }
   return text.slice(start, start + 400);
+}
+
+/**
+ * Is the <Button> at `index` wrapped by a parent that carries the action?
+ *
+ * Three wrappers count: <Link>, a Radix *Trigger, and a plain <a href>. Missing
+ * the anchor cost the first baseline 7 false positives (#935).
+ *
+ * The tag is read with tagAt() rather than matched with `<Link[^>]*>`, because
+ * `[^>]*` stops at the FIRST '>' — including the one inside an arrow function.
+ * `<Link href={x} onClick={(e) => e.stop()}>` therefore looked unwrapped, and
+ * the guard reported a working link as a dead button. Same `[^>]*` trap that
+ * once broke the retrospective-date codemod; a JSX tag needs a real scanner.
+ */
+function isWrapped(text, index) {
+  const OPENERS = /<(Link|a|\w*Trigger)\b/g;
+  let last = null, o;
+  OPENERS.lastIndex = 0;
+  while ((o = OPENERS.exec(text)) && o.index < index) last = o;
+  if (!last) return false;
+
+  const wrapper = tagAt(text, last.index);
+  if (wrapper.endsWith("/>")) return false; // self-closing wraps nothing
+  const name = last[1];
+  if (name === "a" && !/\bhref=/.test(wrapper)) return false;
+
+  // Only whitespace (or a single {…} expression) may sit between the wrapper's
+  // '>' and the button — anything else means the button is a later sibling,
+  // not the wrapped child.
+  const between = text.slice(last.index + wrapper.length, index);
+  return /^\s*(\{[^}]*\}\s*)?$/s.test(between);
 }
 
 function* walk(dir) {
@@ -116,13 +141,7 @@ for (const file of walk("src/app")) {
     const label = after.split("</Button")[0].replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 34);
     if (!label) continue; // icon-only: a11y's problem, not this guard's
 
-    const back = text.slice(Math.max(0, m.index - 500), m.index);
-    if (/<Link\b[^>]*>\s*(\{[^}]*\}\s*)?$/s.test(back)) continue;
-    if (/<\w*Trigger\b[^>]*>\s*$/s.test(back)) continue;
-    // A plain <a href="…" download> wrapper is real wiring too — the anchor
-    // carries the action. Missing this cost the first baseline 7 false
-    // positives (every recruitment CSV export, both buildings links).
-    if (/<a\s[^>]*href=[^>]*>\s*$/s.test(back)) continue;
+    if (isWrapped(text, m.index)) continue;
 
     if (BASELINE.has(`${page}|${label}`)) continue;
     const line = text.slice(0, m.index).split("\n").length;

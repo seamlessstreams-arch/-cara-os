@@ -3,6 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
+import { api } from "@/hooks/use-api";
+import { useAuthContext } from "@/contexts/auth-context";
+import { CreateTaskDialog } from "@/components/workflow/create-task-dialog";
+import {
+  ScheduleSupervisionDialog, RestrictDutyDialog,
+} from "@/components/workflow/competence-action-dialogs";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -133,12 +139,25 @@ const SEVERITY_META: Record<string, { color: string }> = {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function StaffCompetencePassportPage() {
+  const { currentUser } = useAuthContext();
   const [selectedStaff, setSelectedStaff] = useState("staff-a");
   const [staffRecords, setStaffRecords] = useState<StaffRecord[]>([]);
+  const [assignTrainingOpen, setAssignTrainingOpen] = useState(false);
+  const [superviseOpen, setSuperviseOpen] = useState(false);
+  const [restrictOpen, setRestrictOpen] = useState(false);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useCompetenceRecords();
   const updateCompetence = useCreateCompetenceRecord();
+
+  /* The roster, for the two actions that write a record ABOUT a person: a
+   * supervision and an assigned task both need a real staff id, and the
+   * passport's own ids ("staff-a") belong to the intelligence layer. */
+  const { data: rosterData } = useQuery({
+    queryKey: ["staff", { competencePassport: true }],
+    queryFn: () => api.get<{ data: { id: string; full_name: string }[] }>("/staff"),
+  });
+  const roster = rosterData?.data ?? [];
 
   useEffect(() => {
     const rich = (apiData as unknown as { richRecords?: unknown[] } | undefined)?.richRecords;
@@ -416,15 +435,15 @@ export default function StaffCompetencePassportPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setAssignTrainingOpen(true)}>
                 <GraduationCap className="h-4 w-4 mr-1" />
                 Assign Training
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setSuperviseOpen(true)}>
                 <Calendar className="h-4 w-4 mr-1" />
                 Schedule Supervision
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setRestrictOpen(true)}>
                 <Shield className="h-4 w-4 mr-1" />
                 Restrict Duty
               </Button>
@@ -450,6 +469,31 @@ export default function StaffCompetencePassportPage() {
         pageContext="Staff Competence Passport — individual staff competencies, skills, compliance status, training records, warnings and restrictions, Reg 40 staff qualifications evidence, Ofsted workforce"
         recordType="staff_training"
         className="mt-6"
+      />
+
+      <CreateTaskDialog
+        open={assignTrainingOpen}
+        onOpenChange={setAssignTrainingOpen}
+        heading="Assign training"
+        blurb="Files a training task the staff member owns, so it shows on their list and in the training matrix."
+        defaults={{ title: `Training — ${staff.name}`, category: "training", priority: "medium" }}
+        staff={roster}
+      />
+
+      <ScheduleSupervisionDialog
+        open={superviseOpen}
+        onOpenChange={setSuperviseOpen}
+        staff={roster}
+        supervisorId={currentUser?.id ?? ""}
+      />
+
+      <RestrictDutyDialog
+        open={restrictOpen}
+        onOpenChange={setRestrictOpen}
+        passportStaffId={staff.id}
+        staffLabel={staff.name}
+        existing={staff.restrictions ?? []}
+        appliedBy={currentUser?.full_name ?? ""}
       />
     </PageShell>
   );

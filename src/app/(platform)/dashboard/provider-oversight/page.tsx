@@ -250,6 +250,19 @@ export default function ProviderOversightPage() {
   const { data: voiceData } = useVoiceEntries();
   const { data: evidenceData } = useEvidenceItems();
 
+  /* One write, three entry types — the log's own vocabulary. The comment box
+   * is cleared only on success, so a failed request keeps what the RI typed
+   * rather than blanking it and looking like it saved. */
+  const logOversight = (entryType: "comment" | "action_request" | "review") =>
+    createSummary.mutate(
+      {
+        homeId: selectedHome === "all" ? "oak-house" : selectedHome,
+        notes: oversightComment,
+        entryType,
+      },
+      { onSuccess: () => setOversightComment("") },
+    );
+
   useEffect(() => {
     const rich = (apiData as unknown as { richSummaries?: unknown[]; oversightLog?: unknown[] } | undefined);
     if (apiData?.persisted && Array.isArray(rich?.richSummaries) && rich!.richSummaries!.length > 0) {
@@ -607,23 +620,32 @@ export default function ProviderOversightPage() {
                 variant="outline"
                 size="sm"
                 disabled={!oversightComment.trim() || createSummary.isPending}
-                onClick={() => {
-                  createSummary.mutate({
-                    homeId: selectedHome === "all" ? "oak-house" : selectedHome,
-                    notes: oversightComment,
-                  }, {
-                    onSuccess: () => setOversightComment(""),
-                  });
-                }}
+                onClick={() => logOversight("comment")}
               >
                 <MessageSquare className="h-4 w-4 mr-1" />
                 {createSummary.isPending ? "Saving..." : "Add Oversight Comment"}
               </Button>
-              <Button variant="outline" size="sm">
+              {/* The oversight log already distinguishes comment /
+                  action_request / review / escalation, and the route already
+                  reads body.entryType — these two were the same write as the
+                  button beside them with a different type, and simply never
+                  sent it. All three use the one comment box above, so what is
+                  filed is what the RI actually wrote. */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!oversightComment.trim() || createSummary.isPending}
+                onClick={() => logOversight("action_request")}
+              >
                 <AlertTriangle className="h-4 w-4 mr-1" />
                 Request Action
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!oversightComment.trim() || createSummary.isPending}
+                onClick={() => logOversight("review")}
+              >
                 <CheckCircle2 className="h-4 w-4 mr-1" />
                 Mark Reviewed
               </Button>

@@ -361,6 +361,9 @@ import type { Incident, YoungPerson, StaffMember } from "@/types";
 import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
 import Link from "next/link";
+import type { TaskCategory } from "@/lib/constants";
+import { CreateTaskDialog } from "@/components/workflow/create-task-dialog";
+import { AddOversightDialog } from "@/components/workflow/add-oversight-dialog";
 import type {
   AttentionCategory,
   Urgency,
@@ -2083,7 +2086,71 @@ interface AttentionItem {
   dueDate?: string;
   childName?: string;
   staffName?: string;
+  /** Where this item came from. `source_record_id` is frequently null — the
+   *  engines know the KIND of record before they know which one — so the two
+   *  are separate and the link falls back to the section. */
+  sourceRecordType?: string;
+  sourceRecordId?: string;
   createdAt: string;
+}
+
+/* ── where an attention item points ────────────────────────────────────────── */
+
+/** Section route per attention category. Used when the item names a kind of
+ *  record but not a specific one, which is most of them. */
+const CATEGORY_ROUTES: Partial<Record<AttentionCategory, string>> = {
+  log_approval: "/daily-log",
+  incident_oversight: "/incidents",
+  serious_incident: "/incidents",
+  missing_from_care: "/missing-from-care",
+  risk_assessment_review: "/risk-assessments",
+  placement_plan_update: "/placement-plan",
+  key_work_overdue: "/key-work",
+  wishes_feelings_missing: "/voice",
+  medication_check: "/medication",
+  supervision_overdue: "/workforce/supervision",
+  training_gap: "/workforce/training-matrix",
+  recruitment_gap: "/recruitment",
+  complaint_open: "/complaints",
+  reg44_action_overdue: "/quality/reg-44",
+  reg45_evidence_gap: "/quality/reg-45",
+  task_overdue: "/tasks",
+  staff_debrief: "/debriefs",
+  document_sign_off: "/documents",
+  cara_pattern: "/intelligence/cara/action-centre",
+};
+
+/** Task category for a task raised from an attention item. Falls back to
+ *  "compliance" for anything unmapped rather than guessing. */
+const ATTENTION_TASK_CATEGORY: Partial<Record<AttentionCategory, TaskCategory>> = {
+  log_approval: "compliance",
+  incident_oversight: "safeguarding",
+  serious_incident: "safeguarding",
+  missing_from_care: "safeguarding",
+  risk_assessment_review: "safeguarding",
+  placement_plan_update: "young_person_plans",
+  key_work_overdue: "young_person_plans",
+  wishes_feelings_missing: "young_person_plans",
+  medication_check: "medication",
+  supervision_overdue: "supervision",
+  training_gap: "training",
+  recruitment_gap: "staffing",
+  complaint_open: "compliance",
+  reg44_action_overdue: "compliance",
+  reg45_evidence_gap: "compliance",
+  task_overdue: "admin",
+  staff_debrief: "supervision",
+  document_sign_off: "admin",
+  cara_pattern: "compliance",
+};
+
+/** A specific record when the item names one, the section when it does not,
+ *  and null when it names neither — in which case no link is offered at all
+ *  rather than a button that goes nowhere. */
+function attentionHref(item: AttentionItem): string | null {
+  if (item.sourceRecordType === "incident" && item.sourceRecordId) return `/incidents?id=${item.sourceRecordId}`;
+  if (item.sourceRecordType === "task" && item.sourceRecordId) return `/tasks?id=${item.sourceRecordId}`;
+  return CATEGORY_ROUTES[item.category] ?? null;
 }
 
 /* ── demo data ─────────────────────────────────────────────────────────────── */
@@ -2189,6 +2256,8 @@ export default function ManagerControlCentrePage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("7d");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [oversightFor, setOversightFor] = useState<AttentionItem | null>(null);
+  const [taskFor, setTaskFor] = useState<AttentionItem | null>(null);
   const updateItem = useUpdateAttentionItem();
 
   useEffect(() => {
@@ -2204,6 +2273,10 @@ export default function ManagerControlCentrePage() {
         dueDate: item.due_date as string | undefined,
         childName: item.child_id as string | undefined,
         staffName: item.staff_id as string | undefined,
+        // The row has carried a record reference all along; the mapping just
+        // dropped it, which is why "Open Record" had nothing to open.
+        sourceRecordType: (item.source_record_type as string) ?? undefined,
+        sourceRecordId: (item.source_record_id as string) ?? undefined,
         createdAt: item.created_at as string,
       })));
     }
@@ -2714,15 +2787,33 @@ export default function ManagerControlCentrePage() {
 
                     {/* action buttons */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--cs-border-subtle)]">
-                      <Button variant="outline" size="sm" className="gap-1.5">
-                        <FileText className="h-3.5 w-3.5" />
-                        Open Record
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1.5">
+                      {/* Rendered only when the item points somewhere. An item
+                          with neither a source record nor a known category has
+                          nothing to open, and offering the button anyway is
+                          how it came to be dead in the first place. */}
+                      {attentionHref(item) && (
+                        <Link href={attentionHref(item)!} onClick={(e) => e.stopPropagation()}>
+                          <Button variant="outline" size="sm" className="gap-1.5">
+                            <FileText className="h-3.5 w-3.5" />
+                            Open Record
+                          </Button>
+                        </Link>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={(e) => { e.stopPropagation(); setOversightFor(item); }}
+                      >
                         <Eye className="h-3.5 w-3.5" />
                         Add Oversight
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={(e) => { e.stopPropagation(); setTaskFor(item); }}
+                      >
                         <ClipboardList className="h-3.5 w-3.5" />
                         Assign Task
                       </Button>
@@ -3087,6 +3178,43 @@ export default function ManagerControlCentrePage() {
           intelligence layer and require human review before any action is taken.
         </p>
       </div>
+
+      {oversightFor && (
+        <AddOversightDialog
+          open
+          onOpenChange={(v) => { if (!v) { setOversightFor(null); updateItem.reset(); } }}
+          itemTitle={oversightFor.title}
+          suggestedAction={oversightFor.suggestedAction}
+          pending={updateItem.isPending}
+          error={updateItem.isError ? (updateItem.error as Error).message : ""}
+          onSave={(note) =>
+            updateItem.mutate(
+              { id: oversightFor.id, status: "reviewed", oversightNote: note },
+              {
+                onSuccess: () => {
+                  setItems((prev) => prev.map((i) => i.id === oversightFor.id ? { ...i, status: "reviewed" } : i));
+                  setOversightFor(null);
+                },
+              },
+            )
+          }
+        />
+      )}
+
+      {taskFor && (
+        <CreateTaskDialog
+          open
+          onOpenChange={(v) => { if (!v) setTaskFor(null); }}
+          heading="Assign a task for this item"
+          blurb="Prefilled from the item. Cara's suggested action is a starting point — edit it to what you actually want done."
+          defaults={{
+            title: taskFor.title,
+            category: ATTENTION_TASK_CATEGORY[taskFor.category] ?? "compliance",
+            priority: taskFor.urgency === "critical" ? "urgent" : taskFor.urgency === "high" ? "high" : "medium",
+            description: taskFor.suggestedAction,
+          }}
+        />
+      )}
     </PageShell>
   );
 }
