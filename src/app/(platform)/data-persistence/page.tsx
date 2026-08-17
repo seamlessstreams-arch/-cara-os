@@ -26,9 +26,11 @@ interface PersistenceStatus {
     migration: string | null;
     rows: number | null;
     error: string | null;
+    missing_columns: { name: string; migration: string | null }[] | null;
   }[];
   drift: {
     checked: number; present: number; missing: number; errored: number;
+    tables_missing_columns: number; missing_column_count: number;
     pending_migrations: string[]; headline: string;
   } | null;
   summary: { total: number; durable: number; pending: number };
@@ -91,10 +93,15 @@ export default function DataPersistencePage() {
               does not, writes fail and reads render as an empty list — which
               is indistinguishable from a home that has recorded nothing. This
               banner is the only place that difference is visible. */}
-          {data.drift && data.drift.missing > 0 && (
+          {data.drift && (data.drift.missing > 0 || data.drift.missing_column_count > 0) && (
             <section className="rounded-2xl border border-red-200 bg-red-50/60 p-5">
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-red-800">
-                <Database className="h-4 w-4" /> {data.drift.missing} table{data.drift.missing === 1 ? "" : "s"} missing on this tenant
+                <Database className="h-4 w-4" />
+                {data.drift.missing > 0 && `${data.drift.missing} table${data.drift.missing === 1 ? "" : "s"}`}
+                {data.drift.missing > 0 && data.drift.missing_column_count > 0 && " and "}
+                {data.drift.missing_column_count > 0 &&
+                  `${data.drift.missing_column_count} column${data.drift.missing_column_count === 1 ? "" : "s"}`}
+                {" missing on this tenant"}
               </h3>
               <p className="mt-1 text-sm text-red-900">{data.drift.headline}</p>
               <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-red-800">Migrations still to run, in order</p>
@@ -103,6 +110,20 @@ export default function DataPersistencePage() {
                   <li key={m} className="font-mono text-xs text-red-900">supabase/migrations/{m}</li>
                 ))}
               </ol>
+              {data.drift.missing_column_count > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-red-800">
+                    Tables that exist but are short a column
+                  </p>
+                  {data.probe
+                    .filter((p) => (p.missing_columns?.length ?? 0) > 0)
+                    .map((p) => (
+                      <p key={p.table} className="mt-1 font-mono text-xs text-red-900">
+                        {p.table} — {p.missing_columns!.map((c) => c.name).join(", ")}
+                      </p>
+                    ))}
+                </div>
+              )}
               <p className="mt-3 text-xs text-red-800">{data.migration_note}</p>
             </section>
           )}
@@ -122,9 +143,10 @@ export default function DataPersistencePage() {
                   <div
                     key={p.table}
                     className={`rounded-xl border px-3 py-2.5 text-sm ${
-                      p.status === "present" ? "border-emerald-200 bg-emerald-50/50"
-                        : p.status === "missing" ? "border-red-200 bg-red-50/50"
-                        : "border-amber-200 bg-amber-50/50"
+                      p.status === "missing" ? "border-red-200 bg-red-50/50"
+                        : p.status === "errored" ? "border-amber-200 bg-amber-50/50"
+                        : (p.missing_columns?.length ?? 0) > 0 ? "border-red-200 bg-red-50/50"
+                        : "border-emerald-200 bg-emerald-50/50"
                     }`}
                   >
                     <p className="font-mono text-xs font-semibold text-[var(--cs-navy)]">{p.table}</p>
@@ -135,6 +157,12 @@ export default function DataPersistencePage() {
                         : p.status === "missing" ? "does not exist — migration not run"
                         : `could not be checked — ${p.error}`}
                     </p>
+                    {(p.missing_columns?.length ?? 0) > 0 && (
+                      <p className="mt-1 text-xs font-medium text-red-700">
+                        missing {p.missing_columns!.length} column
+                        {p.missing_columns!.length === 1 ? "" : "s"}: {p.missing_columns!.map((c) => c.name).join(", ")}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

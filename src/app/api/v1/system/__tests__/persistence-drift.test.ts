@@ -24,12 +24,36 @@ vi.mock("@/lib/supabase/server", () => ({
 import { GET } from "@/app/api/v1/system/persistence/route";
 import { EXPECTED_TABLES } from "@/lib/supabase/expected-tables";
 
-/** A client whose head-count answers depend on the table asked for. */
-function fakeClient(answers: Record<string, { count?: number; error?: { code?: string; message?: string } }>) {
+type Answer = { count?: number; error?: { code?: string; message?: string } };
+
+/**
+ * A client whose answers depend on the table asked for, and — for the column
+ * probe — on which columns are asked for.
+ *
+ * `absentColumns` models what PostgREST actually does: it rejects the WHOLE
+ * select on the FIRST unknown column and names only that one, which is why the
+ * route has to ask repeatedly, dropping one each time.
+ */
+function fakeClient(
+  answers: Record<string, Answer>,
+  absentColumns: Record<string, string[]> = {},
+) {
   return {
-    from: (table: string) => ({
-      select: async () => answers[table] ?? { count: 0, error: null },
-    }),
+    from: (table: string) => {
+      const builder = (columns?: string) => {
+        const asked = (columns ?? "*").split(",").map((c) => c.trim());
+        const absent = (absentColumns[table] ?? []).find((c) => asked.includes(c));
+        const result = absent
+          ? { error: { code: "42703", message: `column ${table}.${absent} does not exist` } }
+          : (answers[table] ?? { count: 0, error: null });
+        return {
+          ...result,
+          limit: async () => result,
+          then: (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve),
+        };
+      };
+      return { select: (columns?: string) => builder(columns) };
+    },
   };
 }
 
@@ -134,5 +158,101 @@ describe("what it refuses to claim", () => {
     const { data } = await run();
     expect(data.drift.errored).toBe(EXPECTED_TABLES.length);
     expect(data.drift.missing).toBe(0);
+  });
+});
+
+// ── The table is there; the ALTER was never run ──────────────────────────────
+//
+// #941 added six safer-recruitment columns to staff_members, a table that has
+// existed since the lean baseline. Unapplied, the table-level probe reports
+// "present" with the right row count and nothing looks wrong — while every read
+// naming one of those columns fails wholesale.
+
+describe("a present table that is short a column", () => {
+  const staffShort = (...columns: string[]) =>
+    fakeClient({ staff_members: { count: 14 } }, { staff_members: columns });
+
+  it("is still reported as present, with its real row count", async () => {
+    createServerClient.mockReturnValue(staffShort("barred_list_checked_date"));
+    const { data } = await run();
+    const row = data.probe.find((p: { table: string }) => p.table === "staff_members");
+    expect(row.status).toBe("present");
+    expect(row.rows).toBe(14);
+  });
+
+  it("★ names the columns it does not have, and the migration that adds them", async () => {
+    createServerClient.mockReturnValue(
+      staffShort("barred_list_checked_date", "prohibition_checked_by"),
+    );
+    const { data } = await run();
+    const row = data.probe.find((p: { table: string }) => p.table === "staff_members");
+
+    expect(row.missing_columns.map((c: { name: string }) => c.name))
+      .toEqual(["barred_list_checked_date", "prohibition_checked_by"]);
+    expect(data.drift.missing_column_count).toBe(2);
+    expect(data.drift.tables_missing_columns).toBe(1);
+    expect(data.drift.pending_migrations)
+      .toEqual(["20260816200000_add_safer_recruitment_checks.sql"]);
+  });
+
+  it("finds ALL of them, though PostgREST names only one per refusal", async () => {
+    createServerClient.mockReturnValue(staffShort(
+      "barred_list_checked_by", "barred_list_checked_date",
+      "prohibition_checked_by", "prohibition_checked_date",
+      "right_to_work_checked_by", "right_to_work_checked_date",
+    ));
+    const { data } = await run();
+    expect(data.drift.missing_column_count).toBe(6);
+  });
+
+  it("reports an empty list — not null — when every column is there", async () => {
+    createServerClient.mockReturnValue(fakeClient({}));
+    const { data } = await run();
+    const row = data.probe.find((p: { table: string }) => p.table === "staff_members");
+    expect(row.missing_columns).toEqual([]);
+    expect(data.drift.missing_column_count).toBe(0);
+    expect(data.drift.headline).toContain("with every expected column");
+  });
+
+  it("★ reports NOT CHECKED rather than guessing when the refusal names nothing", async () => {
+    createServerClient.mockReturnValue({
+      from: () => ({
+        select: (columns?: string) => {
+          const res = columns && columns !== "*"
+            ? { error: { code: "42703", message: "something is wrong with a column" } }
+            : { count: 3, error: null };
+          return { ...res, limit: async () => res, then: (r: (v: unknown) => unknown) => Promise.resolve(res).then(r) };
+        },
+      }),
+    });
+    const { data } = await run();
+    const row = data.probe.find((p: { table: string }) => p.table === "staff_members");
+    expect(row.status).toBe("present");
+    expect(row.missing_columns).toBeNull();
+    expect(data.drift.missing_column_count).toBe(0);
+  });
+
+  it("does not probe columns on a table that does not exist", async () => {
+    createServerClient.mockReturnValue(fakeClient({
+      staff_members: { error: { code: "PGRST205" } },
+    }));
+    const { data } = await run();
+    const row = data.probe.find((p: { table: string }) => p.table === "staff_members");
+    expect(row.status).toBe("missing");
+    expect(row.missing_columns).toBeNull();
+    // One fact, not seven: the table is absent.
+    expect(data.drift.missing_column_count).toBe(0);
+  });
+
+  it("merges table drift and column drift into one run list", async () => {
+    createServerClient.mockReturnValue(fakeClient(
+      { cs_communication_drafts: { error: { code: "PGRST205" } }, staff_members: { count: 9 } },
+      { staff_members: ["barred_list_checked_date"] },
+    ));
+    const { data } = await run();
+    expect(data.drift.pending_migrations).toEqual([
+      "20260816200000_add_safer_recruitment_checks.sql",
+      "20260816210000_persist_communication_drafts.sql",
+    ]);
   });
 });
