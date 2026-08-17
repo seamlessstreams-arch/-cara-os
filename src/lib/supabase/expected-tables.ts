@@ -6,58 +6,266 @@
 // /api/v1/system/persistence say WHICH migration has not been run yet, instead
 // of a page quietly rendering an empty list for a table that does not exist.
 
+export interface ExpectedColumn {
+  name: string;
+  /**
+   * The migration that ADDS it, which is always later than the one that
+   * creates the table — that is why this column can be missing while the table
+   * is present. Null means no migration in the repo mentions it at all.
+   */
+  migration: string | null;
+}
+
 export interface ExpectedTable {
   /** Table name as PostgREST sees it. */
   table: string;
   /** The migration file that creates it — the one to run if it is missing. */
   migration: string | null;
+  /**
+   * Only the columns added AFTER the table was created. The rest exist if and
+   * only if the table does, so probing them would say nothing new. These are
+   * the ones an unapplied ALTER leaves behind — #941's safer-recruitment
+   * fields, for instance, on a staff_members table that has existed for months.
+   */
+  columns: ExpectedColumn[];
 }
 
 export const EXPECTED_TABLES: ExpectedTable[] = [
-  { table: "annex_a_evidence_queue", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "audit_log", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "behaviour_support_plans", migration: "20260815090000_persist_behaviour_support_plans.sql" },
-  { table: "building_checks", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "buildings", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "candidate_checks", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "candidate_profiles", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "candidate_references", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "cara_interactions", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "care_event_audit_log", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "care_event_jobs", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "care_event_routes", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "care_events", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "care_forms", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "child_daily_summaries", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "chronology_entries", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "cs_communication_drafts", migration: "20260816210000_persist_communication_drafts.sql" },
-  { table: "daily_log_entries", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "document_read_receipts", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "documents", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "expenses", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "filing_cabinet_items", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "generic_records", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "handovers", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "incidents", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "leave_requests", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "maintenance_items", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "management_oversight_tasks", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "medication_administrations", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "medications", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "missing_episodes", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "notifications", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "qa_audits", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "reg40_tasks", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "reg45_evidence_queue", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "saved_time_metrics", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "shifts", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "staff_members", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "supervisions", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "tasks", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "time_saved_entries", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "training_records", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "vacancies", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "vehicle_checks", migration: "20260722120000_persist_typed_tables.sql" },
-  { table: "vehicles", migration: "00000000000000_lean_live_baseline.sql" },
-  { table: "young_people", migration: "00000000000000_lean_live_baseline.sql" },
+  {
+    table: "annex_a_evidence_queue",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "audit_log",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "behaviour_support_plans",
+    migration: "20260815090000_persist_behaviour_support_plans.sql",
+    columns: [],
+  },
+  {
+    table: "building_checks",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "buildings",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "candidate_checks",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "candidate_profiles",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "candidate_references",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "cara_interactions",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "care_event_audit_log",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "care_event_jobs",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "care_event_routes",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "care_events",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "care_forms",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "child_daily_summaries",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "chronology_entries",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "cs_communication_drafts",
+    migration: "20260816210000_persist_communication_drafts.sql",
+    columns: [],
+  },
+  {
+    table: "daily_log_entries",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "document_read_receipts",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "documents",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "expenses",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "filing_cabinet_items",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "generic_records",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "handovers",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "incidents",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "leave_requests",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "maintenance_items",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "management_oversight_tasks",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "medication_administrations",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "medications",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "missing_episodes",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "notifications",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "qa_audits",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "reg40_tasks",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "reg45_evidence_queue",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "saved_time_metrics",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "shifts",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "staff_members",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [
+      { name: "barred_list_checked_by", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+      { name: "barred_list_checked_date", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+      { name: "prohibition_checked_by", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+      { name: "prohibition_checked_date", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+      { name: "right_to_work_checked_by", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+      { name: "right_to_work_checked_date", migration: "20260816200000_add_safer_recruitment_checks.sql" },
+    ],
+  },
+  {
+    table: "supervisions",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "tasks",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "time_saved_entries",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "training_records",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "vacancies",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "vehicle_checks",
+    migration: "20260722120000_persist_typed_tables.sql",
+    columns: [],
+  },
+  {
+    table: "vehicles",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
+  {
+    table: "young_people",
+    migration: "00000000000000_lean_live_baseline.sql",
+    columns: [],
+  },
 ];
