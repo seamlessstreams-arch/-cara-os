@@ -102,7 +102,7 @@ const exportCols: ExportColumn<Disclosure>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function DisclosureLogPage() {
-  const { data: res, isLoading } = useDisclosures();
+  const { data: res, isLoading, isError, refetch } = useDisclosures();
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
@@ -262,7 +262,7 @@ export default function DisclosureLogPage() {
       {/* ── disclosure cards ──────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <EmptyState compact title="No disclosures match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="disclosures" compact title="No disclosures match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;

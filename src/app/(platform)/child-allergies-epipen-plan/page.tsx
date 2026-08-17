@@ -96,7 +96,7 @@ export default function ChildAllergiesEpipenPlanPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: resp, isLoading } = useQuery<{ data: AllergyPlan[] }>({
+  const { data: resp, isLoading, isError, refetch } = useQuery<{ data: AllergyPlan[] }>({
     queryKey: [ALLERGY_PLANS_KEY],
     queryFn: () => api.get<{ data: AllergyPlan[] }>(ALLERGY_PLANS_API),
   });
@@ -403,7 +403,7 @@ export default function ChildAllergiesEpipenPlanPage() {
       {/* ── Allergy Plan Cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No plans match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="allergy and EpiPen plans" compact title="No plans match your filters." />
         )}
 
         {filtered.map((plan) => {

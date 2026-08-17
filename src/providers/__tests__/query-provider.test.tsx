@@ -53,3 +53,54 @@ describe("global mutation error backstop", () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 });
+
+// ── The read-side twin ───────────────────────────────────────────────────────
+//
+// `rows = data?.data ?? []` turns a failed query into an empty array, and 103
+// pages then rendered "No welfare checks recorded yet" — an absence asserted
+// without a successful read. The per-page fix is EmptyState's `error` prop;
+// this cache-level handler is the backstop for the pages not yet reached.
+async function read(queryKey: unknown[], queryFn: () => Promise<unknown>, meta?: Record<string, unknown>) {
+  const qc = makeQueryClient();
+  await qc.fetchQuery({ queryKey, queryFn, retry: false, meta }).catch(() => {});
+}
+
+describe("global query error backstop", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("a failed read surfaces, so an empty screen is not mistaken for an empty store", async () => {
+    await read(["welfare-checks"], () => Promise.reject(new Error("HTTP 500")));
+    expect(toast.error).toHaveBeenCalledWith(
+      "Couldn't load that",
+      expect.objectContaining({ description: "HTTP 500" }),
+    );
+  });
+
+  it("dedupes by query key — a 60s refetchInterval must not stack a toast a minute", async () => {
+    await read(["welfare-checks", { date: "2026-08-16" }], () => Promise.reject(new Error("nope")));
+    expect(toast.error).toHaveBeenCalledWith(
+      "Couldn't load that",
+      expect.objectContaining({ id: 'query-error:["welfare-checks",{"date":"2026-08-16"}]' }),
+    );
+  });
+
+  it("says what the consequence is when the error carries no message", async () => {
+    await read(["x"], () => Promise.reject(new Error("")));
+    expect(toast.error).toHaveBeenCalledWith(
+      "Couldn't load that",
+      expect.objectContaining({
+        description: "This screen may be showing less than there is — it could not reach the store.",
+      }),
+    );
+  });
+
+  it("meta.silentError opts a probe out deliberately", async () => {
+    await read(["probe"], () => Promise.reject(new Error("boom")), { silentError: true });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("a successful read stays quiet", async () => {
+    await read(["ok"], () => Promise.resolve({ data: [] }));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+});

@@ -450,7 +450,7 @@ const STATUS_LABELS: Record<NotifiableStatus, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function NotifiableEventsPage() {
-  const { data: neData, isLoading } = useNotifiableEvents();
+  const { data: neData, isLoading, isError, refetch } = useNotifiableEvents();
   const events = neData?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -609,7 +609,7 @@ export default function NotifiableEventsPage() {
         ) : (
         <FlatList>
           {filtered.length === 0 && (
-            <EmptyState compact title="No events match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="notifiable events" compact title="No events match your filters." />
           )}
           {filtered.map((evt) => {
             const isExpanded = expanded === evt.id;

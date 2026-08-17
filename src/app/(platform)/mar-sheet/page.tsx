@@ -78,7 +78,7 @@ function getStatus(e: MarEntry): EntryStatus {
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
 export default function MarSheetPage() {
-  const { data: res, isLoading } = useMarEntries();
+  const { data: res, isLoading, isError, refetch } = useMarEntries();
   const entries: MarEntry[] = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -221,7 +221,7 @@ export default function MarSheetPage() {
       <p className="text-[11px] text-[var(--cs-text-muted)] mb-3">Showing {filtered.length} of {entries.length} record{entries.length !== 1 ? "s" : ""}</p>
 
       <div className="space-y-2">
-        {filtered.length === 0 && (<EmptyState compact title="No MAR entries match the current filters." />)}
+        {filtered.length === 0 && (<EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the MAR sheet" compact title="No MAR entries match the current filters." />)}
 
         {filtered.map((entry) => {
           const isExpanded = expandedId === entry.id;

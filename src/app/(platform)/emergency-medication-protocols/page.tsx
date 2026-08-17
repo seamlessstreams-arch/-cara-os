@@ -75,7 +75,7 @@ const TRIGGER_COLOURS: Record<EmergencyMedTrigger, string> = {
 // ── Page Component ────────────────────────────────────────────────────────────
 
 export default function EmergencyMedicationProtocolsPage() {
-  const { data: queryData, isLoading } = useEmergencyMedicationProtocols();
+  const { data: queryData, isLoading, isError, refetch } = useEmergencyMedicationProtocols();
   const records = queryData?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -384,7 +384,7 @@ export default function EmergencyMedicationProtocolsPage() {
       {/* ── Protocol Cards ─────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No protocols match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="emergency medication protocols" compact title="No protocols match your filters." />
         )}
 
         {filtered.map((protocol) => {

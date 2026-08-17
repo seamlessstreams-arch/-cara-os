@@ -113,7 +113,7 @@ const PERSONS_OPTIONS = ["Manager", "GP", "Parent", "Social Worker", "Pharmacist
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function MedicationErrorsPage() {
-  const { data: result, isLoading } = useMedicationErrors();
+  const { data: result, isLoading, isError, refetch } = useMedicationErrors();
   const errors = result?.data ?? [];
   const createMutation = useCreateMedicationError();
 
@@ -435,7 +435,7 @@ export default function MedicationErrorsPage() {
       {/* ── Error Cards ───────────────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <EmptyState compact title="No medication errors match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="medication errors" compact title="No medication errors match the current filters." />
         )}
 
         {filtered.map((error) => {

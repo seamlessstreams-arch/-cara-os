@@ -102,7 +102,7 @@ const EXPORT_COLS: ExportColumn<SignificantEvent>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function SignificantEventsPage() {
-  const { data: seData, isLoading } = useSignificantEvents();
+  const { data: seData, isLoading, isError, refetch } = useSignificantEvents();
   const createEvent = useCreateSignificantEvent();
   const events = seData?.data ?? [];
   const threeDaysOut = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
@@ -268,7 +268,7 @@ export default function SignificantEventsPage() {
 
         {/* ── Event list ───────────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <EmptyState compact title="No events match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="significant events" compact title="No events match your filters." />}
           {filtered.map((e) => {
             const open = !!expanded[e.id];
             const catM = CATEGORY_META[e.category];
