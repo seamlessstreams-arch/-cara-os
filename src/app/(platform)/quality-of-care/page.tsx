@@ -83,7 +83,7 @@ const RATING_COLORS: Record<QocRating, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function QualityOfCarePage() {
-  const { data: records = [], isLoading } = useQualityOfCareReviews();
+  const { data: records = [], isLoading, isError, refetch } = useQualityOfCareReviews();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterRating, setFilterRating] = useState("all");
@@ -256,7 +256,7 @@ export default function QualityOfCarePage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No reviews match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="quality of care records" compact title="No reviews match your filters." />
           )}
           {filtered.map((review) => {
             const isExpanded = expanded === review.id;

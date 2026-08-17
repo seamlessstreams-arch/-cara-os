@@ -53,7 +53,7 @@ const ENGAGEMENT_STATUSES = Object.entries(OFSTED_ENGAGEMENT_STATUS_LABEL) as [O
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedEngagementLogPage() {
-  const { data: res, isLoading } = useOfstedEngagementLog();
+  const { data: res, isLoading, isError, refetch } = useOfstedEngagementLog();
   const records: OfstedEngagementRecord[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -325,7 +325,7 @@ export default function OfstedEngagementLogPage() {
         {/* ── engagement cards ───────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No engagements match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the Ofsted engagement log" compact title="No engagements match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

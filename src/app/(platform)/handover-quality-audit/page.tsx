@@ -95,7 +95,7 @@ type SortKey =
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function HandoverQualityAuditPage() {
-  const { data: res, isLoading } = useHandoverAudits();
+  const { data: res, isLoading, isError, refetch } = useHandoverAudits();
   const audits = res?.data ?? [];
 
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
@@ -664,7 +664,7 @@ export default function HandoverQualityAuditPage() {
         })}
 
         {visible.length === 0 && (
-          <EmptyState compact title="No audits match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="handover quality audits" compact title="No audits match the current filters." />
         )}
       </FlatList>
 

@@ -81,7 +81,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 /* ── component ────────────────────────────────────────────────────────────── */
 
 export default function ShiftNotesPage() {
-  const { data: records = [], isLoading } = useShiftNoteRecords();
+  const { data: records = [], isLoading, isError, refetch } = useShiftNoteRecords();
   const [search, setSearch] = useState("");
   const [shiftFilter, setShiftFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -219,7 +219,7 @@ export default function ShiftNotesPage() {
 
         {/* ── Shift notes list ─────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <EmptyState compact title="No shift notes match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="shift notes" compact title="No shift notes match your filters." />}
           {filtered.map((n) => {
             const open = !!expanded[n.id];
             const shiftM = SHIFT_META[n.shift];

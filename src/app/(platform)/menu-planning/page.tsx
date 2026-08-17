@@ -72,7 +72,7 @@ const DIETARY_META: Record<DietaryFlag, { label: string; color: string }> = {
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 export default function MenuPlanningPage() {
-  const { data: res, isLoading } = useMealPlans();
+  const { data: res, isLoading, isError, refetch } = useMealPlans();
   const meals: MealPlan[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -213,7 +213,7 @@ export default function MenuPlanningPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No meals match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="menu plans" compact title="No meals match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const mealM = MEAL_META[m.meal];

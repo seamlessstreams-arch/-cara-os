@@ -81,7 +81,7 @@ const STATUS_ICONS: Record<DiversityEventStatus, typeof Clock> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function DiversityCalendarPage() {
-  const { data: raw, isLoading } = useDiversityCalendarEvents();
+  const { data: raw, isLoading, isError, refetch } = useDiversityCalendarEvents();
   const events: DiversityCalendarEvent[] = raw?.data ?? [];
 
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -208,7 +208,7 @@ export default function DiversityCalendarPage() {
         {/* ── event cards ────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No events match the current filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the diversity calendar" compact title="No events match the current filters." />
           )}
 
           {filtered.map((event) => {

@@ -124,7 +124,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────── */
 
 export default function ChildTraumaTherapyLogPage() {
-  const { data: res, isLoading } = useTraumaTherapyLogs();
+  const { data: res, isLoading, isError, refetch } = useTraumaTherapyLogs();
   const items = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -445,7 +445,7 @@ export default function ChildTraumaTherapyLogPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No sessions match these filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="trauma therapy sessions" compact title="No sessions match these filters." />
         )}
       </div>
 

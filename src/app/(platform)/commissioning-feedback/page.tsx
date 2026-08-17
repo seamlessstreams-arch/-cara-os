@@ -37,7 +37,7 @@ const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CommissioningFeedbackPage() {
-  const { data: res, isLoading } = useQuery<{ data: CommissioningFeedbackRecord[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: CommissioningFeedbackRecord[] }>({
     queryKey: ["commissioning-feedback-records"],
     queryFn: () => api.get<{ data: CommissioningFeedbackRecord[] }>("/api/v1/commissioning-feedback-records"),
   });
@@ -257,7 +257,7 @@ export default function CommissioningFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No commissioning feedback matches your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="commissioning feedback" compact title="No commissioning feedback matches your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expandedId === entry.id;

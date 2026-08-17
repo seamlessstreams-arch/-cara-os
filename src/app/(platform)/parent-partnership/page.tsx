@@ -112,7 +112,7 @@ const exportCols: ExportColumn<ParentPartnershipRecord>[] = [
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ParentPartnershipPage() {
-  const { data: res, isLoading } = useParentPartnershipRecords();
+  const { data: res, isLoading, isError, refetch } = useParentPartnershipRecords();
   const data = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -382,7 +382,7 @@ export default function ParentPartnershipPage() {
             );
           })}
           {filtered.length === 0 && (
-            <EmptyState compact title="No contacts match filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="parent partnership records" compact title="No contacts match filters." />
           )}
         </div>
 

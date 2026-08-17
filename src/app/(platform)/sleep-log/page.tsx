@@ -71,7 +71,7 @@ const DISTURBANCE_COLORS: Record<SleepDisturbanceLevel, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function SleepLogPage() {
-  const { data: slData, isLoading } = useSleepLog();
+  const { data: slData, isLoading, isError, refetch } = useSleepLog();
   const createEntry = useCreateSleepLogEntry();
   const entries = slData?.data ?? [];
   const [search, setSearch] = useState("");
@@ -229,7 +229,7 @@ export default function SleepLogPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No entries match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="sleep records" compact title="No entries match your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;

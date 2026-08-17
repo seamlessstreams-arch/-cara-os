@@ -93,7 +93,7 @@ const exportCols: ExportColumn<HouseholdTask>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function HouseholdTasksRotaPage() {
-  const { data: raw, isLoading } = useQuery<{ data: HouseholdTask[] }>({
+  const { data: raw, isLoading, isError, refetch } = useQuery<{ data: HouseholdTask[] }>({
     queryKey: ["household-tasks"],
     queryFn: async () => {
       const params = "";
@@ -234,7 +234,7 @@ export default function HouseholdTasksRotaPage() {
       {/* ── task cards ─────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No tasks match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the household tasks rota" compact title="No tasks match your filters." />
         )}
         {filtered.map((task) => {
           const isExpanded = expandedId === task.id;

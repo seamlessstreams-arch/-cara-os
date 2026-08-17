@@ -109,7 +109,7 @@ const EXPORT_COLS: ExportColumn<TransitionPlanningRecord>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TransitionPlanningPage() {
-  const { data: records = [], isLoading } = useTransitionPlanningRecords();
+  const { data: records = [], isLoading, isError, refetch } = useTransitionPlanningRecords();
   const [statusOverrides, setStatusOverrides] = useState<Record<string, { status: TransitionPlanningGoalStatus; percent_complete: number }>>({});
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
@@ -317,7 +317,7 @@ export default function TransitionPlanningPage() {
 
         {/* ── Goal list ──────────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No goals match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="transition plans" compact title="No goals match your filters." />}
           {filtered.map((g) => {
             const open = !!expanded[g.id];
             const areaM = AREA_META[g.area];

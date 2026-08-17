@@ -92,7 +92,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildCareAnniversaryPage() {
-  const { data: resp, isLoading } = useCareAnniversaryRecords();
+  const { data: resp, isLoading, isError, refetch } = useCareAnniversaryRecords();
   const data = resp?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -375,7 +375,7 @@ export default function ChildCareAnniversaryPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No records match these filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="care anniversaries" compact title="No records match these filters." />
         )}
       </div>
 

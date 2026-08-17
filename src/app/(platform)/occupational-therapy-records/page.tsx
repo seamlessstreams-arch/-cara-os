@@ -129,7 +129,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function OccupationalTherapyRecordsPage() {
-  const { data: res, isLoading } = useOccupationalTherapyRecords();
+  const { data: res, isLoading, isError, refetch } = useOccupationalTherapyRecords();
   const data: OccupationalTherapyRecord[] = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -349,7 +349,7 @@ export default function OccupationalTherapyRecordsPage() {
       {/* ── records ────────────────────────────────────────────────── */}
       <div className="space-y-4 mb-8">
         {filtered.length === 0 && (
-          <EmptyState compact title="No OT records match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="occupational therapy records" compact title="No OT records match the current filters." />
         )}
 
         {filtered.map((r) => {

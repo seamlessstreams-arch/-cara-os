@@ -535,10 +535,10 @@ function RoutingTab({
 
 // ── Audit tab ──────────────────────────────────────────────────────────────────
 
-function AuditTab({ entries }: { entries: CareEventAuditLog[] }) {
-  if (entries.length === 0) {
+function AuditTab({ entries, failed, onRetry }: { entries: CareEventAuditLog[]; failed?: boolean; onRetry?: () => void }) {
+  if (failed || entries.length === 0) {
     return (
-      <EmptyState compact title="No audit entries yet." />
+      <EmptyState error={failed} onRetry={onRetry} noun="the audit trail" compact title="No audit entries yet." />
     );
   }
 
@@ -612,7 +612,7 @@ const JOB_TYPE_LABELS: Record<string, string> = {
 };
 
 function JobsTab({ careEventId }: { careEventId: string }) {
-  const { data, isLoading } = useCareEventJobs(careEventId);
+  const { data, isLoading, isError, refetch } = useCareEventJobs(careEventId);
   const runMutation = useRunCareEventJobs();
 
   const jobs = data?.data ?? [];
@@ -633,7 +633,13 @@ function JobsTab({ careEventId }: { careEventId: string }) {
 
   if (jobs.length === 0) {
     return (
-      <EmptyState compact title="No background jobs for this event." />
+      <EmptyState
+        error={isError}
+        onRetry={() => { void refetch(); }}
+        noun="background jobs"
+        compact
+        title="No background jobs for this event."
+      />
     );
   }
 
@@ -782,7 +788,7 @@ export default function CareEventDetailPage({
   if (auditParams?.care_event_id) qs.set("care_event_id", auditParams.care_event_id);
   if (auditParams?.limit) qs.set("limit", String(auditParams.limit));
   const query = qs.toString() ? `?${qs.toString()}` : "";
-  const { data: auditData } = useQuery<{ entries: any[]; meta: any }>({
+  const { data: auditData, isError: auditFailed, refetch: refetchAudit } = useQuery<{ entries: any[]; meta: any }>({
     queryKey: ["care-event-audit", auditParams],
     queryFn: () => api.get(`/care-event-audit${query}`),
   });
@@ -1066,7 +1072,7 @@ export default function CareEventDetailPage({
               />
             </TabsContent>
             <TabsContent value="audit" className="mt-3">
-              <AuditTab entries={auditEntries} />
+              <AuditTab entries={auditEntries} failed={auditFailed} onRetry={() => { void refetchAudit(); }} />
             </TabsContent>
             <TabsContent value="jobs" className="mt-3">
               <JobsTab careEventId={event.id} />

@@ -81,7 +81,7 @@ const confidenceChip = (c: TravelConfidence) => {
 
 export default function IndependentTravelTrainingPage() {
   const KEY = "independent-travel-records";
-  const { data: res, isLoading } = useQuery<{ data: IndependentTravelRecord[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: IndependentTravelRecord[] }>({
     queryKey: [KEY],
     queryFn: () =>
       api.get<{ data: IndependentTravelRecord[] }>("/api/v1/independent-travel-records"),
@@ -499,7 +499,7 @@ export default function IndependentTravelTrainingPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No travel training records match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="independent travel training records" compact title="No travel training records match the current filters." />
         )}
       </div>
 

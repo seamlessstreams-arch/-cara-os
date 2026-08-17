@@ -80,7 +80,7 @@ const exportCols: ExportColumn<PlacementEndSummary>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function PlacementEndSummaryPage() {
-  const { data: res, isLoading } = usePlacementEndSummaries();
+  const { data: res, isLoading, isError, refetch } = usePlacementEndSummaries();
   const entries = res?.data ?? [];
 
   const [filterReason, setFilterReason] = useState("all");
@@ -197,7 +197,7 @@ export default function PlacementEndSummaryPage() {
       {/* ── summary cards ──────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No summaries match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="placement end summaries" compact title="No summaries match your filters." />
         )}
         {filtered.map((s) => {
           const isExpanded = expandedId === s.id;

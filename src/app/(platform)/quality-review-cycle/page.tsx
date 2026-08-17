@@ -66,7 +66,7 @@ const AREA_RATING_COLORS: Record<Reg46AreaRating, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function QualityReviewCyclePage() {
-  const { data: records = [], isLoading } = useReg46Reviews();
+  const { data: records = [], isLoading, isError, refetch } = useReg46Reviews();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -224,7 +224,7 @@ export default function QualityReviewCyclePage() {
         {/* ── review list ──────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No reviews match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the quality review cycle" compact title="No reviews match your filters." />
           )}
           {filtered.map((review) => {
             const isExpanded = expandedId === review.id;

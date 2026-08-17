@@ -75,7 +75,7 @@ const TYPE_COLOR: Record<ProfConsultationType, string> = {
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 export default function ProfessionalConsultationsPage() {
-  const { data: records = [], isLoading } = useProfessionalConsultations();
+  const { data: records = [], isLoading, isError, refetch } = useProfessionalConsultations();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [childFilter, setChildFilter] = useState("all");
@@ -221,7 +221,7 @@ export default function ProfessionalConsultationsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No consultations match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="professional consultations" compact title="No consultations match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const typeColor = TYPE_COLOR[r.type];

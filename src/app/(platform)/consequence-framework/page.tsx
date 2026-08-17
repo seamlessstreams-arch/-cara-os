@@ -66,7 +66,7 @@ const exportCols: ExportColumn<ConsequenceRecord>[] = [
 ];
 
 export default function ConsequenceFrameworkPage() {
-  const { data: res, isLoading } = useQuery<{ data: ConsequenceRecord[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: ConsequenceRecord[] }>({
     queryKey: ["consequence-records"],
     queryFn: () => api.get<{ data: ConsequenceRecord[] }>("/api/v1/consequence-records"),
   });
@@ -187,7 +187,7 @@ export default function ConsequenceFrameworkPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No records match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="consequences" compact title="No records match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;

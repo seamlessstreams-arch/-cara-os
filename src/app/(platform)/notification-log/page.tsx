@@ -44,7 +44,7 @@ const RECIPIENTS = ["Ofsted", "Placing Authority", "LADO", "Police"] as const;
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function NotificationLogPage() {
-  const { data: res, isLoading } = useNotificationLog();
+  const { data: res, isLoading, isError, refetch } = useNotificationLog();
   const records: NotificationLogEntry[] = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterRecipient, setFilterRecipient] = useState("all");
@@ -235,7 +235,7 @@ export default function NotificationLogPage() {
         {/* ── notification cards ──────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No notifications match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the notification log" compact title="No notifications match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

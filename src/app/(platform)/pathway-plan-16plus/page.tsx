@@ -119,7 +119,7 @@ const SKILL_CLR: Record<PathwaySkillLevel, string> = {
 
 export default function PathwayPlan16PlusPage() {
   const homeName = useHomeName();
-  const { data: res, isLoading } = usePathwayPlans();
+  const { data: res, isLoading, isError, refetch } = usePathwayPlans();
   const plans: PathwayPlan[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -517,7 +517,7 @@ export default function PathwayPlan16PlusPage() {
         </div>
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No pathway plans match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="pathway plans" compact title="No pathway plans match your filters." />
         )}
 
         {/* alerts: reviews due */}

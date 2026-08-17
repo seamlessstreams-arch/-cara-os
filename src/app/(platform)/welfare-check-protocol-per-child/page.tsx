@@ -93,7 +93,7 @@ const exportCols: ExportColumn<WelfareProtocol>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function WelfareCheckProtocolPerChildPage() {
-  const { data: result, isLoading } = useWelfareProtocols(undefined, "home_oak");
+  const { data: result, isLoading, isError, refetch } = useWelfareProtocols(undefined, "home_oak");
   const data = result?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");
@@ -217,7 +217,7 @@ export default function WelfareCheckProtocolPerChildPage() {
       {/* ── protocol cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No protocols match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="welfare check protocols" compact title="No protocols match your filters." />
         )}
         {filtered.map((r) => {
           const open = expandedId === r.id;

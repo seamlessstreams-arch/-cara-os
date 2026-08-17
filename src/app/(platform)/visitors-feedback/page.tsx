@@ -66,7 +66,7 @@ function Stars({ rating, max = 5 }: { rating: number; max?: number }) {
 export default function VisitorsFeedbackPage() {
   const uid = useId();
   const qc = useQueryClient();
-  const { data: entries = [], isLoading } = useQuery<VisitorsFeedbackRecord[]>({
+  const { data: entries = [], isLoading, isError, refetch } = useQuery<VisitorsFeedbackRecord[]>({
     queryKey: ["visitors-feedback-records"],
     queryFn: async () => {
       const res = await fetch("/api/v1/visitors-feedback-records");
@@ -247,7 +247,7 @@ export default function VisitorsFeedbackPage() {
         {/* ── feedback list ──────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No feedback matches your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="visitor feedback" compact title="No feedback matches your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expandedId === entry.id;

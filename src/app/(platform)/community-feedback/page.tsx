@@ -55,7 +55,7 @@ const SOURCE_ICON: Record<CommunityFeedbackSource, typeof Home> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CommunityFeedbackPage() {
-  const { data, isLoading } = useQuery<{ data: CommunityFeedbackRecord[] }>({
+  const { data, isLoading, isError, refetch } = useQuery<{ data: CommunityFeedbackRecord[] }>({
     queryKey: ["community-feedback-records"],
     queryFn: () => api.get<{ data: CommunityFeedbackRecord[] }>("/api/v1/community-feedback-records"),
   });
@@ -233,7 +233,7 @@ export default function CommunityFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No community feedback matches your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="community feedback" compact title="No community feedback matches your filters." />
           )}
           {filtered.map((r) => {
             const isExpanded = expandedId === r.id;

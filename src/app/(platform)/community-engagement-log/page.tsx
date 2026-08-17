@@ -72,7 +72,7 @@ const exportCols: ExportColumn<CommunityEngagement>[] = [
 ];
 
 export default function CommunityEngagementLogPage() {
-  const { data: res, isLoading } = useQuery<{ data: CommunityEngagement[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: CommunityEngagement[] }>({
     queryKey: ["community-engagements"],
     queryFn: () => api.get<{ data: CommunityEngagement[] }>("/api/v1/community-engagements"),
   });
@@ -192,7 +192,7 @@ export default function CommunityEngagementLogPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No activities match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the community engagement log" compact title="No activities match your filters." />
         )}
         {filtered.map((evt) => {
           const isExpanded = expandedId === evt.id;

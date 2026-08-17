@@ -76,7 +76,7 @@ const SCENARIO_COLOURS: Record<DrillScenarioType, string> = {
 // ── Page Component ────────────────────────────────────────────────────────────
 
 export default function EmergencyProtocolDrillsPage() {
-  const { data: queryData, isLoading } = useProtocolDrills();
+  const { data: queryData, isLoading, isError, refetch } = useProtocolDrills();
   const records = queryData?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -345,7 +345,7 @@ export default function EmergencyProtocolDrillsPage() {
       {/* ── Drill Cards ────────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No drills match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="protocol drills" compact title="No drills match your filters." />
         )}
 
         {filtered.map((drill) => {

@@ -116,7 +116,7 @@ const AREA_OPTIONS = [
 /* ── page ────────────────────────────────────────────────────────────── */
 
 export default function RoomSearchesPage() {
-  const { data: records = [], isLoading } = useRoomSearchRecords();
+  const { data: records = [], isLoading, isError, refetch } = useRoomSearchRecords();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -562,7 +562,7 @@ export default function RoomSearchesPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No room searches match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="room searches" compact title="No room searches match your filters." />
         )}
         </FlatList>
 

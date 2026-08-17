@@ -63,7 +63,7 @@ const CATEGORY_LABELS: Record<ComplimentCategory, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ComplimentsPage() {
-  const { data: cmpData, isLoading } = useQuery({
+  const { data: cmpData, isLoading, isError, refetch } = useQuery({
     queryKey: ["compliments"],
     queryFn: () => api.get<ListResponse>("/compliments"),
     staleTime: 30_000,
@@ -216,7 +216,7 @@ export default function ComplimentsPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No compliments match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="compliments" compact title="No compliments match your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;

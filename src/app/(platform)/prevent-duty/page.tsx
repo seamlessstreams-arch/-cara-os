@@ -105,7 +105,7 @@ const d = (n: number) => {
 
 /* ── component ──────────────────────────────────────────────────────── */
 export default function PreventDutyPage() {
-  const { data: records = [], isLoading } = usePreventRecords();
+  const { data: records = [], isLoading, isError, refetch } = usePreventRecords();
   const createMutation = useCreatePreventRecord();
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
@@ -293,7 +293,7 @@ export default function PreventDutyPage() {
         {/* ── card list ──────────────────────────────────────────── */}
         <FlatList>
           {filtered.length === 0 && (
-            <EmptyState compact title="No records match the current filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="Prevent duty records" compact title="No records match the current filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;

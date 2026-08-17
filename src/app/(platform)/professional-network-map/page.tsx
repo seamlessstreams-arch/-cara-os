@@ -71,7 +71,7 @@ const FRESHNESS_STYLES: Record<string, { bg: string; text: string; label: string
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ProfessionalNetworkMapPage() {
-  const { data: records = [], isLoading } = useProfessionalNetworkContacts();
+  const { data: records = [], isLoading, isError, refetch } = useProfessionalNetworkContacts();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
@@ -279,7 +279,7 @@ export default function ProfessionalNetworkMapPage() {
         ))}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No professionals match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the professional network" compact title="No professionals match the current filters." />
         )}
 
         {/* ── regulatory note ── */}

@@ -84,7 +84,7 @@ const EXPORT_COLS: ExportColumn<FamilyTimeSession>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function FamilyTimeSupervisionPage() {
-  const { data: queryData, isLoading } = useQuery<{ data: FamilyTimeSession[] }>({
+  const { data: queryData, isLoading, isError, refetch } = useQuery<{ data: FamilyTimeSession[] }>({
     queryKey: ["family-time-sessions"],
     queryFn: () => api.get<{ data: FamilyTimeSession[] }>("/api/v1/family-time-sessions"),
   });
@@ -394,7 +394,7 @@ export default function FamilyTimeSupervisionPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No family time sessions match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="family time supervision records" compact title="No family time sessions match the current filters." />
         )}
       </div>
 

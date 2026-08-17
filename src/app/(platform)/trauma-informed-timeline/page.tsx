@@ -76,7 +76,7 @@ const exportCols: ExportColumn<TimelineEvent>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function TraumaInformedTimelinePage() {
-  const { data: result, isLoading } = useTimelineEvents(undefined, "home_oak");
+  const { data: result, isLoading, isError, refetch } = useTimelineEvents(undefined, "home_oak");
   const data = result?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");
@@ -194,7 +194,7 @@ export default function TraumaInformedTimelinePage() {
       {/* ── timeline cards ─────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No timeline events match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the trauma-informed timeline" compact title="No timeline events match your filters." />
         )}
         {filtered.map((evt) => {
           const isExpanded = expandedId === evt.id;

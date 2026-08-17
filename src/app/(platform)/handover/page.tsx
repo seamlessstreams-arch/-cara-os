@@ -226,7 +226,9 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
 
 function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
   const isToday = handover.shift_date === todayStr();
-  const { data: ctxData } = useHandoverContext(handover.incoming_staff ?? []);
+  const { data: ctxData, isError: ctxFailed } = useHandoverContext(handover.incoming_staff ?? []);
+  // An empty list here silently drops the "4d away" badges, which read as
+  // "nobody has been away" rather than "we could not check".
   const staffContexts = ctxData?.data ?? [];
 
   return (
@@ -269,6 +271,11 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
           </div>
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-1">Incoming</span>
+            {ctxFailed && (
+              <span className="mb-1 block text-[10px] text-amber-700">
+                Time-away context could not be loaded — no badge does not mean nobody has been away.
+              </span>
+            )}
             {handover.incoming_staff.map((id) => {
               const ctx = staffContexts.find((c) => c.staff_id === id);
               return (

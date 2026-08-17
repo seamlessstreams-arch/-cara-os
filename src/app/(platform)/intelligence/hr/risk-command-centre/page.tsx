@@ -20,6 +20,7 @@ import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
   SelectContent,
@@ -170,7 +171,7 @@ export default function HrRiskCommandCentrePage() {
   const [rawOverdueTasks, setRawOverdueTasks] = useState<HrTaskSummary[]>([]);
   const [rawRecruitment, setRawRecruitment] = useState<RecruitmentSummary[]>([]);
 
-  const { data: apiData } = useHrRisk();
+  const { data: apiData, isError, refetch } = useHrRisk();
   useEffect(() => {
     if (apiData?.persisted) {
       if (Array.isArray(apiData.cases)) setRawCases(apiData.cases as CaseSummary[]);
@@ -333,7 +334,7 @@ export default function HrRiskCommandCentrePage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {cases.length === 0 ? (
-                <EmptyState message="No cases match the selected risk level." />
+                <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the risk command centre" compact title="No cases match the selected risk level." />
               ) : (
                 cases.map((c) => (
                   <div
@@ -456,7 +457,7 @@ export default function HrRiskCommandCentrePage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {rawOverdueTasks.length === 0 ? (
-                <EmptyState message="No overdue HR tasks." />
+                <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the risk command centre" compact title="No overdue HR tasks." />
               ) : (
                 rawOverdueTasks.map((t) => (
                   <div
@@ -491,7 +492,7 @@ export default function HrRiskCommandCentrePage() {
             </CardHeader>
             <CardContent>
               {riOversightPending.length === 0 ? (
-                <EmptyState message="All cases requiring RI oversight have been reviewed." />
+                <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the risk command centre" compact title="All cases requiring RI oversight have been reviewed." />
               ) : (
                 <div className="space-y-2">
                   {riOversightPending.map((c) => (
@@ -738,10 +739,3 @@ function MetricCard({
   );
 }
 
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="py-6 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
-  );
-}

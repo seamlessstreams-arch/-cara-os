@@ -80,7 +80,7 @@ const EXPORT_COLS: ExportColumn<PettyCashEntry>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function PettyCashPage() {
-  const { data: res, isLoading } = usePettyCashEntries();
+  const { data: res, isLoading, isError, refetch } = usePettyCashEntries();
   const records = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -225,7 +225,7 @@ export default function PettyCashPage() {
         </div>
 
         <div className="space-y-2">
-          {filtered.length === 0 && <EmptyState compact title="No transactions match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="petty cash records" compact title="No transactions match your filters." />}
           {filtered.map((e) => {
             const open = !!expanded[e.id];
             const isIncome = e.type === "top_up" || e.type === "refund";

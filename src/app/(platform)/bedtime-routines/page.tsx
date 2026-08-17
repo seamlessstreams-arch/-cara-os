@@ -64,7 +64,7 @@ const BEDTIME_ROUTINES_QUERY = {
 };
 
 export default function BedtimeRoutinesPage() {
-  const { data: res, isLoading } = useQuery<{ data: BedtimeRoutine[] }>(BEDTIME_ROUTINES_QUERY);
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: BedtimeRoutine[] }>(BEDTIME_ROUTINES_QUERY);
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");
@@ -171,7 +171,7 @@ export default function BedtimeRoutinesPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No routines match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="bedtime routines" compact title="No routines match your filters." />
         )}
         {filtered.map((routine) => {
           const isExpanded = expandedId === routine.id;

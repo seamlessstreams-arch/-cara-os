@@ -82,7 +82,7 @@ const ENERGY_COLORS: Record<CheckInEnergy, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ChildMentalHealthDailyCheckPage() {
-  const { data: raw, isLoading } = useMentalHealthCheckIns();
+  const { data: raw, isLoading, isError, refetch } = useMentalHealthCheckIns();
   const items = raw?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -241,7 +241,7 @@ export default function ChildMentalHealthDailyCheckPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No check-ins match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="daily mental health checks" compact title="No check-ins match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

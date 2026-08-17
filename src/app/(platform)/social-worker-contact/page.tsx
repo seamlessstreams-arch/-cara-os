@@ -92,7 +92,7 @@ const SW_DIR: Record<string, { name: string; team: string; email: string; phone:
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function SocialWorkerContactPage() {
-  const { data: records = [], isLoading } = useSocialWorkerContactRecords();
+  const { data: records = [], isLoading, isError, refetch } = useSocialWorkerContactRecords();
   const createContact = useCreateSocialWorkerContactRecord();
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
@@ -386,7 +386,7 @@ export default function SocialWorkerContactPage() {
               </Card>
             );
           })}
-          {filtered.length === 0 && <EmptyState compact title="No contacts match filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="social worker contacts" compact title="No contacts match filters." />}
         </div>
 
         {/* statutory visit tracker */}
