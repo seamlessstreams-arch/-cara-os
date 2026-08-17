@@ -94,6 +94,27 @@ if (gaps.length > 0) {
   process.exit(1);
 }
 
+// ── 4. The runtime manifest must match ───────────────────────────────────────
+//
+// Migrations reach the live tenant BY HAND — no `supabase db push` in CI or in
+// the deploy. /api/v1/system/persistence probes each expected table so a
+// missing one is NAMED rather than rendering as an empty list, and it reads
+// that list from a GENERATED file, because types.ts is erased at runtime.
+// Stale generation would make the probe silently skip a table, which is the
+// same silence it exists to break.
+const { collect, render } = require("./generate-expected-tables.js");
+const GENERATED = path.join(ROOT, "src", "lib", "supabase", "expected-tables.ts");
+const expected = render(collect());
+const onDisk = fs.existsSync(GENERATED) ? fs.readFileSync(GENERATED, "utf8") : "";
+if (onDisk !== expected) {
+  console.error(
+    "\ncheck-dal-persistence: src/lib/supabase/expected-tables.ts is out of date.\n" +
+      "Run:  node scripts/generate-expected-tables.js\n",
+  );
+  process.exit(1);
+}
+
 console.log(
-  `check-dal-persistence: all ${typedTables.size} typed tables are backed by a migration ✓`,
+  `check-dal-persistence: all ${typedTables.size} typed tables are backed by a migration ✓ ` +
+    `(runtime manifest in sync)`,
 );

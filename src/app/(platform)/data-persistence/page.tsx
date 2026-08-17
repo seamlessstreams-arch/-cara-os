@@ -20,10 +20,21 @@ interface PersistenceStatus {
   mode: "durable" | "demo";
   enabled: boolean;
   env: Record<string, boolean>;
-  probe: { table: string; ok: boolean; rows: number | null; error: string | null }[];
+  probe: {
+    table: string;
+    status: "present" | "missing" | "errored";
+    migration: string | null;
+    rows: number | null;
+    error: string | null;
+  }[];
+  drift: {
+    checked: number; present: number; missing: number; errored: number;
+    pending_migrations: string[]; headline: string;
+  } | null;
   summary: { total: number; durable: number; pending: number };
   manifest: PersistenceEntry[];
   demo_note: string | null;
+  migration_note: string;
 }
 
 const RUNBOOK = [
@@ -74,15 +85,56 @@ export default function DataPersistencePage() {
             </div>
           </div>
 
+          {/* ── Migrations shipped but not applied ──────────────────────────
+              Nothing in CI or the deploy runs a migration, so a table can be
+              merged, deployed and live-verified and still not exist. When it
+              does not, writes fail and reads render as an empty list — which
+              is indistinguishable from a home that has recorded nothing. This
+              banner is the only place that difference is visible. */}
+          {data.drift && data.drift.missing > 0 && (
+            <section className="rounded-2xl border border-red-200 bg-red-50/60 p-5">
+              <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-red-800">
+                <Database className="h-4 w-4" /> {data.drift.missing} table{data.drift.missing === 1 ? "" : "s"} missing on this tenant
+              </h3>
+              <p className="mt-1 text-sm text-red-900">{data.drift.headline}</p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-red-800">Migrations still to run, in order</p>
+              <ol className="mt-1 space-y-1">
+                {data.drift.pending_migrations.map((m) => (
+                  <li key={m} className="font-mono text-xs text-red-900">supabase/migrations/{m}</li>
+                ))}
+              </ol>
+              <p className="mt-3 text-xs text-red-800">{data.migration_note}</p>
+            </section>
+          )}
+
           {/* ── Live probe (durable mode) ── */}
           {data.probe.length > 0 && (
             <section className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
               <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[var(--cs-navy)]"><Database className="h-4 w-4" /> Live table probe</h3>
+              {data.drift && (
+                <p className="mt-1 text-xs text-[var(--cs-text-muted)]">
+                  {data.drift.checked} expected tables checked · {data.drift.present} present ·{" "}
+                  {data.drift.missing} missing · {data.drift.errored} could not be checked.
+                </p>
+              )}
               <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {data.probe.map((p) => (
-                  <div key={p.table} className={`rounded-xl border px-3 py-2.5 text-sm ${p.ok ? "border-emerald-200 bg-emerald-50/50" : "border-red-200 bg-red-50/50"}`}>
+                  <div
+                    key={p.table}
+                    className={`rounded-xl border px-3 py-2.5 text-sm ${
+                      p.status === "present" ? "border-emerald-200 bg-emerald-50/50"
+                        : p.status === "missing" ? "border-red-200 bg-red-50/50"
+                        : "border-amber-200 bg-amber-50/50"
+                    }`}
+                  >
                     <p className="font-mono text-xs font-semibold text-[var(--cs-navy)]">{p.table}</p>
-                    <p className="text-xs text-[var(--cs-text-secondary)]">{p.ok ? `${p.rows} rows` : p.error}</p>
+                    {/* Three states, never two: a table with 0 rows EXISTS, and
+                        saying so is the whole point of this panel. */}
+                    <p className="text-xs text-[var(--cs-text-secondary)]">
+                      {p.status === "present" ? `${p.rows} rows`
+                        : p.status === "missing" ? "does not exist — migration not run"
+                        : `could not be checked — ${p.error}`}
+                    </p>
                   </div>
                 ))}
               </div>
