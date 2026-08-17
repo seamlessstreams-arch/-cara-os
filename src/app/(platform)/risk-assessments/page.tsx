@@ -108,7 +108,7 @@ const EXPORT_COLS: ExportColumn<RiskAssessment>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function RiskAssessmentsPage() {
-  const { data: raData, isLoading } = useRiskAssessments();
+  const { data: raData, isLoading, isError, refetch } = useRiskAssessments();
   const createRA = useCreateRiskAssessment();
   const assessments = raData?.data ?? [];
   const [search, setSearch] = useState("");
@@ -257,7 +257,7 @@ export default function RiskAssessmentsPage() {
         </div>
 
         <FlatList>
-          {filtered.length === 0 && <EmptyState compact title="No assessments match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="risk assessments" compact title="No assessments match your filters." />}
           {filtered.map((a) => {
             const open = !!expanded[a.id];
             const domainM = DOMAIN_META[a.domain];

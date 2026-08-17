@@ -102,7 +102,7 @@ const EXPORT_COLS: ExportColumn<RestraintRecord>[] = [
 ];
 
 export default function RestraintLogPage() {
-  const { data: rstData, isLoading } = useRestraints();
+  const { data: rstData, isLoading, isError, refetch } = useRestraints();
   const records = rstData?.data ?? [];
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
@@ -212,7 +212,7 @@ export default function RestraintLogPage() {
         </div>
 
         <FlatList>
-          {filtered.length === 0 && <EmptyState compact title="No restraint records found." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="restraint records" compact title="No restraint records found." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const reviewM = REVIEW_META[r.review_status] ?? { label: String(r.review_status ?? "Unknown"), color: "bg-slate-100 text-slate-700" };

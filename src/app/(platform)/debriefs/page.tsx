@@ -76,7 +76,7 @@ const EXPORT_COLS: ExportColumn<DebriefRecord>[] = [
 ];
 
 export default function DebriefsPage() {
-  const { data: raw, isLoading } = useDebriefRecords();
+  const { data: raw, isLoading, isError, refetch } = useDebriefRecords();
   const debriefs = raw?.data ?? [];
   const createDebrief = useCreateDebriefRecord();
   const [debForm, setDebForm] = useState({ date: todayStr(), type: "post_incident" as ReflectiveDebriefType, what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
@@ -163,7 +163,7 @@ export default function DebriefsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No debriefs match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="debriefs" compact title="No debriefs match your filters." />}
           {filtered.map((db) => {
             const open = !!expanded[db.id];
             const typeM = TYPE_META[db.type];

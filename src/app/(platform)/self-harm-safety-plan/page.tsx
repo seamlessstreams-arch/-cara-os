@@ -68,7 +68,7 @@ type SortDir = "asc" | "desc";
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function SelfHarmSafetyPlanPage() {
-  const { data: records = [], isLoading } = useSelfHarmSafetyPlanRecords();
+  const { data: records = [], isLoading, isError, refetch } = useSelfHarmSafetyPlanRecords();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -280,7 +280,7 @@ export default function SelfHarmSafetyPlanPage() {
         {/* plan cards */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No safety plans match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="self-harm safety plans" compact title="No safety plans match your filters." />
           )}
           {filtered.map((plan) => {
             const isExpanded = !!expanded[plan.id];

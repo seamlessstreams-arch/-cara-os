@@ -931,7 +931,7 @@ export default function MissingFromCarePage() {
   const [logReturnEp, setLogReturnEp] = useState<MissingEpisode | null>(null);
   const [rhiEp, setRhiEp] = useState<MissingEpisode | null>(null);
 
-  const { data, isLoading } = useMissingEpisodes({ homeId, status: statusFilter });
+  const { data, isLoading, isError, refetch } = useMissingEpisodes({ homeId, status: statusFilter });
   const episodes: MissingEpisode[] = data?.data ?? [];
   const meta = data?.meta;
   const patterns: PatternAnalysis[] = data?.pattern_analysis ?? [];
@@ -1114,7 +1114,7 @@ export default function MissingFromCarePage() {
             ))}
           </div>
         ) : filteredEpisodes.length === 0 ? (
-          <EmptyState
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="missing-from-care episodes"
             icon={isSearchActive ? Search : MapPin}
             title={isSearchActive ? "No episodes match your search" : "No missing episodes found"}
             description={

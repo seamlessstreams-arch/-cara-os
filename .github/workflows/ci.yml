@@ -109,6 +109,9 @@ jobs:
       - name: Fabricated-score guard (an empty population must not score as compliant)
         run: node scripts/check-fabricated-scores.js
 
+      - name: Fabricated-absence guard (a failed read must not render as "none recorded")
+        run: node scripts/check-fabricated-absence.js
+
       - name: DAL-adoption guard (routes read/write via dal; 8 structural exclusions pinned)
         run: node scripts/check-dal-adoption.js
 

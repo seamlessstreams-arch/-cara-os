@@ -74,7 +74,7 @@ function formatDate(s: string): string {
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 export default function MedicationNearMissLogPage() {
-  const { data: res, isLoading } = useMedicationNearMisses();
+  const { data: res, isLoading, isError, refetch } = useMedicationNearMisses();
   const records: MedicationNearMiss[] = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -217,7 +217,7 @@ export default function MedicationNearMissLogPage() {
       <p className="text-[11px] text-[var(--cs-text-muted)] mb-3">Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}</p>
 
       <FlatList>
-        {filtered.length === 0 && (<EmptyState compact title="No near-misses match the current filters." />)}
+        {filtered.length === 0 && (<EmptyState error={isError} onRetry={() => { void refetch(); }} noun="medication near misses" compact title="No near-misses match the current filters." />)}
 
         {filtered.map((r) => {
           const isExpanded = expandedId === r.id;

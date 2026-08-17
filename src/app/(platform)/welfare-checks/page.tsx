@@ -99,7 +99,7 @@ function NewCheckForm({
   onSuccess: () => void;
 }) {
   const { currentUser } = useAuthContext();
-  const { data: ypData } = useYoungPeople("current");
+  const { data: ypData, isError: childrenFailed, refetch: refetchChildren } = useYoungPeople("current");
   const qc = useQueryClient();
 
   // useCreateWelfareCheckRound inline
@@ -210,6 +210,30 @@ function NewCheckForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* A round is a list of CHILDREN checked. If the children could not be
+            read, an empty list is not "nobody lives here" — recording a round
+            against it would evidence a check that covered no one. Say so, and
+            do not let it be saved. */}
+        {childrenFailed && (
+          <div className="rounded-xl border border-[--cs-risk-soft] bg-[var(--cs-surface)] p-4 text-xs">
+            <p className="font-semibold text-[var(--cs-navy)]">
+              The children on shift could not be loaded
+            </p>
+            <p className="mt-1 text-[var(--cs-text-secondary)]">
+              A round recorded now would evidence a check that covered no one. Nothing has been lost —
+              reload the list and start the round again.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => { void refetchChildren(); }}
+            >
+              Try again
+            </Button>
+          </div>
+        )}
+
         {/* Individual child checks */}
         {children.map((child) => {
           const data = checkData[child.id];
@@ -375,7 +399,7 @@ function NewCheckForm({
         {/* Submit */}
         <Button
           onClick={handleSubmit}
-          disabled={createRound.isPending}
+          disabled={createRound.isPending || childrenFailed || children.length === 0}
           className="w-full gap-2 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90"
         >
           {createRound.isPending ? (
@@ -552,7 +576,7 @@ export default function WelfareChecksPage() {
   const searchParams = new URLSearchParams();
   if (selectedDate) searchParams.set("date", selectedDate);
   const qs = searchParams.toString();
-  const { data, isLoading, refetch } = useQuery<WelfareChecksResponse>({
+  const { data, isLoading, isError, refetch } = useQuery<WelfareChecksResponse>({
     queryKey: ["welfare-checks", { date: selectedDate }],
     queryFn: () => api.get<WelfareChecksResponse>(`/welfare-checks${qs ? `?${qs}` : ""}`).then((r) => r),
     staleTime: 30_000,
@@ -783,6 +807,9 @@ export default function WelfareChecksPage() {
         {/* Check rounds by date */}
         {groupedRounds.length === 0 ? (
           <EmptyState
+            error={isError}
+            onRetry={() => { void refetch(); }}
+            noun="welfare checks"
             icon={Moon}
             title="No welfare checks recorded yet"
             description="Start a new check round to document tonight's welfare monitoring — every round evidences Quality Standard 6.3 and Reg 34 supervision."

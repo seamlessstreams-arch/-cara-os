@@ -74,7 +74,7 @@ const exportCols: ExportColumn<CpConferenceRecord>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildProtectionConferencesPage() {
-  const { data: res, isLoading } = useQuery<{ data: CpConferenceRecord[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: CpConferenceRecord[] }>({
     queryKey: ["cp-conferences"],
     queryFn: () => api.get<{ data: CpConferenceRecord[] }>("/api/v1/cp-conferences"),
   });
@@ -208,7 +208,7 @@ export default function ChildProtectionConferencesPage() {
       {/* ── conference cards ───────────────────────────────────────────── */}
       <FlatList>
         {filtered.length === 0 && (
-          <EmptyState compact title="No conferences match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="child protection conferences" compact title="No conferences match your filters." />
         )}
         {filtered.map((conf) => {
           const isExpanded = expandedId === conf.id;
