@@ -72,7 +72,7 @@ const PRI_TEXT: Record<DutyLogPriority, string> = { routine: "", important: "tex
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function DutyLogPage() {
-  const { data: queryData, isLoading } = useDutyLogEntries();
+  const { data: queryData, isLoading, isError, refetch } = useDutyLogEntries();
   const data = queryData?.data ?? [];
   const createEntry = useCreateDutyLogEntry();
 
@@ -275,7 +275,7 @@ export default function DutyLogPage() {
               </div>
             );
           })}
-          {filtered.length === 0 && <EmptyState compact title="No entries match filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the duty log" compact title="No entries match filters." />}
         </FlatList>
 
         {/* daily summary */}

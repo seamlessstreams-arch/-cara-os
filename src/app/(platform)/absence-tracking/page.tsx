@@ -59,7 +59,7 @@ const SETTING_LABELS: Record<AbsenceSetting, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function AbsenceTrackingPage() {
   const qc = useQueryClient();
-  const { data: result, isLoading } = useQuery<{ data: AbsenceRecord[] }>({
+  const { data: result, isLoading, isError, refetch } = useQuery<{ data: AbsenceRecord[] }>({
     queryKey: ["absence-tracking"],
     queryFn: () => api.get<{ data: AbsenceRecord[] }>("/api/v1/absence-tracking"),
   });
@@ -275,7 +275,7 @@ export default function AbsenceTrackingPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No absences match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="absence records" compact title="No absences match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;

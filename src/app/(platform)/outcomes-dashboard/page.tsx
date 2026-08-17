@@ -85,7 +85,7 @@ const trendIcon = (t: OutcomeTrend) => {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function OutcomesDashboardPage() {
-  const { data: res, isLoading } = useOutcomeMetrics();
+  const { data: res, isLoading, isError, refetch } = useOutcomeMetrics();
   const metrics: OutcomeMetric[] = res?.data ?? [];
 
   const [filterArea, setFilterArea] = useState<string>("all");
@@ -352,7 +352,7 @@ export default function OutcomesDashboardPage() {
         </div>
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No outcome metrics match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="outcomes" compact title="No outcome metrics match the current filters." />
         )}
 
         {/* ── regulatory note ── */}

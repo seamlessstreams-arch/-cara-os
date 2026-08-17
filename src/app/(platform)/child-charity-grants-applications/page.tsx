@@ -87,7 +87,7 @@ const gbp = (n: number) =>
   }).format(n);
 
 export default function ChildCharityGrantsApplicationsPage() {
-  const { data: res, isLoading } = useCharityGrantRecords();
+  const { data: res, isLoading, isError, refetch } = useCharityGrantRecords();
   const data = res?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -507,7 +507,7 @@ export default function ChildCharityGrantsApplicationsPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No grant applications match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="grant applications" compact title="No grant applications match the current filters." />
         )}
 
         <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 text-sm text-amber-900">

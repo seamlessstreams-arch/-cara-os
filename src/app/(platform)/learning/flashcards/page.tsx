@@ -168,7 +168,7 @@ export default function FlashcardsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const { data, isLoading } = useGeneratedResources({ homeId: homeId });
+  const { data, isLoading, isError, refetch } = useGeneratedResources({ homeId: homeId });
   const createMutation = useCreateGeneratedResource();
 
   const flashcardSets = (data?.data ?? []).filter((r) => r.resource_type === "flashcard_set");
@@ -322,7 +322,7 @@ export default function FlashcardsPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState compact title="No cards generated" />
+                <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="flashcards" compact title="No cards generated" />
               )}
             </CardContent>
           </Card>

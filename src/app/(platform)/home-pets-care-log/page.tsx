@@ -128,7 +128,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 
 export default function HomePetsCareLogPage() {
   const homeName = useHomeName();
-  const { data: raw, isLoading } = usePetRecords();
+  const { data: raw, isLoading, isError, refetch } = usePetRecords();
   const data = useMemo(() => raw?.data ?? [], [raw]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -448,7 +448,7 @@ export default function HomePetsCareLogPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No pets match these filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the pet care log" compact title="No pets match these filters." />
         )}
       </div>
 

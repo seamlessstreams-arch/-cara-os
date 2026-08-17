@@ -60,7 +60,7 @@ const RATING_BAR: Record<number, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AnnualOutcomesReportPage() {
-  const { data: aoData, isLoading } = useQuery<{ data: AnnualOutcome[] }>({
+  const { data: aoData, isLoading, isError, refetch } = useQuery<{ data: AnnualOutcome[] }>({
     queryKey: ["annual-outcomes"],
     queryFn: () => api.get<{ data: AnnualOutcome[] }>("/api/v1/annual-outcomes"),
   });
@@ -272,7 +272,7 @@ export default function AnnualOutcomesReportPage() {
         </div>
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No outcomes match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the annual outcomes report" compact title="No outcomes match the current filters." />
         )}
 
         {/* ── regulatory reference ── */}

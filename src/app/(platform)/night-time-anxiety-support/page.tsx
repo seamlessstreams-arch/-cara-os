@@ -93,7 +93,7 @@ const nightmareChip = (f: NightmareFrequency) => {
 
 // ── page ────────────────────────────────────────────────────────────────────
 export default function NightTimeAnxietySupportPage() {
-  const { data: res, isLoading } = useNightAnxietySupport();
+  const { data: res, isLoading, isError, refetch } = useNightAnxietySupport();
   const records: NightAnxietySupportRecord[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -510,7 +510,7 @@ export default function NightTimeAnxietySupportPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No plans match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="night-time anxiety support records" compact title="No plans match the current filters." />
         )}
       </div>
 

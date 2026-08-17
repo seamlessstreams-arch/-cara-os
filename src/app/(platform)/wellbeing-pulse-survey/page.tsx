@@ -85,7 +85,7 @@ const ALL_TRENDS: WellbeingPulseTrend[] = ["up", "stable", "down", "first_survey
 
 /* ── component ──────────────────────────────────────────────────────────── */
 export default function WellbeingPulseSurveyPage() {
-  const { data: records = [], isLoading } = useWellbeingPulseSurveyRecords();
+  const { data: records = [], isLoading, isError, refetch } = useWellbeingPulseSurveyRecords();
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [filterTrend, setFilterTrend] = useState("all");
@@ -304,7 +304,7 @@ export default function WellbeingPulseSurveyPage() {
         {/* ── list ───────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No pulse surveys match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="pulse survey responses" compact title="No pulse surveys match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;

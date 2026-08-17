@@ -77,7 +77,7 @@ const ScoreIcon = ({ score }: { score: number }) => {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StaffWellbeingPage() {
-  const { data: records = [], isLoading } = useStaffWellbeingRecords();
+  const { data: records = [], isLoading, isError, refetch } = useStaffWellbeingRecords();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -241,7 +241,7 @@ export default function StaffWellbeingPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No check-ins match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="staff wellbeing records" compact title="No check-ins match your filters." />
           )}
           {filtered.map((check) => {
             const isExpanded = expanded === check.id;

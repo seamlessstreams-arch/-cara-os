@@ -74,7 +74,7 @@ const STATUS_META: Record<ReferralTrackerStatus, { colour: string }> = {
 /* ── page ────────────────────────────────────────────────────────────── */
 
 export default function ReferralTrackerPage() {
-  const { data: records = [], isLoading } = useReferralTrackerRecords();
+  const { data: records = [], isLoading, isError, refetch } = useReferralTrackerRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createReferral = useCreateReferralTrackerRecord();
@@ -249,7 +249,7 @@ export default function ReferralTrackerPage() {
 
         {/* ── referral cards ─────────────────────────────────────── */}
         {filtered.length === 0 && (
-          <EmptyState compact title="No referrals match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="referrals" compact title="No referrals match your filters." />
         )}
 
         {filtered.map((ref) => {

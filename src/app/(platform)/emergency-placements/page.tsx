@@ -79,7 +79,7 @@ const EXPORT_COLS: ExportColumn<EmergencyReferral>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function EmergencyPlacementsPage() {
-  const { data: queryData, isLoading } = useEmergencyReferrals();
+  const { data: queryData, isLoading, isError, refetch } = useEmergencyReferrals();
   const referrals = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -209,7 +209,7 @@ export default function EmergencyPlacementsPage() {
         {/* ── Referral List ─────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No emergency referrals match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="emergency placements" compact title="No emergency referrals match your filters." />
           )}
           {filtered.map((r) => {
             const open = expandedId === r.id;

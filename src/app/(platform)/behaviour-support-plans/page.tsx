@@ -126,7 +126,7 @@ const EXPORT_COLS: ExportColumn<BehaviourSupportPlan>[] = [
 
 export default function BehaviourSupportPlansPage() {
   const qc = useQueryClient();
-  const { data: bspData, isLoading } = useQuery({
+  const { data: bspData, isLoading, isError, refetch } = useQuery({
     queryKey: ["behaviour-support-plans"],
     queryFn: () => api.get<BSPResponse>("/behaviour-support-plans"),
     staleTime: 30_000,
@@ -355,7 +355,7 @@ export default function BehaviourSupportPlansPage() {
         {/* -- BSP Detail Cards ---------------------------------------------- */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No behaviour support plans match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="behaviour support plans" compact title="No behaviour support plans match your filters." />
           )}
           {filtered.map((plan) => {
             const isExpanded = !!expanded[plan.id];

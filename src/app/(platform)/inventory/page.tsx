@@ -56,7 +56,7 @@ export default function InventoryPage() {
   const KEY = "inventory-items";
   const qc = useQueryClient();
 
-  const { data: res, isLoading } = useQuery<{ data: InventoryItem[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: InventoryItem[] }>({
     queryKey: [KEY],
     queryFn: () => api.get<{ data: InventoryItem[] }>("/api/v1/inventory-items"),
   });
@@ -277,7 +277,7 @@ export default function InventoryPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No items match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="inventory" compact title="No items match your filters." />
           )}
           {filtered.map((item) => {
             const isExpanded = expanded === item.id;

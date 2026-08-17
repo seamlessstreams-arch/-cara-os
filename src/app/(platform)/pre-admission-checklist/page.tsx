@@ -64,7 +64,7 @@ const exportCols: ExportColumn<PreAdmissionChecklist>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function PreAdmissionChecklistPage() {
-  const { data: records = [], isLoading } = usePreAdmissionChecklists();
+  const { data: records = [], isLoading, isError, refetch } = usePreAdmissionChecklists();
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -169,7 +169,7 @@ export default function PreAdmissionChecklistPage() {
       {/* ── checklist cards ────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No checklists match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="pre-admission checklists" compact title="No checklists match your filters." />
         )}
         {filtered.map((checklist) => {
           const isExpanded = expandedId === checklist.id;

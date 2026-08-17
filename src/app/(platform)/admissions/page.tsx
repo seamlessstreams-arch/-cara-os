@@ -54,7 +54,7 @@ type SingleResponse = { data: AdmissionReferral };
 
 export default function AdmissionsPage() {
   const qc = useQueryClient();
-  const { data: response, isLoading } = useQuery({
+  const { data: response, isLoading, isError, refetch } = useQuery({
     queryKey: ["admissions", undefined],
     queryFn: () => api.get<ListResponse>("/admissions"),
     staleTime: 30_000,
@@ -231,7 +231,7 @@ export default function AdmissionsPage() {
 
         {/* ── Referral list ────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No referrals match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="admissions" compact title="No referrals match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             return (

@@ -2222,18 +2222,39 @@ const CATEGORY_OPTIONS: { value: AttentionCategory; label: string }[] = [
    ══════════════════════════════════════════════════════════════════════════════ */
 
 export default function ManagerControlCentrePage() {
-  const { data: apiData } = useAttentionItems();
-  const { data: learningData } = useLearningReviews();
-  const { data: reg44Data } = useReg44Visits();
-  const { data: reg45Data } = useReg45Reviews();
-  const { data: competenceData } = useCompetenceRecords();
-  const { data: voiceData } = useVoiceEntries();
-  const { data: evidenceData } = useEvidenceItems();
+  // Ten feeds compose this screen, and every one of them turns into `?? []` a
+  // few lines down. "Nothing needs your attention" is the single most dangerous
+  // sentence in the product to say on a failed read — it is told to a
+  // registered manager, about their own home, and it is acted on by NOT acting.
+  // So each feed reports whether it was actually read, and if ANY of them was
+  // not, the screen says so instead.
+  const attention  = useAttentionItems();
+  const learning   = useLearningReviews();
+  const reg44      = useReg44Visits();
+  const reg45      = useReg45Reviews();
+  const competence = useCompetenceRecords();
+  const voice      = useVoiceEntries();
+  const evidence   = useEvidenceItems();
 
   // ── Cara proactive alert engine ─────────────────────────────────────────
-  const { data: incidentsData } = useIncidents();
-  const { data: ypData }        = useYoungPeople();
-  const { data: kwData }        = useKeyWorkingSessions();
+  const incidentsQ  = useIncidents();
+  const youngPeopleQ = useYoungPeople();
+  const keyWorkingQ = useKeyWorkingSessions();
+
+  const feeds = [attention, learning, reg44, reg45, competence, voice, evidence, incidentsQ, youngPeopleQ, keyWorkingQ];
+  const anyFeedFailed = feeds.some((q) => q.isError);
+  const retryFeeds = () => { for (const q of feeds) void q.refetch(); };
+
+  const { data: apiData }        = attention;
+  const { data: learningData }   = learning;
+  const { data: reg44Data }      = reg44;
+  const { data: reg45Data }      = reg45;
+  const { data: competenceData } = competence;
+  const { data: voiceData }      = voice;
+  const { data: evidenceData }   = evidence;
+  const { data: incidentsData }  = incidentsQ;
+  const { data: ypData }         = youngPeopleQ;
+  const { data: kwData }         = keyWorkingQ;
 
   const caraAlerts = useMemo<ProactiveAlert[]>(() => {
     const incidents   = incidentsData?.data ?? [];
@@ -2644,6 +2665,9 @@ export default function ManagerControlCentrePage() {
       {/* ── attention items list ───────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <EmptyState
+          error={anyFeedFailed}
+          onRetry={retryFeeds}
+          noun="the control centre"
           icon={CheckCircle2}
           title="Nothing needs your attention"
           description="All items have been reviewed for the selected filters. Adjust the filters or check back later."

@@ -377,8 +377,12 @@ export default function Reg44Page() {
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
-  const { data: apiData } = useReg44Visits();
-  const { data: actionsData } = useReg44Actions();
+  // `visits`/`actions` start as [] and are hydrated from these queries in an
+  // effect below. A failed read never fires the setter, so the tabs would say
+  // "No visits recorded" about a home's Regulation 44 history — an absence
+  // asserted without a successful read, on a statutory screen.
+  const { data: apiData, isError: visitsFailed, refetch: refetchVisits } = useReg44Visits();
+  const { data: actionsData, isError: actionsFailed, refetch: refetchActions } = useReg44Actions();
   const createVisit = useCreateReg44Visit();
   const respondToAction = useRespondToReg44Action();
   const respondToVisit = useRespondToReg44Visit();
@@ -578,6 +582,9 @@ export default function Reg44Page() {
         <TabsContent value="visits">
           {visits.length === 0 ? (
             <EmptyState
+              error={visitsFailed}
+              onRetry={() => { void refetchVisits(); }}
+              noun="Reg 44 visits"
               icon={FileText}
               title="No visits recorded"
               description="Record the first Regulation 44 independent visit for this home."
@@ -805,6 +812,9 @@ export default function Reg44Page() {
 
           {filteredActions.length === 0 ? (
             <EmptyState
+              error={actionsFailed}
+              onRetry={() => { void refetchActions(); }}
+              noun="Reg 44 actions"
               icon={ClipboardList}
               title="No actions found"
               description="No actions match the current filter. Try changing the status filter above."

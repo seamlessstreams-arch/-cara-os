@@ -114,7 +114,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildPhysioOtPlanPage() {
-  const { data: raw, isLoading } = usePhysioOtPlans();
+  const { data: raw, isLoading, isError, refetch } = usePhysioOtPlans();
   const items = raw?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -315,7 +315,7 @@ export default function ChildPhysioOtPlanPage() {
       {/* ── plans ──────────────────────────────────────────────────── */}
       <div className="space-y-4 mb-8">
         {filtered.length === 0 && (
-          <EmptyState compact title="No therapy plans match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="physio and OT plans" compact title="No therapy plans match the current filters." />
         )}
 
         {filtered.map((r) => {

@@ -64,7 +64,7 @@ function TrajectoryIcon({ t }: { t: FamilyRelationshipTrajectory }) {
 type SortKey = "date" | "quality" | "review" | "child";
 
 export default function FamilyRelationshipQualityTrackerPage() {
-  const { data: res, isLoading } = useQuery<{ data: FamilyRelationshipRecord[] }>({
+  const { data: res, isLoading, isError, refetch } = useQuery<{ data: FamilyRelationshipRecord[] }>({
     queryKey: ["family-relationship-records"],
     queryFn: () => api.get<{ data: FamilyRelationshipRecord[] }>("/api/v1/family-relationship-records"),
   });
@@ -464,7 +464,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
         })}
 
         {visible.length === 0 && (
-          <EmptyState compact title="No relationships match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="family relationship records" compact title="No relationships match the current filters." />
         )}
       </div>
 

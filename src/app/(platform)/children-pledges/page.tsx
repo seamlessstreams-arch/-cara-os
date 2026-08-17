@@ -72,7 +72,7 @@ const exportCols: ExportColumn<ChildPledge>[] = [
 ];
 
 export default function ChildrenPledgesPage() {
-  const { data: res, isLoading } = useChildPledges();
+  const { data: res, isLoading, isError, refetch } = useChildPledges();
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
@@ -191,7 +191,7 @@ export default function ChildrenPledgesPage() {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No pledges match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="pledges" compact title="No pledges match your filters." />
         )}
         {filtered.map((pledge) => {
           const isExpanded = expandedId === pledge.id;

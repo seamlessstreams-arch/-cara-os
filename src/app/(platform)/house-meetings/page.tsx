@@ -57,7 +57,7 @@ const EXPORT_COLS: ExportColumn<HouseMeeting>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function HouseMeetingsPage() {
-  const { data: hmData, isLoading } = useQuery({
+  const { data: hmData, isLoading, isError, refetch } = useQuery({
     queryKey: ["house-meetings"],
     queryFn: () => api.get<{ data: HouseMeeting[]; meta: { total: number } }>("/house-meetings"),
     staleTime: 30_000,
@@ -194,7 +194,7 @@ export default function HouseMeetingsPage() {
 
         {/* ── Meeting list ─────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No meetings match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="house meetings" compact title="No meetings match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const typeM = TYPE_META[m.meeting_type];

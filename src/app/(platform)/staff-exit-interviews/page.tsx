@@ -90,7 +90,7 @@ const STATUS_TYPES: StaffExitInterviewStatus[] = ["completed", "declined", "pend
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StaffExitInterviewsPage() {
-  const { data: records = [], isLoading } = useStaffExitInterviewRecords();
+  const { data: records = [], isLoading, isError, refetch } = useStaffExitInterviewRecords();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterReason, setFilterReason] = useState("all");
@@ -287,7 +287,7 @@ export default function StaffExitInterviewsPage() {
         {/* ── interview cards ────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No exit interviews match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="exit interviews" compact title="No exit interviews match your filters." />
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;

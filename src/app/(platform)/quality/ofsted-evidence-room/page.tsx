@@ -358,7 +358,7 @@ const PERIOD_OPTIONS = [
 export default function OfstedEvidenceRoomPage() {
   const homeName = useHomeName();
   /* ── API hooks ─────────────────────────────────────────────────────────── */
-  const { data: apiData } = useEvidenceItems();
+  const { data: apiData, isError, refetch } = useEvidenceItems();
   const { data: gapsData } = useEvidenceGaps();
   const createEvidence = useCreateEvidence();
 
@@ -763,7 +763,7 @@ export default function OfstedEvidenceRoomPage() {
 
           {/* ── evidence items ─────────────────────────────────────────── */}
           {!showGapsOnly && filteredEvidence.length === 0 && (
-            <EmptyState
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the evidence room"
               icon={FileText}
               title="No evidence found"
               description="Adjust your filters or add new evidence to this area."

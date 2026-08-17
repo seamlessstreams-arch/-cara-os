@@ -88,7 +88,7 @@ const exportCols: ExportColumn<MobilityDisabilityPlan>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildMobilityPhysicalDisabilityPlanPage() {
-  const { data: raw, isLoading } = useMobilityDisabilityPlans();
+  const { data: raw, isLoading, isError, refetch } = useMobilityDisabilityPlans();
   const items = raw?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -221,7 +221,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
       {/* ── plan cards ─────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No mobility plans match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="mobility and disability plans" compact title="No mobility plans match your filters." />
         )}
         {filtered.map((plan) => {
           const isExpanded = expandedId === plan.id;

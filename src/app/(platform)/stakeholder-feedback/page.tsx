@@ -80,7 +80,7 @@ const SENTIMENTS: StakeholderFeedbackSentiment[] = ["positive", "mixed", "negati
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StakeholderFeedbackPage() {
-  const { data: records = [], isLoading } = useStakeholderFeedbackRecords();
+  const { data: records = [], isLoading, isError, refetch } = useStakeholderFeedbackRecords();
   const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");
   const [filterSentiment, setFilterSentiment] = useState("all");
@@ -254,7 +254,7 @@ export default function StakeholderFeedbackPage() {
         {/* ── list ──────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No feedback matches your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="stakeholder feedback" compact title="No feedback matches your filters." />
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;

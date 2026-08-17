@@ -99,7 +99,7 @@ const DOMAIN_COLOUR: Record<DigitalLiteracyDomain, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function DigitalLiteracySkillsPage() {
-  const { data: raw, isLoading } = useDigitalLiteracySkillRecords();
+  const { data: raw, isLoading, isError, refetch } = useDigitalLiteracySkillRecords();
   const records = raw?.data ?? [];
 
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -258,7 +258,7 @@ export default function DigitalLiteracySkillsPage() {
         {/* ── records ───────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No records match the current filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="digital literacy records" compact title="No records match the current filters." />
           )}
           {filtered.map((rec) => {
             const isOpen = expanded === rec.id;

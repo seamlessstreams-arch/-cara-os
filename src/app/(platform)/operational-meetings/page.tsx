@@ -75,7 +75,7 @@ const EXPORT_COLS: ExportColumn<OperationalMeeting>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function OperationalMeetingsPage() {
-  const { data: res, isLoading } = useOperationalMeetings();
+  const { data: res, isLoading, isError, refetch } = useOperationalMeetings();
   const meetings: OperationalMeeting[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -213,7 +213,7 @@ export default function OperationalMeetingsPage() {
         {/* Meeting cards */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No meetings match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="operational meetings" compact title="No meetings match your filters." />
           )}
           {filtered.map((m) => {
             const open = expandedId === m.id;

@@ -75,7 +75,7 @@ const ACTIONS_REGISTER_QUERY = {
 };
 
 export default function ActionsRegisterPage() {
-  const { data, isLoading, isFetching, refetch } = useQuery<ActionsRegisterResult>(ACTIONS_REGISTER_QUERY);
+  const { data, isLoading, isFetching, refetch, isError } = useQuery<ActionsRegisterResult>(ACTIONS_REGISTER_QUERY);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [overdueOnly, setOverdueOnly] = useState(false);
 
@@ -175,7 +175,7 @@ export default function ActionsRegisterPage() {
             {/* Action list */}
             <div className="space-y-2">
               {filtered.length === 0 ? (
-                <EmptyState compact title={data.actions.length === 0 ? "No open actions — everything agreed is complete." : "No actions match this filter."} />
+                <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="the actions register" compact title={data.actions.length === 0 ? "No open actions — everything agreed is complete." : "No actions match this filter."} />
               ) : (
                 filtered.map((a) => <ActionRow key={a.id} a={a} />)
               )}

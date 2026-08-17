@@ -168,7 +168,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function KeyWorkingPage() {
-  const { data: queryData, isLoading } = useKeyWorkingSessions();
+  const { data: queryData, isLoading, isError, refetch } = useKeyWorkingSessions();
   const createMutation = useCreateKeyWorkingSession();
   const updateMutation = useUpdateKeyWorkingSession();
 
@@ -418,7 +418,7 @@ export default function KeyWorkingPage() {
 
         {/* ── Session list ─────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No sessions match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="key-work sessions" compact title="No sessions match your filters." />}
           {filtered.map((s) => {
             const open = !!expanded[s.id];
             const typeM = TYPE_META[s.type];

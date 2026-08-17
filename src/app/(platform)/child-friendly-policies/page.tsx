@@ -86,7 +86,7 @@ const exportCols: ExportColumn<ChildFriendlyPolicy>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildFriendlyPoliciesPage() {
-  const { data: res, isLoading } = useChildFriendlyPolicies();
+  const { data: res, isLoading, isError, refetch } = useChildFriendlyPolicies();
   const items = res?.data ?? [];
 
   const [filterArea, setFilterArea] = useState("all");
@@ -207,7 +207,7 @@ export default function ChildFriendlyPoliciesPage() {
       {/* ── policy cards ───────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No policies match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="child-friendly policies" compact title="No policies match your filters." />
         )}
         {filtered.map((policy) => {
           const isExpanded = expandedId === policy.id;

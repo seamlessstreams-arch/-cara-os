@@ -112,7 +112,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ───────────────────────────────────────────────────────── */
 
 export default function BereavementLossSupportPage() {
-  const { data: brData, isLoading } = useQuery<{ data: BereavementRecord[] }>({
+  const { data: brData, isLoading, isError, refetch } = useQuery<{ data: BereavementRecord[] }>({
     queryKey: ["bereavement-records"],
     queryFn: () => api.get<{ data: BereavementRecord[] }>("/api/v1/bereavement-records"),
   });
@@ -401,7 +401,7 @@ export default function BereavementLossSupportPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No records match these filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="bereavement support records" compact title="No records match these filters." />
         )}
       </div>
 

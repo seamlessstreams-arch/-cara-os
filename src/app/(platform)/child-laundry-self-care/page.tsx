@@ -93,7 +93,7 @@ export default function ChildLaundrySelfCarePage() {
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: queryData, isLoading } = useLaundrySelfCareRecords();
+  const { data: queryData, isLoading, isError, refetch } = useLaundrySelfCareRecords();
   const items = queryData?.data ?? [];
 
   const filtered = useMemo(() => {
@@ -229,7 +229,7 @@ export default function ChildLaundrySelfCarePage() {
       {/* ── records ──────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No records match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="laundry and self-care records" compact title="No records match your filters." />
         )}
         {filtered.map((rec) => {
           const isExpanded = expandedId === rec.id;

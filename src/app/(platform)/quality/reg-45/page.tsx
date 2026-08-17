@@ -174,7 +174,7 @@ export default function Reg45Page() {
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg45Reviews();
-  const { data: evidenceData } = useReg45Evidence({ homeId: "home_oak" });
+  const { data: evidenceData, isError, refetch } = useReg45Evidence({ homeId: "home_oak" });
   const updateReview = useUpdateReg45Review();
   const [draftingSection, setDraftingSection] = useState<string | null>(null);
   const [showLinkMap, setShowLinkMap] = useState(false);
@@ -252,7 +252,7 @@ export default function Reg45Page() {
         subtitle="Six-Monthly Quality Review  ·  Responsible Individual Oversight"
         caraContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
       >
-        <EmptyState
+        <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="Reg 45 reviews"
           icon={FileText}
           title="Loading reviews…"
           description="Fetching Reg 45 reviews from the intelligence layer."
@@ -643,7 +643,7 @@ export default function Reg45Page() {
             </div>
 
             {!showEvidence ? (
-              <EmptyState
+              <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="Reg 45 reviews"
                 icon={Link2}
                 title="Evidence not loaded"
                 description="Click 'Pull Evidence' to see what evidence exists for this review period. Cara can link evidence items to review sections automatically."

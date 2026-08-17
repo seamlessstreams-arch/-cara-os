@@ -103,7 +103,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildPreventRadicalisationScreeningPage() {
-  const { data: res, isLoading } = usePreventScreenings();
+  const { data: res, isLoading, isError, refetch } = usePreventScreenings();
   const items = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -423,7 +423,7 @@ export default function ChildPreventRadicalisationScreeningPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No screenings match these filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="Prevent screenings" compact title="No screenings match these filters." />
         )}
       </div>
 

@@ -106,7 +106,7 @@ const EXPORT_COLS: ExportColumn<LACReview>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function LACReviewsPage() {
-  const { data: lacData, isLoading } = useLACReviews();
+  const { data: lacData, isLoading, isError, refetch } = useLACReviews();
   const createReview = useCreateLACReview();
   const reviews = lacData?.data ?? [];
   const [search, setSearch] = useState("");
@@ -242,7 +242,7 @@ export default function LACReviewsPage() {
 
         {/* ── Review list ──────────────────────────────────────────────────── */}
         <FlatList>
-          {filtered.length === 0 && <EmptyState compact title="No reviews match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="LAC reviews" compact title="No reviews match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const typeM = TYPE_META[r.review_type];

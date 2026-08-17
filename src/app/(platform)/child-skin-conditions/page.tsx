@@ -97,7 +97,7 @@ export default function ChildSkinConditionsPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: res, isLoading } = useSkinConditionPlans();
+  const { data: res, isLoading, isError, refetch } = useSkinConditionPlans();
   const items = res?.data ?? [];
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -366,7 +366,7 @@ export default function ChildSkinConditionsPage() {
       {/* ── Skin Plan Cards ────────────────────────────────────────────────── */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <EmptyState compact title="No skin plans match your filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="skin condition records" compact title="No skin plans match your filters." />
         )}
 
         {filtered.map((rec) => {

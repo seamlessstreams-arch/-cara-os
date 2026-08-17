@@ -298,7 +298,7 @@ export default function StaffDevelopmentPage() {
   const [sortBy, setSortBy] = useState<"name" | "compliance" | "status" | "needs">("status");
   const [showCara, setShowCara] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["staff-development"],
     queryFn: () =>
       api.get<{ data: StaffDevelopmentProfile[]; summary: DevelopmentSummary }>(
@@ -507,7 +507,7 @@ export default function StaffDevelopmentPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState
+        <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="staff development records"
           icon={Brain}
           title="No staff match your filter"
           description="Try changing the status filter or clearing your search to see all staff members."

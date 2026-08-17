@@ -440,10 +440,22 @@ function OutcomesSummary({ childId }: { childId: string }) {
 }
 
 function KeyWorkingLastSession({ childId }: { childId: string }) {
-  const { data, isLoading } = useKeyWorkingSessions({ childId });
+  const { data, isLoading, isError } = useKeyWorkingSessions({ childId });
 
   if (isLoading) {
     return <div className="h-8 rounded-lg bg-slate-100 animate-pulse" />;
+  }
+
+  // "No key working sessions recorded" about a named child, on a read that
+  // never succeeded, is a fabricated absence — and the one a manager would act
+  // on. Say which it is.
+  if (isError) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-slate-500 rounded-lg border border-dashed border-slate-300 px-3 py-2">
+        <BookOpen className="h-3.5 w-3.5 shrink-0" />
+        <span>Key working history could not be loaded — this is not the same as none.</span>
+      </div>
+    );
   }
 
   const sessions = data?.data ?? [];

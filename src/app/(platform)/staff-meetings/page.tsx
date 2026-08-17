@@ -79,7 +79,7 @@ const BORDER_CLR: Record<StaffMeetingType, string> = {
 /* ── component ────────────────────────────────────────────────────────────── */
 
 export default function StaffMeetingsPage() {
-  const { data: meetings = [], isLoading } = useStaffMeetingRecords();
+  const { data: meetings = [], isLoading, isError, refetch } = useStaffMeetingRecords();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -209,7 +209,7 @@ export default function StaffMeetingsPage() {
         </div>
 
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No meetings match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="staff meetings" compact title="No meetings match your filters." />}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
             const pendingActions = (m.new_actions ?? []).filter((a) => !a.completed).length;

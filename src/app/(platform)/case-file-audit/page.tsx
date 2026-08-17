@@ -102,7 +102,7 @@ const exportCols: ExportColumn<CaseFileAudit>[] = [
 ];
 
 export default function CaseFileAuditPage() {
-  const { data: res, isLoading } = useCaseFileAudits();
+  const { data: res, isLoading, isError, refetch } = useCaseFileAudits();
   const data = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterRag, setFilterRag] = useState("all");
@@ -362,7 +362,7 @@ export default function CaseFileAuditPage() {
         })}
 
         {filtered.length === 0 && (
-          <EmptyState compact title="No audits match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="case file audits" compact title="No audits match the current filters." />
         )}
       </FlatList>
 

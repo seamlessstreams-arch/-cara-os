@@ -117,7 +117,7 @@ type SortKey =
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function EndOfShiftChecklistPage() {
-  const { data: res, isLoading } = useShiftChecklists();
+  const { data: res, isLoading, isError, refetch } = useShiftChecklists();
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
@@ -642,7 +642,7 @@ export default function EndOfShiftChecklistPage() {
         })}
 
         {visible.length === 0 && (
-          <EmptyState compact title="No checklists match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="end-of-shift checklists" compact title="No checklists match the current filters." />
         )}
       </FlatList>
 

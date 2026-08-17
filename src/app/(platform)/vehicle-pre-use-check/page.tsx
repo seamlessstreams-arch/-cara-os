@@ -151,7 +151,7 @@ export default function VehiclePreUseCheckPage() {
   const [filterOutcome, setFilterOutcome] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: result, isLoading } = useVehiclePreUseChecks("home_oak");
+  const { data: result, isLoading, isError, refetch } = useVehiclePreUseChecks("home_oak");
   const RECORDS = result?.data ?? [];
 
   const vehicleOptions = useMemo(() => {
@@ -898,7 +898,7 @@ export default function VehiclePreUseCheckPage() {
         })}
 
         {visible.length === 0 && (
-          <EmptyState compact title="No pre-use checks match the current filters." />
+          <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="vehicle checks" compact title="No pre-use checks match the current filters." />
         )}
       </div>
 

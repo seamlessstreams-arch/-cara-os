@@ -93,7 +93,7 @@ type SortKey = "date_desc" | "date_asc" | "events" | "concerns";
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default function NightStaffHandoverPage() {
-  const { data: res, isLoading } = useNightStaffHandovers();
+  const { data: res, isLoading, isError, refetch } = useNightStaffHandovers();
   const records: NightStaffHandover[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -307,7 +307,7 @@ export default function NightStaffHandoverPage() {
         {/* ── List ──────────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <EmptyState compact title="No night handover records match your filters." />
+            <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="night staff handovers" compact title="No night handover records match your filters." />
           )}
 
           {filtered.map((r) => {

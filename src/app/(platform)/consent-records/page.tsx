@@ -76,7 +76,7 @@ const EXPORT_COLS: ExportColumn<ConsentRecord>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function ConsentRecordsPage() {
-  const { data, isLoading } = useQuery<{ data: ConsentRecord[] }>({
+  const { data, isLoading, isError, refetch } = useQuery<{ data: ConsentRecord[] }>({
     queryKey: ["consent-records"],
     queryFn: () => api.get<{ data: ConsentRecord[] }>("/api/v1/consent-records"),
   });
@@ -284,7 +284,7 @@ export default function ConsentRecordsPage() {
 
         {/* ── Record list ──────────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {filtered.length === 0 && <EmptyState compact title="No consent records match your filters." />}
+          {filtered.length === 0 && <EmptyState error={isError} onRetry={() => { void refetch(); }} noun="consent records" compact title="No consent records match your filters." />}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const catM = CATEGORY_META[r.category];
