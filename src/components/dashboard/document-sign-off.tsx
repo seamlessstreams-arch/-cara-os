@@ -17,7 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { api } from "@/hooks/use-api";
 import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn, formatRelative, todayStr, daysFromNow } from "@/lib/utils";
 import {
   FileText, FileCheck, AlertTriangle, CheckCircle2,
   Loader2, ChevronRight, Clock, Pen, Shield,
@@ -90,9 +90,9 @@ function DocRow({
   const signedCount = docReceipts.length;
   const pct = Math.min(100, Math.round((signedCount / totalRequired) * 100));
 
-  const isExpired = doc.expiry_date && new Date(doc.expiry_date) < new Date();
+  const isExpired = doc.expiry_date && doc.expiry_date.slice(0, 10) < todayStr();
   const isExpiring = doc.expiry_date && !isExpired &&
-    (new Date(doc.expiry_date).getTime() - Date.now()) < 30 * 86400000;
+    doc.expiry_date.slice(0, 10) <= daysFromNow(30);
 
   const catConfig = CATEGORY_CONFIG[doc.category] ?? { color: "text-[var(--cs-text-secondary)]", bgColor: "bg-[var(--cs-surface)]" };
 

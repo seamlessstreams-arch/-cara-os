@@ -18,7 +18,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import type { QualificationRecord } from "@/types/extended";
-import { cn, formatDate, londonDayDiff } from "@/lib/utils";
+import { cn, formatDate, londonDayDiff, daysFromNow } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
   Award, CheckCircle2, Clock, AlertTriangle, Plus, Calendar,
@@ -564,7 +564,7 @@ export default function QualificationsPage() {
   // Stats
   const mandatory = allQuals.filter((q) => q.mandatory);
   const gaps      = mandatory.filter((q) => q.status === "not_started").length;
-  const expiring  = allQuals.filter((q) => q.expiry_date && new Date(q.expiry_date) < new Date(Date.now() + 90 * 86400000) && q.status !== "expired").length;
+  const expiring  = allQuals.filter((q) => q.expiry_date && q.expiry_date.slice(0, 10) <= daysFromNow(90) && q.status !== "expired").length;
   const completed = allQuals.filter((q) => q.status === "completed").length;
   const expired   = allQuals.filter((q) => q.status === "expired").length;
   const teamPct   = allQuals.length > 0 ? Math.round(((completed + allQuals.filter((q) => q.status === "exempt").length) / allQuals.length) * 100) : null;

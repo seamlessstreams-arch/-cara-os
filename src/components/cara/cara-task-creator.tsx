@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import {
   ListTodo,
   Check,
@@ -204,11 +204,7 @@ export function CaraTaskCreator({
     setTaskStates((prev) => ({ ...prev, [task.id]: "creating" }));
 
     try {
-      const dueDate = task.dueDays
-        ? new Date(Date.now() + task.dueDays * 86400000)
-            .toISOString()
-            .slice(0, 10)
-        : null;
+      const dueDate = task.dueDays ? daysFromNow(task.dueDays) : null;
 
       const res = await fetch("/api/v1/tasks", {
         method: "POST",

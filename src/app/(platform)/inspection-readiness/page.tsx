@@ -1,6 +1,7 @@
 "use client";
 
 import { PageShell } from "@/components/layout/page-shell";
+import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { useQuery } from "@tanstack/react-query";
 import { daysFromNow, todayStr } from "@/lib/utils";
@@ -315,7 +316,7 @@ export default function InspectionReadinessPage() {
             <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-slate-900">Care Events — Last 30 Days</h2>
-                <a href="/care-events" className="text-xs text-blue-600 hover:underline">View all →</a>
+                <Link href="/care-events" className="text-xs text-blue-600 hover:underline">View all →</Link>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <MetricCard title="Total Events" value={events30.length} colour="neutral" />

@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -105,7 +105,7 @@ export default function SignificantEventsPage() {
   const { data: seData, isLoading, isError, refetch } = useSignificantEvents();
   const createEvent = useCreateSignificantEvent();
   const events = seData?.data ?? [];
-  const threeDaysOut = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  const threeDaysOut = daysFromNow(3);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");

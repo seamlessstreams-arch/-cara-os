@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { api } from "@/hooks/use-api";
 import { careToast, toastSuccess } from "@/lib/toast";
 import React, { useState, useMemo } from "react";
@@ -1230,9 +1231,9 @@ export default function HandoverPage() {
                       </div>
                     </div>
                   ))}
-                  <a href="/tasks" className="block text-center text-[10px] text-blue-600 hover:underline pt-1">
+                  <Link href="/tasks" className="block text-center text-[10px] text-blue-600 hover:underline pt-1">
                     View all tasks
-                  </a>
+                  </Link>
                 </div>
               )}
             </CardContent>
@@ -1262,9 +1263,9 @@ export default function HandoverPage() {
                       </div>
                     </div>
                   ))}
-                  <a href="/incidents" className="block text-center text-[10px] text-blue-600 hover:underline pt-1">
+                  <Link href="/incidents" className="block text-center text-[10px] text-blue-600 hover:underline pt-1">
                     View all incidents
-                  </a>
+                  </Link>
                 </div>
               )}
             </CardContent>

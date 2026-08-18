@@ -24,7 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { getStore } from "@/lib/db/store";
-import { todayStr, formatRelative, initials } from "@/lib/utils";
+import { todayStr, formatRelative, initials, daysFromNow } from "@/lib/utils";
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmStatusBadge } from "@/components/ui/calm-status-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
@@ -108,8 +108,7 @@ export function HomeLanding() {
     // Reg 44 — check if there's a recent visit
     const reg44Level: ComplianceLevel =
       store.home.last_inspection_date &&
-      new Date(store.home.last_inspection_date) >
-        new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
+      store.home.last_inspection_date.slice(0, 10) >= daysFromNow(-28)
         ? "green"
         : "amber";
 
@@ -147,9 +146,7 @@ export function HomeLanding() {
 
   // ── Positive progress ────────────────────────────────────────────────────
   const positiveEntries = useMemo(() => {
-    const sevenDaysAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000,
-    ).toISOString().split("T")[0];
+    const sevenDaysAgo = daysFromNow(-7);
 
     return store.dailyLog
       .filter(

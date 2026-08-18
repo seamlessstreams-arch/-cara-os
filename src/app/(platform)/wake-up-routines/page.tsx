@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -90,7 +90,7 @@ export default function WakeUpRoutinesPage() {
 
   const allChildAgreed = data.every((r) => r.childAgreed);
   const avgRating = (data.reduce((sum, r) => sum + r.effectivenessRating, 0) / data.length).toFixed(1);
-  const reviewedRecently = data.filter((r) => r.reviewedDate >= new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)).length;
+  const reviewedRecently = data.filter((r) => r.reviewedDate >= daysFromNow(-30)).length;
 
   return (
     <PageShell

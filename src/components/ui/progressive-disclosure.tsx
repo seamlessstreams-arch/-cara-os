@@ -39,7 +39,10 @@ export function ProgressiveDisclosureSection({
   className,
 }: ProgressiveDisclosureSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
-  const Icon = resolveIcon(icon);
+  // Memoised so the same icon name yields the same component reference across
+  // renders — resolveIcon returns an existing lucide component, but without
+  // the memo the compiler must assume a fresh component per render.
+  const Icon = React.useMemo(() => resolveIcon(icon), [icon]);
 
   return (
     <div
@@ -70,7 +73,9 @@ export function ProgressiveDisclosureSection({
         {/* Icon */}
         {Icon && (
           <div className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--cs-surface)]">
-            <Icon className="h-4 w-4 text-[var(--cs-text-secondary)]" />
+            {/* createElement for the same reason as CalmEmptyState: an existing
+                lucide component behind a lookup the rule cannot analyse. */}
+            {React.createElement(Icon, { className: "h-4 w-4 text-[var(--cs-text-secondary)]" })}
           </div>
         )}
 

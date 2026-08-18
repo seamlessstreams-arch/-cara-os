@@ -6,7 +6,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { DigitalPlan } from "@/types/extended";
 import {
@@ -87,7 +87,7 @@ export default function DigitalWellbeingPlanPage() {
 
   const total = records.length;
   const allChildAgreed = records.length > 0 && records.every((p) => p.child_agreed);
-  const sixtyDaysLater = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
+  const sixtyDaysLater = daysFromNow(60);
   const dueReview = records.filter((p) => p.next_review_date <= sixtyDaysLater).length;
   const totalApps = records.reduce((sum, p) => sum + p.apps_used.length, 0);
 

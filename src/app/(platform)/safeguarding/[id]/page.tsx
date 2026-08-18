@@ -27,7 +27,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, londonDayDiff } from "@/lib/utils";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { CaraContextLinker } from "@/components/cara/cara-context-linker";
@@ -338,7 +338,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
           sourceText={concern.oversight_note || concern.description}
           sourceRecordId={concern.id}
           childName={ypName}
-          childAge={yp?.date_of_birth ? Math.floor((Date.now() - new Date(yp.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : undefined}
+          childAge={yp?.date_of_birth ? Math.floor(londonDayDiff(yp.date_of_birth) / 365.25) : undefined}
           mode="post_save"
           className="mb-4"
         />

@@ -370,8 +370,8 @@ export async function buildCaraContext(
   if (!supabaseRaw) return empty;
   const supabase = loose(supabaseRaw);
 
-  const module = resolveModule(request.sourceModule);
-  const configs = getSourceConfigs(module);
+  const sourceModule = resolveModule(request.sourceModule);
+  const configs = getSourceConfigs(sourceModule);
   const limit = request.limit ?? 20;
   const lookbackDays = request.lookbackDays ?? 30;
   const cutoffDate = new Date();

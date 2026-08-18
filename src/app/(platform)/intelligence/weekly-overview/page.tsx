@@ -183,7 +183,7 @@ function useYoungPeople(status = "current") {
       ),
   });
 }
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { cn, formatDate, formatRelative, daysFromNow, londonDateStr } from "@/lib/utils";
 import {
   Brain,
   Sparkles,
@@ -275,12 +275,12 @@ function HeaderStatCards() {
   const overdueItems = overdue.data?.data ?? [];
 
   // Voice coverage: how many children had a voice record in last 7 days
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = daysFromNow(-7);
   const voiceCoverage = useMemo(() => {
     const childVoice: boolean[] = [
-      (vCasey.data?.data ?? []).some((r) => new Date(r.created_at).getTime() > sevenDaysAgo),
-      (vAlex.data?.data ?? []).some((r) => new Date(r.created_at).getTime() > sevenDaysAgo),
-      (vJordan.data?.data ?? []).some((r) => new Date(r.created_at).getTime() > sevenDaysAgo),
+      (vCasey.data?.data ?? []).some((r) => londonDateStr(new Date(r.created_at)) >= sevenDaysAgo),
+      (vAlex.data?.data ?? []).some((r) => londonDateStr(new Date(r.created_at)) >= sevenDaysAgo),
+      (vJordan.data?.data ?? []).some((r) => londonDateStr(new Date(r.created_at)) >= sevenDaysAgo),
     ];
     return childVoice.filter(Boolean).length;
   }, [vCasey.data, vAlex.data, vJordan.data, sevenDaysAgo]);

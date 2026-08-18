@@ -5,6 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { formatRate, meets } from "@/lib/metrics/rate";
 
 interface ComplianceSummary {
@@ -200,9 +201,9 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/audits" className="text-xs text-primary font-medium hover:underline">
+        <Link href="/audits" className="text-xs text-primary font-medium hover:underline">
           View quality dashboard →
-        </a>
+        </Link>
       </div>
     </div>
   );

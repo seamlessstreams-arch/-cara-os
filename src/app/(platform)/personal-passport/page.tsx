@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -81,7 +81,7 @@ export default function PersonalPassportPage() {
 
   const total = records.length;
   const allChildAuthored = records.every((p) => p.child_authored);
-  const updatedRecently = records.filter((p) => p.last_updated >= new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)).length;
+  const updatedRecently = records.filter((p) => p.last_updated >= daysFromNow(-30)).length;
 
   return (
     <PageShell

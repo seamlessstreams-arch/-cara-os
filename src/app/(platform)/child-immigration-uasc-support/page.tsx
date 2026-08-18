@@ -15,7 +15,7 @@ import {
 import {
   Globe, FileText, Shield, ChevronUp, ChevronDown, ArrowUpDown, Search, Calendar, Heart, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { ImmigrationUascRecord, ImmigrationStatus } from "@/types/extended";
 import { IMMIGRATION_STATUS_LABEL, ENGLISH_LANGUAGE_LEVEL_LABEL } from "@/types/extended";
@@ -117,9 +117,7 @@ export default function ChildImmigrationUascSupportPage() {
   const ageAssessmentsCompleted = items.filter(r => r.age_assessment_completed).length;
   const reviewsDue90 = items.filter(r => {
     if (!r.review_date) return false;
-    const dt = new Date(r.review_date).getTime();
-    const now = Date.now();
-    return dt - now <= 90 * 24 * 60 * 60 * 1000 && dt - now >= 0;
+    return r.review_date >= todayStr() && r.review_date <= daysFromNow(90);
   }).length;
 
   const exportCols: ExportColumn<ImmigrationUascRecord>[] = useMemo(() => [

@@ -50,7 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, localMonthKey } from "@/lib/utils";
+import { cn, localMonthKey, daysFromNow } from "@/lib/utils";
 import {
   Building2,
   Shield,
@@ -322,7 +322,7 @@ export default function ProviderOversightPage() {
     const voiceEntries = (voiceData?.entries as Record<string, unknown>[]) ?? [];
     const voiceLast30 = voiceEntries.filter((e) => {
       const d = (e.entry_date as string) ?? (e.created_at as string) ?? "";
-      return d >= new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+      return d >= daysFromNow(-30);
     }).length;
 
     const evidence = (evidenceData?.items as Record<string, unknown>[]) ?? [];

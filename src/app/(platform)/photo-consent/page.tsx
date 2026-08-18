@@ -20,7 +20,7 @@ import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Camera, X, Clock, Loader2,
 } from "lucide-react";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { PhotoConsentRecord, PhotoConsentCategory, PhotoConsentStatus } from "@/types/extended";
@@ -95,7 +95,7 @@ export default function PhotoConsentPage() {
   const totalGranted = records.flatMap((r) => r.permissions).filter((p) => p.status === "granted").length;
   const totalRefused = records.flatMap((r) => r.permissions).filter((p) => p.status === "refused").length;
   const totalConditional = records.flatMap((r) => r.permissions).filter((p) => p.status === "conditional").length;
-  const reviewsDue = records.filter((r) => r.next_review_date <= new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)).length;
+  const reviewsDue = records.filter((r) => r.next_review_date <= daysFromNow(30)).length;
 
   const exportCols: ExportColumn<PhotoConsentRecord>[] = [
     { header: "Child", accessor: (r: PhotoConsentRecord) => getYPName(r.child_id) },

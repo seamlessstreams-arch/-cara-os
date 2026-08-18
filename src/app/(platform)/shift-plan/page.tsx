@@ -4,7 +4,7 @@
 // Who's on, the running order, what must get done, the medication picture and
 // per-child watch-points — deterministic, with an optional Cara narrative.
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -50,18 +50,17 @@ export default function ShiftPlanPage() {
   });
   const plan = resp?.data;
 
-  const periodBtn = useMemo(
-    () => (p: "day" | "night", Icon: React.ElementType, label: string) => (
-      <button
-        onClick={() => setPeriod(p)}
-        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-          period === p ? "bg-[var(--cs-navy)] text-white" : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]"
-        }`}
-      >
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </button>
-    ),
-    [period],
+  // A plain render helper — the useMemo'd factory read to react/display-name
+  // as an anonymous component, and memoising two buttons bought nothing.
+  const periodBtn = (p: "day" | "night", Icon: React.ElementType, label: string) => (
+    <button
+      onClick={() => setPeriod(p)}
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+        period === p ? "bg-[var(--cs-navy)] text-white" : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" /> {label}
+    </button>
   );
 
   return (

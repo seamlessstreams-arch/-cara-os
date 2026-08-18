@@ -20,7 +20,7 @@ import {
   Filter, Calendar, AlertCircle, UserCheck, Pill,
   FileSearch, BookOpen, Scale, Activity, Siren,
 } from "lucide-react";
-import { cn, localMonthKey } from "@/lib/utils";
+import { cn, localMonthKey, daysFromNow } from "@/lib/utils";
 import { CaraDailyIntelligence } from "@/components/cara/cara-daily-intelligence";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-intelligence-card";
@@ -2442,7 +2442,7 @@ export default function ManagerControlCentrePage() {
     const voiceEntries = (voiceData?.entries as Record<string, unknown>[]) ?? [];
     const voiceLast30 = voiceEntries.filter((e) => {
       const d = (e.entry_date as string) ?? (e.created_at as string) ?? "";
-      return d >= new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+      return d >= daysFromNow(-30);
     }).length;
 
     const evidence = (evidenceData?.items as Record<string, unknown>[]) ?? [];

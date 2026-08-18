@@ -296,12 +296,12 @@ function isOverdue(ref: RecruitmentReference): boolean {
 // ── Reference Row ─────────────────────────────────────────────────────────────
 
 interface RefRowProps {
-  ref: RecruitmentReference;
+  reference: RecruitmentReference;
   candidateName: string;
   candidateStage: string;
 }
 
-function ReferenceRow({ ref: r, candidateName, candidateStage }: RefRowProps) {
+function ReferenceRow({ reference: r, candidateName, candidateStage }: RefRowProps) {
   const overdue = isOverdue(r);
   const daysPending = r.requested_date ? daysSince(r.requested_date) : null;
   const daysReceived = r.received_date ? daysSince(r.received_date) : null;
@@ -558,7 +558,7 @@ export default function ReferencesPage() {
           {filtered.map(r => (
             <ReferenceRow
               key={r.id}
-              ref={r}
+              reference={r}
               candidateName={r.candidateName}
               candidateStage={r.candidateStage}
             />
