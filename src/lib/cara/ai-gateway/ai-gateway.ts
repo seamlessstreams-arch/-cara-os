@@ -641,6 +641,9 @@ function defaultDeps(): AiGatewayDeps {
     spentTodayGbp: () => {
       try {
         // Sum today's metered AI cost from the in-memory ring (best-effort).
+        // Lazy require, not a top-level import: the store pulls in the gateway's
+        // own callers and a static import would close the cycle.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { getStore } = require("@/lib/db/store");
         const today = todayStr();
         const rows = (getStore().hqAiUsage ?? []) as { at: string; cost_gbp: number }[];

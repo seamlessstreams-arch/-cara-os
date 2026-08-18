@@ -69,6 +69,32 @@ jobs:
       - name: tsc --noEmit (Playwright e2e; baseline locked at 0)
         run: npx tsc --noEmit -p tsconfig.e2e.json
 
+  lint:
+    name: Lint ratchet
+    runs-on: ubuntu-latest
+    # The full lint takes 6–8 minutes; its own job so the fast guards stay fast.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Census 2026-08-17: 10,910 findings, 90% two rules, 19 auto-fixable.
+      # Nothing gets fixed as a precondition of gating — the guard holds a
+      # per-rule baseline that may only shrink, so no NEW lint debt can land
+      # while the burn-down proceeds behind it. The guard also pins eslint 9:
+      # eslint 10 crashes this repo (held PR #949), and a crashed lint must
+      # read as a failure, not as zero findings.
+      - name: Lint baseline guard (per-rule counts may only fall)
+        run: node scripts/check-lint-baseline.js
+
   guards:
     name: Repo guards
     runs-on: ubuntu-latest

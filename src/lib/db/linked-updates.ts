@@ -406,6 +406,9 @@ function trackTimeSaved(
   };
   // In-memory store push (we access via getStore())
   try {
+    // Lazy require: the store imports linked-updates, so a static import here
+    // would be circular.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { getStore } = require("@/lib/db/store");
     getStore().timeSaved.push(entry);
   } catch {}
