@@ -162,6 +162,8 @@ export function requireHumanApproval(
   sensitivity: CaraDataSensitivity,
   riskLevel: string,
 ): boolean {
+  // Lazy require breaks the constants↔safety import cycle.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { TASKS_REQUIRING_APPROVAL } = require("../core/constants");
 
   if (TASKS_REQUIRING_APPROVAL.includes(taskType)) return true;
