@@ -1,0 +1,20 @@
+{
+ "@next/next/no-assign-module-variable": 1,
+ "@next/next/no-html-link-for-pages": 5,
+ "@next/next/no-img-element": 3,
+ "@next/next/no-location-assign-relative-destination": 1,
+ "@typescript-eslint/no-empty-object-type": 2,
+ "@typescript-eslint/no-explicit-any": 5037,
+ "@typescript-eslint/no-unused-expressions": 9,
+ "@typescript-eslint/no-unused-vars": 4799,
+ "__unused-disable-directive__": 10,
+ "prefer-const": 10,
+ "react-hooks/exhaustive-deps": 576,
+ "react-hooks/preserve-manual-memoization": 47,
+ "react-hooks/purity": 27,
+ "react-hooks/refs": 37,
+ "react-hooks/set-state-in-effect": 58,
+ "react-hooks/static-components": 24,
+ "react/display-name": 1,
+ "react/no-unescaped-entities": 209
+}
