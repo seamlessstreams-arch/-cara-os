@@ -99,6 +99,24 @@ const ZONE_STYLE = {
 } as const;
 
 const inputCls = "w-full rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm text-[var(--cs-navy,#1e293b)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]";
+// Inputs remount-and-lose-focus if this is recreated per render (it holds
+// <input>s), so it lives at module scope and takes the form state as props.
+function ZoneFields({ zone, label, f, set }: {
+  zone: string;
+  label: string;
+  f: Record<string, string>;
+  set: (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-[var(--cs-border,#e2e8f0)] p-3 space-y-2">
+      <div className="text-xs font-bold text-[var(--cs-navy,#1e293b)]">{label}</div>
+      <Labelled label="How the child looks / feels"><input value={f[`${zone}_signs`] ?? ""} onChange={set(`${zone}_signs`)} className={inputCls} /></Labelled>
+      <Labelled label="What helps / staff do"><input value={f[`${zone}_do`] ?? ""} onChange={set(`${zone}_do`)} className={inputCls} /></Labelled>
+      <Labelled label="What makes it worse / staff don't"><input value={f[`${zone}_dont`] ?? ""} onChange={set(`${zone}_dont`)} className={inputCls} /></Labelled>
+    </div>
+  );
+}
+
 function Labelled({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-semibold text-[var(--cs-navy,#1e293b)]">{label}</span>{children}</label>;
 }
@@ -131,14 +149,17 @@ function ZoneCard({ zone, data, childFriendly }: { zone: "green" | "amber" | "re
   );
 }
 
+// Module scope, not inside PlanView: a component defined during render is a
+// NEW component every render, so React unmounts and remounts its subtree.
+const Section = ({ icon: Icon, title, body }: { icon: React.ElementType; title: string; body: string }) =>
+  body ? (
+    <div className="rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white p-3">
+      <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[var(--cs-navy,#1e293b)]"><Icon className="h-3.5 w-3.5 text-[var(--cs-cara-gold,#b45309)]" /> {title}</div>
+      <p className="text-sm text-[var(--cs-text-secondary,#475569)]">{body}</p>
+    </div>
+  ) : null;
+
 function PlanView({ plan, childFriendly }: { plan: StayingSafePlan; childFriendly: boolean }) {
-  const Section = ({ icon: Icon, title, body }: { icon: React.ElementType; title: string; body: string }) =>
-    body ? (
-      <div className="rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white p-3">
-        <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[var(--cs-navy,#1e293b)]"><Icon className="h-3.5 w-3.5 text-[var(--cs-cara-gold,#b45309)]" /> {title}</div>
-        <p className="text-sm text-[var(--cs-text-secondary,#475569)]">{body}</p>
-      </div>
-    ) : null;
 
   return (
     <div className="space-y-4">
@@ -210,14 +231,6 @@ function PlanForm({ childId, existing, onDone }: { childId: string; existing: St
     onDone();
   }
 
-  const ZoneFields = ({ zone, label }: { zone: string; label: string }) => (
-    <div className="rounded-lg border border-[var(--cs-border,#e2e8f0)] p-3 space-y-2">
-      <div className="text-xs font-bold text-[var(--cs-navy,#1e293b)]">{label}</div>
-      <Labelled label="How the child looks / feels"><input value={f[`${zone}_signs`] ?? ""} onChange={set(`${zone}_signs`)} className={inputCls} /></Labelled>
-      <Labelled label="What helps / staff do"><input value={f[`${zone}_do`] ?? ""} onChange={set(`${zone}_do`)} className={inputCls} /></Labelled>
-      <Labelled label="What makes it worse / staff don't"><input value={f[`${zone}_dont`] ?? ""} onChange={set(`${zone}_dont`)} className={inputCls} /></Labelled>
-    </div>
-  );
 
   return (
     <Card>
@@ -229,9 +242,9 @@ function PlanForm({ childId, existing, onDone }: { childId: string; existing: St
         <Labelled label="When to use this plan"><textarea value={f.when_to_use ?? ""} onChange={set("when_to_use")} rows={2} className={inputCls} /></Labelled>
         <Labelled label="Early warning signs"><textarea value={f.early_warning_signs ?? ""} onChange={set("early_warning_signs")} rows={2} className={inputCls} /></Labelled>
         <div className="grid gap-3 md:grid-cols-3">
-          <ZoneFields zone="green" label="🟢 When I'm okay" />
-          <ZoneFields zone="amber" label="🟠 When I'm struggling" />
-          <ZoneFields zone="red" label="🔴 When I need urgent help" />
+          <ZoneFields zone="green" label="🟢 When I'm okay" f={f} set={set} />
+          <ZoneFields zone="amber" label="🟠 When I'm struggling" f={f} set={set} />
+          <ZoneFields zone="red" label="🔴 When I need urgent help" f={f} set={set} />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <Labelled label="Calming tools"><textarea value={f.calming_tools ?? ""} onChange={set("calming_tools")} rows={2} className={inputCls} /></Labelled>

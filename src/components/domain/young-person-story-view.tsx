@@ -44,6 +44,7 @@ import {
   formatDate,
   initials,
   todayStr,
+  daysFromNow,
 } from "@/lib/utils";
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmStatusBadge } from "@/components/ui/calm-status-badge";
@@ -187,9 +188,7 @@ function useChildStoryData(childId: string): ChildStoryData {
       }));
 
     // Daily log (last 7 days)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const sevenDaysAgo = daysFromNow(-7);
     const dailyLog = store.dailyLog
       .filter((dl) => dl.child_id === childId && dl.date >= sevenDaysAgo)
       .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));

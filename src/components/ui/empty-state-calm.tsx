@@ -35,7 +35,10 @@ export function CalmEmptyState({
   actionHref,
   className,
 }: CalmEmptyStateProps) {
-  const Icon = resolveIcon(icon);
+  // Memoised so the same icon name yields the same component reference across
+  // renders — resolveIcon returns an existing lucide component, but without
+  // the memo the compiler must assume a fresh component per render.
+  const Icon = React.useMemo(() => resolveIcon(icon), [icon]);
 
   return (
     <div
@@ -50,7 +53,11 @@ export function CalmEmptyState({
     >
       {Icon && (
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--cs-surface)] mb-4">
-          <Icon className="h-7 w-7 text-[var(--cs-text-gentle)]" />
+          {/* createElement, not <Icon/>: the lookup returns an EXISTING lucide
+              component, but the static-components rule cannot see through
+              resolveIcon and reads a capitalised render-scoped binding as a
+              new component type per render. */}
+          {React.createElement(Icon, { className: "h-7 w-7 text-[var(--cs-text-gentle)]" })}
         </div>
       )}
 

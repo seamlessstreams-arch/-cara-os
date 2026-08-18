@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -93,7 +93,7 @@ export default function EmergencyEvacuationPlanPage() {
   }
 
   const now = todayStr();
-  const future60 = new Date(Date.now() + 60 * 86_400_000).toISOString().slice(0, 10);
+  const future60 = daysFromNow(60);
 
   const total = data.length;
   const dueDrills = data.filter((p) => p.next_drill_due <= future60).length;

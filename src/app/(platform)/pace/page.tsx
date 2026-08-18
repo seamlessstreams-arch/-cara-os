@@ -238,13 +238,16 @@ function CheckTab() {
 }
 
 // ── Tab: Guidance ─────────────────────────────────────────────────────────────
+// Module scope: recreated per render it is a new component type each time,
+// which unmounts its subtree on every keystroke of the parent.
+const Section = ({ title, items, icon }: { title: string; items: string[]; icon: React.ReactNode }) => (
+  <div><p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">{icon}{title}</p><List items={items} /></div>
+);
+
 function GuidanceTab() {
   const [context, setContext] = useState<PACEContext>("INCIDENT");
   const { data } = usePACEGuidance(context);
   const g = data?.data;
-  const Section = ({ title, items, icon }: { title: string; items: string[]; icon: React.ReactNode }) => (
-    <div><p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">{icon}{title}</p><List items={items} /></div>
-  );
   return (
     <div className="space-y-4">
       <div className="max-w-xs"><Label htmlFor="ccc1-context-2" className="text-xs">Context</Label>

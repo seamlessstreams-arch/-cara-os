@@ -73,6 +73,10 @@ export default function HqCustomerDetailPage({ params }: { params: Promise<{ id:
       qc.invalidateQueries({ queryKey: ["hq-customer"] });
     },
   });
+  // Captured once per mount: the impure read lives in the lazy initializer,
+  // which is where the hooks rules allow it. The grant list refetches on its
+  // own cadence, so per-mount freshness is the honest granularity here.
+  const [mountedAtMs] = useState(() => Date.now());
   const [reason, setReason] = useState("");
   const [hours, setHours] = useState(4);
 
@@ -235,7 +239,7 @@ export default function HqCustomerDetailPage({ params }: { params: Promise<{ id:
                     </p>
                     <ul className="space-y-2">
                       {data.break_glass.recent.map((g) => {
-                        const open = !g.revoked_at && Date.parse(g.expires_at) > Date.now();
+                        const open = !g.revoked_at && Date.parse(g.expires_at) > mountedAtMs;
                         return (
                           <li
                             key={g.id}

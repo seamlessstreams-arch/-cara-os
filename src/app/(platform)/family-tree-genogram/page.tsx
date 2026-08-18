@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -88,7 +88,7 @@ export default function FamilyTreeGenogramPage() {
 
   const total = records.length;
   const allChildInput = records.every((g) => g.child_input_provided);
-  const updatedRecently = records.filter((g) => g.last_updated_date >= new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10)).length;
+  const updatedRecently = records.filter((g) => g.last_updated_date >= daysFromNow(-90)).length;
 
   const uniqueChildIds = useMemo(
     () => Array.from(new Set(records.map((g) => g.child_id))),

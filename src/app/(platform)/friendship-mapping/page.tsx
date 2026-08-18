@@ -17,7 +17,7 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -124,7 +124,7 @@ export default function FriendshipMappingPage() {
     );
     // "Reviews due in next 30 days" = last reviewed >= 11 months ago (335 days)
     const reviewsDue = records.filter(
-      (m) => m.reviewed_date <= new Date(Date.now() - 335 * 86400000).toISOString().slice(0, 10)
+      (m) => m.reviewed_date <= daysFromNow(-335)
     ).length;
     return { childrenMapped, strongFriendships, concernsFlagged, reviewsDue };
   }, [records]);

@@ -279,13 +279,17 @@ function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle:
 
   const [note, setNote] = useState("");
   const [entryType, setEntryType] = useState("observation");
-  const [, tick] = useState(0);
-  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 30_000); return () => clearInterval(t); }, []);
+  // The clock reading lives in the lazy initializer and the interval callback —
+  // the two places the hooks rules allow it. This also fixes a real staleness
+  // bug: the old anonymous tick was not in elapsed's deps, so the timer only
+  // advanced when something else re-rendered the page.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setNowMs(Date.now()), 30_000); return () => clearInterval(t); }, []);
   const elapsed = useMemo(() => {
-    const end = session.ended_at ? Date.parse(session.ended_at) : Date.now();
+    const end = session.ended_at ? Date.parse(session.ended_at) : nowMs;
     const mins = Math.max(0, Math.round((end - Date.parse(session.started_at)) / 60_000));
     return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60}m`;
-  }, [session.started_at, session.ended_at, bundle]);
+  }, [session.started_at, session.ended_at, nowMs]);
 
   const submitNote = () => {
     const text = note.trim();

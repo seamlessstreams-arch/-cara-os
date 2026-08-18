@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -111,7 +111,7 @@ export default function ParentalResponsibilityRecordPage() {
   }, [data, filterYP, sortBy]);
 
   const today = todayStr();
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const ninetyDaysAgo = daysFromNow(-90);
 
   const total = data.length;
   const allSignedOff = data.every((r) => r.signed_off_by_la);

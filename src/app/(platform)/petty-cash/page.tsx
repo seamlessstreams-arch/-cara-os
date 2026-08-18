@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
@@ -130,7 +130,7 @@ export default function PettyCashPage() {
 
   const stats = useMemo(() => {
     const currentBalance = records[0]?.balance_after || 0;
-    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    const sevenDaysAgo = daysFromNow(-7);
     const weekSpend = records.filter((e) => e.type === "withdrawal" && e.date >= sevenDaysAgo).reduce((a, e) => a + e.amount, 0);
     const missingReceipts = records.filter((e) => e.type === "withdrawal" && !e.receipt_attached).length;
     const totalEntries = records.length;

@@ -24,7 +24,7 @@ export function MarketingFooter() {
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Platform</p>
               <ul className="mt-3 space-y-2 text-sm text-slate-400">
-                <li><a href="/#layers" className="transition-colors hover:text-white">Intelligence layers</a></li>
+                <li><Link href="/#layers" className="transition-colors hover:text-white">Intelligence layers</Link></li>
                 <li><Link href="/product/safeguarding" className="transition-colors hover:text-white">Safeguarding</Link></li>
                 <li><Link href="/product/compliance" className="transition-colors hover:text-white">Compliance</Link></li>
                 <li><Link href="/product/intelligence" className="transition-colors hover:text-white">Practice intelligence</Link></li>

@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, todayStr } from "@/lib/utils";
+import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import {
   Shirt,
   Sparkles,
@@ -131,7 +131,7 @@ export default function ChildStyleIdentityExpressionPage() {
   const genderAffirmingCount = items.filter((r) => r.gender_expression_notes && r.gender_expression_notes.length > 0).length;
   const buildingConfidenceCount = items.filter((r) => r.body_confidence === "building").length;
   const today = todayStr();
-  const thirtyDaysFromNow = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  const thirtyDaysFromNow = daysFromNow(30);
   const reviewsDue = items.filter((r) => r.review_date <= thirtyDaysFromNow).length;
 
   return (

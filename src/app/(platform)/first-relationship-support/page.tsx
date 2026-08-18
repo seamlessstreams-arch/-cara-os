@@ -6,7 +6,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FirstRelationshipRecord } from "@/types/extended";
 import {
@@ -110,7 +110,7 @@ export default function FirstRelationshipSupportPage() {
     return r;
   }, [records, search, screenFilter, sortBy]);
 
-  const sevenDaysLater = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const sevenDaysLater = daysFromNow(7);
 
   const stats = useMemo(() => {
     const inRelationship = records.filter((r) =>
