@@ -11,7 +11,7 @@
 // Placed in the platform layout so it's available everywhere.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { Sparkles, X } from "lucide-react";
 import { CaraCommandPanel } from "./cara-command-panel";
@@ -63,31 +63,27 @@ function moduleFromPath(path: string): string | undefined {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
+// The pathname is an external store: subscribe to popstate + the <title>
+// mutation that marks a Next.js client navigation, snapshot the module name.
+// Replaces two effects that copied window.location into state.
+function subscribeToNavigation(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  const observer = new MutationObserver(onChange);
+  const titleEl = document.querySelector("title");
+  if (titleEl) observer.observe(titleEl, { childList: true });
+  return () => {
+    window.removeEventListener("popstate", onChange);
+    observer.disconnect();
+  };
+}
+
 export function CaraGlobalFab() {
   const [open, setOpen] = useState(false);
-  const [currentModule, setCurrentModule] = useState<string | undefined>();
-
-  // Track pathname changes
-  useEffect(() => {
-    setCurrentModule(moduleFromPath(window.location.pathname));
-    const handlePopState = () => {
-      setCurrentModule(moduleFromPath(window.location.pathname));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  // Also update on Next.js navigation (MutationObserver on <title>)
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setCurrentModule(moduleFromPath(window.location.pathname));
-    });
-    const titleEl = document.querySelector("title");
-    if (titleEl) {
-      observer.observe(titleEl, { childList: true });
-    }
-    return () => observer.disconnect();
-  }, []);
+  const currentModule = useSyncExternalStore(
+    subscribeToNavigation,
+    () => moduleFromPath(window.location.pathname),
+    () => undefined,
+  );
 
   return (
     <>

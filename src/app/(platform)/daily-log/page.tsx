@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -640,9 +640,15 @@ export default function DailyLogPage() {
   // a year-two home doesn't mount every entry ever recorded. Stats, export and
   // the pattern scanner keep the full filtered list; only rendering is capped.
   const [visibleCount, setVisibleCount] = useState(50);
-  useEffect(() => {
+  // Reset the render cap when any filter changes — render-adjustment (React's
+  // documented replacement for a reset effect): no flash of the old page
+  // depth, no cascading second render.
+  const filterKey = [selectedYP, dateFilter, typeFilter, search, sortBy].join("\u0000");
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setVisibleCount(50);
-  }, [selectedYP, dateFilter, typeFilter, search, sortBy]);
+  }
 
   // Group by date (grouping the visible slice keeps date groups bounded too)
   const visibleEntries = entries.slice(0, visibleCount);

@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { PrintButton } from "@/components/ui/print-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -589,15 +590,17 @@ export default function ChildResourcesPage() {
   const [previewing, setPreviewing] = useState<ChildResource | null>(null);
   const [starterChild, setStarterChild] = useState<{ id: string; type: ChildResourceType } | null>(null);
 
-  // Pre-fill from query params when navigated from a record's Cara quick-actions
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const c = p.get("child_id") ?? "";
-    if (c) {
-      setParamChildId(c);
-      setShowForm(true);
-    }
-  }, []);
+  // Pre-fill from query params when navigated from a record's Cara
+  // quick-actions. One-shot render-adjustment: applied exactly once, both
+  // values stay user-editable afterwards — the old effect did the same a
+  // render later.
+  const urlChildId = useUrlParam("child_id");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && urlChildId) {
+    setUrlApplied(true);
+    setParamChildId(urlChildId);
+    setShowForm(true);
+  }
   const { data, isLoading } = useChildResources({ homeId });
   const updateResource = useUpdateChildResource();
   const resources: ChildResource[] = useMemo(() => data?.data ?? [], [data]);

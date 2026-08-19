@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -127,12 +128,10 @@ export default function RelationshipIntelligencePage() {
     [ypQuery.data],
   );
   const [selectedChildId, setSelectedChildId] = useState<string>("");
-  // Deep-link: ?child=<id> (e.g. from the Home Relationships overview).
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("child");
-    if (p) setSelectedChildId(p);
-  }, []);
-  const childId = selectedChildId || youngPeople[0]?.id || "";
+  // Deep-link: ?child=<id> (e.g. from the Home Relationships overview) —
+  // read as an external value, not copied into state by an effect.
+  const urlChildId = useUrlParam("child");
+  const childId = selectedChildId || urlChildId || youngPeople[0]?.id || "";
 
   const { data: rel, isLoading: relLoading } = useRelationalTimeline(childId);
   const { data: es, isLoading: esLoading } = useEmotionalSafety(childId);

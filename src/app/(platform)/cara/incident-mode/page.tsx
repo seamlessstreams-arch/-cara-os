@@ -153,13 +153,14 @@ function Disclaimer({ text }: { text: string }) {
 
 export default function CaraIncidentModePage() {
   const list = useCaraIncidentList();
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  // null = follow the default (auto-open the active session); "list" = the
+  // user pressed Back and means it. The old effect re-opened the active
+  // session the moment sessionId went null, so Back was a dead end.
+  const [sessionChoice, setSessionChoice] = useState<string | "list" | null>(null);
+  const sessionId =
+    sessionChoice === "list" ? null : sessionChoice ?? list.data?.active?.id ?? null;
   const bundle = useCaraIncidentSession(sessionId);
 
-  // auto-open the active session
-  useEffect(() => {
-    if (!sessionId && list.data?.active) setSessionId(list.data.active.id);
-  }, [list.data?.active, sessionId]);
 
   return (
     <PageShell
@@ -170,13 +171,13 @@ export default function CaraIncidentModePage() {
       <div className="mx-auto max-w-3xl space-y-4 pb-10">
         {list.isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
 
-        {!sessionId && list.data && <StartView data={list.data} onOpen={setSessionId} />}
+        {!sessionId && list.data && <StartView data={list.data} onOpen={setSessionChoice} />}
         {sessionId && bundle.isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
         {sessionId && bundle.data && (
           <SessionView
             sessionId={sessionId}
             bundle={bundle.data}
-            onBack={() => setSessionId(null)}
+            onBack={() => setSessionChoice("list")}
           />
         )}
       </div>

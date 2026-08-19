@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -151,13 +151,10 @@ export default function ChildPlacementQualityPage() {
   const { data: ypData, isLoading: ypLoading } = useYoungPeople("current");
   const youngPeople = ypData?.data ?? [];
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [chosenId, setChosenId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!selectedId && youngPeople.length > 0) {
-      setSelectedId(youngPeople[0].id);
-    }
-  }, [youngPeople, selectedId]);
+  // Default = first child, derived rather than effect-written.
+  const selectedId = chosenId ?? youngPeople[0]?.id ?? null;
 
   const { data, isLoading: qLoading } = useChildPlacementQuality(selectedId);
   const d = data?.data;
@@ -192,7 +189,7 @@ export default function ChildPlacementQualityPage() {
         {/* Child selector */}
         <div className="flex items-center gap-3">
           <label htmlFor="1c99-viewing" className="text-sm font-medium text-muted-foreground whitespace-nowrap">Viewing:</label>
-          <Select value={selectedId ?? ""} onValueChange={setSelectedId}>
+          <Select value={selectedId ?? ""} onValueChange={setChosenId}>
             <SelectTrigger id="1c99-viewing" className="w-56">
               <SelectValue placeholder="Select a young person" />
             </SelectTrigger>

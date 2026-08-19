@@ -1,7 +1,8 @@
 "use client";
 
 // CARA STUDIO — /cara-studio/materials/new
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { GeneratorPage, ChildPicker, Labelled, TextInput, Pills } from "@/components/cara-studio/studio-bits";
 import { CARA_MATERIAL_TYPES, type CaraMaterialType } from "@/lib/cara-studio/cara-types";
 
@@ -15,12 +16,14 @@ export default function NewMaterialPage() {
   const [format, setFormat] = useState("");
 
   // Chained from a session plan? Prefill child + theme from the URL.
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const qc = q.get("childId"); const qt = q.get("theme");
-    if (qc) setChildId(qc);
-    if (qt) setTheme(qt);
-  }, []);
+  const urlChildId = useUrlParam("childId");
+  const urlSeed = useUrlParam("theme");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && (urlChildId || urlSeed)) {
+    setUrlApplied(true);
+    if (urlChildId) setChildId(urlChildId);
+    if (urlSeed) setTheme(urlSeed);
+  }
 
   return (
     <GeneratorPage

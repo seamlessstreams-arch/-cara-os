@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState } from "react";
+import { useClientValue } from "@/hooks/use-client-value";
 
 function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -155,11 +156,14 @@ export function CountUp({
   className?: string;
 }) {
   const ref = useRef<HTMLSpanElement | null>(null);
+  // Reduced-motion viewers render the final value directly — no state write,
+  // no animation. The state only carries animation frames.
+  const reduced = useClientValue(() => prefersReducedMotion(), false);
   const [val, setVal] = useState(0);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (prefersReducedMotion()) { setVal(to); return; }
+    if (prefersReducedMotion()) return;
     let raf = 0;
     const io = new IntersectionObserver(
       (entries) => {
@@ -184,7 +188,7 @@ export function CountUp({
   }, [to, duration]);
   return (
     <span ref={ref} className={`tabular-nums ${className}`}>
-      {prefix}{val.toLocaleString()}{suffix}
+      {prefix}{(reduced ? to : val).toLocaleString()}{suffix}
     </span>
   );
 }

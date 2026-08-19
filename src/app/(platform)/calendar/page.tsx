@@ -2,7 +2,8 @@
 
 // CARA — CALENDAR page: month + agenda views over the unified feed
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,15 +67,15 @@ export default function CalendarPage() {
     },
   });
 
-  // Deep-link: /calendar?event=ID opens that editable event
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ev = params.get("event");
-    if (ev) {
-      setEditingId(ev);
-      setEditorOpen(true);
-    }
-  }, []);
+  // Deep-link: /calendar?event=ID opens that editable event — one-shot
+  // render-adjustment over the URL param.
+  const urlEventId = useUrlParam("event");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && urlEventId) {
+    setUrlApplied(true);
+    setEditingId(urlEventId);
+    setEditorOpen(true);
+  }
 
   const items = feed.data?.items ?? [];
   const itemsByDay = useMemo(() => {

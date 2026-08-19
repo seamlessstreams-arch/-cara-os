@@ -7,7 +7,7 @@
 // trajectory and evidence churn.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,15 +29,13 @@ export default function InspectionBundleDiffPage() {
     refetchInterval: 60000,
   });
   const rows = useMemo(() => list.data?.data ?? [], [list.data]);
-  const [currentId, setCurrentId] = useState<string>("");
-  const [previousId, setPreviousId] = useState<string>("");
+  const [chosenCurrentId, setChosenCurrentId] = useState<string>("");
+  const [chosenPreviousId, setChosenPreviousId] = useState<string>("");
 
-  // Default current = newest, previous = next newest
-  useEffect(() => {
-    if (!rows.length) return;
-    if (!currentId) setCurrentId(rows[0].id);
-    if (!previousId && rows.length >= 2) setPreviousId(rows[1].id);
-  }, [rows, currentId, previousId]);
+  // Default current = newest, previous = next newest — derived, not copied
+  // into state by an effect.
+  const currentId = chosenCurrentId || rows[0]?.id || "";
+  const previousId = chosenPreviousId || (rows.length >= 2 ? rows[1].id : "");
 
   const diff = useQuery({
     queryKey: ["inspection-bundle-diff", currentId ?? "", previousId ?? ""],
@@ -75,7 +73,7 @@ export default function InspectionBundleDiffPage() {
                 <Picker
                   label="Previous bundle"
                   value={previousId}
-                  onChange={setPreviousId}
+                  onChange={setChosenPreviousId}
                   rows={rows}
                   allowNone
                 />
@@ -83,7 +81,7 @@ export default function InspectionBundleDiffPage() {
                 <Picker
                   label="Current bundle"
                   value={currentId}
-                  onChange={setCurrentId}
+                  onChange={setChosenCurrentId}
                   rows={rows}
                 />
               </div>

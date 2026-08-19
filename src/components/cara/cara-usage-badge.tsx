@@ -11,7 +11,7 @@
 //   <CaraUsageBadge sourceTable="daily_log_entries" recordId={entry.id} />
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -90,11 +90,6 @@ export function CaraUsageBadge({
     setLoaded(true);
   }, [sourceTable, recordId, loaded]);
 
-  useEffect(() => {
-    if (expanded && !loaded) {
-      fetchUsage();
-    }
-  }, [expanded, loaded, fetchUsage]);
 
   // Don't render if not Cara-assisted
   if (!caraAssisted) return null;
@@ -102,7 +97,12 @@ export function CaraUsageBadge({
   return (
     <div className={cn("inline-flex flex-col", className)}>
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => {
+          // Lazy-load on first expand — in the event handler, where the
+          // fetch belongs, not in an effect watching the state it set.
+          if (!expanded && !loaded) fetchUsage();
+          setExpanded(!expanded);
+        }}
         className={cn(
           "inline-flex items-center gap-1 rounded-full border transition-colors",
           "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] hover:bg-[var(--cs-cara-gold-soft)]",

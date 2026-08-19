@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -119,18 +120,18 @@ export default function TasksPage() {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [caraLinkContext, setCaraLinkContext] = useState<{ childId: string; linkedId: string; sourceType: string } | null>(null);
 
-  // Handle Cara "Create Follow-Up Task" quick-action — pre-filter by child and show prompt
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const isNew = p.get("new") === "1";
-    const childId = p.get("child_id");
-    const linkedId = p.get("linked_id") ?? "";
-    const sourceType = p.get("source_type") ?? "";
-    if (isNew && childId) {
-      setFilterPerson(childId);
-      setCaraLinkContext({ childId, linkedId, sourceType });
-    }
-  }, []);
+  // Cara "Create Follow-Up Task" quick-action — pre-filter by child and show
+  // the prompt. One-shot render-adjustment over the URL params.
+  const urlIsNew = useUrlParam("new");
+  const urlChildId = useUrlParam("child_id");
+  const urlLinkedId = useUrlParam("linked_id");
+  const urlSourceType = useUrlParam("source_type");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && urlIsNew === "1" && urlChildId) {
+    setUrlApplied(true);
+    setFilterPerson(urlChildId);
+    setCaraLinkContext({ childId: urlChildId, linkedId: urlLinkedId, sourceType: urlSourceType });
+  }
   const [filterPriority, setFilterPriority] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");

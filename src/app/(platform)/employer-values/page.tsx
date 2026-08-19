@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,7 +81,8 @@ export default function EmployerValuesPage() {
   const [form, setForm] = useState<FormState | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
-  useEffect(() => { if (data !== undefined && form === null) setForm(toForm(data)); }, [data, form]);
+  // Seed once when the record arrives; render-adjustment, not an effect.
+  if (data !== undefined && form === null) setForm(toForm(data));
   const set = (k: keyof FormState, v: string) => setForm((f) => (f ? ({ ...f, [k]: v } as FormState) : f));
 
   const onSave = () => {

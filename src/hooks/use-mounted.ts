@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const noopSubscribe = () => () => {};
 
 /**
  * `false` on the server render and the first client render, then `true` after
@@ -16,11 +18,17 @@ import { useEffect, useState } from "react";
  * frozen at *build* time, so an ungated clock is a guaranteed mismatch every
  * time the page is viewed later — not a rare sub-second race. See
  * scripts/live-fiction-crawl.mjs, which reports these as recoverable mismatches.
+ *
+ * useSyncExternalStore rather than the classic setState-in-effect: identical
+ * observable behaviour (server false → post-hydration true), but React flips
+ * the value during the hydration pass itself instead of scheduling a second
+ * render from an effect — the exact cascade react-hooks/set-state-in-effect
+ * exists to prevent, in the hook every hydration gate in the app consumes.
  */
 export function useMounted(): boolean {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  return mounted;
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 }
