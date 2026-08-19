@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -133,12 +134,10 @@ export default function OutcomeIntelligencePage() {
   );
 
   const [selectedChildId, setSelectedChildId] = useState<string>("");
-  // Deep-link: ?child=<id> (e.g. from a relational dashboard or briefing).
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("child");
-    if (p) setSelectedChildId(p);
-  }, []);
-  const childId = selectedChildId || youngPeople[0]?.id || "";
+  // Deep-link: ?child=<id> (e.g. from a relational dashboard or briefing) —
+  // read as an external value, not copied into state by an effect.
+  const urlChildId = useUrlParam("child");
+  const childId = selectedChildId || urlChildId || youngPeople[0]?.id || "";
 
   const { data: o, isLoading } = useOutcomeIntelligence(childId);
   const overallStatus = o ? STATUS_CONFIG[o.overallStatus] : null;

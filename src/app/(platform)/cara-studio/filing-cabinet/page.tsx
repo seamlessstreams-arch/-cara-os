@@ -7,7 +7,7 @@
 // Browse by category, child, or date. Mirrors Ofsted-expected filing structure.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import Link from "next/link";
@@ -32,7 +32,10 @@ interface FilingFolder {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function FilingCabinetPage() {
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+  // null = the user has not touched a folder yet, so the top level shows
+  // expanded by default. Deriving the default (instead of writing it into
+  // state from an effect) also removes the didAutoExpand ref dance.
+  const [touchedPaths, setTouchedPaths] = useState<Set<string> | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,19 +46,11 @@ export default function FilingCabinetPage() {
   });
   const structure = React.useMemo(() => data?.structure ?? [], [data]);
 
-  // Auto-expand top level once on first load — not on the periodic refetch,
-  // which must not fight folders the user has since collapsed.
-  const didAutoExpand = React.useRef(false);
-  useEffect(() => {
-    if (structure.length > 0 && !didAutoExpand.current) {
-      didAutoExpand.current = true;
-      setExpandedPaths(new Set(structure.map((f) => f.path)));
-    }
-  }, [structure]);
+  const expandedPaths = touchedPaths ?? new Set(structure.map((f) => f.path));
 
   const toggleExpand = (path: string) => {
-    setExpandedPaths((prev) => {
-      const next = new Set(prev);
+    setTouchedPaths(() => {
+      const next = new Set(expandedPaths);
       if (next.has(path)) next.delete(path);
       else next.add(path);
       return next;

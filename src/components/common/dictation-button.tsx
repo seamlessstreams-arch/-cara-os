@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState } from "react";
+import { useClientValue } from "@/hooks/use-client-value";
 import { Mic, MicOff, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -99,7 +100,6 @@ export function DictationButton({
   disabled = false,
 }: DictationButtonProps) {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [interim, setInterim] = useState("");
 
@@ -123,12 +123,10 @@ export function DictationButton({
   });
 
   // ── Support check (client-side only) ────────────────────────────────────────
-  useEffect(() => {
-    const supported =
-      typeof window !== "undefined" &&
-      !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-    setIsSupported(supported);
-  }, []);
+  const isSupported = useClientValue(
+    () => !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+    false,
+  );
 
   // ── Cleanup on unmount ───────────────────────────────────────────────────────
   useEffect(() => {

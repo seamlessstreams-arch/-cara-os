@@ -9,7 +9,7 @@
 //          risk assessments · manually recorded chronology entries.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { use, useState, useMemo, useEffect } from "react";
+import React, { use, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -473,9 +473,13 @@ export default function ChildChronologyPage({
   // groups and the cards inside them stay bounded. Export/stats keep the full
   // filtered list.
   const [visibleCount, setVisibleCount] = useState(50);
-  useEffect(() => {
+  // Render-adjustment reset — see daily-log for the shape.
+  const filterKey = [severityFilter, sourceFilter, fromDate, toDate].join("\u0000");
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setVisibleCount(50);
-  }, [severityFilter, sourceFilter, fromDate, toDate]);
+  }
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),

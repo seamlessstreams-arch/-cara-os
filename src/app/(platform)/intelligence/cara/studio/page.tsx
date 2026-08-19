@@ -7,7 +7,7 @@
 // approval.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, use, Suspense } from "react";
+import { useState, use, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/hooks/use-api";
@@ -261,13 +261,14 @@ function CaraStudioPageInner() {
     title: "",
   });
 
-  // Open dialog automatically if coming from quick action
-  useEffect(() => {
-    if (preArtifactType) {
-      setDialogOpen(true);
-      setStep(2);
-    }
-  }, [preArtifactType]);
+  // Open dialog automatically if coming from quick action — one-shot render
+  // adjustment; both values stay user-controllable afterwards.
+  const [quickActionApplied, setQuickActionApplied] = useState(false);
+  if (!quickActionApplied && preArtifactType) {
+    setQuickActionApplied(true);
+    setDialogOpen(true);
+    setStep(2);
+  }
 
   // ── Data ─────────────────────────────────────────────────────────────────
   const { data: artifactsData, isLoading } = useCaraArtifacts({

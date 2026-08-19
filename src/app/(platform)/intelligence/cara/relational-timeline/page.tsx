@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -165,11 +166,10 @@ export default function RelationalTimelinePage() {
   );
 
   const [selectedChildId, setSelectedChildId] = useState<string>("");
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("child");
-    if (p) setSelectedChildId(p);
-  }, []);
-  const childId = selectedChildId || youngPeople[0]?.id || "";
+  // Deep-link param joins the preference chain directly — no effect copying
+  // the URL into state, no cascading second render.
+  const urlChildId = useUrlParam("child");
+  const childId = selectedChildId || urlChildId || youngPeople[0]?.id || "";
 
   const { data: timeline, isLoading } = useRelationalTimeline(childId);
   const stability = timeline?.stability;

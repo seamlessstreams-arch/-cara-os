@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -31,15 +31,16 @@ function useChildTrends(childId: string | null) {
 }
 
 export default function ChildTrendsPage() {
-  const [childId, setChildId] = useState<string | null>(null);
+  const [childId, setChosenChildId] = useState<string | null>(null);
   const { data, isLoading, isFetching, refetch } = useChildTrends(childId);
   const children = data?.children ?? [];
   const trends = data?.trends ?? null;
 
-  // Auto-select the first child once the list loads, for an immediate view.
-  useEffect(() => {
-    if (!childId && children.length > 0) setChildId(children[0].id);
-  }, [childId, children]);
+  // Children arrive on the same query the id feeds — render-adjustment, the
+  // sanctioned replacement for the old default-writing effect.
+  if (childId === null && children.length > 0) {
+    setChosenChildId(children[0].id);
+  }
 
   return (
     <PageShell
@@ -65,7 +66,7 @@ export default function ChildTrendsPage() {
           {children.map((c) => (
             <button
               key={c.id}
-              onClick={() => setChildId(c.id)}
+              onClick={() => setChosenChildId(c.id)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
                 childId === c.id ? "border-indigo-300 bg-indigo-50 text-indigo-700" : "bg-white text-slate-600 hover:bg-slate-50",

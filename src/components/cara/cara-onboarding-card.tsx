@@ -8,7 +8,8 @@
 // persistently via localStorage.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useClientValue } from "@/hooks/use-client-value";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -51,17 +52,17 @@ const FEATURES = [
 ] as const;
 
 export function CaraOnboardingCard({ className }: CaraOnboardingCardProps) {
-  const [dismissed, setDismissed] = useState(true); // Start hidden to prevent flash
-
-  useEffect(() => {
-    const stored = localStorage.getItem(DISMISSED_KEY);
-    if (stored !== "true") {
-      setDismissed(false);
-    }
-  }, []);
+  // Server/hydration render hidden (no flash); the stored value takes over
+  // post-hydration without an effect writing it into state.
+  const storedDismissed = useClientValue(
+    () => localStorage.getItem(DISMISSED_KEY) === "true",
+    true,
+  );
+  const [dismissedNow, setDismissedNow] = useState(false);
+  const dismissed = dismissedNow || storedDismissed;
 
   function handleDismiss() {
-    setDismissed(true);
+    setDismissedNow(true);
     localStorage.setItem(DISMISSED_KEY, "true");
   }
 

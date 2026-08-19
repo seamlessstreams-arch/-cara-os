@@ -1,7 +1,8 @@
 "use client";
 
 // CARA STUDIO — /cara-studio/conversation/new
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { GeneratorPage, ChildPicker, Labelled, TextInput, TextArea, Pills } from "@/components/cara-studio/studio-bits";
 
 const LEVELS = ["low", "medium", "high"] as const;
@@ -16,12 +17,14 @@ export default function NewConversationPage() {
   const [context, setContext] = useState("");
 
   // Chained from a session plan? Prefill child + topic from the URL.
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const qc = q.get("childId"); const qt = q.get("topic");
-    if (qc) setChildId(qc);
-    if (qt) setTopic(qt);
-  }, []);
+  const urlChildId = useUrlParam("childId");
+  const urlSeed = useUrlParam("topic");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && (urlChildId || urlSeed)) {
+    setUrlApplied(true);
+    if (urlChildId) setChildId(urlChildId);
+    if (urlSeed) setTopic(urlSeed);
+  }
 
   return (
     <GeneratorPage

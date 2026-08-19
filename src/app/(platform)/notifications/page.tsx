@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -172,9 +172,13 @@ export default function NotificationsPage() {
   // full lists; only rendering is capped.
   const [visibleCount, setVisibleCount] = useState(50);
   const [visibleCareEventCount, setVisibleCareEventCount] = useState(50);
-  useEffect(() => {
+  // Render-adjustment reset — see daily-log for the shape.
+  const filterKey = [tab, search, severityFilter, typeFilter, sortBy].join("\u0000");
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setVisibleCount(50);
-  }, [tab, search, severityFilter, typeFilter, sortBy]);
+  }
 
   const setStatus = (id: string, status: AlertStatus) => {
     setLocalStatuses((prev) => ({ ...prev, [id]: status }));

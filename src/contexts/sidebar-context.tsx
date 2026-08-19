@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useClientValue } from "@/hooks/use-client-value";
 
 interface SidebarContextValue {
   collapsed:    boolean;
@@ -15,7 +16,13 @@ const SidebarContext = createContext<SidebarContextValue>({
 });
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  // null = the user has not toggled yet, so the tablet default applies.
+  // Deriving (rather than an effect writing the default into state) means no
+  // second render on mount and the user's explicit choice always wins.
+  const [userCollapsed, setUserCollapsed] = useState<boolean | null>(null);
+  const tabletDefault = useClientValue(() => window.innerWidth < 1024, false);
+  const collapsed = userCollapsed ?? tabletDefault;
+  const setCollapsed = (v: boolean) => setUserCollapsed(v);
   const [isMobile, setIsMobile] = useState(false);
 
   // Track mobile breakpoint
@@ -26,12 +33,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Auto-collapse on tablet (md–lg) on first mount only
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setCollapsed(true);
-    }
-  }, []);
 
   return (
     <SidebarContext.Provider value={{ collapsed, setCollapsed, isMobile }}>

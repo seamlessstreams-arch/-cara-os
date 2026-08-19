@@ -4,7 +4,8 @@
 // CARA — Cara KEY WORK BUILDER
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import Link from "next/link";
 import type { YoungPerson, StaffMember } from "@/types";
 
@@ -460,15 +461,17 @@ export default function KeyWorkBuilderPage() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Pre-fill from query params when navigated from a record's Cara quick-actions
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const c = p.get("child_id") ?? "";
-    if (c) {
-      setParamChildId(c);
-      setShowBuilder(true);
-    }
-  }, []);
+  // Pre-fill from query params when navigated from a record's Cara
+  // quick-actions. One-shot render-adjustment: applied exactly once, both
+  // values stay user-editable afterwards — the old effect did the same a
+  // render later.
+  const urlChildId = useUrlParam("child_id");
+  const [urlApplied, setUrlApplied] = useState(false);
+  if (!urlApplied && urlChildId) {
+    setUrlApplied(true);
+    setParamChildId(urlChildId);
+    setShowBuilder(true);
+  }
   const { data, isLoading } = useKeyWorkSessions({ homeId });
   const sessions: KeyWorkSession[] = useMemo(() => data?.data ?? [], [data]);
 
