@@ -396,11 +396,11 @@ function MockupWritingAssistant() {
           <div className="space-y-1.5">
             <div className="rounded-lg border border-amber-400/25 bg-amber-500/10 p-1.5">
               <p className="text-[9px] font-bold text-amber-200">Blame language</p>
-              <p className="text-[9px] text-amber-200">"refused to engage" places fault — try "Alex found it hard to join the activity today"</p>
+              <p className="text-[9px] text-amber-200">&quot;refused to engage&quot; places fault — try &quot;Alex found it hard to join the activity today&quot;</p>
             </div>
             <div className="rounded-lg border border-amber-400/25 bg-amber-500/10 p-1.5">
               <p className="text-[9px] font-bold text-amber-200">Institutional phrase</p>
-              <p className="text-[9px] text-amber-200">"returned safe and well" — if Alex went missing, use MFC language; otherwise describe what actually happened</p>
+              <p className="text-[9px] text-amber-200">&quot;returned safe and well&quot; — if Alex went missing, use MFC language; otherwise describe what actually happened</p>
             </div>
             <div className="rounded-lg border border-blue-400/25 bg-blue-500/10 p-1.5">
               <p className="text-[9px] font-bold text-blue-300">Missing child voice</p>

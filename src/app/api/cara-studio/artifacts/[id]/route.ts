@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     if (error || !artifact) return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
 
     // Fetch related data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const [sources, versions, reviews] = await Promise.all([
       (sb.from("cara_studio_artifact_sources") as any).select("*").eq("artifact_id", id),
       (sb.from("cara_studio_artifact_versions") as any).select("*").eq("artifact_id", id).order("version_number", { ascending: false }),

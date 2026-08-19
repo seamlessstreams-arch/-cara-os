@@ -73,12 +73,12 @@ export function InlinePracticeReasoning({ childId, childName }: { childId: strin
           Practice Reasoning{childName ? ` — ${childName}` : ""}
           {r && <ConfidencePill level={r.overallConfidence} />}
         </CardTitle>
-        <CardDescription>The reasoning engine's read of this child, surfaced here to inform your oversight.</CardDescription>
+        <CardDescription>The reasoning engine&apos;s read of this child, surfaced here to inform your oversight.</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted)]">
-            <Loader2 className="h-4 w-4 animate-spin" /> Reasoning over {who}'s records…
+            <Loader2 className="h-4 w-4 animate-spin" /> Reasoning over {who}&apos;s records…
           </div>
         )}
         {isError && <p className="text-sm text-[var(--cs-text-muted)]">Practice reasoning is not available for this child.</p>}

@@ -249,7 +249,7 @@ function calculateDuration(episode: MissingEpisode): number {
   if (!episode.endTime) return 0;
   const [sh, sm] = episode.startTime.split(":").map(Number);
   const [eh, em] = (episode.endTime).split(":").map(Number);
-  let startMins = sh * 60 + sm;
+  const startMins = sh * 60 + sm;
   let endMins = eh * 60 + em;
 
   // Handle multi-day

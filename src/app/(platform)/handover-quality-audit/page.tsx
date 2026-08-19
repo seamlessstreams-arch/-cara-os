@@ -250,7 +250,7 @@ export default function HandoverQualityAuditPage() {
               Handover is a safeguarding moment.
             </p>
             <p className="mt-1">
-              Every handover protects a child's safety, voice and continuity of
+              Every handover protects a child&apos;s safety, voice and continuity of
               care. Auditing handover quality is one of the clearest ways a
               Registered Manager can evidence Quality Standard 13 (Leadership &
               Management) and inform the Independent Person under Reg 33. Each
@@ -674,13 +674,13 @@ export default function HandoverQualityAuditPage() {
           <BookOpen className="h-4 w-4" /> Regulatory basis
         </h3>
         <p>
-          The Children's Homes (England) Regulations 2015 — Quality Standard 13
+          The Children&apos;s Homes (England) Regulations 2015 — Quality Standard 13
           (Leadership and Management Standard) requires the Registered Manager
           to lead a culture of continuous improvement and to use evidence to
           improve quality of care. Reg 33 visits ask the Independent Person to
           consider whether children are effectively safeguarded and whether
           systems for sharing information between staff are robust. Auditing
-          handovers — the moment a child's safety, voice, and continuity of care
+          handovers — the moment a child&apos;s safety, voice, and continuity of care
           travel from one shift to the next — is one of the strongest direct
           evidence sources for both. Findings here feed Reg 45 quality of care
           reviews and the SCCIF self-evaluation.

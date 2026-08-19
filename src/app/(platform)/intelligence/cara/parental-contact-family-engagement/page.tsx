@@ -236,7 +236,7 @@ export default function ParentalContactFamilyEngagementPage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          CHR 2015 Reg 5 (consulting children), Reg 6 (quality of care), Reg 8 (contact). Children Act 1989 s.34. SCCIF: "Experiences and progress of children in care."
+          CHR 2015 Reg 5 (consulting children), Reg 6 (quality of care), Reg 8 (contact). Children Act 1989 s.34. SCCIF: &quot;Experiences and progress of children in care.&quot;
         </p>
       </div>
     </PageShell>

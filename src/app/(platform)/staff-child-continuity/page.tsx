@@ -75,7 +75,7 @@ export default function StaffChildContinuityPage() {
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               Children in care do best with consistent, trusted adults who know them well. This measures the
-              <strong> relational</strong> continuity of each child's care (distinct from routine or handover
+              <strong> relational</strong> continuity of each child&apos;s care (distinct from routine or handover
               continuity): is an <em>active</em> key worker assigned, are they <em>actually delivering</em> the
               key-working sessions, and is the relationship concentrated and recent — or spread thinly across many
               staff? Supports CHR 2015 Reg 11 (positive relationships), Reg 6 and Reg 12.

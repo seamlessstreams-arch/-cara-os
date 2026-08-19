@@ -212,7 +212,7 @@ function StartView({ data, onOpen }: { data: NonNullable<ReturnType<typeof useCa
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">2 · What's happening?</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">2 · What&apos;s happening?</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {data.incident_types.map((t) => (
                 <button key={t.key} onClick={() => setType(t.key)}

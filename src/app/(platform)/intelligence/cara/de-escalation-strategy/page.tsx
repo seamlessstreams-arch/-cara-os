@@ -387,7 +387,7 @@ export default function DeEscalationStrategyPage() {
 
         {/* Accountability callout */}
         <blockquote className="border-l-4 border-blue-400 pl-4 py-2 text-sm text-muted-foreground italic">
-          "The aim is not to control behaviour but to understand it — to ask what is this child communicating, and what does this child need from us right now? A therapeutic response starts with curiosity, not consequences."
+          &quot;The aim is not to control behaviour but to understand it — to ask what is this child communicating, and what does this child need from us right now? A therapeutic response starts with curiosity, not consequences.&quot;
           <br />
           <span className="text-xs not-italic mt-1 block">Dan Hughes, DDP / Therapeutic residential care principles</span>
         </blockquote>

@@ -20,12 +20,12 @@ export default function QualityGatesPage() {
       <div className="mb-6 flex items-start gap-3 rounded-lg border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 p-4">
         <Lock className="mt-0.5 h-6 w-6 shrink-0 text-teal-600" />
         <div>
-          <p className="font-semibold text-teal-900">The gap can't be closed over.</p>
+          <p className="font-semibold text-teal-900">The gap can&apos;t be closed over.</p>
           <p className="mt-0.5 text-sm text-teal-800">
-            Where the Health Check <em>detects</em> what's missing, a quality gate <em>enforces</em> it: an oversight-required incident
-            can't be closed without oversight, a restraint can't be signed off without the child's debrief, a missing episode can't be
+            Where the Health Check <em>detects</em> what&apos;s missing, a quality gate <em>enforces</em> it: an oversight-required incident
+            can&apos;t be closed without oversight, a restraint can&apos;t be signed off without the child&apos;s debrief, a missing episode can&apos;t be
             closed without a return home interview. A gate never judges the practice — it refuses an unsafe finalising step and names
-            exactly what's needed. Complete the requirement and the gate clears.
+            exactly what&apos;s needed. Complete the requirement and the gate clears.
           </p>
         </div>
       </div>

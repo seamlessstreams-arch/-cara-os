@@ -165,7 +165,7 @@ function RecordPathway({ onDone }: { onDone: () => void }) {
         <CardContent className="p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h3 className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy,#1e293b)]">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Review recorded — Cara's read
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Review recorded — Cara&apos;s read
             </h3>
             <CompletenessRing pct={result.completenessPct} />
           </div>
@@ -221,7 +221,7 @@ function RecordPathway({ onDone }: { onDone: () => void }) {
         {/* The child — emphasised */}
         <div className="rounded-lg border border-[var(--cs-cara-gold-soft,#fde68a)] bg-[var(--cs-cara-gold-bg,#fffbeb)] p-3 space-y-3">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--cs-cara-gold,#b45309)]">
-            <MessageCircle className="h-3.5 w-3.5" /> The child's voice
+            <MessageCircle className="h-3.5 w-3.5" /> The child&apos;s voice
           </div>
           <Labelled label="Child's wishes & feelings" hint="In their words where possible. This is central to the decision.">
             <textarea value={f.child_wishes_feelings ?? ""} onChange={set("child_wishes_feelings")} rows={2} className={inputCls} />
@@ -307,7 +307,7 @@ export default function RightsRestrictionPage() {
           <Scale className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             Cara is a <span className="font-semibold">decision-support and evidence tool — not legal advice</span>. It helps you
-            consider the whole picture (the arrangement, its impact, the child's wishes and objection, proportionality and
+            consider the whole picture (the arrangement, its impact, the child&apos;s wishes and objection, proportionality and
             less-restrictive options). Where there is uncertainty, escalate and seek advice from your manager, the local
             authority or a legal adviser.
           </span>

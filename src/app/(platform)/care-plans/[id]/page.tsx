@@ -675,7 +675,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
             <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-white p-10 text-center">
               <BookOpen className="h-8 w-8 mx-auto mb-2 text-[var(--cs-text-gentle)]" />
               <p className="text-sm font-medium text-[var(--cs-text-secondary)]">No goals in this domain</p>
-              <p className="text-xs text-[var(--cs-text-muted)] mt-1">Goals for this domain haven't been set yet</p>
+              <p className="text-xs text-[var(--cs-text-muted)] mt-1">Goals for this domain haven&apos;t been set yet</p>
             </div>
           ) : (
             <div className="space-y-3">

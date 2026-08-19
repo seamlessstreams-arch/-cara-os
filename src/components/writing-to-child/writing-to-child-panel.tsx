@@ -204,7 +204,7 @@ export function WritingToChildPanel({
 
             {r.missingInformation.length > 0 && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] flex items-center gap-1"><HelpCircle className="h-3.5 w-3.5" /> What's missing</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] flex items-center gap-1"><HelpCircle className="h-3.5 w-3.5" /> What&apos;s missing</p>
                 <ul className="mt-1 space-y-1 text-sm text-[var(--cs-text-secondary)]">{r.missingInformation.map((m, i) => <li key={i}>• {m}</li>)}</ul>
               </div>
             )}

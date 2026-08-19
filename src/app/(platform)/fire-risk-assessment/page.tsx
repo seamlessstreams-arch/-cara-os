@@ -371,10 +371,10 @@ export default function FireRiskAssessmentPage() {
               (the Registered Manager) to carry out and regularly review a suitable and sufficient fire risk
               assessment, identifying hazards, the people at risk, and the control measures in place.
               <strong> Quality Standard 25 (Health & Wellbeing)</strong> and <strong>Regulation 23 (Fitness of
-              premises)</strong> of the Children's Homes (England) Regulations 2015 require the home to be
+              premises)</strong> of the Children&apos;s Homes (England) Regulations 2015 require the home to be
               physically safe, with effective fire precautions appropriate to the needs of the children
               accommodated. This assessment underpins fire drills, equipment provision, staff training, and
-              individual risk assessments where a child's needs or behaviour create elevated fire risk.
+              individual risk assessments where a child&apos;s needs or behaviour create elevated fire risk.
             </p>
           </div>
         </div>

@@ -256,7 +256,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
       {hasAvoidEntries && (
         <div className="mb-2 flex items-center gap-1.5 rounded-lg bg-red-50 border border-red-100 px-2.5 py-1.5 text-[11px] text-red-700">
           <AlertTriangle className="h-3 w-3 shrink-0" />
-          {categoryCounts["what_to_avoid"]} "what to avoid" entr{categoryCounts["what_to_avoid"] === 1 ? "y" : "ies"} — read before shift
+          {categoryCounts["what_to_avoid"]} &quot;what to avoid&quot; entr{categoryCounts["what_to_avoid"] === 1 ? "y" : "ies"} — read before shift
         </div>
       )}
 
@@ -280,7 +280,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
           {generating ? (
             <><Loader2 className="h-3 w-3 animate-spin" />Generating…</>
           ) : (
-            <><Sparkles className="h-3 w-3" />Generate "What Works"</>
+            <><Sparkles className="h-3 w-3" />Generate &quot;What Works&quot;</>
           )}
         </Button>
       </div>
@@ -304,7 +304,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
 
             <div className="max-h-[60vh] overflow-y-auto p-6 space-y-4">
               <div className="text-sm font-semibold text-[var(--cs-navy)] mb-4">
-                Evidence-based "what works" approaches for {displayName}:
+                Evidence-based &quot;what works&quot; approaches for {displayName}:
               </div>
               {suggestions.map((suggestion, i) => (
                 <div key={i} className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
@@ -410,7 +410,7 @@ export default function PracticeBankPage() {
               <p className="text-xs text-[var(--cs-cara-gold)] leading-relaxed">
                 The practice bank captures what works, what to avoid, and relational
                 strategies for each young person. Entries are contributed by staff and
-                reviewed by managers. Cards flagging <strong>"what to avoid"</strong> entries
+                reviewed by managers. Cards flagging <strong>&quot;what to avoid&quot;</strong> entries
                 should be read before each shift. Select a child below to view their
                 full practice bank on their intelligence profile.
               </p>
@@ -500,7 +500,7 @@ export default function PracticeBankPage() {
           <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
           <div className="text-xs text-[var(--cs-text-secondary)]">
             <strong className="text-[var(--cs-navy)]">Staff tip:</strong> Practice bank entries can be added from any young
-            person's intelligence tab. Cara will automatically surface relevant entries when generating care
+            person&apos;s intelligence tab. Cara will automatically surface relevant entries when generating care
             recommendations, keywork plans, and shift briefings.
           </div>
         </div>

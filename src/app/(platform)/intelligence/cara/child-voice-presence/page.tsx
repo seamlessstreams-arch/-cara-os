@@ -358,7 +358,7 @@ export default function ChildVoicePresencePage() {
 
           {/* Footer */}
           <p className="text-center text-[11px] text-slate-400">
-            Cara detects language patterns — the manager reflects on what this means for each child's experience.
+            Cara detects language patterns — the manager reflects on what this means for each child&apos;s experience.
           </p>
         </div>
       )}

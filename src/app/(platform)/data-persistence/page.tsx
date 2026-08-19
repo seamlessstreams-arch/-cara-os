@@ -172,7 +172,7 @@ export default function DataPersistencePage() {
           {/* ── Coverage matrix ── */}
           <section className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
             <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[var(--cs-navy)]"><ScrollText className="h-4 w-4" /> What persists, and where the audit trail lives</h3>
-            <p className="mt-1 text-xs text-[var(--cs-text-muted)]">“Write-through” entities are saved to their real table the moment they're created (once durable mode is on) — and read back identically in both modes.</p>
+            <p className="mt-1 text-xs text-[var(--cs-text-muted)]">“Write-through” entities are saved to their real table the moment they&apos;re created (once durable mode is on) — and read back identically in both modes.</p>
             {areas.map((area) => (
               <div key={area} className="mt-4">
                 <p className="text-xs font-bold text-[var(--cs-teal-strong)]">{area}</p>

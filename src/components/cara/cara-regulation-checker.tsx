@@ -161,7 +161,7 @@ export function CaraRegulationChecker() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Regulation Compliance Checker</h3>
-              <p className="text-[10px] text-[var(--cs-text-muted)]">Children's Homes Regulations 2015 — live status</p>
+              <p className="text-[10px] text-[var(--cs-text-muted)]">Children&apos;s Homes Regulations 2015 — live status</p>
             </div>
           </div>
           <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${complianceRate >= 80 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : complianceRate >= 60 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"}`}>

@@ -8,7 +8,7 @@
  * All queries are scoped to home_id (passed explicitly — service role bypasses RLS).
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { todayStr, daysFromNow } from "@/lib/utils";

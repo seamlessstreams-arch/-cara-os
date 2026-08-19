@@ -175,7 +175,7 @@ export function PracticeBankAddModal({
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     createEntry(
       {
         child_id: childId,

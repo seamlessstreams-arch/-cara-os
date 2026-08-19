@@ -76,7 +76,7 @@ export default function BehaviourTriggerPatternsPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 flex gap-3">
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
-              This analyses the <em>patterns</em> in each child's behaviour log (distinct from whether records are
+              This analyses the <em>patterns</em> in each child&apos;s behaviour log (distinct from whether records are
               complete): recurring <strong>triggers</strong>, whether concerning behaviour is <strong>escalating</strong>
               in intensity, whether a <strong>de-escalation strategy</strong> is recorded (especially for high-intensity
               incidents), and the balance of positive to concerning entries. Understanding behaviour is how restraint is

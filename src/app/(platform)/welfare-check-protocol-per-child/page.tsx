@@ -354,7 +354,7 @@ export default function WelfareCheckProtocolPerChildPage() {
                   <div className="rounded-lg border bg-blue-50 border-blue-200 p-3">
                     <h4 className="font-medium mb-1 flex items-center gap-2 text-blue-800">
                       <MessageSquare className="h-4 w-4" />
-                      Child's voice & preferences
+                      Child&apos;s voice & preferences
                     </h4>
                     <p className="text-blue-900 mb-2">{r.childPreferences}</p>
                     <p className="text-xs text-blue-800">
@@ -427,11 +427,11 @@ export default function WelfareCheckProtocolPerChildPage() {
         </p>
         <p>
           Each child has an individualised welfare check protocol that balances safeguarding with
-          dignity and the child's expressed wishes. Protocols are co-produced where possible,
+          dignity and the child&apos;s expressed wishes. Protocols are co-produced where possible,
           recorded clearly, and reviewed at least monthly or following any significant change in risk
-          or presentation. Staff are inducted on each child's protocol before lone shifts. This page
-          supports compliance with the Children's Homes (England) Regulations 2015 and the Guide to
-          the Children's Homes Regulations.
+          or presentation. Staff are inducted on each child&apos;s protocol before lone shifts. This page
+          supports compliance with the Children&apos;s Homes (England) Regulations 2015 and the Guide to
+          the Children&apos;s Homes Regulations.
         </p>
       </div>
       <CareEventsPanel

@@ -432,7 +432,7 @@ export default function GuidanceNotesPage() {
                 <div className="space-y-1.5">
                   {result.reflection_questions.map((q, i) => (
                     <div key={i} className="rounded-lg bg-slate-50 border border-[var(--cs-border)] px-3 py-2">
-                      <p className="text-xs text-[var(--cs-text-secondary)] italic">"{q}"</p>
+                      <p className="text-xs text-[var(--cs-text-secondary)] italic">&quot;{q}&quot;</p>
                     </div>
                   ))}
                 </div>

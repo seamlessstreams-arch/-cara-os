@@ -38,7 +38,7 @@ export function ActionCenterView() {
     return (
       <div className="max-w-xl mx-auto rounded-2xl border border-[var(--cs-teal-soft)] bg-[var(--cs-teal-bg)] p-8 text-center">
         <CheckCircle2 className="h-8 w-8 text-[var(--cs-teal)] mx-auto mb-2" />
-        <p className="text-lg font-bold text-[var(--cs-navy)]">You're all caught up</p>
+        <p className="text-lg font-bold text-[var(--cs-navy)]">You&apos;re all caught up</p>
         <p className="text-sm text-[var(--cs-text-secondary)] mt-1">No emergencies, acknowledgements, staffing alerts or sign-offs need you right now.</p>
       </div>
     );

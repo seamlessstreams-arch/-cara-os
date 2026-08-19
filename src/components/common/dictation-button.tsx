@@ -278,7 +278,7 @@ export function DictationButton({
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-50">
           <div className="whitespace-nowrap rounded-lg bg-[var(--cs-navy)] px-2.5 py-1.5 text-[11px] text-white shadow-[var(--cs-shadow-card)]">
-            Voice input isn't supported here — try Chrome, Edge or Safari
+            Voice input isn&apos;t supported here — try Chrome, Edge or Safari
           </div>
         </div>
       </div>

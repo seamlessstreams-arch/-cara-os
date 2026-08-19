@@ -348,7 +348,7 @@ export default function ProtectiveRelationshipsPage() {
         )}
 
         <p className="px-1 text-xs text-[var(--cs-text-muted,#64748b)]">
-          Cara maps a child's network and surfaces where the risks and protective factors are. It informs safeguarding and
+          Cara maps a child&apos;s network and surfaces where the risks and protective factors are. It informs safeguarding and
           relationship work — it never replaces professional judgement.
         </p>
       </div>

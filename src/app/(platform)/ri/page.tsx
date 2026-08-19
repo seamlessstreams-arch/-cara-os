@@ -508,7 +508,7 @@ export default function RiHubPage() {
           <div>
             <p className="text-sm font-semibold text-[var(--cs-text-secondary)]">RI Independent Oversight</p>
             <p className="text-xs text-[var(--cs-text-muted)] leading-relaxed mt-0.5">
-              This Command Centre supports the RI role under Regulation 15 and Schedule 2 of the Children's Homes (England) Regulations 2015.
+              This Command Centre supports the RI role under Regulation 15 and Schedule 2 of the Children&apos;s Homes (England) Regulations 2015.
               All AI-generated analysis requires RI review and professional judgement before any governance action is taken.
             </p>
           </div>

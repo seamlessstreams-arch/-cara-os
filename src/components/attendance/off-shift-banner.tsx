@@ -59,7 +59,7 @@ export function OffShiftBanner() {
         <Lock className="h-4 w-4 mt-0.5 shrink-0 text-[var(--cs-avisaar-coral)]" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-[var(--cs-navy)]">You're off shift</p>
+            <p className="text-sm font-semibold text-[var(--cs-navy)]">You&apos;re off shift</p>
             {isLive ? (
               <Badge variant="outline" className="text-[9px] text-[var(--cs-avisaar-coral)] border-[var(--cs-avisaar-coral)]/40">Restricted now</Badge>
             ) : (

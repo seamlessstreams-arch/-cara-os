@@ -60,7 +60,7 @@ export default function PracticeReasoningPage() {
               <Users className="h-4 w-4 text-[var(--cs-teal,#0d9488)]" />
               Choose a child
             </CardTitle>
-            <CardDescription>Reasoning is assembled deterministically from this child's records.</CardDescription>
+            <CardDescription>Reasoning is assembled deterministically from this child&apos;s records.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">

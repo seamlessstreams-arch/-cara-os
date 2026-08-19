@@ -52,7 +52,7 @@ export function PresenceClockIn({
   if (choice === null) {
     return (
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Confirm you're at the home</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Confirm you&apos;re at the home</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button
             onClick={() => setChoice("kiosk")}

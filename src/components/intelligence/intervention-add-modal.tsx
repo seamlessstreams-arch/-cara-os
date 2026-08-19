@@ -192,7 +192,7 @@ export function InterventionAddModal({
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     createIntervention(
       {
         child_id: childId,

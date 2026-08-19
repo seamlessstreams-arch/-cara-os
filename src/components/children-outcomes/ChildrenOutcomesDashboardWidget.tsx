@@ -108,7 +108,7 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Children's Outcomes</h3>
+              <h3 className="text-sm font-semibold">Children&apos;s Outcomes</h3>
               <p className="text-xs text-muted-foreground">{data.childCount} children — SCCIF aligned</p>
             </div>
           </div>

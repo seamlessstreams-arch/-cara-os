@@ -866,7 +866,7 @@ export async function getAdmissionStats(
 
   const all = data ?? [];
   const byPhase: Record<string, number> = {};
-  let completedDays: number[] = [];
+  const completedDays: number[] = [];
 
   for (const wf of all) {
     byPhase[wf.current_phase] = (byPhase[wf.current_phase] ?? 0) + 1;

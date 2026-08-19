@@ -89,7 +89,7 @@ export default function ConflictDetectionPage() {
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               Duplicate detection finds records that are the <strong>same</strong> event captured twice. Conflict detection finds
               records that <strong>disagree</strong> — a care log written while a child is recorded missing, an injury documented in
-              one record and denied in another, the same incident graded "critical" and "low", a staff member delivering care while
+              one record and denied in another, the same incident graded &quot;critical&quot; and &quot;low&quot;, a staff member delivering care while
               also booked on leave. Each is a data-integrity and often a safeguarding risk. <strong>Every conflict here is surfaced for a
               human to reconcile and is never auto-resolved</strong> — Cara may suggest which record is more likely accurate, with its
               reasoning and confidence, but it never edits either record, hides the disagreement, or silently picks a winner.

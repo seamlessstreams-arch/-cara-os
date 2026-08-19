@@ -108,7 +108,7 @@ export default function OfstedReadinessIntelligencePage() {
             {d.engines_inadequate > 0 && (
               <div className="flex items-center gap-1.5 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                {d.engines_inadequate} engine{d.engines_inadequate > 1 ? "s" : ""} rated inadequate — any inadequate area is a serious inspection risk; Ofsted's overall effectiveness judgement is bounded by the weakest judgement area
+                {d.engines_inadequate} engine{d.engines_inadequate > 1 ? "s" : ""} rated inadequate — any inadequate area is a serious inspection risk; Ofsted&apos;s overall effectiveness judgement is bounded by the weakest judgement area
               </div>
             )}
             {d.engines_no_data >= 10 && (
@@ -253,7 +253,7 @@ export default function OfstedReadinessIntelligencePage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          ILACS (Inspection of Local Authority Children's Services) framework — the four judgement areas for children's homes registered under CHR 2015: (1) the overall experiences and progress of children; (2) how well children are helped and protected; (3) the effectiveness of leaders and managers; (4) the impact of leaders on staff practice. Ofsted's overall effectiveness judgement is determined by the lowest individual judgement area — a home cannot be judged good overall if any judgement area is inadequate or requires improvement. CHR 2015 Schedule 7 (matters to be considered in inspection); Reg 44 (monthly visits by nominated individual); Reg 45 (annual review of quality of care); Reg 46 (actions required by Ofsted). This composite score is indicative only — it is based on recorded practice data and cannot replicate the full range of evidence Ofsted would gather during an inspection, including direct observation, conversations with children, and staff interviews.
+          ILACS (Inspection of Local Authority Children&apos;s Services) framework — the four judgement areas for children&apos;s homes registered under CHR 2015: (1) the overall experiences and progress of children; (2) how well children are helped and protected; (3) the effectiveness of leaders and managers; (4) the impact of leaders on staff practice. Ofsted&apos;s overall effectiveness judgement is determined by the lowest individual judgement area — a home cannot be judged good overall if any judgement area is inadequate or requires improvement. CHR 2015 Schedule 7 (matters to be considered in inspection); Reg 44 (monthly visits by nominated individual); Reg 45 (annual review of quality of care); Reg 46 (actions required by Ofsted). This composite score is indicative only — it is based on recorded practice data and cannot replicate the full range of evidence Ofsted would gather during an inspection, including direct observation, conversations with children, and staff interviews.
         </p>
       </div>
     </PageShell>

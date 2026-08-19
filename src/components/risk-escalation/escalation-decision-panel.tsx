@@ -128,7 +128,7 @@ function DecisionRow({ decision }: { decision: EscalationDecision }) {
 
           {decision.decisionReason && (
             <p className="text-xs">
-              <b>Manager's reason:</b> {decision.decisionReason}
+              <b>Manager&apos;s reason:</b> {decision.decisionReason}
             </p>
           )}
 

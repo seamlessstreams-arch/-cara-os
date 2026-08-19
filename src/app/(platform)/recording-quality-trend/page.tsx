@@ -64,8 +64,8 @@ export default function RecordingQualityTrendPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 flex gap-3">
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
-              Recording quality scored week by week, so you can see the direction of travel — not just today's snapshot.
-              The child's voice is tracked separately because it is the dimension that most often needs a sustained push.
+              Recording quality scored week by week, so you can see the direction of travel — not just today&apos;s snapshot.
+              The child&apos;s voice is tracked separately because it is the dimension that most often needs a sustained push.
               An improving line is real evidence for inspection that the home learns and improves (Reg 13).
             </p>
           </div>

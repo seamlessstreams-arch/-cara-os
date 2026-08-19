@@ -339,7 +339,7 @@ export default function StayingSafePlansPage() {
 
         {!editing && !child.isLoading && !plan && childId && (
           <Card><CardContent className="p-6 text-center">
-            <p className="mb-3 text-sm text-[var(--cs-text-secondary,#475569)]">{child.data?.childName ?? "This child"} doesn't have a Staying Safe Plan yet.</p>
+            <p className="mb-3 text-sm text-[var(--cs-text-secondary,#475569)]">{child.data?.childName ?? "This child"} doesn&apos;t have a Staying Safe Plan yet.</p>
             <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-cara-gold,#b45309)] px-3 py-1.5 text-sm font-semibold text-white"><Plus className="h-4 w-4" /> Create a plan</button>
           </CardContent></Card>
         )}
@@ -349,7 +349,7 @@ export default function StayingSafePlansPage() {
             {!childFriendly && (
               <Card><CardContent className="p-4 space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-[var(--cs-navy,#1e293b)]">Cara's check · {analysis.completenessPct}% complete</h3>
+                  <h3 className="text-sm font-bold text-[var(--cs-navy,#1e293b)]">Cara&apos;s check · {analysis.completenessPct}% complete</h3>
                   {!plan.manager_approved ? (
                     <button onClick={() => update.mutate({ id: plan.id, approve: true } as never)} disabled={update.isPending} className="rounded-lg bg-[var(--cs-navy,#1e293b)] px-3 py-1.5 text-xs font-semibold text-white">Manager approve</button>
                   ) : (

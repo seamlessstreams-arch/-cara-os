@@ -107,7 +107,7 @@ export function SmartSignIn() {
               </p>
             ) : status.has_shift_today && status.scheduled_start ? (
               <p className="text-sm text-[var(--cs-text-secondary)] mt-1">
-                Today's shift: <strong>{status.scheduled_start}–{status.scheduled_end}</strong>
+                Today&apos;s shift: <strong>{status.scheduled_start}–{status.scheduled_end}</strong>
                 {status.shift && <span className="capitalize"> · {status.shift.shift_type.replace(/_/g, " ")}</span>}
               </p>
             ) : (

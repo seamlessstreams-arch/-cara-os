@@ -55,9 +55,9 @@ export default function EventCapturePage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 flex gap-3">
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
-              A form is just a way to capture an event <strong>once</strong>. The moment it's submitted, the orchestrator
-              validates it against fixed rules, checks it isn't a duplicate, decides which workflows it routes to and which
-              evidence it builds — so one entry surfaces everywhere it's needed, nothing is re-typed, and nothing
+              A form is just a way to capture an event <strong>once</strong>. The moment it&apos;s submitted, the orchestrator
+              validates it against fixed rules, checks it isn&apos;t a duplicate, decides which workflows it routes to and which
+              evidence it builds — so one entry surfaces everywhere it&apos;s needed, nothing is re-typed, and nothing
               externally-facing fires without approval. This is that preview, shown on a representative draft.
             </p>
           </div>

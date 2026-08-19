@@ -297,7 +297,7 @@ export default function InspectionReadinessIntelligencePage() {
         </div>
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          Ofsted ILACS 2023 (Inspection of Local Authority Children's Services). SCCIF (Social Care Common Inspection Framework). Three judgment areas: overall experiences and progress, how well children are helped and protected, leadership and management.
+          Ofsted ILACS 2023 (Inspection of Local Authority Children&apos;s Services). SCCIF (Social Care Common Inspection Framework). Three judgment areas: overall experiences and progress, how well children are helped and protected, leadership and management.
         </p>
       </div>
     </PageShell>

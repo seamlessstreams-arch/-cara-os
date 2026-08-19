@@ -175,7 +175,7 @@ function CheckTab() {
               <div className="flex flex-wrap gap-1.5">
                 {a.elements.map((e) => <span key={e.element} className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${e.present ? "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"}`}>{e.present ? "✓" : "—"} {e.element.toLowerCase()}</span>)}
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${a.connectBeforeCorrect ? "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"}`}>{a.connectBeforeCorrect ? "✓" : "—"} connect-before-correct</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${a.childVoicePresent ? "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"}`}>{a.childVoicePresent ? "✓" : "—"} child's voice</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${a.childVoicePresent ? "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"}`}>{a.childVoicePresent ? "✓" : "—"} child&apos;s voice</span>
               </div>
 
               {/* Dimensions */}

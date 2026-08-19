@@ -285,7 +285,7 @@ export default function OnCallRotaPage() {
         {/* regulatory note */}
         <div className="rounded-lg bg-muted/40 border p-4 text-xs text-muted-foreground space-y-1">
           <p className="font-semibold">Regulatory framework</p>
-          <p>The on-call rota is the operational expression of Quality Standard 13 — the leadership and management standard — which requires that the home is led and managed by people who provide direction, support and guidance, including outside of office hours. It also supports the Independent Person's monitoring under Reg 33 by evidencing that escalation routes exist and are used appropriately. On-call records form part of the home's audit trail, demonstrating the responsiveness of senior staff, the calibration of decision thresholds, and the wellbeing impact of out-of-hours cover on the people who provide it.</p>
+          <p>The on-call rota is the operational expression of Quality Standard 13 — the leadership and management standard — which requires that the home is led and managed by people who provide direction, support and guidance, including outside of office hours. It also supports the Independent Person&apos;s monitoring under Reg 33 by evidencing that escalation routes exist and are used appropriately. On-call records form part of the home&apos;s audit trail, demonstrating the responsiveness of senior staff, the calibration of decision thresholds, and the wellbeing impact of out-of-hours cover on the people who provide it.</p>
         </div>
       </div>
       <CareEventsPanel

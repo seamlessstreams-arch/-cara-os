@@ -284,7 +284,7 @@ export default function EndOfShiftChecklistPage() {
               Closing the shift well is part of safeguarding.
             </p>
             <p className="mt-1">
-              A consistent end-of-shift discipline protects children's safety,
+              A consistent end-of-shift discipline protects children&apos;s safety,
               continuity of medication, and quality of records — and gives the
               incoming team the steady foundation they need. Each completed
               checklist forms part of the evidence base for Quality Standard 13
@@ -652,7 +652,7 @@ export default function EndOfShiftChecklistPage() {
           <BookOpen className="h-4 w-4" /> Regulatory basis
         </h3>
         <p>
-          The Children's Homes (England) Regulations 2015 — Quality Standard 13
+          The Children&apos;s Homes (England) Regulations 2015 — Quality Standard 13
           (Leadership and Management) requires the Registered Manager to ensure
           staff work as a team and that systems for safeguarding, medication,
           environment, and records are robust at every transition between

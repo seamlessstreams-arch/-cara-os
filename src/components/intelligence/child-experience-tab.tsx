@@ -597,7 +597,7 @@ function PatternAlertsPanel({ childId }: { childId: string }) {
                 </div>
                 {alert.reflective_prompt && (
                   <p className="text-[11px] text-[var(--cs-text-muted)] italic leading-relaxed">
-                    "{alert.reflective_prompt}"
+                    &quot;{alert.reflective_prompt}&quot;
                   </p>
                 )}
                 <div className="text-[10px] text-[var(--cs-text-muted)]">{formatDate(alert.detected_at)}</div>
@@ -860,7 +860,7 @@ function VoiceRecordsPanel({ childId, childName }: { childId: string; childName:
                 </div>
                 {record.direct_quote ? (
                   <blockquote className="text-xs text-[var(--cs-text-secondary)] italic border-l-2 border-[var(--cs-cara-gold-soft)] pl-2 leading-relaxed">
-                    "{record.direct_quote}"
+                    &quot;{record.direct_quote}&quot;
                   </blockquote>
                 ) : record.paraphrase ? (
                   <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{record.paraphrase}</p>

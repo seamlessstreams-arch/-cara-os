@@ -88,7 +88,7 @@ export async function POST(
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const updatePayload: Record<string, unknown> = {
       status: newStatus,
       updated_at: now,

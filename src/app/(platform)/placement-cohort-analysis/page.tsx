@@ -148,7 +148,7 @@ export default function PlacementCohortAnalysisPage() {
           <div>
             <p className="font-semibold mb-0.5">Group living is its own developmental experience.</p>
             <p>
-              Children in our care don't just receive support as individuals — they shape and are shaped by the cohort they live with.
+              Children in our care don&apos;t just receive support as individuals — they shape and are shaped by the cohort they live with.
               How peers interact, what dynamics emerge, what supports cohesion and what destabilises it are themselves a form of care.
               This analysis is reviewed quarterly and informs every admission decision.
             </p>
@@ -380,7 +380,7 @@ export default function PlacementCohortAnalysisPage() {
       {/* ── regulatory note ────────────────────────────────────────── */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 mb-6">
         <strong>Regulation 14 &amp; Quality Standard 6:</strong> Reg 14 requires the registered person to assess, before any admission,
-        the impact of that admission on existing children and the suitability of the home for the child's needs alongside the existing cohort.
+        the impact of that admission on existing children and the suitability of the home for the child&apos;s needs alongside the existing cohort.
         Quality Standard 6 (positive relationships) requires that children are helped to develop, and benefit from, relationships with peers
         and adults that support their welfare and development. Quarterly cohort analysis evidences how the home actively manages group living
         as a developmental experience and provides the structured basis for every admission impact assessment.

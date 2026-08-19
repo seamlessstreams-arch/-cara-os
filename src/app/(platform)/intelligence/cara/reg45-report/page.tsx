@@ -171,7 +171,7 @@ export default function Reg45ReportPage() {
           <CardContent className="space-y-2 text-xs">
             {reports.length === 0 && (
               <div className="text-muted-foreground">
-                No reports yet. Click "Build new draft".
+                No reports yet. Click &quot;Build new draft&quot;.
               </div>
             )}
             {reports.map((r) => (

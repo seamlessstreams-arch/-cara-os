@@ -176,7 +176,7 @@ export function CaraWeeklyDigest({
       {/* Top actions */}
       <div className="px-5 py-3">
         <p className="text-[9px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-2">
-          This week's priorities
+          This week&apos;s priorities
         </p>
         <div className="space-y-2">
           {digest.topActions.map((action) => {
@@ -207,7 +207,7 @@ export function CaraWeeklyDigest({
       {digest.achievements.length > 0 && (
         <div className="px-5 py-3 bg-emerald-50/50 border-t border-emerald-100">
           <p className="text-[9px] font-semibold text-emerald-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-            <TrendingUp className="h-3 w-3" /> This week's wins
+            <TrendingUp className="h-3 w-3" /> This week&apos;s wins
           </p>
           <ul className="space-y-0.5">
             {digest.achievements.map((a, i) => (

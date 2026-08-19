@@ -265,7 +265,7 @@ export default function Reg45EvidencePage() {
         {snapshot && snapshot.summary.total === 0 && (
           <Card>
             <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              No evidence yet for this review period. Click "Refresh evidence"
+              No evidence yet for this review period. Click &quot;Refresh evidence&quot;
               to draft from current verified records.
             </CardContent>
           </Card>

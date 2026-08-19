@@ -141,7 +141,7 @@ export function computeValuesMatch(employer: EmployerValuesProfile, candidate: C
     ...(candidate.scenario_answers || []).map((s) => s.answer),
   ].join(" ");
   const relationalHits = countVocabHits(candRelational, RELATIONAL_VOCAB);
-  let relationalScore = clamp01(relationalHits / 3);
+  const relationalScore = clamp01(relationalHits / 3);
   // employer priority nudges how decisive this dimension is
   const relWeight = employer.relational_practice_priority === "high" ? 0.24
     : employer.relational_practice_priority === "low" ? 0.12 : 0.18;

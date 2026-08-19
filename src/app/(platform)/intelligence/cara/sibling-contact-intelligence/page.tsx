@@ -237,7 +237,7 @@ export default function SiblingContactIntelligencePage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          Children Act 1989 s.23(7) — duty to promote contact with siblings. CHR 2015 Reg 5 (engaging children). SCCIF: "Experiences and progress of children in care."
+          Children Act 1989 s.23(7) — duty to promote contact with siblings. CHR 2015 Reg 5 (engaging children). SCCIF: &quot;Experiences and progress of children in care.&quot;
         </p>
       </div>
     </PageShell>

@@ -752,7 +752,7 @@ export default function SupervisionDetailPage({
                     Regulation 22 — Supervision
                   </p>
                   <p className="text-[10px] text-[var(--cs-text-muted)] leading-relaxed">
-                    All staff in regulated children's homes must receive formal
+                    All staff in regulated children&apos;s homes must receive formal
                     supervision at least every four to six weeks. This record
                     is a legal document and may be inspected by Ofsted (ILACS).
                   </p>

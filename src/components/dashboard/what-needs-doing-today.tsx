@@ -357,7 +357,7 @@ export function WhatNeedsDoingToday({
             <PartyPopper className="h-7 w-7 text-emerald-600" />
           </div>
           <h3 className="text-base font-semibold text-[var(--cs-navy)] mb-1">
-            Everything's up to date!
+            Everything&apos;s up to date!
           </h3>
           <p className="text-sm text-[var(--cs-text-muted)]">
             No outstanding tasks, logs, or reviews right now.

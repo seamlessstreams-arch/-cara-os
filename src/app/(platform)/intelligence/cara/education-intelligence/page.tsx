@@ -275,7 +275,7 @@ export default function EducationIntelligencePage() {
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
         <p className="font-semibold mb-1">Regulatory reference</p>
-        <p>Children in care must have a Personal Education Plan reviewed at each LAC review (Care Planning Regulations 2010). Exclusions must be notified to the designated teacher immediately (Children's Homes Regulations 2015, Reg 8 & 10; KCSIE 2024).</p>
+        <p>Children in care must have a Personal Education Plan reviewed at each LAC review (Care Planning Regulations 2010). Exclusions must be notified to the designated teacher immediately (Children&apos;s Homes Regulations 2015, Reg 8 & 10; KCSIE 2024).</p>
       </div>
 
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">

@@ -72,7 +72,7 @@ export function OffShiftPortal() {
     return (
       <div className="max-w-xl mx-auto rounded-2xl border border-[var(--cs-teal-soft)] bg-[var(--cs-teal-bg)] p-6 text-center">
         <CheckCircle2 className="h-7 w-7 text-[var(--cs-teal)] mx-auto mb-2" />
-        <p className="text-lg font-bold text-[var(--cs-navy)]">You're on shift</p>
+        <p className="text-lg font-bold text-[var(--cs-navy)]">You&apos;re on shift</p>
         <p className="text-sm text-[var(--cs-text-secondary)] mt-1">You have full operational access right now.</p>
         <Link href="/dashboard" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-[var(--cs-teal)] hover:underline">Go to dashboard <ArrowRight className="h-4 w-4" /></Link>
       </div>
@@ -87,9 +87,9 @@ export function OffShiftPortal() {
     <div className="max-w-2xl mx-auto space-y-4">
       {/* Hero — clock in */}
       <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-6">
-        <p className="text-lg font-bold text-[var(--cs-navy)]">Hi {name}, you're off shift</p>
+        <p className="text-lg font-bold text-[var(--cs-navy)]">Hi {name}, you&apos;re off shift</p>
         <p className="text-sm text-[var(--cs-text-secondary)] mt-1 mb-4">
-          Clock in to get your full operational access back. Until then, here's what you can still do.
+          Clock in to get your full operational access back. Until then, here&apos;s what you can still do.
         </p>
         <Link href="/sign-in">
           <Button className="gap-1.5"><LogIn className="h-4 w-4" />Clock in to your shift</Button>

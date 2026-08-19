@@ -21,7 +21,7 @@ const {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /** Build a minimal QualityAudit for testing. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 function makeAudit(
   overrides: Record<string, unknown> = {},
 ): any {
@@ -50,7 +50,7 @@ function makeAudit(
 }
 
 /** Build a minimal ImprovementPlan for testing. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 function makeImprovementPlan(
   overrides: Record<string, unknown> = {},
 ): any {

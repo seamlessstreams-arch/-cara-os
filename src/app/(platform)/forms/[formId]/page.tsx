@@ -667,7 +667,7 @@ export default function FormDetailPage() {
             </div>
             {form.review_notes && (
               <p className="mt-2 text-xs text-emerald-700 italic border-t border-emerald-200 pt-2">
-                "{form.review_notes}"
+                &quot;{form.review_notes}&quot;
               </p>
             )}
           </div>

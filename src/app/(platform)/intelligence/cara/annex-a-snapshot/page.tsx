@@ -221,7 +221,7 @@ export default function AnnexASnapshotPage() {
           <Card>
             <CardContent className="flex items-center gap-3 py-8 text-sm text-muted-foreground">
               <AlertTriangle className="h-4 w-4" />
-              No snapshot yet. Click "Build snapshot" to draft one from current
+              No snapshot yet. Click &quot;Build snapshot&quot; to draft one from current
               verified records.
             </CardContent>
           </Card>

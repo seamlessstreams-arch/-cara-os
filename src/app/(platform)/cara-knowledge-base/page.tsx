@@ -299,7 +299,7 @@ export default function CaraKnowledgeBasePage() {
           <div className="rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-slate-50 p-5">
             <div className="flex items-center gap-2 mb-3">
               <Heart className="h-4 w-4 text-violet-600" />
-              <h2 className="text-sm font-semibold text-violet-900">Cara's heart</h2>
+              <h2 className="text-sm font-semibold text-violet-900">Cara&apos;s heart</h2>
             </div>
             <p className="text-sm text-slate-700 italic mb-4">{result.heart.identity}</p>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">

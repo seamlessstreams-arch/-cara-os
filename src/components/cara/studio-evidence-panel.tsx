@@ -55,7 +55,7 @@ export function CaraStudioEvidencePanel({
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
             No indexed sources were available. This output is based on general practice principles.
-            Verify all content against the child's actual records before use.
+            Verify all content against the child&apos;s actual records before use.
           </span>
         </div>
       )}

@@ -80,7 +80,7 @@ export function RecordingQualityTrendCard() {
             </div>
           </div>
           <div className="rounded-lg border p-2.5">
-            <p className="text-[10px] text-muted-foreground">Child's voice</p>
+            <p className="text-[10px] text-muted-foreground">Child&apos;s voice</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-lg font-bold tabular-nums">{o.childvoice_current}</span>
               <span className={cn("flex items-center gap-0.5 text-[11px] font-medium", voice.cls)}>{voice.icon}{voice.label}{o.childvoice_change !== 0 ? ` ${o.childvoice_change > 0 ? "+" : ""}${o.childvoice_change}` : ""}</span>

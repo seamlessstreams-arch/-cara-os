@@ -148,7 +148,7 @@ export function AdvocacyCard() {
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Scale className="h-3 w-3" />
-              Children's Advocacy
+              Children&apos;s Advocacy
             </p>
             {intel.child_advocacy_profiles.map((cp) => (
               <div key={cp.child_id} className="flex items-center justify-between rounded border p-2 text-xs">
