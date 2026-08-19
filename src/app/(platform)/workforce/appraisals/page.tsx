@@ -7,7 +7,7 @@
 // and regulatory compliance tracking for Ofsted inspection readiness.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -494,11 +494,11 @@ export default function AppraisalsPage() {
   const appraisalsQuery = useAppraisals();
   const staffQuery      = useStaff();
 
-  const allAppraisals = appraisalsQuery.data?.data ?? [];
+  const allAppraisals = useMemo(() => appraisalsQuery.data?.data ?? [], [appraisalsQuery.data]);
   const meta = appraisalsQuery.data?.meta as Record<string, unknown> | undefined;
-  const staff = staffQuery.data?.data ?? [];
+  const staff = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
-  const getStaffNameFn = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
+  const getStaffNameFn = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
 
   const ratingCounts   = (meta?.rating_counts ?? {}) as Record<string, number>;
   const teamAvgScores  = (meta?.team_avg_scores ?? {}) as Record<string, number>;
@@ -541,7 +541,7 @@ export default function AppraisalsPage() {
     });
 
     return list;
-  }, [allAppraisals, filter, typeFilter, search, sortMode, staff]);
+  }, [allAppraisals, filter, typeFilter, search, sortMode, getStaffNameFn]);
 
   // ── Staff groups for staff view ──────────────────────────────────────────
   const staffGroups = useMemo(() => {
@@ -559,7 +559,7 @@ export default function AppraisalsPage() {
         if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
         return getStaffNameFn(a.staffId).localeCompare(getStaffNameFn(b.staffId));
       });
-  }, [allAppraisals, staff]);
+  }, [allAppraisals, getStaffNameFn]);
 
   return (
     <PageShell

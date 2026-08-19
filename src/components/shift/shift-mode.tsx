@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useMounted } from "@/hooks/use-mounted";
@@ -14,7 +14,9 @@ interface ShiftModeProps { onExit: () => void }
 
 export function ShiftMode({ onExit }: ShiftModeProps) {
   const store = getStore();
-  const children = (store.youngPeople as any[] || []).filter((yp: any) => yp.status === "current");
+  // The in-memory store is a module singleton; memoized so the timer
+  // callbacks that capture this list stay compiler-preservable.
+  const children = useMemo(() => (store.youngPeople as any[] || []).filter((yp: any) => yp.status === "current"), [store.youngPeople]);
   const [selectedChild, setSelectedChild] = useState<string | null>(children[0]?.id ?? null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);

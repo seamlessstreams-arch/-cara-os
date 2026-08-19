@@ -1386,7 +1386,7 @@ export default function DashboardPage() {
       return queue.filter((t) => t.assigned_to === currentUser.id);
     }
     return queue;
-  }, [d?.tasks.priority_queue, config.personalTasksOnly, currentUser?.id]);
+  }, [d, config, currentUser]);
 
   if (isError) {
     return (

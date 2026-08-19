@@ -78,7 +78,7 @@ export default function VoterRegistrationCivicPage() {
     queryKey: ["civic-records", childId, homeId],
     queryFn: () => api.get<{ data: CivicRecord[] }>(`/api/v1/civic-records${qs}`),
   });
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const filtered = useMemo(() => {
     let r = records.filter((rec) => {
@@ -96,7 +96,7 @@ export default function VoterRegistrationCivicPage() {
       return b.recordedDate.localeCompare(a.recordedDate);
     });
     return r;
-  }, [search, statusFilter, sortBy]);
+  }, [records, search, statusFilter, sortBy]);
 
   const stats = useMemo(() => {
     const registered = records.filter((r) => r.voterRegistrationStatus.startsWith("Registered")).length;

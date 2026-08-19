@@ -7,7 +7,7 @@
 // organisational resilience to Ofsted.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -207,9 +207,9 @@ export default function SuccessionBoardPage() {
 
   const plans    = successionQuery.data?.data ?? [];
   const profiles = profilesQuery.data?.data ?? [];
-  const staff    = staffQuery.data?.data ?? [];
+  const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
-  const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
+  const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
   const getProfile   = (staffId: string) => profiles.find((p) => p.staff_id === staffId);
 
   // ── Export data ────────────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ export default function SuccessionBoardPage() {
         notes: c.notes ?? "",
       })),
     ),
-  [plans, staff]);
+  [plans, getStaffName]);
 
   const filteredPlans = useMemo(() => {
     if (!search.trim()) return plans;
@@ -249,7 +249,7 @@ export default function SuccessionBoardPage() {
       const hay = [p.role_title, p.urgency, candidateNames, p.cara_narrative || ""].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [plans, search, staff]);
+  }, [plans, search, staff, getStaffName]);
 
   // Stats
   const totalCandidates = plans.reduce((s, p) => s + p.candidates.length, 0);

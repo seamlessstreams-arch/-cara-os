@@ -36,7 +36,7 @@ function useOnCallShifts() {
 
 export default function OnCallRotaPage() {
   const { data: res, isLoading } = useOnCallShifts();
-  const data: OnCallShift[] = res?.data ?? [];
+  const data = useMemo<OnCallShift[]>(() => res?.data ?? [], [res]);
 
   const [roleFilter, setRoleFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");

@@ -82,7 +82,7 @@ const STATUS_ICONS: Record<DiversityEventStatus, typeof Clock> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function DiversityCalendarPage() {
   const { data: raw, isLoading, isError, refetch } = useDiversityCalendarEvents();
-  const events: DiversityCalendarEvent[] = raw?.data ?? [];
+  const events = useMemo<DiversityCalendarEvent[]>(() => raw?.data ?? [], [raw]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

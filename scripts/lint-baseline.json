@@ -6,7 +6,6 @@
  "@typescript-eslint/no-unused-expressions": 9,
  "@typescript-eslint/no-unused-vars": 4798,
  "prefer-const": 10,
- "react-hooks/exhaustive-deps": 572,
- "react-hooks/preserve-manual-memoization": 48,
+ "react-hooks/exhaustive-deps": 550,
  "react/no-unescaped-entities": 209
 }

@@ -306,7 +306,7 @@ export default function StaffDevelopmentPage() {
       ),
   });
 
-  const profiles = data?.data ?? [];
+  const profiles = useMemo(() => data?.data ?? [], [data]);
   const summary = data?.summary;
 
   const filtered = useMemo(() => {
@@ -368,7 +368,7 @@ export default function StaffDevelopmentPage() {
       .filter(Boolean)
       .join("\n");
     return lines;
-  }, [profiles, summary]);
+  }, [profiles, summary, homeName]);
 
   return (
     <PageShell

@@ -63,7 +63,8 @@ const MOOD_CLR: Record<StaffReflectionMood, string> = { positive: "bg-green-100 
 /* ── component ────────────────────────────────────────────────────────────── */
 
 export default function StaffReflectionsPage() {
-  const { data: records = [], isLoading } = useStaffReflectionRecords();
+  const { data: recordsData, isLoading } = useStaffReflectionRecords();
+  const records = useMemo(() => recordsData ?? [], [recordsData]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");

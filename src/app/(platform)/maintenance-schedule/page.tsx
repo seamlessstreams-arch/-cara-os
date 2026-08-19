@@ -70,15 +70,12 @@ const CATEGORIES: MaintenanceScheduleCategory[] = [
 
 export default function MaintenanceSchedulePage() {
   const { data: res, isLoading } = useMaintenanceScheduleItems();
-  const data: MaintenanceScheduleItem[] = res?.data ?? [];
+  const data = useMemo<MaintenanceScheduleItem[]>(() => res?.data ?? [], [res]);
 
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("nextDue");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   const filtered = useMemo(() => {
     let list = [...data];
@@ -104,8 +101,9 @@ export default function MaintenanceSchedulePage() {
   const inDateCount = data.filter((m) => m.compliance_status === "in_date" || m.compliance_status === "booked").length;
   const inDatePct = total > 0 ? Math.round((inDateCount / total) * 100) : null;
   const due30 = data.filter((m) => {
-    const due = new Date(m.next_due);
-    const days = londonDayDiff(due, today);
+    // londonDayDiff anchors to the current London day itself — the mutated
+    // local-midnight Date it replaced was machine-local, not London.
+    const days = londonDayDiff(m.next_due);
     return days >= 0 && days <= 30 && m.compliance_status !== "overdue";
   }).length;
   const overdue = data.filter((m) => m.compliance_status === "overdue").length;

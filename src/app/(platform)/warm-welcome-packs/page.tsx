@@ -95,7 +95,7 @@ export default function WarmWelcomePacksPage() {
     queryKey: ["warm-welcome-packs", undefined, "home_oak"],
     queryFn: () => api.get<{ data: WarmWelcomePack[] }>("/api/v1/warm-welcome-packs?home_id=home_oak"),
   });
-  const packs = result?.data ?? [];
+  const packs = useMemo(() => result?.data ?? [], [result]);
 
   const filtered = useMemo(() => {
     let list = [...packs];
@@ -111,7 +111,7 @@ export default function WarmWelcomePacksPage() {
       }
     });
     return list;
-  }, [filterStatus, sortBy]);
+  }, [packs, filterStatus, sortBy]);
 
   const stats = useMemo(() => {
     const total = packs.length;

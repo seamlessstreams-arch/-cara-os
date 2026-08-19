@@ -383,7 +383,7 @@ export default function HrInspectionModePage() {
       ["Staff Ref", "Referral Date", "Allegation Category", "LADO Outcome", "DBS Referral Made", "Ofsted Notified", "Status", "Days to Resolution"],
       rawLado.map((l) => [l.staffRef, l.referralDate, l.allegationCategory, l.ladoOutcome ?? "", l.dbsReferralMade ? "Yes" : "No", l.ofstedNotified ? "Yes" : "No", l.status, l.daysToResolution != null ? String(l.daysToResolution) : ""]),
     );
-  }, []);
+  }, [rawCases, rawRecruitment, rawCompliance, rawChronology, rawSuspensions, rawLado]);
 
   // ── Summary stats ─────────────────────────────────────────────────────
 
@@ -403,7 +403,7 @@ export default function HrInspectionModePage() {
       pendingOversight: pendingOversight.length,
       totalStaff: rawWorkforce.totalStaff,
     };
-  }, []);
+  }, [rawCases, rawRecruitment, rawCompliance, rawSuspensions, rawLado, rawWorkforce]);
 
   return (
     <PageShell

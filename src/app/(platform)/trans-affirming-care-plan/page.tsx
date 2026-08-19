@@ -82,7 +82,7 @@ export default function TransAffirmingCarePlanPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: result, isLoading } = useTransAffirmingPlans(undefined, "home_oak");
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const filtered = useMemo(() => {
     let r = records.filter((rec) => {
@@ -100,7 +100,7 @@ export default function TransAffirmingCarePlanPage() {
       return b.planDate.localeCompare(a.planDate);
     });
     return r;
-  }, [search, stageFilter, sortBy]);
+  }, [records, search, stageFilter, sortBy]);
 
   const stats = useMemo(() => {
     const activePlans = records.length;

@@ -7,7 +7,7 @@
 // colour-coded matrix with print support.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -88,6 +88,7 @@ const TRAINING_CATEGORIES = [
   { key: "mental_health",  label: "Mental Health FA",  short: "MH", mandatory: false },
   { key: "trauma",         label: "Trauma-Informed",   short: "TIP", mandatory: false },
 ];
+const mandatoryCategories = TRAINING_CATEGORIES.filter((c) => c.mandatory);
 
 const STATUS_ICON: Record<QualificationStatus | "unknown", React.ElementType> = {
   completed:   CheckCircle2,
@@ -247,12 +248,12 @@ export default function TrainingMatrixPage() {
   const qualsQuery = useQualifications();
   const staffQuery = useStaff();
 
-  const quals = qualsQuery.data?.data ?? [];
-  const staff = staffQuery.data?.data?.filter((s) => s.is_active && s.role !== "responsible_individual") ?? [];
+  const quals = useMemo(() => qualsQuery.data?.data ?? [], [qualsQuery.data]);
+  const staff = useMemo(() => staffQuery.data?.data?.filter((s) => s.is_active && s.role !== "responsible_individual") ?? [], [staffQuery.data]);
 
   const getStaffName = (id: string) => staffQuery.data?.data?.find((s) => s.id === id)?.full_name ?? id;
 
-  const getStatusForCategory = (staffId: string, categoryKey: string): QualificationStatus | "unknown" => {
+  const getStatusForCategory = useCallback((staffId: string, categoryKey: string): QualificationStatus | "unknown" => {
     const keywords: Record<string, string[]> = {
       safeguarding:    ["safeguarding", "child protection"],
       medication:      ["medication", "mar", "medic"],
@@ -271,7 +272,7 @@ export default function TrainingMatrixPage() {
         terms.some((t) => q.qualification_name.toLowerCase().includes(t)),
     );
     return match ? match.status : "unknown";
-  };
+  }, [quals]);
 
   const getExpiryForCategory = (staffId: string, categoryKey: string): string | null => {
     const keywords: Record<string, string[]> = {
@@ -293,7 +294,6 @@ export default function TrainingMatrixPage() {
   };
 
   // ── Computed stats ───────────────────────────────────────────────────────
-  const mandatoryCategories = TRAINING_CATEGORIES.filter((c) => c.mandatory);
 
   const teamGaps = staff.reduce((total, s) => {
     return total + mandatoryCategories.filter((cat) => {
@@ -350,7 +350,7 @@ export default function TrainingMatrixPage() {
       row._pct = `${mandatoryCategories.length > 0 ? Math.round((compliant / mandatoryCategories.length) * 100) : null}%`;
       return row;
     }),
-  [staff, quals]);
+  [staff, getStatusForCategory]);
 
   // ── Filtered staff list ──────────────────────────────────────────────────
   const filteredStaff = useMemo(() => {
@@ -368,7 +368,7 @@ export default function TrainingMatrixPage() {
       );
     }
     return list;
-  }, [staff, search, filterMode, quals]);
+  }, [staff, search, filterMode, getStatusForCategory]);
 
   return (
     <PageShell
