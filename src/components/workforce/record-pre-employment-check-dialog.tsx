@@ -17,7 +17,7 @@
 // then the truth about it.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useId, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,18 +54,16 @@ export function RecordPreEmploymentCheckDialog({
 }) {
   const uid = useId();
   const qc = useQueryClient();
-  const [dates, setDates] = useState<Record<string, string>>({});
-
-  // Seed from what is already recorded, so the dialog shows the current state
-  // rather than an empty form that looks like nothing has ever been checked.
-  useEffect(() => {
-    if (!open || !subject) return;
-    setDates({
-      right_to_work_checked_date: subject.right_to_work_checked_date ?? "",
-      barred_list_checked_date: subject.barred_list_checked_date ?? "",
-      prohibition_checked_date: subject.prohibition_checked_date ?? "",
-    });
-  }, [open, subject]);
+  // The dialog shows what is already recorded (an empty form would look like
+  // nothing has ever been checked) until the manager edits; then their dates
+  // win, and closing discards them so reopening re-reads the record.
+  const recordedDates = useMemo<Record<string, string>>(() => ({
+    right_to_work_checked_date: subject?.right_to_work_checked_date ?? "",
+    barred_list_checked_date: subject?.barred_list_checked_date ?? "",
+    prohibition_checked_date: subject?.prohibition_checked_date ?? "",
+  }), [subject]);
+  const [editedDates, setEditedDates] = useState<Record<string, string> | null>(null);
+  const dates = editedDates ?? recordedDates;
 
   const save = useMutation({
     mutationFn: () => {
@@ -85,7 +83,7 @@ export function RecordPreEmploymentCheckDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) save.reset(); onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { save.reset(); setEditedDates(null); } onOpenChange(v); }}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Pre-employment checks — {subject?.full_name}</DialogTitle>
@@ -107,7 +105,7 @@ export function RecordPreEmploymentCheckDialog({
                 // A check cannot have been made tomorrow; the route rejects it too.
                 max={todayStr()}
                 value={dates[c.dateKey] ?? ""}
-                onChange={(e) => setDates((p) => ({ ...p, [c.dateKey]: e.target.value }))}
+                onChange={(e) => setEditedDates((p) => ({ ...(p ?? recordedDates), [c.dateKey]: e.target.value }))}
               />
             </div>
           ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -388,14 +388,27 @@ function BrandingTab() {
     },
   });
 
-  const [sysForm, setSysForm] = useState({ primary_colour: "#1e3a5f", secondary_colour: "#2dd4bf", accent_colour: "#3b82f6", default_footer_text: "Generated securely through Cara", support_email: "support@cara.care" });
-  const [orgForm, setOrgForm] = useState({ company_name: "", trading_name: "", registered_provider_name: "", company_registration_number: "", ofsted_provider_reference: "", address: "", phone: "", email: "", website: "", responsible_individual_name: "", primary_colour: "", secondary_colour: "", logo_url: "", document_logo_url: "", confidentiality_notice: "" });
-  const [homeForm2, setHomeForm2] = useState({ home_name: "", home_address: "", ofsted_urn: "", registered_manager_name: "", responsible_individual_name: "", emergency_contact: "", safeguarding_contact: "", lado_contact: "", local_authority_contact: "", police_contact: "", logo_override_url: "" });
+  // Each form follows the server until the user first edits it; from then on
+  // their snapshot wins, so a background refetch (each save invalidates the
+  // branding queries) can never clobber typing in the other two forms.
+  const serverSys = useMemo(() => systemQ.data
+    ? { primary_colour: systemQ.data.primary_colour, secondary_colour: systemQ.data.secondary_colour, accent_colour: systemQ.data.accent_colour, default_footer_text: systemQ.data.default_footer_text, support_email: systemQ.data.support_email }
+    : { primary_colour: "#1e3a5f", secondary_colour: "#2dd4bf", accent_colour: "#3b82f6", default_footer_text: "Generated securely through Cara", support_email: "support@cara.care" }, [systemQ.data]);
+  const serverOrg = useMemo(() => ({ company_name: orgQ.data?.company_name ?? "", trading_name: orgQ.data?.trading_name ?? "", registered_provider_name: orgQ.data?.registered_provider_name ?? "", company_registration_number: orgQ.data?.company_registration_number ?? "", ofsted_provider_reference: orgQ.data?.ofsted_provider_reference ?? "", address: orgQ.data?.address ?? "", phone: orgQ.data?.phone ?? "", email: orgQ.data?.email ?? "", website: orgQ.data?.website ?? "", responsible_individual_name: orgQ.data?.responsible_individual_name ?? "", primary_colour: orgQ.data?.primary_colour ?? "", secondary_colour: orgQ.data?.secondary_colour ?? "", logo_url: orgQ.data?.logo_url ?? "", document_logo_url: orgQ.data?.document_logo_url ?? "", confidentiality_notice: orgQ.data?.confidentiality_notice ?? "" }), [orgQ.data]);
+  const serverHome = useMemo(() => ({ home_name: homeQ.data?.home_name ?? "", home_address: homeQ.data?.home_address ?? "", ofsted_urn: homeQ.data?.ofsted_urn ?? "", registered_manager_name: homeQ.data?.registered_manager_name ?? "", responsible_individual_name: homeQ.data?.responsible_individual_name ?? "", emergency_contact: homeQ.data?.emergency_contact ?? "", safeguarding_contact: homeQ.data?.safeguarding_contact ?? "", lado_contact: homeQ.data?.lado_contact ?? "", local_authority_contact: homeQ.data?.local_authority_contact ?? "", police_contact: homeQ.data?.police_contact ?? "", logo_override_url: homeQ.data?.logo_override_url ?? "" }), [homeQ.data]);
+  const [sysEdited, setSysEdited] = useState<typeof serverSys | null>(null);
+  const [orgEdited, setOrgEdited] = useState<typeof serverOrg | null>(null);
+  const [homeEdited, setHomeEdited] = useState<typeof serverHome | null>(null);
+  const sysForm = sysEdited ?? serverSys;
+  const orgForm = orgEdited ?? serverOrg;
+  const homeForm2 = homeEdited ?? serverHome;
+  const setSysForm: React.Dispatch<React.SetStateAction<typeof serverSys>> = (update) =>
+    setSysEdited((prev) => typeof update === "function" ? update(prev ?? serverSys) : update);
+  const setOrgForm: React.Dispatch<React.SetStateAction<typeof serverOrg>> = (update) =>
+    setOrgEdited((prev) => typeof update === "function" ? update(prev ?? serverOrg) : update);
+  const setHomeForm2: React.Dispatch<React.SetStateAction<typeof serverHome>> = (update) =>
+    setHomeEdited((prev) => typeof update === "function" ? update(prev ?? serverHome) : update);
   const [showAudit, setShowAudit] = useState(false);
-
-  useEffect(() => { if (systemQ.data) setSysForm({ primary_colour: systemQ.data.primary_colour, secondary_colour: systemQ.data.secondary_colour, accent_colour: systemQ.data.accent_colour, default_footer_text: systemQ.data.default_footer_text, support_email: systemQ.data.support_email }); }, [systemQ.data]);
-  useEffect(() => { if (orgQ.data) setOrgForm({ company_name: orgQ.data.company_name ?? "", trading_name: orgQ.data.trading_name ?? "", registered_provider_name: orgQ.data.registered_provider_name ?? "", company_registration_number: orgQ.data.company_registration_number ?? "", ofsted_provider_reference: orgQ.data.ofsted_provider_reference ?? "", address: orgQ.data.address ?? "", phone: orgQ.data.phone ?? "", email: orgQ.data.email ?? "", website: orgQ.data.website ?? "", responsible_individual_name: orgQ.data.responsible_individual_name ?? "", primary_colour: orgQ.data.primary_colour ?? "", secondary_colour: orgQ.data.secondary_colour ?? "", logo_url: orgQ.data.logo_url ?? "", document_logo_url: orgQ.data.document_logo_url ?? "", confidentiality_notice: orgQ.data.confidentiality_notice ?? "" }); }, [orgQ.data]);
-  useEffect(() => { if (homeQ.data) setHomeForm2({ home_name: homeQ.data.home_name ?? "", home_address: homeQ.data.home_address ?? "", ofsted_urn: homeQ.data.ofsted_urn ?? "", registered_manager_name: homeQ.data.registered_manager_name ?? "", responsible_individual_name: homeQ.data.responsible_individual_name ?? "", emergency_contact: homeQ.data.emergency_contact ?? "", safeguarding_contact: homeQ.data.safeguarding_contact ?? "", lado_contact: homeQ.data.lado_contact ?? "", local_authority_contact: homeQ.data.local_authority_contact ?? "", police_contact: homeQ.data.police_contact ?? "", logo_override_url: homeQ.data.logo_override_url ?? "" }); }, [homeQ.data]);
 
   async function saveSystem() { try { await updateSystem.mutateAsync({ ...sysForm, updated_by: currentUser?.id }); toast.success("System branding saved"); } catch { toast.error("Failed to save system branding"); } }
   async function saveOrg() { try { await updateOrg.mutateAsync({ ...orgForm, organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Organisation branding saved"); } catch { toast.error("Failed to save organisation branding"); } }

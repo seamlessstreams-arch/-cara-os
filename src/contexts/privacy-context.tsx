@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_IDLE_LOCK_SECONDS } from "@/lib/privacy/screen-protection";
+import { useClientValue } from "@/hooks/use-client-value";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Privacy / screen-protection context (Phase 6) — defence-in-depth UI only.
@@ -38,25 +39,33 @@ const LS_MODE = "cs_privacy_mode";
 const LS_IDLE = "cs_privacy_idle_seconds";
 const LS_BLUR = "cs_privacy_auto_blur";
 
+function readPref(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
 export function PrivacyProvider({ children }: { children: React.ReactNode }) {
-  const [privacyMode, setPrivacyModeState] = useState(false);
+  // Preferences live in localStorage — an external store. The stored value is
+  // read via useSyncExternalStore (null on the server, so SSR and hydration
+  // agree on the defaults), and in-session changes land in an override that
+  // the derivation prefers. The setters below write both.
+  const storedMode = useClientValue(() => readPref(LS_MODE), null);
+  const storedIdle = useClientValue(() => readPref(LS_IDLE), null);
+  const storedBlur = useClientValue(() => readPref(LS_BLUR), null);
+  const [modeOverride, setModeOverride] = useState<boolean | null>(null);
+  const [idleOverride, setIdleOverride] = useState<number | null>(null);
+  const [blurOverride, setBlurOverride] = useState<boolean | null>(null);
+
+  const privacyMode = modeOverride ?? (storedMode === "1");
+  const storedIdleNum = Number(storedIdle);
+  const idleSeconds = idleOverride ??
+    (storedIdle !== null && Number.isFinite(storedIdleNum) && storedIdleNum >= 0
+      ? storedIdleNum
+      : DEFAULT_IDLE_LOCK_SECONDS);
+  const autoObscureOnBlur = blurOverride ?? (storedBlur !== "0");
+
   const [screenLocked, setScreenLocked] = useState(false);
-  const [idleSeconds, setIdleSecondsState] = useState(DEFAULT_IDLE_LOCK_SECONDS);
-  const [autoObscureOnBlur, setAutoObscureOnBlurState] = useState(true);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Hydrate preferences from localStorage after mount (avoids SSR mismatch).
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(LS_MODE) === "1") setPrivacyModeState(true);
-      const idle = Number(localStorage.getItem(LS_IDLE));
-      if (Number.isFinite(idle) && idle >= 0) setIdleSecondsState(idle);
-      if (localStorage.getItem(LS_BLUR) === "0") setAutoObscureOnBlurState(false);
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   const clearReveals = useCallback(() => setRevealed((prev) => (prev.size ? new Set() : prev)), []);
 
@@ -68,7 +77,7 @@ export function PrivacyProvider({ children }: { children: React.ReactNode }) {
 
   const setPrivacyMode = useCallback(
     (v: boolean) => {
-      setPrivacyModeState(v);
+      setModeOverride(v);
       try { localStorage.setItem(LS_MODE, v ? "1" : "0"); } catch { /* ignore */ }
       if (v) clearReveals();
     },
@@ -77,11 +86,11 @@ export function PrivacyProvider({ children }: { children: React.ReactNode }) {
   const togglePrivacyMode = useCallback(() => setPrivacyMode(!privacyMode), [privacyMode, setPrivacyMode]);
 
   const setIdleSeconds = useCallback((s: number) => {
-    setIdleSecondsState(s);
+    setIdleOverride(s);
     try { localStorage.setItem(LS_IDLE, String(s)); } catch { /* ignore */ }
   }, []);
   const setAutoObscureOnBlur = useCallback((v: boolean) => {
-    setAutoObscureOnBlurState(v);
+    setBlurOverride(v);
     try { localStorage.setItem(LS_BLUR, v ? "1" : "0"); } catch { /* ignore */ }
   }, []);
 
