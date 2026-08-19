@@ -188,7 +188,7 @@ export default function PremisesCompliancePage() {
             {categories.map((c) => <CategoryBlock key={c} data={data} category={c} />)}
 
             <p className="px-1 text-center text-[11px] text-[var(--cs-text-muted)]">
-              "No record" flags a statutory check with nothing on file — record it on the linked page to bring it into the compliance picture.
+              &quot;No record&quot; flags a statutory check with nothing on file — record it on the linked page to bring it into the compliance picture.
             </p>
           </>
         )}

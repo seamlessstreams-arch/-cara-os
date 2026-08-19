@@ -182,8 +182,8 @@ export default function ChildImmigrationUascSupportPage() {
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 flex items-start gap-3">
           <Globe className="h-5 w-5 text-amber-700 mt-0.5" />
           <div>
-            <p className="font-semibold">Every child's immigration status matters — and is handled with care</p>
-            <p className="text-xs mt-1">Whether a child is a UK citizen, holds settled status, or is an unaccompanied asylum-seeking child (UASC), this record helps us hold the right information about identity, entitlements and risk in one place. We work with specialist immigration solicitors, the British Red Cross and the Refugee Council. We never treat heritage as suspicion. We never gather facial or biometric data outside lawful Home Office processes. We support family tracing only with the young person's informed consent and with safety paramount.</p>
+            <p className="font-semibold">Every child&apos;s immigration status matters — and is handled with care</p>
+            <p className="text-xs mt-1">Whether a child is a UK citizen, holds settled status, or is an unaccompanied asylum-seeking child (UASC), this record helps us hold the right information about identity, entitlements and risk in one place. We work with specialist immigration solicitors, the British Red Cross and the Refugee Council. We never treat heritage as suspicion. We never gather facial or biometric data outside lawful Home Office processes. We support family tracing only with the young person&apos;s informed consent and with safety paramount.</p>
           </div>
         </div>
 
@@ -402,7 +402,7 @@ export default function ChildImmigrationUascSupportPage() {
 
                     {/* child voice */}
                     <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                      <p className="text-xs font-semibold text-amber-800 mb-1">Child's voice</p>
+                      <p className="text-xs font-semibold text-amber-800 mb-1">Child&apos;s voice</p>
                       <p className="text-sm italic text-amber-900">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
 
@@ -431,7 +431,7 @@ export default function ChildImmigrationUascSupportPage() {
         {/* regulatory note */}
         <div className="rounded-lg bg-muted/40 border p-4 text-xs text-muted-foreground space-y-1">
           <p className="font-semibold">Regulatory & practice framework</p>
-          <p>Immigration Act 1971 and Nationality and Borders Act 2022 — primary statutes governing immigration status, asylum claims and removal. Children Act 1989 — local authority duties to UASC under s.20 (accommodation) and s.17 (children in need); LA holds full corporate parenting responsibility regardless of immigration status. Children (Leaving Care) Act 2000 — care leaver entitlements continue for eligible/relevant/former-relevant young people while immigration matters resolve. Modern Slavery Act 2015 — National Referral Mechanism (NRM) where trafficking is a reasonable suspicion. Statutory Guidance for Local Authorities on the care of unaccompanied asylum-seeking and trafficked children (DfE 2017). Hillingdon Judgment (R (Hillingdon LBC) v Secretary of State 2003) — confirms LA duty to provide s.20 accommodation to UASC. Merton-compliant principles (R (B) v Merton LBC 2003) and ADCS Age Assessment Guidance (AAR) — joint assessment by two qualified social workers, benefit of the doubt, interpreter, appropriate adult, no purely visual assessments. Working Together to Safeguard Children 2023. UNCRC Articles 7 (identity), 8 (preservation of identity), 22 (refugee children). External partners: British Red Cross International Family Tracing; Refugee Council Children's Section; Freedom from Torture; Helen Bamber Foundation; UK Visas and Immigration. Records retained securely; access controlled; data shared only on lawful basis with the child's interests paramount.</p>
+          <p>Immigration Act 1971 and Nationality and Borders Act 2022 — primary statutes governing immigration status, asylum claims and removal. Children Act 1989 — local authority duties to UASC under s.20 (accommodation) and s.17 (children in need); LA holds full corporate parenting responsibility regardless of immigration status. Children (Leaving Care) Act 2000 — care leaver entitlements continue for eligible/relevant/former-relevant young people while immigration matters resolve. Modern Slavery Act 2015 — National Referral Mechanism (NRM) where trafficking is a reasonable suspicion. Statutory Guidance for Local Authorities on the care of unaccompanied asylum-seeking and trafficked children (DfE 2017). Hillingdon Judgment (R (Hillingdon LBC) v Secretary of State 2003) — confirms LA duty to provide s.20 accommodation to UASC. Merton-compliant principles (R (B) v Merton LBC 2003) and ADCS Age Assessment Guidance (AAR) — joint assessment by two qualified social workers, benefit of the doubt, interpreter, appropriate adult, no purely visual assessments. Working Together to Safeguard Children 2023. UNCRC Articles 7 (identity), 8 (preservation of identity), 22 (refugee children). External partners: British Red Cross International Family Tracing; Refugee Council Children&apos;s Section; Freedom from Torture; Helen Bamber Foundation; UK Visas and Immigration. Records retained securely; access controlled; data shared only on lawful basis with the child&apos;s interests paramount.</p>
         </div>
       </div>
       <CareEventsPanel

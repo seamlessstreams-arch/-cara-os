@@ -597,7 +597,7 @@ function PatternAlertsSection() {
                     )}
                     {alert.reflective_prompt && (
                       <p className="text-[11px] text-[var(--cs-text-muted)] italic leading-relaxed">
-                        Reflect: "{alert.reflective_prompt}"
+                        Reflect: &quot;{alert.reflective_prompt}&quot;
                       </p>
                     )}
                     <div className="text-[10px] text-[var(--cs-text-muted)]">{formatDate(alert.detected_at)}</div>
@@ -855,7 +855,7 @@ function VoiceCoverageSection() {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <MessageSquareQuote className="h-4 w-4 text-[var(--cs-cara-gold)]" />
-          Children's Voice
+          Children&apos;s Voice
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -889,7 +889,7 @@ function VoiceCoverageSection() {
                 </div>
                 {(record.direct_quote ?? record.paraphrase) && (
                   <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed line-clamp-2 italic">
-                    "{record.direct_quote ?? record.paraphrase}"
+                    &quot;{record.direct_quote ?? record.paraphrase}&quot;
                   </p>
                 )}
               </div>

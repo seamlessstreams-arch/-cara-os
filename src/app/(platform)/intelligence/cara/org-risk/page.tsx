@@ -97,7 +97,7 @@ export default function OrgRiskPage() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-start gap-2 rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-[var(--cs-cara-gold-bg,#fffbeb)] px-3 py-2 text-xs text-[var(--cs-text-secondary,#475569)]">
           <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-cara-gold,#b45309)]" />
-          <span>This dashboard is about <span className="font-semibold">supporting the team, not blaming it</span>. It surfaces pressure points early so they can be addressed before they affect children's care.</span>
+          <span>This dashboard is about <span className="font-semibold">supporting the team, not blaming it</span>. It surfaces pressure points early so they can be addressed before they affect children&apos;s care.</span>
         </div>
 
         {isLoading && <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted,#64748b)]"><Loader2 className="h-4 w-4 animate-spin" /> Assessing organisational risk…</div>}

@@ -178,7 +178,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
       <div className="rounded-lg bg-sky-50 border border-sky-200 p-3 mb-6 flex items-start gap-2">
         <Accessibility className="h-4 w-4 text-sky-700 mt-0.5 shrink-0" />
         <p className="text-sm text-sky-900">
-          Social model of disability: the home is the thing that needs adapting, not the child. Plans are co-produced with each young person, their PT/OT, and (where relevant) specialist clinics. Pacing decisions are clinical, not behavioural. We do not push through fatigue, and we never make ability assumptions on a child's behalf.
+          Social model of disability: the home is the thing that needs adapting, not the child. Plans are co-produced with each young person, their PT/OT, and (where relevant) specialist clinics. Pacing decisions are clinical, not behavioural. We do not push through fatigue, and we never make ability assumptions on a child&apos;s behalf.
         </p>
       </div>
 

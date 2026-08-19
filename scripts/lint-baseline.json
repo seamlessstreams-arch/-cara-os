@@ -1,11 +1,8 @@
 {
- "__unused-disable-directive__": 10,
  "@next/next/no-img-element": 3,
  "@next/next/no-location-assign-relative-destination": 1,
  "@typescript-eslint/no-explicit-any": 5037,
  "@typescript-eslint/no-unused-expressions": 9,
  "@typescript-eslint/no-unused-vars": 4798,
- "prefer-const": 10,
- "react-hooks/exhaustive-deps": 550,
- "react/no-unescaped-entities": 209
+ "react-hooks/exhaustive-deps": 550
 }

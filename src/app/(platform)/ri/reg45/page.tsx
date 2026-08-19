@@ -783,7 +783,7 @@ export default function Reg45Page() {
         <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 flex items-start gap-3">
           <AlertTriangle className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-800 leading-relaxed">
-            <strong>Regulation 45 reports</strong> must be completed at least once every 6 months by the RI under Reg 45 of the Children's Homes (England) Regulations 2015. Cara drafts are a starting point — all content must be reviewed, edited and approved by the RI before submission.
+            <strong>Regulation 45 reports</strong> must be completed at least once every 6 months by the RI under Reg 45 of the Children&apos;s Homes (England) Regulations 2015. Cara drafts are a starting point — all content must be reviewed, edited and approved by the RI before submission.
           </p>
         </div>
 

@@ -283,7 +283,7 @@ export default function ShiftSafetyPage() {
         {/* Summary tiles */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-lg border bg-card p-4">
-            <p className="text-xs text-muted-foreground">Today's shifts</p>
+            <p className="text-xs text-muted-foreground">Today&apos;s shifts</p>
             <p className="text-2xl font-bold mt-1">{summary.todayShifts}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {summary.openShiftsToday > 0 ? `${summary.openShiftsToday} open` : "all covered"}
@@ -376,9 +376,9 @@ export default function ShiftSafetyPage() {
 
         {/* Accountability callout */}
         <blockquote className="border-l-4 border-blue-400 pl-4 py-2 text-sm text-muted-foreground italic">
-          "The registered person must ensure that sufficient numbers of suitably qualified, skilled and experienced persons are employed at the home. This includes ensuring that the home is not chronically short-staffed and that staff are not routinely working excessive hours."
+          &quot;The registered person must ensure that sufficient numbers of suitably qualified, skilled and experienced persons are employed at the home. This includes ensuring that the home is not chronically short-staffed and that staff are not routinely working excessive hours.&quot;
           <br />
-          <span className="text-xs not-italic mt-1 block">Children's Homes (England) Regulations 2015, Regulation 32</span>
+          <span className="text-xs not-italic mt-1 block">Children&apos;s Homes (England) Regulations 2015, Regulation 32</span>
         </blockquote>
       </div>
     </PageShell>

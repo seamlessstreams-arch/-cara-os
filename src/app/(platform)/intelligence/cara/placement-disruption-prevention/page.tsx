@@ -237,7 +237,7 @@ export default function PlacementDisruptionPreventionPage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          CHR 2015 Reg 5 (engaging children), Reg 6 (quality of care), Reg 9 (accommodation). SCCIF: "Experiences and progress of children in care." Working Together 2023.
+          CHR 2015 Reg 5 (engaging children), Reg 6 (quality of care), Reg 9 (accommodation). SCCIF: &quot;Experiences and progress of children in care.&quot; Working Together 2023.
         </p>
       </div>
     </PageShell>

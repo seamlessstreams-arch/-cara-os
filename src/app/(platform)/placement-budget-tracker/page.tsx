@@ -353,7 +353,7 @@ export default function PlacementBudgetTrackerPage() {
 
                     {/* child input */}
                     <div className="rounded-lg bg-pink-50 p-3">
-                      <h4 className="text-sm font-semibold text-pink-800 mb-1">Child's Input on Spend</h4>
+                      <h4 className="text-sm font-semibold text-pink-800 mb-1">Child&apos;s Input on Spend</h4>
                       <p className="text-sm text-pink-900">{rec.child_input_on_spend}</p>
                     </div>
 
@@ -394,7 +394,7 @@ export default function PlacementBudgetTrackerPage() {
         {/* regulatory note */}
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Quality Standard 13 — Leadership &amp; management / financial governance.</strong>{" "}
-          Each child's placement is properly funded and money is spent in their best interests, reflecting corporate
+          Each child&apos;s placement is properly funded and money is spent in their best interests, reflecting corporate
           parenting principles. Budgets must be transparent, agreed with the child where age-appropriate, regularly
           reviewed and recorded. Junior ISAs and Setting Up Home allowances should be tracked to ensure entitlements
           are protected. All figures shown are illustrative only (£ GBP).

@@ -78,7 +78,7 @@ export default function RecordingQualityPage() {
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               Every narrative record (daily logs, incidents, key-working) is scored on <strong>completeness, clarity,
-              professional language, factuality, the child's voice and risk relevance</strong> using transparent text
+              professional language, factuality, the child&apos;s voice and risk relevance</strong> using transparent text
               checks — no black box. Each record gets concrete suggestions to improve it. Strong recording is a real
               asset at inspection; this turns it into something you can coach in supervision. Reg 36 (records), Reg 13.
             </p>

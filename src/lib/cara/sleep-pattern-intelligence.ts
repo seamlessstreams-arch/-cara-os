@@ -222,7 +222,7 @@ export function analyseSleepPatterns(input: SleepInput): SleepAssessment {
 function calculateDuration(settledTime: string, wakeTime: string): number {
   const [sh, sm] = settledTime.split(":").map(Number);
   const [wh, wm] = wakeTime.split(":").map(Number);
-  let settledMinutes = sh * 60 + sm;
+  const settledMinutes = sh * 60 + sm;
   let wakeMinutes = wh * 60 + wm;
   // If settled time is in the evening (>= 12:00) and wake is in the morning (< 12:00)
   if (settledMinutes > wakeMinutes) {
@@ -234,7 +234,7 @@ function calculateDuration(settledTime: string, wakeTime: string): number {
 function calculateSettlingMinutes(bedtime: string, settledTime: string): number {
   const [bh, bm] = bedtime.split(":").map(Number);
   const [sh, sm] = settledTime.split(":").map(Number);
-  let bedMinutes = bh * 60 + bm;
+  const bedMinutes = bh * 60 + bm;
   let settledMinutes = sh * 60 + sm;
   if (settledMinutes < bedMinutes) {
     settledMinutes += 24 * 60;

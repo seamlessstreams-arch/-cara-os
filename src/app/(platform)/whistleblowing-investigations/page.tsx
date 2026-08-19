@@ -420,7 +420,7 @@ export default function WhistleblowingInvestigationsPage() {
 
                   {inv.status === "closed" && inv.closed_date && (
                     <p className="text-xs text-muted-foreground">
-                      File closed {inv.closed_date}. Retained securely for the period required by the home's records-retention schedule.
+                      File closed {inv.closed_date}. Retained securely for the period required by the home&apos;s records-retention schedule.
                     </p>
                   )}
                 </div>
@@ -433,7 +433,7 @@ export default function WhistleblowingInvestigationsPage() {
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Regulatory framework</strong> — Investigations triggered by whistleblowing must be conducted promptly, fairly
           and confidentially. The <em>Public Interest Disclosure Act 1998</em> protects qualifying disclosures from detrimental
-          treatment. <em>Children's Homes Regulations 2015 (Quality Standard 5 — Protection of Children)</em> requires the
+          treatment. <em>Children&apos;s Homes Regulations 2015 (Quality Standard 5 — Protection of Children)</em> requires the
           registered person to investigate concerns about staff and practice, take appropriate action and learn from outcomes.
           <em> Working Together to Safeguard Children 2023</em> requires inter-agency cooperation, including LADO consultation,
           where allegations relate to a person who works with children.

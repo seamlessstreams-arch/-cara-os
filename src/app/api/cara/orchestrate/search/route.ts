@@ -377,7 +377,7 @@ function computeConfidence(
   searchTerms: string[],
 ): number {
   let matchCount = 0;
-  let totalPossible = searchTerms.length * textColumns.length;
+  const totalPossible = searchTerms.length * textColumns.length;
 
   for (const col of textColumns) {
     const value = row[col];

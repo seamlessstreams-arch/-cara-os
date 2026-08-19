@@ -97,7 +97,7 @@ export function InOutBoardPanel({ compact = false, className }: { compact?: bool
     return (
       <div className={shell}>
         <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted)]">
-          <Loader2 className="h-4 w-4 animate-spin" /> Checking who's in and out…
+          <Loader2 className="h-4 w-4 animate-spin" /> Checking who&apos;s in and out…
         </div>
       </div>
     );

@@ -643,7 +643,7 @@ export default function MedicationErrorsPage() {
       <div className="mt-6 rounded-lg border border-[var(--cs-border)] bg-slate-50 p-3">
         <p className="text-[10px] text-[var(--cs-text-muted)] leading-relaxed">
           <strong>Regulatory context:</strong> This register supports compliance with{" "}
-          <strong>Regulation 23 (Health)</strong> of the Children's Homes (England) Regulations 2015 and follows{" "}
+          <strong>Regulation 23 (Health)</strong> of the Children&apos;s Homes (England) Regulations 2015 and follows{" "}
           <strong>NICE guidelines</strong> on medication safety in care settings. All medication errors, near-misses, and
           adverse drug reactions must be recorded, investigated, and used to improve practice. Duty of candour applies to
           incidents of moderate severity or above. Records are subject to Ofsted inspection and should be maintained in

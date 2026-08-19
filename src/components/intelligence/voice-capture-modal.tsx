@@ -200,7 +200,7 @@ export function VoiceCaptureModal({
           <div className="flex items-start justify-between gap-4 border-b border-[var(--cs-border-subtle)] px-6 py-4 sticky top-0 bg-white z-10">
             <div>
               <Dialog.Title className="text-base font-bold text-[var(--cs-navy)]">
-                Capture Children's Voice
+                Capture Children&apos;s Voice
               </Dialog.Title>
               <Dialog.Description className="mt-0.5 text-xs text-[var(--cs-text-muted)]">
                 Recording voice for{" "}
@@ -219,7 +219,7 @@ export function VoiceCaptureModal({
             <div className="flex flex-col items-center gap-3 py-14 px-6">
               <CheckCircle2 className="h-12 w-12 text-emerald-500" />
               <p className="text-sm font-bold text-[var(--cs-navy)]">Voice record saved</p>
-              <p className="text-xs text-[var(--cs-text-muted)]">This child's voice has been captured and linked to their record.</p>
+              <p className="text-xs text-[var(--cs-text-muted)]">This child&apos;s voice has been captured and linked to their record.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate>

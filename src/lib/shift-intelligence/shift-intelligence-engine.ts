@@ -182,7 +182,7 @@ function timeToMinutes(time: string): number {
 // ── Helper: Calculate shift duration in hours ──────────────────────────────
 
 export function calculateShiftDurationHours(start: string, end: string): number {
-  let startMins = timeToMinutes(start);
+  const startMins = timeToMinutes(start);
   let endMins = timeToMinutes(end);
 
   // Handle overnight shifts (end < start means crosses midnight)

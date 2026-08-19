@@ -59,7 +59,7 @@ function SessionRow({ session }: { session: SessionSummary }) {
       </div>
       {session.childVoice && !session.confidential && (
         <p className="text-gray-700 italic border-l-2 border-blue-300 pl-2 mt-1">
-          "{session.childVoice}"
+          &quot;{session.childVoice}&quot;
         </p>
       )}
       {session.overdueFollowUp && (
@@ -124,7 +124,7 @@ function ChildKeyworkCard({ profile }: { profile: ChildKeyworkProfile }) {
       {/* Child voice */}
       {profile.latestChildVoice && (
         <div className="text-xs text-gray-700 italic border-l-2 border-blue-300 pl-2">
-          "{profile.latestChildVoice}"
+          &quot;{profile.latestChildVoice}&quot;
         </div>
       )}
 
@@ -254,7 +254,7 @@ export default function KeyworkingQualityIntelligencePage() {
         <p>
           <strong>Mood scores:</strong> Before/after mood ratings are recorded by the key worker
           at each session. An improvement score ≥1 is generally positive. Persistent low or
-          declining scores warrant review with the child's social worker and CAMHS where indicated.
+          declining scores warrant review with the child&apos;s social worker and CAMHS where indicated.
         </p>
       </div>
     </div>

@@ -291,7 +291,7 @@ export default function Reg40TriagePage() {
           {(pending.data?.data ?? []).length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                No pending Reg 40 triage. Click "Scan candidates" to refresh from
+                No pending Reg 40 triage. Click &quot;Scan candidates&quot; to refresh from
                 the latest care events.
               </CardContent>
             </Card>

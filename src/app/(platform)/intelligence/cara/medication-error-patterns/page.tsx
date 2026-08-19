@@ -452,7 +452,7 @@ export default function MedicationErrorPatternsPage() {
 
         {/* Accountability callout */}
         <blockquote className="border-l-4 border-blue-400 pl-4 py-2 text-sm text-muted-foreground italic">
-          "Where a medication error occurs, the home must identify what happened, inform those affected through duty of candour, implement remedial actions, and demonstrate that learning was shared across the team. The absence of errors does not prove good practice — it may reflect under-reporting."
+          &quot;Where a medication error occurs, the home must identify what happened, inform those affected through duty of candour, implement remedial actions, and demonstrate that learning was shared across the team. The absence of errors does not prove good practice — it may reflect under-reporting.&quot;
           <br />
           <span className="text-xs not-italic mt-1 block">NICE / CQC Medicines Management guidance; Regulation 20 Duty of Candour</span>
         </blockquote>

@@ -70,7 +70,7 @@ export default function ManagerInboxPage() {
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               This is assembled automatically from events across the home — it never decides or acts on its own. Each item
-              shows <strong>why</strong> it's here, the <strong>deadline</strong>, the linked child/staff, the required
+              shows <strong>why</strong> it&apos;s here, the <strong>deadline</strong>, the linked child/staff, the required
               action, an <strong>Cara-suggested response</strong> and the evidence it will contribute to. Approving,
               requesting changes or escalating remain your decision, with a full audit trail. Reg 13 (leadership oversight).
             </p>

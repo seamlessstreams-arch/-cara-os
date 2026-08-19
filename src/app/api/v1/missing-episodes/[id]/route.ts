@@ -32,7 +32,7 @@ async function patchEpisode(
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Auto-calculate duration_hours when marking returned
-  let extra: Partial<typeof body> = {};
+  const extra: Partial<typeof body> = {};
   if (body.date_returned && body.time_returned && existing.date_missing && existing.time_missing) {
     try {
       const missedAt = new Date(`${existing.date_missing}T${existing.time_missing}`);

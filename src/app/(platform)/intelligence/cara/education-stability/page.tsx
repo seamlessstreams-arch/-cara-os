@@ -379,8 +379,8 @@ export default function EducationStabilityPage() {
 
         {/* Accountability callout */}
         <blockquote className="border-l-4 border-blue-400 pl-4 py-2 text-sm text-muted-foreground italic">
-          "Every looked-after child is the responsibility of the Virtual School Head and their corporate parent.
-          The home's role is to be a fierce advocate — attending PEP meetings, supporting attendance, and celebrating every achievement."
+          &quot;Every looked-after child is the responsibility of the Virtual School Head and their corporate parent.
+          The home&apos;s role is to be a fierce advocate — attending PEP meetings, supporting attendance, and celebrating every achievement.&quot;
           <br />
           <span className="text-xs not-italic mt-1 block">DfE: Promoting the education of looked-after children, 2018</span>
         </blockquote>

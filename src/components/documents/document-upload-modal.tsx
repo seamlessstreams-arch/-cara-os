@@ -413,7 +413,7 @@ export function DocumentUploadModal({
                 <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
                   Document text <span className="text-[var(--cs-text-muted)] font-normal">(optional)</span>
                   <span className="ml-2 text-[10px] font-normal text-[var(--cs-text-muted)]">
-                    Read automatically from PDF, Word, Excel, email (.eml) and text files. Paste here only for scans or anything Cara couldn't read.
+                    Read automatically from PDF, Word, Excel, email (.eml) and text files. Paste here only for scans or anything Cara couldn&apos;t read.
                   </span>
                 </label>
                 <textarea
@@ -501,7 +501,7 @@ export function DocumentUploadModal({
                     <div className="text-sm font-bold text-red-800">⚠️ Suspicious content detected</div>
                     <div className="text-xs text-red-700 mt-1 leading-relaxed">
                       This document contains text that attempted to manipulate Cara. The content has been treated as data only and no instructions were followed.
-                      {aiResult.suspicious_content && <div className="mt-1 font-mono bg-red-100 rounded px-2 py-1 text-[10px]">"{aiResult.suspicious_content}"</div>}
+                      {aiResult.suspicious_content && <div className="mt-1 font-mono bg-red-100 rounded px-2 py-1 text-[10px]">&quot;{aiResult.suspicious_content}&quot;</div>}
                     </div>
                   </div>
                 </div>
@@ -672,7 +672,7 @@ export function DocumentUploadModal({
                         )}
                         {task.source_quote && (
                           <div className="mt-1.5 text-[10px] text-[var(--cs-text-muted)] italic border-l-2 border-[var(--cs-border)] pl-2">
-                            "{task.source_quote}"
+                            &quot;{task.source_quote}&quot;
                           </div>
                         )}
                       </div>

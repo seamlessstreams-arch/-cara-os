@@ -289,7 +289,7 @@ export default function OfstedReadinessPage() {
                     <p className="text-sm text-emerald-700 leading-relaxed">{s.evidence}</p>
                     {s.ofsted_language && (
                       <div className="rounded-lg bg-white border border-emerald-100 px-3 py-2">
-                        <p className="text-xs text-emerald-600 italic">"{s.ofsted_language}"</p>
+                        <p className="text-xs text-emerald-600 italic">&quot;{s.ofsted_language}&quot;</p>
                       </div>
                     )}
                   </div>

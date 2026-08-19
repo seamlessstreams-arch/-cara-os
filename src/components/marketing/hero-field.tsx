@@ -53,7 +53,8 @@ export function HeroField({ className = "" }: { className?: string }) {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pts = buildSphere(300);
     let w = 0, h = 0, dpr = 1, raf = 0;
-    let rotY = 0.4, rotX = -0.18;
+    let rotY = 0.4;
+    const rotX = -0.18;
     let targetPX = 0, targetPY = 0, px = 0, py = 0;
     let running = true;
 

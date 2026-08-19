@@ -17,7 +17,7 @@
 // plausible sentence nobody wrote.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useId, useState } from "react";
+import React, { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,7 @@ export interface CreateTaskDefaults {
   linkedChildId?: string;
 }
 
-export function CreateTaskDialog({
-  open, onOpenChange, heading, blurb, defaults, staff, homeId = "home_oak",
-}: {
+interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   heading: string;
@@ -58,7 +56,20 @@ export function CreateTaskDialog({
   defaults: CreateTaskDefaults;
   staff?: TaskAssignee[];
   homeId?: string;
-}) {
+}
+
+/* The form mounts fresh per open session, keyed by the row's prefill, so the
+ * seed is each field's useState initializer. Opening from a different row
+ * remounts with that row's defaults — the old reset effect's job — and the
+ * second row can no longer inherit the first row's prefill. */
+export function CreateTaskDialog(props: CreateTaskDialogProps) {
+  if (!props.open) return null;
+  return <CreateTaskDialogForm key={`${props.defaults.title}|${props.defaults.category}`} {...props} />;
+}
+
+function CreateTaskDialogForm({
+  open, onOpenChange, heading, blurb, defaults, staff, homeId = "home_oak",
+}: CreateTaskDialogProps) {
   const uid = useId();
   const qc = useQueryClient();
 
@@ -68,20 +79,6 @@ export function CreateTaskDialog({
   const [priority, setPriority] = useState<TaskPriority>(defaults.priority ?? "medium");
   const [assignedTo, setAssignedTo] = useState("");
   const [dueDate, setDueDate] = useState("");
-
-  // Re-seed when the dialog is opened from a different row: the component
-  // stays mounted between openings, so without this the second row would
-  // inherit the first row's prefill and file the task against the wrong thing.
-  useEffect(() => {
-    if (!open) return;
-    setTitle(defaults.title);
-    setDescription(defaults.description ?? "");
-    setCategory(defaults.category);
-    setPriority(defaults.priority ?? "medium");
-    setAssignedTo("");
-    setDueDate("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, defaults.title, defaults.category, defaults.description, defaults.priority]);
 
   const create = useMutation({
     mutationFn: () =>

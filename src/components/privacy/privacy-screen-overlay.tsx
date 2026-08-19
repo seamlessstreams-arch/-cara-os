@@ -32,7 +32,7 @@ export function PrivacyScreenOverlay() {
           {currentUser?.first_name ? `Welcome back, ${currentUser.first_name}. ` : ""}Tap anywhere to continue.
         </p>
         <p className="mt-6 inline-flex items-center gap-1.5 text-[11px] text-white/50">
-          <ShieldCheck className="h-3.5 w-3.5" />Sensitive information is kept off screen while you're away.
+          <ShieldCheck className="h-3.5 w-3.5" />Sensitive information is kept off screen while you&apos;re away.
         </p>
       </div>
     </div>

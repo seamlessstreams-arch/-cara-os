@@ -127,7 +127,7 @@ function ReflectionForm({ incident, onDone }: { incident: IncidentNeedingReflect
     <Card>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-bold text-[var(--cs-navy,#1e293b)]">Reflect on {incident.childName}'s incident — {incident.date}</h3>
+          <h3 className="text-sm font-bold text-[var(--cs-navy,#1e293b)]">Reflect on {incident.childName}&apos;s incident — {incident.date}</h3>
           <button onClick={onDone} className="text-[var(--cs-text-muted,#64748b)] hover:text-[var(--cs-navy)]"><X className="h-4 w-4" /></button>
         </div>
 
@@ -144,7 +144,7 @@ function ReflectionForm({ incident, onDone }: { incident: IncidentNeedingReflect
 
         {/* Child voice — emphasised */}
         <div className="rounded-lg border border-[var(--cs-cara-gold-soft,#fde68a)] bg-[var(--cs-cara-gold-bg,#fffbeb)] p-3 space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--cs-cara-gold,#b45309)]"><MessageCircle className="h-3.5 w-3.5" /> The child's view</div>
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--cs-cara-gold,#b45309)]"><MessageCircle className="h-3.5 w-3.5" /> The child&apos;s view</div>
           <textarea value={f.child_view ?? ""} onChange={set("child_view")} rows={2} className={inputCls} placeholder="How does the child see what happened?" />
           <div className="grid gap-3 sm:grid-cols-2">
             <Labelled label="Child debrief done?"><select value={f.child_debrief_done} onChange={set("child_debrief_done")} className={inputCls}><option value="yes">Yes</option><option value="no">No / not yet</option><option value="unknown">Not sure</option></select></Labelled>
@@ -331,7 +331,7 @@ export default function PostIncidentReflectionPage() {
                             <div className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted,#64748b)]">What happened</div>
                             <p className="text-[var(--cs-text-secondary,#475569)]">{item.reflection.what_happened || "—"}</p>
                             {item.reflection.child_view && (
-                              <p className="rounded-lg bg-[var(--cs-cara-gold-bg,#fffbeb)] px-2.5 py-1.5 text-xs text-[var(--cs-navy,#1e293b)]"><span className="font-semibold">Child's view:</span> {item.reflection.child_view}</p>
+                              <p className="rounded-lg bg-[var(--cs-cara-gold-bg,#fffbeb)] px-2.5 py-1.5 text-xs text-[var(--cs-navy,#1e293b)]"><span className="font-semibold">Child&apos;s view:</span> {item.reflection.child_view}</p>
                             )}
                             {item.reflection.learning_points && (
                               <p className="text-xs text-[var(--cs-text-secondary,#475569)]"><span className="font-semibold">Learning:</span> {item.reflection.learning_points}</p>
@@ -347,7 +347,7 @@ export default function PostIncidentReflectionPage() {
 
             <p className="px-1 text-xs text-[var(--cs-text-muted,#64748b)]">
               Cara guides reflection and surfaces patterns to support learning and repair. It informs practice — it never
-              replaces professional judgement or a manager's decision.
+              replaces professional judgement or a manager&apos;s decision.
             </p>
           </>
         )}

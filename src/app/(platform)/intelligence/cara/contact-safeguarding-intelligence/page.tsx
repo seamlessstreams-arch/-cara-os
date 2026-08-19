@@ -323,7 +323,7 @@ export default function ContactSafeguardingIntelligencePage() {
       <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 space-y-1">
         <p className="font-semibold">Regulatory & practice context</p>
         <p>
-          CHR 2015 Reg 9 requires contact arrangements to promote children's
+          CHR 2015 Reg 9 requires contact arrangements to promote children&apos;s
           welfare. Working Together 2023 requires practitioners to consider
           whether family contact creates or compounds harm. This intelligence
           supports evidence-based contact review — not contact restriction.

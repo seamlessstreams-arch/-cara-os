@@ -179,7 +179,7 @@ export function SelfHarmPreventionProtocolDashboardWidget() {
             <div><span className="text-gray-500">Profiles:</span> <span className="font-medium">{data.riskAssessmentQuality.totalProfiles}</span></div>
             <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{data.riskAssessmentQuality.riskAssessedRate}%</span></div>
             <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{data.riskAssessmentQuality.reviewCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Triggers ID'd:</span> <span className="font-medium">{data.riskAssessmentQuality.triggersIdentifiedRate}%</span></div>
+            <div><span className="text-gray-500">Triggers ID&apos;d:</span> <span className="font-medium">{data.riskAssessmentQuality.triggersIdentifiedRate}%</span></div>
             <div><span className="text-gray-500">Prof. Support:</span> <span className="font-medium">{data.riskAssessmentQuality.professionalSupportRate}%</span></div>
           </div>
         </Section>

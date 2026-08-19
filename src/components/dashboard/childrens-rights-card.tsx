@@ -61,7 +61,7 @@ export function ChildrensRightsCard() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Shield className="h-4 w-4 text-slate-600" />
-            <span className="text-slate-900">Children's Rights</span>
+            <span className="text-slate-900">Children&apos;s Rights</span>
           </CardTitle>
           <Link href="/contact-directory" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
@@ -106,7 +106,7 @@ export function ChildrensRightsCard() {
           <div className="space-y-1.5">
             <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
               <Brain className="h-3 w-3" />
-              Cara Children's Rights Intelligence
+              Cara Children&apos;s Rights Intelligence
             </p>
             {insights.slice(0, 2).map((insight, i) => (
               <div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>

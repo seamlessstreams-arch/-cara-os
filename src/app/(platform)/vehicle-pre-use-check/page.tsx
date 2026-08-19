@@ -369,7 +369,7 @@ export default function VehiclePreUseCheckPage() {
               insurance, MOT and breakdown cover are in date. Any failed item
               withdraws the vehicle from service until rectified and
               re-inspected. Each check forms part of the evidence base for
-              Quality Standard 5 and the home's transport risk assessment.
+              Quality Standard 5 and the home&apos;s transport risk assessment.
             </p>
           </div>
         </div>
@@ -908,10 +908,10 @@ export default function VehiclePreUseCheckPage() {
           <BookOpen className="h-4 w-4" /> Regulatory basis
         </h3>
         <p>
-          The Children's Homes (England) Regulations 2015 — Quality Standard 5
+          The Children&apos;s Homes (England) Regulations 2015 — Quality Standard 5
           (Health and Wellbeing) requires the Registered Manager to ensure that
           children are kept safe whenever they are travelling with staff. The
-          home's transport policy and accompanying transport risk assessment
+          home&apos;s transport policy and accompanying transport risk assessment
           require a documented pre-use check by the driver before any journey
           carrying a child, with vehicles withdrawn from use until any defect is
           rectified and re-inspected. Pre-use check records evidence

@@ -217,7 +217,7 @@ function PIDebriefCard({
                   <p>{debrief.yp_debrief_date ? formatDate(debrief.yp_debrief_date) : ""}</p>
                   {debrief.yp_debrief_by && <p>By: {getStaffName(debrief.yp_debrief_by)}</p>}
                   {debrief.yp_debrief_feelings && (
-                    <p className="text-[var(--cs-text-secondary)] italic mt-1">"{debrief.yp_debrief_feelings}"</p>
+                    <p className="text-[var(--cs-text-secondary)] italic mt-1">&quot;{debrief.yp_debrief_feelings}&quot;</p>
                   )}
                 </div>
               ) : (

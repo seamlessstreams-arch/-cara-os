@@ -85,7 +85,7 @@ export default function PlacementBreakdownForecastPage() {
           <div className="rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-4 flex gap-3">
             <Info className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
-              This is an <strong>early-warning indicator</strong>, not a prediction of certainty. Each child's risk is
+              This is an <strong>early-warning indicator</strong>, not a prediction of certainty. Each child&apos;s risk is
               scored over the last 14 days and compared with the preceding 14 days to detect a <em>trajectory</em>;
               an accelerating trajectory projects an indicative time to a critical risk threshold. Every score is
               fully explained below so you can act on the evidence, not a black box. Supports CHR 2015 Reg 11

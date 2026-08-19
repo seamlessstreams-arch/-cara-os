@@ -109,7 +109,7 @@ export default function NeighbourhoodSafetyIntelligencePage() {
             {below(d.risk_assessment_rate, 80) && (
               <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                Neighbourhood risk assessment rate {formatRate(d.risk_assessment_rate)} — the area around the home is part of the children's environment; an unassessed neighbourhood means risks from local gangs, county lines, exploitation networks or physical hazards may be unknown and unmitigated
+                Neighbourhood risk assessment rate {formatRate(d.risk_assessment_rate)} — the area around the home is part of the children&apos;s environment; an unassessed neighbourhood means risks from local gangs, county lines, exploitation networks or physical hazards may be unknown and unmitigated
               </div>
             )}
             {below(d.hazard_identification_rate, 80) && (
@@ -216,7 +216,7 @@ export default function NeighbourhoodSafetyIntelligencePage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          CHR 2015 Regulation 17 (risk assessments must consider the location of the home and the risks it presents to children; neighbourhood risk is explicitly within scope). Regulation 5 (welfare — children's safety does not end at the front door; the home is responsible for understanding and mitigating risks in the environment where children live their daily lives). NMS Standard 18 (the registered person must ensure that the risks presented by the local area are regularly assessed and shared with children in a way that promotes rather than restricts their independence). Contextual Safeguarding (Firmin, 2015 / Contextual Safeguarding Network) — abuse and exploitation often occur in peer groups, online, and in local areas rather than only in the home; neighbourhood-level risk mapping is a core element of a modern safeguarding approach, particularly for children at risk of county lines involvement, criminal exploitation or CSE.
+          CHR 2015 Regulation 17 (risk assessments must consider the location of the home and the risks it presents to children; neighbourhood risk is explicitly within scope). Regulation 5 (welfare — children&apos;s safety does not end at the front door; the home is responsible for understanding and mitigating risks in the environment where children live their daily lives). NMS Standard 18 (the registered person must ensure that the risks presented by the local area are regularly assessed and shared with children in a way that promotes rather than restricts their independence). Contextual Safeguarding (Firmin, 2015 / Contextual Safeguarding Network) — abuse and exploitation often occur in peer groups, online, and in local areas rather than only in the home; neighbourhood-level risk mapping is a core element of a modern safeguarding approach, particularly for children at risk of county lines involvement, criminal exploitation or CSE.
         </p>
       </div>
     </PageShell>

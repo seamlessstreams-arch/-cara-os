@@ -375,9 +375,9 @@ export default function StaffTrainingCompliancePage() {
 
         {/* Accountability callout */}
         <blockquote className="border-l-4 border-blue-400 pl-4 py-2 text-sm text-muted-foreground italic">
-          "Registered managers must ensure that sufficient numbers of suitably qualified, skilled and experienced persons are employed. They must have regard to the qualifications, competence and experience of those employed."
+          &quot;Registered managers must ensure that sufficient numbers of suitably qualified, skilled and experienced persons are employed. They must have regard to the qualifications, competence and experience of those employed.&quot;
           <br />
-          <span className="text-xs not-italic mt-1 block">Children's Homes (England) Regulations 2015, Regulation 32 & 33</span>
+          <span className="text-xs not-italic mt-1 block">Children&apos;s Homes (England) Regulations 2015, Regulation 32 & 33</span>
         </blockquote>
       </div>
     </PageShell>

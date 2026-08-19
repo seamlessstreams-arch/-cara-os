@@ -91,7 +91,7 @@ export function HomeStatutoryNotificationComplianceIntelligenceCard() {
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.acknowledgement_rate >= 90 ? "bg-green-50" : d.acknowledgement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.acknowledgement_rate}%</p>
-              <p className="text-[9px] text-muted-foreground">Ack'd</p>
+              <p className="text-[9px] text-muted-foreground">Ack&apos;d</p>
             </div>
           </div>
         )}

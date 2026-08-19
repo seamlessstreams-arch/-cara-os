@@ -410,7 +410,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                       <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                         <div className="flex items-center gap-1 mb-2">
                           <Heart className="h-4 w-4 text-pink-700" />
-                          <p className="text-xs font-medium text-pink-700">Child's Voice & Contribution</p>
+                          <p className="text-xs font-medium text-pink-700">Child&apos;s Voice & Contribution</p>
                         </div>
                         <p className="text-sm">
                           <Badge variant="outline" className="text-xs mr-2">
@@ -511,7 +511,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
         {/* ── reg note ──────────────────────────────────────────── */}
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
           <strong>Quality Standard 4 (Enjoyment & Achievement) and Reg 5:</strong> Children must experience
-          stable placements that meet their needs. Per-child disruption prevention plans demonstrate the home's
+          stable placements that meet their needs. Per-child disruption prevention plans demonstrate the home&apos;s
           proactive, anticipatory approach to placement stability — identifying warning signs early, agreeing
           actions in advance, involving the child in planning, and coordinating with the placing authority,
           family, and external professionals. Plans are reviewed regularly and updated as triggers, warning

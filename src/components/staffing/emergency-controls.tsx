@@ -156,7 +156,7 @@ export function ActiveEmergencyBanner() {
             </div>
             <div className="flex flex-col gap-1.5 shrink-0">
               <Button size="sm" onClick={() => action.mutate({ id: a.id, action: "acknowledge" })} disabled={action.isPending} className="gap-1 text-xs">
-                <HandHelping className="h-3.5 w-3.5" />I'm responding
+                <HandHelping className="h-3.5 w-3.5" />I&apos;m responding
               </Button>
               <Button size="sm" variant="outline" onClick={() => action.mutate({ id: a.id, action: "resolve" })} disabled={action.isPending} className="gap-1 text-xs">
                 <CheckCircle2 className="h-3.5 w-3.5" />Resolve

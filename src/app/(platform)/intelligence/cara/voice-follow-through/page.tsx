@@ -152,7 +152,7 @@ export default function VoiceFollowThroughPage() {
                       {l.review_with_child_note && (
                         <p className="mt-0.5 text-xs text-[var(--cs-text-secondary,#475569)]">
                           <CheckCircle2 className="mr-1 inline h-3 w-3 text-emerald-600" />
-                          Child's review: {l.review_with_child_note}
+                          Child&apos;s review: {l.review_with_child_note}
                         </p>
                       )}
                     </div>

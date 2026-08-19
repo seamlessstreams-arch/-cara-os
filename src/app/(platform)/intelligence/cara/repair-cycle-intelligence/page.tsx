@@ -179,7 +179,7 @@ export default function RepairCycleIntelligencePage() {
         )}
 
         <p className="text-xs text-muted-foreground border-t pt-3">
-          The repair cycle is the DDP-informed response to every relational incident. It is not optional: an incident without debrief, without child perspective, without lessons learned, and without restorative conversation is an incomplete safeguarding response. The registered manager's oversight function includes ensuring that every incident on this list has a complete repair cycle closed within regulatory timescales.
+          The repair cycle is the DDP-informed response to every relational incident. It is not optional: an incident without debrief, without child perspective, without lessons learned, and without restorative conversation is an incomplete safeguarding response. The registered manager&apos;s oversight function includes ensuring that every incident on this list has a complete repair cycle closed within regulatory timescales.
         </p>
       </div>
     </PageShell>

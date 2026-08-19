@@ -296,7 +296,7 @@ export default function TeamApproachConsistencyPage() {
             {/* ── Accountability note ───────────────────────────────────── */}
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-5 py-3 text-xs text-gray-500 leading-relaxed">
               <span className="font-medium text-gray-600">Professional accountability: </span>
-              Approach classification is based on keyword detection in behaviour log strategy fields. A "boundary" or "physical" classification does not mean the intervention was wrong — context matters. The manager uses this as a prompt for professional conversation about consistency, not as a performance judgement. Some variation across staff is normal and healthy; significant divergence warrants exploration.
+              Approach classification is based on keyword detection in behaviour log strategy fields. A &quot;boundary&quot; or &quot;physical&quot; classification does not mean the intervention was wrong — context matters. The manager uses this as a prompt for professional conversation about consistency, not as a performance judgement. Some variation across staff is normal and healthy; significant divergence warrants exploration.
             </div>
           </div>
         );

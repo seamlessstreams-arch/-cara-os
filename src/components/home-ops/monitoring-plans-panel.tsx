@@ -102,7 +102,7 @@ export function MonitoringPlansPanel({ compact = false, className }: { compact?:
         Monitoring Plans
       </p>
       <p className="mt-0.5 text-xs text-[var(--cs-text-muted)]">
-        Standing observation levels — a human decision, recorded with the child's views. Nights follow the night-check plan.
+        Standing observation levels — a human decision, recorded with the child&apos;s views. Nights follow the night-check plan.
       </p>
 
       {/* Summary chips */}
@@ -146,7 +146,7 @@ export function MonitoringPlansPanel({ compact = false, className }: { compact?:
         <p className="mt-3 flex items-start gap-1.5 text-[11px] text-[var(--cs-text-gentle)]">
           <Info className="mt-0.5 h-3 w-3 shrink-0" />
           Plans are created and ended through the governed write path (restriction acknowledged, rationale, the
-          child's views, review within 28 days) — Cara never sets a level itself.
+          child&apos;s views, review within 28 days) — Cara never sets a level itself.
         </p>
       )}
     </div>

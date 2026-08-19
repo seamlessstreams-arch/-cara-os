@@ -1016,7 +1016,7 @@ export default function CareEventDetailPage({
                             {v.amended_by_name && <> · {v.amended_by_name}</>}
                           </p>
                           {v.amendment_reason && (
-                            <p className="text-xs text-slate-600 mt-0.5 italic">"{v.amendment_reason}"</p>
+                            <p className="text-xs text-slate-600 mt-0.5 italic">&quot;{v.amendment_reason}&quot;</p>
                           )}
                         </div>
                         <Link href={`/care-events/${v.id}`} className="text-[10px] text-indigo-600 hover:text-indigo-700 font-medium shrink-0 mt-0.5">

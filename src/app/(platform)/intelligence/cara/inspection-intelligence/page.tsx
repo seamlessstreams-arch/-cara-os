@@ -225,7 +225,7 @@ export default function InspectionIntelligencePage() {
             <p className="px-1 text-xs text-[var(--cs-text-muted,#64748b)]">
               CARA assembles the evidence you already hold and highlights gaps to support your self-evaluation and inspection
               preparation. It does <span className="font-semibold">not</span> predict or assign an Ofsted grade — that
-              judgement is the inspector's. Intelligence informs practice; people make the decisions.
+              judgement is the inspector&apos;s. Intelligence informs practice; people make the decisions.
             </p>
           </>
         )}

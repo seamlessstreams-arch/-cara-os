@@ -336,7 +336,7 @@ export default function DentalRecordsPage() {
                   {/* Attitude / orthodontics / fluoride */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Child's Attitude</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Child&apos;s Attitude</p>
                       <p>{rec.child_attitude_to_dentistry}</p>
                     </div>
                     <div>

@@ -30,7 +30,7 @@ export function OfflineBanner() {
       className="fixed top-0 inset-x-0 z-[300] flex items-center justify-center gap-1.5 bg-[var(--cs-avisaar-coral)] px-3 py-1.5 text-center text-xs font-semibold text-white"
     >
       <WifiOff className="h-3.5 w-3.5 shrink-0" />
-      You're offline — live care information may not be up to date.
+      You&apos;re offline — live care information may not be up to date.
     </div>
   );
 }
