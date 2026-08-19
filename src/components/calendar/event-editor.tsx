@@ -2,7 +2,7 @@
 
 // CARA — CALENDAR event editor (create / edit slide-over)
 
-import React, { useId, useEffect, useState } from "react";
+import React, { useId, useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { X, Plus, Trash2 } from "lucide-react";
 import { api } from "@/hooks/use-api";
@@ -85,21 +85,31 @@ interface TaskRow {
   due_date: string;
 }
 
-export function EventEditor({
-  open,
-  onClose,
-  defaultDate,
-  defaultChildId,
-  editing,
-  onSaved,
-}: {
+interface EventEditorProps {
   open: boolean;
   onClose: () => void;
   defaultDate?: string;
   defaultChildId?: string;
   editing?: CalendarEvent | null;
   onSaved?: (id: string) => void;
-}) {
+}
+
+/* The form mounts fresh per open session (and per editing target, via the
+ * key), so every field's seed is its useState initializer — there is no reset
+ * effect, and a calendar-feed refetch that produces a new `editing` object
+ * for the same event can no longer clobber what the user has typed. */
+export function EventEditor(props: EventEditorProps) {
+  if (!props.open) return null;
+  return <EventEditorForm key={props.editing?.id ?? "new"} {...props} />;
+}
+
+function EventEditorForm({
+  onClose,
+  defaultDate,
+  defaultChildId,
+  editing,
+  onSaved,
+}: EventEditorProps) {
   const uid = useId();
   const yp = useYoungPeople();
   const staff = useStaff();
@@ -132,63 +142,26 @@ export function EventEditor({
     onSuccess: () => invalidate(),
   });
 
-  const [title, setTitle] = useState("");
-  const [eventType, setEventType] = useState<EventType>("meeting");
-  const [date, setDate] = useState(defaultDate ?? "");
-  const [startTime, setStartTime] = useState("10:00");
-  const [endTime, setEndTime] = useState("11:00");
-  const [allDay, setAllDay] = useState(false);
-  const [location, setLocation] = useState("");
-  const [childId, setChildId] = useState("");
-  const [description, setDescription] = useState("");
-  const [staffIds, setStaffIds] = useState<string[]>([]);
-  const [externals, setExternals] = useState<ExternalRow[]>([]);
-  const [reminder, setReminder] = useState<number | null>(60);
-  const [recurFreq, setRecurFreq] = useState<"none" | "daily" | "weekly" | "fortnightly" | "monthly">("none");
-  const [recurUntil, setRecurUntil] = useState("");
+  const [title, setTitle] = useState(editing?.title ?? "");
+  const [eventType, setEventType] = useState<EventType>(editing?.event_type ?? "meeting");
+  const [date, setDate] = useState(editing ? editing.start.slice(0, 10) : (defaultDate ?? ""));
+  const [startTime, setStartTime] = useState(editing ? (editing.start.slice(11, 16) || "10:00") : "10:00");
+  const [endTime, setEndTime] = useState(editing ? (editing.end?.slice(11, 16) || "11:00") : "11:00");
+  const [allDay, setAllDay] = useState(editing?.all_day ?? false);
+  const [location, setLocation] = useState(editing?.location ?? "");
+  const [childId, setChildId] = useState(editing ? (editing.child_id ?? "") : (defaultChildId ?? ""));
+  const [description, setDescription] = useState(editing?.description ?? "");
+  const [staffIds, setStaffIds] = useState<string[]>(() =>
+    editing ? editing.attendees.filter((a) => a.kind === "staff" && a.staff_id).map((a) => a.staff_id as string) : []);
+  const [externals, setExternals] = useState<ExternalRow[]>(() =>
+    editing ? editing.attendees.filter((a) => a.kind === "external").map((a) => ({ name: a.name, email: a.email ?? "" })) : []);
+  // An existing event's reminder may legitimately be null (no reminder) — only
+  // a brand-new event gets the 1-hour default, so ?? would be wrong here.
+  const [reminder, setReminder] = useState<number | null>(editing ? editing.reminder_minutes_before : 60);
+  const [recurFreq, setRecurFreq] = useState<"none" | "daily" | "weekly" | "fortnightly" | "monthly">(editing?.recurrence?.freq ?? "none");
+  const [recurUntil, setRecurUntil] = useState(editing?.recurrence?.until ?? "");
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // Reset/seed when opening
-  useEffect(() => {
-    if (!open) return;
-    if (editing) {
-      setTitle(editing.title);
-      setEventType(editing.event_type);
-      setDate(editing.start.slice(0, 10));
-      setStartTime(editing.start.slice(11, 16) || "10:00");
-      setEndTime(editing.end?.slice(11, 16) || "11:00");
-      setAllDay(editing.all_day);
-      setLocation(editing.location ?? "");
-      setChildId(editing.child_id ?? "");
-      setDescription(editing.description ?? "");
-      setStaffIds(editing.attendees.filter((a) => a.kind === "staff" && a.staff_id).map((a) => a.staff_id as string));
-      setExternals(editing.attendees.filter((a) => a.kind === "external").map((a) => ({ name: a.name, email: a.email ?? "" })));
-      setReminder(editing.reminder_minutes_before);
-      setRecurFreq(editing.recurrence?.freq ?? "none");
-      setRecurUntil(editing.recurrence?.until ?? "");
-      setTasks([]);
-    } else {
-      setTitle("");
-      setEventType("meeting");
-      setDate(defaultDate ?? "");
-      setStartTime("10:00");
-      setEndTime("11:00");
-      setAllDay(false);
-      setLocation("");
-      setChildId(defaultChildId ?? "");
-      setDescription("");
-      setStaffIds([]);
-      setExternals([]);
-      setReminder(60);
-      setRecurFreq("none");
-      setRecurUntil("");
-      setTasks([]);
-    }
-    setError(null);
-  }, [open, editing, defaultDate, defaultChildId]);
-
-  if (!open) return null;
 
   const youngPeople = yp.data?.data ?? [];
   const staffList = staff.data?.data ?? [];

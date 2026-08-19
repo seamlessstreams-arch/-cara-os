@@ -5,7 +5,7 @@
 // View, edit, submit, and approve a single care form.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -286,15 +286,13 @@ export default function FormDetailPage() {
     },
   });
 
-  // Seed the edit draft ONCE per edit session — when entering edit mode (and once the
-  // form has loaded). Critically NOT on every background refetch of `form` (queries
-  // refetch every 60s): re-seeding mid-edit would clobber whatever the user has typed,
-  // which is the "data entered not saving / old data remains" bug. Resets on edit exit.
-  const seededRef = useRef(false);
-  useEffect(() => {
-    if (!editing) { seededRef.current = false; return; }
-    if (seededRef.current || !form) return;
-    seededRef.current = true;
+  // The edit draft is seeded in the Edit button's handler — the one moment the
+  // user chooses to start from the current record. Seeding at the event (not in
+  // an effect watching `form`) means a background refetch (queries refetch every
+  // 60s) can never clobber whatever the user has typed, which was the "data
+  // entered not saving / old data remains" bug.
+  function startEditing() {
+    if (!form) return;
     setEditDraft({
       title: form.title,
       description: form.description ?? "",
@@ -305,7 +303,8 @@ export default function FormDetailPage() {
       linked_staff_id: form.linked_staff_id ?? "",
       tags: form.tags,
     });
-  }, [form, editing]);
+    setEditing(true);
+  }
 
   const canEdit    = can(PERMISSIONS.EDIT_FORMS);
   const canSubmit  = can(PERMISSIONS.SUBMIT_FORMS);
@@ -387,7 +386,7 @@ export default function FormDetailPage() {
             </Button>
           </Link>
           {canEdit && isDraft && !editing && (
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+            <Button size="sm" variant="outline" onClick={startEditing}>
               <Pencil className="h-3.5 w-3.5 mr-1" />Edit
             </Button>
           )}

@@ -11,7 +11,8 @@
 //   <CaraNotificationPrefs userId="staff_darren" />
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
+import { useClientValue } from "@/hooks/use-client-value";
 import { cn } from "@/lib/utils";
 import {
   Bell,
@@ -129,28 +130,28 @@ export function CaraNotificationPrefs({
   userId,
   className,
 }: CaraNotificationPrefsProps) {
-  const [prefs, setPrefs] = useState<NotificationPreferences>(getDefaultPrefs());
+  // Saved preferences are an external store (localStorage): null on the
+  // server so SSR and hydration agree on the defaults, parsed once per stored
+  // string. Unsaved toggles live in an override the derivation prefers.
+  const storedJson = useClientValue(() => {
+    try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+  }, null);
+  const storedPrefs = useMemo<NotificationPreferences>(() => {
+    const defaults = getDefaultPrefs();
+    if (!storedJson) return defaults;
+    try { return { ...defaults, ...JSON.parse(storedJson) }; } catch { return defaults; }
+  }, [storedJson]);
+  const [editedPrefs, setEditedPrefs] = useState<NotificationPreferences | null>(null);
+  const prefs = editedPrefs ?? storedPrefs;
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setPrefs((prev) => ({ ...prev, ...parsed }));
-      }
-    } catch {
-      // Use defaults
-    }
-  }, []);
-
   const toggleCategory = useCallback((categoryId: string) => {
-    setPrefs((prev) => ({
-      ...prev,
-      [categoryId]: !prev[categoryId],
-    }));
+    setEditedPrefs((prev) => {
+      const base = prev ?? storedPrefs;
+      return { ...base, [categoryId]: !base[categoryId] };
+    });
     setSaved(false);
-  }, []);
+  }, [storedPrefs]);
 
   function handleSave() {
     try {

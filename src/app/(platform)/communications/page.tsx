@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useId } from "react";
+import React, { useState, useMemo, useId } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -401,33 +401,41 @@ export default function CommunicationsPage() {
         </div>
       </div>
 
-      <ComposeDraftDialog
-        type={composing}
-        onClose={() => setComposing(null)}
-        author={author}
-        homeId={homeId}
-        pending={act.isPending}
-        error={act.isError ? (act.error as Error).message : ""}
-        onSave={(title, content) =>
-          act.mutate(
-            { action: "create", homeId, type: composing, title, content, createdBy: author },
-            { onSuccess: () => setComposing(null) },
-          )
-        }
-      />
+      {/* Mounted only while open, keyed by subject, so each open session
+          starts from a fresh seed via useState initializers — no reset effect. */}
+      {composing && (
+        <ComposeDraftDialog
+          key={composing}
+          type={composing}
+          onClose={() => setComposing(null)}
+          author={author}
+          homeId={homeId}
+          pending={act.isPending}
+          error={act.isError ? (act.error as Error).message : ""}
+          onSave={(title, content) =>
+            act.mutate(
+              { action: "create", homeId, type: composing, title, content, createdBy: author },
+              { onSuccess: () => setComposing(null) },
+            )
+          }
+        />
+      )}
 
-      <EditDraftDialog
-        draft={editing}
-        onClose={() => setEditing(null)}
-        pending={act.isPending}
-        error={act.isError ? (act.error as Error).message : ""}
-        onSave={(title, content) =>
-          act.mutate(
-            { action: "update", id: editing!.id, title, content, editedBy: author },
-            { onSuccess: () => setEditing(null) },
-          )
-        }
-      />
+      {editing && (
+        <EditDraftDialog
+          key={editing.id}
+          draft={editing}
+          onClose={() => setEditing(null)}
+          pending={act.isPending}
+          error={act.isError ? (act.error as Error).message : ""}
+          onSave={(title, content) =>
+            act.mutate(
+              { action: "update", id: editing.id, title, content, editedBy: author },
+              { onSuccess: () => setEditing(null) },
+            )
+          }
+        />
+      )}
     </PageShell>
   );
 }
@@ -443,7 +451,7 @@ export default function CommunicationsPage() {
 function ComposeDraftDialog({
   type, onClose, author, homeId, pending, error, onSave,
 }: {
-  type: CommunicationType | null;
+  type: CommunicationType;
   onClose: () => void;
   author: string;
   homeId: string;
@@ -452,18 +460,15 @@ function ComposeDraftDialog({
   onSave: (title: string, content: string) => void;
 }) {
   const uid = useId();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  useEffect(() => {
-    if (!type) return;
-    const tmpl = COMMUNICATION_TEMPLATES[type];
-    setTitle(`${tmpl.label} — ${londonDisplay({ day: "numeric", month: "long", year: "numeric" })}`);
-    setContent((tmpl.sections ?? []).map((s: string) => `## ${s}\n\n`).join(""));
-  }, [type]);
-
-  if (!type) return null;
+  // Mounted per open session (parent keys by type), so the template seed is
+  // the initial state — reopening or switching template remounts fresh.
   const tmpl = COMMUNICATION_TEMPLATES[type];
+  const [title, setTitle] = useState(
+    () => `${tmpl.label} — ${londonDisplay({ day: "numeric", month: "long", year: "numeric" })}`,
+  );
+  const [content, setContent] = useState(
+    () => (tmpl.sections ?? []).map((s: string) => `## ${s}\n\n`).join(""),
+  );
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -513,23 +518,17 @@ function ComposeDraftDialog({
 function EditDraftDialog({
   draft, onClose, pending, error, onSave,
 }: {
-  draft: DraftRow | null;
+  draft: DraftRow;
   onClose: () => void;
   pending: boolean;
   error: string;
   onSave: (title: string, content: string) => void;
 }) {
   const uid = useId();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  useEffect(() => {
-    if (!draft) return;
-    setTitle(draft.title);
-    setContent(draft.content);
-  }, [draft]);
-
-  if (!draft) return null;
+  // Mounted per open session (parent keys by draft id), so the draft is the
+  // initial state — a background refetch can no longer clobber mid-edit text.
+  const [title, setTitle] = useState(draft.title);
+  const [content, setContent] = useState(draft.content);
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>

@@ -6,9 +6,11 @@
 // In production, replace the localStorage stub with NextAuth / Clerk session.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import { useClientValue } from "@/hooks/use-client-value";
+import { useMounted } from "@/hooks/use-mounted";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
 
@@ -65,17 +67,18 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [userId, setUserId] = useState<string>(DEFAULT_USER_ID);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Read persisted user on mount (client-only)
-  useEffect(() => {
-    const stored = typeof window !== "undefined"
-      ? localStorage.getItem(SESSION_KEY)
-      : null;
-    if (stored) setUserId(stored);
-    setIsLoaded(true);
-  }, []);
+  // The persisted user is an external store (localStorage), not React state:
+  // "" on the server and during hydration, the stored id after. In-session
+  // switches land in sessionUserId, so the derivation below prefers them.
+  const storedUserId = useClientValue(
+    () => {
+      try { return localStorage.getItem(SESSION_KEY) ?? ""; } catch { return ""; }
+    },
+    "",
+  );
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const userId = sessionUserId ?? (storedUserId || DEFAULT_USER_ID);
+  const isLoaded = useMounted();
 
   const staffQuery = useStaff();
   const allStaff = staffQuery.data?.data ?? [];
@@ -84,10 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const currentRole: AppRole = toAppRole(currentUser?.role ?? "residential_care_worker");
 
   function setCurrentUserId(id: string) {
-    setUserId(id);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(SESSION_KEY, id);
-    }
+    setSessionUserId(id);
+    try { localStorage.setItem(SESSION_KEY, id); } catch { /* ignore */ }
   }
 
   return (

@@ -9,7 +9,8 @@
 // Choose a real event to review, or explore the worked example.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useUrlParam } from "@/hooks/use-client-value";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
@@ -85,14 +86,13 @@ function useOversightFromRecord(id: string | null) {
 }
 
 export default function OversightWorkflowPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // Deep-link support (?id=) without useSearchParams, so the static page needs no
-  // Suspense boundary. Read once on mount; reflect changes via replaceState.
-  useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("id");
-    if (id) setSelectedId(id);
-  }, []);
+  // Deep-link support (?id=) without useSearchParams, so the static page needs
+  // no Suspense boundary. The URL param is the mount-time default; a user
+  // choice overrides it — including choosing the example (override === null),
+  // which a plain `chosen ?? url` chain could not express.
+  const urlId = useUrlParam("id");
+  const [override, setOverride] = useState<string | null | undefined>(undefined);
+  const selectedId = override !== undefined ? override : (urlId || null);
 
   function syncUrl(id: string | null) {
     const url = new URL(window.location.href);
@@ -101,11 +101,11 @@ export default function OversightWorkflowPage() {
     window.history.replaceState({}, "", url);
   }
   function select(id: string) {
-    setSelectedId(id);
+    setOverride(id);
     syncUrl(id);
   }
   function showExample() {
-    setSelectedId(null);
+    setOverride(null);
     syncUrl(null);
   }
 

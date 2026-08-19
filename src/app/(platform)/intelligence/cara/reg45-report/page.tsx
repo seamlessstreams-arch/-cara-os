@@ -10,7 +10,7 @@ import { api } from "@/hooks/use-api";
 // reports are immutable and feed Annex A Section 9 evidence.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,20 +92,19 @@ export default function Reg45ReportPage() {
     [reports, selectedId],
   );
 
-  // Local edit buffers
-  const [title, setTitle] = useState("");
-  const [exec, setExec] = useState("");
-  const [sectionText, setSectionText] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (current) {
-      setTitle(current.title);
-      setExec(current.executive_summary);
-      const map: Record<string, string> = {};
-      for (const s of current.sections) map[s.theme] = s.narrative;
-      setSectionText(map);
-    }
-  }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Local edit buffers: overrides scoped to the report they were typed on.
+  // Untouched fields keep tracking the server (the inputs and the save handler
+  // both fall back per-field), and switching report discards stale edits —
+  // the old per-id reseed effect, without the effect.
+  const [edits, setEdits] = useState<{ forId: string; title?: string; exec?: string; sections: Record<string, string> }>({ forId: "", sections: {} });
+  const active = current && edits.forId === current.id ? edits : { forId: current?.id ?? "", sections: {} };
+  const title = active.title ?? current?.title ?? "";
+  const exec = active.exec ?? current?.executive_summary ?? "";
+  const sectionText = active.sections;
+  const setTitle = (v: string) => setEdits({ ...active, title: v });
+  const setExec = (v: string) => setEdits({ ...active, exec: v });
+  const setSectionTheme = (theme: string, v: string) =>
+    setEdits({ ...active, sections: { ...active.sections, [theme]: v } });
 
   const handleBuild = () => {
     build.mutate(
@@ -305,7 +304,7 @@ export default function Reg45ReportPage() {
                       <Textarea
                         value={sectionText[s.theme] ?? s.narrative}
                         onChange={(e) =>
-                          setSectionText((prev) => ({ ...prev, [s.theme]: e.target.value }))
+                          setSectionTheme(s.theme, e.target.value)
                         }
                         rows={6}
                       />
