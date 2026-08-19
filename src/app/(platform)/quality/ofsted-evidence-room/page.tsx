@@ -37,7 +37,7 @@ function useHomeName(fallback = "This home"): string {
   const { data } = useHomeProfile();
   return data?.home?.name?.trim() || fallback;
 }
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { PageShell } from "@/components/layout/page-shell";
@@ -362,18 +362,17 @@ export default function OfstedEvidenceRoomPage() {
   const { data: gapsData } = useEvidenceGaps();
   const createEvidence = useCreateEvidence();
 
-  const [evidenceItems, setEvidenceItems] = useState<(InspectionEvidenceItem & { sourceLabel: SourceType })[]>([]);
-  const [gaps, setGaps] = useState<EvidenceGap[]>([]);
+    
+  const gaps = useMemo<EvidenceGap[]>(
+    () => (gapsData?.persisted && Array.isArray(gapsData.gaps)
+      ? gapsData.gaps as EvidenceGap[]
+      : []),
+    [gapsData],
+  );
 
-  useEffect(() => {
-    if (gapsData?.persisted && Array.isArray(gapsData.gaps)) {
-      setGaps(gapsData.gaps as EvidenceGap[]);
-    }
-  }, [gapsData]);
-
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.items)) {
-      setEvidenceItems((apiData.items as Record<string, unknown>[]).map((row) => ({
+  const evidenceItems = useMemo<(InspectionEvidenceItem & { sourceLabel: SourceType })[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.items)
+      ? (apiData.items as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: (row.home_id as string) ?? "",
         childId: (row.child_id as string) ?? undefined,
@@ -391,9 +390,10 @@ export default function OfstedEvidenceRoomPage() {
         createdBy: (row.created_by as string) ?? undefined,
         createdAt: row.created_at as string,
         updatedAt: row.created_at as string,
-      })));
-    }
-  }, [apiData]);
+      }))
+      : []),
+    [apiData],
+  );
 
   /* ── filter state ──────────────────────────────────────────────────────── */
   const [activeTab, setActiveTab] = useState<string>("all");

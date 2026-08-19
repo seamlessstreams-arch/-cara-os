@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useId } from "react";
+import { useState, useMemo, useId } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -372,9 +372,7 @@ function AddActionDialog({
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg44Page() {
-  const [visits, setVisits] = useState<Reg44Visit[]>([]);
-  const [actions, setActions] = useState<Reg44Action[]>([]);
-  const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
+      const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   // `visits`/`actions` start as [] and are hydrated from these queries in an
@@ -398,9 +396,9 @@ export default function Reg44Page() {
   const visitError = (target: string) =>
     respondToVisit.isError && visitTarget === target ? (respondToVisit.error as Error).message : "";
 
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.visits)) {
-      setVisits((apiData.visits as Record<string, unknown>[]).map((row) => ({
+  const visits = useMemo<Reg44Visit[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.visits)
+      ? (apiData.visits as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: row.home_id as string,
         visitDate: row.visit_date as string,
@@ -416,13 +414,14 @@ export default function Reg44Page() {
         createdBy: (row.created_by as string) ?? undefined,
         createdAt: (row.created_at as string) ?? "",
         updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
-      })));
-    }
-  }, [apiData]);
+      }))
+      : []),
+    [apiData],
+  );
 
-  useEffect(() => {
-    if (actionsData?.persisted && Array.isArray(actionsData.actions)) {
-      setActions((actionsData.actions as Record<string, unknown>[]).map((row) => ({
+  const actions = useMemo<Reg44Action[]>(
+    () => (actionsData?.persisted && Array.isArray(actionsData.actions)
+      ? (actionsData.actions as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         visitId: row.visit_id as string,
         homeId: row.home_id as string,
@@ -438,9 +437,10 @@ export default function Reg44Page() {
         createdBy: (row.created_by as string) ?? undefined,
         createdAt: (row.created_at as string) ?? "",
         updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
-      })));
-    }
-  }, [actionsData]);
+      }))
+      : []),
+    [actionsData],
+  );
   const [tab, setTab] = useState("visits");
   const [actionFilter, setActionFilter] = useState<string>("all");
 

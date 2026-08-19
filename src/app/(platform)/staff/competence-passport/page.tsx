@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { api } from "@/hooks/use-api";
@@ -141,7 +141,6 @@ const SEVERITY_META: Record<string, { color: string }> = {
 export default function StaffCompetencePassportPage() {
   const { currentUser } = useAuthContext();
   const [selectedStaff, setSelectedStaff] = useState("staff-a");
-  const [staffRecords, setStaffRecords] = useState<StaffRecord[]>([]);
   const [assignTrainingOpen, setAssignTrainingOpen] = useState(false);
   const [superviseOpen, setSuperviseOpen] = useState(false);
   const [restrictOpen, setRestrictOpen] = useState(false);
@@ -159,14 +158,13 @@ export default function StaffCompetencePassportPage() {
   });
   const roster = rosterData?.data ?? [];
 
-  useEffect(() => {
+  const staffRecords = useMemo<StaffRecord[]>(() => {
     const rich = (apiData as unknown as { richRecords?: unknown[] } | undefined)?.richRecords;
     if (apiData?.persisted && Array.isArray(rich) && rich.length > 0) {
-      setStaffRecords(rich as StaffRecord[]);
-      return;
+      return rich as StaffRecord[];
     }
     if (apiData?.persisted && Array.isArray(apiData.records) && apiData.records.length > 0) {
-      setStaffRecords((apiData.records as Record<string, unknown>[]).map((row) => ({
+      return (apiData.records as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         name: (row.staff_id as string) ?? "",
         role: "",
@@ -194,8 +192,9 @@ export default function StaffCompetencePassportPage() {
         compliments: (row.compliments as string)
           ? [{ id: "c1", text: row.compliments as string, from: "", date: "" }]
           : [],
-      })));
+      }));
     }
+    return [];
   }, [apiData]);
 
   const staff = staffRecords.find((s) => s.id === selectedStaff) || staffRecords[0];

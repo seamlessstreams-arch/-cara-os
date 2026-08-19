@@ -13,7 +13,7 @@
 // Every action is audit-logged. Rejection requires a reason.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
@@ -280,16 +280,15 @@ export default function CaraSuggestionDetailPage({
   const suggestion = ((apiData?.item as SuggestionDetail | null) ?? demoSeedOne(DEMO_SUGGESTION_FALLBACK));
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(suggestion?.draft_text ?? "");
+  // null = untouched, so the reviewer sees the server draft; a keystroke takes
+  // over from there. The old effect copied the draft into state and could
+  // clobber an in-progress edit when the query refetched.
+  const [editedOverride, setEditedOverride] = useState<string | null>(null);
+  const editedText = editedOverride ?? suggestion?.draft_text ?? "";
+  const setEditedText = (v: string) => setEditedOverride(v);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [actionTaken, setActionTaken] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (apiData?.item) {
-      setEditedText((apiData.item as SuggestionDetail).draft_text);
-    }
-  }, [apiData]);
 
   // Hooks are all above this line, so the early return is safe. On a live tenant
   // with no matching suggestion, `suggestion` is null (no demo fallback).

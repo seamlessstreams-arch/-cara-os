@@ -36,7 +36,7 @@ function useHomeName(fallback = "This home"): string {
   const { data } = useHomeProfile();
   return data?.home?.name?.trim() || fallback;
 }
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { PageShell } from "@/components/layout/page-shell";
@@ -237,8 +237,6 @@ export default function ProviderOversightPage() {
   const homeName = useHomeName();
   const [selectedHome, setSelectedHome] = useState<string>("all");
   const [oversightComment, setOversightComment] = useState("");
-  const [homes, setHomes] = useState<HomeData[]>([]);
-  const [oversightLog, setOversightLog] = useState<OversightEntry[]>([]);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useProviderSummaries();
@@ -263,17 +261,13 @@ export default function ProviderOversightPage() {
       { onSuccess: () => setOversightComment("") },
     );
 
-  useEffect(() => {
-    const rich = (apiData as unknown as { richSummaries?: unknown[]; oversightLog?: unknown[] } | undefined);
-    if (apiData?.persisted && Array.isArray(rich?.richSummaries) && rich!.richSummaries!.length > 0) {
-      setHomes(rich!.richSummaries as HomeData[]);
-      if (Array.isArray(rich?.oversightLog)) {
-        setOversightLog(rich!.oversightLog as OversightEntry[]);
-      }
-      return;
+  const rich = apiData as unknown as { richSummaries?: unknown[]; oversightLog?: unknown[] } | undefined;
+  const homes = useMemo<HomeData[]>(() => {
+    if (apiData?.persisted && Array.isArray(rich?.richSummaries) && rich.richSummaries.length > 0) {
+      return rich.richSummaries as HomeData[];
     }
     if (apiData?.persisted && Array.isArray(apiData.summaries) && apiData.summaries.length > 0) {
-      setHomes((apiData.summaries as Record<string, unknown>[]).map((row) => ({
+      return (apiData.summaries as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         name: (row.home_id as string) ?? "",
         manager: (row.created_by as string) ?? "",
@@ -293,9 +287,19 @@ export default function ProviderOversightPage() {
         missingEpisodes: 0,
         caraRiskFlags: [],
         lastReviewed: (row.summary_date as string) ?? "",
-      })));
+      }));
     }
+    return [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- rich is derived from apiData
   }, [apiData]);
+  const oversightLog = useMemo<OversightEntry[]>(
+    () =>
+      apiData?.persisted && Array.isArray(rich?.richSummaries) && rich.richSummaries.length > 0 && Array.isArray(rich?.oversightLog)
+        ? (rich.oversightLog as OversightEntry[])
+        : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rich is derived from apiData
+    [apiData],
+  );
 
   const filteredHomes =
     selectedHome === "all"

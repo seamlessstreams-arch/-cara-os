@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -140,8 +140,28 @@ const CHILDREN = [
 export default function VoiceOfTheChildPage() {
   const [selectedChild, setSelectedChild] = useState("child-a");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [entries, setEntries] = useState<VoiceEntry[]>([]);
 
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
+  const { data: apiData } = useVoiceEntries();
+  const createEntry = useCreateVoiceEntry();
+
+  const entries = useMemo<VoiceEntry[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.entries)
+      ? (apiData.entries as Record<string, unknown>[]).map((e) => ({
+        id: e.id as string,
+        date: (e.entry_date as string) ?? "",
+        category: e.category as VoiceCategory,
+        childWords: (e.child_words as string) ?? "",
+        summary: (e.summary as string) ?? "",
+        actionTaken: (e.action_taken as string) ?? "",
+        staffResponse: (e.staff_response as string) ?? "",
+        staffMember: (e.created_by as string) ?? "",
+        linkedRecord: e.linked_record_id as string | undefined,
+      }))
+      : []),
+    [apiData],
+  );
+  
   const themes = useMemo<ThemeCount[]>(() => {
     const counts = new Map<VoiceCategory, number>();
     for (const e of entries) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
@@ -169,25 +189,6 @@ export default function VoiceOfTheChildPage() {
   const [newActionTaken, setNewActionTaken] = useState("");
   const [newStaffResponse, setNewStaffResponse] = useState("");
 
-  /* ── API hooks ─────────────────────────────────────────────────────────── */
-  const { data: apiData } = useVoiceEntries();
-  const createEntry = useCreateVoiceEntry();
-
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.entries)) {
-      setEntries((apiData.entries as Record<string, unknown>[]).map((e) => ({
-        id: e.id as string,
-        date: (e.entry_date as string) ?? "",
-        category: e.category as VoiceCategory,
-        childWords: (e.child_words as string) ?? "",
-        summary: (e.summary as string) ?? "",
-        actionTaken: (e.action_taken as string) ?? "",
-        staffResponse: (e.staff_response as string) ?? "",
-        staffMember: (e.created_by as string) ?? "",
-        linkedRecord: e.linked_record_id as string | undefined,
-      })));
-    }
-  }, [apiData]);
 
   return (
     <PageShell

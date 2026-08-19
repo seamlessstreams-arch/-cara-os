@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { todayStr } from "@/lib/utils";
@@ -164,10 +164,7 @@ const CHILDREN = [
 export default function ChildProgressPage() {
   const [selectedChild, setSelectedChild] = useState("child-a");
   const [showCaraDraft, setShowCaraDraft] = useState(false);
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [progressEntries, setProgressEntries] = useState<ProgressEntry[]>([]);
-  const [outcomes, setOutcomes] = useState<OutcomeScore[]>([]);
-
+    
   /* ── API hooks (live data via intelligence-layer fallback store) ───────── */
   const { data: goalsData } = useProgressGoals(selectedChild);
   const { data: entriesData } = useProgressEntries(selectedChild);
@@ -175,9 +172,9 @@ export default function ChildProgressPage() {
   const createRecord = useCreateProgressRecord();
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (goalsData?.persisted && Array.isArray(goalsData.data)) {
-      setGoals((goalsData.data as Record<string, unknown>[]).map((row) => ({
+  const goals = useMemo<Goal[]>(
+    () => (goalsData?.persisted && Array.isArray(goalsData.data)
+      ? (goalsData.data as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         title: (row.title as string) ?? "",
         area: (row.goal_area as ProgressArea) ?? "education",
@@ -185,31 +182,35 @@ export default function ChildProgressPage() {
         targetDate: (row.target_date as string) ?? "",
         description: (row.description as string) ?? "",
         progress: (row.progress as number) ?? 0,
-      })));
-    }
-  }, [goalsData]);
+      }))
+      : []),
+    [goalsData],
+  );
 
-  useEffect(() => {
-    if (entriesData?.persisted && Array.isArray(entriesData.data)) {
-      setProgressEntries((entriesData.data as Record<string, unknown>[]).map((row) => ({
+  const progressEntries = useMemo<ProgressEntry[]>(
+    () => (entriesData?.persisted && Array.isArray(entriesData.data)
+      ? (entriesData.data as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         date: (row.entry_date as string) ?? "",
         area: (row.area as ProgressArea) ?? "education",
         description: (row.what_happened as string) ?? "",
         impactNote: (row.impact_on_child as string) ?? "",
         staffMember: ((row.staff_member as string) ?? (row.created_by as string)) ?? "",
-      })));
-    }
-  }, [entriesData]);
+      }))
+      : []),
+    [entriesData],
+  );
 
-  useEffect(() => {
-    if (snapshotsData?.persisted && Array.isArray(snapshotsData.data) && snapshotsData.data.length > 0) {
-      const row = snapshotsData.data[0] as Record<string, unknown>;
-      const trend = (key: string): "up" | "down" | "stable" => {
-        const v = row[key];
-        return v === "up" || v === "down" ? v : "stable";
-      };
-      setOutcomes([
+  const outcomes = useMemo<OutcomeScore[]>(() => {
+    if (!(snapshotsData?.persisted && Array.isArray(snapshotsData.data) && snapshotsData.data.length > 0)) {
+      return [];
+    }
+    const row = snapshotsData.data[0] as Record<string, unknown>;
+    const trend = (key: string): "up" | "down" | "stable" => {
+      const v = row[key];
+      return v === "up" || v === "down" ? v : "stable";
+    };
+    return [
         { domain: "Education", score: (row.education_score as number) ?? 0, previousScore: (row.education_previous_score as number) ?? 0, trend: trend("education_trend") },
         { domain: "Health", score: (row.health_score as number) ?? 0, previousScore: (row.health_previous_score as number) ?? 0, trend: trend("health_trend") },
         { domain: "Emotional Wellbeing", score: (row.emotional_wellbeing_score as number) ?? 0, previousScore: (row.emotional_wellbeing_previous_score as number) ?? 0, trend: trend("emotional_wellbeing_trend") },
@@ -217,8 +218,7 @@ export default function ChildProgressPage() {
         { domain: "Relationships", score: (row.relationships_score as number) ?? 0, previousScore: (row.relationships_previous_score as number) ?? 0, trend: trend("relationships_trend") },
         { domain: "Independence", score: (row.independence_score as number) ?? 0, previousScore: (row.independence_previous_score as number) ?? 0, trend: trend("independence_trend") },
         { domain: "Engagement", score: (row.engagement_score as number) ?? 0, previousScore: (row.engagement_previous_score as number) ?? 0, trend: trend("engagement_trend") },
-      ]);
-    }
+    ];
   }, [snapshotsData]);
 
   /* The progress narrative, composed from THIS child's records. It replaced
