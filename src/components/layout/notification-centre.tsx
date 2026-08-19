@@ -368,7 +368,7 @@ export function NotificationCentre() {
     }
 
     return items;
-  }, [d]);
+  }, [d, homeName]);
 
   // Filter dismissed
   const visible = notifications.filter((n) => !dismissedIds.has(n.id));

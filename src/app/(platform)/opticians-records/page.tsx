@@ -53,7 +53,7 @@ const statusColour: Record<OpticalStatus, string> = {
 
 export default function OpticiansRecordsPage() {
   const { data: res, isLoading } = useOpticiansRecords();
-  const data: OpticiansRecord[] = res?.data ?? [];
+  const data = useMemo<OpticiansRecord[]>(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

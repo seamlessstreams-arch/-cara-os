@@ -105,7 +105,8 @@ const d = (n: number) => {
 
 /* ── component ──────────────────────────────────────────────────────── */
 export default function PreventDutyPage() {
-  const { data: records = [], isLoading, isError, refetch } = usePreventRecords();
+  const { data: recordsData, isLoading, isError, refetch } = usePreventRecords();
+  const records = useMemo(() => recordsData ?? [], [recordsData]);
   const createMutation = useCreatePreventRecord();
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");

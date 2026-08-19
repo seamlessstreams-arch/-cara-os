@@ -492,7 +492,7 @@ export default function RiAlertsPage() {
   const [sortMode, setSortMode]        = useState<SortMode>("newest");
 
   // ── Derived data ─────────────────────────────────────────────────────────
-  const alerts   = data?.data ?? [];
+  const alerts = useMemo(() => data?.data ?? [], [data]);
   const meta     = data?.meta as Record<string, unknown> | undefined;
   const active   = alerts.filter((a: RiAlert) => !a.is_resolved);
   const resolved = alerts.filter((a: RiAlert) => a.is_resolved);

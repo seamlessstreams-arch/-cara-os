@@ -7,7 +7,7 @@
 // Reg 29 (RM Level 5), Reg 32 (staff Level 3), Reg 5 (DBS/right-to-work).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -524,10 +524,10 @@ export default function QualificationsPage() {
   const staffQuery = useStaff();
 
   const allQuals = qualsQuery.data?.data ?? [];
-  const staff    = staffQuery.data?.data ?? [];
+  const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
   const isLoading = qualsQuery.isLoading || staffQuery.isLoading;
 
-  const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
+  const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
   const getStaffRole = (id: string) => staff.find((s) => s.id === id)?.job_title ?? "";
 
   const filtered = useMemo(() => {
@@ -559,7 +559,7 @@ export default function QualificationsPage() {
     });
 
     return list;
-  }, [allQuals, filter, search, staff, sortBy]);
+  }, [allQuals, filter, search, staff, sortBy, getStaffName]);
 
   // Stats
   const mandatory = allQuals.filter((q) => q.mandatory);

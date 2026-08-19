@@ -7,7 +7,7 @@
 // development tracking into a single view for workforce planning.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -369,9 +369,9 @@ export default function CareerPathwayPage() {
   const staffQuery    = useStaff();
 
   const profiles = profilesQuery.data?.data ?? [];
-  const staff    = staffQuery.data?.data ?? [];
+  const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
-  const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
+  const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
 
   const filteredProfiles = useMemo(() => {
     if (!search.trim()) return profiles;
@@ -387,7 +387,7 @@ export default function CareerPathwayPage() {
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [profiles, search, staff]);
+  }, [profiles, search, staff, getStaffName]);
 
   const staffAtStage = (stage: PathwayStage) =>
     filteredProfiles.filter((p) => p.current_stage === stage);

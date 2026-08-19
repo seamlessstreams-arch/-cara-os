@@ -7,7 +7,7 @@
 // working unsupervised. Tracks milestones, phases, and sign-off.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -386,10 +386,10 @@ export default function InductionTrackerPage() {
   const inductionQuery = useInductionRecords();
   const staffQuery = useStaff();
 
-  const records = inductionQuery.data?.data ?? [];
-  const staff = staffQuery.data?.data ?? [];
+  const records = useMemo(() => inductionQuery.data?.data ?? [], [inductionQuery.data]);
+  const staff = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
-  const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
+  const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
 
   const inProgress = records.filter((r) => r.overall_status === "in_progress").length;
   const completed = records.filter((r) => r.overall_status === "completed" || r.overall_status === "signed_off").length;
@@ -432,7 +432,7 @@ export default function InductionTrackerPage() {
     });
 
     return list;
-  }, [records, filter, search, staff, sortBy]);
+  }, [records, filter, search, staff, sortBy, getStaffName]);
 
   const isLoading = inductionQuery.isPending || staffQuery.isPending;
 

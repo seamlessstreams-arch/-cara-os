@@ -63,7 +63,7 @@ const CAT_LABELS: Record<DelegatedAuthCategory, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function DelegatedAuthorityPage() {
   const { data: daData, isLoading } = useDelegatedAuthority();
-  const records = daData?.data ?? [];
+  const records = useMemo(() => daData?.data ?? [], [daData]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);

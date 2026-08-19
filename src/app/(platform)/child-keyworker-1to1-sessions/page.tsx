@@ -92,7 +92,7 @@ export default function ChildKeyworker1to1SessionsPage() {
     placeholderData: keepPreviousData,
   });
 
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [formatFilter, setFormatFilter] = useState("all");
