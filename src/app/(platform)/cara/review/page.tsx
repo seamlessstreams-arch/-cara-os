@@ -10,7 +10,7 @@
 // Cara never commits to a record without explicit manager approval.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraHealthPanel } from "@/components/cara/cara-health-panel";
@@ -142,13 +142,16 @@ const TYPE_CONFIG: Record<SuggestionType, { label: string; icon: React.ElementTy
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function CaraReviewQueuePage() {
-  const [items, setItems] = useState<ReviewItem[]>([]);
   const { data: apiData } = useCaraSuggestions();
   const updateMutation = useUpdateCaraSuggestion();
 
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.items)) {
-      setItems(
+  // Server rows are DERIVED; the reviewer's optimistic status changes live in
+  // a small override map merged on top. The old shape copied rows into state
+  // and patched them there, so a refetch could silently undo an optimistic
+  // update mid-review.
+  const serverItems = useMemo<ReviewItem[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.items)
+      ? 
         (apiData.items as Record<string, unknown>[]).map((r) => ({
           id: r.id as string,
           title: r.title as string,
@@ -165,10 +168,15 @@ export default function CaraReviewQueuePage() {
           created_at: r.created_at as string,
           reviewer_role: (r.reviewer_role as string) ?? undefined,
           linked_count: Array.isArray(r.linked_records) ? (r.linked_records as unknown[]).length : 0,
-        })),
-      );
-    }
-  }, [apiData]);
+        }))
+      : []),
+    [apiData],
+  );
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, SuggestionStatus>>({});
+  const items = useMemo<ReviewItem[]>(
+    () => serverItems.map((i) => (statusOverrides[i.id] ? { ...i, status: statusOverrides[i.id] } : i)),
+    [serverItems, statusOverrides],
+  );
   const [statusFilter, setStatusFilter] = useState<SuggestionStatus | "all">("awaiting_review");
   const [riskFilter, setRiskFilter] = useState<RiskLevel | "all">("all");
   const [typeFilter, setTypeFilter] = useState<SuggestionType | "all">("all");
@@ -176,9 +184,7 @@ export default function CaraReviewQueuePage() {
 
   const handleStatusChange = useCallback(
     (id: string, newStatus: SuggestionStatus) => {
-      setItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item)),
-      );
+      setStatusOverrides((prev) => ({ ...prev, [id]: newStatus }));
       updateMutation.mutate({ id, status: newStatus });
     },
     [updateMutation],

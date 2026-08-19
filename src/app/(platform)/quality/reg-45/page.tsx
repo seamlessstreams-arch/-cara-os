@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import {
@@ -168,10 +168,8 @@ interface EvidenceItem {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg45Page() {
-  const [reviews, setReviews] = useState<Reg45Review[]>([]);
-  const [selectedReviewId, setSelectedReviewId] = useState<string>("r1");
-  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
-
+    const [selectedReviewId, setSelectedReviewId] = useState<string>("r1");
+  
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg45Reviews();
   const { data: evidenceData, isError, refetch } = useReg45Evidence({ homeId: "home_oak" });
@@ -179,29 +177,9 @@ export default function Reg45Page() {
   const [draftingSection, setDraftingSection] = useState<string | null>(null);
   const [showLinkMap, setShowLinkMap] = useState(false);
 
-  /* Deterministic. Reg 45 asks the registered person to review quality of care
-   * against the home's own records — assembly, not authorship — so this needs
-   * no AI, which matters because this tenant has none. The draft stops at the
-   * evidence: the OPINION is the registered person's under Reg 45(4), and one
-   * Cara wrote would not be theirs. See src/lib/reg45/section-draft.ts. */
-  function requestDraft(sectionKey: string) {
-    if (!selectedReview) return;
-    setDraftingSection(sectionKey);
-    const draft = buildReg45SectionDraft(sectionKey as Reg45SectionKey, {
-      homeName: "Oak House",
-      periodStart: selectedReview.periodStart,
-      periodEnd: selectedReview.periodEnd,
-      evidence,
-    });
-    updateReview.mutate(
-      { id: selectedReview.id, homeId: selectedReview.homeId, [sectionKey]: draft.text },
-      { onSettled: () => setDraftingSection(null) },
-    );
-  }
-
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.reviews)) {
-      setReviews((apiData.reviews as Record<string, unknown>[]).map((row) => ({
+  const reviews = useMemo<Reg45Review[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.reviews)
+      ? (apiData.reviews as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: row.home_id as string,
         periodStart: row.period_start as string,
@@ -224,19 +202,21 @@ export default function Reg45Page() {
         approvedAt: (row.approved_at as string) ?? undefined,
         createdAt: (row.created_at as string) ?? "",
         updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
-      })));
-    }
-  }, [apiData]);
+      }))
+      : []),
+    [apiData],
+  );
 
-  useEffect(() => {
-    if (evidenceData?.persisted && Array.isArray(evidenceData.evidence)) {
-      setEvidence((evidenceData.evidence as Record<string, unknown>[]).map((row) => ({
+  const evidence = useMemo<EvidenceItem[]>(
+    () => (evidenceData?.persisted && Array.isArray(evidenceData.evidence)
+      ? (evidenceData.evidence as Record<string, unknown>[]).map((row) => ({
         category: row.category as string,
         count: (row.count as number) ?? 0,
         examples: (row.examples as string[]) ?? [],
-      })));
-    }
-  }, [evidenceData]);
+      }))
+      : []),
+    [evidenceData],
+  );
   const [showEvidence, setShowEvidence] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["qualityOfCareSummary", "childrenExperiencesSummary"]));
 
@@ -244,6 +224,26 @@ export default function Reg45Page() {
     () => reviews.find((r) => r.id === selectedReviewId) ?? reviews[0],
     [reviews, selectedReviewId],
   );
+
+  /* Deterministic. Reg 45 asks the registered person to review quality of care
+   * against the home's own records — assembly, not authorship — so this needs
+   * no AI, which matters because this tenant has none. The draft stops at the
+   * evidence: the OPINION is the registered person's under Reg 45(4), and one
+   * Cara wrote would not be theirs. See src/lib/reg45/section-draft.ts. */
+  function requestDraft(sectionKey: string) {
+    if (!selectedReview) return;
+    setDraftingSection(sectionKey);
+    const draft = buildReg45SectionDraft(sectionKey as Reg45SectionKey, {
+      homeName: "Oak House",
+      periodStart: selectedReview.periodStart,
+      periodEnd: selectedReview.periodEnd,
+      evidence,
+    });
+    updateReview.mutate(
+      { id: selectedReview.id, homeId: selectedReview.homeId, [sectionKey]: draft.text },
+      { onSettled: () => setDraftingSection(null) },
+    );
+  }
 
   if (!selectedReview) {
     return (

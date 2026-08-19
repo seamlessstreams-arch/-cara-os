@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -161,16 +161,17 @@ export default function IncidentLearningReviewPage() {
   const [taskFor, setTaskFor] = useState<{ incident: Incident; kind: TaskKind } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [prompts, setPrompts] = useState<Record<string, ReviewPrompt[]>>({});
-  const [incidents, setIncidents] = useState<Incident[]>([]);
 
   /* ── API hook (live data via intelligence-layer fallback store) ─────────── */
   const { data: apiData } = useLearningReviews();
   const updateReview = useUpdateLearningReview();
   const openTask = (incident: Incident, kind: TaskKind) => setTaskFor({ incident, kind });
 
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.reviews)) {
-      setIncidents((apiData.reviews as Record<string, unknown>[]).map((row) => ({
+  // Server rows derived; the manager's optimistic status flips live in an
+  // override map merged on top — a refetch can no longer undo them.
+  const serverIncidents = useMemo<Incident[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.reviews)
+      ? (apiData.reviews as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         date: ((row.incident_date as string) ?? (row.created_at as string)) ?? "",
         title: ((row.incident_title as string) ?? (row.incident_id as string)) ?? "",
@@ -182,9 +183,15 @@ export default function IncidentLearningReviewPage() {
         reviewStatus: (row.review_status as ReviewStatus) ?? "required",
         managerNotes: (row.manager_notes as string) ?? "",
         learningSummary: (row.learning_summary as string) ?? "",
-      })));
-    }
-  }, [apiData]);
+      }))
+      : []),
+    [apiData],
+  );
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, ReviewStatus>>({});
+  const incidents = useMemo<Incident[]>(
+    () => serverIncidents.map((i) => (statusOverrides[i.id] ? { ...i, reviewStatus: statusOverrides[i.id] } : i)),
+    [serverIncidents, statusOverrides],
+  );
   const [managerNotes, setManagerNotes] = useState<Record<string, string>>({});
   const [learningSummaries, setLearningSummaries] = useState<Record<string, string>>({});
   const [caraAnalysis, setCaraAnalysis] = useState<Record<string, boolean>>({});
@@ -432,9 +439,7 @@ export default function IncidentLearningReviewPage() {
                                 reviewStatus: "completed",
                                 learningSummary: `NFA: ${currentNfa}`,
                               });
-                              setIncidents((prev) =>
-                                prev.map((i) => i.id === incident.id ? { ...i, reviewStatus: "completed" } : i)
-                              );
+                              setStatusOverrides((prev) => ({ ...prev, [incident.id]: "completed" }));
                             }}
                           >
                             <XCircle className="h-3.5 w-3.5 mr-1" />
@@ -488,9 +493,7 @@ export default function IncidentLearningReviewPage() {
                             reviewStatus: "in_progress" as ReviewStatus,
                             learningSummary: currentLearning,
                           });
-                          setIncidents((prev) =>
-                            prev.map((i) => i.id === incident.id ? { ...i, reviewStatus: "in_progress" as ReviewStatus } : i)
-                          );
+                          setStatusOverrides((prev) => ({ ...prev, [incident.id]: "in_progress" as ReviewStatus }));
                         }}
                       >
                         <Send className="h-4 w-4 mr-2" />

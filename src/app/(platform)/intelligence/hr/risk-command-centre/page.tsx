@@ -13,7 +13,7 @@
 // empty-state guidance that explains what each section does and why it matters.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { useQuery } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
@@ -167,18 +167,20 @@ function formatRiskLevel(level: HrRiskLevel): string {
 export default function HrRiskCommandCentrePage() {
   const [riskFilter, setRiskFilter] = useState<HrRiskLevel | "all">("all");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
-  const [rawCases, setRawCases] = useState<CaseSummary[]>([]);
-  const [rawOverdueTasks, setRawOverdueTasks] = useState<HrTaskSummary[]>([]);
-  const [rawRecruitment, setRawRecruitment] = useState<RecruitmentSummary[]>([]);
-
   const { data: apiData, isError, refetch } = useHrRisk();
-  useEffect(() => {
-    if (apiData?.persisted) {
-      if (Array.isArray(apiData.cases)) setRawCases(apiData.cases as CaseSummary[]);
-      if (Array.isArray(apiData.overdueTasks)) setRawOverdueTasks(apiData.overdueTasks as HrTaskSummary[]);
-      if (Array.isArray(apiData.recruitment)) setRawRecruitment(apiData.recruitment as RecruitmentSummary[]);
-    }
-  }, [apiData]);
+  // Derived, not effect-written: three collections, zero cascading renders.
+  const rawCases = useMemo<CaseSummary[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.cases) ? (apiData.cases as CaseSummary[]) : []),
+    [apiData],
+  );
+  const rawOverdueTasks = useMemo<HrTaskSummary[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.overdueTasks) ? (apiData.overdueTasks as HrTaskSummary[]) : []),
+    [apiData],
+  );
+  const rawRecruitment = useMemo<RecruitmentSummary[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.recruitment) ? (apiData.recruitment as RecruitmentSummary[]) : []),
+    [apiData],
+  );
 
   const cases = useMemo(() => {
     if (riskFilter === "all") return rawCases;

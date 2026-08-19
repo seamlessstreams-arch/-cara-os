@@ -21,7 +21,7 @@
 // download and print event.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { useQuery } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
@@ -274,31 +274,61 @@ export default function HrInspectionModePage() {
   const [period, setPeriod] = useState<string>("6_months");
   const printRef = useRef<HTMLDivElement>(null);
 
-  const [rawWorkforce, setRawWorkforce] = useState<WorkforceSummary>({
-    totalStaff: 0, permanentStaff: 0, agencyStaff: 0, vacancies: 0,
-    staffInProbation: 0, staffSuspended: 0, averageTenureMonths: 0, turnoverLast12Months: 0,
-  });
-  const [rawRecruitment, setRawRecruitment] = useState<RecruitmentCheck[]>([]);
-  const [rawCases, setRawCases] = useState<CaseRecord[]>([]);
-  const [rawChronology, setRawChronology] = useState<ChronologyEvent[]>([]);
-  const [rawSuspensions, setRawSuspensions] = useState<SuspensionRecord[]>([]);
-  const [rawLado, setRawLado] = useState<LadoReferral[]>([]);
-  const [rawCompliance, setRawCompliance] = useState<ComplianceItem[]>([]);
-  const [rawOversight, setRawOversight] = useState<OversightRecord[]>([]);
 
   const { data: apiData } = useHrInspection();
-  useEffect(() => {
-    if (apiData?.persisted) {
-      if (apiData.workforce) setRawWorkforce(apiData.workforce as WorkforceSummary);
-      if (Array.isArray(apiData.recruitment)) setRawRecruitment(apiData.recruitment as RecruitmentCheck[]);
-      if (Array.isArray(apiData.cases)) setRawCases(apiData.cases as CaseRecord[]);
-      if (Array.isArray(apiData.chronology)) setRawChronology(apiData.chronology as ChronologyEvent[]);
-      if (Array.isArray(apiData.suspensions)) setRawSuspensions(apiData.suspensions as SuspensionRecord[]);
-      if (Array.isArray(apiData.lado)) setRawLado(apiData.lado as LadoReferral[]);
-      if (Array.isArray(apiData.compliance)) setRawCompliance(apiData.compliance as ComplianceItem[]);
-      if (Array.isArray(apiData.oversight)) setRawOversight(apiData.oversight as OversightRecord[]);
-    }
-  }, [apiData]);
+  // Eight collections, one derivation each — the old single effect wrote all
+  // eight into state, one cascading render per response.
+  const rawWorkforce = useMemo<WorkforceSummary>(
+    () => (apiData?.persisted && apiData.workforce
+      ? (apiData.workforce as WorkforceSummary)
+      : {
+    totalStaff: 0, permanentStaff: 0, agencyStaff: 0, vacancies: 0,
+    staffInProbation: 0, staffSuspended: 0, averageTenureMonths: 0, turnoverLast12Months: 0,
+  }),
+    [apiData],
+  );
+  const rawRecruitment = useMemo<RecruitmentCheck[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.recruitment)
+      ? (apiData.recruitment as RecruitmentCheck[])
+      : []),
+    [apiData],
+  );
+  const rawCases = useMemo<CaseRecord[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.cases)
+      ? (apiData.cases as CaseRecord[])
+      : []),
+    [apiData],
+  );
+  const rawChronology = useMemo<ChronologyEvent[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.chronology)
+      ? (apiData.chronology as ChronologyEvent[])
+      : []),
+    [apiData],
+  );
+  const rawSuspensions = useMemo<SuspensionRecord[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.suspensions)
+      ? (apiData.suspensions as SuspensionRecord[])
+      : []),
+    [apiData],
+  );
+  const rawLado = useMemo<LadoReferral[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.lado)
+      ? (apiData.lado as LadoReferral[])
+      : []),
+    [apiData],
+  );
+  const rawCompliance = useMemo<ComplianceItem[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.compliance)
+      ? (apiData.compliance as ComplianceItem[])
+      : []),
+    [apiData],
+  );
+  const rawOversight = useMemo<OversightRecord[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.oversight)
+      ? (apiData.oversight as OversightRecord[])
+      : []),
+    [apiData],
+  );
 
   const toggleSection = useCallback((section: InspectionSection) => {
     setExpandedSections((prev) => {

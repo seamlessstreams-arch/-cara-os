@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { PrintButton } from "@/components/ui/print-button";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardSkeleton } from "@/components/dashboard/card-skeleton";
@@ -2299,7 +2299,6 @@ export default function ManagerControlCentrePage() {
     } catch { return []; }
   }, [incidentsData, ypData, kwData]);
 
-  const [items, setItems] = useState<AttentionItem[]>([]);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -2310,9 +2309,14 @@ export default function ManagerControlCentrePage() {
   const [oversightScaffoldFor, setOversightScaffoldFor] = useState<AttentionItem | null>(null);
   const updateItem = useUpdateAttentionItem();
 
-  useEffect(() => {
-    if (apiData?.persisted && Array.isArray(apiData.items)) {
-      setItems((apiData.items as Record<string, unknown>[]).map((item) => ({
+  // Server rows and Cara proactive alerts are both DERIVED and merged in one
+  // place. The old pair of effects was order-dependent — the hydrate replaced
+  // the whole list (dropping merged Cara items) and the merge re-added them —
+  // and a refetch could undo a manager's optimistic status change. Optimistic
+  // flips now live in an override map on top.
+  const serverItems = useMemo<AttentionItem[]>(
+    () => (apiData?.persisted && Array.isArray(apiData.items)
+      ? (apiData.items as Record<string, unknown>[]).map((item) => ({
         id: item.id as string,
         title: item.title as string,
         category: item.category as AttentionCategory,
@@ -2328,16 +2332,14 @@ export default function ManagerControlCentrePage() {
         sourceRecordType: (item.source_record_type as string) ?? undefined,
         sourceRecordId: (item.source_record_id as string) ?? undefined,
         createdAt: item.created_at as string,
-      })));
-    }
-  }, [apiData]);
-
-  // Merge live Cara proactive alerts into the attention items list
-  useEffect(() => {
-    if (caraAlerts.length === 0) return;
+      }))
+      : []),
+    [apiData],
+  );
+  const caraItems = useMemo<AttentionItem[]>(() => {
     const severityToUrgency = (s: string): Urgency =>
       s === "urgent" ? "critical" : s === "high" ? "high" : s === "medium" ? "medium" : "low";
-    const caraItems: AttentionItem[] = caraAlerts.map((a) => ({
+    return caraAlerts.map((a) => ({
       id:             `cara_${a.id}`,
       title:          a.title,
       category:       "cara_pattern" as AttentionCategory,
@@ -2349,11 +2351,14 @@ export default function ManagerControlCentrePage() {
       staffName:      undefined,
       createdAt:      a.detectedAt,
     }));
-    setItems((prev) => [
-      ...prev.filter((i) => i.category !== "cara_pattern"),
-      ...caraItems,
-    ]);
   }, [caraAlerts]);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, AttentionStatus>>({});
+  const items = useMemo<AttentionItem[]>(
+    () => [...serverItems.filter((i) => i.category !== "cara_pattern"), ...caraItems]
+      .map((i) => (statusOverrides[i.id] ? { ...i, status: statusOverrides[i.id] } : i)),
+    [serverItems, caraItems, statusOverrides],
+  );
+
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
@@ -2893,7 +2898,7 @@ export default function ManagerControlCentrePage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           updateItem.mutate({ id: item.id, status: "reviewed" });
-                          setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: "reviewed" } : i));
+                          setStatusOverrides((prev) => ({ ...prev, [item.id]: "reviewed" }));
                         }}
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -2906,7 +2911,7 @@ export default function ManagerControlCentrePage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           updateItem.mutate({ id: item.id, status: "escalated" });
-                          setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: "escalated" } : i));
+                          setStatusOverrides((prev) => ({ ...prev, [item.id]: "escalated" }));
                         }}
                       >
                         <ArrowUpRight className="h-3.5 w-3.5" />
@@ -3257,7 +3262,7 @@ export default function ManagerControlCentrePage() {
               { id: oversightFor.id, status: "reviewed", oversightNote: note },
               {
                 onSuccess: () => {
-                  setItems((prev) => prev.map((i) => i.id === oversightFor.id ? { ...i, status: "reviewed" } : i));
+                  setStatusOverrides((prev) => ({ ...prev, [oversightFor.id]: "reviewed" }));
                   setOversightFor(null);
                 },
               },
@@ -3280,7 +3285,7 @@ export default function ManagerControlCentrePage() {
               { id: oversightScaffoldFor.id, status: "reviewed", oversightNote: note },
               {
                 onSuccess: () => {
-                  setItems((prev) => prev.map((i) => i.id === oversightScaffoldFor.id ? { ...i, status: "reviewed" } : i));
+                  setStatusOverrides((prev) => ({ ...prev, [oversightScaffoldFor.id]: "reviewed" }));
                   setOversightScaffoldFor(null);
                 },
               },
