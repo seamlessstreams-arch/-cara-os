@@ -1160,14 +1160,6 @@ describe("Bonus 4 — peak flow monitoring rate", () => {
   });
 
   it(">=65 <85 peak flow monitoring → +2", () => {
-    const r = run({
-      ...bonusIsolationBase(),
-      peak_flow_records: [
-        makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, action_required: true, action_taken: true, child_performed_independently: false }),
-        makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, action_required: false, child_performed_independently: false }),
-        makePeakFlow({ zone: "amber", technique_correct: false, recorded_in_diary: false, action_required: true, action_taken: false, child_performed_independently: false }),
-      ],
-    });
     // technique=2/3=67, diary=2/3=67, green=2/3=67, actionTaken=pct(1,2)=50
     // composite = round((67+67+67+50)/4) = round(251/4) = round(62.75) = 63
     // That's <65, so let me adjust...
@@ -1348,75 +1340,6 @@ describe("Bonus 6 — child self-management rate", () => {
   });
 
   it(">=65 <85 child self-management → +1", () => {
-    const r = run({
-      total_children: 3,
-      action_plan_records: [
-        makeActionPlan({ plan_in_place: true, plan_current: true, gp_approved: true, plan_accessible: true, child_involved_in_plan: true, plan_shared_with_child: true }),
-        makeActionPlan({ plan_in_place: false, plan_current: false, gp_approved: false, plan_accessible: false, child_involved_in_plan: false, plan_shared_with_child: false }),
-      ],
-      inhaler_technique_records: [
-        makeInhaler({ technique_correct: true, child_can_self_administer: true, child_understands_when_to_use: true, assessor_role: "staff" }),
-        makeInhaler({ technique_correct: true, child_can_self_administer: true, child_understands_when_to_use: false, assessor_role: "staff" }),
-        makeInhaler({ technique_correct: false, child_can_self_administer: false, child_understands_when_to_use: false, assessor_role: "staff" }),
-      ],
-      trigger_management_records: [
-        makeTrigger({ trigger_identified: true, avoidance_plan_in_place: true, environmental_controls_implemented: true, staff_aware_of_trigger: true, documented_in_care_plan: true, child_can_identify_trigger: true, child_can_manage_exposure: true }),
-        makeTrigger({ trigger_identified: false, avoidance_plan_in_place: false, environmental_controls_implemented: false, staff_aware_of_trigger: false, documented_in_care_plan: false, child_can_identify_trigger: false, child_can_manage_exposure: false }),
-      ],
-      peak_flow_records: [
-        makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, child_performed_independently: true }),
-        makePeakFlow({ zone: "amber", technique_correct: false, recorded_in_diary: false, child_performed_independently: false }),
-      ],
-      emergency_preparedness_records: [
-        makeEmergency({
-          emergency_inhaler_accessible: true,
-          staff_trained_in_emergency: true,
-          emergency_protocol_displayed: false,
-          emergency_contacts_current: true,
-          ambulance_procedure_known: false,
-          staff_count_trained: 4,
-          staff_count_total: 10,
-        }),
-      ],
-    });
-    // AP: childInvolved=1, shared=1, denom=2,2
-    // Inhaler: selfAdmin=2, understands=1, denom=3,3
-    // Trigger: identify=1, manage=1, denom=2,2
-    // PeakFlow: independent=1, denom=2
-    // Total num: 1+1+2+1+1+1+1 = 8, denom: 2+2+3+3+2+2+2 = 16
-    // rate = pct(8,16) = 50 → no bonus, no penalty
-    // Hmm, need to get 65-84
-    const r2 = run({
-      total_children: 3,
-      action_plan_records: [
-        makeActionPlan({ plan_in_place: true, plan_current: true, gp_approved: true, plan_accessible: true, child_involved_in_plan: true, plan_shared_with_child: true }),
-        makeActionPlan({ plan_in_place: false, plan_current: false, gp_approved: false, plan_accessible: false, child_involved_in_plan: false, plan_shared_with_child: false }),
-      ],
-      inhaler_technique_records: [
-        makeInhaler({ technique_correct: true, child_can_self_administer: true, child_understands_when_to_use: true, assessor_role: "staff" }),
-        makeInhaler({ technique_correct: true, child_can_self_administer: true, child_understands_when_to_use: true, assessor_role: "staff" }),
-        makeInhaler({ technique_correct: false, child_can_self_administer: false, child_understands_when_to_use: false, assessor_role: "staff" }),
-      ],
-      trigger_management_records: [
-        makeTrigger({ trigger_identified: true, avoidance_plan_in_place: true, environmental_controls_implemented: true, staff_aware_of_trigger: true, documented_in_care_plan: true, child_can_identify_trigger: true, child_can_manage_exposure: true }),
-        makeTrigger({ trigger_identified: false, avoidance_plan_in_place: false, environmental_controls_implemented: false, staff_aware_of_trigger: false, documented_in_care_plan: false, child_can_identify_trigger: false, child_can_manage_exposure: false }),
-      ],
-      peak_flow_records: [
-        makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, child_performed_independently: true }),
-        makePeakFlow({ zone: "amber", technique_correct: false, recorded_in_diary: false, child_performed_independently: false }),
-      ],
-      emergency_preparedness_records: [
-        makeEmergency({
-          emergency_inhaler_accessible: true,
-          staff_trained_in_emergency: true,
-          emergency_protocol_displayed: false,
-          emergency_contacts_current: true,
-          ambulance_procedure_known: false,
-          staff_count_trained: 4,
-          staff_count_total: 10,
-        }),
-      ],
-    });
     // AP: childInvolved=1, shared=1, denom=2,2
     // Inhaler: selfAdmin=2, understands=2, denom=3,3
     // Trigger: identify=1, manage=1, denom=2,2

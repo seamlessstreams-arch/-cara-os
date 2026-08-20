@@ -1448,52 +1448,6 @@ describe("strengths: child understanding", () => {
   });
 
   it("weaker strength at >= 60 but < 80", () => {
-    // Make composite average between 60-79
-    const uRecords = [
-      makeUnderstanding("u1", "child_1", {
-        understands_savings_option: false,
-        age_appropriate_explanation: false,
-      }),
-      makeUnderstanding("u2", "child_2", {
-        understands_savings_option: false,
-        age_appropriate_explanation: false,
-      }),
-    ];
-    const r = computePocketMoneyDistributionEquity(
-      baseInput({ child_understanding_records: uRecords }),
-    );
-    // amount=100, freq=100, savings=0, ageAppExpl=0 -> avg=50 -- too low
-    // Try: savings=50%, ageAppExpl=50%
-    const uRecords2 = [
-      makeUnderstanding("u1", "child_1", {
-        understands_savings_option: false,
-        age_appropriate_explanation: false,
-      }),
-      makeUnderstanding("u2", "child_2"),
-      makeUnderstanding("u3", "child_3"),
-      makeUnderstanding("u4", "child_4"),
-    ];
-    const r2 = computePocketMoneyDistributionEquity(
-      baseInput({ child_understanding_records: uRecords2 }),
-    );
-    // amount=100, freq=100, savings=75, ageAppExpl=75 -> avg=88 -- too high
-    // Use 3 records: 2 good + 1 all-false
-    const uRecords3 = [
-      makeUnderstanding("u1", "child_1"),
-      makeUnderstanding("u2", "child_2", {
-        understands_savings_option: false,
-        age_appropriate_explanation: false,
-      }),
-      makeUnderstanding("u3", "child_3", {
-        understands_amount: false,
-        understands_frequency: false,
-        understands_savings_option: false,
-        age_appropriate_explanation: false,
-      }),
-    ];
-    const r3 = computePocketMoneyDistributionEquity(
-      baseInput({ child_understanding_records: uRecords3 }),
-    );
     // amount=67, freq=67, savings=33, ageAppExpl=33 -> avg=50 -- still too low
     // The weak strength appears at 60-79 range. Need careful calibration.
     // 5 records: 4 all-true, 1 with savings=false, ageApp=false

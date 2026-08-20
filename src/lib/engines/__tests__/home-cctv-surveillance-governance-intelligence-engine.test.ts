@@ -2474,46 +2474,6 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
     });
 
     it("boundary: score exactly 65 is good", () => {
-      // We need score = 65. base=52, so need +13 from bonuses with no penalties.
-      // e.g., 4+4+4+1 = 13. Need 3 rates at >=90 (each +4) and staffTraining at 70-89 (+1).
-      const input = baseInput({
-        total_children: 0,
-        cctv_policy_records: [makePolicy()],       // policyComplianceRate=100 => +4
-        privacy_impact_records: [makePrivacyImpact()],  // privacyImpactRate=100 => +4
-        footage_retention_records: [makeRetention()],   // retentionComplianceRate=100 => +4, authorisedAccessRate=100 => +3
-        // That gives 52+4+4+4+3 = 67, too much. Let's reduce.
-        // We need exactly 52+13=65.
-        // policyCompliance +4, privacyImpact +4, retentionCompliance +4, staffTraining +1 = +13
-        // But authorisedAccess from retention would add +3 too.
-        // Use retention with 0 access count to avoid authorised access bonus.
-      });
-      // Recalculate more carefully
-      const input2 = baseInput({
-        total_children: 0,
-        cctv_policy_records: [makePolicy()],              // +4
-        privacy_impact_records: [makePrivacyImpact()],     // +4
-        footage_retention_records: [
-          makeRetention({ footage_accessed_count: 0, footage_accessed_authorised: 0 }),
-        ],                                                 // +4 (no authorised access bonus since count=0)
-        data_protection_records: [
-          makeDataProtection({ training_up_to_date: false }),
-        ],                                                 // dataProtectionRate=100 => +4, staffTrainingRate=50 => no bonus for training
-        // Total = 52 + 4 + 4 + 4 + 4 = 68. Too high.
-      });
-      // Let me try: only policy and privacy (each +4) plus child awareness at 70-89 (+2) and staffTraining 70-89 (+1)
-      // = 52 + 4 + 4 + 2 + 1 = 63. Too low.
-      // + retention at 70-89 (+2) = 65. Yes!
-      const input3 = baseInput({
-        total_children: 0,
-        cctv_policy_records: [makePolicy()],                     // policyCompliance=100 => +4
-        privacy_impact_records: [makePrivacyImpact()],            // privacyImpact=100 => +4
-        footage_retention_records: [
-          makeRetention({ footage_accessed_count: 0, footage_accessed_authorised: 0 }),
-          makeRetention({ auto_delete_enabled: false, footage_accessed_count: 0, footage_accessed_authorised: 0 }),
-        ],                                                        // retentionCompliance = round((100+50+100+100+100)/5)=90 => +4. Nope.
-        // 2 records: 1st all true, 2nd auto_delete=false => autoDelete=50. Others 100.
-        // (100+50+100+100+100)/5 = 90 => +4. Still too high.
-      });
       // Hard to hit exactly 65. Let's just verify the boundary math.
       // Actually, let me verify toRating(65) = "good"
       // toRating: >= 80 outstanding, >= 65 good
@@ -2709,22 +2669,6 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
     });
 
     it("52 + 2(policy) + 2(privacy) = 56 with tier-2 bonuses", () => {
-      // Each rate must be 70-89
-      // policy: approval=100, ico=67, children=67, rm=100 => composite=84
-      // 84 >= 70 => +2
-      const input = baseInput({
-        total_children: 0,
-        cctv_policy_records: [
-          makePolicy(),
-          makePolicy(),
-          makePolicy({ compliant_with_ico: false, covers_children_rights: false }),
-        ],
-        privacy_impact_records: [
-          makePrivacyImpact(),
-          makePrivacyImpact({ approved_by_dpo: false }),
-        ],
-      });
-      const result = computeCctvSurveillanceGovernance(input);
       // privacy: (100+100+100+100+50)/5 = 90 => that's >= 90 => +4 not +2
       // Need to adjust. Let's do 70-89:
       // 5 factors: justified, proportionate, alternatives, riskMitigation, dpo

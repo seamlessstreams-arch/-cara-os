@@ -1583,22 +1583,6 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
     });
 
     it("complaintTimelinessRate 70% → strength about generally timely", () => {
-      const r = computeComplaintAdvocacyResponsiveness(
-        baseInput({
-          complaint_outcomes: [
-            makeComplaintOutcome("co1"),
-            makeComplaintOutcome("co2"),
-            makeComplaintOutcome("co3", { resolved: true, actual_resolution_days: 15, target_resolution_days: 10 }),
-            makeComplaintOutcome("co4", {
-              resolved: false,
-              resolution_date: null,
-              resolution_description: null,
-              actual_resolution_days: null,
-              child_satisfied: false,
-            }),
-          ],
-        }),
-      );
       // Within target: co1, co2 = 2/4 = 50%. Not 70%. Need more within target.
       // Let's do 7/10 = 70%
       const r2 = computeComplaintAdvocacyResponsiveness(

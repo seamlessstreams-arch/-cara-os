@@ -1422,12 +1422,6 @@ describe("insights", () => {
     for (let i = 5; i < 10; i++) {
       assessments2[i].immunisations_up_to_date = false; // 50% — not < 50, so no warning
     }
-    // coverage: 10/20 = 50% (not >= 90, so no positive insight; not < any trigger)
-    const r = computeAnnualHealthAssessment({
-      today: "2026-05-27",
-      total_children: 20,
-      assessments: assessments2, // 10 unique out of 20 = 50% coverage
-    });
     // coverage 50% → no coverage insight, no exemplary insight
     // deadline 100% → positive insight ✓
     // immunisation 50% → no warning

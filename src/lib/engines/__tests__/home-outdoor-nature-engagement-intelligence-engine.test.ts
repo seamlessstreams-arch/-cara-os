@@ -338,17 +338,6 @@ describe("computeOutdoorNatureEngagement", () => {
     });
 
     it("score in [45..64] yields adequate", () => {
-      // base 52 alone without bonuses or penalties
-      // need to avoid all bonuses: no records that trigger bonuses
-      // 1 outdoor activity for 1 child out of 4 = 25% frequency => no bonus
-      // low nature, no garden, no exploration, 1 non-compliant safety
-      const acts = [makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 3 })];
-      const safs = [makeSafety({ compliant: false, staff_trained: false })];
-      const r = run({
-        total_children: 4,
-        outdoor_activity_records: acts,
-        outdoor_safety_records: safs,
-      });
       // outdoorFrequencyRate = 25% (<40) => penalty -5 => 47
       // safetyComplianceRate = 0% (<50) => penalty -5 => 42 ... might be too low
       // Let's adjust: avoid triggering penalties
@@ -391,16 +380,6 @@ describe("computeOutdoorNatureEngagement", () => {
 
   describe("base score", () => {
     it("starts at 52 with minimal data (no bonuses, no penalties)", () => {
-      // 2 children out of 4 = 50% => no bonus, no penalty
-      // no nature/garden/exploration/safety => no bonus/penalty for those
-      const acts = [
-        makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 3 }),
-        makeActivity({ child_id: "c2", child_initiated: false, child_enjoyment: 3 }),
-      ];
-      const r = run({
-        total_children: 4,
-        outdoor_activity_records: acts,
-      });
       // childEnjoymentRate: avg 3/5 = 60% => +1 bonus
       // score = 52 + 1 = 53
       // Let's use enjoyment=2 to avoid bonus: 2/5 = 40% => no bonus, no penalty
@@ -479,11 +458,6 @@ describe("computeOutdoorNatureEngagement", () => {
         makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 2 }),
         makeActivity({ child_id: "c2", child_initiated: false, child_enjoyment: 2 }),
       ];
-      const r = run({
-        total_children: 4,
-        outdoor_activity_records: acts,
-        nature_learning_records: nats,
-      });
       // base 52 + 3 (nature learning) = 55
       // Also educationLinkRate: all linked_to_education defaults true => 100% => +3 (bonus 8)
       // Need to disable linked_to_education

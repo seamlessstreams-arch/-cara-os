@@ -380,13 +380,6 @@ describe("good scenarios", () => {
     // All comprehensive by default => 100% => +3
     // All manager reviewed, signed, factual => high accuracy
 
-    const r = run({
-      daily_log_records: logs,
-      care_plan_records: [],
-      risk_assessment_records: [],
-      incident_report_records: [],
-      regulatory_document_records: [],
-    });
     // With only logs: bonuses from daily log completion (95%=>+4),
     // comprehensive log rate (100%=>+3), accuracy rate (19 factual + 20 signed + 20 reviewed) / (20+20+20+0+0)=59/60=98% => +3
     // Notification bonus: no incidents requiring notification => both 0 => +2
@@ -483,19 +476,6 @@ describe("adequate scenarios", () => {
   });
 
   it("base score 52 is adequate when no bonuses/penalties (notification bonus only)", () => {
-    // With only empty arrays and total_children > 0 -> special case (all empty => inadequate floor)
-    // So need at least some records. Provide minimal logs with no bonus metrics.
-    const logs = nLogs(10, {
-      completed_on_time: true,
-      covers_wellbeing: false,
-      covers_activities: false,
-      covers_mood: false,
-      covers_interactions: false,
-      covers_meals: false,
-      manager_reviewed: false,
-      factual_and_objective: false,
-      signed_by_author: false,
-    });
     // completion: 100% => +4 bonus... need lower.
     // Actually 100% >= 95 => +4. Hmm need to get no bonuses.
     // Try 70% completion
@@ -3260,36 +3240,6 @@ describe("rating threshold boundaries", () => {
   });
 
   it("score 64 => adequate (just below good)", () => {
-    // Same as above but with 18/20 = 90% daily log completion => +2 not +4
-    // Score: 52+2+3+4+2 = 63. Need 64. Hmm.
-    // Try: daily=80% => +2, comprehensive=90% => +3, reg=95% => +4, notification => +2, accuracy => +1
-    // For accuracy +1 (>=75): need 75% accuracy.
-    // 20 logs: 15 factual, 15 signed, 15 reviewed => 45/60=75% => +1
-    // Score: 52+2+3+4+2+1 = 64
-    const logs = [
-      ...nLogs(16, {
-        completed_on_time: true,
-        covers_wellbeing: true,
-        covers_activities: true,
-        covers_mood: true,
-        covers_interactions: true,
-        covers_meals: true,
-        manager_reviewed: true,
-        factual_and_objective: true,
-        signed_by_author: true,
-      }),
-      ...nLogs(4, {
-        completed_on_time: false,
-        covers_wellbeing: true,
-        covers_activities: true,
-        covers_mood: true,
-        covers_interactions: true,
-        covers_meals: true,
-        manager_reviewed: false,
-        factual_and_objective: false,
-        signed_by_author: false,
-      }),
-    ];
     // dailyLog: 16/20=80% => +2
     // comprehensive: 20/20=100% => +3
     // accuracy: (16+16+16)/(20+20+20+0+5)=48/65 => 73.8... => Math.round = 74% => no bonus (< 75)
@@ -3363,31 +3313,6 @@ describe("rating threshold boundaries", () => {
       meets_statutory_requirements: false,
       reviewed_by_manager: false,
     });
-    // Need incidents with ofsted 80% but < 100% and LA at 100% (or 0 required)
-    // ofsted: 5 required, 4 notified = 80%
-    // LA: 0 required => condition met
-    const incidents = [
-      ...nIncidents(4, {
-        completed_within_24h: true,
-        manager_signed_off: false,
-        ofsted_notification_required: true,
-        ofsted_notified: true,
-        local_authority_notification_required: false,
-        follow_up_actions_identified: 0,
-        follow_up_actions_completed: 0,
-        lessons_learned_recorded: false,
-      }),
-      makeIncidentReport({
-        completed_within_24h: true,
-        manager_signed_off: false,
-        ofsted_notification_required: true,
-        ofsted_notified: false,
-        local_authority_notification_required: false,
-        follow_up_actions_identified: 0,
-        follow_up_actions_completed: 0,
-        lessons_learned_recorded: false,
-      }),
-    ];
     // ofsted: 4/5=80% >= 80 => passes second tier
     // LA: 0 required => passes
     // Top tier: ofsted 80% != 100% => fails
@@ -3459,18 +3384,6 @@ describe("rating threshold boundaries", () => {
     const docs = nRegDocs(10, {
       meets_statutory_requirements: false,
       reviewed_by_manager: false,
-    });
-    // Add incidents with failing ofsted notifications to block bonus 8
-    const incidents = nIncidents(5, {
-      completed_within_24h: true, // 100% => +3 bonus... need to avoid.
-      manager_signed_off: false,
-      ofsted_notification_required: true,
-      ofsted_notified: false,
-      local_authority_notification_required: true,
-      local_authority_notified: false,
-      follow_up_actions_identified: 0,
-      follow_up_actions_completed: 0,
-      lessons_learned_recorded: false,
     });
     // timeliness: 100% => +3. Hmm. 52+3-5-3=47. Not 44.
     // Make timeliness 60%

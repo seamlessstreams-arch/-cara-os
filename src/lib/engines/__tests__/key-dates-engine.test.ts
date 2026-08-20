@@ -18,7 +18,6 @@ import {
   type YPInput,
   type StaffInput,
   type TrainingInput,
-  type SupervisionInput,
   type LACReviewInput,
   type BehaviourSupportPlanInput,
 } from "../key-dates-engine";
@@ -66,18 +65,6 @@ function makeTraining(overrides: Partial<TrainingInput> = {}): TrainingInput {
     course_name: "Test Course",
     expiry_date: null,
     is_mandatory: true,
-    ...overrides,
-  };
-}
-
-function makeSupervision(overrides: Partial<SupervisionInput> = {}): SupervisionInput {
-  return {
-    id: "sup_test",
-    staff_id: "staff_test",
-    type: "formal",
-    scheduled_date: daysFromToday(5),
-    actual_date: null,
-    status: "scheduled",
     ...overrides,
   };
 }

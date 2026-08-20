@@ -972,20 +972,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
     // Bonus 2: lifeStoryEngagementRate >= 80 -> +3
     describe("Bonus 2: lifeStoryEngagementRate", () => {
       it("+3 when lifeStoryEngagementRate >= 80", () => {
-        // book=true, active=true, sessions=10/10, engaged=true -> all 100% -> composite=100
-        const r = computePositiveIdentitySelfEsteem(
-          lifeStoryOnly({
-            life_story_records: [makeLifeStory({ child_engaged: false })],
-          }),
-        );
-        // bookRate=100, activeRate=100, sessionRate=100, engagementRateRaw=0
-        // composite = round((100+100+100+0)/4) = 75 -> not >=80
-        // Need all true
-        const r2 = computePositiveIdentitySelfEsteem(
-          lifeStoryOnly({
-            life_story_records: [makeLifeStory()],
-          }),
-        );
         // composite=100 >= 80 -> +3
         // childConfidence = 1 engaged / 1 denom = 100% -> bonus6 +3
         // lifeStoryBookRate=100 >= 90 -> bonus8 +3
@@ -1072,29 +1058,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
     // Bonus 3: selfEsteemProgrammeRate >= 80 -> +4
     describe("Bonus 3: selfEsteemProgrammeRate", () => {
       it("+4 when selfEsteemProgrammeRate >= 80", () => {
-        // attendance=100, engagement=100, progress=100 -> composite=100
-        const r = computePositiveIdentitySelfEsteem({
-          today: "2026-05-29",
-          total_children: 3,
-          identity_work_records: [],
-          life_story_records: [],
-          self_esteem_programme_records: [
-            makeSelfEsteem({ child_engaged: false, progress_documented: false, sessions_attended: 10, sessions_planned: 10 }),
-          ],
-          achievement_records: [],
-          positive_image_records: [],
-        });
-        // attendance=100, engagement=0, progress=0 -> composite=round(100/3)=33 -> no bonus
-        // Need engaged + progress for >=80
-        const r2 = computePositiveIdentitySelfEsteem({
-          today: "2026-05-29",
-          total_children: 3,
-          identity_work_records: [],
-          life_story_records: [],
-          self_esteem_programme_records: [makeSelfEsteem({ child_engaged: false })],
-          achievement_records: [],
-          positive_image_records: [],
-        });
         // attendance=100, engagement=0, progress=100 -> composite=round(200/3)=67 -> +2 (not +4)
         // All true:
         const r3 = computePositiveIdentitySelfEsteem(selfEsteemOnly());
@@ -1175,17 +1138,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
     // Bonus 5: positiveImageRate >= 80 -> +3
     describe("Bonus 5: positiveImageRate", () => {
       it("+3 when positiveImageRate >= 80", () => {
-        const r = computePositiveIdentitySelfEsteem({
-          today: "2026-05-29",
-          total_children: 3,
-          identity_work_records: [],
-          life_story_records: [],
-          self_esteem_programme_records: [],
-          achievement_records: [],
-          positive_image_records: [
-            makePositiveImage({ child_engaged: false }),
-          ],
-        });
         // completion=100, engagement=0, improvement=100 -> composite=round(200/3)=67 -> +1 not +3
         // Need all three high:
         const r2 = computePositiveIdentitySelfEsteem(positiveImageOnly());
@@ -1195,19 +1147,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
       });
 
       it("+1 when positiveImageRate >= 60 and < 80", () => {
-        // completed=true, engaged=true, improvement=false
-        // completion=100, engagement=100, improvement=0 -> composite=round(200/3)=67 -> +1
-        const r = computePositiveIdentitySelfEsteem({
-          today: "2026-05-29",
-          total_children: 3,
-          identity_work_records: [],
-          life_story_records: [],
-          self_esteem_programme_records: [],
-          achievement_records: [],
-          positive_image_records: [
-            makePositiveImage({ measurable_improvement: false, child_engaged: false }),
-          ],
-        });
         // completion=100, engagement=0, improvement=0 -> composite=round(100/3)=33 -> no bonus
         // Need engagement:
         const r2 = computePositiveIdentitySelfEsteem({
@@ -1290,19 +1229,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
       });
 
       it("+1 when achievementDisplayRate >= 70 and < 90", () => {
-        const r = computePositiveIdentitySelfEsteem({
-          today: "2026-05-29",
-          total_children: 3,
-          identity_work_records: [],
-          life_story_records: [],
-          self_esteem_programme_records: [],
-          achievement_records: [
-            makeAchievement({ celebrated: false, child_proud: false, displayed: true }),
-            makeAchievement({ celebrated: false, child_proud: false, displayed: true }),
-            makeAchievement({ celebrated: false, child_proud: false, displayed: false }),
-          ],
-          positive_image_records: [],
-        });
         // displayRate = round(2/3*100)=67 -> <70, no bonus
         // Need 3/4 = 75%:
         const r2 = computePositiveIdentitySelfEsteem({
@@ -3067,25 +2993,6 @@ describe("computePositiveIdentitySelfEsteem", () => {
     });
 
     it("life story engagement exactly at boundary 40", () => {
-      // Need composite = 40 exactly
-      // bookRate=100, activeRate=0, sessionRate=0, engagementRateRaw=60
-      // round((100+0+0+60)/4) = round(40) = 40
-      // 3 of 5 engaged -> 60%
-      const r = computePositiveIdentitySelfEsteem({
-        today: "2026-05-29",
-        total_children: 3,
-        identity_work_records: [],
-        life_story_records: [
-          makeLifeStory({ has_life_story_book: true, life_story_work_active: false, sessions_planned: 10, sessions_completed: 0, child_engaged: true }),
-          makeLifeStory({ has_life_story_book: true, life_story_work_active: false, sessions_planned: 10, sessions_completed: 0, child_engaged: true }),
-          makeLifeStory({ has_life_story_book: true, life_story_work_active: false, sessions_planned: 10, sessions_completed: 0, child_engaged: true }),
-          makeLifeStory({ has_life_story_book: false, life_story_work_active: false, sessions_planned: 10, sessions_completed: 0, child_engaged: false }),
-          makeLifeStory({ has_life_story_book: false, life_story_work_active: false, sessions_planned: 10, sessions_completed: 0, child_engaged: false }),
-        ],
-        self_esteem_programme_records: [],
-        achievement_records: [],
-        positive_image_records: [],
-      });
       // bookRate=60, activeRate=0, sessionRate=0, engagementRateRaw=60
       // composite = round((60+0+0+60)/4) = round(30) = 30 -> <40 -> penalty
       // Hmm, that's 30 not 40. Let me adjust.

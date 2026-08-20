@@ -279,15 +279,6 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
     it("awards +4 for child debrief rate >= 100%", () => {
       // All restraints have child_debriefed = true (default) → 100%
       const withBonus = computeEmotionalSafetyClimate(baseInput());
-      // Remove the bonus by making child_debriefed false on all
-      const withoutBonus = computeEmotionalSafetyClimate(
-        baseInput({
-          restraints: [
-            makeRestraint("r1", { child_debriefed: false }),
-            makeRestraint("r2", { child_debriefed: false }),
-          ],
-        }),
-      );
       // The difference also includes the -5 penalty for < 50% child debrief,
       // so we compare against a 50% case instead
       const halfDebriefed = computeEmotionalSafetyClimate(

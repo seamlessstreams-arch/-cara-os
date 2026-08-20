@@ -3864,16 +3864,6 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
     });
 
     it("generates evidence documentation strength at >= 70% (lower tier)", () => {
-      const r = computeTherapeuticInterventionEffectiveness(
-        baseInput({
-          total_children: 1,
-          intervention_outcomes: [
-            makeOutcome({ id: "o1", evidence_documented: true, outcome_measured: false, positive_outcome: false, review_completed: false, baseline_score: 50, current_score: 50, target_score: 80 }),
-            makeOutcome({ id: "o2", evidence_documented: true, outcome_measured: false, positive_outcome: false, review_completed: false, baseline_score: 50, current_score: 50, target_score: 80 }),
-            makeOutcome({ id: "o3", evidence_documented: false, outcome_measured: false, positive_outcome: false, review_completed: false, baseline_score: 50, current_score: 50, target_score: 80 }),
-          ],
-        }),
-      );
       // pct(2,3) = 67... need 70. Use 7/10 ratio
       // Let me just use exact 70%
       const r2 = computeTherapeuticInterventionEffectiveness(

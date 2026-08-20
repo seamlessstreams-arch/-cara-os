@@ -520,37 +520,6 @@ describe("Adequate scenario", () => {
   });
 
   it("adequate at exact boundary score=45", () => {
-    // Need score exactly 45
-    // 52 + coverage + 4P + child_contrib + interventions + multi_agency + review = 45
-    // modifiers sum = -7
-    // coverage=-5 (<30%), 4P=0, child_contrib=0, interventions=0, multi_agency=0, review=-2(no specific)
-    // Actually, let me build: coverage <30% → -5, 4P in 30-59% → 0, child_contrib in 30-59% → 0, interventions in 30-59% → 0, multi_agency in 20-49% → 0, review in 30-49% → 0
-    // 52-5 = 47 — not 45
-    // Need: coverage <30% → -5, 4P in 30-59% → 0, child_contrib in 30-59% → 0, interventions in 30-59% → 0, multi_agency <20% → -4, review >=50% → +2
-    // 52-5+0+0+0-4+2 = 45
-    const formulations = [
-      makeFormulation({
-        id: "ab1", child_id: "c1",
-        predisposing_count: 2, precipitating_count: 2, perpetuating_count: 0, protective_count: 0, // 2/4
-        has_child_contribution: true,
-        agreed_intervention_count: 3,
-        participant_count: 1,
-        has_next_review_date: true,
-      }),
-      makeFormulation({
-        id: "ab2", child_id: "c1", // same child! so only 1 unique child
-        predisposing_count: 2, precipitating_count: 2, perpetuating_count: 0, protective_count: 0, // 2/4
-        has_child_contribution: false,
-        agreed_intervention_count: 3,
-        participant_count: 1,
-        has_next_review_date: true,
-      }),
-    ];
-    const r = computeMultidisciplinaryFormulation({
-      today: "2025-06-15",
-      total_children: 8,
-      formulations,
-    });
     // coverage = pct(1,8) = 13% → -5 (<30%)
     // 4P: (2+2)/8 = 50% → 0 (>=30, <60: no +/-)
     // child_contribution: 1/2 = 50% → 0 (>=30, <60: no +/-)
@@ -708,34 +677,6 @@ describe("Inadequate scenario", () => {
   });
 
   it("inadequate at score=44 boundary", () => {
-    // coverage <30% → -5, 4P <30% → -5, child_contrib >=60% → +2, interventions >=90% → +5, multi_agency <20% → -4, review >=80% → +5
-    // -5-5+2+5-4+5 = -2 → 52-2=50 — too high
-    // Let's get 44:
-    // coverage <30% → -5, 4P >=60% → +2, child_contrib <30% → -4, interventions >=60% → +2, multi_agency <20% → -4, review <30% → -3
-    // -5+2-4+2-4-3 = -12 → 52-12=40 — too low
-    // Try: coverage <30% → -5, 4P >=60% → +2, child_contrib <30% → -4, interventions >=90% → +5, multi_agency <20% → -4, review <30% → -3
-    // -5+2-4+5-4-3 = -9 → 52-9=43 — still too low
-    // Try: -5+2-4+5-4+0 = -6 → 52-6=46 → adequate
-    // Try: -5+2-4+2+0+0 = -5 → 52-5=47 → adequate
-    // Hmm. Let me try: -5+0+0+0-4+2 = -7 → 52-7=45 → adequate
-    // -5+0+0+0-4+0 = -9 → 52-9=43 → inadequate
-    // -5+2+0+0-4-3 = -10 → 52-10=42
-    // -5+0+0+0-4+2-3? No, only 6 modifiers.
-    // -5+0+0+0+0-3 = -8 → 52-8=44
-    // coverage <30%→-5, 4P 30-59%→0, child_contrib 30-59%→0, interventions 30-59%→0, multi_agency 20-49%→0, review <30%→-3
-    // Need 5 formulations for 1 child, total_children=10
-    const formulations44 = [
-      makeFormulation({ id: "i44-1", child_id: "c1", predisposing_count: 1, precipitating_count: 1, perpetuating_count: 0, protective_count: 0, has_child_contribution: true, agreed_intervention_count: 3, participant_count: 3, has_next_review_date: false }),
-      makeFormulation({ id: "i44-2", child_id: "c1", predisposing_count: 1, precipitating_count: 1, perpetuating_count: 0, protective_count: 0, has_child_contribution: true, agreed_intervention_count: 0, participant_count: 1, has_next_review_date: false }),
-      makeFormulation({ id: "i44-3", child_id: "c1", predisposing_count: 1, precipitating_count: 1, perpetuating_count: 0, protective_count: 0, has_child_contribution: false, agreed_intervention_count: 3, participant_count: 1, has_next_review_date: false }),
-      makeFormulation({ id: "i44-4", child_id: "c1", predisposing_count: 1, precipitating_count: 0, perpetuating_count: 1, protective_count: 0, has_child_contribution: false, agreed_intervention_count: 0, participant_count: 1, has_next_review_date: true }),
-      makeFormulation({ id: "i44-5", child_id: "c1", predisposing_count: 1, precipitating_count: 0, perpetuating_count: 0, protective_count: 1, has_child_contribution: false, agreed_intervention_count: 0, participant_count: 1, has_next_review_date: false }),
-    ];
-    const r = computeMultidisciplinaryFormulation({
-      today: "2025-06-15",
-      total_children: 10,
-      formulations: formulations44,
-    });
     // coverage: pct(1,10) = 10% → -5
     // 4P: (2+2+2+2+2)/20 = 10/20 = 50% → 0 (>=30, <60)
     // child_contribution: 2/5 = 40% → 0 (>=30, <60)

@@ -341,8 +341,6 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
     });
 
     it("-5 when coverage < 40%", () => {
-      // 1 child out of 5 = 20%
-      const high = computeHomeSpecializedHealthPlans(baseInput());
       const low = computeHomeSpecializedHealthPlans(baseInput({
         adhd_plans: [makeADHD({ child_id: "c1" })],
         allergy_plans: [],
@@ -467,16 +465,6 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
     });
 
     it("+2 when readiness 80-99%", () => {
-      // 4 of 5 ready → 80%
-      const result = computeHomeSpecializedHealthPlans(baseInput({
-        allergy_plans: [
-          makeAllergy({ child_id: "c2" }), // ready
-          makeAllergy({ id: "allergy-2", child_id: "c3" }), // ready
-          makeAllergy({ id: "allergy-3", child_id: "c1" }), // ready
-          makeAllergy({ id: "allergy-4", child_id: "c4", staff_trained_count: 0, school_has_plan: false }), // not ready
-        ],
-        epilepsy_plans: [makeEpilepsy({ child_id: "c5" })], // ready
-      }));
       // 4 of 5 = 80% → +2
       const safetyReadyCount = 3 + 1; // 3 allergy ready + 1 epilepsy ready
       const totalSafety = 4 + 1;

@@ -1356,15 +1356,6 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
     });
 
     it("includes lower-tier loss identification strength at 70-89%", () => {
-      const r = computeGriefBereavementSupport(
-        baseInput({
-          loss_identification_records: [
-            makeLoss("l1", { support_plan_in_place: true }),
-            makeLoss("l2", { child_id: "c2", support_plan_in_place: true }),
-            makeLoss("l3", { child_id: "c3", support_plan_in_place: false }),
-          ],
-        }),
-      );
       // 2/3 = 67% → should not have either strength tier
       // Let's test with 75%
       const r2 = computeGriefBereavementSupport(
@@ -1646,22 +1637,6 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
     });
 
     it("concern when childCopingRate 50-69", () => {
-      const r = computeGriefBereavementSupport(
-        baseInput({
-          grief_intervention_records: [
-            makeIntervention("gi1", { child_reported_improvement: true }),
-            makeIntervention("gi2", { child_id: "c2", child_reported_improvement: false }),
-          ],
-          counselling_access_records: [
-            makeCounselling("co1", { child_found_helpful: true }),
-            makeCounselling("co2", { child_id: "c2", child_found_helpful: false }),
-          ],
-          memory_work_records: [
-            makeMemoryWork("mw1", { child_found_meaningful: false }),
-            makeMemoryWork("mw2", { child_id: "c2", child_found_meaningful: false }),
-          ],
-        }),
-      );
       // 2 of 6 = 33% — actually < 50, need different numbers
       // Let's try: 3 positive of 6 = 50%
       const r2 = computeGriefBereavementSupport(

@@ -332,7 +332,6 @@ describe("computeManagementWalkroundOversight", () => {
     it("1-3 walkrounds → no bonus or penalty", () => {
       // Compare to a baseline. 2 walkrounds vs 1 should differ only in rate changes, not freq modifier.
       const r1 = computeManagementWalkroundOversight(nWalkrounds(1));
-      const r2 = computeManagementWalkroundOversight(nWalkrounds(2));
       // Both get +0 from frequency. Difference comes from unannounced rate shift.
       // 1 walkround: 1 unannounced out of 1 = 100%. 2 walkrounds: 1 unannounced out of 2 = 50%.
       // Both >=30% so same unannounced modifier. Scores may differ only due to rate rounding.

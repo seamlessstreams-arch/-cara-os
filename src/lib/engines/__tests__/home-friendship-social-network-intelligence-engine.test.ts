@@ -1895,15 +1895,6 @@ describe("recommendations", () => {
   });
 
   it("recommends soon action for outsideFriendshipRate 40-59", () => {
-    const r = computeFriendshipSocialNetwork(baseInput({
-      friendship_mapping_records: [
-        makeMapping({ id: "fm_1", friends_outside_home: 1, friends_from_school: 0, friends_from_community: 0 }),
-        makeMapping({ id: "fm_2", friends_outside_home: 0, friends_from_school: 0, friends_from_community: 0 }),
-        makeMapping({ id: "fm_3", friends_outside_home: 1, friends_from_school: 0, friends_from_community: 0 }),
-        makeMapping({ id: "fm_4", friends_outside_home: 0, friends_from_school: 0, friends_from_community: 0 }),
-        makeMapping({ id: "fm_5", friends_outside_home: 1, friends_from_school: 0, friends_from_community: 0 }),
-      ],
-    }));
     // 3/5 = 60% => not in 40-59 range
     // Need to make it 40-59
     const r2 = computeFriendshipSocialNetwork(baseInput({

@@ -48,21 +48,6 @@ function manyScreenings(
 }
 
 /** Build an outstanding-level scenario: all rates high, no high risk. */
-function outstandingScreenings(): SubstanceScreeningRecordInput[] {
-  // 5 children, 10 screenings, all positive indicators
-  return Array.from({ length: 10 }, (_, i) =>
-    makeScreening({
-      id: `scr_${i}`,
-      child_id: `yp_${i % 5}`,
-      risk_level: "low_risk",
-      has_harm_reduction: true,
-      professional_support_count: 2,
-      has_child_insight: true,
-      shared_with_social_worker: true,
-      shared_with_camhs: true,
-    }),
-  );
-}
 
 // ── Tests ───────────────────────────────────────────────────────────────────
 
@@ -461,18 +446,6 @@ describe("computeSubstanceMisuseScreening", () => {
       // So: mod1:-5, mod2:0(gap), mod3:0(gap), mod4:0(gap), mod5:0(gap), mod6:-3
       // 52 - 5 - 3 = 44
 
-      // 1 child, 5 total_children → 20% → mod1=-5
-      // harm: gap (30-49%): 3 screenings, 1 harm → 33%
-      // prof: gap (20-39%): 1/3 = 33% → >=20 and <40 → gap
-      // insight: gap (30-59%): 1/3 = 33% → gap
-      // sharing: gap (30-49%): 1/3 = 33% → gap
-      // risk: all 3 high risk, 0 support → 0% → -3
-      const screenings = [
-        makeScreening({ id: "scr_0", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: true, professional_support_count: 1, has_child_insight: true, shared_with_social_worker: true, shared_with_camhs: false }),
-        makeScreening({ id: "scr_1", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: false, professional_support_count: 0, has_child_insight: false, shared_with_social_worker: false, shared_with_camhs: false }),
-        makeScreening({ id: "scr_2", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: false, professional_support_count: 0, has_child_insight: false, shared_with_social_worker: false, shared_with_camhs: false }),
-      ];
-      const r = computeSubstanceMisuseScreening(baseInput({ total_children: 5, screenings }));
       // Now: prof support rate: 0/3 = 0% → <20 → mod3:-4
       // insight: 1/3 = 33% → gap → 0
       // sharing: 1/3 = 33% → gap → 0
@@ -1431,26 +1404,12 @@ describe("computeSubstanceMisuseScreening", () => {
     });
 
     it("has no insights for a middle-ground scenario with no triggers", () => {
-      // <80% coverage, <80% harm, <80% sharing, <10 screenings, not 0 records, <30% high risk, >0 high risk
-      const screenings = [
-        makeScreening({ id: "s1", child_id: "c1", risk_level: "high_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false }),
-        makeScreening({ id: "s2", child_id: "c2", risk_level: "low_risk", has_harm_reduction: true, shared_with_social_worker: true }),
-      ];
-      const r = computeSubstanceMisuseScreening(baseInput({ total_children: 5, screenings }));
       // 2/5=40% coverage (<80), harm 50% (<80), sharing 50% (<80), total 2 (<10),
       // high risk 50% (>=30 → triggers warning)
       // Actually 1/2 = 50% high risk >= 30 → triggers warning. Let me fix.
       // Use 4 low risk + 1 high risk: highRiskRate = 1/5 = 20% → <30 → no warning
       const screenings2 = manyScreenings(3, { risk_level: "low_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false });
       screenings2.push(makeScreening({ id: "s4", child_id: "c4", risk_level: "high_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false }));
-      // 4 unique / 5 total = 80%... that'll trigger coverage insight
-      // Need <80%:
-      const screenings3 = [
-        makeScreening({ id: "s1", child_id: "c1", risk_level: "low_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false }),
-        makeScreening({ id: "s2", child_id: "c2", risk_level: "low_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false }),
-        makeScreening({ id: "s3", child_id: "c3", risk_level: "high_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false }),
-      ];
-      const r2 = computeSubstanceMisuseScreening(baseInput({ total_children: 5, screenings: screenings3 }));
       // 3/5=60% coverage (<80 → no coverage insight), 1/3=33% high risk (>=30 → warning triggers!)
       // Need <30% high risk. Use 10 screenings with 2 high risk → 2/10=20% → <30
       const screenings4 = manyScreenings(7, { risk_level: "low_risk", has_harm_reduction: false, shared_with_social_worker: false, shared_with_camhs: false });

@@ -518,18 +518,6 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
   // ════════════════════════════════════════════════════════════════════════
 
   describe("Bonuses", () => {
-    // Helper: produces a score=52 baseline with all neutral data
-    function neutralInput(): CookingKitchenInput {
-      // All arrays with one record each, all at borderline to avoid bonuses/penalties
-      return baseInput({
-        total_children: 4,
-        cooking_session_records: [],
-        kitchen_safety_records: [],
-        meal_preparation_records: [],
-        nutritional_understanding_records: [],
-        independence_records: [],
-      });
-    }
 
     // Bonus 1: cookingParticipationRate >=90 → +4
     it("awards +4 bonus for cookingParticipationRate >= 90", () => {
@@ -930,7 +918,6 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
     });
 
     it("does NOT apply independence penalty when records empty", () => {
-      const r = computeCookingKitchenSkills(baseInput());
       // All empty + children > 0 → special case returns 15. Not here.
       // Need at least one non-empty array.
       const r2 = computeCookingKitchenSkills(

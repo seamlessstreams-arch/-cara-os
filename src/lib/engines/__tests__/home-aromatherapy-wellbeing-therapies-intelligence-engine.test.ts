@@ -1751,17 +1751,6 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
     });
 
     it("102 — relaxation effectiveness 40-64 concern", () => {
-      const r = computeAromatherapyWellbeingTherapies(
-        baseInput({
-          relaxation_programme_records: [
-            makeRelaxationProgramme({ measurable_outcomes_set: true, measurable_outcomes_achieved: true, anxiety_level_before: 8, anxiety_level_after: 3, child_feedback_positive: true, reviewed: true }),
-            makeRelaxationProgramme({ measurable_outcomes_set: false, anxiety_level_before: 3, anxiety_level_after: 5, child_feedback_positive: false, reviewed: false }),
-            makeRelaxationProgramme({ measurable_outcomes_set: false, anxiety_level_before: 3, anxiety_level_after: 5, child_feedback_positive: false, reviewed: false }),
-            makeRelaxationProgramme({ measurable_outcomes_set: false, anxiety_level_before: 3, anxiety_level_after: 5, child_feedback_positive: false, reviewed: false }),
-            makeRelaxationProgramme({ measurable_outcomes_set: false, anxiety_level_before: 3, anxiety_level_after: 5, child_feedback_positive: false, reviewed: false }),
-          ],
-        }),
-      );
       // 4/(5*4) = 4/20 = 20% → this is < 40, not 40-64
       // Let me recalculate: 2 full + 1 partial
       // Actually: 2 full + 2 half empty → need 40-64
@@ -1799,16 +1788,6 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
     });
 
     it("104 — child benefit 40-64 concern", () => {
-      const r = computeAromatherapyWellbeingTherapies(
-        baseInput({
-          child_benefit_records: [
-            makeChildBenefit({ overall_wellbeing_improvement: true, child_self_reported_benefit: true, staff_reported_benefit: false, child_voice_captured: false }),
-            makeChildBenefit({ overall_wellbeing_improvement: true, child_self_reported_benefit: true, staff_reported_benefit: false, child_voice_captured: false }),
-            makeChildBenefit({ overall_wellbeing_improvement: false, child_self_reported_benefit: false, staff_reported_benefit: false, child_voice_captured: false }),
-            makeChildBenefit({ overall_wellbeing_improvement: false, child_self_reported_benefit: false, staff_reported_benefit: false, child_voice_captured: false }),
-          ],
-        }),
-      );
       // (2+2+0+0)/(4*4) = 4/16 = 25% — too low
       // Try: 3 with 2/4 each → (6)/(3*4) = 6/12 = 50%
       const r2 = computeAromatherapyWellbeingTherapies(
@@ -1869,19 +1848,6 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
     });
 
     it("108 — aroma safety 70-79 concern", () => {
-      // 5 records: 3 all true + 2 with 2/4 = (12+4)/(5*4) = 16/20 = 80% → too high
-      // 5 records: 3 all true + 2 with 1/4 = (12+2)/(5*4) = 14/20 = 70%
-      const r = computeAromatherapyWellbeingTherapies(
-        baseInput({
-          aromatherapy_session_records: [
-            makeAromaSession({ consent_obtained: true, allergy_check_completed: true, contraindication_check_completed: true, risk_assessment_current: true }),
-            makeAromaSession({ consent_obtained: true, allergy_check_completed: true, contraindication_check_completed: true, risk_assessment_current: true }),
-            makeAromaSession({ consent_obtained: true, allergy_check_completed: true, contraindication_check_completed: true, risk_assessment_current: true }),
-            makeAromaSession({ consent_obtained: true, allergy_check_completed: false, contraindication_check_completed: false, risk_assessment_current: false }),
-            makeAromaSession({ consent_obtained: false, allergy_check_completed: false, contraindication_check_completed: false, risk_assessment_current: false }),
-          ],
-        }),
-      );
       // (12+1+0)/(5*4) = 13/20 = 65% — wait that's < 70
       // Let me re-count: 3*(4) + 1*(1) + 1*(0) = 12+1+0=13; 13/20 = 65 → < 70
       // Need 70-79: 5 records: 4 all true + 1 with 0/4 = 16/20 = 80% → too high
@@ -1912,12 +1878,6 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
     });
 
     it("110 — adverse reaction 11-20 concern", () => {
-      const records = Array.from({ length: 10 }, (_, i) =>
-        makeAromaSession({ adverse_reaction: i < 2 }),
-      );
-      const r = computeAromatherapyWellbeingTherapies(
-        baseInput({ aromatherapy_session_records: records }),
-      );
       // 2/10 = 20% → not > 20, so no concern at exactly 20
       // Need > 10 and <= 20: 11-20%
       const records2 = Array.from({ length: 8 }, (_, i) =>

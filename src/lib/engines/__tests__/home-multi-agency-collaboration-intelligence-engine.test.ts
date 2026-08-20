@@ -2649,25 +2649,6 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     it("boundary: score exactly 65 is good", () => {
-      // 52 + 13 = 65
-      // Bonuses: lac timely 100% => +4, sw visit 100% => +4, therapeutic 100% => +3, lac actions => +3 (if actions set)
-      // But we only want +13 total from bonuses
-      // +4 (lac timely) + +4 (sw) + +3 (therapeutic) + +1 (education 80%) + +1 (pep 70%) = 13
-      // No: also check info sharing, child seen alone, gdpr
-      // Simplify: provide only lac, sw, therapeutic to control
-      const r = computeMultiAgencyCollaboration(
-        baseInput({
-          lac_review_records: [
-            makeLacReview({ on_time: true }),
-          ],
-          social_worker_visit_records: [
-            makeSWVisit({ within_statutory_timescale: true }),
-          ],
-          therapeutic_service_records: [
-            makeTherapeutic({ child_engaged: true }),
-          ],
-        }),
-      );
       // Bonus1: lac 100% => +4, Bonus2: sw 100% => +4, Bonus3: therapeutic 100% => +3
       // Bonus6: lacActionCompletionRate = pct(0,0)=0 => no bonus
       // Bonus7: childSeenAloneRate = pct(0,1)=0 => no bonus

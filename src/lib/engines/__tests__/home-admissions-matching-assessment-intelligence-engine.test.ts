@@ -2335,20 +2335,6 @@ describe("Admissions Matching Engine — Concerns", () => {
   });
 
   it("concern for impactAssessmentRate 40-69", () => {
-    const r = computeAdmissionsMatchingAssessment(
-      baseInput({
-        impact_risk_assessment_records: [
-          makeImpactAssessment({
-            individual_impacts_assessed: true,
-            children_consulted_count: 0,
-            existing_children_count: 0,
-            mitigations_adequate: false,
-            safeguarding_implications_reviewed: false,
-          }),
-          makeWeakImpact({ existing_children_count: 0, children_consulted_count: 0 }),
-        ],
-      }),
-    );
     // individualImpactRate=50, childConsult=pct(0,0)=0, mitigationAdequacy=pct(0,2)=0, safeguardingImplications=pct(0,2)=0
     // composite = round((50+0+0+0)/4) = 13 => <40 => "Only X% impact assessment quality"
     // Need 40-69: individual=100, consult=pct(6,6)=100, mitigation=0, safeguarding=0 => (100+100+0+0)/4=50

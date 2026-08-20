@@ -2501,11 +2501,6 @@ describe("computeStaffRotaAdequateStaffing", () => {
       const ratios = nRecords(makeRatio, 10, { ratio_met: false, senior_staff_on_duty: false } as Partial<RatioComplianceRecordInput>);
       // ratioComplianceRate=0% => -5
 
-      const rotas = nRecords(makeRota, 10, {
-        days_advance_published: 14, all_shifts_filled: true, skill_mix_adequate: false,
-        senior_cover_every_shift: false, rota_approved_by_manager: false,
-        staff_preferences_considered: false, staff_consulted: false, contingency_plan_in_place: false,
-      } as Partial<RotaPlanningRecordInput>);
       // rotaPlanningRate: pub=10, fill=10, skill=0, senior=0, approved=0 => 20/50 = 40%
       // Not < 40, so no penalty 4 for rota
       // But add +2 from rota>=70... no, 40 is not >=70

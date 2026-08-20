@@ -311,12 +311,6 @@ describe("computeOutcomeStarNeeds", () => {
     });
 
     it("modifier 2: no stars gives +0", () => {
-      const withStars = computeOutcomeStarNeeds(baseInput({
-        total_children: 1,
-        outcome_stars: [makeOutcomeStar({ id: "os_1", child_id: "c1", average_score: 5 })],
-        needs_assessments: [],
-        kpis: [],
-      }));
       // No stars, but other data present → engine still scores (no-stars contributes +0).
       const noStars = computeOutcomeStarNeeds(baseInput({
         total_children: 1,

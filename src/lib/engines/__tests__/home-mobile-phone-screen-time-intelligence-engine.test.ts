@@ -1158,14 +1158,6 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
     });
 
     it("flags mid-range screen time management concern when rate 40-69", () => {
-      const r = computeMobilePhoneScreenTime(baseInput({
-        screen_time_records: [
-          makeScreenTime({ id: "st_1", limit_adhered_to: true, bedtime_device_handover: false }),
-          makeScreenTime({ id: "st_2", limit_adhered_to: false, bedtime_device_handover: true }),
-          makeScreenTime({ id: "st_3", limit_adhered_to: false, bedtime_device_handover: false }),
-          makeScreenTime({ id: "st_4", limit_adhered_to: true, bedtime_device_handover: false }),
-        ],
-      }));
       // numerator = 2+1=3, denominator = 8, rate = pct(3,8)=38% -- that's <40
       // Let me adjust
       const r2 = computeMobilePhoneScreenTime(baseInput({

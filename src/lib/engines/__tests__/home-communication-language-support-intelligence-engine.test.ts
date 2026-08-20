@@ -1682,17 +1682,6 @@ describe("concerns", () => {
   });
 
   it("concern for staffTrainingRate 40-64", () => {
-    const training = makeTraining({
-      training_completed: true,
-      competency_passed: true,
-      applied_in_practice: false,
-    });
-    const r = computeCommunicationLanguageSupport(
-      baseInput({
-        total_children: 0,
-        staff_communication_training_records: [training],
-      }),
-    );
     // pct(2,3) = 67 -> this is >= 65, so no concern for 40-64
     // Use different values: pct(1,3) = 33 -> < 40, not the 40-64 band
     // We need exactly pct = 40-64. Use 2 records: 1 perfect (3/3), 1 empty (0/3) -> pct(3,6)=50
@@ -2621,29 +2610,6 @@ describe("edge cases", () => {
   });
 
   it("boundary: score exactly 65 = good", () => {
-    // base=52, need +13 more
-    // B1: coverage 100% (+4), B6: childInvolvement 100% (+3), B9: supportPlanReview 100% (+3)
-    // B8: childProgress (assessment progress 5 -> rate=100 -> +2)
-    // That's +12. Need +1 more.
-    // B7: homePractice: need >=70% -> can't without therapy (pct(0,0)=0)
-    // Let's use: coverage100(+4), involvement100(+3), planReview100(+3), progress100(+2), aidProvision>=65(+1)
-    // = +13 => 52+13 = 65
-    const r = computeCommunicationLanguageSupport(
-      baseInput({
-        total_children: 0,
-        communication_assessment_records: [
-          makePerfectAssessment(),
-        ],
-        communication_aid_records: [
-          makeAid({
-            aid_available: true,
-            aid_in_use: true,
-            aid_maintained: true,
-            child_trained_on_aid: false,
-          }),
-        ],
-      }),
-    );
     // coverage: total_children=0 -> 0 -> no bonus
     // Hmm, with total_children=0, assessment_coverage_rate = 0, no B1 bonus
     // Need total_children > 0 for B1

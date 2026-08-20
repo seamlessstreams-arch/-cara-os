@@ -445,7 +445,6 @@ describe("bonus 2 — CPD completion", () => {
   });
 
   it("no bonus when totalCpd = 0 (guard)", () => {
-    const r = run({ total_staff: 10 });
     // allEmpty with staff > 0 = special case score 15
     // We need at least one non-cpd record to avoid allEmpty
     const r2 = run({
@@ -547,10 +546,6 @@ describe("bonus 4 — training needs coverage", () => {
   function makeCurrentTna(staffId: string): TrainingNeedsRecordInput {
     return makeTrainingNeeds({ staff_id: staffId, is_current: true, needs_identified: 0, needs_addressed: 0 });
   }
-  function makeNonCurrentTna(staffId: string): TrainingNeedsRecordInput {
-    return makeTrainingNeeds({ staff_id: staffId, is_current: false, needs_identified: 0, needs_addressed: 0 });
-  }
-
   // Need a non-training record to avoid allEmpty
   function runWithTna(current: number, totalStaff: number) {
     const records: TrainingNeedsRecordInput[] = [];

@@ -1621,16 +1621,6 @@ describe("concerns", () => {
   });
 
   it("concern for satisfaction 50-69", () => {
-    const r = computeBathroomAccessibilityAdaptations(baseInput({
-      adaptation_records: [],
-      grab_rail_records: [],
-      non_slip_records: [],
-      wheelchair_records: [],
-      modification_records: [
-        makeModification({ id: "mod_1", child_id: "yp_alex", satisfaction_rating: 3 }),
-        makeModification({ id: "mod_2", child_id: "yp_jordan", satisfaction_rating: 4, bathroom_id: "bath_2" }),
-      ],
-    }));
     // avg = 3.5, pct = 70 -> at boundary, actually >=70 so no concern
     // Use 3 and 3 -> avg 3, pct 60
     const r2 = computeBathroomAccessibilityAdaptations(baseInput({

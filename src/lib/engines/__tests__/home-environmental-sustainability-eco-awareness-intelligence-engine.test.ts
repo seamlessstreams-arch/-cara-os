@@ -1538,15 +1538,6 @@ describe("Home Environmental Sustainability & Eco-Awareness Intelligence Engine"
     });
 
     it("sustainability practice score 40-59% → moderate concern", () => {
-      const recs = Array.from({ length: 10 }, (_, i) =>
-        makeSustainabilityPractice(`sp${i}`, {
-          implemented: i < 6,
-          documented: i < 3,
-          children_involved: i < 3,
-          staff_trained: i < 3,
-        }),
-      );
-      const r = run({ total_children: 3, sustainability_practice_records: recs });
       // impl=60%, doc: only implemented+documented count → pct(3,10)=30%, children=pct(3,10)=30%, staff=pct(3,10)=30%
       // Wait: documented/children_involved/staff_trained only count if implemented too
       // i<3: all four flags true. i=3,4,5: implemented but not doc/children/staff. i>=6: not implemented.

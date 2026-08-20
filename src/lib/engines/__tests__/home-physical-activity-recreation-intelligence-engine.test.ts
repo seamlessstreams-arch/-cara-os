@@ -818,13 +818,6 @@ describe("Bonus 9 — recreationalEnjoymentRate", () => {
         inclusive: true,
       }));
     }
-    const r = run({
-      total_children: 1,
-      recreational_activity_records: recs,
-      exercise_programme_records: [
-        makeExerciseProgramme({ child_id: "child_1", active: true }),
-      ],
-    });
     const enjoyedCount = recs.filter((x) => x.child_enjoyed).length;
     expect(Math.round((enjoyedCount / recs.length) * 100)).toBe(70);
   });

@@ -273,11 +273,6 @@ describe("modifier 1: approval turnaround", () => {
   });
 
   it("is neutral when no approved expenses exist", () => {
-    const withApproval = computeHomeExpenseGovernance(baseInput({
-      expenses: [
-        makeExpense({ id: "e1", created_at: "2026-05-25", approved_at: "2026-05-26" }),
-      ],
-    }));
     const noApproval = computeHomeExpenseGovernance(baseInput({
       expenses: [
         makeExpense({ id: "e1", status: "submitted", approved_by: null, approved_at: null }),

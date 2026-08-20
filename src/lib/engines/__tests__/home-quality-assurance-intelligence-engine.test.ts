@@ -22,12 +22,6 @@ function daysAgo(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function daysFrom(n: number): string {
-  const d = new Date(TODAY);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
 function makeAction(overrides: Partial<QAActionInput> = {}): QAActionInput {
   return {
     status: "completed",

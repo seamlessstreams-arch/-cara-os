@@ -1120,22 +1120,6 @@ describe("rating boundaries", () => {
     // Do: all max except settling → mid tier (+1)
     // = 52 + 4+3+4+3+3+3+3+1+3 = 79
 
-    const routineRecords = [
-      ...times(9, makeRoutine, {
-        routine_followed: true,
-        child_settled_within_30_min: true,
-        wind_down_activity_completed: true,
-        sleep_quality_rating: 5,
-      }),
-      // 1 record with child_settled = false → settling = 9/10 = 90% still
-      // need 7-8/10 for 70-89% → +1
-      ...times(1, makeRoutine, {
-        routine_followed: true,
-        child_settled_within_30_min: false,
-        wind_down_activity_completed: true,
-        sleep_quality_rating: 5,
-      }),
-    ];
     // routineAdherenceRate = 100% → +4
     // settlingRate = 90% → +2 (still too high, need 70-89)
     // Need: 7/10 settled or 8/10 settled
@@ -1283,65 +1267,15 @@ describe("rating boundaries", () => {
   });
 
   it("score 45 → adequate (lower boundary)", () => {
-    // base 52 - 7 = 45 → need penalties totaling 7
-    // routineAdherence < 50 → -5, then need -2 more
-    // Can't get exactly -2 from other penalties (they're -5, -5, -3)
-    // Instead: base 52 with no bonuses, no penalties = 52 → too high
-    // So: 52 - 5 (routine penalty) - 3 (highImpact) + 1 (some bonus) = 45
-    // routine adherence < 50 → -5 (e.g., 0/10)
-    // highImpact > 50 → -3
-    // Need disturbance resolution high enough to get +2 bonus
-    // disturbance: 7/10 resettled = 70% → +2, and set impact severe on 6/10 = 60% > 50 → -3
-    const routines = times(10, makeRoutine, { routine_followed: false });
-    const disturbances = [
-      ...times(7, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "severe",
-      }),
-      ...times(3, makeDisturbance, {
-        child_resettled: false,
-        impact_on_next_day: "none",
-      }),
-    ];
     // disturbanceResolutionRate = 70% → +2
     // highImpactRate = 70% (7/10) → -3
     // routineAdherence = 0% → -5
     // 52 + 2 - 5 - 3 = 46 → not 45
 
-    // Instead: need exactly 45
-    // 52 - 5 (routine) - 3 (highImpact) + 1 (some mid-tier bonus) = 45
-    // e.g., environmentQualityRate 70-89% → +1
-    const envRecords = [
-      makeEnvironment({
-        room_temperature_ok: true,
-        lighting_appropriate: true,
-        noise_level_acceptable: true,
-        bedding_clean_adequate: true,
-        room_personalised: true,
-        electronic_devices_managed: false,
-        ventilation_adequate: false,
-      }),
-    ];
-    // env = 5/7 = 71% → +1
-    const disturbances2 = times(10, makeDisturbance, {
-      child_resettled: false,
-      impact_on_next_day: "severe",
-    });
     // disturbanceResolutionRate = 0% → -5
     // highImpactRate = 100% → -3
     // 52 + 1 (env) - 5 (routine) - 5 (dist) - 3 (impact) = 40 → too low
 
-    // Simpler approach: 52 - 5 (routine) - 3 (highImpact) + 1 (env mid) = 45
-    const dist3 = [
-      ...times(6, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "moderate",
-      }),
-      ...times(4, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "none",
-      }),
-    ];
     // disturbanceResolutionRate = 100% → +4
     // highImpactRate = 60% → -3
     // routineAdherence = 0% → -5
@@ -1384,12 +1318,6 @@ describe("rating boundaries", () => {
     // env high (+3), routine < 50 (-5), highImpact > 50 (-3), dist >= 90 (+4)
     // 52 + 3 + 4 - 5 - 3 = 51 → nope
 
-    // Simpler: 52 - 5 (routine) - 3 (highImpact) = 44
-    const routines = times(10, makeRoutine, { routine_followed: false });
-    const disturbances = times(10, makeDisturbance, {
-      child_resettled: true,
-      impact_on_next_day: "severe",
-    });
     // disturbanceResolutionRate = 100% → +4
     // highImpactRate = 100% → -3
     // routineAdherence = 0% → -5
@@ -1397,70 +1325,14 @@ describe("rating boundaries", () => {
 
     // 52 - 5 (routine) - 5 (dist) + 2 (routine mid) = impossible since routine < 50
 
-    // Just: 52 - 5 (support quality) - 3 (highImpact) = 44
-    const support = times(10, makeBedtimeSupport, {
-      support_provided: false,
-      child_engaged: false,
-      child_feedback_positive: false,
-      consistency_with_plan: false,
-    });
-    const dist2 = [
-      ...times(6, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "severe",
-      }),
-      ...times(4, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "none",
-      }),
-    ];
     // disturbanceResolutionRate = 100% → +4
     // highImpactRate = 60% → -3
     // bedtimeSupportQuality = 0% → -5
     // 52 + 4 - 5 - 3 = 48 → still not 44
 
-    // Need exactly -8: use all four penalties = -5-5-5-3 = -18, plus bonuses
-    // 52 - 18 + 10 bonuses = 44
-    // That's complex. Let's be pragmatic and get 44 directly.
-    // 52 - 5 (routine) - 5 (dist) + 2 (env mid) = 44
-    const routines2 = times(10, makeRoutine, { routine_followed: false });
-    const dist3 = times(10, makeDisturbance, { child_resettled: false });
-    const envRecords = [
-      makeEnvironment({
-        room_temperature_ok: true,
-        lighting_appropriate: true,
-        noise_level_acceptable: true,
-        bedding_clean_adequate: true,
-        room_personalised: true,
-        electronic_devices_managed: false,
-        ventilation_adequate: false,
-      }),
-    ];
     // env = 5/7 = 71% → +1
     // 52 + 1 - 5 - 5 = 43... still off
 
-    // Let's try: env >= 90 (+3) with routine and dist penalties
-    // 52 + 3 (env) - 5 (routine) - 5 (dist) - 3 (highImpact) = 42 → no
-    // Simple: two penalties + nothing else = 52 - 5 - 3 = 44
-    // bedtimeSupportQuality < 40 (-5): need support records with quality < 40%
-    // highImpact > 50 (-3): need disturbance records with > 50% severe/moderate
-    // BUT dist resolution at 0% would also give -5... we need dist resettled to avoid that
-    const support2 = times(10, makeBedtimeSupport, {
-      support_provided: false,
-      child_engaged: false,
-      child_feedback_positive: false,
-      consistency_with_plan: false,
-    });
-    const dist4 = [
-      ...times(6, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "moderate",
-      }),
-      ...times(4, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "none",
-      }),
-    ];
     // disturbanceResolutionRate = 100% → +4 bonus
     // highImpactRate = 60% → -3 penalty
     // bedtimeSupportQuality = 0% → -5 penalty
@@ -1470,16 +1342,6 @@ describe("rating boundaries", () => {
     // Need: routine adherence < 50 AND highImpact > 50
     // But we need dist resolution NOT < 50 to avoid additional -5
     const routines3 = times(10, makeRoutine, { routine_followed: false });
-    const dist5 = [
-      ...times(6, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "severe",
-      }),
-      ...times(4, makeDisturbance, {
-        child_resettled: true,
-        impact_on_next_day: "none",
-      }),
-    ];
     // disturbanceResolutionRate = 100% → +4 bonus... that gives 52+4-5-3=48
     // Need resolution rate between 50-69% to get no bonus and no penalty
     const dist6 = [

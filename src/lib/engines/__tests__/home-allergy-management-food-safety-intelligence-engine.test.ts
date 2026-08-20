@@ -712,14 +712,6 @@ describe("inadequate rating", () => {
 describe("bonuses", () => {
   // Bonus 1: allergyPlanRate
   it("allergyPlanRate >= 100 gives +5", () => {
-    const r = computeAllergyManagementFoodSafety(baseInput({
-      children_with_allergies: 0,
-      allergy_plan_records: [],
-      allergen_awareness_records: [],
-      epipen_check_records: [],
-      food_labelling_records: [makeFood()],
-      emergency_response_records: [],
-    }));
     // allergyPlanRate = 0 (no children_with_allergies, no plans => 0)
     // Only food labelling present: base 52, food 100%->+4 = 56
     // Actually: no children_with_allergies and no plans => allergyPlanRate = 0

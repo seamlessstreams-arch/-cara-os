@@ -987,9 +987,6 @@ describe("penalty guards — no penalty when guard condition not met", () => {
   });
 
   it("no adaptation penalty when totalAdaptations = 0", () => {
-    const r = run({
-      total_children: 3,
-    });
     // This is allEmpty → special case returns 15
     // We need at least one non-empty array
     const r2 = run({

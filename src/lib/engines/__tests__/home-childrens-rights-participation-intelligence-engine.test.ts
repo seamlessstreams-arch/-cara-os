@@ -868,7 +868,7 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
     });
 
     it("+1 when avg closure 8-14 days", () => {
-      const loops = baseInput().feedback_loops.map((f, i) => ({
+      const loops = baseInput().feedback_loops.map((f) => ({
         ...f,
         duration_days_to_close: 10,
       }));
@@ -1531,8 +1531,6 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
     });
 
     it("mod7 voice domains track all six data sources", () => {
-      // Full baseInput has all 6 domains
-      const result = computeHomeChildrensRightsParticipation(baseInput());
       // Remove each data source one at a time and verify mod7 still works
       const withoutRights = computeHomeChildrensRightsParticipation(baseInput({
         rights_entries: [],

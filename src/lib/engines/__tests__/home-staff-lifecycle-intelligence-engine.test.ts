@@ -1559,21 +1559,6 @@ describe("cross-modifier interaction", () => {
   });
 
   it("min practical score is 24 (52 - 28)", () => {
-    // 52 + (-5) + (-4) + (-4) + (-3) + (-3) + (-3) + (-3) + (-3) = 24
-    const r = computeHomeStaffLifecycle(baseInput({
-      induction_records: [
-        makeInduction({ overall_status: "overdue", tasks_total: 10, tasks_completed: 2 }),
-      ], // mod1: 0% < 60 → -5, mod7: 20% < 50 → -3
-      sickness_records: [
-        makeSickness({ date_started: "2026-05-01", total_days: 60, rtw_status: "overdue", trigger_points_count: 2, occupational_health_referral: false }),
-      ], // mod2: >6% → -4, mod3: 0% < 50 → -4, mod8: 0% < 40 → -3
-      exit_interview_records: [
-        makeExit({ status: "declined", overall_rating: null }),
-        makeExit({ id: "e2", status: "not_offered", overall_rating: null }),
-      ], // mod4: 0% < 50 → -3, mod5: no ratings → 0
-      recognition_records: [], // mod6: 0 events → -3
-      total_staff: 10,
-    }));
     // But mod5 is 0 not -3. So: 52 - 5 - 4 - 4 - 3 + 0 - 3 - 3 - 3 = 27
     // We need a rating < 2 for mod5 = -3
     const rWithBadRatings = computeHomeStaffLifecycle(baseInput({

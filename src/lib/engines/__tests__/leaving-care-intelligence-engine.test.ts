@@ -62,14 +62,6 @@ function makeChild(overrides: Partial<ChildRef> = {}): ChildRef {
   };
 }
 
-function makeStaff(overrides: Partial<StaffRef> = {}): StaffRef {
-  return {
-    id: "staff_001",
-    name: "Staff Member",
-    ...overrides,
-  };
-}
-
 // ── Test Data — Chamberlain House ─────────────────────────────────────────────────────
 
 const CHILDREN: ChildRef[] = [

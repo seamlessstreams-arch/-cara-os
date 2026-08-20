@@ -624,9 +624,6 @@ describe("scoring -- base and bonuses", () => {
   });
 
   it("46 -- sharpsLockedRate >= 100 adds +2", () => {
-    const r = run({
-      sharps_bin_records: [makeSharpsBin({ is_locked: true }), makeSharpsBin({ is_locked: true })],
-    });
     // 100% locked => +2
     const r2 = run({
       sharps_bin_records: [makeSharpsBin({ is_locked: true })],
@@ -786,10 +783,6 @@ describe("rating thresholds", () => {
   });
 
   it("59 -- score in [45, 64] yields adequate", () => {
-    const r = run({
-      hazardous_waste_records: [makeHazardousWaste()],
-      coshh_records: [makeCoshh()],
-    });
     // 52 + 5 + 4 + 3 + 3 + 2 = 69? Let me check -- only haz+coshh staff trained so staffTraining=100=>+3
     // 52 + 5(haz) + 4(coshh) + 3(staff) + 2(coshhLocked) = 66, still good
     // Need something in adequate range. Just hazardous waste alone:

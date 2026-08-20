@@ -440,10 +440,6 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
       const r = computeStaffInductionOnboarding(
         baseInput({ total_staff: 7, staff_inductions: staffInductions }),
       );
-      // completionRate = 86% => +2 (not +4)
-      // vs baseInput where completionRate = 100% => +4
-      // Difference should be -2 from full-bonus base
-      const rFull = computeStaffInductionOnboarding(baseInput({ total_staff: 7 }));
       // Can't directly compare since other metrics change. Just verify the rate.
       expect(r.completion_rate).toBe(86);
     });

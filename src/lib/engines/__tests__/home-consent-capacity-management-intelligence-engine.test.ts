@@ -653,26 +653,6 @@ describe("computeConsentCapacityManagement", () => {
     // --- Bonus 2: gillickAssessmentRate ---
     describe("Bonus 2: gillickAssessmentRate", () => {
       it("+4 when gillickAssessmentRate >= 80", () => {
-        const r = run({
-          ...noBonus(),
-          gillick_assessment_records: gillickForChildren(2, {
-            evidence_documented: false,
-            child_understanding_verified: false,
-          }),
-        });
-        // rate = pct(2,2)=100 → +4
-        // gillickEvidence=0% → no bonus8
-        // childUnderstanding: 0 gillick verified + 0 informed = 0/2 = 0% → no bonus6
-        // But childUnderstanding < 40 AND totalOpportunities > 0 → penalty3 = -4!
-        // So score = 52 + 4 - 4 = 52
-        // To avoid penalty3 we need childUnderstanding >= 40
-        // 2 gillick with understanding verified = 2/(2+0)=100%
-        const r2 = run({
-          ...noBonus(),
-          gillick_assessment_records: gillickForChildren(2, {
-            evidence_documented: false,
-          }),
-        });
         // gillickAssessmentRate=100 → +4
         // gillickEvidence=0 → no bonus8
         // childUnderstanding=pct(2,2)=100 → +3 bonus6
@@ -714,18 +694,6 @@ describe("computeConsentCapacityManagement", () => {
       });
 
       it("+0 when gillickAssessmentRate < 60", () => {
-        const r = run({
-          ...noBonus(),
-          total_children: 5,
-          consent_form_records: consentFormsForChildren(3, {
-            review_overdue: true,
-            accessible_format_used: false,
-          }),
-          gillick_assessment_records: [
-            makeGillickAssessment({ child_id: "child_1", evidence_documented: false, child_understanding_verified: true }),
-            makeGillickAssessment({ child_id: "child_2", evidence_documented: false, child_understanding_verified: true }),
-          ],
-        });
         // gillickRate = pct(2,5) = 40 → +0
         // childUnderstanding = pct(2,2)=100 → +3 bonus6!
         // Need to avoid that. Let understanding be 50%
@@ -783,22 +751,6 @@ describe("computeConsentCapacityManagement", () => {
     // --- Bonus 4: informedConsentRate ---
     describe("Bonus 4: informedConsentRate", () => {
       it("+3 when informedConsentRate >= 80", () => {
-        const r = run({
-          ...noBonus(),
-          informed_consent_records: informedConsentForChildren(2, {
-            child_understanding_confirmed: false,
-          }),
-        });
-        // informedConsentRate = pct(2,2)=100 → +3
-        // childUnderstanding = pct(0,2)=0 → penalty3 (-4)!
-        // Must avoid penalty. Set understanding for 1 to get 50%
-        const r2 = run({
-          ...noBonus(),
-          informed_consent_records: [
-            makeInformedConsent({ child_id: "child_1", child_understanding_confirmed: true }),
-            makeInformedConsent({ child_id: "child_2", child_understanding_confirmed: false }),
-          ],
-        });
         // informedConsentRate = pct(2,2)=100 → +3
         // childUnderstanding = pct(1,2)=50 → no bonus6 (<70), no penalty3 (>=40)
         // consentDocumented = pct(2,2)=100 → bonus9 +2!
@@ -978,30 +930,6 @@ describe("computeConsentCapacityManagement", () => {
     // --- Bonus 8: gillickEvidenceRate ---
     describe("Bonus 8: gillickEvidenceRate", () => {
       it("+3 when gillickEvidenceRate >= 90", () => {
-        const r = run({
-          ...noBonus(),
-          gillick_assessment_records: [
-            makeGillickAssessment({
-              child_id: "child_1",
-              evidence_documented: true,
-              child_understanding_verified: false,
-            }),
-          ],
-        });
-        // gillickRate = pct(1,2)=50 → no bonus2
-        // gillickEvidence = pct(1,1)=100 → +3
-        // childUnderstanding = pct(0,1)=0 → penalty3 (-4)
-        // Need to avoid penalty3. Set understanding true.
-        const r2 = run({
-          ...noBonus(),
-          gillick_assessment_records: [
-            makeGillickAssessment({
-              child_id: "child_1",
-              evidence_documented: true,
-              child_understanding_verified: true,
-            }),
-          ],
-        });
         // gillickEvidence = 100 → +3
         // childUnderstanding = pct(1,1)=100 → +3 bonus6
         // Need to isolate. Add informed consent with no understanding to dilute
@@ -1026,41 +954,6 @@ describe("computeConsentCapacityManagement", () => {
       });
 
       it("+1 when gillickEvidenceRate >= 70 and < 90", () => {
-        // Need 70-89%. 7 of 10 documented = 70%
-        const r = run({
-          ...noBonus(),
-          total_children: 20,
-          consent_form_records: consentFormsForChildren(10, {
-            review_overdue: true,
-            accessible_format_used: false,
-          }),
-          gillick_assessment_records: [
-            ...Array.from({ length: 7 }, (_, i) =>
-              makeGillickAssessment({
-                child_id: `child_${i + 1}`,
-                evidence_documented: true,
-                child_understanding_verified: true,
-              }),
-            ),
-            ...Array.from({ length: 3 }, (_, i) =>
-              makeGillickAssessment({
-                child_id: `child_${i + 8}`,
-                evidence_documented: false,
-                child_understanding_verified: false,
-              }),
-            ),
-          ],
-          informed_consent_records: [
-            // Add informed consents to dilute childUnderstanding below 70
-            ...Array.from({ length: 10 }, (_, i) =>
-              makeInformedConsent({
-                child_id: `child_${i + 11}`,
-                child_understanding_confirmed: false,
-                consent_documented: false,
-              }),
-            ),
-          ],
-        });
         // gillickRate = pct(10,20)=50 → no bonus2
         // gillickEvidence = pct(7,10) = 70 → +1
         // childUnderstanding = pct(7, 20) = 35 → penalty3 (-4)!
@@ -1110,34 +1003,6 @@ describe("computeConsentCapacityManagement", () => {
     // --- Bonus 9: consentDocumentedRate ---
     describe("Bonus 9: consentDocumentedRate", () => {
       it("+2 when consentDocumentedRate >= 95", () => {
-        const r = run({
-          ...noBonus(),
-          informed_consent_records: [
-            makeInformedConsent({
-              child_id: "child_1",
-              consent_documented: true,
-              child_understanding_confirmed: false,
-            }),
-          ],
-        });
-        // consentDocumented = pct(1,1)=100 → +2
-        // childUnderstanding = pct(0,1)=0 → penalty3 (-4)
-        // Need to get understanding >=40
-        const r2 = run({
-          ...noBonus(),
-          informed_consent_records: [
-            makeInformedConsent({
-              child_id: "child_1",
-              consent_documented: true,
-              child_understanding_confirmed: true,
-            }),
-            makeInformedConsent({
-              child_id: "child_2",
-              consent_documented: true,
-              child_understanding_confirmed: false,
-            }),
-          ],
-        });
         // consentDocumented = pct(2,2)=100 → +2
         // childUnderstanding = pct(1,2)=50 → no bonus6
         // informedConsentRate = pct(2,2)=100 → +3 bonus4!
@@ -1161,104 +1026,6 @@ describe("computeConsentCapacityManagement", () => {
       });
 
       it("+1 when consentDocumentedRate >= 80 and < 95", () => {
-        // Need 80-94%. 4 of 5 = 80%
-        const r = run({
-          ...noBonus(),
-          total_children: 10,
-          consent_form_records: consentFormsForChildren(5, {
-            review_overdue: true,
-            accessible_format_used: false,
-          }),
-          informed_consent_records: [
-            ...Array.from({ length: 4 }, (_, i) =>
-              makeInformedConsent({
-                child_id: `child_${i + 1}`,
-                consent_documented: true,
-                child_understanding_confirmed: true,
-              }),
-            ),
-            makeInformedConsent({
-              child_id: "child_5",
-              consent_documented: false,
-              child_understanding_confirmed: false,
-            }),
-          ],
-        });
-        // consentDocumented = pct(4,5) = 80 → +1
-        // informedConsentRate = pct(5,10) = 50 → no bonus4
-        // childUnderstanding = pct(4,5) = 80 → +1 bonus6!
-        // Need to avoid bonus6. Dilute understanding below 70.
-        const r2 = run({
-          ...noBonus(),
-          total_children: 10,
-          consent_form_records: consentFormsForChildren(5, {
-            review_overdue: true,
-            accessible_format_used: false,
-          }),
-          informed_consent_records: [
-            ...Array.from({ length: 4 }, (_, i) =>
-              makeInformedConsent({
-                child_id: `child_${i + 1}`,
-                consent_documented: true,
-                child_understanding_confirmed: false,
-              }),
-            ),
-            makeInformedConsent({
-              child_id: "child_5",
-              consent_documented: false,
-              child_understanding_confirmed: false,
-            }),
-          ],
-          gillick_assessment_records: [
-            makeGillickAssessment({
-              child_id: "child_6",
-              child_understanding_verified: true,
-              evidence_documented: false,
-            }),
-            makeGillickAssessment({
-              child_id: "child_7",
-              child_understanding_verified: true,
-              evidence_documented: false,
-            }),
-            makeGillickAssessment({
-              child_id: "child_8",
-              child_understanding_verified: true,
-              evidence_documented: false,
-            }),
-          ],
-        });
-        // consentDocumented = pct(4,5) = 80 → +1
-        // childUnderstanding = pct(3, 8) = 38 → penalty3 (-4)!
-        // Need 40%. pct(4,8)=50 → ok. Set 1 informed to have understanding
-        const r3 = run({
-          ...noBonus(),
-          total_children: 10,
-          consent_form_records: consentFormsForChildren(5, {
-            review_overdue: true,
-            accessible_format_used: false,
-          }),
-          informed_consent_records: [
-            ...Array.from({ length: 4 }, (_, i) =>
-              makeInformedConsent({
-                child_id: `child_${i + 1}`,
-                consent_documented: true,
-                child_understanding_confirmed: i < 2, // 2 true, 2 false
-              }),
-            ),
-            makeInformedConsent({
-              child_id: "child_5",
-              consent_documented: false,
-              child_understanding_confirmed: false,
-            }),
-          ],
-          gillick_assessment_records: [
-            makeGillickAssessment({
-              child_id: "child_6",
-              child_understanding_verified: false,
-              evidence_documented: false,
-            }),
-          ],
-        });
         // consentDocumented = pct(4,5) = 80 → +1
         // childUnderstanding = pct(2, 6) = 33 → penalty3 (-4)!
         // Tricky to isolate. Let me just verify the bonus value directly:
@@ -3079,17 +2846,6 @@ describe("computeConsentCapacityManagement", () => {
   // ── Strength threshold: gillick evidence 70-89 ───────────────────────
   describe("gillick evidence tier 2 strength", () => {
     it("strength for gillickEvidenceRate >= 70 and < 90", () => {
-      const r = run({
-        total_children: 3,
-        consent_form_records: consentFormsForChildren(3),
-        gillick_assessment_records: [
-          makeGillickAssessment({ child_id: "child_1", evidence_documented: true }),
-          makeGillickAssessment({ child_id: "child_2", evidence_documented: true }),
-          makeGillickAssessment({ child_id: "child_3", evidence_documented: false }),
-        ],
-        capacity_review_records: capacityForChildren(3),
-        informed_consent_records: informedConsentForChildren(3),
-      });
       // evidence = pct(2,3) = 67 → not >=70
       // Need >=70. 7 of 10 = 70%
       const r2 = run({
@@ -3139,17 +2895,6 @@ describe("computeConsentCapacityManagement", () => {
   // ── Strength threshold: child understanding 70-89 ─────────────────────
   describe("child understanding tier 2 strength", () => {
     it("strength for childUnderstandingRate >= 70 and < 90", () => {
-      const r = run({
-        total_children: 3,
-        consent_form_records: consentFormsForChildren(3),
-        gillick_assessment_records: [
-          makeGillickAssessment({ child_id: "child_1", child_understanding_verified: true }),
-          makeGillickAssessment({ child_id: "child_2", child_understanding_verified: true }),
-          makeGillickAssessment({ child_id: "child_3", child_understanding_verified: false }),
-        ],
-        capacity_review_records: capacityForChildren(3),
-        informed_consent_records: informedConsentForChildren(3, { child_understanding_confirmed: false }),
-      });
       // understanding = pct(2, 6) = 33 → too low
       // Need 70-89%. 5 of 6 = 83%
       const r2 = run({

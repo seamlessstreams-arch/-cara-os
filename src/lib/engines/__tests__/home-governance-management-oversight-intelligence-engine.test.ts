@@ -1225,8 +1225,6 @@ describe("computeGovernanceManagementOversight", () => {
     });
   });
 
-
-
   // ─── Score Boundary Values ──────────────────────────────────────
 
   describe("score boundary values", () => {
@@ -1389,43 +1387,6 @@ describe("computeGovernanceManagementOversight", () => {
     });
 
     it("score 44 is inadequate (just below adequate threshold)", () => {
-      // From the 45 scenario, need -1. Change Mod 4 from +0 (33%) to -4 (<30%)
-      // Actually that drops by 4. Let me try: Mod 3 from +0 to -5 (0/3 responded = 0%)
-      // That drops by 5. Too much. Let me recompute.
-      // Need sum of modifiers = -8.
-      // Mod 1: 0, Mod 2: -5, Mod 3: -5, Mod 4: +2, Mod 5: +2, Mod 6: -1 = -7 → 45. No.
-      // Mod 1: 0, Mod 2: -5, Mod 3: -5, Mod 4: +2, Mod 5: +2, Mod 6: -2... no -2 tier.
-      // Mod 1: -5, Mod 2: +3, Mod 3: 0, Mod 4: 0, Mod 5: 0, Mod 6: -4 = -6 → 46. Not enough.
-      // Mod 1: -5, Mod 2: +0, Mod 3: 0, Mod 4: 0, Mod 5: 0, Mod 6: -4 = -9 → 43. Too much.
-      // Mod 1: -5, Mod 2: +0, Mod 3: 0, Mod 4: +2, Mod 5: 0, Mod 6: -4 = -7 → 45. Exact.
-      // Mod 1: -5, Mod 2: +0, Mod 3: 0, Mod 4: +0, Mod 5: +2, Mod 6: -4 = -7 → 45.
-      // I need 44. Hard to hit exactly.
-      // Mod 1: -5, Mod 2: +3, Mod 3: 0, Mod 4: 0, Mod 5: -5, Mod 6: -1 = -8 → 44
-      const r = computeGovernanceManagementOversight(baseInput({
-        walkrounds: [],
-        governance_meetings: [
-          makeGovernanceMeeting("gm1"),
-          makeGovernanceMeeting("gm2"),
-          makeGovernanceMeeting("gm3"),
-          makeGovernanceMeeting("gm4", { regulatory_topics_discussed: false }),
-          makeGovernanceMeeting("gm5", { children_discussed_count: 0 }),
-        ],
-        board_reports: [
-          makeBoardReport("br1", { board_response_received: true }),
-          makeBoardReport("br2", { board_response_received: false }),
-          makeBoardReport("br3", { board_response_received: false }),
-        ],
-        operational_meetings: [
-          makeOpsMeeting("om1"),
-          makeOpsMeeting("om2", { key_decisions_count: 0, actions_agreed_count: 0 }),
-          makeOpsMeeting("om3", { key_decisions_count: 0, actions_agreed_count: 0 }),
-        ],
-        commissioning_feedback: [
-          makeCommFeedback("cf1", { overall_rating: 2 }),
-          makeCommFeedback("cf2", { overall_rating: 1 }),
-          makeCommFeedback("cf3", { overall_rating: 3 }),
-        ],
-      }));
       // Mod 1: 0 walkrounds → -5
       // Mod 2: 3/5 engaged → 60% → +3
       // Mod 3: 1/3 responded → 33% → +0

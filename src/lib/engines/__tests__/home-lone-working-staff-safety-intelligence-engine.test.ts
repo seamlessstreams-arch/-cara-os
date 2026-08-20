@@ -471,8 +471,6 @@ describe("mod2: alarm coverage", () => {
   });
 
   it("awards 0 when no records exist", () => {
-    // mod2 = 0 for 0 records
-    const withRecords = computeLoneWorkingStaffSafety(baseInput());
     const withoutRecords = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
     // When no records: mod2=0 instead of +6, but also mod1 changes, etc.
     // Just verify the engine doesn't crash

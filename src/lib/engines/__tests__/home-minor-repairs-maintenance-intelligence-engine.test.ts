@@ -1917,7 +1917,6 @@ describe("penalty: requestResponseRate < 40 -> -5", () => {
   });
 
   it("no penalty when no maintenance records (guarded)", () => {
-    const r = computeMinorRepairsMaintenance(baseInput());
     // No records -> penalty guard prevents -5
     // But also allEmpty check... no, total_children=3 so it's the inadequate floor
     // Let me use at least one other array

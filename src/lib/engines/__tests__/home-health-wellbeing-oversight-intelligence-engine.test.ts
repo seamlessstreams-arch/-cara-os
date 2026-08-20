@@ -893,24 +893,6 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
     });
 
     it("score 65 yields good", () => {
-      // 52 + 4 (assessment 100%) + 3 (dental 100%) + 3 (monitoring 100%) + 3 (optician 100%) = 65
-      // Need passport currency, action completion, immunisation, consent, timeliness all at 0 bonus
-      const r = computeHealthWellbeingOversight(
-        baseInput({
-          health_assessments: [
-            makeHealthAssessment("ha1", { child_id: "c1", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha2", { child_id: "c2", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha3", { child_id: "c3", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha4", { child_id: "c4", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-          ],
-          health_passports: [
-            makeHealthPassport("hp1", { child_id: "c1", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp2", { child_id: "c2", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp3", { child_id: "c3", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp4", { child_id: "c4", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-          ],
-        }),
-      );
       // assessment compliance = 100% → +4
       // dental = 100% → +3
       // passport currency = 0% → no bonus, penalty: 0% < 50 && totalPassports>0 → -3
@@ -945,49 +927,6 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
     });
 
     it("score 64 yields adequate", () => {
-      // From 65 scenario above, drop monitoring from +3 to +1 → 65-2 = 63
-      // Instead: drop optician from +3 to +1 → 65-2 = 63
-      // Need exactly 64: use 65 setup and drop immunisation from 0 to... can't drop it further.
-      // Actually: 52 + 4 + 3 + 3 + 2 (optician 80%) = 64
-      const r = computeHealthWellbeingOversight(
-        baseInput({
-          health_assessments: [
-            makeHealthAssessment("ha1", { child_id: "c1", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha2", { child_id: "c2", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha3", { child_id: "c3", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-            makeHealthAssessment("ha4", { child_id: "c4", actions_identified: 0, actions_completed: 0, next_due_date: "" }),
-          ],
-          health_passports: [
-            makeHealthPassport("hp1", { child_id: "c1", last_updated: "2025-05-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp2", { child_id: "c2", last_updated: "2025-05-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp3", { child_id: "c3", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp4", { child_id: "c4", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: true }),
-            makeHealthPassport("hp5", { child_id: "c5", last_updated: "2024-01-01", immunisations_current: false, consent_forms_signed: false, optician_registered: false }),
-          ],
-        }),
-      );
-      // optician = 4/5 = 80% → +1. passport currency = 2/5 = 40% → penalty -3
-      // 52 + 4 + 3 + 3 + 1 - 3 = 60. Not 64.
-      // Try different approach: remove passports entirely (no passport penalty without passports).
-      // But then optician bonus requires totalPassports > 0.
-      // Let me compute carefully: use no passports so no passport-related bonuses or penalties.
-      const r2 = computeHealthWellbeingOversight(
-        baseInput({
-          health_assessments: [
-            makeHealthAssessment("ha1", { child_id: "c1", actions_identified: 2, actions_completed: 2, next_due_date: "2026-05-01" }),
-            makeHealthAssessment("ha2", { child_id: "c2", actions_identified: 2, actions_completed: 2, next_due_date: "2026-05-01" }),
-            makeHealthAssessment("ha3", { child_id: "c3", actions_identified: 2, actions_completed: 2, next_due_date: "2026-05-01" }),
-            makeHealthAssessment("ha4", { child_id: "c4", actions_identified: 2, actions_completed: 1, next_due_date: "2025-04-01" }),
-          ],
-          health_passports: [],
-          health_monitoring: [
-            makeHealthMonitoring("hm1"),
-            makeHealthMonitoring("hm2"),
-            makeHealthMonitoring("hm3"),
-            makeHealthMonitoring("hm4", { readings_recorded: false }),
-          ],
-        }),
-      );
       // assessment compliance = 4/4 = 100% → +4
       // dental = 4/4 = 100% → +3
       // passport currency = pct(0,0) = 0% → no bonus, no penalty (totalPassports=0)
@@ -2147,16 +2086,6 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
     });
 
     it("includes action completion 50-69% concern", () => {
-      const r = computeHealthWellbeingOversight(
-        baseInput({
-          health_assessments: [
-            makeHealthAssessment("ha1", { child_id: "c1", actions_identified: 5, actions_completed: 3 }),
-            makeHealthAssessment("ha2", { child_id: "c2", actions_identified: 5, actions_completed: 3 }),
-            makeHealthAssessment("ha3", { child_id: "c3" }),
-            makeHealthAssessment("ha4", { child_id: "c4" }),
-          ],
-        }),
-      );
       // 10/14 = 71%... that's >=70. Let me adjust.
       // Use: 3+2+2+2 completed, 5+5+2+2 identified = 9/14 = 64%
       const r2 = computeHealthWellbeingOversight(

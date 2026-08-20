@@ -2495,18 +2495,6 @@ describe("edge cases", () => {
   });
 
   it("boundary: exactly 65 score is good", () => {
-    // Need score exactly 65. Start from 52, need +13 of bonuses.
-    // Let's get: visitor +5, advocacy +5, satisfaction +3 = 13 => 52+13=65
-    const r = run({
-      total_children: 4,
-      independent_visitor_records: nOf(10, makeIV),
-      advocacy_service_records: nOf(10, () =>
-        makeAdvocacy({ advocacy_independent_of_home: false }),
-      ),
-      representation_records: [], // no rep => no bonus, no penalty
-      visit_compliance_records: [], // no visit => no bonus, no penalty
-      child_satisfaction_records: nOf(10, makeSat),
-    });
     // visitor 100% => +5, advocacy 100% => +5, no rep/visit bonuses or penalties, sat +3, indep 0% < 70 => no bonus
     // childVoice: 10/(10+0+0) = 100% => +4
     // score = 52 + 5 + 5 + 4 + 3 = 69... too high

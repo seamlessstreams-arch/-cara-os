@@ -5,7 +5,6 @@ import {
   type StatutoryVisitInput,
   type SocialWorkerContactInput,
   type UnannouncedVisitInput,
-  type Reg22RecordInput,
 } from "../home-statutory-visit-compliance-intelligence-engine";
 
 /* ── helpers ────────────────────────────────────────────────────────────────── */
@@ -20,10 +19,6 @@ function makeSWContact(id: string, childId: string, o: Partial<SocialWorkerConta
 
 function makeUV(id: string, o: Partial<UnannouncedVisitInput> = {}): UnannouncedVisitInput {
   return { id, visit_date: "2026-05-01", completed: true, findings_documented: true, actions_raised: 1, actions_resolved: 1, ...o };
-}
-
-function makeReg22(id: string, childId: string, o: Partial<Reg22RecordInput> = {}): Reg22RecordInput {
-  return { id, child_id: childId, date: "2026-05-01", notifications_made: true, placement_plan_updated: true, ...o };
 }
 
 function baseInput(overrides: Partial<StatutoryVisitComplianceInput> = {}): StatutoryVisitComplianceInput {
