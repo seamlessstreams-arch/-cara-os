@@ -340,9 +340,6 @@ export function computePlacementStabilityPermanence(
   const impactAssessmentCompleted = placement_records.filter((r) => r.impact_assessment_completed).length;
   const impactAssessmentRate = pct(impactAssessmentCompleted, totalPlacements);
 
-  const keyWorkerAssigned = placement_records.filter((r) => r.key_worker_assigned).length;
-  const keyWorkerRate = pct(keyWorkerAssigned, totalPlacements);
-
   const keyWorkerWithin48h = placement_records.filter((r) => r.key_worker_assigned_within_48h).length;
   const keyWorkerTimelyRate = pct(keyWorkerWithin48h, totalPlacements);
 
@@ -358,19 +355,6 @@ export function computePlacementStabilityPermanence(
       ? Math.round((placementSatisfactionSum / totalPlacements) * 100) / 100
       : null;
 
-  // Stability ratings on placements
-  const stabilityRatingSum = placement_records.reduce(
-    (sum, r) => sum + r.stability_rating, 0,
-  );
-  const stabilityRatingAvg: number | null =
-    totalPlacements > 0
-      ? Math.round((stabilityRatingSum / totalPlacements) * 100) / 100
-      : null;
-
-  // Peer impact assessed
-  const peerImpactAssessed = placement_records.filter((r) => r.peer_impact_assessed).length;
-  const peerImpactRate = pct(peerImpactAssessed, totalPlacements);
-
   // Average placement duration (days) for ongoing placements
   const ongoingDurations = ongoingPlacements.map((r) => {
     const startMs = new Date(r.start_date + "T00:00:00").getTime();
@@ -382,13 +366,6 @@ export function computePlacementStabilityPermanence(
     ongoingDurations.length > 0
       ? Math.round(ongoingDurations.reduce((a, b) => a + b, 0) / ongoingDurations.length)
       : null;
-
-  // Average matching score on placements
-  const matchingScoreSum = placement_records.reduce(
-    (sum, r) => sum + r.matching_score, 0,
-  );
-  const avgPlacementMatchScore: number | null =
-    totalPlacements > 0 ? Math.round(matchingScoreSum / totalPlacements) : null;
 
   // ==========================================
   // METRIC 2 -- Matching Quality Rate
@@ -415,44 +392,14 @@ export function computePlacementStabilityPermanence(
   ).length;
   const existingResidentsRate = pct(existingResidentsConsidered, totalMatchingAssessments);
 
-  const culturalMatchConsidered = matching_assessment_records.filter(
-    (r) => r.cultural_match_considered,
-  ).length;
-  const culturalMatchRate = pct(culturalMatchConsidered, totalMatchingAssessments);
-
-  const educationContinuityAssessed = matching_assessment_records.filter(
-    (r) => r.education_continuity_assessed,
-  ).length;
-  const educationContinuityRate = pct(educationContinuityAssessed, totalMatchingAssessments);
-
   const reg36Compliant = matching_assessment_records.filter(
     (r) => r.reg_36_compliant,
   ).length;
   const reg36ComplianceRate = pct(reg36Compliant, totalMatchingAssessments);
 
-  const matchApproved = matching_assessment_records.filter((r) => r.match_approved).length;
-  const matchApprovalRate = pct(matchApproved, totalMatchingAssessments);
-
   const matchChildViewsSought = matching_assessment_records.filter(
     (r) => r.child_views_sought,
   ).length;
-  const matchChildViewsRate = pct(matchChildViewsSought, totalMatchingAssessments);
-
-  const matchChildViewsPositive = matching_assessment_records.filter(
-    (r) => r.child_views_positive,
-  ).length;
-  const matchPositiveViewsRate = pct(
-    matchChildViewsPositive,
-    matchChildViewsSought > 0 ? matchChildViewsSought : totalMatchingAssessments,
-  );
-
-  const overallMatchScoreSum = matching_assessment_records.reduce(
-    (sum, r) => sum + r.overall_match_score, 0,
-  );
-  const avgMatchScore: number | null =
-    totalMatchingAssessments > 0
-      ? Math.round(overallMatchScoreSum / totalMatchingAssessments)
-      : null;
 
   // Composite matching quality rate
   const matchingQualityRate: number | null =
@@ -473,20 +420,10 @@ export function computePlacementStabilityPermanence(
 
   const totalStabilityMeetings = stability_meeting_records.length;
 
-  const childAttendedMeetings = stability_meeting_records.filter(
-    (r) => r.child_attended,
-  ).length;
-  const childAttendanceMeetingRate = pct(childAttendedMeetings, totalStabilityMeetings);
-
   const childViewsRepresented = stability_meeting_records.filter(
     (r) => r.child_views_represented,
   ).length;
   const childViewsMeetingRate = pct(childViewsRepresented, totalStabilityMeetings);
-
-  const socialWorkerAttendedMeetings = stability_meeting_records.filter(
-    (r) => r.social_worker_attended,
-  ).length;
-  const socialWorkerMeetingRate = pct(socialWorkerAttendedMeetings, totalStabilityMeetings);
 
   const totalActionsAgreed = stability_meeting_records.reduce(
     (sum, r) => sum + r.actions_agreed, 0,
@@ -504,16 +441,8 @@ export function computePlacementStabilityPermanence(
   ).length;
   const followUpCompletionRate = pct(followUpCompleted, followUpRequired.length);
 
-  const breakdownPreventedMeetings = stability_meeting_records.filter(
-    (r) => r.outcome === "breakdown_prevented",
-  ).length;
-
   const emergencyMeetings = stability_meeting_records.filter(
     (r) => r.meeting_type === "emergency" || r.meeting_type === "disruption_risk",
-  ).length;
-
-  const highRiskMeetings = stability_meeting_records.filter(
-    (r) => r.stability_risk_level === "high" || r.stability_risk_level === "critical",
   ).length;
 
   // Unique children with stability meetings vs total children
@@ -543,11 +472,6 @@ export function computePlacementStabilityPermanence(
   ).length;
   const disruptionPreventionRate = pct(preventedDisruptions, totalDisruptionRecords);
 
-  const placementPreserved = disruption_prevention_records.filter(
-    (r) => r.placement_preserved,
-  ).length;
-  const placementPreservedRate = pct(placementPreserved, totalDisruptionRecords);
-
   const timelyInterventions = disruption_prevention_records.filter(
     (r) => r.intervention_timely,
   ).length;
@@ -556,17 +480,11 @@ export function computePlacementStabilityPermanence(
   const childConsultedDisruption = disruption_prevention_records.filter(
     (r) => r.child_consulted,
   ).length;
-  const childConsultedDisruptionRate = pct(childConsultedDisruption, totalDisruptionRecords);
 
   const multiAgencyInvolved = disruption_prevention_records.filter(
     (r) => r.multi_agency_involved,
   ).length;
   const multiAgencyRate = pct(multiAgencyInvolved, totalDisruptionRecords);
-
-  const reviewCompletedDisruption = disruption_prevention_records.filter(
-    (r) => r.review_completed,
-  ).length;
-  const reviewCompletedRate = pct(reviewCompletedDisruption, totalDisruptionRecords);
 
   const lessonsDocumented = disruption_prevention_records.filter(
     (r) => r.lessons_learned_documented,
@@ -596,17 +514,14 @@ export function computePlacementStabilityPermanence(
   const childConsultedOnAdmission = placement_records.filter(
     (r) => r.child_consulted_on_admission,
   ).length;
-  const childConsultedAdmissionRate = pct(childConsultedOnAdmission, totalPlacements);
 
   const childViewsRecorded = placement_records.filter(
     (r) => r.child_views_recorded,
   ).length;
-  const childViewsRecordedRate = pct(childViewsRecorded, totalPlacements);
 
   const reviewChildViewsCaptured = placement_review_records.filter(
     (r) => r.child_views_captured,
   ).length;
-  const reviewChildViewsRate = pct(reviewChildViewsCaptured, placement_review_records.length);
 
   // Composite child consultation rate
   // Two signals per placement (consulted on admission + views recorded), one per other record type
@@ -627,45 +542,10 @@ export function computePlacementStabilityPermanence(
 
   const totalReviews = placement_review_records.length;
 
-  const reviewChildAttended = placement_review_records.filter(
-    (r) => r.child_attended,
-  ).length;
-  const reviewChildAttendanceRate = pct(reviewChildAttended, totalReviews);
-
-  const reviewSocialWorkerAttended = placement_review_records.filter(
-    (r) => r.social_worker_attended,
-  ).length;
-  const reviewSocialWorkerRate = pct(reviewSocialWorkerAttended, totalReviews);
-
-  const reviewParentInvolved = placement_review_records.filter(
-    (r) => r.parent_carer_involved,
-  ).length;
-  const reviewParentRate = pct(reviewParentInvolved, totalReviews);
-
-  const placementPlanUpdated = placement_review_records.filter(
-    (r) => r.placement_plan_updated,
-  ).length;
-  const placementPlanUpdateRate = pct(placementPlanUpdated, totalReviews);
-
-  const carePlanAligned = placement_review_records.filter(
-    (r) => r.care_plan_aligned,
-  ).length;
-  const carePlanAlignmentRate = pct(carePlanAligned, totalReviews);
-
   const permanencePlanDiscussed = placement_review_records.filter(
     (r) => r.permanence_plan_discussed,
   ).length;
   const permanencePlanRate = pct(permanencePlanDiscussed, totalReviews);
-
-  const permanencePlanInPlace = placement_review_records.filter(
-    (r) => r.permanence_plan_in_place,
-  ).length;
-  const permanenceInPlaceRate = pct(permanencePlanInPlace, totalReviews);
-
-  const outcomesReviewed = placement_review_records.filter(
-    (r) => r.outcomes_reviewed,
-  ).length;
-  const outcomesReviewedRate = pct(outcomesReviewed, totalReviews);
 
   const totalPreviousActions = placement_review_records.reduce(
     (sum, r) => sum + r.actions_from_previous_review, 0,

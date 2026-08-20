@@ -339,18 +339,6 @@ export function computeBoilerHeatingSystemServicing(
   ).length;
   const flueInspectionRate = pct(fluesPassed, totalBoilerServices);
 
-  // Pressure test pass rate
-  const pressureTestsPassed = boiler_service_records.filter(
-    (s) => s.pressure_test_passed,
-  ).length;
-  const pressureTestRate = pct(pressureTestsPassed, totalBoilerServices);
-
-  // Gas safety certificate issuance
-  const gasSafetyCertificatesIssued = boiler_service_records.filter(
-    (s) => s.gas_safety_certificate_issued,
-  ).length;
-  const gasSafetyCertificateRate = pct(gasSafetyCertificatesIssued, totalBoilerServices);
-
   // Fault resolution
   const totalFaultsFound = boiler_service_records.reduce(
     (sum, s) => sum + s.faults_found,
@@ -432,17 +420,6 @@ export function computeBoilerHeatingSystemServicing(
   ).length;
   const leakFreeRate = pct(totalHeatingChecks - checksWithLeaks, totalHeatingChecks);
 
-  // Issue resolution in heating checks
-  const heatingIssuesFound = heating_check_records.reduce(
-    (sum, c) => sum + c.issues_found,
-    0,
-  );
-  const heatingIssuesResolved = heating_check_records.reduce(
-    (sum, c) => sum + c.issues_resolved,
-    0,
-  );
-  const heatingIssueResolutionRate = pct(heatingIssuesResolved, heatingIssuesFound);
-
   // Overdue heating checks
   const overdueHeatingChecks = heating_check_records.filter(
     (c) => c.check_overdue,
@@ -453,12 +430,6 @@ export function computeBoilerHeatingSystemServicing(
     (c) => c.pipe_insulation_adequate,
   ).length;
   const pipeInsulationRate = pct(pipeInsulationAdequate, totalHeatingChecks);
-
-  // Heating check documentation
-  const heatingChecksWithNotes = heating_check_records.filter(
-    (c) => c.notes_recorded,
-  ).length;
-  const heatingDocumentationRate = pct(heatingChecksWithNotes, totalHeatingChecks);
 
   // Pump functional
   const pumpsFunctional = heating_check_records.filter(
@@ -471,12 +442,6 @@ export function computeBoilerHeatingSystemServicing(
     (c) => c.water_pressure_normal,
   ).length;
   const waterPressureRate = pct(waterPressureNormal, totalHeatingChecks);
-
-  // Timer/programmer working
-  const timerProgrammerWorking = heating_check_records.filter(
-    (c) => c.timer_programmer_working,
-  ).length;
-  const timerProgrammerRate = pct(timerProgrammerWorking, totalHeatingChecks);
 
   // ─── Radiator maintenance rate ────────────────────────────────────────
   // Measures: proportion of radiators not overdue for bleeding/inspection
@@ -498,12 +463,6 @@ export function computeBoilerHeatingSystemServicing(
     (r) => r.heating_evenly,
   ).length;
   const evenHeatingRate = pct(radiatorsHeatingEvenly, totalRadiators);
-
-  // TRV valves working
-  const trvsWorking = radiator_records.filter(
-    (r) => r.thermostat_valve_working,
-  ).length;
-  const trvWorkingRate = pct(trvsWorking, totalRadiators);
 
   // Child safety covers in child areas
   const radiatorsInChildAreas = radiator_records.filter(
@@ -529,15 +488,6 @@ export function computeBoilerHeatingSystemServicing(
   const overdueRadiatorBleeds = radiator_records.filter(
     (r) => r.bleed_overdue,
   ).length;
-  const overdueRadiatorInspections = radiator_records.filter(
-    (r) => r.inspection_overdue,
-  ).length;
-
-  // Radiator documentation
-  const radiatorsWithNotes = radiator_records.filter(
-    (r) => r.notes_recorded,
-  ).length;
-  const radiatorDocumentationRate = pct(radiatorsWithNotes, totalRadiators);
 
   // ─── Thermostat calibration rate ──────────────────────────────────────
   // Measures: proportion of thermostats not overdue for calibration
@@ -601,30 +551,6 @@ export function computeBoilerHeatingSystemServicing(
     (t) => t.calibration_overdue,
   ).length;
 
-  // Overdue thermostat checks
-  const overdueChecks = thermostat_records.filter(
-    (t) => t.check_overdue,
-  ).length;
-
-  // Temperature set point analysis
-  const setTemperatures = thermostat_records
-    .filter((t) => t.set_temperature_celsius > 0)
-    .map((t) => t.set_temperature_celsius);
-  const avgSetTemperature: number | null =
-    setTemperatures.length > 0
-      ? Math.round(
-          (setTemperatures.reduce((sum, v) => sum + v, 0) /
-            setTemperatures.length) *
-            10,
-        ) / 10
-      : null;
-
-  // Thermostat documentation
-  const thermostatsWithNotes = thermostat_records.filter(
-    (t) => t.notes_recorded,
-  ).length;
-  const thermostatDocumentationRate = pct(thermostatsWithNotes, totalThermostats);
-
   // ─── Energy efficiency rate ───────────────────────────────────────────
   // Measures: composite of EPC, insulation, efficiency measures, controls
   const epcRecords = energy_records.filter((e) => e.record_type === "epc");
@@ -663,24 +589,6 @@ export function computeBoilerHeatingSystemServicing(
   ).length;
   const controlsOptimisedRate = pct(controlsOptimised, totalEnergyRecords);
 
-  // Efficiency measures implemented
-  const improvementRecords = energy_records.filter(
-    (e) => e.record_type === "improvement",
-  );
-  const measuresImplemented = improvementRecords.filter(
-    (e) => e.efficiency_measure_implemented,
-  ).length;
-  const measureImplementationRate = pct(measuresImplemented, improvementRecords.length);
-
-  // Window condition
-  const windowRecords = energy_records.filter(
-    (e) => e.window_condition !== null,
-  );
-  const goodWindows = windowRecords.filter(
-    (e) => e.window_condition === "good",
-  ).length;
-  const windowConditionRate = pct(goodWindows, windowRecords.length);
-
   // Composite energy efficiency rate
   const energyComponentScores: number[] = [];
   if (latestEpc) energyComponentScores.push(epcScore);
@@ -694,12 +602,6 @@ export function computeBoilerHeatingSystemServicing(
             energyComponentScores.length,
         )
       : null;
-
-  // Energy documentation
-  const energyWithNotes = energy_records.filter(
-    (e) => e.notes_recorded,
-  ).length;
-  const energyDocumentationRate = pct(energyWithNotes, totalEnergyRecords);
 
   // ─── Child comfort rate ───────────────────────────────────────────────
   // Composite: temperature appropriate, all zones heating, even heating,

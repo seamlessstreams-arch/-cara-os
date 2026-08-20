@@ -22,8 +22,6 @@ function baseInput(over: Partial<EmotionalSafetyInput> = {}): EmotionalSafetyInp
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const b = (o: any) => o;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const inc = (o: any) => o;
 
 describe("buildEmotionalSafetyAnalysis", () => {
   it("aggregates triggers from behaviour log + PACE and ranks them", () => {

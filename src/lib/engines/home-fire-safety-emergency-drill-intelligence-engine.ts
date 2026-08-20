@@ -332,10 +332,6 @@ export function computeFireSafetyEmergencyDrill(
   ).length;
   const riskAssessmentCurrencyRate = pct(currentAssessments, totalRiskAssessments);
 
-  const overdueAssessments = fire_risk_assessment_records.filter(
-    (r) => daysBetween(r.next_review_date, today) > 0,
-  ).length;
-
   const highCriticalAssessments = fire_risk_assessment_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
   ).length;
@@ -350,11 +346,6 @@ export function computeFireSafetyEmergencyDrill(
     0,
   );
   const raActionCompletionRate = pct(completedRaActions, totalRaActions);
-
-  const documentedAssessments = fire_risk_assessment_records.filter(
-    (r) => r.documented,
-  ).length;
-  const documentedAssessmentRate = pct(documentedAssessments, totalRiskAssessments);
 
   const sharedWithStaffAssessments = fire_risk_assessment_records.filter(
     (r) => r.shared_with_staff,
@@ -391,19 +382,10 @@ export function computeFireSafetyEmergencyDrill(
   ).length;
   const overdueEquipmentRate = pct(overdueEquipmentChecks, totalEquipmentChecks);
 
-  const professionalServiceChecks = fire_equipment_check_records.filter(
-    (e) => e.professional_service,
-  ).length;
-  const professionalServiceRate = pct(professionalServiceChecks, totalEquipmentChecks);
-
   const certificateHeldChecks = fire_equipment_check_records.filter(
     (e) => e.certificate_held,
   ).length;
   const certificateHeldRate = pct(certificateHeldChecks, totalEquipmentChecks);
-
-  // Equipment type coverage
-  const equipmentTypes = new Set(fire_equipment_check_records.map((e) => e.equipment_type));
-  const equipmentTypeCoverage = equipmentTypes.size;
 
   // --- Staff fire training metrics ---
   const totalTrainingRecords = fire_training_records.length;
@@ -417,31 +399,15 @@ export function computeFireSafetyEmergencyDrill(
   ).length;
   const trainingPassRate = pct(passedTraining, totalTrainingRecords);
 
-  const certificateIssuedTraining = fire_training_records.filter(
-    (t) => t.completed && t.certificate_issued,
-  ).length;
-  const certificateIssuedRate = pct(certificateIssuedTraining, totalTrainingRecords);
-
   const expiredTraining = fire_training_records.filter(
     (t) => t.expiry_date !== null && daysBetween(t.expiry_date!, today) > 0,
   ).length;
   const expiredTrainingRate = pct(expiredTraining, totalTrainingRecords);
 
-  // Unique staff trained
-  const uniqueStaffTrained = new Set(
-    fire_training_records.filter((t) => t.completed).map((t) => t.staff_id),
-  ).size;
-
   // Fire marshal training
   const fireMarshalTraining = fire_training_records.filter(
     (t) => t.training_type === "fire_marshal" && t.completed,
   ).length;
-
-  // Training types coverage
-  const trainingTypes = new Set(
-    fire_training_records.filter((t) => t.completed).map((t) => t.training_type),
-  );
-  const trainingTypeCoverage = trainingTypes.size;
 
   // --- Fire safety documentation metrics ---
   const totalDocumentRecords = fire_safety_document_records.length;
@@ -450,20 +416,10 @@ export function computeFireSafetyEmergencyDrill(
   ).length;
   const documentCurrencyRate = pct(currentDocuments, totalDocumentRecords);
 
-  const overdueDocuments = fire_safety_document_records.filter(
-    (d) => daysBetween(d.next_review_due, today) > 0,
-  ).length;
-  const overdueDocumentRate = pct(overdueDocuments, totalDocumentRecords);
-
   const staffAccessibleDocs = fire_safety_document_records.filter(
     (d) => d.accessible_to_staff,
   ).length;
   const staffAccessRate = pct(staffAccessibleDocs, totalDocumentRecords);
-
-  const childAccessibleDocs = fire_safety_document_records.filter(
-    (d) => d.accessible_to_children,
-  ).length;
-  const childAccessRate = pct(childAccessibleDocs, totalDocumentRecords);
 
   const approvedDocs = fire_safety_document_records.filter(
     (d) => d.approved_by !== "",
@@ -478,7 +434,6 @@ export function computeFireSafetyEmergencyDrill(
 
   // Document type coverage
   const docTypes = new Set(fire_safety_document_records.map((d) => d.document_type));
-  const docTypeCoverage = docTypes.size;
 
   // Key documents present
   const hasFirePolicy = docTypes.has("fire_policy");

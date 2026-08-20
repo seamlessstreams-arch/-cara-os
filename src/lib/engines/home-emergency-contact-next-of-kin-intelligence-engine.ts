@@ -276,30 +276,15 @@ export function computeEmergencyContactNextOfKin(
   const totalContactRecords = contact_information_records.length;
 
   const currentContacts = contact_information_records.filter((c) => c.is_current).length;
-  const contactCurrentRate = pct(currentContacts, totalContactRecords);
 
   const consentedContacts = contact_information_records.filter((c) => c.consent_to_contact).length;
   const consentRate = pct(consentedContacts, totalContactRecords);
-
-  const contactsWithAddress = contact_information_records.filter((c) => c.address_on_file).length;
-  const addressOnFileRate = pct(contactsWithAddress, totalContactRecords);
-
-  const contactsWithSecondaryPhone = contact_information_records.filter(
-    (c) => c.phone_secondary !== null && c.phone_secondary !== "",
-  ).length;
-  const secondaryPhoneRate = pct(contactsWithSecondaryPhone, totalContactRecords);
-
-  const contactsWithEmail = contact_information_records.filter(
-    (c) => c.email !== null && c.email !== "",
-  ).length;
-  const emailOnFileRate = pct(contactsWithEmail, totalContactRecords);
 
   // Contacts verified within the last 90 days
   const recentlyVerifiedContacts = contact_information_records.filter((c) => {
     if (!c.last_verified_date) return false;
     return daysBetween(c.last_verified_date, today) <= 90;
   }).length;
-  const recentVerificationRate = pct(recentlyVerifiedContacts, totalContactRecords);
 
   // Contacts ever verified
   const everVerifiedContacts = contact_information_records.filter(
@@ -333,18 +318,8 @@ export function computeEmergencyContactNextOfKin(
   const reachableRate = pct(reachableTests, totalAccessibilityTests);
 
   const answeredQuickly = accessibility_records.filter((a) => a.answered_within_3_rings).length;
-  const quickAnswerRate = pct(answeredQuickly, totalAccessibilityTests);
 
   const voicemailAvailable = accessibility_records.filter((a) => a.voicemail_available).length;
-  const voicemailRate = pct(voicemailAvailable, totalAccessibilityTests);
-
-  const altMethodTested = accessibility_records.filter((a) => a.alternative_method_tested).length;
-  const altMethodTestedRate = pct(altMethodTested, totalAccessibilityTests);
-
-  const altMethodSuccessful = accessibility_records.filter(
-    (a) => a.alternative_method_tested && a.alternative_method_successful,
-  ).length;
-  const altMethodSuccessRate = pct(altMethodSuccessful, altMethodTested);
 
   // Rapid response — responded within 15 minutes
   const rapidResponse = accessibility_records.filter(
@@ -362,23 +337,15 @@ export function computeEmergencyContactNextOfKin(
   const totalUpdateRecords = update_frequency_records.length;
 
   const verifiedAccurateUpdates = update_frequency_records.filter((u) => u.verified_accurate).length;
-  const updateAccuracyRate = pct(verifiedAccurateUpdates, totalUpdateRecords);
 
   const overdueReviews = update_frequency_records.filter((u) => u.review_overdue).length;
   const overdueRate = pct(overdueReviews, totalUpdateRecords);
-  const onTimeReviewRate = totalUpdateRecords > 0 ? 100 - overdueRate : 0;
 
   // Scheduled reviews vs reactive
   const scheduledUpdates = update_frequency_records.filter(
     (u) => u.update_type === "scheduled_review" || u.update_type === "annual_review",
   ).length;
   const scheduledUpdateRate = pct(scheduledUpdates, totalUpdateRecords);
-
-  // Updates with fields actually changed
-  const updatesWithFieldChanges = update_frequency_records.filter(
-    (u) => u.fields_updated.length > 0,
-  ).length;
-  const fieldChangeRate = pct(updatesWithFieldChanges, totalUpdateRecords);
 
   // Update frequency composite: accuracy + on-time + scheduled
   const updateNumerator = verifiedAccurateUpdates + (totalUpdateRecords - overdueReviews) + scheduledUpdates;
@@ -392,12 +359,6 @@ export function computeEmergencyContactNextOfKin(
   const withMinTwoContacts = multi_contact_records.filter(
     (m) => m.total_contacts_on_file >= 2,
   ).length;
-  const minTwoContactRate = pct(withMinTwoContacts, totalMultiContactRecords);
-
-  const withMinTwoEmergency = multi_contact_records.filter(
-    (m) => m.emergency_contacts_count >= 2,
-  ).length;
-  const minTwoEmergencyRate = pct(withMinTwoEmergency, totalMultiContactRecords);
 
   const withNextOfKin = multi_contact_records.filter(
     (m) => m.next_of_kin_designated,
@@ -414,11 +375,6 @@ export function computeEmergencyContactNextOfKin(
   ).length;
   const placingAuthorityRate = pct(withPlacingAuthority, totalMultiContactRecords);
 
-  const withDiverseRelationships = multi_contact_records.filter(
-    (m) => m.diverse_relationship_types,
-  ).length;
-  const diverseRelationshipRate = pct(withDiverseRelationships, totalMultiContactRecords);
-
   const gapsIdentifiedRecords = multi_contact_records.filter(
     (m) => m.gaps_identified.length > 0,
   ).length;
@@ -432,53 +388,9 @@ export function computeEmergencyContactNextOfKin(
   const multiDenominator = totalMultiContactRecords * 4;
   const multiContactRate = pct(multiNumerator, multiDenominator);
 
-  // Unique children with multi-contact assessment
-  const childrenWithMultiContact = new Set(
-    multi_contact_records.map((m) => m.child_id),
-  ).size;
-  const multiContactCoverageRate = total_children > 0 ? pct(childrenWithMultiContact, total_children) : 0;
-
   // ── 5. Out-of-Hours Metrics ───────────────────────────────────────────
 
   const totalOOHRecords = out_of_hours_records.length;
-
-  const oohDesignated = out_of_hours_records.filter(
-    (o) => o.out_of_hours_contact_designated,
-  ).length;
-  const oohDesignatedRate = pct(oohDesignated, totalOOHRecords);
-
-  const edtOnFile = out_of_hours_records.filter((o) => o.edt_number_on_file).length;
-  const edtOnFileRate = pct(edtOnFile, totalOOHRecords);
-
-  const onCallAccessible = out_of_hours_records.filter(
-    (o) => o.on_call_manager_accessible,
-  ).length;
-  const onCallAccessibleRate = pct(onCallAccessible, totalOOHRecords);
-
-  const nhs111Accessible = out_of_hours_records.filter(
-    (o) => o.nhs_111_accessible,
-  ).length;
-  const nhs111Rate = pct(nhs111Accessible, totalOOHRecords);
-
-  const hospitalOnFile = out_of_hours_records.filter(
-    (o) => o.local_hospital_number_on_file,
-  ).length;
-  const hospitalOnFileRate = pct(hospitalOnFile, totalOOHRecords);
-
-  const policeOnFile = out_of_hours_records.filter(
-    (o) => o.police_non_emergency_on_file,
-  ).length;
-  const policeOnFileRate = pct(policeOnFile, totalOOHRecords);
-
-  const placingAuthorityOOH = out_of_hours_records.filter(
-    (o) => o.placing_authority_ooh_on_file,
-  ).length;
-  const placingAuthorityOOHRate = pct(placingAuthorityOOH, totalOOHRecords);
-
-  const oohTested = out_of_hours_records.filter(
-    (o) => o.last_tested_date !== null && o.last_tested_date !== "",
-  ).length;
-  const oohTestedRate = pct(oohTested, totalOOHRecords);
 
   const oohTestSuccessful = out_of_hours_records.filter(
     (o) => o.test_successful,
@@ -494,11 +406,6 @@ export function computeEmergencyContactNextOfKin(
     (o) => o.staff_aware_of_procedure,
   ).length;
   const staffAwareRate = pct(staffAware, totalOOHRecords);
-
-  const backupAvailable = out_of_hours_records.filter(
-    (o) => o.backup_contact_available,
-  ).length;
-  const backupAvailableRate = pct(backupAvailable, totalOOHRecords);
 
   // OOH composite: designated + EDT + on-call + escalation documented + staff aware
   const oohChecks = [

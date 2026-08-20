@@ -180,10 +180,6 @@ export function computeHomeNightSafety(
     ...welfare_checks.filter((c) => isWithin(today, c.date, 30)),
     ...night_checks.filter((c) => isWithin(today, c.date, 30)),
   ];
-  const allChecks7d = [
-    ...welfare_checks.filter((c) => isWithin(today, c.date, 7)),
-    ...night_checks.filter((c) => isWithin(today, c.date, 7)),
-  ];
 
   const incidents30d = night_incidents.filter((i) => isWithin(today, i.date, 30));
   const incidents7d = night_incidents.filter((i) => isWithin(today, i.date, 7));

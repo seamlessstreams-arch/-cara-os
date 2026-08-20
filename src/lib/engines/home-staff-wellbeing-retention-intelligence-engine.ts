@@ -281,11 +281,6 @@ export function computeStaffWellbeingRetention(
   // --- Sickness absence metrics ---
   const totalSicknessRecords = staff_sickness_records.length;
 
-  const totalDaysLost = staff_sickness_records.reduce(
-    (sum, r) => sum + r.days_lost,
-    0,
-  );
-
   // Sickness absence rate: total days lost as % of available working days
   // Approximation: total_staff * 260 working days per year, but we use a
   // 90-day rolling window to keep the metric current.
@@ -300,33 +295,10 @@ export function computeStaffWellbeingRetention(
   ).length;
   const returnToWorkRate = pct(returnToWorkCompleted, totalSicknessRecords);
 
-  const ohReferrals = staff_sickness_records.filter(
-    (r) => r.occupational_health_referral,
-  ).length;
-
   const stressRelatedAbsence = staff_sickness_records.filter(
     (r) => r.reason === "stress_related" || r.reason === "mental_health",
   ).length;
   const stressRelatedRate = pct(stressRelatedAbsence, totalSicknessRecords);
-
-  const managerNotifiedPromptly = staff_sickness_records.filter(
-    (r) => r.manager_notified_promptly,
-  ).length;
-  const promptNotificationRate = pct(managerNotifiedPromptly, totalSicknessRecords);
-
-  const longTermAbsence = staff_sickness_records.filter(
-    (r) => r.reason === "long_term" || r.days_lost > 28,
-  ).length;
-  const longTermAbsenceRate = pct(longTermAbsence, totalSicknessRecords);
-
-  const fitNoteReceived = staff_sickness_records.filter(
-    (r) => r.fit_note_received,
-  ).length;
-  const fitNoteComplianceRate = pct(fitNoteReceived, totalSicknessRecords);
-
-  const phasedReturns = staff_sickness_records.filter(
-    (r) => r.phased_return,
-  ).length;
 
   // --- Wellbeing survey metrics ---
   const totalSurveyRecords = staff_wellbeing_survey_records.length;
@@ -341,36 +313,6 @@ export function computeStaffWellbeingRetention(
   );
   const avgOverallWellbeing = avg((overallWellbeingScores.filter((v): v is number => v !== null) ?? 0));
 
-  const workloadScores = staff_wellbeing_survey_records.map(
-    (r) => r.workload_score,
-  );
-  const avgWorkload = avg((workloadScores.filter((v): v is number => v !== null) ?? 0));
-
-  const teamSupportScores = staff_wellbeing_survey_records.map(
-    (r) => r.team_support_score,
-  );
-  const avgTeamSupport = avg((teamSupportScores.filter((v): v is number => v !== null) ?? 0));
-
-  const managementSupportScores = staff_wellbeing_survey_records.map(
-    (r) => r.management_support_score,
-  );
-  const avgManagementSupport = avg((managementSupportScores.filter((v): v is number => v !== null) ?? 0));
-
-  const workLifeBalanceScores = staff_wellbeing_survey_records.map(
-    (r) => r.work_life_balance_score,
-  );
-  const avgWorkLifeBalance = avg((workLifeBalanceScores.filter((v): v is number => v !== null) ?? 0));
-
-  const jobSatisfactionScores = staff_wellbeing_survey_records.map(
-    (r) => r.job_satisfaction_score,
-  );
-  const avgJobSatisfaction = avg((jobSatisfactionScores.filter((v): v is number => v !== null) ?? 0));
-
-  const moraleScores = staff_wellbeing_survey_records.map(
-    (r) => r.morale_score,
-  );
-  const avgMorale = avg((moraleScores.filter((v): v is number => v !== null) ?? 0));
-
   const feelsValued = staff_wellbeing_survey_records.filter(
     (r) => r.feels_valued,
   ).length;
@@ -379,7 +321,6 @@ export function computeStaffWellbeingRetention(
   const wouldRecommend = staff_wellbeing_survey_records.filter(
     (r) => r.would_recommend_employer,
   ).length;
-  const wouldRecommendRate = pct(wouldRecommend, totalSurveyRecords);
 
   // Staff satisfaction: composite of feels_valued + would_recommend + job_satisfaction >= 7
   const highJobSatisfaction = staff_wellbeing_survey_records.filter(
@@ -402,9 +343,6 @@ export function computeStaffWellbeingRetention(
   // --- Retention metrics ---
   const totalRetentionEvents = staff_retention_records.length;
 
-  const joinedEvents = staff_retention_records.filter(
-    (r) => r.event_type === "joined",
-  ).length;
   const leftEvents = staff_retention_records.filter(
     (r) => r.event_type === "left",
   ).length;
@@ -418,43 +356,11 @@ export function computeStaffWellbeingRetention(
   const promotions = staff_retention_records.filter(
     (r) => r.event_type === "promotion",
   ).length;
-  const probationPassed = staff_retention_records.filter(
-    (r) => r.event_type === "probation_passed",
-  ).length;
-  const probationFailed = staff_retention_records.filter(
-    (r) => r.event_type === "probation_failed",
-  ).length;
-
-  const handoversCompleted = staff_retention_records.filter(
-    (r) => r.event_type === "left" && r.handover_completed,
-  ).length;
-  const handoverCompletionRate = pct(handoversCompleted, leftEvents);
-
-  const replacementsRecruited = staff_retention_records.filter(
-    (r) => r.event_type === "left" && r.replacement_recruited,
-  ).length;
-  const replacementRecruitedRate = pct(replacementsRecruited, leftEvents);
-
-  const resignations = staff_retention_records.filter(
-    (r) => r.event_type === "left" &&
-      (r.reason_for_leaving === "resignation" || r.reason_for_leaving === "dissatisfaction"),
-  ).length;
-  const voluntaryTurnoverRate = pct(resignations, total_staff);
-
-  const leaversServiceMonths = staff_retention_records
-    .filter((r) => r.event_type === "left")
-    .map((r) => r.length_of_service_months);
-  const avgServiceLength = avg(leaversServiceMonths);
 
   const earlyLeavers = staff_retention_records.filter(
     (r) => r.event_type === "left" && r.length_of_service_months < 12,
   ).length;
   const earlyLeaverRate = pct(earlyLeavers, leftEvents);
-
-  const noticeServed = staff_retention_records.filter(
-    (r) => r.event_type === "left" && r.notice_period_served,
-  ).length;
-  const noticeServedRate = pct(noticeServed, leftEvents);
 
   // --- Wellbeing support metrics ---
   const totalSupportRecords = wellbeing_support_records.length;
@@ -462,17 +368,11 @@ export function computeStaffWellbeingRetention(
   const supportOffered = wellbeing_support_records.filter(
     (r) => r.support_offered,
   ).length;
-  const supportOfferedRate = pct(supportOffered, totalSupportRecords);
 
   const supportAccepted = wellbeing_support_records.filter(
     (r) => r.support_offered && r.support_accepted,
   ).length;
   const wellbeingSupportUptakeRate = pct(supportAccepted, supportOffered);
-
-  const supportCompleted = wellbeing_support_records.filter(
-    (r) => r.support_completed,
-  ).length;
-  const supportCompletionRate = pct(supportCompleted, totalSupportRecords);
 
   const highOutcomeSupport = wellbeing_support_records.filter(
     (r) => r.outcome_rating >= 4,
@@ -487,11 +387,6 @@ export function computeStaffWellbeingRetention(
   ).length;
   const supportFollowUpRate = pct(followUpCompleted, followUpNeeded);
 
-  const uniqueStaffSupported = new Set(
-    wellbeing_support_records.filter((r) => r.support_accepted).map((r) => r.staff_id),
-  ).size;
-  const supportCoverageRate = pct(uniqueStaffSupported, total_staff);
-
   // --- Exit interview metrics ---
   const totalExitInterviews = exit_interview_records.length;
 
@@ -499,16 +394,6 @@ export function computeStaffWellbeingRetention(
     (r) => r.conducted,
   ).length;
   const exitInterviewCompletionRate = pct(exitInterviewsConducted, leftEvents > 0 ? leftEvents : totalExitInterviews > 0 ? totalExitInterviews : 1);
-
-  const exitOverallScores = exit_interview_records
-    .filter((r) => r.conducted)
-    .map((r) => r.overall_experience_rating);
-  const avgExitExperienceRating = avg(exitOverallScores);
-
-  const exitManagementScores = exit_interview_records
-    .filter((r) => r.conducted)
-    .map((r) => r.management_rating);
-  const avgExitManagementRating = avg(exitManagementScores);
 
   const wouldReturnCount = exit_interview_records.filter(
     (r) => r.conducted && r.would_return,

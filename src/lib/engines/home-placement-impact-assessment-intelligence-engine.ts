@@ -121,7 +121,6 @@ export function computePlacementImpactAssessment(
   const totalChildViews = assessments.reduce((s, a) => s + a.impact_with_child_view_count, 0);
   const childViewCaptureRate = pct(totalChildViews, totalImpacts);
 
-  const totalHighRisk = assessments.reduce((s, a) => s + a.impact_high_risk_count, 0);
   const totalMitigations = assessments.reduce((s, a) => s + a.impact_with_mitigation_count, 0);
   const mitigationRate = pct(totalMitigations, totalImpacts);
 

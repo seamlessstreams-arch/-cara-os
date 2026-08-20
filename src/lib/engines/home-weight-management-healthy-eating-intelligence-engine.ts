@@ -302,9 +302,6 @@ export function computeWeightManagementHealthyEating(
   const weightChildInformed = weight_monitoring_records.filter((r) => r.child_informed).length;
   const weightChildInformedRate = pct(weightChildInformed, totalWeightRecords);
 
-  const weightGpNotified = weight_monitoring_records.filter((r) => r.gp_notified).length;
-  const weightGpNotificationRate = pct(weightGpNotified, totalWeightRecords);
-
   const weightFollowUpNeeded = weight_monitoring_records.filter((r) => r.follow_up_date !== null).length;
   const weightFollowUpCompleted = weight_monitoring_records.filter(
     (r) => r.follow_up_date !== null && r.follow_up_completed,
@@ -338,12 +335,6 @@ export function computeWeightManagementHealthyEating(
   const bmiHealthy = bmi_tracking_records.filter((r) => r.bmi_category === "healthy").length;
   const bmiHealthyRate = pct(bmiHealthy, totalBmiRecords);
 
-  const bmiImproving = bmi_tracking_records.filter((r) => r.trend_direction === "improving").length;
-  const bmiImprovingRate = pct(bmiImproving, totalBmiRecords);
-
-  const bmiReferralMade = bmi_tracking_records.filter((r) => r.referral_made).length;
-  const bmiReferralRate = pct(bmiReferralMade, totalBmiRecords);
-
   const bmiProfessionalInvolved = bmi_tracking_records.filter((r) => r.professional_involved).length;
   const bmiProfessionalRate = pct(bmiProfessionalInvolved, totalBmiRecords);
 
@@ -351,11 +342,6 @@ export function computeWeightManagementHealthyEating(
     (r) => r.child_age_appropriate_discussion,
   ).length;
   const bmiDiscussionRate = pct(bmiAgeAppropriateDiscussion, totalBmiRecords);
-
-  const bmiOutsideHealthy = bmi_tracking_records.filter(
-    (r) => r.bmi_category !== "healthy" && r.bmi_category !== "unknown",
-  ).length;
-  const bmiConcernRate = pct(bmiOutsideHealthy, totalBmiRecords);
 
   const bmiDeclining = bmi_tracking_records.filter((r) => r.trend_direction === "declining").length;
   const bmiDecliningRate = pct(bmiDeclining, totalBmiRecords);
@@ -373,9 +359,6 @@ export function computeWeightManagementHealthyEating(
     totalHealthyEatingRecords > 0
       ? Math.round((healthyEatingAttendanceRate + healthyEatingEngagementRate) / 2)
       : null;
-
-  const healthyEatingEnjoyed = healthy_eating_records.filter((r) => r.child_enjoyed).length;
-  const healthyEatingEnjoymentRate = pct(healthyEatingEnjoyed, totalHealthyEatingRecords);
 
   const healthyEatingSatisfactionSum = healthy_eating_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -398,19 +381,6 @@ export function computeWeightManagementHealthyEating(
     (r) => r.dietary_knowledge_improved,
   ).length;
   const dietaryKnowledgeRate = pct(dietaryKnowledgeImproved, totalHealthyEatingRecords);
-
-  const healthyEatingFollowUpNeeded = healthy_eating_records.filter(
-    (r) => r.follow_up_planned,
-  ).length;
-  const healthyEatingFollowUpCompleted = healthy_eating_records.filter(
-    (r) => r.follow_up_planned && r.follow_up_completed,
-  ).length;
-  const healthyEatingFollowUpRate = pct(healthyEatingFollowUpCompleted, healthyEatingFollowUpNeeded);
-
-  const externalProviderSessions = healthy_eating_records.filter(
-    (r) => r.external_provider,
-  ).length;
-  const externalProviderRate = pct(externalProviderSessions, totalHealthyEatingRecords);
 
   // --- Portion control awareness ---
   const totalPortionRecords = portion_control_records.length;
@@ -443,11 +413,6 @@ export function computeWeightManagementHealthyEating(
   ).length;
   const hydrationRate = pct(hydrationAdequate, totalPortionRecords);
 
-  const healthyChoicesPC = portion_control_records.filter(
-    (r) => r.child_makes_healthy_choices,
-  ).length;
-  const healthyChoicesRate = pct(healthyChoicesPC, totalPortionRecords);
-
   const selfServes = portion_control_records.filter((r) => r.child_self_serves).length;
   const selfServingRate = pct(selfServes, totalPortionRecords);
 
@@ -465,11 +430,6 @@ export function computeWeightManagementHealthyEating(
     (r) => r.emotional_eating_identified,
   ).length;
   const emotionalEatingRate = pct(emotionalEating, totalPortionRecords);
-
-  const portionSupportPlan = portion_control_records.filter(
-    (r) => r.support_plan_in_place,
-  ).length;
-  const portionSupportPlanRate = pct(portionSupportPlan, totalPortionRecords);
 
   const staffTrainedPortions = portion_control_records.filter(
     (r) => r.staff_trained_on_portions,
@@ -527,11 +487,6 @@ export function computeWeightManagementHealthyEating(
   ).length;
   const bodyPositivityConcernRate = pct(bodyPositivityConcerns, totalBodyPositivityRecords);
 
-  const bodyPositivityReferrals = body_positivity_records.filter(
-    (r) => r.referral_made,
-  ).length;
-  const bodyPositivityReferralRate = pct(bodyPositivityReferrals, totalBodyPositivityRecords);
-
   const bodyPositivityOutcomes = body_positivity_records.filter(
     (r) => r.outcomes_documented,
   ).length;
@@ -540,11 +495,6 @@ export function computeWeightManagementHealthyEating(
   const bodyPositivityVoiceCaptured = body_positivity_records.filter(
     (r) => r.child_voice_captured,
   ).length;
-
-  const bodyPositivityStaffFacilitated = body_positivity_records.filter(
-    (r) => r.staff_facilitated,
-  ).length;
-  const bodyPositivityStaffRate = pct(bodyPositivityStaffFacilitated, totalBodyPositivityRecords);
 
   // --- Child engagement composite ---
   const engagementNumerator =

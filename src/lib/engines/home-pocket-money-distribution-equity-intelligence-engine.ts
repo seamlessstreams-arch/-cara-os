@@ -275,9 +275,6 @@ export function computePocketMoneyDistributionEquity(
   const childSigned = distribution_records.filter((r) => r.child_signed).length;
   const childSignedRate = pct(childSigned, totalDistRecords);
 
-  const staffSigned = distribution_records.filter((r) => r.staff_signed).length;
-  const staffSignedRate = pct(staffSigned, totalDistRecords);
-
   const dualSignedRate = pct(
     distribution_records.filter((r) => r.child_signed && r.staff_signed).length,
     totalDistRecords,
@@ -339,10 +336,6 @@ export function computePocketMoneyDistributionEquity(
   ).length;
   const ageSatisfactionRate = pct(ageSatisfied, totalAgeRecords);
 
-  const adjustmentsMade = age_appropriateness_records.filter(
-    (r) => r.adjustment_made,
-  ).length;
-
   // Check for age-band diversity
   const ageBands = new Set(
     age_appropriateness_records.map((r) => r.age_band),
@@ -377,11 +370,6 @@ export function computePocketMoneyDistributionEquity(
   ).length;
   const delayInformedRate = pct(childInformedOfDelay, latePayments.length);
 
-  const compensatoryAction = latePayments.filter(
-    (r) => r.compensatory_action_taken,
-  ).length;
-  const compensatoryRate = pct(compensatoryAction, latePayments.length);
-
   const missedPayments = payment_timeliness_records.filter(
     (r) => !r.payment_made,
   ).length;
@@ -403,11 +391,6 @@ export function computePocketMoneyDistributionEquity(
     (r) => r.understands_savings_option,
   ).length;
   const understandsSavingsRate = pct(understandsSavings, totalUnderstandingRecords);
-
-  const understandsExtra = child_understanding_records.filter(
-    (r) => r.understands_how_to_request_extra,
-  ).length;
-  const understandsExtraRate = pct(understandsExtra, totalUnderstandingRecords);
 
   const ageAppropriateExplanation = child_understanding_records.filter(
     (r) => r.age_appropriate_explanation,

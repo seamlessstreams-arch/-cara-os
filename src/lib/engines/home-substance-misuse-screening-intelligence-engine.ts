@@ -122,8 +122,6 @@ export function computeSubstanceMisuseScreening(
   const withChildInsight = screenings.filter(s => s.has_child_insight).length;
   const childInsightRate = pct(withChildInsight, total);
 
-  const sharedWithSW = screenings.filter(s => s.shared_with_social_worker).length;
-  const sharedWithCamhs = screenings.filter(s => s.shared_with_camhs).length;
   const sharedEither = screenings.filter(s => s.shared_with_social_worker || s.shared_with_camhs).length;
   const informationSharingRate = pct(sharedEither, total);
 

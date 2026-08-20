@@ -293,12 +293,6 @@ export function computeAnxietyMentalHealthScreening(
   const screeningsWithConsent = screening_records.filter(
     (s) => s.child_consented,
   ).length;
-  const consentRate = pct(screeningsWithConsent, totalScreenings);
-
-  const screeningsExceedingThreshold = screening_records.filter(
-    (s) => s.completed && s.threshold_exceeded,
-  ).length;
-  const thresholdExceededRate = pct(screeningsExceedingThreshold, completedScreenings);
 
   const screeningsRequiringFollowUp = screening_records.filter(
     (s) => s.follow_up_required,
@@ -340,14 +334,6 @@ export function computeAnxietyMentalHealthScreening(
   ).length;
   const assessmentChildInvolvementRate = pct(
     assessmentsWithChildInvolvement,
-    totalAssessments,
-  );
-
-  const assessmentsWithProfessionalInput = anxiety_assessment_records.filter(
-    (a) => a.professional_input,
-  ).length;
-  const assessmentProfessionalRate = pct(
-    assessmentsWithProfessionalInput,
     totalAssessments,
   );
 
@@ -399,11 +385,6 @@ export function computeAnxietyMentalHealthScreening(
   ).length;
   const referralAcceptanceRate = pct(acceptedReferrals, totalReferrals);
 
-  const referralsWithFirstAppt = camhs_referral_records.filter(
-    (r) => r.first_appointment_date !== null,
-  ).length;
-  const referralTimelinessRate = pct(referralsWithFirstAppt, acceptedReferrals);
-
   const referralDaysToAppt = camhs_referral_records
     .filter((r) => r.days_to_first_appointment !== null && r.days_to_first_appointment! > 0)
     .map((r) => r.days_to_first_appointment as number);
@@ -415,10 +396,6 @@ export function computeAnxietyMentalHealthScreening(
             referralDaysToAppt.length,
         )
       : null;
-
-  const activeReferrals = camhs_referral_records.filter(
-    (r) => r.currently_active,
-  ).length;
 
   const childEngagedWithCamhs = camhs_referral_records.filter(
     (r) => r.child_engaged,
@@ -439,10 +416,6 @@ export function computeAnxietyMentalHealthScreening(
     (r) => r.review_overdue,
   ).length;
 
-  const urgentReferrals = camhs_referral_records.filter(
-    (r) => r.urgency === "urgent" || r.urgency === "emergency",
-  ).length;
-
   // --- Wellbeing check-ins ---
   const totalCheckins = wellbeing_checkin_records.length;
   const uniqueChildrenCheckedIn = new Set(
@@ -454,7 +427,6 @@ export function computeAnxietyMentalHealthScreening(
   const engagedCheckins = wellbeing_checkin_records.filter(
     (w) => w.child_engaged,
   ).length;
-  const checkinEngagementRate = pct(engagedCheckins, totalCheckins);
 
   const checkinsWithConcerns = wellbeing_checkin_records.filter(
     (w) => w.concerns_raised,
@@ -463,14 +435,6 @@ export function computeAnxietyMentalHealthScreening(
     (w) => w.concerns_raised && w.concerns_actioned,
   ).length;
   const concernsActionedRate = pct(concernsActionedCount, checkinsWithConcerns);
-
-  const checkinsRequiringFollowUp = wellbeing_checkin_records.filter(
-    (w) => w.follow_up_required,
-  ).length;
-  const checkinsWithFollowUpDone = wellbeing_checkin_records.filter(
-    (w) => w.follow_up_required && w.follow_up_completed,
-  ).length;
-  const checkinFollowUpRate = pct(checkinsWithFollowUpDone, checkinsRequiringFollowUp);
 
   const checkinsWithNotes = wellbeing_checkin_records.filter(
     (w) => w.notes_recorded,

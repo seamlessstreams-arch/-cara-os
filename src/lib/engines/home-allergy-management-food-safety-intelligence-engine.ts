@@ -319,16 +319,6 @@ export function computeAllergyManagementFoodSafety(
   ).length;
   const childAwarenessRate = pct(plansSharedWithChild, totalPlans);
 
-  const plansWithEmergencyMed = allergy_plan_records.filter(
-    (p) => p.emergency_medication_specified,
-  ).length;
-  const emergencyMedDocRate = pct(plansWithEmergencyMed, totalPlans);
-
-  const plansWithDietary = allergy_plan_records.filter(
-    (p) => p.dietary_requirements_documented,
-  ).length;
-  const dietaryDocRate = pct(plansWithDietary, totalPlans);
-
   const plansWithCrossContam = allergy_plan_records.filter(
     (p) => p.cross_contamination_measures,
   ).length;
@@ -348,16 +338,6 @@ export function computeAllergyManagementFoodSafety(
     (p) => p.plan_accessible_in_kitchen,
   ).length;
   const kitchenAccessRate = pct(plansAccessibleInKitchen, totalPlans);
-
-  const plansWithGPInput = allergy_plan_records.filter(
-    (p) => p.gp_or_specialist_input,
-  ).length;
-  const gpInputRate = pct(plansWithGPInput, totalPlans);
-
-  const plansWithParentConsulted = allergy_plan_records.filter(
-    (p) => p.parent_carer_consulted,
-  ).length;
-  const parentConsultRate = pct(plansWithParentConsulted, totalPlans);
 
   const overdueplanReviews = allergy_plan_records.filter(
     (p) => p.plan_review_overdue,
@@ -428,11 +408,6 @@ export function computeAllergyManagementFoodSafety(
     (a) => a.training_expired,
   ).length;
 
-  const trainingWithCertificate = allergen_awareness_records.filter(
-    (a) => a.certificate_held,
-  ).length;
-  const certificateRate = pct(trainingWithCertificate, totalTrainingRecords);
-
   const trainingAssessmentPassed = allergen_awareness_records.filter(
     (a) => a.assessment_passed,
   ).length;
@@ -450,27 +425,12 @@ export function computeAllergyManagementFoodSafety(
 
   // --- Epipen checks ---
   const totalEpipenChecks = epipen_check_records.length;
-  const uniqueChildrenWithEpipens = new Set(
-    epipen_check_records.map((e) => e.child_id),
-  ).size;
 
-  const epipensInDate = epipen_check_records.filter(
-    (e) => e.epipen_in_date,
-  ).length;
   const epipensExpired = epipen_check_records.filter(
     (e) => e.epipen_expired,
   ).length;
-  const epipensAccessible = epipen_check_records.filter(
-    (e) => e.epipen_accessible,
-  ).length;
   const epipensWithSpare = epipen_check_records.filter(
     (e) => e.spare_available,
-  ).length;
-  const epipensLabelled = epipen_check_records.filter(
-    (e) => e.location_clearly_labelled,
-  ).length;
-  const staffAwareLocation = epipen_check_records.filter(
-    (e) => e.staff_aware_of_location,
   ).length;
   const travelKitAvailable = epipen_check_records.filter(
     (e) => e.travel_kit_available,
@@ -482,11 +442,7 @@ export function computeAllergyManagementFoodSafety(
   ).length;
   const epipenCheckRate = pct(epipensCompliant, totalEpipenChecks);
 
-  const epipenInDateRate = pct(epipensInDate, totalEpipenChecks);
-  const epipenAccessibleRate = pct(epipensAccessible, totalEpipenChecks);
   const spareAvailableRate = pct(epipensWithSpare, totalEpipenChecks);
-  const locationLabelledRate = pct(epipensLabelled, totalEpipenChecks);
-  const staffAwareRate = pct(staffAwareLocation, totalEpipenChecks);
   const travelKitRate = pct(travelKitAvailable, totalEpipenChecks);
 
   // --- Food labelling compliance ---
@@ -501,20 +457,10 @@ export function computeAllergyManagementFoodSafety(
   );
   const foodLabellingRate = pct(totalItemsCorrect, totalItemsChecked);
 
-  const auditsWithAllergenInfo = food_labelling_records.filter(
-    (f) => f.allergen_info_displayed,
-  ).length;
-  const allergenInfoRate = pct(auditsWithAllergenInfo, totalFoodAudits);
-
   const auditsWithCrossContamControls = food_labelling_records.filter(
     (f) => f.cross_contamination_controls,
   ).length;
   const crossContamControlRate = pct(auditsWithCrossContamControls, totalFoodAudits);
-
-  const auditsDateCompliant = food_labelling_records.filter(
-    (f) => f.date_marking_compliant,
-  ).length;
-  const dateMarkingRate = pct(auditsDateCompliant, totalFoodAudits);
 
   const auditsWithSeparateStorage = food_labelling_records.filter(
     (f) => f.separate_storage_for_allergens,

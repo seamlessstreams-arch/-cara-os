@@ -3069,15 +3069,6 @@ describe("computeMedicationAdministration", () => {
       const refused = Array.from({ length: 7 }, (_, i) =>
         baseRecord({ id: `r_${i}`, status: "refused", has_witness: false }),
       );
-      const prnUndoc = Array.from({ length: 5 }, (_, i) =>
-        baseRecord({
-          id: `prn_${i}`,
-          is_prn: true,
-          has_prn_reason: false,
-          has_prn_effectiveness: false,
-          has_witness: false,
-        }),
-      );
       // Total non-scheduled = 1+2+7+5 = 15
       // administered = 1+2+5 = 8 (given + late + PRN given)
       // adminRate = 8/15 = 53 → <70 → -5

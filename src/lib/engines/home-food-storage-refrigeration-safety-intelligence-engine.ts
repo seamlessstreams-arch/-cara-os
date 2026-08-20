@@ -309,9 +309,6 @@ export function computeFoodStorageRefrigerationSafety(
   const thermometerCalibrated = temperature_log_records.filter((r) => r.thermometer_calibrated).length;
   const calibrationRate = pct(thermometerCalibrated, totalTempLogs);
 
-  const secondChecksDone = temperature_log_records.filter((r) => r.second_check_done).length;
-  const secondCheckRate = pct(secondChecksDone, totalTempLogs);
-
   // Composite temperature logging rate: in_range + calibrated + (corrective if out of range)
   const tempNumerator = tempsInRange + thermometerCalibrated;
   const tempDenominator = totalTempLogs * 2;
@@ -319,19 +316,6 @@ export function computeFoodStorageRefrigerationSafety(
 
   // Unique appliances checked
   const uniqueAppliances = new Set(temperature_log_records.map((r) => r.appliance_id)).size;
-
-  // --- Fridge-specific temperature analysis ---
-  const fridgeLogs = temperature_log_records.filter(
-    (r) => r.appliance_type === "fridge" || r.appliance_type === "walk_in_fridge" || r.appliance_type === "prep_fridge",
-  );
-  const fridgeInRange = fridgeLogs.filter((r) => r.in_range).length;
-  const fridgeComplianceRate = pct(fridgeInRange, fridgeLogs.length);
-
-  const freezerLogs = temperature_log_records.filter(
-    (r) => r.appliance_type === "freezer" || r.appliance_type === "walk_in_freezer",
-  );
-  const freezerInRange = freezerLogs.filter((r) => r.in_range).length;
-  const freezerComplianceRate = pct(freezerInRange, freezerLogs.length);
 
   // --- Storage compliance metrics ---
   const totalStorageChecks = storage_compliance_records.length;
@@ -371,9 +355,6 @@ export function computeFoodStorageRefrigerationSafety(
   const allergenSegregationCompliant = storage_compliance_records.filter((s) => s.allergen_items_segregated).length;
   const allergenSegregationRate = pct(allergenSegregationCompliant, totalStorageChecks);
 
-  const labellingCompliant = storage_compliance_records.filter((s) => s.items_labelled && s.items_dated).length;
-  const labellingRate = pct(labellingCompliant, totalStorageChecks);
-
   // --- Date checking metrics ---
   const totalDateChecks = date_check_records.length;
 
@@ -388,10 +369,6 @@ export function computeFoodStorageRefrigerationSafety(
   const outOfDateRemovalRate = pct(totalItemsRemoved, totalItemsOutOfDate);
 
   const useByVisibleRecords = date_check_records.filter((d) => d.use_by_dates_visible).length;
-  const useByVisibilityRate = pct(useByVisibleRecords, totalDateChecks);
-
-  const openDatesMarkedRecords = date_check_records.filter((d) => d.open_dates_marked).length;
-  const openDateMarkingRate = pct(openDatesMarkedRecords, totalDateChecks);
 
   const fifoFollowedRecords = date_check_records.filter((d) => d.fifo_rotation_followed).length;
   const fifoRate = pct(fifoFollowedRecords, totalDateChecks);
@@ -410,38 +387,11 @@ export function computeFoodStorageRefrigerationSafety(
       ? Math.round((hygieneScoreSum / totalHygieneAssessments) * 100) / 100
       : null;
 
-  const fridgeCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.fridge_cleanliness, 0);
-  const avgFridgeCleanliness =
-    totalHygieneAssessments > 0
-      ? Math.round((fridgeCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : null;
-
-  const freezerCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.freezer_cleanliness, 0);
-  const avgFreezerCleanliness =
-    totalHygieneAssessments > 0
-      ? Math.round((freezerCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : null;
-
-  const storageAreaCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.storage_area_cleanliness, 0);
-  const avgStorageCleanliness =
-    totalHygieneAssessments > 0
-      ? Math.round((storageAreaCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : null;
-
-  const foodHandlingSum = hygiene_rating_records.reduce((sum, h) => sum + h.food_handling_practice, 0);
-  const avgFoodHandling =
-    totalHygieneAssessments > 0
-      ? Math.round((foodHandlingSum / totalHygieneAssessments) * 100) / 100
-      : null;
-
   const handWashingCompliant = hygiene_rating_records.filter((h) => h.hand_washing_compliance).length;
   const handWashingRate = pct(handWashingCompliant, totalHygieneAssessments);
 
   const cleaningScheduleFollowed = hygiene_rating_records.filter((h) => h.cleaning_schedule_followed).length;
   const cleaningScheduleRate = pct(cleaningScheduleFollowed, totalHygieneAssessments);
-
-  const pestControlSatisfactory = hygiene_rating_records.filter((h) => h.pest_control_satisfactory).length;
-  const pestControlRate = pct(pestControlSatisfactory, totalHygieneAssessments);
 
   const wasteDisposalCorrect = hygiene_rating_records.filter((h) => h.waste_disposal_correct).length;
   const wasteDisposalRate = pct(wasteDisposalCorrect, totalHygieneAssessments);
@@ -486,31 +436,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
   const crossContaminationRate = pct(totalCrossContamChecksPassed, totalCrossContamChecksPossible);
 
-  const crossContamIssuesFound = cross_contamination_records.filter(
-    (c) => c.issues_found.length > 0,
-  ).length;
-  const crossContamCorrected = cross_contamination_records.filter(
-    (c) => c.issues_found.length > 0 && c.corrective_action_taken,
-  ).length;
-  const crossContamCorrectionRate = pct(crossContamCorrected, crossContamIssuesFound);
-
-  const colourCodedBoardsRate = pct(
-    cross_contamination_records.filter((c) => c.colour_coded_boards_used).length,
-    totalCrossContamChecks,
-  );
-
-  const separateUtensilsRate = pct(
-    cross_contamination_records.filter((c) => c.separate_utensils_raw_cooked).length,
-    totalCrossContamChecks,
-  );
-
   const handWashingBetweenTasksRate = pct(
     cross_contamination_records.filter((c) => c.hand_washing_between_tasks).length,
-    totalCrossContamChecks,
-  );
-
-  const rawBelowCookedRate = pct(
-    cross_contamination_records.filter((c) => c.raw_food_stored_below_cooked).length,
     totalCrossContamChecks,
   );
 
@@ -518,7 +445,6 @@ export function computeFoodStorageRefrigerationSafety(
   const trainingObservations = cross_contamination_records.filter(
     (c) => c.check_type === "training_observation",
   );
-  const totalTrainingObs = trainingObservations.length;
 
   let trainingChecksPassed = 0;
   let trainingChecksPossible = 0;
@@ -532,9 +458,6 @@ export function computeFoodStorageRefrigerationSafety(
     trainingChecksPossible > 0
       ? pct(trainingChecksPassed, trainingChecksPossible)
       : (totalCrossContamChecks > 0 ? crossContaminationRate : 0);
-
-  // Unique staff observed across all cross-contamination records
-  const uniqueStaffObserved = new Set(cross_contamination_records.map((c) => c.staff_member_observed)).size;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

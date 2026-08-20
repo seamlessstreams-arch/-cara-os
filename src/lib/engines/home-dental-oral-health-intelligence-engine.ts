@@ -283,14 +283,7 @@ export function computeDentalOralHealth(
   const checkupComplianceRate = pct(checkupsAttended, totalCheckupRecords);
 
   const checkupsConsented = dental_checkup_records.filter((r) => r.child_consented).length;
-  const consentRate = pct(checkupsConsented, totalCheckupRecords);
 
-  const fluorideApplied = dental_checkup_records.filter((r) => r.fluoride_varnish_applied).length;
-  const fluorideRate = pct(fluorideApplied, totalCheckupRecords);
-
-  const checkupsWithFollowUp = dental_checkup_records.filter(
-    (r) => r.outcome === "treatment_needed" || r.outcome === "referral_made" || r.outcome === "follow_up",
-  ).length;
   const checkupsAllClear = dental_checkup_records.filter(
     (r) => r.outcome === "all_clear",
   ).length;
@@ -306,23 +299,15 @@ export function computeDentalOralHealth(
   ).length;
   const brushingComplianceRate = pct(bothBrushingsCompleted, totalHygieneRecords);
 
-  const brushingSupervised = oral_hygiene_records.filter((r) => r.brushing_supervised).length;
-  const supervisionRate = pct(brushingSupervised, totalHygieneRecords);
-
   const brushingDurationAdequate = oral_hygiene_records.filter((r) => r.brushing_duration_adequate).length;
-  const durationAdequateRate = pct(brushingDurationAdequate, totalHygieneRecords);
 
   const childEngagedHygiene = oral_hygiene_records.filter((r) => r.child_engaged).length;
-  const hygieneEngagementRate = pct(childEngagedHygiene, totalHygieneRecords);
 
   const educationProvided = oral_hygiene_records.filter((r) => r.oral_health_education_provided).length;
   const educationRate = pct(educationProvided, totalHygieneRecords);
 
   const childIndependent = oral_hygiene_records.filter((r) => r.child_independent).length;
   const independenceRate = pct(childIndependent, totalHygieneRecords);
-
-  const flossingCompleted = oral_hygiene_records.filter((r) => r.flossing_completed).length;
-  const flossingRate = pct(flossingCompleted, totalHygieneRecords);
 
   // Composite oral hygiene rate: morning + evening + duration adequate + child engaged
   const hygieneNumerator = morningBrushingCompleted + eveningBrushingCompleted + brushingDurationAdequate + childEngagedHygiene;
@@ -348,31 +333,23 @@ export function computeDentalOralHealth(
   const aftercareRate = pct(aftercareFollowed, totalTreatmentRecords);
 
   const treatmentConsented = dental_treatment_records.filter((r) => r.child_consented).length;
-  const treatmentConsentRate = pct(treatmentConsented, totalTreatmentRecords);
 
   const childCopedWell = dental_treatment_records.filter((r) => r.child_coped_well).length;
   const copingRate = pct(childCopedWell, totalTreatmentRecords);
-
-  const anxietySupportInTreatment = dental_treatment_records.filter((r) => r.anxiety_support_provided).length;
-  const treatmentAnxietySupportRate = pct(anxietySupportInTreatment, totalTreatmentRecords);
 
   // --- Orthodontic metrics ---
   const totalOrthoRecords = orthodontic_records.length;
 
   const orthoAppointmentsAttended = orthodontic_records.filter((r) => r.appointment_attended).length;
-  const orthoAttendanceRate = pct(orthoAppointmentsAttended, totalOrthoRecords);
 
   const orthoCompliant = orthodontic_records.filter((r) => r.compliance_with_instructions).length;
-  const orthoInstructionComplianceRate = pct(orthoCompliant, totalOrthoRecords);
 
   const orthoHygieneMaintained = orthodontic_records.filter((r) => r.oral_hygiene_maintained).length;
-  const orthoHygieneRate = pct(orthoHygieneMaintained, totalOrthoRecords);
 
   const orthoProgressSatisfactory = orthodontic_records.filter((r) => r.progress_satisfactory).length;
   const orthoProgressRate = pct(orthoProgressSatisfactory, totalOrthoRecords);
 
   const orthoChildEngaged = orthodontic_records.filter((r) => r.child_engaged_with_treatment).length;
-  const orthoEngagementRate = pct(orthoChildEngaged, totalOrthoRecords);
 
   const orthoDiscomfortReported = orthodontic_records.filter((r) => r.discomfort_reported).length;
   const orthoDiscomfortManaged = orthodontic_records.filter(
@@ -394,10 +371,8 @@ export function computeDentalOralHealth(
   const totalAnxietyRecords = dental_anxiety_records.length;
 
   const preAppointmentPrep = dental_anxiety_records.filter((r) => r.pre_appointment_preparation).length;
-  const preAppPrepRate = pct(preAppointmentPrep, totalAnxietyRecords);
 
   const postAppointmentDebrief = dental_anxiety_records.filter((r) => r.post_appointment_debrief).length;
-  const postAppDebriefRate = pct(postAppointmentDebrief, totalAnxietyRecords);
 
   const desensitisationCompleted = dental_anxiety_records.filter((r) => r.desensitisation_session_completed).length;
   const desensitisationRate = pct(desensitisationCompleted, totalAnxietyRecords);
@@ -406,16 +381,9 @@ export function computeDentalOralHealth(
   const anxietyAttendanceRate = pct(anxietyChildAttended, totalAnxietyRecords);
 
   const anxietyChildCoped = dental_anxiety_records.filter((r) => r.child_coped_with_treatment).length;
-  const anxietyCopingRate = pct(anxietyChildCoped, totalAnxietyRecords);
 
   const anxietyImproved = dental_anxiety_records.filter((r) => r.improvement_noted).length;
   const anxietyImprovementRate = pct(anxietyImproved, totalAnxietyRecords);
-
-  const specialistReferralMade = dental_anxiety_records.filter((r) => r.specialist_referral_made).length;
-  const specialistReferralAttended = dental_anxiety_records.filter(
-    (r) => r.specialist_referral_made && r.specialist_referral_attended,
-  ).length;
-  const specialistReferralFollowThroughRate = pct(specialistReferralAttended, specialistReferralMade);
 
   // Composite anxiety support rate: pre-prep + debrief + desensitisation + child coped
   const anxietySupportNumerator = preAppointmentPrep + postAppointmentDebrief + desensitisationCompleted + anxietyChildCoped;

@@ -355,17 +355,11 @@ export function computeStaffLoneWorkingSafety(
   const highRiskAssessments = risk_assessment_records.filter(
     (r) => r.risk_level === "high",
   ).length;
-  const mediumRiskAssessments = risk_assessment_records.filter(
-    (r) => r.risk_level === "medium",
-  ).length;
   const approvedAssessments = risk_assessment_records.filter(
     (r) => r.approved,
   ).length;
   const emergencyDocumented = risk_assessment_records.filter(
     (r) => r.emergency_procedure_documented,
-  ).length;
-  const personalAlarmIncluded = risk_assessment_records.filter(
-    (r) => r.personal_alarm_included,
   ).length;
 
   // Unique staff with current risk assessments
@@ -375,28 +369,6 @@ export function computeStaffLoneWorkingSafety(
       .map((r) => r.staff_id),
   );
   const riskAssessmentRate = pct(staffWithCurrentAssessments.size, total_staff);
-
-  // Average control measures per assessment
-  const avgControlMeasures =
-    totalRiskAssessments > 0
-      ? Math.round(
-          risk_assessment_records.reduce(
-            (sum, r) => sum + r.control_measures_count,
-            0,
-          ) / totalRiskAssessments,
-        )
-      : null;
-
-  // Average hazards identified
-  const avgHazards =
-    totalRiskAssessments > 0
-      ? Math.round(
-          risk_assessment_records.reduce(
-            (sum, r) => sum + r.hazards_identified,
-            0,
-          ) / totalRiskAssessments,
-        )
-      : null;
 
   // Shift type coverage in risk assessments
   const assessmentShiftTypes = new Set(
@@ -446,9 +418,6 @@ export function computeStaffLoneWorkingSafety(
   ).length;
   const welfareConfirmRate = pct(welfareConfirmed, totalCheckIns);
 
-  // Check-in method diversity
-  const checkInMethods = new Set(check_in_records.map((c) => c.method));
-
   // Unique staff with check-in records
   const staffWithCheckIns = new Set(check_in_records.map((c) => c.staff_id));
 
@@ -459,9 +428,6 @@ export function computeStaffLoneWorkingSafety(
   const totalProtocols = safety_protocol_records.length;
   const protocolsSigned = safety_protocol_records.filter(
     (p) => p.signed,
-  ).length;
-  const protocolsUnderstood = safety_protocol_records.filter(
-    (p) => p.understood,
   ).length;
   const trainingCompleted = safety_protocol_records.filter(
     (p) => p.training_completed,
@@ -478,7 +444,6 @@ export function computeStaffLoneWorkingSafety(
 
   const safetyProtocolRate = pct(protocolsSigned, totalProtocols);
   const trainingCompletionRate = pct(trainingCompleted, totalProtocols);
-  const understandingRate = pct(protocolsUnderstood, totalProtocols);
   const competencyRate = pct(competencyPassed, competencyAssessed);
 
   // Unique staff with protocol records
@@ -508,9 +473,6 @@ export function computeStaffLoneWorkingSafety(
   // ════════════════════════════════════════════════════════════════════════
 
   const totalDevices = communication_device_records.length;
-  const devicesIssued = communication_device_records.filter(
-    (d) => d.issued,
-  ).length;
   const devicesTested = communication_device_records.filter(
     (d) => d.tested,
   ).length;
@@ -540,11 +502,6 @@ export function computeStaffLoneWorkingSafety(
   const batteryCheckRate = pct(batteryChecked, totalDevices);
   const signalConfirmRate = pct(signalConfirmed, totalDevices);
 
-  // Device type coverage
-  const deviceTypes = new Set(
-    communication_device_records.map((d) => d.device_type),
-  );
-
   // ════════════════════════════════════════════════════════════════════════
   // METRIC 5: Incident Reporting Rate
   // ════════════════════════════════════════════════════════════════════════
@@ -559,12 +516,6 @@ export function computeStaffLoneWorkingSafety(
   const lessonsDocumented = incident_reporting_records.filter(
     (i) => i.lessons_learned_documented,
   ).length;
-  const managerNotified = incident_reporting_records.filter(
-    (i) => i.manager_notified,
-  ).length;
-  const safeguardingReferralsMade = incident_reporting_records.filter(
-    (i) => i.safeguarding_referral_made,
-  ).length;
   const riskAssessmentUpdated = incident_reporting_records.filter(
     (i) => i.risk_assessment_updated,
   ).length;
@@ -578,7 +529,6 @@ export function computeStaffLoneWorkingSafety(
   const incidentReportingRate = pct(incidentsReportedTimely, totalIncidents);
   const investigationRate = pct(investigationsCompleted, totalIncidents);
   const lessonsLearnedRate = pct(lessonsDocumented, totalIncidents);
-  const managerNotificationRate = pct(managerNotified, totalIncidents);
   const debriefOfferRate = pct(debriefsOffered, totalIncidents);
   const debriefCompletionRate = pct(debriefsCompleted, debriefsOffered);
 
@@ -601,10 +551,6 @@ export function computeStaffLoneWorkingSafety(
     (i) => i.severity === "high",
   ).length;
 
-  // Incident types
-  const incidentTypes = new Set(
-    incident_reporting_records.map((i) => i.incident_type),
-  );
   const nearMisses = incident_reporting_records.filter(
     (i) => i.incident_type === "near_miss",
   ).length;

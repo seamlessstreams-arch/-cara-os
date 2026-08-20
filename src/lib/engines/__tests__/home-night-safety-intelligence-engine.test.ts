@@ -162,7 +162,6 @@ describe("Home Night Safety Intelligence Engine", () => {
   });
 
   it("computes all children checked rate", () => {
-    const children = [makeChild("yp_1", "Alex"), makeChild("yp_2", "Jordan")];
     // Night 1: both checked
     const checks = [
       makeWelfareCheck({ child_id: "yp_1", date: daysAgo(1), time: "23:00" }),

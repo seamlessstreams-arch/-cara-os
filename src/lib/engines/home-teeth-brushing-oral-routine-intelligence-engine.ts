@@ -299,8 +299,6 @@ export function computeTeethBrushingOralRoutine(
   const bothBrushingsDone = brushing_schedule_records.filter(
     (r) => r.morning_brushing_completed && r.evening_brushing_completed,
   ).length;
-  const morningBrushingRate = pct(morningBrushingDone, totalBrushingRecords);
-  const eveningBrushingRate = pct(eveningBrushingDone, totalBrushingRecords);
   const bothBrushingRate = pct(bothBrushingsDone, totalBrushingRecords);
 
   // Duration: adequate = >= 120 seconds (2 minutes)
@@ -310,27 +308,14 @@ export function computeTeethBrushingOralRoutine(
   const eveningDurationAdequate = brushing_schedule_records.filter(
     (r) => r.evening_brushing_completed && r.brushing_duration_evening_seconds >= 120,
   ).length;
-  const morningDurationRate = pct(morningDurationAdequate, morningBrushingDone);
-  const eveningDurationRate = pct(eveningDurationAdequate, eveningBrushingDone);
   const totalDurationAdequate = morningDurationAdequate + eveningDurationAdequate;
   const totalBrushingsDone = morningBrushingDone + eveningBrushingDone;
   const overallDurationRate = pct(totalDurationAdequate, totalBrushingsDone);
 
   const techniqueCorrect = brushing_schedule_records.filter((r) => r.brushing_technique_correct).length;
-  const techniqueRate = pct(techniqueCorrect, totalBrushingRecords);
 
   const allAreasCovered = brushing_schedule_records.filter((r) => r.teeth_areas_covered === "all").length;
-  const partialCovered = brushing_schedule_records.filter((r) => r.teeth_areas_covered === "partial").length;
   const areaCoverageRate = pct(allAreasCovered, totalBrushingRecords);
-
-  const tongueCleaned = brushing_schedule_records.filter((r) => r.tongue_cleaned).length;
-  const tongueCleanedRate = pct(tongueCleaned, totalBrushingRecords);
-
-  const mouthwashUsed = brushing_schedule_records.filter((r) => r.mouthwash_used).length;
-  const mouthwashRate = pct(mouthwashUsed, totalBrushingRecords);
-
-  const flossingDone = brushing_schedule_records.filter((r) => r.flossing_completed).length;
-  const flossingRate = pct(flossingDone, totalBrushingRecords);
 
   const childRefused = brushing_schedule_records.filter((r) => r.child_refused).length;
   const refusalRate = pct(childRefused, totalBrushingRecords);
@@ -341,7 +326,6 @@ export function computeTeethBrushingOralRoutine(
   const alternativeOfferedRate = pct(alternativeOffered, childRefused);
 
   const childEngagedBrushing = brushing_schedule_records.filter((r) => r.child_engaged).length;
-  const brushingEngagementRate = pct(childEngagedBrushing, totalBrushingRecords);
 
   // Composite brushing adherence: morning + evening + technique + engagement
   // weighted: bothBrushings (35%) + durationAdequate (25%) + technique (20%) + engagement (20%)
@@ -353,36 +337,15 @@ export function computeTeethBrushingOralRoutine(
   const totalFluorideRecords = fluoride_use_records.length;
 
   const fluoridePasteUsed = fluoride_use_records.filter((r) => r.fluoride_toothpaste_used).length;
-  const fluoridePasteRate = pct(fluoridePasteUsed, totalFluorideRecords);
 
   const fluorideConcentrationAppropriate = fluoride_use_records.filter(
     (r) => r.fluoride_concentration_appropriate,
   ).length;
-  const concentrationAppropriateRate = pct(fluorideConcentrationAppropriate, totalFluorideRecords);
-
-  const fluorideMouthwashUsed = fluoride_use_records.filter((r) => r.fluoride_mouthwash_used).length;
-  const fluorideMouthwashRate = pct(fluorideMouthwashUsed, totalFluorideRecords);
-
-  const fluorideVarnishApplied = fluoride_use_records.filter((r) => r.fluoride_varnish_applied).length;
-  const varnishRate = pct(fluorideVarnishApplied, totalFluorideRecords);
 
   const ageAppropriateProduct = fluoride_use_records.filter((r) => r.child_age_appropriate_product).length;
-  const ageAppropriateRate = pct(ageAppropriateProduct, totalFluorideRecords);
-
-  const spitsNotSwallows = fluoride_use_records.filter((r) => r.child_spits_not_swallows).length;
-  const spitRate = pct(spitsNotSwallows, totalFluorideRecords);
-
-  const fluorideSupervised = fluoride_use_records.filter((r) => r.staff_supervised_application).length;
-  const fluorideSupervisionRate = pct(fluorideSupervised, totalFluorideRecords);
 
   const productInDate = fluoride_use_records.filter((r) => r.product_in_date).length;
   const productInDateRate = pct(productInDate, totalFluorideRecords);
-
-  const supplementGiven = fluoride_use_records.filter((r) => r.fluoride_supplement_given).length;
-  const supplementPrescribed = fluoride_use_records.filter(
-    (r) => r.fluoride_supplement_given && r.supplement_prescribed,
-  ).length;
-  const supplementComplianceRate = pct(supplementPrescribed, supplementGiven);
 
   // Composite fluoride use: paste + concentration appropriate + age appropriate + in date
   const fluorideNumerator = fluoridePasteUsed + fluorideConcentrationAppropriate + ageAppropriateProduct + productInDate;
@@ -393,30 +356,15 @@ export function computeTeethBrushingOralRoutine(
   const totalSupervisionRecords = supervision_records.length;
 
   const staffPresent = supervision_records.filter((r) => r.staff_present_during_brushing).length;
-  const staffPresentRate = pct(staffPresent, totalSupervisionRecords);
 
   const staffGuided = supervision_records.filter((r) => r.staff_guided_technique).length;
-  const staffGuidedRate = pct(staffGuided, totalSupervisionRecords);
-
-  const staffTimed = supervision_records.filter((r) => r.staff_timed_brushing).length;
-  const staffTimedRate = pct(staffTimed, totalSupervisionRecords);
 
   const supervisionAppropriate = supervision_records.filter(
     (r) => r.supervision_appropriate_for_age,
   ).length;
-  const supervisionAppropriateRate = pct(supervisionAppropriate, totalSupervisionRecords);
 
   const positiveReinforcement = supervision_records.filter((r) => r.positive_reinforcement_given).length;
   const reinforcementRate = pct(positiveReinforcement, totalSupervisionRecords);
-
-  const correctionNeeded = supervision_records.filter((r) => r.correction_needed).length;
-  const correctionAccepted = supervision_records.filter(
-    (r) => r.correction_needed && r.correction_accepted,
-  ).length;
-  const correctionAcceptedRate = pct(correctionAccepted, correctionNeeded);
-
-  const handwashingBefore = supervision_records.filter((r) => r.handwashing_before_brushing).length;
-  const handwashingRate = pct(handwashingBefore, totalSupervisionRecords);
 
   const oralHealthDiscussion = supervision_records.filter((r) => r.oral_health_discussion).length;
   const oralDiscussionRate = pct(oralHealthDiscussion, totalSupervisionRecords);
@@ -450,32 +398,20 @@ export function computeTeethBrushingOralRoutine(
   const brushAgeAppropriate = toothbrush_replacement_records.filter(
     (r) => r.brush_age_appropriate,
   ).length;
-  const brushAgeAppropriateRate = pct(brushAgeAppropriate, totalReplacementRecords);
 
   const childChoseBrush = toothbrush_replacement_records.filter(
     (r) => r.child_chose_own_brush,
   ).length;
   const childChoseRate = pct(childChoseBrush, totalReplacementRecords);
 
-  const childChoseToothpaste = toothbrush_replacement_records.filter(
-    (r) => r.child_chose_own_toothpaste,
-  ).length;
-  const childChoseToothpasteRate = pct(childChoseToothpaste, totalReplacementRecords);
-
   const storageCorrect = toothbrush_replacement_records.filter(
     (r) => r.personal_brush_storage_correct,
   ).length;
-  const storageCorrectRate = pct(storageCorrect, totalReplacementRecords);
 
   const brushLabelled = toothbrush_replacement_records.filter(
     (r) => r.brush_labelled,
   ).length;
-  const brushLabelledRate = pct(brushLabelled, totalReplacementRecords);
 
-  // Brush condition at replacement
-  const replacedInGoodCondition = toothbrush_replacement_records.filter(
-    (r) => r.brush_condition_at_replacement === "good" || r.brush_condition_at_replacement === "worn",
-  ).length;
   const frayedOrWorse = toothbrush_replacement_records.filter(
     (r) => r.brush_condition_at_replacement === "frayed" || r.brush_condition_at_replacement === "heavily_worn" || r.brush_condition_at_replacement === "damaged",
   ).length;
@@ -497,50 +433,20 @@ export function computeTeethBrushingOralRoutine(
   const brushesIndependently = independence_records.filter(
     (r) => r.brushes_independently,
   ).length;
-  const brushesIndependentlyRate = pct(brushesIndependently, totalIndependenceRecords);
-
-  const appliesToothpaste = independence_records.filter(
-    (r) => r.applies_toothpaste_independently,
-  ).length;
-  const appliesToothpasteRate = pct(appliesToothpaste, totalIndependenceRecords);
-
-  const selectsProducts = independence_records.filter(
-    (r) => r.selects_own_products,
-  ).length;
-  const selectsProductsRate = pct(selectsProducts, totalIndependenceRecords);
 
   const initiatesWithoutPrompt = independence_records.filter(
     (r) => r.initiates_brushing_without_prompt,
   ).length;
-  const initiatesRate = pct(initiatesWithoutPrompt, totalIndependenceRecords);
 
   const completesFullRoutine = independence_records.filter(
     (r) => r.completes_full_routine_independently,
   ).length;
-  const fullRoutineRate = pct(completesFullRoutine, totalIndependenceRecords);
 
   const understandsImportance = independence_records.filter(
     (r) => r.understands_importance_of_oral_care,
   ).length;
-  const understandsRate = pct(understandsImportance, totalIndependenceRecords);
-
-  const canExplainTechnique = independence_records.filter(
-    (r) => r.can_explain_brushing_technique,
-  ).length;
-  const canExplainRate = pct(canExplainTechnique, totalIndependenceRecords);
-
-  const managesReplacement = independence_records.filter(
-    (r) => r.manages_own_toothbrush_replacement,
-  ).length;
-  const managesReplacementRate = pct(managesReplacement, totalIndependenceRecords);
-
-  const requestsProducts = independence_records.filter(
-    (r) => r.requests_dental_products_when_needed,
-  ).length;
-  const requestsProductsRate = pct(requestsProducts, totalIndependenceRecords);
 
   const goalSet = independence_records.filter((r) => r.independence_goal_set).length;
-  const goalSetRate = pct(goalSet, totalIndependenceRecords);
 
   const goalMet = independence_records.filter(
     (r) => r.independence_goal_set && r.independence_goal_met,
@@ -552,9 +458,6 @@ export function computeTeethBrushingOralRoutine(
 
   const improved = independence_records.filter(
     (r) => r.progress_since_last_assessment === "improved",
-  ).length;
-  const maintained = independence_records.filter(
-    (r) => r.progress_since_last_assessment === "maintained",
   ).length;
   const declined = independence_records.filter(
     (r) => r.progress_since_last_assessment === "declined",

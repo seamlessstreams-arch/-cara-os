@@ -1283,7 +1283,6 @@ describe("Home Staff Performance Composite Intelligence Engine", () => {
     });
 
     it("appraisal_completion_rate is correct", () => {
-      const staffIds = ["s1", "s2", "s3", "s4"];
       const appraisals = [
         makeAppraisal({ id: "a1", staff_id: "s1", status: "completed" }),
         makeAppraisal({ id: "a2", staff_id: "s2", status: "completed" }),

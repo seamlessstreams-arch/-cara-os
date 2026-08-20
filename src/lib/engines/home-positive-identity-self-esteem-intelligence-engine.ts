@@ -308,17 +308,11 @@ export function computePositiveIdentitySelfEsteem(
   const identityChildLed = identity_work_records.filter((r) => r.child_led).length;
   const identityChildLedRate = pct(identityChildLed, totalIdentityRecords);
 
-  const identityStaffFacilitated = identity_work_records.filter((r) => r.staff_facilitated).length;
-  const identityStaffFacilitationRate = pct(identityStaffFacilitated, totalIdentityRecords);
-
   const identityTherapeutic = identity_work_records.filter((r) => r.therapeutic_support).length;
   const identityTherapeuticRate = pct(identityTherapeutic, totalIdentityRecords);
 
   const identityOutcomesDocumented = identity_work_records.filter((r) => r.outcomes_documented).length;
   const identityOutcomesRate = pct(identityOutcomesDocumented, totalIdentityRecords);
-
-  const identityFollowUp = identity_work_records.filter((r) => r.follow_up_planned).length;
-  const identityFollowUpRate = pct(identityFollowUp, totalIdentityRecords);
 
   const identitySatisfactionSum = identity_work_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -328,10 +322,6 @@ export function computePositiveIdentitySelfEsteem(
     totalIdentityRecords > 0
       ? Math.round((identitySatisfactionSum / totalIdentityRecords) * 100) / 100
       : null;
-
-  const uniqueChildrenWithIdentityWork = new Set(
-    identity_work_records.map((r) => r.child_id),
-  ).size;
 
   // --- Life story engagement rate ---
   const totalLifeStoryRecords = life_story_records.length;
@@ -352,20 +342,8 @@ export function computePositiveIdentitySelfEsteem(
   const lifeStoryChildEngaged = life_story_records.filter((r) => r.child_engaged).length;
   const lifeStoryEngagementRateRaw = pct(lifeStoryChildEngaged, totalLifeStoryRecords);
 
-  const lifeStoryChildLed = life_story_records.filter((r) => r.child_led).length;
-  const lifeStoryChildLedRate = pct(lifeStoryChildLed, totalLifeStoryRecords);
-
   const lifeStoryStaffTrained = life_story_records.filter((r) => r.staff_trained).length;
   const lifeStoryStaffTrainingRate = pct(lifeStoryStaffTrained, totalLifeStoryRecords);
-
-  const lifeStoryTherapeutic = life_story_records.filter((r) => r.therapeutic_input).length;
-  const lifeStoryTherapeuticRate = pct(lifeStoryTherapeutic, totalLifeStoryRecords);
-
-  const lifeStoryAgeAppropriate = life_story_records.filter((r) => r.age_appropriate).length;
-  const lifeStoryAgeAppropriateRate = pct(lifeStoryAgeAppropriate, totalLifeStoryRecords);
-
-  const lifeStoryMaterials = life_story_records.filter((r) => r.materials_provided).length;
-  const lifeStoryMaterialsRate = pct(lifeStoryMaterials, totalLifeStoryRecords);
 
   const lifeStorySatisfactionSum = life_story_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -375,9 +353,6 @@ export function computePositiveIdentitySelfEsteem(
     totalLifeStoryRecords > 0
       ? Math.round((lifeStorySatisfactionSum / totalLifeStoryRecords) * 100) / 100
       : null;
-
-  const lifeStorySWInvolved = life_story_records.filter((r) => r.social_worker_involved).length;
-  const lifeStorySWRate = pct(lifeStorySWInvolved, totalLifeStoryRecords);
 
   // Composite life story engagement rate
   // fab-0: null when no records.
@@ -408,9 +383,6 @@ export function computePositiveIdentitySelfEsteem(
   const selfEsteemEvidenceBased = self_esteem_programme_records.filter((r) => r.evidence_based).length;
   const selfEsteemEvidenceBasedRate = pct(selfEsteemEvidenceBased, totalSelfEsteemRecords);
 
-  const selfEsteemStaffTrained = self_esteem_programme_records.filter((r) => r.staff_trained).length;
-  const selfEsteemStaffTrainingRate = pct(selfEsteemStaffTrained, totalSelfEsteemRecords);
-
   const selfEsteemSatisfactionSum = self_esteem_programme_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
@@ -438,9 +410,6 @@ export function computePositiveIdentitySelfEsteem(
   const sharedWithFamily = achievement_records.filter((r) => r.shared_with_family).length;
   const achievementFamilyShareRate = pct(sharedWithFamily, totalAchievementRecords);
 
-  const sharedWithSW = achievement_records.filter((r) => r.shared_with_social_worker).length;
-  const achievementSWShareRate = pct(sharedWithSW, totalAchievementRecords);
-
   const childProud = achievement_records.filter((r) => r.child_proud).length;
   const childPrideRate = pct(childProud, totalAchievementRecords);
 
@@ -449,9 +418,6 @@ export function computePositiveIdentitySelfEsteem(
 
   const recordedInCarePlan = achievement_records.filter((r) => r.recorded_in_care_plan).length;
   const achievementCarePlanRate = pct(recordedInCarePlan, totalAchievementRecords);
-
-  const staffInitiatedAchievements = achievement_records.filter((r) => r.staff_initiated).length;
-  const staffInitiatedRate = pct(staffInitiatedAchievements, totalAchievementRecords);
 
   const uniqueAchievementTypes = new Set(
     achievement_records.map((r) => r.achievement_type),
@@ -470,12 +436,6 @@ export function computePositiveIdentitySelfEsteem(
 
   const positiveImageImprovement = positive_image_records.filter((r) => r.measurable_improvement).length;
   const positiveImageImprovementRate = pct(positiveImageImprovement, totalPositiveImageRecords);
-
-  const positiveImageOutcomes = positive_image_records.filter((r) => r.outcomes_documented).length;
-  const positiveImageOutcomesRate = pct(positiveImageOutcomes, totalPositiveImageRecords);
-
-  const positiveImageFollowUp = positive_image_records.filter((r) => r.follow_up_planned).length;
-  const positiveImageFollowUpRate = pct(positiveImageFollowUp, totalPositiveImageRecords);
 
   // Composite positive image rate
   // fab-0: null when no records.

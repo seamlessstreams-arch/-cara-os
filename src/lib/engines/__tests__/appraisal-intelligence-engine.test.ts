@@ -472,7 +472,6 @@ describe("alerts", () => {
     const r = run([
       makeAppraisal({ id: "a1", status: "completed" }),
     ]);
-    const overdueAlerts = r.alerts.filter((a) => a.message.includes("overdue"));
     // The "overdue" alert should NOT appear (though "review_overdue" for next_review might)
     const critOverdue = r.alerts.filter((a) => a.severity === "critical" && a.message.includes("appraisal(s) overdue"));
     expect(critOverdue.length).toBe(0);

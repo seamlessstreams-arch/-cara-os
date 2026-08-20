@@ -324,22 +324,10 @@ export function computeHazardNearMissReporting(
   const hazardsVerified = hazard_report_records.filter(
     (h) => (h.status === "resolved" || h.status === "closed") && h.resolution_verified,
   ).length;
-  const resolutionVerificationRate = pct(hazardsVerified, hazardsResolved);
 
   const hazardsEscalated = hazard_report_records.filter(
     (h) => h.escalated_to_manager,
   ).length;
-  const escalationRate = pct(hazardsEscalated, totalHazardReports);
-
-  const criticalHazards = hazard_report_records.filter(
-    (h) => h.severity === "critical" || h.severity === "high",
-  ).length;
-  const criticalHazardRate = pct(criticalHazards, totalHazardReports);
-
-  const hazardsWithPhoto = hazard_report_records.filter(
-    (h) => h.photograph_attached,
-  ).length;
-  const photoEvidenceRate = pct(hazardsWithPhoto, totalHazardReports);
 
   const recurrentHazards = hazard_report_records.filter(
     (h) => h.recurrence_flag,
@@ -355,15 +343,6 @@ export function computeHazardNearMissReporting(
   // Reporter role diversity — how many distinct roles are reporting
   const reporterRoles = new Set(hazard_report_records.map((h) => h.reporter_role));
   const reporterDiversity = reporterRoles.size;
-
-  // Hazard type diversity — how many distinct hazard types logged
-  const hazardTypes = new Set(hazard_report_records.map((h) => h.hazard_type));
-
-  // Open / overdue hazards
-  const openHazards = hazard_report_records.filter(
-    (h) => h.status === "open" || h.status === "in_progress",
-  ).length;
-  const openHazardRate = pct(openHazards, totalHazardReports);
 
   // --- Near miss metrics ---
   const totalNearMisses = near_miss_records.length;
@@ -381,7 +360,6 @@ export function computeHazardNearMissReporting(
   const nearMissPreventiveIdentified = near_miss_records.filter(
     (n) => n.preventive_actions_identified,
   ).length;
-  const preventiveActionIdentifiedRate = pct(nearMissPreventiveIdentified, totalNearMisses);
 
   const nearMissPreventiveCompleted = near_miss_records.filter(
     (n) => n.preventive_actions_identified && n.preventive_actions_completed,
@@ -394,28 +372,16 @@ export function computeHazardNearMissReporting(
   const nearMissShared = near_miss_records.filter(
     (n) => n.shared_with_team,
   ).length;
-  const nearMissSharingRate = pct(nearMissShared, totalNearMisses);
 
   const nearMissWithImmediateAction = near_miss_records.filter(
     (n) => n.immediate_action_taken,
   ).length;
   const nearMissImmediateActionRate = pct(nearMissWithImmediateAction, totalNearMisses);
 
-  const nearMissClosed = near_miss_records.filter(
-    (n) => n.status === "closed",
-  ).length;
-  const nearMissClosureRate = pct(nearMissClosed, totalNearMisses);
-
   const nearMissCatastrophic = near_miss_records.filter(
     (n) => n.potential_severity === "catastrophic" || n.potential_severity === "serious",
   ).length;
   const seriousNearMissRate = pct(nearMissCatastrophic, totalNearMisses);
-
-  // Near miss child involvement
-  const nearMissChildInvolved = near_miss_records.filter(
-    (n) => n.child_involved,
-  ).length;
-  const childInvolvedNearMissRate = pct(nearMissChildInvolved, totalNearMisses);
 
   // Composite near miss tracking rate: investigated + timely + preventive completed + shared
   const nearMissTrackingNumerator =
@@ -435,7 +401,6 @@ export function computeHazardNearMissReporting(
   const actionsCompleted = corrective_action_records.filter(
     (a) => a.status === "completed",
   ).length;
-  const actionCompletionRate = pct(actionsCompleted, totalCorrectiveActions);
 
   const actionsCompletedOnTime = corrective_action_records.filter(
     (a) => a.status === "completed" && a.completed_on_time,
@@ -457,26 +422,6 @@ export function computeHazardNearMissReporting(
   ).length;
   const overdueActionRate = pct(overdueActions, totalCorrectiveActions);
 
-  const criticalActions = corrective_action_records.filter(
-    (a) => a.priority === "critical" || a.priority === "high",
-  ).length;
-  const criticalActionRate = pct(criticalActions, totalCorrectiveActions);
-
-  const criticalActionsCompleted = corrective_action_records.filter(
-    (a) =>
-      (a.priority === "critical" || a.priority === "high") &&
-      a.status === "completed",
-  ).length;
-  const criticalActionCompletionRate = pct(criticalActionsCompleted, criticalActions);
-
-  const followUpRequired = corrective_action_records.filter(
-    (a) => a.follow_up_required,
-  ).length;
-  const followUpCompleted = corrective_action_records.filter(
-    (a) => a.follow_up_required && a.follow_up_completed,
-  ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
-
   // Composite corrective action rate: completed + on time + verified + recurrence prevented
   const correctiveActionNumerator =
     actionsCompleted + actionsCompletedOnTime + actionsVerified + actionsRecurrencePrevented;
@@ -489,27 +434,19 @@ export function computeHazardNearMissReporting(
   const walksWithReports = safety_walk_records.filter(
     (w) => w.report_completed,
   ).length;
-  const walkReportCompletionRate = pct(walksWithReports, totalSafetyWalks);
 
   const walksShared = safety_walk_records.filter(
     (w) => w.report_shared_with_team,
   ).length;
-  const walkSharingRate = pct(walksShared, totalSafetyWalks);
 
   const walksWithStaffEngagement = safety_walk_records.filter(
     (w) => w.staff_engaged_during_walk,
   ).length;
-  const walkStaffEngagementRate = pct(walksWithStaffEngagement, totalSafetyWalks);
 
   const walksWithChildConsultation = safety_walk_records.filter(
     (w) => w.children_consulted,
   ).length;
   const walkChildConsultationRate = pct(walksWithChildConsultation, totalSafetyWalks);
-
-  const walksWithFollowUp = safety_walk_records.filter(
-    (w) => w.follow_up_walk_scheduled,
-  ).length;
-  const followUpWalkRate = pct(walksWithFollowUp, totalSafetyWalks);
 
   // Walk area coverage
   const totalAreasPlanned = safety_walk_records.reduce(
@@ -520,7 +457,6 @@ export function computeHazardNearMissReporting(
     (sum, w) => sum + w.total_areas_completed,
     0,
   );
-  const areaCoverageRate = pct(totalAreasCompleted, totalAreasPlanned);
 
   // Walk actions completion
   const totalWalkActionsRaised = safety_walk_records.reduce(
@@ -543,16 +479,6 @@ export function computeHazardNearMissReporting(
       ? Math.round((walkComplianceSum / totalSafetyWalks) * 100) / 100
       : null;
 
-  // Total hazards found on walks
-  const totalWalkHazards = safety_walk_records.reduce(
-    (sum, w) => sum + w.hazards_identified,
-    0,
-  );
-  const totalWalkPositives = safety_walk_records.reduce(
-    (sum, w) => sum + w.positive_observations,
-    0,
-  );
-
   // Composite safety walk rate: report + shared + area coverage + action completion
   const safetyWalkNumerator =
     walksWithReports + walksShared + totalAreasCompleted + totalWalkActionsCompleted;
@@ -573,14 +499,6 @@ export function computeHazardNearMissReporting(
   ).length;
   const lessonSharingRate = pct(lessonsShared, totalIncidentLearnings);
 
-  const policyUpdateRequired = incident_learning_records.filter(
-    (l) => l.policy_update_required,
-  ).length;
-  const policyUpdateCompleted = incident_learning_records.filter(
-    (l) => l.policy_update_required && l.policy_update_completed,
-  ).length;
-  const policyUpdateCompletionRate = pct(policyUpdateCompleted, policyUpdateRequired);
-
   const trainingNeedIdentified = incident_learning_records.filter(
     (l) => l.training_need_identified,
   ).length;
@@ -589,16 +507,9 @@ export function computeHazardNearMissReporting(
   ).length;
   const trainingDeliveryRate = pct(trainingDelivered, trainingNeedIdentified);
 
-  const improvementActionIdentified = incident_learning_records.filter(
-    (l) => l.improvement_action_identified,
-  ).length;
   const improvementActionCompleted = incident_learning_records.filter(
     (l) => l.improvement_action_identified && l.improvement_action_completed,
   ).length;
-  const improvementActionCompletionRate = pct(
-    improvementActionCompleted,
-    improvementActionIdentified,
-  );
 
   const improvementActionEffective = incident_learning_records.filter(
     (l) =>
@@ -620,16 +531,6 @@ export function computeHazardNearMissReporting(
     (l) => l.staff_debrief_completed,
   ).length;
   const staffDebriefRate = pct(staffDebriefCompleted, totalIncidentLearnings);
-
-  const systemicIssues = incident_learning_records.filter(
-    (l) => l.systemic_issue_identified,
-  ).length;
-  const systemicIssueRate = pct(systemicIssues, totalIncidentLearnings);
-
-  const recurrenceChecked = incident_learning_records.filter(
-    (l) => l.recurrence_check_date !== null,
-  ).length;
-  const recurrenceCheckRate = pct(recurrenceChecked, totalIncidentLearnings);
 
   const recurrenceOccurred = incident_learning_records.filter(
     (l) => l.recurrence_occurred,

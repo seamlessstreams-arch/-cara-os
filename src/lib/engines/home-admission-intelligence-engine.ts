@@ -173,12 +173,6 @@ export function computeHomeAdmission(
     ? Math.round(decisionDays.reduce((a, b) => a + b, 0) / decisionDays.length)
     : null;
 
-  // Pending referrals over 14 days old without decision
-  const pendingOver14 = referrals.filter(r =>
-    ["new", "under_assessment", "impact_assessment", "panel_decision"].includes(r.status) &&
-    r.days_to_decision === -1 &&
-    r.referral_date <= today, // ensure it's a real referral date
-  ).length;
   // More accurate: check if referral_date is more than 14 days ago
   const pendingOver14Days = referrals.filter(r => {
     if (!["new", "under_assessment", "impact_assessment", "panel_decision"].includes(r.status)) return false;

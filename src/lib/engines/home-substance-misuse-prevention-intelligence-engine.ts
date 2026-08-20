@@ -295,8 +295,6 @@ export function computeSubstanceMisusePrevention(
 
   // --- Substance education metrics ---
   const totalEducationRecords = substance_education_records.length;
-  const attendedEducation = substance_education_records.filter((e) => e.attended).length;
-  const educationAttendanceRate = pct(attendedEducation, totalEducationRecords);
 
   const engagedEducation = substance_education_records.filter((e) => e.attended && e.engaged).length;
   const educationEngagementRate = pct(engagedEducation, totalEducationRecords);
@@ -304,26 +302,9 @@ export function computeSubstanceMisusePrevention(
   const understandingDemonstrated = substance_education_records.filter(
     (e) => e.attended && e.understanding_demonstrated,
   ).length;
-  const understandingRate = pct(understandingDemonstrated, totalEducationRecords);
 
   const ageAppropriate = substance_education_records.filter((e) => e.age_appropriate).length;
   const ageAppropriateRate = pct(ageAppropriate, totalEducationRecords);
-
-  const positiveFeedbackEducation = substance_education_records.filter(
-    (e) => e.attended && e.child_feedback_positive,
-  ).length;
-  const positiveFeedbackRate = pct(positiveFeedbackEducation, totalEducationRecords);
-
-  const linkedToRiskAssessment = substance_education_records.filter(
-    (e) => e.linked_to_risk_assessment,
-  ).length;
-  const linkedToRiskAssessmentRate = pct(linkedToRiskAssessment, totalEducationRecords);
-
-  const followUpPlanned = substance_education_records.filter((e) => e.follow_up_planned).length;
-  const followUpCompleted = substance_education_records.filter(
-    (e) => e.follow_up_planned && e.follow_up_completed,
-  ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
 
   const uniqueChildrenInEducation = new Set(
     substance_education_records.filter((e) => e.attended).map((e) => e.child_id),
@@ -342,11 +323,6 @@ export function computeSubstanceMisusePrevention(
     (r) => r.completed && r.action_plan_created,
   ).length;
   const actionPlanRate = pct(actionPlanCreated, completedAssessments);
-
-  const actionPlanReviewed = risk_assessment_records.filter(
-    (r) => r.action_plan_created && r.action_plan_reviewed,
-  ).length;
-  const actionPlanReviewRate = pct(actionPlanReviewed, actionPlanCreated);
 
   const reviewOverdue = risk_assessment_records.filter((r) => r.review_overdue).length;
   const reviewOverdueRate = pct(reviewOverdue, totalRiskAssessmentRecords);
@@ -385,18 +361,9 @@ export function computeSubstanceMisusePrevention(
 
   // --- Early intervention metrics ---
   const totalInterventionRecords = early_intervention_records.length;
-  const completedInterventions = early_intervention_records.filter(
-    (i) => i.status === "completed",
-  ).length;
-  const interventionCompletionRate = pct(completedInterventions, totalInterventionRecords);
 
   const engagedInterventions = early_intervention_records.filter((i) => i.child_engaged).length;
   const interventionEngagementRate = pct(engagedInterventions, totalInterventionRecords);
-
-  const positiveOutcomes = early_intervention_records.filter(
-    (i) => (i.status === "completed" || i.status === "in_progress") && i.outcomes_positive,
-  ).length;
-  const positiveOutcomeCount = positiveOutcomes;
 
   const measurableImprovement = early_intervention_records.filter(
     (i) => i.measurable_improvement,
@@ -416,9 +383,6 @@ export function computeSubstanceMisusePrevention(
   );
   const sessionCompletionRate = pct(totalSessionsCompleted, totalSessionsPlanned);
 
-  const reviewedInterventions = early_intervention_records.filter((i) => i.reviewed).length;
-  const interventionReviewRate = pct(reviewedInterventions, totalInterventionRecords);
-
   // Composite intervention effectiveness: engagement + measurable improvement + risk reduction
   // fab-0: null when no intervention records.
   const interventionEffectivenessRate: number | null =
@@ -435,22 +399,8 @@ export function computeSubstanceMisusePrevention(
   ).length;
   const referralTimelinessRate = pct(referralsMadeWithinTarget, totalReferralRecords);
 
-  const acceptedReferrals = referral_records.filter((r) => r.accepted).length;
-  const referralAcceptanceRate = pct(acceptedReferrals, totalReferralRecords);
-
-  const appointmentsAttended = referral_records.filter(
-    (r) => r.appointment_date && r.appointment_attended,
-  ).length;
-  const appointmentsWithDates = referral_records.filter((r) => r.appointment_date).length;
-  const appointmentAttendanceRate = pct(appointmentsAttended, appointmentsWithDates);
-
   const outcomesRecorded = referral_records.filter((r) => r.outcome_recorded).length;
   const outcomeRecordingRate = pct(outcomesRecorded, totalReferralRecords);
-
-  const positiveReferralOutcomes = referral_records.filter(
-    (r) => r.outcome_recorded && r.outcome_positive,
-  ).length;
-  const positiveReferralOutcomeRate = pct(positiveReferralOutcomes, outcomesRecorded);
 
   const followUpRequired = referral_records.filter((r) => r.follow_up_required).length;
   const followUpDone = referral_records.filter(
@@ -459,13 +409,6 @@ export function computeSubstanceMisusePrevention(
   const referralFollowUpRate = pct(followUpDone, followUpRequired);
 
   const childConsented = referral_records.filter((r) => r.child_consented).length;
-  const childConsentRate = pct(childConsented, totalReferralRecords);
-
-  const socialWorkerInformed = referral_records.filter((r) => r.social_worker_informed).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalReferralRecords);
-
-  const emergencyReferrals = referral_records.filter((r) => r.urgency === "emergency").length;
-  const urgentReferrals = referral_records.filter((r) => r.urgency === "urgent").length;
 
   // Composite referral compliance: timeliness + outcome recording + follow-up
   // fab-0: null when no referrals.
@@ -489,12 +432,6 @@ export function computeSubstanceMisusePrevention(
   const childUnderstandsStrategy = harm_reduction_records.filter(
     (h) => h.implemented && h.child_understands_strategy,
   ).length;
-  const strategyUnderstandingRate = pct(childUnderstandsStrategy, totalHarmReductionRecords);
-
-  const riskReducedHarmReduction = harm_reduction_records.filter(
-    (h) => h.implemented && h.risk_reduced,
-  ).length;
-  const harmReductionRiskReductionRate = pct(riskReducedHarmReduction, totalHarmReductionRecords);
 
   const documentedHarmReduction = harm_reduction_records.filter(
     (h) => h.implemented && h.documented,
@@ -524,10 +461,6 @@ export function computeSubstanceMisusePrevention(
     implementedHarmReduction > 0
       ? Math.round((effectivenessSum / implementedHarmReduction) * 100) / 100
       : null;
-
-  const uniqueChildrenHarmReduction = new Set(
-    harm_reduction_records.filter((h) => h.implemented).map((h) => h.child_id),
-  ).size;
 
   // Composite harm reduction rate: implementation + engagement + documentation
   // fab-0: null when no harm-reduction records.

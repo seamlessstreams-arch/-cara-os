@@ -134,8 +134,6 @@ describe("identifySensoryAlerts", () => {
   it("returns empty array when all children assessed and profiles current", () => {
     const profiles = [makeProfile()];
     const alerts = identifySensoryAlerts(profiles, 1);
-    // No outdated, staff trained, review not overdue, has adaptations
-    const criticalOrHigh = alerts.filter((a) => a.severity === "critical" || a.severity === "high");
     // Only the profile_gap should not fire since 1 child, 1 assessed
     expect(alerts.filter((a) => a.type === "no_profile")).toHaveLength(0);
   });

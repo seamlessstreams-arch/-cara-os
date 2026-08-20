@@ -703,7 +703,6 @@ describe("generateHomeIntelligenceSummary", () => {
       moduleScores: fullModuleSet(),
     });
 
-    const strengthTexts = result.strengths.join(" ");
     // Should mention positive rating
     expect(result.strengths.some((s) => s.includes("rated"))).toBe(true);
   });

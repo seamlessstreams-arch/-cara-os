@@ -292,25 +292,15 @@ export function computeLaundryLinenManagement(
   const totalServiceRecords = laundry_service_records.length;
 
   const itemsCollected = laundry_service_records.filter((r) => r.items_collected).length;
-  const collectionRate = pct(itemsCollected, totalServiceRecords);
 
   const itemsReturned = laundry_service_records.filter((r) => r.items_returned).length;
-  const returnRate = pct(itemsReturned, totalServiceRecords);
 
   const returnedWithin24h = laundry_service_records.filter((r) => r.returned_within_24h).length;
   const timelinessRate = pct(returnedWithin24h, totalServiceRecords);
 
   const returnedClean = laundry_service_records.filter((r) => r.returned_clean).length;
-  const cleanlinessRate = pct(returnedClean, totalServiceRecords);
 
   const returnedUndamaged = laundry_service_records.filter((r) => r.returned_undamaged).length;
-  const undamagedRate = pct(returnedUndamaged, totalServiceRecords);
-
-  const preferencesFollowed = laundry_service_records.filter((r) => r.child_preferences_followed).length;
-  const preferenceRate = pct(preferencesFollowed, totalServiceRecords);
-
-  const labellingIntact = laundry_service_records.filter((r) => r.labelling_intact).length;
-  const labellingRate = pct(labellingIntact, totalServiceRecords);
 
   const notMixedWithOthers = laundry_service_records.filter((r) => !r.mixed_with_others).length;
   const separationRate = pct(notMixedWithOthers, totalServiceRecords);
@@ -356,35 +346,19 @@ export function computeLaundryLinenManagement(
   ).length;
   const linenIssueResolutionRate = pct(linenIssuesResolved, linenIssuesIdentified);
 
-  const linenScoreSum = linen_adequacy_records.reduce(
-    (sum, r) => sum + (r.overall_adequacy_score ?? 0),
-    0,
-  );
-  const avgLinenScore =
-    totalLinenAssessments > 0
-      ? Math.round((linenScoreSum / totalLinenAssessments) * 100) / 100
-      : null;
-
   // ── 3. Clothing care metrics ───────────────────────────────────────────
   const totalClothingCareRecords = clothing_care_records.length;
 
   const careInstructionsFollowed = clothing_care_records.filter((r) => r.care_instructions_followed).length;
-  const careInstructionRate = pct(careInstructionsFollowed, totalClothingCareRecords);
 
   const returnedToCorrectChild = clothing_care_records.filter((r) => r.clothing_returned_to_correct_child).length;
-  const correctReturnRate = pct(returnedToCorrectChild, totalClothingCareRecords);
 
   const conditionMaintained = clothing_care_records.filter((r) => r.clothing_condition_maintained).length;
-  const conditionRate = pct(conditionMaintained, totalClothingCareRecords);
 
   const clothingPrefsRespected = clothing_care_records.filter((r) => r.child_preferences_respected).length;
-  const clothingPreferenceRate = pct(clothingPrefsRespected, totalClothingCareRecords);
 
   const culturalNeedsMet = clothing_care_records.filter((r) => r.cultural_needs_met).length;
   const culturalCareRate = pct(culturalNeedsMet, totalClothingCareRecords);
-
-  const clothingLabelled = clothing_care_records.filter((r) => r.clothing_labelled).length;
-  const clothingLabelRate = pct(clothingLabelled, totalClothingCareRecords);
 
   const ironingDone = clothing_care_records.filter((r) => r.ironing_pressing_done).length;
   const ironingRate = pct(ironingDone, totalClothingCareRecords);
@@ -393,7 +367,6 @@ export function computeLaundryLinenManagement(
   const stainTreatmentRate = pct(stainTreated, totalClothingCareRecords);
 
   const childInvolvedInCare = clothing_care_records.filter((r) => r.child_involved_in_care).length;
-  const childCareInvolvementRate = pct(childInvolvedInCare, totalClothingCareRecords);
 
   // Composite clothing care: care instructions + correct return + condition + prefs + cultural
   const clothingCareNumerator = careInstructionsFollowed + returnedToCorrectChild + conditionMaintained + clothingPrefsRespected + culturalNeedsMet;
@@ -435,23 +408,8 @@ export function computeLaundryLinenManagement(
   ).length;
   const hygieneIssueResolutionRate = pct(hygieneIssuesResolved, hygieneIssuesIdentified);
 
-  const hygieneScoreSum = hygiene_compliance_records.reduce(
-    (sum, r) => sum + (r.overall_compliance_score ?? 0),
-    0,
-  );
-  const avgHygieneScore =
-    totalHygieneAssessments > 0
-      ? Math.round((hygieneScoreSum / totalHygieneAssessments) * 100) / 100
-      : null;
-
   const infectionControlMet = hygiene_compliance_records.filter((r) => r.infection_control_measures_met).length;
   const infectionControlRate = pct(infectionControlMet, totalHygieneAssessments);
-
-  const soiledLinenCorrect = hygiene_compliance_records.filter((r) => r.soiled_linen_handled_correctly).length;
-  const soiledLinenRate = pct(soiledLinenCorrect, totalHygieneAssessments);
-
-  const staffTrained = hygiene_compliance_records.filter((r) => r.staff_trained).length;
-  const staffTrainedRate = pct(staffTrained, totalHygieneAssessments);
 
   // ── 5. Child satisfaction metrics ──────────────────────────────────────
   const totalSatisfactionRecords = child_satisfaction_records.length;
@@ -463,34 +421,22 @@ export function computeLaundryLinenManagement(
       : null;
 
   const clothingCleanEnough = child_satisfaction_records.filter((r) => r.clothing_clean_enough).length;
-  const cleanEnoughRate = pct(clothingCleanEnough, totalSatisfactionRecords);
 
   const clothingReturnedTimely = child_satisfaction_records.filter((r) => r.clothing_returned_timely).length;
-  const returnedTimelyRate = pct(clothingReturnedTimely, totalSatisfactionRecords);
 
   const handledWithCare = child_satisfaction_records.filter((r) => r.clothing_handled_with_care).length;
-  const handledWithCareRate = pct(handledWithCare, totalSatisfactionRecords);
 
   const beddingComfortable = child_satisfaction_records.filter((r) => r.bedding_comfortable).length;
-  const beddingComfortRate = pct(beddingComfortable, totalSatisfactionRecords);
 
   const preferencesListened = child_satisfaction_records.filter((r) => r.preferences_listened_to).length;
-  const preferencesListenedRate = pct(preferencesListened, totalSatisfactionRecords);
 
   const feelsRespected = child_satisfaction_records.filter((r) => r.feels_respected).length;
   const feelsRespectedRate = pct(feelsRespected, totalSatisfactionRecords);
 
   const allowedOwnLaundry = child_satisfaction_records.filter((r) => r.allowed_to_do_own_laundry).length;
-  const ownLaundryRate = pct(allowedOwnLaundry, totalSatisfactionRecords);
 
   const wantsMoreIndependence = child_satisfaction_records.filter((r) => r.wants_more_independence).length;
   const wantsMoreIndependenceRate = pct(wantsMoreIndependence, totalSatisfactionRecords);
-
-  const culturalNeedsRespected = child_satisfaction_records.filter((r) => r.cultural_needs_respected).length;
-  const culturalRespectRate = pct(culturalNeedsRespected, totalSatisfactionRecords);
-
-  const favouriteItemsTreated = child_satisfaction_records.filter((r) => r.favourite_items_treated_well).length;
-  const favouriteItemsRate = pct(favouriteItemsTreated, totalSatisfactionRecords);
 
   // Composite child satisfaction: clean + timely + handled with care + bedding comfortable + prefs listened + feels respected
   const satisfactionNumerator = clothingCleanEnough + clothingReturnedTimely + handledWithCare + beddingComfortable + preferencesListened + feelsRespected;

@@ -597,61 +597,6 @@ describe("computeAllegationsInvestigationsManagement", () => {
     });
 
     it("score 65 is good", () => {
-      // Drop more bonuses: allegation 60% → 0, lado 60% → 0, safeguarding 60% → 0
-      // investigation 80% → +1, outcome 60% → 0
-      // management oversight 60% → 0, lessons 60% → 0
-      // child support 60% → 0, independence 60% → 0
-      // 52 + 3(inv completion 100%) + 3(outcome doc 100%) + 4(safeguarding 100%) + 3(mgmt 100%) + 2(lessons 100%) + 3(child support 100%) + 2(independence 100%) = too high
-      // Use baseInputNoBonuses which gives 52 then add specific bonuses
-      // Actually, let me manually compute:
-      // baseInputNoBonuses: all rates at 60%, no bonuses, no penalties = 52
-      // Then add investigation completion and safeguarding to 90%+ to get +3 and +4 = 59
-      // Need more: also add lado to 90% → +4 = 63. Still < 65.
-      // Add allegation to 90% → +4 = 67. Good!
-      // But we need to override those from baseInputNoBonuses.
-      const allegations = Array.from({ length: 10 }, (_, i) =>
-        makeAllegation({
-          id: `alleg_${i}`,
-          child_id: `child_${i}`,
-          recorded_within_24h: i < 7, // 70% → +2
-        }),
-      );
-      const ladoReferrals = Array.from({ length: 10 }, (_, i) =>
-        makeLadoReferral({
-          id: `lado_${i}`,
-          allegation_id: `alleg_${i}`,
-          referred_within_1_working_day: i < 7, // 70% → +2
-        }),
-      );
-      const investigations = Array.from({ length: 10 }, (_, i) =>
-        makeInvestigation({
-          id: `inv_${i}`,
-          allegation_id: `alleg_${i}`,
-          is_open: i >= 7, // 70% completion → +1
-          date_closed: i < 7 ? "2026-04-15" : null,
-          actual_completion_days: i < 7 ? 13 : -1,
-          completed_within_target: i < 7,
-          management_oversight: i < 6, // 60% → 0
-          child_supported_throughout: i < 6, // 60% → 0
-          investigator_independent: i < 6, // 60% → 0
-        }),
-      );
-      const outcomes = Array.from({ length: 10 }, (_, i) =>
-        makeOutcome({
-          id: `out_${i}`,
-          allegation_id: `alleg_${i}`,
-          investigation_id: `inv_${i}`,
-          outcome_documented: i < 7, // 70% → +1
-          lessons_learned_recorded: i < 6, // 60% → 0
-        }),
-      );
-      const safeguardingResponses = Array.from({ length: 10 }, (_, i) =>
-        makeSafeguardingResponse({
-          id: `sg_${i}`,
-          allegation_id: `alleg_${i}`,
-          response_within_1_hour: i < 7, // 70% → +2
-        }),
-      );
       // Score: 52 + 2 + 2 + 1 + 1 + 2 + 0 + 0 + 0 + 0 = 58... not enough
       // Need to push some to 90%+
       // Let me make allegations 90% and lado 90%

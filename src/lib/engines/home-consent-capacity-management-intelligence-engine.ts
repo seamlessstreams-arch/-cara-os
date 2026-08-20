@@ -295,16 +295,6 @@ export function computeConsentCapacityManagement(
   const consentCoverageRate =
     total_children > 0 ? pct(uniqueChildrenWithConsent, total_children) : 0;
 
-  const consentFormsWithChildConsulted = consent_form_records.filter(
-    (f) => f.child_consulted,
-  ).length;
-  const childConsultedRate = pct(consentFormsWithChildConsulted, totalConsentForms);
-
-  const consentFormsWithChildViews = consent_form_records.filter(
-    (f) => f.child_views_recorded,
-  ).length;
-  const childViewsRecordedRate = pct(consentFormsWithChildViews, totalConsentForms);
-
   const consentFormsAccessibleFormat = consent_form_records.filter(
     (f) => f.accessible_format_used,
   ).length;
@@ -330,11 +320,6 @@ export function computeConsentCapacityManagement(
   const gillickAssessmentRate =
     total_children > 0 ? pct(uniqueChildrenWithGillick, total_children) : 0;
 
-  const gillickCompetenceDetermined = gillick_assessment_records.filter(
-    (g) => g.competence_determined,
-  ).length;
-  const gillickDeterminationRate = pct(gillickCompetenceDetermined, totalGillickAssessments);
-
   const gillickEvidenceDocumented = gillick_assessment_records.filter(
     (g) => g.evidence_documented,
   ).length;
@@ -343,17 +328,6 @@ export function computeConsentCapacityManagement(
   const gillickChildUnderstandingVerified = gillick_assessment_records.filter(
     (g) => g.child_understanding_verified,
   ).length;
-  const gillickUnderstandingRate = pct(gillickChildUnderstandingVerified, totalGillickAssessments);
-
-  const gillickAgeAppropriateInfo = gillick_assessment_records.filter(
-    (g) => g.information_provided_age_appropriate,
-  ).length;
-  const gillickAgeAppropriateRate = pct(gillickAgeAppropriateInfo, totalGillickAssessments);
-
-  const gillickOutcomeExplained = gillick_assessment_records.filter(
-    (g) => g.outcome_explained_to_child,
-  ).length;
-  const gillickOutcomeExplainedRate = pct(gillickOutcomeExplained, totalGillickAssessments);
 
   const gillickMultiDisciplinary = gillick_assessment_records.filter(
     (g) => g.multi_disciplinary_input,
@@ -377,11 +351,6 @@ export function computeConsentCapacityManagement(
   ).length;
   const bestInterestsRate = pct(capacityBestInterests, totalCapacityReviews);
 
-  const capacityChildSupported = capacity_review_records.filter(
-    (c) => c.child_supported_to_participate,
-  ).length;
-  const childSupportedRate = pct(capacityChildSupported, totalCapacityReviews);
-
   const capacityReasonableAdjustments = capacity_review_records.filter(
     (c) => c.reasonable_adjustments_made,
   ).length;
@@ -391,16 +360,6 @@ export function computeConsentCapacityManagement(
     (c) => c.advocacy_offered,
   ).length;
   const advocacyOfferedRate = pct(capacityAdvocacyOffered, totalCapacityReviews);
-
-  const capacityOutcomeCommunicated = capacity_review_records.filter(
-    (c) => c.outcome_communicated_to_child,
-  ).length;
-  const outcomeCommunicatedRate = pct(capacityOutcomeCommunicated, totalCapacityReviews);
-
-  const capacityDecisionSpecific = capacity_review_records.filter(
-    (c) => c.decision_specific,
-  ).length;
-  const decisionSpecificRate = pct(capacityDecisionSpecific, totalCapacityReviews);
 
   const overdueCapacityReviews = capacity_review_records.filter(
     (c) => c.next_review_overdue,
@@ -414,11 +373,6 @@ export function computeConsentCapacityManagement(
   const informedConsentRate =
     total_children > 0 ? pct(uniqueChildrenWithInformedConsent, total_children) : 0;
 
-  const informedConsentInfoProvided = informed_consent_records.filter(
-    (ic) => ic.information_provided,
-  ).length;
-  const infoProvidedRate = pct(informedConsentInfoProvided, totalInformedConsents);
-
   const informedConsentAgeAppropriate = informed_consent_records.filter(
     (ic) => ic.information_age_appropriate,
   ).length;
@@ -429,25 +383,9 @@ export function computeConsentCapacityManagement(
   ).length;
   const risksExplainedRate = pct(informedConsentRisksExplained, totalInformedConsents);
 
-  const informedConsentBenefitsExplained = informed_consent_records.filter(
-    (ic) => ic.benefits_explained,
-  ).length;
-  const benefitsExplainedRate = pct(informedConsentBenefitsExplained, totalInformedConsents);
-
-  const informedConsentAlternatives = informed_consent_records.filter(
-    (ic) => ic.alternatives_discussed,
-  ).length;
-  const alternativesDiscussedRate = pct(informedConsentAlternatives, totalInformedConsents);
-
-  const informedConsentQuestionsEncouraged = informed_consent_records.filter(
-    (ic) => ic.questions_encouraged,
-  ).length;
-  const questionsEncouragedRate = pct(informedConsentQuestionsEncouraged, totalInformedConsents);
-
   const informedConsentUnderstandingConfirmed = informed_consent_records.filter(
     (ic) => ic.child_understanding_confirmed,
   ).length;
-  const understandingConfirmedRate = pct(informedConsentUnderstandingConfirmed, totalInformedConsents);
 
   const informedConsentTimeGiven = informed_consent_records.filter(
     (ic) => ic.time_given_to_decide,
@@ -458,11 +396,6 @@ export function computeConsentCapacityManagement(
     (ic) => ic.consent_documented,
   ).length;
   const consentDocumentedRate = pct(informedConsentDocumented, totalInformedConsents);
-
-  const informedConsentWitnessed = informed_consent_records.filter(
-    (ic) => ic.witness_present,
-  ).length;
-  const witnessRate = pct(informedConsentWitnessed, totalInformedConsents);
 
   const interpreterNeeded = informed_consent_records.filter(
     (ic) => ic.interpreter_needed,
@@ -494,35 +427,10 @@ export function computeConsentCapacityManagement(
   ).length;
   const withdrawalChildViewsRate = pct(withdrawalsChildViewsSought, totalWithdrawals);
 
-  const withdrawalsPartiesNotified = consent_withdrawal_records.filter(
-    (w) => w.relevant_parties_notified,
-  ).length;
-  const withdrawalNotificationRate = pct(withdrawalsPartiesNotified, totalWithdrawals);
-
-  const withdrawalsAlternatives = consent_withdrawal_records.filter(
-    (w) => w.alternative_options_discussed,
-  ).length;
-  const withdrawalAlternativesRate = pct(withdrawalsAlternatives, totalWithdrawals);
-
   const withdrawalsDocUpdated = consent_withdrawal_records.filter(
     (w) => w.documentation_updated,
   ).length;
   const withdrawalDocRate = pct(withdrawalsDocUpdated, totalWithdrawals);
-
-  const withdrawalsImpactAssessed = consent_withdrawal_records.filter(
-    (w) => w.impact_assessment_completed,
-  ).length;
-  const withdrawalImpactRate = pct(withdrawalsImpactAssessed, totalWithdrawals);
-
-  const withdrawalsManagerInformed = consent_withdrawal_records.filter(
-    (w) => w.manager_informed,
-  ).length;
-  const withdrawalManagerRate = pct(withdrawalsManagerInformed, totalWithdrawals);
-
-  const withdrawalsFollowUp = consent_withdrawal_records.filter(
-    (w) => w.follow_up_planned,
-  ).length;
-  const withdrawalFollowUpRate = pct(withdrawalsFollowUp, totalWithdrawals);
 
   // --- Composite withdrawal handling rate ---
   const withdrawalHandlingRate =

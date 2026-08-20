@@ -304,11 +304,6 @@ export function computeCulturalIdentityDiversity(
   }).length;
   const identityReviewTimelinessRate = pct(plansReviewedOnTime, plansRequiringReview);
 
-  // --- Personal passport currency ---
-  // Passports are "current" if identity_info_complete, cultural_needs_documented, and photo_current
-  const currentPassports = personal_passports.filter(
-    (p) => p.identity_info_complete && p.cultural_needs_documented && p.photo_current,
-  ).length;
   const childrenWithPassports = new Set(
     personal_passports
       .filter((p) => p.identity_info_complete && p.cultural_needs_documented && p.photo_current)

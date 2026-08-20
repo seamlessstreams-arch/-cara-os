@@ -162,7 +162,6 @@ export function computeDocumentComplianceIntelligence(
   const { documents, read_receipts, active_staff } = input;
 
   const activeStaffIds = new Set(active_staff.map((s) => s.id));
-  const staffNameMap = new Map(active_staff.map((s) => [s.id, s.name]));
   const activeStaffCount = active_staff.length;
 
   // ── Index maps ─────────────────────────────────────────────────────────

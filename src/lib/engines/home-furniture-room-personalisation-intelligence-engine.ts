@@ -301,11 +301,6 @@ export function computeFurnitureRoomPersonalisation(
 
   // --- Furniture adequacy ---
   const totalFurnitureAssessments = furniture_adequacy_records.length;
-  const uniqueChildrenWithFurnitureAssessment = new Set(
-    furniture_adequacy_records.map((f) => f.child_id),
-  ).size;
-  const furnitureCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithFurnitureAssessment, total_children) : 0;
 
   // Count items adequate across all assessments
   const furnitureItemChecks = furniture_adequacy_records.map((f) => {
@@ -326,16 +321,6 @@ export function computeFurnitureRoomPersonalisation(
   const totalFurnitureItems = furnitureItemChecks.reduce((s, c) => s + c.total, 0);
   const totalFurnitureAdequate = furnitureItemChecks.reduce((s, c) => s + c.adequate, 0);
   const furnitureAdequacyRate = pct(totalFurnitureAdequate, totalFurnitureItems);
-
-  const ageAppropriateCount = furniture_adequacy_records.filter(
-    (f) => f.age_appropriate,
-  ).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalFurnitureAssessments);
-
-  const sizeAppropriateCount = furniture_adequacy_records.filter(
-    (f) => f.size_appropriate,
-  ).length;
-  const sizeAppropriateRate = pct(sizeAppropriateCount, totalFurnitureAssessments);
 
   const conditionScoreMap: Record<string, number> = {
     excellent: 4,
@@ -375,11 +360,6 @@ export function computeFurnitureRoomPersonalisation(
 
   // --- Room personalisation ---
   const totalPersonalisationAssessments = room_personalisation_records.length;
-  const uniqueChildrenWithPersonalisation = new Set(
-    room_personalisation_records.map((r) => r.child_id),
-  ).size;
-  const personalisationCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPersonalisation, total_children) : 0;
 
   const personalisationItemChecks = room_personalisation_records.map((r) => {
     const items = [
@@ -413,7 +393,6 @@ export function computeFurnitureRoomPersonalisation(
   const childSatisfiedWithRoomCount = room_personalisation_records.filter(
     (r) => r.child_satisfied_with_room,
   ).length;
-  const roomSatisfactionRate = pct(childSatisfiedWithRoomCount, totalPersonalisationAssessments);
 
   const budgetProvidedCount = room_personalisation_records.filter(
     (r) => r.personalisation_budget_provided,
@@ -441,29 +420,14 @@ export function computeFurnitureRoomPersonalisation(
 
   // --- Child choice ---
   const totalChoiceRecords = child_choice_records.length;
-  const uniqueChildrenWithChoices = new Set(
-    child_choice_records.map((c) => c.child_id),
-  ).size;
-  const choiceCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithChoices, total_children) : 0;
 
   const fulfilledChoices = child_choice_records.filter((c) => c.fulfilled).length;
   const choiceFulfilmentRate = pct(fulfilledChoices, totalChoiceRecords);
-
-  const childInvolvedInSelection = child_choice_records.filter(
-    (c) => c.child_involved_in_selection,
-  ).length;
-  const childInvolvementRate = pct(childInvolvedInSelection, totalChoiceRecords);
 
   const childSatisfiedWithChoice = child_choice_records.filter(
     (c) => c.fulfilled && c.child_satisfied_with_outcome,
   ).length;
   const choiceSatisfactionRate = pct(childSatisfiedWithChoice, fulfilledChoices);
-
-  const staffSupportedChoices = child_choice_records.filter(
-    (c) => c.staff_supported,
-  ).length;
-  const staffSupportRate = pct(staffSupportedChoices, totalChoiceRecords);
 
   // Child choice rate = children who have made at least one fulfilled choice
   const childrenWithFulfilledChoice = new Set(
@@ -480,11 +444,6 @@ export function computeFurnitureRoomPersonalisation(
 
   // --- Comfort assessment ---
   const totalComfortAssessments = comfort_assessment_records.length;
-  const uniqueChildrenWithComfort = new Set(
-    comfort_assessment_records.map((c) => c.child_id),
-  ).size;
-  const comfortCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithComfort, total_children) : 0;
 
   const comfortItemChecks = comfort_assessment_records.map((c) => {
     const items = [
@@ -517,17 +476,11 @@ export function computeFurnitureRoomPersonalisation(
   const childReportedComfort = comfort_assessment_records.filter(
     (c) => c.child_reported,
   ).length;
-  const childReportedComfortRate = pct(childReportedComfort, totalComfortAssessments);
 
   const feelsSafeCount = comfort_assessment_records.filter(
     (c) => c.feels_safe_in_room,
   ).length;
   const feelsSafeRate = pct(feelsSafeCount, totalComfortAssessments);
-
-  const privacyAdequateCount = comfort_assessment_records.filter(
-    (c) => c.privacy_adequate,
-  ).length;
-  const privacyRate = pct(privacyAdequateCount, totalComfortAssessments);
 
   const totalComfortIssues = comfort_assessment_records.reduce(
     (s, c) => s + c.issues_identified,
@@ -546,11 +499,6 @@ export function computeFurnitureRoomPersonalisation(
 
   // --- Dignity of personal space ---
   const totalDignityAssessments = dignity_space_records.length;
-  const uniqueChildrenWithDignity = new Set(
-    dignity_space_records.map((d) => d.child_id),
-  ).size;
-  const dignityCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithDignity, total_children) : 0;
 
   const dignityItemChecks = dignity_space_records.map((d) => {
     const items = [
@@ -592,23 +540,10 @@ export function computeFurnitureRoomPersonalisation(
   ).length;
   const notUsedAsPunishmentRate = pct(roomNotPunishmentCount, totalDignityAssessments);
 
-  const dignityConterns = dignity_space_records.filter(
-    (d) => d.dignity_concern_raised,
-  ).length;
-  const dignityResolved = dignity_space_records.filter(
-    (d) => d.dignity_concern_raised && d.dignity_concern_resolved,
-  ).length;
-  const dignityConcernResolutionRate = pct(dignityResolved, dignityConterns);
-
   const spaceRespectedCount = dignity_space_records.filter(
     (d) => d.personal_space_respected,
   ).length;
   const spaceRespectedRate = pct(spaceRespectedCount, totalDignityAssessments);
-
-  const canSpendTimeAloneCount = dignity_space_records.filter(
-    (d) => d.can_spend_time_alone,
-  ).length;
-  const canSpendTimeAloneRate = pct(canSpendTimeAloneCount, totalDignityAssessments);
 
   // --- Child satisfaction rate (composite across personalisation, choice, comfort) ---
   const satisfactionOpportunities =

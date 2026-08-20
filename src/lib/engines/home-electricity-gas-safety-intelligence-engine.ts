@@ -321,8 +321,6 @@ export function computeElectricityGasSafety(
   const patDefectsResolved = patDefectRecords.filter((p) => p.defect_resolved).length;
   const patDefectResolutionRate = pct(patDefectsResolved, patDefectCount);
 
-  const patRemovedFromService = pat_testing_records.filter((p) => p.removed_from_service).length;
-
   const patHighRiskCount = pat_testing_records.filter((p) => p.risk_rating === "high").length;
 
   const patChildAccessibleFailed = pat_testing_records.filter(
@@ -336,11 +334,6 @@ export function computeElectricityGasSafety(
 
   const patLabelRate = pct(
     pat_testing_records.filter((p) => p.label_attached).length,
-    totalPatRecords,
-  );
-
-  const patVisualInspectionRate = pct(
-    pat_testing_records.filter((p) => p.visual_inspection_passed).length,
     totalPatRecords,
   );
 
@@ -425,11 +418,6 @@ export function computeElectricityGasSafety(
   );
   const electricalDefectResolutionRate = pct(totalElectricalDefectsRectified, totalElectricalDefects);
 
-  const electricalAllResolvedRate = pct(
-    electrical_inspection_records.filter((e) => e.all_defects_resolved).length,
-    totalElectricalRecords,
-  );
-
   const rcdTestedRate = pct(
     electrical_inspection_records.filter((e) => e.rcd_tested).length,
     totalElectricalRecords,
@@ -437,11 +425,6 @@ export function computeElectricityGasSafety(
 
   const rcdOperatingRate = pct(
     electrical_inspection_records.filter((e) => e.rcd_operating_correctly).length,
-    totalElectricalRecords,
-  );
-
-  const distributionBoardRate = pct(
-    electrical_inspection_records.filter((e) => e.distribution_board_satisfactory).length,
     totalElectricalRecords,
   );
 
@@ -455,11 +438,6 @@ export function computeElectricityGasSafety(
     totalElectricalRecords,
   );
 
-  const certificateIssuedRate = pct(
-    electrical_inspection_records.filter((e) => e.certificate_issued).length,
-    totalElectricalRecords,
-  );
-
   // --- CO Detectors ---
   const totalCoDetectors = co_detector_records.length;
   const coFunctioningRecords = co_detector_records.filter((c) => c.functioning);
@@ -468,8 +446,6 @@ export function computeElectricityGasSafety(
   const coTestedCurrent = co_detector_records.filter((c) => !c.test_overdue);
   const coDetectorRate = pct(coTestedCurrent.length, totalCoDetectors);
 
-  const coExpiredCount = co_detector_records.filter((c) => c.expired).length;
-  const coTestOverdueCount = co_detector_records.filter((c) => c.test_overdue).length;
   const coNotFunctioningCount = co_detector_records.filter((c) => !c.functioning).length;
 
   const coNearGasRate = pct(
@@ -530,16 +506,6 @@ export function computeElectricityGasSafety(
 
   const emergencyProcedureRate = pct(
     child_safety_records.filter((c) => c.knows_emergency_procedure).length,
-    totalChildSafetyRecords,
-  );
-
-  const knowsReportingRate = pct(
-    child_safety_records.filter((c) => c.knows_how_to_report).length,
-    totalChildSafetyRecords,
-  );
-
-  const ageAppropriateRate = pct(
-    child_safety_records.filter((c) => c.age_appropriate_understanding).length,
     totalChildSafetyRecords,
   );
 

@@ -305,19 +305,6 @@ export function computeInfectionPreventionControl(
   ).length;
   const auditIssueResolutionRate = pct(auditIssuesResolved, auditIssuesIdentified);
 
-  const auditScoreSum = hygiene_audit_records.reduce(
-    (sum, a) => sum + (a.overall_compliance_score ?? 0),
-    0,
-  );
-  const avgAuditScore =
-    totalAudits > 0
-      ? Math.round((auditScoreSum / totalAudits) * 100) / 100
-      : null;
-
-  const auditsWithCorrectiveActions = hygiene_audit_records.filter(
-    (a) => a.corrective_actions !== null && a.corrective_actions !== "",
-  ).length;
-
   // --- Illness outbreak metrics ---
   const totalOutbreaks = illness_outbreak_records.length;
 
@@ -341,11 +328,6 @@ export function computeInfectionPreventionControl(
   ).length;
   const lessonsLearnedRate = pct(outbreaksWithLessonsLearned, totalOutbreaks);
 
-  const outbreaksPublicHealthNotified = illness_outbreak_records.filter(
-    (o) => o.public_health_notified,
-  ).length;
-  const publicHealthNotificationRate = pct(outbreaksPublicHealthNotified, totalOutbreaks);
-
   // Outbreak management composite: isolation + GP + containment + lessons learned
   const outbreakManagementNumerator =
     outbreaksWithIsolation + outbreaksWithGP + outbreaksContained + outbreaksWithLessonsLearned;
@@ -364,7 +346,6 @@ export function computeInfectionPreventionControl(
   const handHygienePerformed = hand_hygiene_records.filter(
     (h) => h.hand_hygiene_performed,
   ).length;
-  const handHygienePerformedRate = pct(handHygienePerformed, totalHandHygieneObs);
 
   const techniqueCorrect = hand_hygiene_records.filter(
     (h) => h.technique_correct,
@@ -374,17 +355,11 @@ export function computeInfectionPreventionControl(
   const soapOrSanitiserUsed = hand_hygiene_records.filter(
     (h) => h.soap_or_sanitiser_used,
   ).length;
-  const soapUsageRate = pct(soapOrSanitiserUsed, totalHandHygieneObs);
 
   const durationAdequate = hand_hygiene_records.filter(
     (h) => h.duration_adequate,
   ).length;
   const durationAdequateRate = pct(durationAdequate, totalHandHygieneObs);
-
-  const glovesUsed = hand_hygiene_records.filter(
-    (h) => h.gloves_used_when_required,
-  ).length;
-  const glovesComplianceRate = pct(glovesUsed, totalHandHygieneObs);
 
   // Hand hygiene composite: performed + technique + soap + duration
   const handHygieneNumerator =
@@ -409,12 +384,6 @@ export function computeInfectionPreventionControl(
   const productsUsedCorrectly = cleaning_schedule_records.filter(
     (c) => c.products_used_correctly,
   ).length;
-  const productComplianceRate = pct(productsUsedCorrectly, totalCleaningRecords);
-
-  const checksPerformed = cleaning_schedule_records.filter(
-    (c) => c.checked_by !== null && c.checked_by !== "",
-  ).length;
-  const checkRate = pct(checksPerformed, totalCleaningRecords);
 
   const checksPassed = cleaning_schedule_records.filter(
     (c) => c.check_passed,
@@ -437,25 +406,10 @@ export function computeInfectionPreventionControl(
   // --- Immunisation metrics ---
   const totalImmunisationRecords = immunisation_records.length;
 
-  const immunisationsAdministered = immunisation_records.filter(
-    (i) => i.administered,
-  ).length;
-  const immunisationAdministeredRate = pct(immunisationsAdministered, totalImmunisationRecords);
-
   const consentObtained = immunisation_records.filter(
     (i) => i.consent_obtained,
   ).length;
   const consentRate = pct(consentObtained, totalImmunisationRecords);
-
-  const gpConfirmed = immunisation_records.filter(
-    (i) => i.gp_confirmed,
-  ).length;
-  const gpConfirmationRate = pct(gpConfirmed, totalImmunisationRecords);
-
-  const declinedVaccines = immunisation_records.filter(
-    (i) => i.declined,
-  ).length;
-  const declinedRate = pct(declinedVaccines, totalImmunisationRecords);
 
   const catchUpPlans = immunisation_records.filter(
     (i) => !i.administered && !i.declined && i.catch_up_plan_in_place,

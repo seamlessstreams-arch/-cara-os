@@ -93,20 +93,14 @@ export function computeBelongingPersonalProperty(input: BelongingPropertyInput):
   const clothingCoverageRate = pct(childrenWithTrips, total_children);
   const choiceTrips = clothing_trips.filter(c => c.child_chose).length;
   const clothingChoiceRate = pct(choiceTrips, clothing_trips.length);
-  const budgetAdequate = clothing_trips.filter(c => c.budget_adequate).length;
-  const budgetRate = pct(budgetAdequate, clothing_trips.length);
 
   // ── Hair ────────────────────────────────────────────────────────────────
-  const childrenWithHair = new Set(hair_appointments.map(h => h.child_id)).size;
-  const hairCoverageRate = pct(childrenWithHair, total_children);
   const culturalMet = hair_appointments.filter(h => h.cultural_needs_met).length;
   const hairCulturalRate = pct(culturalMet, hair_appointments.length);
   const prefMet = hair_appointments.filter(h => h.child_preference_met).length;
   const hairPrefRate = pct(prefMet, hair_appointments.length);
 
   // ── Gifts ───────────────────────────────────────────────────────────────
-  const childrenWithGifts = new Set(gifts.map(g => g.child_id)).size;
-  const giftCoverageRate = pct(childrenWithGifts, total_children);
   const personalised = gifts.filter(g => g.child_involved_in_choice && g.age_appropriate).length;
   const giftPersonalisationRate = pct(personalised, gifts.length);
 

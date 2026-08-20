@@ -145,12 +145,6 @@ function isEnthusiastic(engagement: string): boolean {
   return engagement === "enthusiastic" || engagement === "suggested_by_yp";
 }
 
-// All known activity categories for variety calculation
-const ALL_CATEGORIES: ActivityCategory[] = [
-  "sport", "creative", "outdoor", "educational", "social",
-  "life_skills", "cultural", "therapeutic", "community", "digital",
-];
-
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeHomeActivityEnrichment(

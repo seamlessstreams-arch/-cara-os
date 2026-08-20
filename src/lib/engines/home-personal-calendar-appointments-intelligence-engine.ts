@@ -300,9 +300,6 @@ export function computePersonalCalendarAppointments(
   const consentObtained = appointment_records.filter((r) => r.child_consented).length;
   const consentRate = pct(consentObtained, totalAppointments);
 
-  const staffAccompanied = appointment_records.filter((r) => r.staff_accompanied).length;
-  const staffAccompanimentRate = pct(staffAccompanied, totalAppointments);
-
   const overdueAppointments = appointment_records.filter((r) => r.is_overdue).length;
   const overdueRate = pct(overdueAppointments, totalAppointments);
 
@@ -334,10 +331,6 @@ export function computePersonalCalendarAppointments(
   const totalScheduled = calendar_management_records.reduce(
     (sum, r) => sum + r.total_appointments_scheduled, 0,
   );
-  const totalInCalendar = calendar_management_records.reduce(
-    (sum, r) => sum + r.appointments_in_calendar, 0,
-  );
-  const calendarCaptureRate = pct(totalInCalendar, totalScheduled);
 
   const calendarAccurate = calendar_management_records.filter(
     (r) => r.calendar_accurate,
@@ -394,16 +387,6 @@ export function computePersonalCalendarAppointments(
   ).length;
   const healthPlanUpdateRate = pct(healthPlanUpdated, totalMedicalCompliance);
 
-  const complianceConsentObtained = medical_compliance_records.filter(
-    (r) => r.consent_obtained,
-  ).length;
-  const complianceConsentRate = pct(complianceConsentObtained, totalMedicalCompliance);
-
-  const complianceOutcomeDocumented = medical_compliance_records.filter(
-    (r) => r.outcome_documented,
-  ).length;
-  const complianceOutcomeRate = pct(complianceOutcomeDocumented, totalMedicalCompliance);
-
   // fab-0: null when no overdue compliance items to average.
   const avgDaysOverdue: number | null =
     overdueCompliance > 0
@@ -450,11 +433,6 @@ export function computePersonalCalendarAppointments(
   ).length;
   const childComfortRate = pct(childComfortable, totalTransportRecords);
 
-  const appropriateVehicle = transport_arrangement_records.filter(
-    (r) => r.appropriate_vehicle,
-  ).length;
-  const appropriateVehicleRate = pct(appropriateVehicle, totalTransportRecords);
-
   const driverChecked = transport_arrangement_records.filter(
     (r) => r.staff_driver_checked,
   ).length;
@@ -465,9 +443,6 @@ export function computePersonalCalendarAppointments(
   ).length;
   const backupPlanRate = pct(backupPlan, totalTransportRecords);
 
-  const lateTransport = transport_arrangement_records.filter(
-    (r) => !r.on_time,
-  ).length;
   const significantDelays = transport_arrangement_records.filter(
     (r) => r.delay_minutes > 15,
   ).length;

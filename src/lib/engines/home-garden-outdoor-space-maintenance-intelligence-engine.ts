@@ -301,7 +301,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   const hazardsFoundCount = garden_condition_records.filter(
     (g) => g.safety_hazards_found,
   ).length;
-  const hazardRate = pct(hazardsFoundCount, totalGardenConditionRecords);
 
   const hazardsResolvedCount = garden_condition_records.filter(
     (g) => g.safety_hazards_found && g.hazards_resolved,
@@ -316,29 +315,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).length;
   const maintenanceCompletionRate = pct(maintenanceCompletedCount, maintenanceRequiredCount);
 
-  const seasonalTasksCompletedCount = garden_condition_records.filter(
-    (g) => g.seasonal_tasks_completed,
-  ).length;
-  const seasonalTaskRate = pct(seasonalTasksCompletedCount, totalGardenConditionRecords);
-
-  const pestIssuesCount = garden_condition_records.filter(
-    (g) => g.pest_issues_found,
-  ).length;
-  const pestResolvedCount = garden_condition_records.filter(
-    (g) => g.pest_issues_found && g.pest_issues_resolved,
-  ).length;
-  const pestResolutionRate = pct(pestResolvedCount, pestIssuesCount);
-
-  const accessibilityAdequateCount = garden_condition_records.filter(
-    (g) => g.accessibility_adequate,
-  ).length;
-  const accessibilityRate = pct(accessibilityAdequateCount, totalGardenConditionRecords);
-
-  const photosCount = garden_condition_records.filter(
-    (g) => g.photos_taken,
-  ).length;
-  const photosRate = pct(photosCount, totalGardenConditionRecords);
-
   // --- Equipment safety metrics ---
   const totalEquipmentSafetyRecords = equipment_safety_records.length;
 
@@ -350,22 +326,11 @@ export function computeGardenOutdoorSpaceMaintenance(
   const defectsFoundCount = equipment_safety_records.filter(
     (e) => e.defects_found,
   ).length;
-  const defectRate = pct(defectsFoundCount, totalEquipmentSafetyRecords);
 
   const defectsResolvedCount = equipment_safety_records.filter(
     (e) => e.defects_found && e.defects_resolved,
   ).length;
   const defectResolutionRate = pct(defectsResolvedCount, defectsFoundCount);
-
-  const outOfServiceCount = equipment_safety_records.filter(
-    (e) => e.out_of_service,
-  ).length;
-  const outOfServiceRate = pct(outOfServiceCount, totalEquipmentSafetyRecords);
-
-  const ageAppropriateCount = equipment_safety_records.filter(
-    (e) => e.age_appropriate,
-  ).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalEquipmentSafetyRecords);
 
   const surfaceSafeCount = equipment_safety_records.filter(
     (e) => e.surface_condition_safe,
@@ -376,21 +341,6 @@ export function computeGardenOutdoorSpaceMaintenance(
     (e) => e.anchoring_secure,
   ).length;
   const anchoringSecureRate = pct(anchoringSecureCount, totalEquipmentSafetyRecords);
-
-  const wearAcceptableCount = equipment_safety_records.filter(
-    (e) => e.wear_and_tear_acceptable,
-  ).length;
-  const wearAcceptableRate = pct(wearAcceptableCount, totalEquipmentSafetyRecords);
-
-  const guidelinesFollowedCount = equipment_safety_records.filter(
-    (e) => e.manufacturer_guidelines_followed,
-  ).length;
-  const guidelinesFollowedRate = pct(guidelinesFollowedCount, totalEquipmentSafetyRecords);
-
-  const goodEquipmentConditionCount = equipment_safety_records.filter(
-    (e) => e.condition_rating >= 4,
-  ).length;
-  const equipmentConditionRate = pct(goodEquipmentConditionCount, totalEquipmentSafetyRecords);
 
   const hasProfessionalInspection = equipment_safety_records.filter(
     (e) => e.last_professional_inspection !== null && e.last_professional_inspection !== "",
@@ -415,11 +365,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).length;
   const staffSupervisionRate = pct(staffSupervisedCount, totalSpaceUtilisationRecords);
 
-  const childInitiatedCount = space_utilisation_records.filter(
-    (s) => s.child_initiated,
-  ).length;
-  const childInitiatedRate = pct(childInitiatedCount, totalSpaceUtilisationRecords);
-
   const inclusiveAccessCount = space_utilisation_records.filter(
     (s) => s.inclusive_access,
   ).length;
@@ -428,21 +373,10 @@ export function computeGardenOutdoorSpaceMaintenance(
   const enjoymentObservedCount = space_utilisation_records.filter(
     (s) => s.enjoyment_observed,
   ).length;
-  const enjoymentObservedRate = pct(enjoymentObservedCount, totalSpaceUtilisationRecords);
-
-  const weatherSuitableCount = space_utilisation_records.filter(
-    (s) => s.weather_suitable,
-  ).length;
-  const weatherSuitableRate = pct(weatherSuitableCount, totalSpaceUtilisationRecords);
 
   // Count unique space types used
   const uniqueSpaceTypes = new Set(
     space_utilisation_records.map((s) => s.space_type),
-  ).size;
-
-  // Count unique activity types
-  const uniqueActivityTypes = new Set(
-    space_utilisation_records.map((s) => s.activity_type),
   ).size;
 
   // --- Child involvement metrics ---
@@ -458,11 +392,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).size;
   const childCoverage = total_children > 0 ? pct(uniqueChildrenInvolved, total_children) : 0;
 
-  const responsibilityTakenCount = child_involvement_records.filter(
-    (c) => c.responsibility_taken,
-  ).length;
-  const responsibilityRate = pct(responsibilityTakenCount, totalChildInvolvementRecords);
-
   const therapeuticBenefitCount = child_involvement_records.filter(
     (c) => c.therapeutic_benefit_noted,
   ).length;
@@ -476,12 +405,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   const childChoseCount = child_involvement_records.filter(
     (c) => c.child_chose_activity,
   ).length;
-  const childChoiceRate = pct(childChoseCount, totalChildInvolvementRecords);
-
-  const staffSupportedCount = child_involvement_records.filter(
-    (c) => c.supported_by_staff,
-  ).length;
-  const staffSupportRate = pct(staffSupportedCount, totalChildInvolvementRecords);
 
   const linkedToCarePlanCount = child_involvement_records.filter(
     (c) => c.linked_to_care_plan,
@@ -497,17 +420,6 @@ export function computeGardenOutdoorSpaceMaintenance(
             100,
         ) / 100
       : null;
-
-  // Count unique activity types in child involvement
-  const uniqueInvolvementActivities = new Set(
-    child_involvement_records.map((c) => c.activity_type),
-  ).size;
-
-  // Skills developed count
-  const totalSkillsDeveloped = child_involvement_records.reduce(
-    (sum, c) => sum + (c.skills_developed?.length ?? 0),
-    0,
-  );
 
   // --- Environmental quality metrics ---
   const totalEnvironmentalQualityRecords = environmental_quality_records.length;
@@ -525,11 +437,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).length;
   const improvementCompletionRate = pct(improvementCompletedCount, improvementNeededCount);
 
-  const childrenConsultedCount = environmental_quality_records.filter(
-    (e) => e.children_consulted,
-  ).length;
-  const childrenConsultedRate = pct(childrenConsultedCount, totalEnvironmentalQualityRecords);
-
   const sensoryBenefitCount = environmental_quality_records.filter(
     (e) => e.sensory_benefit,
   ).length;
@@ -539,11 +446,6 @@ export function computeGardenOutdoorSpaceMaintenance(
     (e) => e.wildlife_observed,
   ).length;
   const wildlifeRate = pct(wildlifeObservedCount, totalEnvironmentalQualityRecords);
-
-  // Count unique environmental categories assessed
-  const uniqueEnvCategories = new Set(
-    environmental_quality_records.map((e) => e.category),
-  ).size;
 
   // --- Child enjoyment composite ---
   // Composite of enjoyment observed in spaces + child enjoyment level in involvement + child choice

@@ -3111,20 +3111,6 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
           signed_off_by: i < 6 ? "mgr" : null,
         }),
       );
-      // 7 staff + 3 agency = 10 total induction records
-      // safeguarding: all 7 staff + need 2/3 agency => 9/10 = 90% (+2)
-      // medication: all 7 staff + need ~1.6 agency. 7+2=9/10=90%. Need >=85: 9/10=90% => +1
-      // fire: all 7 staff + 2/3 agency = 9/10 = 90% (+1)
-      const agencyInductions = Array.from({ length: 3 }, (_, i) =>
-        makeAgencyInduction({
-          id: `ag_${i}`,
-          staff_name: `AW_${i}`,
-          completed: i < 2 ? true : i < 3, // need 80%. 3 total, need 2.4 => 3/3 to get 100, or use 5 agency
-          safeguarding_briefed: i < 2, // 9/10 = 90%
-          medication_briefed: i < 2, // 9/10 = 90%
-          fire_procedures_briefed: i < 2, // 9/10 = 90%
-        }),
-      );
       // Wait, agency completion: 3/3 = 100% => +3, not +1
       // Let me use 5 agency: 4/5 = 80% => +1
       const agencyInductions5 = Array.from({ length: 5 }, (_, i) =>

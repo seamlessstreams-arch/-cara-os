@@ -292,9 +292,6 @@ export function computeRestorativePracticeConflictResolution(
   const agreementReached = restorative_conference_records.filter((r) => r.agreement_reached).length;
   const agreementRate = pct(agreementReached, totalConferences);
 
-  const agreementDocumented = restorative_conference_records.filter((r) => r.agreement_documented).length;
-  const agreementDocumentedRate = pct(agreementDocumented, totalConferences);
-
   const totalAgreementActions = restorative_conference_records.reduce(
     (sum, r) => sum + r.agreement_actions, 0,
   );
@@ -309,28 +306,8 @@ export function computeRestorativePracticeConflictResolution(
   const childPrepared = restorative_conference_records.filter((r) => r.child_prepared_beforehand).length;
   const childPreparationRate = pct(childPrepared, totalConferences);
 
-  const harmedPartyPresent = restorative_conference_records.filter((r) => r.harmed_party_present).length;
-  const harmedPartyPresentRate = pct(harmedPartyPresent, totalConferences);
-
-  const harmedPartyViewsCaptured = restorative_conference_records.filter((r) => r.harmed_party_views_captured).length;
-  const harmedPartyViewsRate = pct(harmedPartyViewsCaptured, totalConferences);
-
   const facilitatorTrained = restorative_conference_records.filter((r) => r.facilitator_trained).length;
   const facilitatorTrainedRate = pct(facilitatorTrained, totalConferences);
-
-  const followUpScheduled = restorative_conference_records.filter((r) => r.follow_up_scheduled).length;
-  const followUpScheduledRate = pct(followUpScheduled, totalConferences);
-
-  const followUpCompleted = restorative_conference_records.filter((r) => r.follow_up_completed).length;
-  const conferenceFollowUpCompletionRate = pct(followUpCompleted, followUpScheduled);
-
-  const totalParticipantsInvited = restorative_conference_records.reduce(
-    (sum, r) => sum + r.participants_invited, 0,
-  );
-  const totalParticipantsAttended = restorative_conference_records.reduce(
-    (sum, r) => sum + r.participants_attended, 0,
-  );
-  const participantAttendanceRate = pct(totalParticipantsAttended, totalParticipantsInvited);
 
   const conferenceSatisfactionSum = restorative_conference_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -351,9 +328,6 @@ export function computeRestorativePracticeConflictResolution(
   const underlyingCauseIdentified = conflict_resolution_records.filter((r) => r.underlying_cause_identified).length;
   const underlyingCauseIdentifiedRate = pct(underlyingCauseIdentified, totalConflicts);
 
-  const underlyingCauseAddressed = conflict_resolution_records.filter((r) => r.underlying_cause_addressed).length;
-  const underlyingCauseAddressedRate = pct(underlyingCauseAddressed, underlyingCauseIdentified);
-
   const recurrenceWithin30Days = conflict_resolution_records.filter((r) => r.recurrence_within_30_days).length;
   const recurrenceRate = pct(recurrenceWithin30Days, totalConflicts);
 
@@ -367,30 +341,6 @@ export function computeRestorativePracticeConflictResolution(
   const conflictStaffTrainedRate = pct(conflictStaffTrained, totalConflicts);
 
   const conflictVoiceCaptured = conflict_resolution_records.filter((r) => r.child_voice_captured).length;
-  const conflictVoiceCapturedRate = pct(conflictVoiceCaptured, totalConflicts);
-
-  const conflictFollowUpCompleted = conflict_resolution_records.filter((r) => r.follow_up_completed).length;
-  const conflictFollowUpRate = pct(conflictFollowUpCompleted, totalConflicts);
-
-  const highSeverityConflicts = conflict_resolution_records.filter(
-    (r) => r.severity === "high" || r.severity === "critical",
-  ).length;
-  const highSeverityRate = pct(highSeverityConflicts, totalConflicts);
-
-  const highSeverityResolved = conflict_resolution_records.filter(
-    (r) => (r.severity === "high" || r.severity === "critical") && r.resolved,
-  ).length;
-  const highSeverityResolutionRate = pct(highSeverityResolved, highSeverityConflicts);
-
-  // Average resolution time
-  const resolvedWithTime = conflict_resolution_records.filter((r) => r.resolved && r.resolution_time_hours > 0);
-  const avgResolutionTimeHours: number | null =
-    resolvedWithTime.length > 0
-      ? Math.round(
-          (resolvedWithTime.reduce((sum, r) => sum + r.resolution_time_hours, 0) /
-            resolvedWithTime.length) * 10,
-        ) / 10
-      : null;
 
   // --- Relationship repair tracking ---
   const totalRepairRecords = relationship_repair_records.length;
@@ -407,12 +357,6 @@ export function computeRestorativePracticeConflictResolution(
 
   const childFeelsHeard = relationship_repair_records.filter((r) => r.child_feels_heard).length;
   const childFeelsHeardRate = pct(childFeelsHeard, totalRepairRecords);
-
-  const otherPartyFeelsHeard = relationship_repair_records.filter((r) => r.other_party_feels_heard).length;
-  const otherPartyFeelsHeardRate = pct(otherPartyFeelsHeard, totalRepairRecords);
-
-  const ongoingSupportInPlace = relationship_repair_records.filter((r) => r.ongoing_support_in_place).length;
-  const ongoingSupportRate = pct(ongoingSupportInPlace, totalRepairRecords);
 
   const childInitiatedRepair = relationship_repair_records.filter((r) => r.repair_initiated_by === "child").length;
   const childInitiatedRepairRate = pct(childInitiatedRepair, totalRepairRecords);
@@ -436,21 +380,10 @@ export function computeRestorativePracticeConflictResolution(
       ? Math.round((repairSatisfactionSum / totalRepairRecords) * 100) / 100
       : null;
 
-  const severeRepairs = relationship_repair_records.filter(
-    (r) => r.initial_damage_level === "severe" || r.initial_damage_level === "significant",
-  ).length;
-  const severeRepairsRestored = relationship_repair_records.filter(
-    (r) => (r.initial_damage_level === "severe" || r.initial_damage_level === "significant") && r.relationship_restored,
-  ).length;
-  const severeRepairSuccessRate = pct(severeRepairsRestored, severeRepairs);
-
   // --- Mediation quality ---
   const totalMediations = mediation_records.length;
   const mediationAgreementReached = mediation_records.filter((r) => r.agreement_reached).length;
   const mediationAgreementRate = pct(mediationAgreementReached, totalMediations);
-
-  const mediationAgreementDocumented = mediation_records.filter((r) => r.agreement_documented).length;
-  const mediationDocumentedRate = pct(mediationAgreementDocumented, totalMediations);
 
   const mediationFairToAll = mediation_records.filter((r) => r.agreement_fair_to_all).length;
   const mediationFairnessRate = pct(mediationFairToAll, totalMediations);
@@ -458,20 +391,8 @@ export function computeRestorativePracticeConflictResolution(
   const mediatorTrained = mediation_records.filter((r) => r.mediator_trained).length;
   const mediatorTrainedRate = pct(mediatorTrained, totalMediations);
 
-  const allPartiesConsented = mediation_records.filter((r) => r.all_parties_consented).length;
-  const consentRate = pct(allPartiesConsented, totalMediations);
-
-  const childPreparedForMediation = mediation_records.filter((r) => r.child_prepared).length;
-  const mediationPreparationRate = pct(childPreparedForMediation, totalMediations);
-
-  const groundRulesEstablished = mediation_records.filter((r) => r.ground_rules_established).length;
-  const groundRulesRate = pct(groundRulesEstablished, totalMediations);
-
   const eachPartyHeard = mediation_records.filter((r) => r.each_party_heard).length;
   const eachPartyHeardRate = pct(eachPartyHeard, totalMediations);
-
-  const mediationFollowUpCompleted = mediation_records.filter((r) => r.follow_up_completed).length;
-  const mediationFollowUpRate = pct(mediationFollowUpCompleted, totalMediations);
 
   const mediationQualityScoreSum = mediation_records.reduce(
     (sum, r) => sum + r.mediation_quality_score, 0,
@@ -506,20 +427,8 @@ export function computeRestorativePracticeConflictResolution(
   const viewsInfluencedOutcome = child_voice_records.filter((r) => r.child_views_influenced_outcome).length;
   const viewsInfluencedRate = pct(viewsInfluencedOutcome, totalVoiceRecords);
 
-  const understoodProcess = child_voice_records.filter((r) => r.child_understood_process).length;
-  const understoodProcessRate = pct(understoodProcess, totalVoiceRecords);
-
   const feltSafeToSpeak = child_voice_records.filter((r) => r.child_felt_safe_to_speak).length;
   const feltSafeToSpeakRate = pct(feltSafeToSpeak, totalVoiceRecords);
-
-  const followUpFeedbackGiven = child_voice_records.filter((r) => r.follow_up_feedback_given).length;
-  const followUpFeedbackRate = pct(followUpFeedbackGiven, totalVoiceRecords);
-
-  const additionalSupportNeeded = child_voice_records.filter((r) => r.additional_support_needed).length;
-  const additionalSupportProvided = child_voice_records.filter(
-    (r) => r.additional_support_needed && r.additional_support_provided,
-  ).length;
-  const additionalSupportProvisionRate = pct(additionalSupportProvided, additionalSupportNeeded);
 
   const voiceBarriersPresent = child_voice_records.filter(
     (r) => r.barriers_to_participation.length > 0,

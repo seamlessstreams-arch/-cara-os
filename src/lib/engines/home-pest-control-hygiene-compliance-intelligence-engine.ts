@@ -301,21 +301,10 @@ export function computePestControlHygieneCompliance(
   ).length;
   const inspectionFollowUpRate = pct(followUpCompleted, inspectionsWithFollowUp);
 
-  const childAreasAffected = pest_inspection_records.filter(
-    (r) => r.children_areas_affected,
-  ).length;
-  const childAreaAffectedRate = pct(childAreasAffected, totalInspections);
-
   const highSeverityInspections = pest_inspection_records.filter(
     (r) => r.severity === "high" || r.severity === "critical",
   ).length;
   const highSeverityRate = pct(highSeverityInspections, totalInspections);
-
-  const overdueInspections = pest_inspection_records.filter((r) => {
-    if (!r.next_inspection_date) return false;
-    return r.next_inspection_date < today;
-  }).length;
-  const overdueInspectionRate = pct(overdueInspections, totalInspections);
 
   // === 2. Treatment Effectiveness ===
 
@@ -328,11 +317,6 @@ export function computePestControlHygieneCompliance(
 
   const coshhCompliantTreatments = treatment_records.filter((r) => r.coshh_compliant).length;
   const treatmentCoshhRate = pct(coshhCompliantTreatments, totalTreatments);
-
-  const reEntryTimeObserved = treatment_records.filter(
-    (r) => r.re_entry_time_observed,
-  ).length;
-  const reEntryComplianceRate = pct(reEntryTimeObserved, totalTreatments);
 
   const contractorCertified = treatment_records.filter(
     (r) => r.contractor_certified,
@@ -389,11 +373,9 @@ export function computePestControlHygieneCompliance(
   ).length;
   const wasteManagementRate = pct(wasteManagementCompliant, totalKitchenAudits);
 
-
   const kitchenStaffTraining = kitchen_hygiene_records.filter(
     (r) => r.staff_training_current,
   ).length;
-  const kitchenStaffTrainingRate = pct(kitchenStaffTraining, totalKitchenAudits);
 
   const allergenControls = kitchen_hygiene_records.filter(
     (r) => r.allergen_controls_in_place,
@@ -418,7 +400,6 @@ export function computePestControlHygieneCompliance(
       ? Math.round((foodHygieneRatingSum / totalKitchenAudits) * 10) / 10
       : null;
 
-
   // === 4. Environmental Cleanliness ===
 
   const totalCleanlinessAssessments = cleanliness_rating_records.length;
@@ -442,7 +423,6 @@ export function computePestControlHygieneCompliance(
   const deepCleanCompleted = cleanliness_rating_records.filter(
     (r) => r.deep_clean_completed,
   ).length;
-  const deepCleanCompletionRate = pct(deepCleanCompleted, totalCleanlinessAssessments);
 
   const deepCleanOverdue = cleanliness_rating_records.filter(
     (r) => r.deep_clean_overdue,
@@ -523,11 +503,6 @@ export function computePestControlHygieneCompliance(
   ).length;
   const coshhAssessmentRate = pct(coshhAssessmentCompleted, totalProducts);
 
-  const coshhSheetAvailable = product_safety_records.filter(
-    (r) => r.coshh_sheet_available,
-  ).length;
-  const coshhSheetRate = pct(coshhSheetAvailable, totalProducts);
-
   const storedSecurely = product_safety_records.filter(
     (r) => r.stored_securely,
   ).length;
@@ -537,10 +512,6 @@ export function computePestControlHygieneCompliance(
     (r) => r.locked_storage,
   ).length;
   const lockedStorageRate = pct(lockedStorage, totalProducts);
-
-  const inDateProducts = product_safety_records.filter(
-    (r) => r.in_date,
-  ).length;
 
   const staffTrainedOnProducts = product_safety_records.filter(
     (r) => r.staff_trained_on_use,
@@ -1234,7 +1205,6 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-
   if (secureStorageRate < 50 && totalProducts > 0) {
     insights.push({
       text: `Only ${secureStorageRate}% of products stored securely. Unsecured hazardous substances represent a direct safeguarding risk -- children could access harmful chemicals.`,
@@ -1286,14 +1256,12 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-
   if (expiredProductRate >= 10 && totalProducts > 0) {
     insights.push({
       text: `${expiredProductRate}% of products are expired -- expired products may be less effective or harmful. Implement stock rotation and expiry monitoring.`,
       severity: "warning",
     });
   }
-
 
   // --- Positive insights ---
 

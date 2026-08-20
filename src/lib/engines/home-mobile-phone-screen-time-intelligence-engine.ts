@@ -281,21 +281,11 @@ export function computeMobilePhoneScreenTime(
   const childSelfManaged = screen_time_records.filter((r) => r.child_self_managed).length;
   const selfManagedRate = pct(childSelfManaged, totalScreenTimeRecords);
 
-  const staffPromptedBreak = screen_time_records.filter((r) => r.staff_prompted_break).length;
-  const staffPromptedBreakRate = pct(staffPromptedBreak, totalScreenTimeRecords);
-
   // Over-limit records: actual > agreed by more than 15 minutes
   const overLimitRecords = screen_time_records.filter(
     (r) => r.actual_usage_minutes > r.agreed_limit_minutes + 15,
   ).length;
   const overLimitRate = pct(overLimitRecords, totalScreenTimeRecords);
-
-  // Average daily usage
-  const totalUsageMinutes = screen_time_records.reduce((sum, r) => sum + r.actual_usage_minutes, 0);
-  const avgDailyUsageMinutes =
-    totalScreenTimeRecords > 0
-      ? Math.round(totalUsageMinutes / totalScreenTimeRecords)
-      : null;
 
   // Screen time management composite: limit adherence + bedtime handover
   const screenTimeManagementNumerator = limitAdhered + bedtimeHandover;
@@ -306,10 +296,6 @@ export function computeMobilePhoneScreenTime(
   const totalContentChecks = content_monitoring_records.length;
 
   const ageAppropriateContent = content_monitoring_records.filter((r) => r.age_appropriate_content).length;
-  const ageAppropriateRate = pct(ageAppropriateContent, totalContentChecks);
-
-  const inappropriateFound = content_monitoring_records.filter((r) => r.inappropriate_content_found).length;
-  const inappropriateContentRate = pct(inappropriateFound, totalContentChecks);
 
   const filtersActive = content_monitoring_records.filter((r) => r.filters_active).length;
   const filtersActiveRate = pct(filtersActive, totalContentChecks);
@@ -318,7 +304,6 @@ export function computeMobilePhoneScreenTime(
   const discussionRate = pct(discussionWithChild, totalContentChecks);
 
   const childInformed = content_monitoring_records.filter((r) => r.child_informed).length;
-  const childInformedRate = pct(childInformed, totalContentChecks);
 
   // Safeguarding referral compliance
   const safeguardingNeeded = content_monitoring_records.filter((r) => r.safeguarding_referral_needed).length;
@@ -335,8 +320,6 @@ export function computeMobilePhoneScreenTime(
   // --- Usage agreement metrics ---
   const totalAgreements = usage_agreement_records.length;
 
-  const activeAgreements = usage_agreement_records.filter((r) => r.agreement_active).length;
-
   const uniqueChildrenWithAgreements = new Set(
     usage_agreement_records.filter((r) => r.agreement_active).map((r) => r.child_id),
   ).size;
@@ -345,9 +328,6 @@ export function computeMobilePhoneScreenTime(
 
   const childContributed = usage_agreement_records.filter((r) => r.child_contributed).length;
   const childContributionRate = pct(childContributed, totalAgreements);
-
-  const childSigned = usage_agreement_records.filter((r) => r.child_signed).length;
-  const childSignedRate = pct(childSigned, totalAgreements);
 
   const agreementChecks = [
     (a: UsageAgreementRecordInput) => a.covers_screen_time_limits,
@@ -379,22 +359,17 @@ export function computeMobilePhoneScreenTime(
   const totalWellbeingSessions = digital_wellbeing_records.length;
 
   const childEngaged = digital_wellbeing_records.filter((r) => r.child_engaged).length;
-  const childEngagementRate = pct(childEngaged, totalWellbeingSessions);
 
   const childFeedbackPositive = digital_wellbeing_records.filter((r) => r.child_feedback_positive).length;
   const childSatisfactionRate = pct(childFeedbackPositive, totalWellbeingSessions);
 
   const learningOutcomesAchieved = digital_wellbeing_records.filter((r) => r.learning_outcomes_achieved).length;
-  const learningOutcomesRate = pct(learningOutcomesAchieved, totalWellbeingSessions);
 
   const followUpPlanned = digital_wellbeing_records.filter((r) => r.follow_up_planned).length;
   const followUpCompleted = digital_wellbeing_records.filter(
     (r) => r.follow_up_planned && r.follow_up_completed,
   ).length;
   const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
-
-  const externalResourceUsed = digital_wellbeing_records.filter((r) => r.external_resource_used).length;
-  const externalResourceRate = pct(externalResourceUsed, totalWellbeingSessions);
 
   // Digital wellbeing composite: engaged + learning outcomes + follow-up
   const digitalWellbeingNumerator = childEngaged + learningOutcomesAchieved + followUpCompleted;
@@ -424,20 +399,11 @@ export function computeMobilePhoneScreenTime(
   }
   const selfRegulationRate = pct(totalSelfRegChecksPassed, totalSelfRegChecksPossible);
 
-  const selfRegScoreSum = self_regulation_records.reduce((sum, r) => sum + (r.self_regulation_score ?? 0), 0);
-  const avgSelfRegScore =
-    totalSelfRegRecords > 0
-      ? Math.round((selfRegScoreSum / totalSelfRegRecords) * 100) / 100
-      : null;
-
   const improved = self_regulation_records.filter((r) => r.improvement_since_last === "improved").length;
   const improvementRate = pct(improved, totalSelfRegRecords);
 
   const declined = self_regulation_records.filter((r) => r.improvement_since_last === "declined").length;
   const declinedRate = pct(declined, totalSelfRegRecords);
-
-  const supportPlanInPlace = self_regulation_records.filter((r) => r.support_plan_in_place).length;
-  const supportPlanRate = pct(supportPlanInPlace, totalSelfRegRecords);
 
   // ── Scoring: base 52, max bonuses +28, 4 guarded penalties ─────────
 

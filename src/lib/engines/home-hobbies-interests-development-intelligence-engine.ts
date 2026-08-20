@@ -360,11 +360,6 @@ export function computeHobbiesInterestsDevelopment(
   const interestExplorationRate =
     total_children > 0 ? pct(uniqueChildrenExploring, total_children) : 0;
 
-  const childInitiatedExplorations = interest_exploration_records.filter(
-    (e) => e.child_initiated,
-  ).length;
-  const childInitiatedExplorationRate = pct(childInitiatedExplorations, totalExplorations);
-
   const newExperiences = interest_exploration_records.filter(
     (e) => e.new_experience,
   ).length;
@@ -374,11 +369,6 @@ export function computeHobbiesInterestsDevelopment(
     (e) => e.cultural_exposure,
   ).length;
   const culturalExposureRate = pct(culturalExposures, totalExplorations);
-
-  const explorationFeedbackPositive = interest_exploration_records.filter(
-    (e) => e.child_feedback_positive,
-  ).length;
-  const explorationFeedbackRate = pct(explorationFeedbackPositive, totalExplorations);
 
   const ledToOngoingHobby = interest_exploration_records.filter(
     (e) => e.led_to_ongoing_hobby,
@@ -406,15 +396,6 @@ export function computeHobbiesInterestsDevelopment(
             explorationBreadthValues.length) *
             100,
         ) / 100
-      : null;
-
-  const explorationEngagementSum = interest_exploration_records.reduce(
-    (sum, e) => sum + e.child_engagement_rating,
-    0,
-  );
-  const explorationEngagementAvg: number | null =
-    totalExplorations > 0
-      ? Math.round((explorationEngagementSum / totalExplorations) * 100) / 100
       : null;
 
   // --- Talent development ---
@@ -471,8 +452,6 @@ export function computeHobbiesInterestsDevelopment(
   for (const t of talent_development_records) {
     achievementCounts[t.achievement_level] = (achievementCounts[t.achievement_level] ?? 0) + 1;
   }
-  const advancedOrElite = (achievementCounts["advanced"] ?? 0) + (achievementCounts["elite"] ?? 0);
-  const advancedRate = pct(advancedOrElite, totalTalentProgrammes);
 
   // --- Creative expression ---
   const totalCreativeActivities = creative_expression_records.length;
@@ -482,15 +461,9 @@ export function computeHobbiesInterestsDevelopment(
   const creativeExpressionRate =
     total_children > 0 ? pct(uniqueChildrenCreative, total_children) : 0;
 
-  const childInitiatedCreative = creative_expression_records.filter(
-    (c) => c.child_initiated,
-  ).length;
-  const childInitiatedCreativeRate = pct(childInitiatedCreative, totalCreativeActivities);
-
   const outputProduced = creative_expression_records.filter(
     (c) => c.output_produced,
   ).length;
-  const outputProductionRate = pct(outputProduced, totalCreativeActivities);
 
   const outputDisplayed = creative_expression_records.filter(
     (c) => c.output_displayed,
@@ -510,11 +483,6 @@ export function computeHobbiesInterestsDevelopment(
     (c) => c.therapeutic_value,
   ).length;
   const therapeuticRate = pct(therapeuticCreativeActivities, totalCreativeActivities);
-
-  const sharedWithOthers = creative_expression_records.filter(
-    (c) => c.shared_with_others,
-  ).length;
-  const sharingRate = pct(sharedWithOthers, totalCreativeActivities);
 
   const creativeDocumented = creative_expression_records.filter(
     (c) => c.documented,
@@ -536,34 +504,10 @@ export function computeHobbiesInterestsDevelopment(
   const childLedRate =
     total_children > 0 ? pct(uniqueChildrenLeading, total_children) : 0;
 
-  const childLedSatisfactionSum = child_led_activity_records.reduce(
-    (sum, a) => sum + a.child_satisfaction_rating,
-    0,
-  );
-  const childLedSatisfactionAvg: number | null =
-    totalChildLedActivities > 0
-      ? Math.round((childLedSatisfactionSum / totalChildLedActivities) * 100) / 100
-      : null;
-
-  const childLedPositiveOutcomes = child_led_activity_records.filter(
-    (a) => a.outcome_positive,
-  ).length;
-  const childLedOutcomeRate = pct(childLedPositiveOutcomes, totalChildLedActivities);
-
   const childLedAutonomyRespected = child_led_activity_records.filter(
     (a) => a.autonomy_respected,
   ).length;
   const autonomyRespectedRate = pct(childLedAutonomyRespected, totalChildLedActivities);
-
-  const childLedResourcesProvided = child_led_activity_records.filter(
-    (a) => a.resources_provided,
-  ).length;
-  const resourcesProvidedRate = pct(childLedResourcesProvided, totalChildLedActivities);
-
-  const childLedDocumented = child_led_activity_records.filter(
-    (a) => a.documented,
-  ).length;
-  const childLedDocumentationRate = pct(childLedDocumented, totalChildLedActivities);
 
   const childLedWithPeers = child_led_activity_records.filter(
     (a) => a.other_children_involved > 0,

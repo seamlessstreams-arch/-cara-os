@@ -317,11 +317,6 @@ export function computeImmunisationVaccinationCompliance(
   ).length;
   const batchRecordingRate = pct(batchNumberRecorded, administered);
 
-  const siteRecorded = vaccination_schedule_records.filter(
-    (r) => r.administered && r.site_recorded,
-  ).length;
-  const siteRecordingRate = pct(siteRecorded, administered);
-
   const documentedInHealthRecord = vaccination_schedule_records.filter(
     (r) => r.administered && r.documented_in_health_record,
   ).length;
@@ -374,9 +369,6 @@ export function computeImmunisationVaccinationCompliance(
   ).length;
   const catchUpSwInformedRate = pct(catchUpSocialWorkerInformed, totalCatchUpRecords);
 
-  const catchUpChildConsented = catch_up_programme_records.filter((r) => r.child_consented).length;
-  const catchUpConsentRate = pct(catchUpChildConsented, totalCatchUpRecords);
-
   // --- 3. Consent management ---
   const totalConsentRecords = consent_management_records.length;
   const consentObtained = consent_management_records.filter((r) => r.consent_obtained).length;
@@ -403,10 +395,6 @@ export function computeImmunisationVaccinationCompliance(
   ).length;
   const gillickAssessedRate = pct(gillickAssessed, totalConsentRecords);
 
-  const gillickCompetentRecords = consent_management_records.filter(
-    (r) => r.gillick_assessed && r.gillick_competent,
-  );
-
   const escalationRequired = consent_management_records.filter(
     (r) => r.escalation_required,
   ).length;
@@ -432,7 +420,6 @@ export function computeImmunisationVaccinationCompliance(
   const infoSharedRate = pct(infoShared, totalGpLiaisonRecords);
 
   const actionPlanAgreed = gp_liaison_records.filter((r) => r.action_plan_agreed).length;
-  const actionPlanAgreedRate = pct(actionPlanAgreed, totalGpLiaisonRecords);
 
   const actionPlanCompleted = gp_liaison_records.filter(
     (r) => r.action_plan_agreed && r.action_plan_completed,
@@ -471,16 +458,6 @@ export function computeImmunisationVaccinationCompliance(
     (r) => r.child_understood_purpose,
   ).length;
   const purposeUnderstandingRate = pct(childUnderstoodPurpose, totalUnderstandingRecords);
-
-  const childUnderstoodRisks = child_understanding_records.filter(
-    (r) => r.child_understood_risks,
-  ).length;
-  const riskUnderstandingRate = pct(childUnderstoodRisks, totalUnderstandingRecords);
-
-  const childUnderstoodBenefits = child_understanding_records.filter(
-    (r) => r.child_understood_benefits,
-  ).length;
-  const benefitUnderstandingRate = pct(childUnderstoodBenefits, totalUnderstandingRecords);
 
   const ageAppropriateInfoGiven = child_understanding_records.filter(
     (r) => r.age_appropriate_information_given,
@@ -522,16 +499,6 @@ export function computeImmunisationVaccinationCompliance(
     (r) => r.visual_aids_used,
   ).length;
   const visualAidsRate = pct(visualAidsUsed, totalUnderstandingRecords);
-
-  const understandingFollowUpRequired = child_understanding_records.filter(
-    (r) => r.follow_up_needed,
-  ).length;
-  const understandingFollowUpCompleted = child_understanding_records.filter(
-    (r) => r.follow_up_needed && r.follow_up_completed,
-  ).length;
-  const understandingFollowUpRate = pct(
-    understandingFollowUpCompleted, understandingFollowUpRequired,
-  );
 
   const childUnderstandingRate: number | null =
     totalUnderstandingRecords > 0

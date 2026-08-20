@@ -443,20 +443,6 @@ export function computeStaffPerformanceAppraisal(
     competent_or_above: data.competent_or_above,
   }));
 
-  // Meeting required level
-  const LEVEL_ORDER: Record<string, number> = {
-    not_assessed: 0,
-    developing: 1,
-    competent: 2,
-    proficient: 3,
-    expert: 4,
-  };
-  const meetingRequiredLevel = competency_assessment_records.filter(c => {
-    const curr = LEVEL_ORDER[c.current_level] ?? 0;
-    const req = LEVEL_ORDER[c.required_level] ?? 0;
-    return curr >= req && c.current_level !== "not_assessed";
-  }).length;
-
   const competencyProfile: CompetencyProfile = {
     total_assessments: totalCompetencyAssessments,
     assessed_count: assessedCompetencies,

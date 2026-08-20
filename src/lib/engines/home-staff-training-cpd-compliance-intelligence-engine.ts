@@ -465,18 +465,6 @@ export function computeStaffTrainingCpdCompliance(
   );
   const mandatoryOverdueCount = mandatoryOverdue.length;
 
-  // In progress
-  const mandatoryInProgress = mandatoryRecords.filter(r =>
-    r.status === "in_progress"
-  );
-  const mandatoryInProgressCount = mandatoryInProgress.length;
-
-  // Not started
-  const mandatoryNotStarted = mandatoryRecords.filter(r =>
-    r.status === "not_started"
-  );
-  const mandatoryNotStartedCount = mandatoryNotStarted.length;
-
   // Expiring within 30 days
   const mandatoryExpiringSoon = mandatoryRecords.filter(r =>
     r.is_valid && isExpiringSoon(r.expiry_date, today, 30)
@@ -488,34 +476,15 @@ export function computeStaffTrainingCpdCompliance(
 
   // All training records (not just mandatory) — for total counts
   const allTrainingTotal = mandatory_training_records.length;
-  const allTrainingValidCount = mandatory_training_records.filter(r =>
-    r.status === "completed" && r.is_valid
-  ).length;
-  const allTrainingExpiredCount = mandatory_training_records.filter(r =>
-    r.status === "expired" || (r.expiry_date && isExpired(r.expiry_date, today))
-  ).length;
-  const allTrainingOverdueCount = mandatory_training_records.filter(r =>
-    r.status === "overdue"
-  ).length;
 
   // Assessment pass rate
   const mandatoryWithAssessment = mandatoryRecords.filter(r => r.status === "completed");
   const mandatoryAssessmentPassed = mandatoryWithAssessment.filter(r => r.assessment_passed).length;
   const assessmentPassRate = pct(mandatoryAssessmentPassed, mandatoryWithAssessment.length);
 
-  // Total training hours
-  const totalMandatoryHours = mandatory_training_records.reduce((sum, r) => sum + (r.training_hours || 0), 0);
-  const avgMandatoryHoursPerStaff = total_staff > 0 ? totalMandatoryHours / total_staff : 0;
-
   // Certificate coverage
   const mandatoryWithCertificate = mandatoryRecords.filter(r => r.status === "completed" && r.certificate_issued).length;
   const certificateCoverageRate = pct(mandatoryWithCertificate, mandatoryWithAssessment.length);
-
-  // Provider quality
-  const ratedProviders = mandatory_training_records.filter(r => r.provider_quality_rating > 0);
-  const avgProviderQuality = ratedProviders.length > 0
-    ? ratedProviders.reduce((sum, r) => sum + r.provider_quality_rating, 0) / ratedProviders.length
-    : null;
 
   // Delivery method diversity
   const deliveryMethods = new Set<string>();
@@ -533,8 +502,6 @@ export function computeStaffTrainingCpdCompliance(
 
   const totalCpd = cpd_records.length;
   const completedCpd = cpd_records.filter(r => r.status === "completed").length;
-  const inProgressCpd = cpd_records.filter(r => r.status === "in_progress").length;
-  const plannedCpd = cpd_records.filter(r => r.status === "planned").length;
   const overdueCpd = cpd_records.filter(r => r.status === "overdue").length;
   const cancelledCpd = cpd_records.filter(r => r.status === "cancelled").length;
 
@@ -542,29 +509,18 @@ export function computeStaffTrainingCpdCompliance(
 
   // CPD hours
   const totalCpdHours = cpd_records.reduce((sum, r) => sum + (r.cpd_hours || 0), 0);
-  const completedCpdHours = cpd_records
-    .filter(r => r.status === "completed")
-    .reduce((sum, r) => sum + (r.cpd_hours || 0), 0);
   const avgCpdHoursPerStaff = total_staff > 0 ? totalCpdHours / total_staff : 0;
 
   // CPD quality metrics
   const cpdWithReflection = cpd_records.filter(r => r.status === "completed" && r.reflection_recorded).length;
   const cpdWithEvidence = cpd_records.filter(r => r.status === "completed" && r.evidence_obtained).length;
   const cpdLearningApplied = cpd_records.filter(r => r.status === "completed" && r.learning_applied).length;
-  const cpdLinkedToDevelopment = cpd_records.filter(r => r.linked_to_development_need).length;
   const cpdSharedWithTeam = cpd_records.filter(r => r.status === "completed" && r.shared_with_team).length;
 
   const cpdReflectionRate = pct(cpdWithReflection, completedCpd);
   const cpdEvidenceRate = pct(cpdWithEvidence, completedCpd);
   const cpdLearningAppliedRate = pct(cpdLearningApplied, completedCpd);
-  const cpdLinkedRate = pct(cpdLinkedToDevelopment, totalCpd);
   const cpdSharedRate = pct(cpdSharedWithTeam, completedCpd);
-
-  // CPD quality ratings
-  const ratedCpd = cpd_records.filter(r => r.quality_rating > 0);
-  const avgCpdQuality = ratedCpd.length > 0
-    ? ratedCpd.reduce((sum, r) => sum + r.quality_rating, 0) / ratedCpd.length
-    : null;
 
   // CPD activity type diversity
   const cpdActivityTypes = new Set<string>();
@@ -604,10 +560,6 @@ export function computeStaffTrainingCpdCompliance(
   const tnaLinkedToSupervision = training_needs_records.filter(r => r.linked_to_supervision).length;
   const tnaLinkedRate = pct(tnaLinkedToSupervision, totalTrainingNeeds);
 
-  // Plans created
-  const tnaPlansCreated = training_needs_records.filter(r => r.plan_created).length;
-  const tnaPlanRate = pct(tnaPlansCreated, totalTrainingNeeds);
-
   // High priority needs
   const highPriorityNeeds = training_needs_records.filter(r => r.priority === "high").length;
   const highPriorityAddressed = training_needs_records
@@ -616,14 +568,6 @@ export function computeStaffTrainingCpdCompliance(
       const ratio = r.needs_identified > 0 ? r.needs_addressed / r.needs_identified : 0;
       return sum + (ratio >= 0.8 ? 1 : 0);
     }, 0);
-
-  // Specialist needs
-  const specialistNeedsIdentified = training_needs_records.reduce((sum, r) =>
-    sum + (r.specialist_needs_identified ? 1 : 0), 0);
-  const specialistNeedsAddressedTotal = training_needs_records.reduce((sum, r) =>
-    sum + (r.specialist_needs_addressed || 0), 0);
-  const specialistNeedsIdentifiedTotal = training_needs_records.filter(r =>
-    r.specialist_needs_identified).length;
 
   // Unique staff with TNA
   const staffWithTna = uniqueStaffCount(training_needs_records);
@@ -639,21 +583,12 @@ export function computeStaffTrainingCpdCompliance(
   const expiredQualifications = qualification_records.filter(r =>
     r.status === "expired" || (r.expiry_date && isExpired(r.expiry_date, today))
   ).length;
-  const withdrawnQualifications = qualification_records.filter(r => r.status === "withdrawn").length;
-  const notStartedQualifications = qualification_records.filter(r => r.status === "not_started").length;
 
   // Currency = achieved + registration current + CPD requirements met
   const currentQualifications = qualification_records.filter(r =>
     r.status === "achieved" && r.registration_current
   ).length;
   const qualificationCurrencyRate = pct(currentQualifications, totalQualifications);
-
-  // Role-relevant qualifications
-  const roleRelevantQualifications = qualification_records.filter(r => r.role_relevant).length;
-  const roleRelevantAchieved = qualification_records.filter(r =>
-    r.role_relevant && r.status === "achieved"
-  ).length;
-  const roleRelevantRate = pct(roleRelevantAchieved, roleRelevantQualifications);
 
   // Required qualifications
   const requiredQualifications = qualification_records.filter(r => r.is_required).length;
@@ -662,23 +597,9 @@ export function computeStaffTrainingCpdCompliance(
   ).length;
   const requiredQualificationRate = pct(requiredAchieved, requiredQualifications);
 
-  // CPD requirements met for qualifications
-  const qualWithCpdReqs = qualification_records.filter(r =>
-    r.status === "achieved" && r.cpd_requirements_met
-  ).length;
-  const qualCpdReqRate = pct(qualWithCpdReqs, achievedQualifications);
-
   // Evidence on file
   const evidenceOnFile = qualification_records.filter(r => r.evidence_on_file).length;
   const evidenceRate = pct(evidenceOnFile, totalQualifications);
-
-  // Qualification level distribution
-  const qualLevels = qualification_records
-    .filter(r => r.status === "achieved" && r.level > 0)
-    .map(r => r.level);
-  const avgQualLevel = qualLevels.length > 0
-    ? qualLevels.reduce((sum, l) => sum + l, 0) / qualLevels.length
-    : null;
 
   // Expiring soon (within 90 days)
   const qualExpiringSoon = qualification_records.filter(r =>
@@ -715,14 +636,7 @@ export function computeStaffTrainingCpdCompliance(
   // Objectives
   const totalObjectivesSet = development_plan_records.reduce((sum, r) => sum + (r.objectives_set || 0), 0);
   const totalObjectivesAchieved = development_plan_records.reduce((sum, r) => sum + (r.objectives_achieved || 0), 0);
-  const totalObjectivesInProgress = development_plan_records.reduce((sum, r) => sum + (r.objectives_in_progress || 0), 0);
   const developmentObjectivesAchievementRate = pct(totalObjectivesAchieved, totalObjectivesSet);
-
-  // Quality ratings
-  const ratedPlans = development_plan_records.filter(r => r.quality_rating > 0);
-  const avgPlanQuality = ratedPlans.length > 0
-    ? ratedPlans.reduce((sum, r) => sum + r.quality_rating, 0) / ratedPlans.length
-    : null;
 
   // Stale plans (plan exists but not current)
   const stalePlans = development_plan_records.filter(r => r.plan_exists && !r.is_current).length;

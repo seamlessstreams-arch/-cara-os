@@ -207,16 +207,6 @@ export function daysSince(from: string, to: string): number {
   );
 }
 
-// Fire-safety check types — these are the ones critical under fire safety law
-const FIRE_SAFETY_CHECK_TYPES = new Set([
-  "fire_alarm_test",
-  "emergency_lighting",
-  "fire_extinguisher",
-  "fire_drill",
-  "smoke_detector",
-  "carbon_monoxide_detector",
-]);
-
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computePremisesSafetyIntelligence(

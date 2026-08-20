@@ -129,8 +129,6 @@ export function computeStatutoryVisitCompliance(input: StatutoryVisitComplianceI
   const uvCompleted = recentUV.filter(v => v.completed);
   const uvDocumented = uvCompleted.filter(v => v.findings_documented);
   const uvCompletionRate = rate(uvCompleted.length, recentUV.length);
-  const uvActions = uvCompleted.reduce((s, v) => s + v.actions_raised, 0);
-  const uvResolved = uvCompleted.reduce((s, v) => s + v.actions_resolved, 0);
 
   // ── Reg 22 records ──────────────────────────────────────────────────────
   const recentReg22 = reg22_records.filter(r => daysBetween(r.date, today) <= 365 && daysBetween(r.date, today) >= 0);

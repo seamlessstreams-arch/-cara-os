@@ -410,10 +410,6 @@ export function computeKeyWorkerRelationshipQuality(
     (s) => s.wants_change_of_key_worker,
   ).length;
 
-  const avgSatisfactionScore = avg(
-    child_satisfaction_records.map((s) => s.satisfaction_score),
-  );
-
   // --- Continuity ---
   const totalContinuityRecords = continuity_records.length;
 

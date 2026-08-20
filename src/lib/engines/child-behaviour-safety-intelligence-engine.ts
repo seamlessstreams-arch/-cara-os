@@ -257,7 +257,6 @@ export function computeChildBehaviourSafety(
 
   // Trend: compare concerning ratio
   const pos60d = beh60d.filter((b) => b.direction === "positive");
-  const con60d = beh60d.filter((b) => b.direction === "concerning");
   const recentPosRatio = beh30d.length > 0 ? pos30d.length / beh30d.length : 0.5;
   const olderPosRatio = beh60d.length > 0 ? pos60d.length / beh60d.length : 0.5;
 

@@ -235,7 +235,6 @@ describe("identifyComplaintAlerts", () => {
   });
 
   it("flags pattern detection: 3+ in same category within 30 days", () => {
-    const now = new Date();
     const recentDate = daysFromNow(-5); // 5 days ago
     const complaints = [
       makeComplaint({ id: "c1", complaint_category: "staff_conduct", date_received: recentDate }),

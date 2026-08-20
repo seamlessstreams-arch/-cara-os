@@ -296,15 +296,6 @@ export function computeAsthmaRespiratoryManagement(
   const plansCurrent = action_plan_records.filter((a) => a.plan_in_place && a.plan_current).length;
   const plansGpApproved = action_plan_records.filter((a) => a.plan_in_place && a.gp_approved).length;
   const plansAccessible = action_plan_records.filter((a) => a.plan_in_place && a.plan_accessible).length;
-  const plansStaffBriefed = action_plan_records.filter((a) => a.plan_in_place && a.staff_briefed).length;
-  const plansParentInformed = action_plan_records.filter((a) => a.plan_in_place && a.parent_carer_informed).length;
-  const plansSchoolNotified = action_plan_records.filter((a) => a.plan_in_place && a.school_notified).length;
-  const plansMedDetailsIncluded = action_plan_records.filter(
-    (a) => a.plan_in_place && a.medication_details_included,
-  ).length;
-  const plansEmergencySteps = action_plan_records.filter(
-    (a) => a.plan_in_place && a.emergency_steps_included,
-  ).length;
   const plansTriggersDocumented = action_plan_records.filter(
     (a) => a.plan_in_place && a.personalised_triggers_documented,
   ).length;
@@ -328,13 +319,6 @@ export function computeAsthmaRespiratoryManagement(
       : 0;
 
   const gpApprovalRate = pct(plansGpApproved, totalActionPlanRecords);
-  const planCurrentRate = pct(plansCurrent, totalActionPlanRecords);
-  const planAccessibleRate = pct(plansAccessible, totalActionPlanRecords);
-  const staffBriefedRate = pct(plansStaffBriefed, totalActionPlanRecords);
-  const parentInformedRate = pct(plansParentInformed, totalActionPlanRecords);
-  const schoolNotifiedRate = pct(plansSchoolNotified, totalActionPlanRecords);
-  const medDetailsRate = pct(plansMedDetailsIncluded, totalActionPlanRecords);
-  const emergencyStepsRate = pct(plansEmergencySteps, totalActionPlanRecords);
   const triggersDocumentedRate = pct(plansTriggersDocumented, totalActionPlanRecords);
 
   // Identify overdue plan reviews
@@ -343,19 +327,6 @@ export function computeAsthmaRespiratoryManagement(
     return a.review_due_date < today && a.plan_in_place;
   }).length;
   const overdueReviewRate = pct(overdueReviews, totalActionPlanRecords);
-
-  // Unique children with action plans
-  const uniqueChildrenWithPlans = new Set(
-    action_plan_records.filter((a) => a.plan_in_place).map((a) => a.child_id),
-  ).size;
-  const actionPlanChildCoverage =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
-
-  // Severity distribution
-  const severeCounts = action_plan_records.filter(
-    (a) => a.severity_level === "severe_persistent" || a.severity_level === "moderate_persistent",
-  ).length;
-  const severeRate = pct(severeCounts, totalActionPlanRecords);
 
   // --- Inhaler technique metrics ---
   const totalInhalerRecords = inhaler_technique_records.length;
@@ -373,20 +344,13 @@ export function computeAsthmaRespiratoryManagement(
   );
   const stepCompletionRate = pct(totalStepsCorrect, totalStepsTotal);
 
-  const spacerUsedCorrectly = inhaler_technique_records.filter(
-    (i) => i.spacer_used_correctly,
-  ).length;
-  const spacerCorrectRate = pct(spacerUsedCorrectly, totalInhalerRecords);
-
   const canSelfAdminister = inhaler_technique_records.filter(
     (i) => i.child_can_self_administer,
   ).length;
-  const selfAdminRate = pct(canSelfAdminister, totalInhalerRecords);
 
   const understandsWhenToUse = inhaler_technique_records.filter(
     (i) => i.child_understands_when_to_use,
   ).length;
-  const understandsUseRate = pct(understandsWhenToUse, totalInhalerRecords);
 
   const retrainingNeeded = inhaler_technique_records.filter(
     (i) => i.retraining_needed,
@@ -397,10 +361,6 @@ export function computeAsthmaRespiratoryManagement(
     (i) => i.retraining_needed && i.retraining_provided,
   ).length;
   const retrainingProvidedRate = pct(retrainingProvided, retrainingNeeded);
-
-  const uniqueChildrenWithInhaler = new Set(
-    inhaler_technique_records.map((i) => i.child_id),
-  ).size;
 
   // Assessor quality — specialist/nurse/pharmacist vs staff
   const specialistAssessments = inhaler_technique_records.filter(
@@ -431,11 +391,6 @@ export function computeAsthmaRespiratoryManagement(
   ).length;
   const avoidancePlanRate = pct(avoidancePlanInPlace, triggersIdentified);
 
-  const avoidancePlanEffective = trigger_management_records.filter(
-    (t) => t.trigger_identified && t.avoidance_plan_in_place && t.avoidance_plan_effective,
-  ).length;
-  const avoidanceEffectivenessRate = pct(avoidancePlanEffective, avoidancePlanInPlace);
-
   const envControlsImplemented = trigger_management_records.filter(
     (t) => t.environmental_controls_implemented,
   ).length;
@@ -444,12 +399,10 @@ export function computeAsthmaRespiratoryManagement(
   const childCanIdentify = trigger_management_records.filter(
     (t) => t.child_can_identify_trigger,
   ).length;
-  const childTriggerIdentifyRate = pct(childCanIdentify, totalTriggerRecords);
 
   const childCanManageExposure = trigger_management_records.filter(
     (t) => t.child_can_manage_exposure,
   ).length;
-  const childExposureManageRate = pct(childCanManageExposure, totalTriggerRecords);
 
   const staffAwareOfTrigger = trigger_management_records.filter(
     (t) => t.staff_aware_of_trigger,
@@ -464,7 +417,6 @@ export function computeAsthmaRespiratoryManagement(
   const episodesOccurred = trigger_management_records.filter(
     (t) => t.episode_occurred,
   ).length;
-  const episodeRate = pct(episodesOccurred, totalTriggerRecords);
 
   const severeEpisodes = trigger_management_records.filter(
     (t) =>
@@ -490,11 +442,6 @@ export function computeAsthmaRespiratoryManagement(
             5,
         )
       : 0;
-
-  // Unique children in trigger management
-  const uniqueChildrenTrigger = new Set(
-    trigger_management_records.map((t) => t.child_id),
-  ).size;
 
   // Trigger type distribution
   const triggerTypeCounts: Record<string, number> = {};
@@ -536,12 +483,6 @@ export function computeAsthmaRespiratoryManagement(
   const peakFlowIndependent = peak_flow_records.filter(
     (p) => p.child_performed_independently,
   ).length;
-  const independentMonitoringRate = pct(peakFlowIndependent, totalPeakFlowRecords);
-
-  const peakFlowStaffSupervised = peak_flow_records.filter(
-    (p) => p.staff_supervised,
-  ).length;
-  const staffSupervisedRate = pct(peakFlowStaffSupervised, totalPeakFlowRecords);
 
   const actionRequired = peak_flow_records.filter(
     (p) => p.action_required,
@@ -573,11 +514,6 @@ export function computeAsthmaRespiratoryManagement(
         )
       : null;
 
-  // Unique children doing peak flow
-  const uniqueChildrenPeakFlow = new Set(
-    peak_flow_records.map((p) => p.child_id),
-  ).size;
-
   // --- Emergency preparedness metrics ---
   const totalEmergencyRecords = emergency_preparedness_records.length;
 
@@ -585,21 +521,6 @@ export function computeAsthmaRespiratoryManagement(
     (e) => e.emergency_inhaler_accessible,
   ).length;
   const inhalerAccessibleRate = pct(inhalerAccessible, totalEmergencyRecords);
-
-  const spacerAvailable = emergency_preparedness_records.filter(
-    (e) => e.spacer_available,
-  ).length;
-  const spacerAvailableRate = pct(spacerAvailable, totalEmergencyRecords);
-
-  const nebuliserAvailable = emergency_preparedness_records.filter(
-    (e) => e.nebuliser_available,
-  ).length;
-  const nebuliserAvailableRate = pct(nebuliserAvailable, totalEmergencyRecords);
-
-  const nebuliserServiced = emergency_preparedness_records.filter(
-    (e) => e.nebuliser_available && e.nebuliser_serviced,
-  ).length;
-  const nebuliserServicedRate = pct(nebuliserServiced, nebuliserAvailable);
 
   const protocolDisplayed = emergency_preparedness_records.filter(
     (e) => e.emergency_protocol_displayed,
@@ -631,11 +552,6 @@ export function computeAsthmaRespiratoryManagement(
   ).length;
   const emergencyContactsRate = pct(emergencyContactsCurrent, totalEmergencyRecords);
 
-  const oxygenMonitorAvailable = emergency_preparedness_records.filter(
-    (e) => e.oxygen_saturation_monitor_available,
-  ).length;
-  const oxygenMonitorRate = pct(oxygenMonitorAvailable, totalEmergencyRecords);
-
   const drillsCompleted = emergency_preparedness_records.filter(
     (e) => e.assessment_type === "drill",
   ).length;
@@ -643,11 +559,6 @@ export function computeAsthmaRespiratoryManagement(
     (e) => e.assessment_type === "drill" && e.drill_completed_successfully,
   ).length;
   const drillSuccessRate = pct(drillsSuccessful, drillsCompleted);
-
-  const actionsCompleted = emergency_preparedness_records.filter(
-    (e) => e.actions_completed,
-  ).length;
-  const actionsCompletedRate = pct(actionsCompleted, totalEmergencyRecords);
 
   // Emergency preparedness composite
   const emergencyPreparednessRate =

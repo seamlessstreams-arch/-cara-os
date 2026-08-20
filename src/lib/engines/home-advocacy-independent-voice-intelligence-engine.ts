@@ -117,7 +117,6 @@ export function computeAdvocacyIndependentVoice(
   const withChildVoice = records.filter(r => r.has_child_view).length;
   const childVoiceRate = pct(withChildVoice, total);
 
-  const withVisits = records.filter(r => r.has_visits).length;
   const totalPrivateSessions = records.reduce((sum, r) => sum + r.private_session_count, 0);
   const totalVisits = records.reduce((sum, r) => sum + r.visit_count, 0);
   const privateSessionRate = pct(totalPrivateSessions, totalVisits);

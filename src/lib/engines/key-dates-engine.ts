@@ -126,7 +126,6 @@ export interface KeyDatesEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-
 /** Days between two ISO date strings. Positive = future, negative = past. */
 export function daysBetween(from: string, to: string): number {
   const a = new Date(from + "T00:00:00Z").getTime();
@@ -146,7 +145,6 @@ export function computeSeverity(daysUntil: number): KeyDate["severity"] {
 /** Compute human-readable notes from days until. */
 export function computeNotes(daysUntil: number, type: KeyDate["type"]): string | undefined {
   if (daysUntil < 0) {
-    const abs = Math.abs(daysUntil);
     return type === "training_expiry" || type === "document_expiry"
       ? "Expired"
       : "Overdue";
@@ -188,7 +186,6 @@ export function nextBirthday(dob: string, today: string): string {
  * Calculate age a person will be turning on the next birthday.
  */
 export function ageOnNextBirthday(dob: string, today: string): number {
-  const todayDate = new Date(today + "T00:00:00Z");
   const birthDate = new Date(dob + "T00:00:00Z");
   const nb = nextBirthday(dob, today);
   const nbDate = new Date(nb + "T00:00:00Z");
@@ -487,7 +484,6 @@ export function computeKeyDates(input: KeyDatesEngineInput): KeyDatesResult {
 
 export function computeNextPlacementReview(placementStart: string, today: string): string | null {
   const start = new Date(placementStart + "T00:00:00Z");
-  const todayDate = new Date(today + "T00:00:00Z");
 
   // Generate review milestones
   const milestones: Date[] = [];

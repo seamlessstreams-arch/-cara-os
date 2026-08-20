@@ -273,43 +273,6 @@ describe("Home Health Appointment Continuity Intelligence Engine", () => {
     });
 
     it("rates good at score boundary 65", () => {
-      // Need score exactly 65: 52 + ? = 65 -> need +13
-      // Mod1: +6 (>=90%), Mod2: +5 (0%), Mod3: +2 (>=60%), Mod4: 0 (mid-range), Mod5: 0 (2 types), Mod6: 0 (mid-range)
-      // 52 + 6 + 5 + 2 + 0 + 0 + 0 = 65
-      // 10 appointments: 10 attended (100%), 0 missed, 7 outcomes (70%), 6 transport (60%), 2 types, 3/6 children (50%)
-      const appointments: AppointmentRecordInput[] = [
-        makeAppointment({ id: "a1", child_id: "c1", appointment_type: "gp" }),
-        makeAppointment({ id: "a2", child_id: "c1", appointment_type: "gp" }),
-        makeAppointment({ id: "a3", child_id: "c1", appointment_type: "dental" }),
-        makeAppointment({ id: "a4", child_id: "c2", appointment_type: "gp" }),
-        makeAppointment({ id: "a5", child_id: "c2", appointment_type: "dental" }),
-        makeAppointment({ id: "a6", child_id: "c3", appointment_type: "gp" }),
-        makeAppointment({ id: "a7", child_id: "c3", appointment_type: "gp", has_outcome: false }),
-        makeAppointment({ id: "a8", child_id: "c1", appointment_type: "gp", has_outcome: false }),
-        makeAppointment({ id: "a9", child_id: "c2", appointment_type: "gp", has_outcome: false, transport_arranged: false }),
-        makeAppointment({ id: "a10", child_id: "c3", appointment_type: "dental", transport_arranged: false }),
-      ];
-      // attendance: 10/10 = 100% -> +6, missed: 0/10 = 0% -> +5, outcome: 7/10 = 70% -> +2
-      // transport: 8/10 = 80% -> +1 ... that gives 66. Let me recalculate.
-      // I need to be more precise. Let me recalculate for transport 60-69% -> no modifier (0).
-      // Transport: need between 50-69% => no modifier. 6/10 = 60% -> no? >=70 -> +1, so 60% = 0
-      // But wait, 70% is +1, <50% is -4. So 50-69% = no adjustment.
-      // 2 types => uniqueTypes=2, which is >1 and <3, so no adjustment.
-      // 3/6 children = 50%, which is >=40 and <60, so no adjustment.
-      // 52 + 6 + 5 + 2 + 0 + 0 + 0 = 65
-      // Need: 6/10 transport. So 4 without transport.
-      const appointments2: AppointmentRecordInput[] = [
-        makeAppointment({ id: "a1", child_id: "c1", appointment_type: "gp" }),
-        makeAppointment({ id: "a2", child_id: "c1", appointment_type: "gp" }),
-        makeAppointment({ id: "a3", child_id: "c1", appointment_type: "dental" }),
-        makeAppointment({ id: "a4", child_id: "c2", appointment_type: "gp" }),
-        makeAppointment({ id: "a5", child_id: "c2", appointment_type: "dental" }),
-        makeAppointment({ id: "a6", child_id: "c3", appointment_type: "gp" }),
-        makeAppointment({ id: "a7", child_id: "c3", appointment_type: "gp", has_outcome: false }),
-        makeAppointment({ id: "a8", child_id: "c1", appointment_type: "gp", has_outcome: false }),
-        makeAppointment({ id: "a9", child_id: "c2", appointment_type: "gp", has_outcome: false, transport_arranged: false }),
-        makeAppointment({ id: "a10", child_id: "c3", appointment_type: "dental", has_outcome: false, transport_arranged: false }),
-      ];
       // outcome: 6/10 = 60% -> +2. transport: 8/10 = 80% -> +1. Nope, need to remove more transport.
       // Let me rebuild properly:
       // Need: outcomeRate >= 60 -> +2. transportRate 50-69 -> 0. uniqueTypes=2 -> 0. childrenRate 40-59% -> 0.

@@ -1014,20 +1014,6 @@ describe("generateContactIntelligence", () => {
   });
 
   it("includes Requires Improvement area when overall 40-59", () => {
-    // Policy only = 25, everything else 0, but need 40-59 range
-    // Policy 25 + some quality but not much
-    const records = Array.from({ length: 3 }, (_, i) =>
-      makeRecord({
-        id: `r-${i}`,
-        contactDate: "2026-03-15",
-        childPrepared: true,
-        contactPlanFollowed: true,
-        childViewCaptured: true,
-        safetyMeasuresInPlace: true,
-        documentationComplete: true,
-        timelyRecording: true,
-      }),
-    );
     // No staff, but has policy. Quality 25, compliance ~18 (1 category only), policy 25, staff 0 = too high
     // Let's try with partial data to hit 40-59 range
     const partialRecords = Array.from({ length: 3 }, (_, i) =>

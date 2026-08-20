@@ -259,10 +259,6 @@ export function computeRestraintPhysicalIntervention(
   const injuryRate = pct(withInjury, total);
   const totalInjuries = r90d.reduce((sum, r) => sum + r.injury_count, 0);
 
-  // Medical checks
-  const medicalCheckDone = r90d.filter(r => r.has_medical_check).length;
-  const medicalCheckRate = pct(medicalCheckDone, total);
-
   // Justification rate
   const justified = r90d.filter(r => r.has_justification).length;
   const justificationRate = pct(justified, total);

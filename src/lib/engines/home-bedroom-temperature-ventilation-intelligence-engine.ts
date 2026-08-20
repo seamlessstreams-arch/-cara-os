@@ -307,15 +307,6 @@ export function computeBedroomTemperatureVentilation(
   const tempActionTaken = temperature_monitoring_records.filter(
     (t) => t.action_required && t.action_taken,
   ).length;
-  const tempActionResponseRate = pct(tempActionTaken, tempActionRequired);
-
-  const bedroomTempRecords = temperature_monitoring_records.filter(
-    (t) => t.location === "bedroom",
-  ).length;
-  const bedroomTempWithinRange = temperature_monitoring_records.filter(
-    (t) => t.location === "bedroom" && t.within_range,
-  ).length;
-  const bedroomSpecificRate = pct(bedroomTempWithinRange, bedroomTempRecords);
 
   const nightTimeRecords = temperature_monitoring_records.filter(
     (t) => t.time_of_day === "night",
@@ -332,25 +323,10 @@ export function computeBedroomTemperatureVentilation(
   }
   const seasonsWithData = Object.keys(seasonCounts).length;
 
-  // Unique bedrooms monitored
-  const uniqueBedroomsTemp = new Set(
-    temperature_monitoring_records.map((t) => t.bedroom_id),
-  ).size;
-
   // --- Ventilation metrics ---
   const totalVentRecords = ventilation_records.length;
   const adequateVentilation = ventilation_records.filter((v) => v.adequate).length;
   const ventilationRate = pct(adequateVentilation, totalVentRecords);
-
-  const airQualityChecked = ventilation_records.filter(
-    (v) => v.air_quality_checked,
-  ).length;
-  const airQualityCheckRate = pct(airQualityChecked, totalVentRecords);
-
-  const airQualityAcceptable = ventilation_records.filter(
-    (v) => v.air_quality_checked && v.air_quality_acceptable,
-  ).length;
-  const airQualityAcceptableRate = pct(airQualityAcceptable, airQualityChecked);
 
   const condensationPresent = ventilation_records.filter(
     (v) => v.condensation_present,
@@ -360,21 +336,12 @@ export function computeBedroomTemperatureVentilation(
   const mouldPresent = ventilation_records.filter((v) => v.mould_present).length;
   const mouldRate = pct(mouldPresent, totalVentRecords);
 
-  const ventSystemWorking = ventilation_records.filter(
-    (v) => v.ventilation_system_working,
-  ).length;
-  const ventSystemWorkingRate = pct(ventSystemWorking, totalVentRecords);
-
   const ventMaintenanceRequired = ventilation_records.filter(
     (v) => v.maintenance_required,
   ).length;
   const ventMaintenanceCompleted = ventilation_records.filter(
     (v) => v.maintenance_required && v.maintenance_completed,
   ).length;
-  const ventMaintenanceCompletionRate = pct(
-    ventMaintenanceCompleted,
-    ventMaintenanceRequired,
-  );
 
   // --- Heating check metrics ---
   const totalHeatingChecks = heating_check_records.length;
@@ -388,20 +355,10 @@ export function computeBedroomTemperatureVentilation(
   ).length;
   const thermostatWorkingRate = pct(thermostatWorking, totalHeatingChecks);
 
-  const thermostatAccessible = heating_check_records.filter(
-    (h) => h.thermostat_accessible_to_child,
-  ).length;
-  const thermostatAccessibleRate = pct(thermostatAccessible, totalHeatingChecks);
-
   const safetyCheckPassed = heating_check_records.filter(
     (h) => h.safety_check_passed,
   ).length;
   const safetyCheckRate = pct(safetyCheckPassed, totalHeatingChecks);
-
-  const temperatureControllable = heating_check_records.filter(
-    (h) => h.temperature_controllable,
-  ).length;
-  const controllableRate = pct(temperatureControllable, totalHeatingChecks);
 
   const serviceOverdue = heating_check_records.filter(
     (h) => h.service_overdue,
@@ -414,15 +371,6 @@ export function computeBedroomTemperatureVentilation(
   const heatingIssuesResolved = heating_check_records.filter(
     (h) => h.issues_found && h.issues_resolved,
   ).length;
-  const heatingIssueResolutionRate = pct(
-    heatingIssuesResolved,
-    heatingIssuesFound,
-  );
-
-  const radiatorGuardsFitted = heating_check_records.filter(
-    (h) => h.radiator_guards_fitted,
-  ).length;
-  const radiatorGuardsRate = pct(radiatorGuardsFitted, totalHeatingChecks);
 
   const engineerCertified = heating_check_records.filter(
     (h) => h.engineer_certified,
@@ -449,48 +397,10 @@ export function computeBedroomTemperatureVentilation(
   ).length;
   const restrictorRate = pct(restrictorFitted, totalWindowRecords);
 
-  const restrictorFunctional = window_compliance_records.filter(
-    (w) => w.window_restrictor_fitted && w.restrictor_functional,
-  ).length;
-  const restrictorFunctionalRate = pct(restrictorFunctional, restrictorFitted);
-
-  const safetyGlassFitted = window_compliance_records.filter(
-    (w) => w.safety_glass_fitted,
-  ).length;
-  const safetyGlassRate = pct(safetyGlassFitted, totalWindowRecords);
-
-  const windowOpensAdequately = window_compliance_records.filter(
-    (w) => w.window_opens_adequately,
-  ).length;
-  const windowOpensRate = pct(windowOpensAdequately, totalWindowRecords);
-
   const fallRiskAssessed = window_compliance_records.filter(
     (w) => w.fall_risk_assessed,
   ).length;
   const fallRiskAssessedRate = pct(fallRiskAssessed, totalWindowRecords);
-
-  const fallRiskMitigated = window_compliance_records.filter(
-    (w) => w.fall_risk_assessed && w.fall_risk_mitigated,
-  ).length;
-  const fallRiskMitigatedRate = pct(fallRiskMitigated, fallRiskAssessed);
-
-  const childCanOpenVent = window_compliance_records.filter(
-    (w) => w.child_can_open_for_ventilation,
-  ).length;
-  const childVentAccessRate = pct(childCanOpenVent, totalWindowRecords);
-
-  const trickleVentPresent = window_compliance_records.filter(
-    (w) => w.trickle_vent_present,
-  ).length;
-  const trickleVentOpenCount = window_compliance_records.filter(
-    (w) => w.trickle_vent_present && w.trickle_vent_open,
-  ).length;
-  const trickleVentOpenRate = pct(trickleVentOpenCount, trickleVentPresent);
-
-  const draughtProofingAdequate = window_compliance_records.filter(
-    (w) => w.draught_proofing_adequate,
-  ).length;
-  const draughtProofingRate = pct(draughtProofingAdequate, totalWindowRecords);
 
   const poorConditionWindows = window_compliance_records.filter(
     (w) => w.window_condition === "poor" || w.window_condition === "damaged",
@@ -503,11 +413,6 @@ export function computeBedroomTemperatureVentilation(
     (c) => c.temperature_preference === "comfortable",
   ).length;
   const comfortableTempRate = pct(comfortableTemp, totalComfortRecords);
-
-  const comfortableVent = child_comfort_records.filter(
-    (c) => c.ventilation_preference === "comfortable",
-  ).length;
-  const comfortableVentRate = pct(comfortableVent, totalComfortRecords);
 
   const sleepsWellTemp = child_comfort_records.filter(
     (c) => c.sleeps_well_temperature,
@@ -524,26 +429,10 @@ export function computeBedroomTemperatureVentilation(
   ).length;
   const beddingSeasonalRate = pct(beddingSeasonal, totalComfortRecords);
 
-  const heatingControlUnderstood = child_comfort_records.filter(
-    (c) => c.heating_control_understood,
-  ).length;
-  const heatingControlUnderstoodRate = pct(
-    heatingControlUnderstood,
-    totalComfortRecords,
-  );
-
   const canAdjustTemp = child_comfort_records.filter(
     (c) => c.can_adjust_temperature,
   ).length;
   const canAdjustTempRate = pct(canAdjustTemp, totalComfortRecords);
-
-  const windowUsageConfident = child_comfort_records.filter(
-    (c) => c.window_usage_confident,
-  ).length;
-  const windowUsageConfidentRate = pct(
-    windowUsageConfident,
-    totalComfortRecords,
-  );
 
   const changesRequested = child_comfort_records.filter(
     (c) => c.requested_changes,

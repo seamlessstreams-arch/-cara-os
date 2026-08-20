@@ -287,36 +287,12 @@ export function computeMultiAgencyCollaboration(
   const onTimeLacReviews = lac_review_records.filter((r) => r.on_time).length;
   const lacReviewTimelinessRate = pct(onTimeLacReviews, totalLacReviews);
 
-  const lacChildAttendance = lac_review_records.filter((r) => r.attended_by_child).length;
-  const lacChildAttendanceRate = pct(lacChildAttendance, totalLacReviews);
-
-  const lacSWAttendance = lac_review_records.filter((r) => r.attended_by_social_worker).length;
-  const lacSWAttendanceRate = pct(lacSWAttendance, totalLacReviews);
-
-  const lacCarerAttendance = lac_review_records.filter((r) => r.attended_by_carer).length;
-  const lacCarerAttendanceRate = pct(lacCarerAttendance, totalLacReviews);
-
-  const lacIROAttendance = lac_review_records.filter((r) => r.attended_by_iro).length;
-  const lacIROAttendanceRate = pct(lacIROAttendance, totalLacReviews);
-
-  const lacEducationAttendance = lac_review_records.filter((r) => r.attended_by_education).length;
-  const lacEducationAttendanceRate = pct(lacEducationAttendance, totalLacReviews);
-
-  const lacHealthAttendance = lac_review_records.filter((r) => r.attended_by_health).length;
-  const lacHealthAttendanceRate = pct(lacHealthAttendance, totalLacReviews);
-
   const lacChildViewsRecorded = lac_review_records.filter((r) => r.child_views_recorded).length;
   const lacChildViewsRate = pct(lacChildViewsRecorded, totalLacReviews);
 
   const lacActionsSet = lac_review_records.reduce((sum, r) => sum + r.actions_set, 0);
   const lacActionsCompleted = lac_review_records.reduce((sum, r) => sum + r.actions_completed, 0);
   const lacActionCompletionRate = pct(lacActionsCompleted, lacActionsSet);
-
-  const lacMinutesTimely = lac_review_records.filter((r) => r.minutes_circulated_within_target).length;
-  const lacMinutesTimelyRate = pct(lacMinutesTimely, totalLacReviews);
-
-  const lacGoodOutcomes = lac_review_records.filter((r) => r.outcome_quality === "good").length;
-  const lacGoodOutcomeRate = pct(lacGoodOutcomes, totalLacReviews);
 
   const lacPoorOutcomes = lac_review_records.filter((r) => r.outcome_quality === "poor").length;
   const lacPoorOutcomeRate = pct(lacPoorOutcomes, totalLacReviews);
@@ -329,35 +305,14 @@ export function computeMultiAgencyCollaboration(
   const childSeenAlone = social_worker_visit_records.filter((v) => v.child_seen_alone).length;
   const childSeenAloneRate = pct(childSeenAlone, totalSWVisits);
 
-  const childViewsSought = social_worker_visit_records.filter((v) => v.child_views_sought).length;
-  const childViewsSoughtRate = pct(childViewsSought, totalSWVisits);
-
-  const visitRecordedPromptly = social_worker_visit_records.filter((v) => v.visit_recorded_promptly).length;
-  const visitRecordedPromptlyRate = pct(visitRecordedPromptly, totalSWVisits);
-
   const swConsistent = social_worker_visit_records.filter((v) => v.social_worker_consistent).length;
   const swConsistencyRate = pct(swConsistent, totalSWVisits);
-
-  const placementPlanReviewed = social_worker_visit_records.filter((v) => v.placement_plan_reviewed).length;
-  const placementPlanReviewRate = pct(placementPlanReviewed, totalSWVisits);
-
-  const swActionsArisingTotal = social_worker_visit_records.reduce((sum, v) => sum + v.actions_arising, 0);
-  const swActionsFollowedUp = social_worker_visit_records.filter((v) => v.actions_followed_up).length;
-  const swFollowUpRate = pct(swActionsFollowedUp, totalSWVisits);
-
-  const swGoodQuality = social_worker_visit_records.filter((v) => v.quality_rating === "good").length;
-  const swGoodQualityRate = pct(swGoodQuality, totalSWVisits);
 
   const swPoorQuality = social_worker_visit_records.filter((v) => v.quality_rating === "poor").length;
   const swPoorQualityRate = pct(swPoorQuality, totalSWVisits);
 
   // --- Therapeutic Service metrics ---
   const totalTherapeuticRecords = therapeutic_service_records.length;
-  const activeServices = therapeutic_service_records.filter((t) => t.service_active).length;
-
-  const sessionsOffered = therapeutic_service_records.reduce((sum, t) => sum + t.sessions_offered, 0);
-  const sessionsAttended = therapeutic_service_records.reduce((sum, t) => sum + t.sessions_attended, 0);
-  const therapeuticAttendanceRate = pct(sessionsAttended, sessionsOffered);
 
   const therapeuticEngaged = therapeutic_service_records.filter((t) => t.child_engaged).length;
   const therapeuticEngagementRate = pct(therapeuticEngaged, totalTherapeuticRecords);
@@ -373,65 +328,24 @@ export function computeMultiAgencyCollaboration(
   const therapeuticInfoShared = therapeutic_service_records.filter((t) => t.information_shared_with_home).length;
   const therapeuticInfoSharedRate = pct(therapeuticInfoShared, totalTherapeuticRecords);
 
-  const therapeuticGoodLiaison = therapeutic_service_records.filter((t) => t.home_liaison_quality === "good").length;
-  const therapeuticGoodLiaisonRate = pct(therapeuticGoodLiaison, totalTherapeuticRecords);
-
-  const therapeuticPoorLiaison = therapeutic_service_records.filter((t) => t.home_liaison_quality === "poor").length;
-  const therapeuticPoorLiaisonRate = pct(therapeuticPoorLiaison, totalTherapeuticRecords);
-
-  const uniqueChildrenInTherapy = new Set(
-    therapeutic_service_records.filter((t) => t.service_active).map((t) => t.child_id),
-  ).size;
-
   // --- Education Liaison metrics ---
   const totalEducationLiaisons = education_liaison_records.length;
   const attendedByHome = education_liaison_records.filter((e) => e.attended_by_home).length;
   const educationLiaisonRate = pct(attendedByHome, totalEducationLiaisons);
 
-  const attendedBySW = education_liaison_records.filter((e) => e.attended_by_social_worker).length;
-  const educationSWAttendanceRate = pct(attendedBySW, totalEducationLiaisons);
-
   const pepUpToDate = education_liaison_records.filter((e) => e.pep_up_to_date).length;
   const pepUpToDateRate = pct(pepUpToDate, totalEducationLiaisons);
 
-  const educationProgressDiscussed = education_liaison_records.filter((e) => e.educational_progress_discussed).length;
-  const educationProgressRate = pct(educationProgressDiscussed, totalEducationLiaisons);
-
-  const educationActionsAgreed = education_liaison_records.reduce((sum, e) => sum + e.actions_agreed, 0);
-  const educationActionsCompleted = education_liaison_records.reduce((sum, e) => sum + e.actions_completed, 0);
-  const educationActionCompletionRate = pct(educationActionsCompleted, educationActionsAgreed);
-
-  const pupilPremiumDiscussed = education_liaison_records.filter((e) => e.pupil_premium_discussed).length;
-  const pupilPremiumRate = pct(pupilPremiumDiscussed, totalEducationLiaisons);
-
   const designatedTeacherInvolved = education_liaison_records.filter((e) => e.designated_teacher_involved).length;
   const designatedTeacherRate = pct(designatedTeacherInvolved, totalEducationLiaisons);
-
-  const ehcpRelevant = education_liaison_records.filter((e) => e.ehcp_relevant).length;
-  const ehcpReviewed = education_liaison_records.filter((e) => e.ehcp_relevant && e.ehcp_reviewed).length;
-  const ehcpReviewRate = pct(ehcpReviewed, ehcpRelevant);
-
-  const educationGoodQuality = education_liaison_records.filter((e) => e.quality_rating === "good").length;
-  const educationGoodQualityRate = pct(educationGoodQuality, totalEducationLiaisons);
-
-  const educationPoorQuality = education_liaison_records.filter((e) => e.quality_rating === "poor").length;
 
   // --- Information Sharing metrics ---
   const totalInfoSharingRecords = information_sharing_records.length;
   const timelySharing = information_sharing_records.filter((i) => i.timely).length;
   const informationSharingRate = pct(timelySharing, totalInfoSharingRecords);
 
-  const completeInfo = information_sharing_records.filter((i) => i.information_complete).length;
-  const informationCompletenessRate = pct(completeInfo, totalInfoSharingRecords);
-
-  const consentObtained = information_sharing_records.filter((i) => i.consent_obtained).length;
-  const consentRate = pct(consentObtained, totalInfoSharingRecords);
-
   const gdprCompliant = information_sharing_records.filter((i) => i.gdpr_compliant).length;
   const gdprComplianceRate = pct(gdprCompliant, totalInfoSharingRecords);
-
-  const outcomeRecorded = information_sharing_records.filter((i) => i.outcome_recorded).length;
-  const outcomeRecordedRate = pct(outcomeRecorded, totalInfoSharingRecords);
 
   const homeInitiated = information_sharing_records.filter((i) => i.initiated_by_home).length;
   const homeInitiatedRate = pct(homeInitiated, totalInfoSharingRecords);

@@ -282,26 +282,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     if (!b.last_reviewed_date || !b.review_due_date) return false;
     return b.last_reviewed_date >= b.review_due_date || daysBetween(b.last_reviewed_date, today) <= 90;
   }).length;
-  // Also count BSPs whose review date is in the future as compliant
-  const bspsNotYetDue = activeBSPsWithReviewDue.filter(
-    (b) => b.review_due_date !== null && b.review_due_date > today,
-  ).length;
   const bspsOverdue = activeBSPsWithReviewDue.filter(
     (b) => b.review_due_date !== null && b.review_due_date <= today && (!b.last_reviewed_date || b.last_reviewed_date < b.review_due_date),
   ).length;
   const bspReviewCompliant = activeBSPsWithReviewDue.length - bspsOverdue;
   const bspReviewComplianceRate = pct(bspReviewCompliant, activeBSPsWithReviewDue.length > 0 ? activeBSPsWithReviewDue.length : activeBSPs.length > 0 ? activeBSPs.length : 1);
 
-  // --- BSP quality indicators ---
-  const bspsWithTriggers = activeBSPs.filter((b) => b.triggers_documented).length;
-  const bspsWithStrategies = activeBSPs.filter((b) => b.strategies_documented).length;
-  const bspsWithDeescalation = activeBSPs.filter((b) => b.de_escalation_strategies_included).length;
-  const bspsWithPositiveReinforcement = activeBSPs.filter((b) => b.positive_reinforcement_included).length;
   const bspsWithChildInvolvement = activeBSPs.filter((b) => b.child_involved_in_creation).length;
-  const bspsWithChildSignOff = activeBSPs.filter((b) => b.child_signed_off).length;
   const bspsWithStaffTrained = activeBSPs.filter((b) => b.staff_trained_on_plan).length;
-  const bspsWithMultiAgency = activeBSPs.filter((b) => b.multi_agency_input).length;
-  const bspsWithRiskLink = activeBSPs.filter((b) => b.risk_assessment_linked).length;
 
   const childInvolvementRate = pct(bspsWithChildInvolvement, activeBSPs.length);
   const staffTrainingRate = pct(bspsWithStaffTrained, activeBSPs.length);
@@ -330,9 +318,6 @@ export function computeBehaviourSupportPlanEffectiveness(
   const interventionsWithDebrief = intervention_records.filter(
     (i) => i.child_debriefed,
   ).length;
-  const interventionsWithFollowUp = intervention_records.filter(
-    (i) => i.follow_up_completed,
-  ).length;
   const incidentsPrevented = intervention_records.filter(
     (i) => i.incident_prevented,
   ).length;
@@ -358,12 +343,6 @@ export function computeBehaviourSupportPlanEffectiveness(
   const deescalationsWithChildDebrief = deescalation_records.filter(
     (d) => d.child_debriefed,
   ).length;
-  const deescalationsWithStaffDebrief = deescalation_records.filter(
-    (d) => d.staff_debriefed,
-  ).length;
-  const deescalationsWithLearning = deescalation_records.filter(
-    (d) => d.learning_recorded,
-  ).length;
 
   // --- Positive reinforcement rate ---
   const totalPositiveRecords = positive_reinforcement_records.length;
@@ -376,10 +355,6 @@ export function computeBehaviourSupportPlanEffectiveness(
     (p) => p.consistent_with_bsp,
   ).length;
   const consistencyRate = pct(consistentWithBSP, totalPositiveRecords);
-
-  const documentedInLog = positive_reinforcement_records.filter(
-    (p) => p.documented_in_daily_log,
-  ).length;
 
   // --- Restrictive practice minimisation ---
   const totalRestrictive = restrictive_practice_records.length;
@@ -395,17 +370,11 @@ export function computeBehaviourSupportPlanEffectiveness(
   const restrictiveWithChildDebrief = restrictive_practice_records.filter(
     (r) => r.child_debriefed,
   ).length;
-  const restrictiveWithStaffDebrief = restrictive_practice_records.filter(
-    (r) => r.staff_debriefed,
-  ).length;
   const restrictiveWithPostIncident = restrictive_practice_records.filter(
     (r) => r.post_incident_review_completed,
   ).length;
   const restrictiveWithBodyMap = restrictive_practice_records.filter(
     (r) => r.body_map_completed,
-  ).length;
-  const restrictiveWithNotification = restrictive_practice_records.filter(
-    (r) => r.notified_authorities,
   ).length;
   const restrictiveWithReductionPlan = restrictive_practice_records.filter(
     (r) => r.reduction_plan_in_place,

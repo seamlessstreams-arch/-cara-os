@@ -91,7 +91,6 @@ export function computeSocialWorkerContact(
   input: SocialWorkerContactInput,
 ): SocialWorkerContactResult {
   const { contacts, total_children, today } = input;
-  const todayMs = new Date(today).getTime();
 
   // Insufficient data guard
   if (total_children === 0) {
@@ -137,17 +136,8 @@ export function computeSocialWorkerContact(
   const decisionDocumentationRate = pct(withDecisions, total);
 
   const urgentContacts = contacts.filter(c => c.urgency === "urgent" || c.urgency === "emergency").length;
-  const statutoryVisits = contacts.filter(c => c.contact_type === "statutory_visit").length;
   const lacReviews = contacts.filter(c => c.contact_type === "lac_review").length;
   const faceToFace = contacts.filter(c => c.contact_type === "visit" || c.contact_type === "statutory_visit" || c.contact_type === "lac_review").length;
-  const withChildViews = contacts.filter(c => c.has_child_views).length;
-  const withNextScheduled = contacts.filter(c => c.has_next_scheduled).length;
-
-  // Recent contacts (within 30 days)
-  const recentContacts = contacts.filter(c => {
-    const contactMs = new Date(c.date).getTime();
-    return (todayMs - contactMs) <= 30 * 86400000;
-  }).length;
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;

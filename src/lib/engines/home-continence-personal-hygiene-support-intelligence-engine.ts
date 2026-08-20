@@ -341,44 +341,19 @@ export function computeContinencePersonalHygieneSupport(
   const goalsSet = continence_plan_records.filter((p) => p.goals_set).length;
   const goalsSetRate = pct(goalsSet, totalContinencePlans);
 
-  const goalsProgressing = continence_plan_records.filter((p) => p.goals_set && p.goals_progressing).length;
-  const goalsProgressRate = pct(goalsProgressing, totalContinencePlans);
-
   const medicalInvolved = continence_plan_records.filter((p) => p.medical_professional_involved).length;
   const medicalInvolvementRate = pct(medicalInvolved, totalContinencePlans);
 
   const childInvolvedPlanning = continence_plan_records.filter((p) => p.child_involved_in_planning).length;
-  const childInvolvedPlanningRate = pct(childInvolvedPlanning, totalContinencePlans);
 
   const staffTrained = continence_plan_records.filter((p) => p.staff_trained).length;
   const staffTrainedRate = pct(staffTrained, totalContinencePlans);
 
-  const staffAware = continence_plan_records.filter((p) => p.staff_aware_of_plan).length;
-  const staffAwareRate = pct(staffAware, totalContinencePlans);
-
   const confidentialityMaintained = continence_plan_records.filter((p) => p.confidentiality_maintained).length;
   const confidentialityRate = pct(confidentialityMaintained, totalContinencePlans);
 
-  const progressNotesUpToDate = continence_plan_records.filter((p) => p.progress_notes_up_to_date).length;
-  const progressNotesRate = pct(progressNotesUpToDate, totalContinencePlans);
-
   const recordsKeptSecurely = continence_plan_records.filter((p) => p.records_kept_securely).length;
   const secureRecordRate = pct(recordsKeptSecurely, totalContinencePlans);
-
-  const triggersIdentified = continence_plan_records.filter((p) => p.triggers_identified).length;
-  const triggersRate = pct(triggersIdentified, totalContinencePlans);
-
-  const toiletingSchedules = continence_plan_records.filter((p) => p.toileting_schedule_in_place).length;
-  const toiletingScheduleRate = pct(toiletingSchedules, totalContinencePlans);
-
-  const schoolPlanShared = continence_plan_records.filter((p) => p.school_plan_shared).length;
-  const schoolPlanRate = pct(schoolPlanShared, totalContinencePlans);
-
-  const parentInformed = continence_plan_records.filter((p) => p.parent_carer_informed).length;
-  const parentInformedRate = pct(parentInformed, totalContinencePlans);
-
-  const socialWorkerInformed = continence_plan_records.filter((p) => p.social_worker_informed).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalContinencePlans);
 
   // Composite continence_plan_rate: average of planInPlace, personalised, reviewedOnTime, goals
   const continencePlanRate: number | null =
@@ -395,7 +370,6 @@ export function computeContinencePersonalHygieneSupport(
   const routineCompletionRate = pct(routinesCompleted, totalHygieneRoutines);
 
   const routinesIndependent = hygiene_routine_records.filter((r) => r.child_independent).length;
-  const independenceRate = pct(routinesIndependent, totalHygieneRoutines);
 
   const routinesPersonalised = hygiene_routine_records.filter((r) => r.routine_personalised).length;
   const routinePersonalisedRate = pct(routinesPersonalised, totalHygieneRoutines);
@@ -412,26 +386,13 @@ export function computeContinencePersonalHygieneSupport(
   const sensoryConsidered = hygiene_routine_records.filter((r) => r.sensory_needs_considered).length;
   const sensoryRate = pct(sensoryConsidered, totalHygieneRoutines);
 
-  const childChoiceRespected = hygiene_routine_records.filter((r) => r.child_choice_respected).length;
-  const childChoiceRate = pct(childChoiceRespected, totalHygieneRoutines);
-
-  const productsAvailable = hygiene_routine_records.filter((r) => r.products_available).length;
-  const productsAvailableRate = pct(productsAvailable, totalHygieneRoutines);
-
-  const productsSuitable = hygiene_routine_records.filter((r) => r.products_suitable).length;
-  const productsSuitableRate = pct(productsSuitable, totalHygieneRoutines);
-
   const sameGenderOffered = hygiene_routine_records.filter((r) => r.same_gender_support_offered).length;
   const sameGenderRate = pct(sameGenderOffered, totalHygieneRoutines);
-
-  const encouragementGiven = hygiene_routine_records.filter((r) => r.encouragement_given).length;
-  const encouragementRate = pct(encouragementGiven, totalHygieneRoutines);
 
   const ageAppropriateRoutine = hygiene_routine_records.filter((r) => r.age_appropriate_approach).length;
   const ageAppropriateRoutineRate = pct(ageAppropriateRoutine, totalHygieneRoutines);
 
   const routinesRefused = hygiene_routine_records.filter((r) => r.child_refused).length;
-  const refusalRate = pct(routinesRefused, totalHygieneRoutines);
 
   const refusalsHandledSensitively = hygiene_routine_records.filter((r) => r.child_refused && r.refusal_handled_sensitively).length;
   const refusalHandlingRate = routinesRefused > 0 ? pct(refusalsHandledSensitively, routinesRefused) : 100;
@@ -455,12 +416,6 @@ export function computeContinencePersonalHygieneSupport(
   const consentSought = dignity_care_records.filter((d) => d.consent_sought).length;
   const consentRate = pct(consentSought, totalDignityCareRecords);
 
-  const childViewsRespected = dignity_care_records.filter((d) => d.child_views_respected).length;
-  const childViewsRate = pct(childViewsRespected, totalDignityCareRecords);
-
-  const discreteApproach = dignity_care_records.filter((d) => d.discrete_approach_used).length;
-  const discreteApproachRate = pct(discreteApproach, totalDignityCareRecords);
-
   const embarrassmentMinimised = dignity_care_records.filter((d) => d.child_embarrassment_minimised).length;
   const embarrassmentMinimisedRate = pct(embarrassmentMinimised, totalDignityCareRecords);
 
@@ -473,32 +428,8 @@ export function computeContinencePersonalHygieneSupport(
   const cleanClothesPromptly = dignity_care_records.filter((d) => d.clean_clothes_provided_promptly).length;
   const cleanClothesRate = pct(cleanClothesPromptly, totalDignityCareRecords);
 
-  const beddingChangedPromptly = dignity_care_records.filter((d) => d.bedding_changed_promptly).length;
-  const beddingChangedRate = pct(beddingChangedPromptly, totalDignityCareRecords);
-
   const peerAwarenessManaged = dignity_care_records.filter((d) => d.peer_awareness_managed).length;
   const peerAwarenessRate = pct(peerAwarenessManaged, totalDignityCareRecords);
-
-  const emotionalSupportOffered = dignity_care_records.filter((d) => d.emotional_support_offered).length;
-  const emotionalSupportRate = pct(emotionalSupportOffered, totalDignityCareRecords);
-
-  const staffFollowedProtocol = dignity_care_records.filter((d) => d.staff_followed_protocol).length;
-  const protocolFollowedRate = pct(staffFollowedProtocol, totalDignityCareRecords);
-
-  const incidentRecordedSensitively = dignity_care_records.filter((d) => d.incident_recorded_sensitively).length;
-  const sensitiveRecordingRate = pct(incidentRecordedSensitively, totalDignityCareRecords);
-
-  const childDebriefed = dignity_care_records.filter((d) => d.child_debriefed).length;
-  const childDebriefRate = pct(childDebriefed, totalDignityCareRecords);
-
-  const sameGenderDignityOffered = dignity_care_records.filter((d) => d.same_gender_carer_offered).length;
-  const sameGenderDignityRate = pct(sameGenderDignityOffered, totalDignityCareRecords);
-
-  const sameGenderDignityProvided = dignity_care_records.filter((d) => d.same_gender_carer_provided).length;
-  const sameGenderProvidedRate = pct(sameGenderDignityProvided, totalDignityCareRecords);
-
-  const minimalStaffInvolved = dignity_care_records.filter((d) => d.minimal_staff_involved).length;
-  const minimalStaffRate = pct(minimalStaffInvolved, totalDignityCareRecords);
 
   // Composite dignity_compliance_rate
   const dignityComplianceRate: number | null =
@@ -522,32 +453,10 @@ export function computeContinencePersonalHygieneSupport(
   const childEngagedGuidance = age_guidance_records.filter((g) => g.child_engaged).length;
   const childEngagedRate = pct(childEngagedGuidance, totalAgeGuidanceRecords);
 
-  const childUnderstood = age_guidance_records.filter((g) => g.child_understood).length;
-  const childUnderstoodRate = pct(childUnderstood, totalAgeGuidanceRecords);
-
-  const questionsEncouraged = age_guidance_records.filter((g) => g.child_questions_encouraged).length;
-  const questionsEncouragedRate = pct(questionsEncouraged, totalAgeGuidanceRecords);
-
-  const childFeedbackPositive = age_guidance_records.filter((g) => g.child_feedback_positive).length;
-  const childFeedbackPositiveRate = pct(childFeedbackPositive, totalAgeGuidanceRecords);
-
   const followUpPlanned = age_guidance_records.filter((g) => g.follow_up_planned).length;
-  const followUpPlannedRate = pct(followUpPlanned, totalAgeGuidanceRecords);
 
   const followUpCompleted = age_guidance_records.filter((g) => g.follow_up_planned && g.follow_up_completed).length;
   const followUpCompletionRate = followUpPlanned > 0 ? pct(followUpCompleted, followUpPlanned) : 100;
-
-  const materialsProvided = age_guidance_records.filter((g) => g.materials_provided).length;
-  const materialsRate = pct(materialsProvided, totalAgeGuidanceRecords);
-
-  const culturalSensitivityShown = age_guidance_records.filter((g) => g.cultural_sensitivity_shown).length;
-  const culturalSensitivityRate = pct(culturalSensitivityShown, totalAgeGuidanceRecords);
-
-  const linkedToCarePlan = age_guidance_records.filter((g) => g.linked_to_care_plan).length;
-  const linkedToCarePlanRate = pct(linkedToCarePlan, totalAgeGuidanceRecords);
-
-  const parentConsulted = age_guidance_records.filter((g) => g.parent_carer_consulted).length;
-  const parentConsultedRate = pct(parentConsulted, totalAgeGuidanceRecords);
 
   const uniqueChildrenGuidance = new Set(
     age_guidance_records.filter((g) => g.child_engaged).map((g) => g.child_id),
@@ -570,9 +479,6 @@ export function computeContinencePersonalHygieneSupport(
   const productsSuitableProv = product_provision_records.filter((p) => p.product_suitable).length;
   const productSuitabilityRate = pct(productsSuitableProv, totalProductProvisionRecords);
 
-  const productPreferred = product_provision_records.filter((p) => p.product_preferred_by_child).length;
-  const productPreferredRate = pct(productPreferred, totalProductProvisionRecords);
-
   const sufficientQuantity = product_provision_records.filter((p) => p.sufficient_quantity).length;
   const sufficientQuantityRate = pct(sufficientQuantity, totalProductProvisionRecords);
 
@@ -582,38 +488,13 @@ export function computeContinencePersonalHygieneSupport(
   const easyAccess = product_provision_records.filter((p) => p.easy_access_for_child).length;
   const easyAccessRate = pct(easyAccess, totalProductProvisionRecords);
 
-  const brandChoice = product_provision_records.filter((p) => p.brand_choice_offered).length;
-  const brandChoiceRate = pct(brandChoice, totalProductProvisionRecords);
-
-  const culturalNeedsProducts = product_provision_records.filter((p) => p.cultural_needs_met).length;
-  const culturalNeedsProductRate = pct(culturalNeedsProducts, totalProductProvisionRecords);
-
-  const sensoryNeedsProducts = product_provision_records.filter((p) => p.sensory_needs_met).length;
-  const sensoryNeedsProductRate = pct(sensoryNeedsProducts, totalProductProvisionRecords);
-
   const replenishedOnTime = product_provision_records.filter((p) => p.replenished_on_time).length;
   const replenishedRate = pct(replenishedOnTime, totalProductProvisionRecords);
 
-  const budgetAdequate = product_provision_records.filter((p) => p.budget_adequate).length;
-  const budgetAdequateRate = pct(budgetAdequate, totalProductProvisionRecords);
-
   const childConsulted = product_provision_records.filter((p) => p.child_consulted_on_choice).length;
-  const childConsultedRate = pct(childConsulted, totalProductProvisionRecords);
-
-  const ageAppropriateProducts = product_provision_records.filter((p) => p.age_appropriate).length;
-  const ageAppropriateProductRate = pct(ageAppropriateProducts, totalProductProvisionRecords);
-
-  const qualityAcceptable = product_provision_records.filter((p) => p.quality_acceptable).length;
-  const qualityAcceptableRate = pct(qualityAcceptable, totalProductProvisionRecords);
 
   const dignityPreservedProducts = product_provision_records.filter((p) => p.child_dignity_preserved).length;
   const dignityProductRate = pct(dignityPreservedProducts, totalProductProvisionRecords);
-
-  const medicalRecFollowed = product_provision_records.filter((p) => p.medical_recommendation_followed).length;
-  const medicalRecRate = pct(medicalRecFollowed, totalProductProvisionRecords);
-
-  const staffAwareProducts = product_provision_records.filter((p) => p.staff_aware_of_needs).length;
-  const staffAwareProductRate = pct(staffAwareProducts, totalProductProvisionRecords);
 
   // Composite product_provision_rate
   const productProvisionRate: number | null =
@@ -1420,7 +1301,6 @@ export function computeContinencePersonalHygieneSupport(
   for (const r of hygiene_routine_records) {
     routineTypeCounts[r.routine_type] = (routineTypeCounts[r.routine_type] ?? 0) + 1;
   }
-  const routineTypes = Object.keys(routineTypeCounts);
   const expectedRoutineTypes = ["morning", "evening", "bathing", "dental", "handwashing"];
   const missingRoutineTypes = expectedRoutineTypes.filter(
     (t) => !routineTypeCounts[t] || routineTypeCounts[t] === 0,

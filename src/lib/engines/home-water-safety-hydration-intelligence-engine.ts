@@ -313,12 +313,6 @@ export function computeWaterSafetyHydration(
   const flushingFollowed = legionella_assessment_records.filter((l) => l.flushing_regime_followed).length;
   const flushingRate = pct(flushingFollowed, totalLegionellaRecords);
 
-  const storageCompliant = legionella_assessment_records.filter((l) => l.water_storage_temperature_compliant).length;
-  const storageComplianceRate = pct(storageCompliant, totalLegionellaRecords);
-
-  const distributionCompliant = legionella_assessment_records.filter((l) => l.distribution_temperature_compliant).length;
-  const distributionComplianceRate = pct(distributionCompliant, totalLegionellaRecords);
-
   const overdueLegionella = legionella_assessment_records.filter((l) => l.overdue).length;
   const overdueRate = pct(overdueLegionella, totalLegionellaRecords);
 
@@ -349,9 +343,6 @@ export function computeWaterSafetyHydration(
   const childEncouraged = hydration_monitoring_records.filter((h) => h.child_encouraged).length;
   const encouragementRate = pct(childEncouraged, totalHydrationRecords);
 
-  const staffPrompted = hydration_monitoring_records.filter((h) => h.staff_prompted).length;
-  const staffPromptRate = pct(staffPrompted, totalHydrationRecords);
-
   const uniqueChildrenHydration = new Set(
     hydration_monitoring_records.map((h) => h.child_id),
   ).size;
@@ -361,11 +352,6 @@ export function computeWaterSafetyHydration(
   const totalSwimmingRecords = swimming_competency_records.length;
   const assessmentsConducted = swimming_competency_records.filter((s) => s.assessment_conducted).length;
   const swimmingAssessmentRate = pct(assessmentsConducted, totalSwimmingRecords);
-
-  const qualifiedAssessors = swimming_competency_records.filter(
-    (s) => s.assessment_conducted && s.assessor_qualified,
-  ).length;
-  const qualifiedAssessorRate = assessmentsConducted > 0 ? pct(qualifiedAssessors, assessmentsConducted) : 0;
 
   const waterSafetyKnowledgeAssessed = swimming_competency_records.filter(
     (s) => s.water_safety_knowledge_assessed,
@@ -383,17 +369,6 @@ export function computeWaterSafetyHydration(
 
   const consentObtained = swimming_competency_records.filter((s) => s.parental_consent_obtained).length;
   const consentRate = pct(consentObtained, totalSwimmingRecords);
-
-  const riskAssessmentSwimming = swimming_competency_records.filter((s) => s.risk_assessment_completed).length;
-  const swimmingRiskAssessmentRate = pct(riskAssessmentSwimming, totalSwimmingRecords);
-
-  const confidenceSum = swimming_competency_records.reduce((sum, s) => sum + s.water_confidence_rating, 0);
-  const avgWaterConfidence = totalSwimmingRecords > 0
-    ? Math.round((confidenceSum / totalSwimmingRecords) * 100) / 100
-    : null;
-
-  const canSwim25m = swimming_competency_records.filter((s) => s.can_swim_25m).length;
-  const canSwim25mRate = pct(canSwim25m, totalSwimmingRecords);
 
   // Composite swimming competency rate:
   // Average of assessment rate, water safety knowledge pass rate, lesson attendance rate
@@ -415,11 +390,6 @@ export function computeWaterSafetyHydration(
   const riskAssessmentCompleted = water_activity_safety_records.filter((a) => a.risk_assessment_completed).length;
   const activityRiskAssessmentRate = pct(riskAssessmentCompleted, totalWaterActivityRecords);
 
-  const riskAssessmentApproved = water_activity_safety_records.filter(
-    (a) => a.risk_assessment_completed && a.risk_assessment_approved,
-  ).length;
-  const riskApprovalRate = riskAssessmentCompleted > 0 ? pct(riskAssessmentApproved, riskAssessmentCompleted) : 0;
-
   const qualifiedSupervision = water_activity_safety_records.filter((a) => a.qualified_supervision).length;
   const qualifiedSupervisionRate = pct(qualifiedSupervision, totalWaterActivityRecords);
 
@@ -440,9 +410,6 @@ export function computeWaterSafetyHydration(
 
   const incidentsOccurred = water_activity_safety_records.filter((a) => a.incident_occurred).length;
   const incidentRate = pct(incidentsOccurred, totalWaterActivityRecords);
-
-  const consentAllActivities = water_activity_safety_records.filter((a) => a.consent_obtained_all).length;
-  const activityConsentRate = pct(consentAllActivities, totalWaterActivityRecords);
 
   const firstAiderPresent = water_activity_safety_records.filter((a) => a.first_aider_present).length;
   const firstAiderRate = pct(firstAiderPresent, totalWaterActivityRecords);

@@ -270,9 +270,6 @@ export function computeStaffInductionOnboarding(
   const overdueInductions = staff_inductions.filter(
     (i) => i.status === "overdue",
   ).length;
-  const inProgressInductions = staff_inductions.filter(
-    (i) => i.status === "in_progress",
-  ).length;
   const notStartedInductions = staff_inductions.filter(
     (i) => i.status === "not_started",
   ).length;
@@ -362,12 +359,6 @@ export function computeStaffInductionOnboarding(
   const agencyChildrenBriefed = agency_inductions.filter(
     (a) => a.children_needs_briefed,
   ).length;
-  const agencyHouseRulesBriefed = agency_inductions.filter(
-    (a) => a.house_rules_briefed,
-  ).length;
-  const agencyEmergencyContacts = agency_inductions.filter(
-    (a) => a.emergency_contacts_given,
-  ).length;
 
   // ── Metric 11: Additional handbook metrics ───────────────────────────
   const safeguardingPolicyRead = handbook_acknowledgements.filter(
@@ -379,17 +370,8 @@ export function computeStaffInductionOnboarding(
   const whistleblowingRead = handbook_acknowledgements.filter(
     (h) => h.whistleblowing_policy_read,
   ).length;
-  const keyPoliciesRead = handbook_acknowledgements.filter(
-    (h) => h.key_policies_read,
-  ).length;
 
   // ── Metric 12: Children intro & policy review ────────────────────────
-  const childrenIntroCompleted = staff_inductions.filter(
-    (i) => i.children_intro_completed,
-  ).length;
-  const policyReviewCompleted = staff_inductions.filter(
-    (i) => i.policy_review_completed,
-  ).length;
   const signedOffCount = staff_inductions.filter(
     (i) => i.signed_off_by !== null,
   ).length;

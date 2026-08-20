@@ -326,12 +326,6 @@ export function computeSavingsBankingSkills(
   ).length;
   const dormantRate = pct(dormantAccounts, totalSavingsAccounts);
 
-  // Staff supported opening
-  const staffSupportedOpening = savings_account_records.filter(
-    (r) => r.staff_supported_opening,
-  ).length;
-  const staffSupportedOpeningRate = pct(staffSupportedOpening, totalSavingsAccounts);
-
   // Composite savings_account_rate: average of coverage, named holder rate, child access, child understands
   const savingsAccountRate: number | null =
     totalSavingsAccounts > 0
@@ -349,20 +343,10 @@ export function computeSavingsBankingSkills(
   ).size;
   const bankingSkillsCoverage = pct(childrenWithBankingSkills, total_children);
 
-  // Taught and demonstrated competence
-  const skillsTaught = banking_skills_records.filter((r) => r.taught).length;
-  const skillsTaughtRate = pct(skillsTaught, totalBankingSkills);
-
   const competenceDemonstrated = banking_skills_records.filter(
     (r) => r.taught && r.demonstrated_competence,
   ).length;
   const competenceRate = pct(competenceDemonstrated, totalBankingSkills);
-
-  // Age-appropriate skills
-  const ageAppropriateSkills = banking_skills_records.filter(
-    (r) => r.age_appropriate,
-  ).length;
-  const ageAppropriateRate = pct(ageAppropriateSkills, totalBankingSkills);
 
   // Child confident
   const childConfidentSkills = banking_skills_records.filter(
@@ -375,12 +359,6 @@ export function computeSavingsBankingSkills(
     (r) => r.practice_opportunity_given,
   ).length;
   const practiceGivenRate = pct(practiceGiven, totalBankingSkills);
-
-  // Staff assessed
-  const staffAssessed = banking_skills_records.filter(
-    (r) => r.staff_assessed,
-  ).length;
-  const staffAssessedRate = pct(staffAssessed, totalBankingSkills);
 
   // Linked to independence plan
   const linkedToIndPlan = banking_skills_records.filter(
@@ -423,12 +401,6 @@ export function computeSavingsBankingSkills(
   ).size;
   const goalCoverage = pct(childrenWithGoals, total_children);
 
-  // Active goals
-  const activeGoals = financial_goal_records.filter(
-    (r) => r.status === "active",
-  ).length;
-  const activeGoalRate = pct(activeGoals, totalFinancialGoals);
-
   // Achieved goals
   const achievedGoals = financial_goal_records.filter(
     (r) => r.status === "achieved",
@@ -467,26 +439,6 @@ export function computeSavingsBankingSkills(
     (r) => r.status === "achieved" && r.celebration_on_achievement,
   ).length;
   const celebrationRate = pct(celebrationsHeld, achievedGoals);
-
-  // Staff supporting
-  const staffSupportingGoals = financial_goal_records.filter(
-    (r) => r.staff_supporting,
-  ).length;
-  const staffSupportingGoalRate = pct(staffSupportingGoals, totalFinancialGoals);
-
-  // Progress towards active goals
-  const activeGoalRecords = financial_goal_records.filter(
-    (r) => r.status === "active" && r.target_amount > 0,
-  );
-  const avgGoalProgress: number | null =
-    activeGoalRecords.length > 0
-      ? Math.round(
-          activeGoalRecords.reduce(
-            (sum, r) => sum + Math.min(pct(r.current_amount, r.target_amount), 100),
-            0,
-          ) / activeGoalRecords.length,
-        )
-      : null;
 
   // Composite financial_goal_rate: average of coverage, child set goal rate, child tracking rate, reviewed in keywork
   const financialGoalRate: number | null =
@@ -532,12 +484,6 @@ export function computeSavingsBankingSkills(
     (r) => r.can_budget_pocket_money,
   ).length;
   const canBudgetRate = pct(canBudget, totalConfidenceAssessments);
-
-  // Can compare prices
-  const canCompare = money_confidence_records.filter(
-    (r) => r.can_compare_prices,
-  ).length;
-  const canCompareRate = pct(canCompare, totalConfidenceAssessments);
 
   // Can identify needs vs wants
   const canIdentifyNeeds = money_confidence_records.filter(
@@ -587,12 +533,6 @@ export function computeSavingsBankingSkills(
   ).length;
   const achievedMilestoneRate = pct(achievedMilestones, totalIndependenceMilestones);
 
-  // Age appropriate milestones
-  const ageAppropriateMilestones = financial_independence_records.filter(
-    (r) => r.age_appropriate,
-  ).length;
-  const ageAppropriateMilestoneRate = pct(ageAppropriateMilestones, totalIndependenceMilestones);
-
   // Child initiated
   const childInitiated = financial_independence_records.filter(
     (r) => r.child_initiated,
@@ -622,12 +562,6 @@ export function computeSavingsBankingSkills(
     (r) => r.next_milestone_identified,
   ).length;
   const nextMilestoneRate = pct(nextMilestoneIdentified, totalIndependenceMilestones);
-
-  // Staff supported
-  const staffSupportedMilestones = financial_independence_records.filter(
-    (r) => r.staff_supported,
-  ).length;
-  const staffSupportedMilestoneRate = pct(staffSupportedMilestones, totalIndependenceMilestones);
 
   // Unique milestone types per child (breadth)
   const milestoneTypesPerChild: Record<string, Set<string>> = {};

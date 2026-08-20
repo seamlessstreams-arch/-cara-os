@@ -288,28 +288,10 @@ export function computeFirstAidKitMedicalSupplies(
   const totalUniqueKits = uniqueKitsChecked.size;
 
   const totalChecks = kit_check_records.length;
-  const checksWithAllPresent = kit_check_records.filter(
-    (k) => k.all_items_present,
-  ).length;
   const checksDocumented = kit_check_records.filter(
     (k) => k.check_documented,
   ).length;
   const checkDocumentationRate = pct(checksDocumented, totalChecks);
-
-  const checksWithSealIntact = kit_check_records.filter(
-    (k) => k.seal_intact,
-  ).length;
-  const sealIntactRate = pct(checksWithSealIntact, totalChecks);
-
-  const checksWithCleanKit = kit_check_records.filter(
-    (k) => k.cleanliness_acceptable,
-  ).length;
-  const cleanlinessRate = pct(checksWithCleanKit, totalChecks);
-
-  const checksWithVisibleSignage = kit_check_records.filter(
-    (k) => k.signage_visible,
-  ).length;
-  const signageRate = pct(checksWithVisibleSignage, totalChecks);
 
   const overdueChecks = kit_check_records.filter(
     (k) => k.check_overdue,
@@ -325,19 +307,6 @@ export function computeFirstAidKitMedicalSupplies(
     0,
   );
   const issueResolutionRate = pct(totalIssuesResolved, totalIssuesFound);
-
-  const totalItemsMissing = kit_check_records.reduce(
-    (sum, k) => sum + k.items_missing,
-    0,
-  );
-  const totalItemsDamaged = kit_check_records.reduce(
-    (sum, k) => sum + k.items_damaged,
-    0,
-  );
-  const totalItemsReplaced = kit_check_records.reduce(
-    (sum, k) => sum + k.items_replaced,
-    0,
-  );
 
   // Kit check rate: percentage of checks where all items present and documented
   const compliantChecks = kit_check_records.filter(
@@ -361,9 +330,6 @@ export function computeFirstAidKitMedicalSupplies(
     criticalItems.length,
   );
 
-  const stockBelowMinimum = stock_records.filter(
-    (s) => s.current_quantity < s.minimum_threshold,
-  ).length;
   const criticalStockBelowMinimum = criticalItems.filter(
     (s) => s.current_quantity < s.minimum_threshold,
   ).length;
@@ -391,32 +357,11 @@ export function computeFirstAidKitMedicalSupplies(
   const nearExpiryItems = expiry_records.filter(
     (e) => !e.is_expired && e.days_until_expiry <= 30,
   ).length;
-  const validExpiryItems = expiry_records.filter(
-    (e) => !e.is_expired && e.days_until_expiry > 30,
-  ).length;
 
   // Items expired but not yet replaced
   const expiredNotReplaced = expiry_records.filter(
     (e) => e.is_expired && !e.replacement_received,
   ).length;
-  const expiredAndDisposed = expiry_records.filter(
-    (e) => e.is_expired && e.disposed_correctly,
-  ).length;
-  const expiredDisposalRate = pct(
-    expiredAndDisposed,
-    expiredItems,
-  );
-
-  const expiredFlaggedInCheck = expiry_records.filter(
-    (e) => e.is_expired && e.flagged_in_check,
-  ).length;
-  const expiryDetectionRate = pct(expiredFlaggedInCheck, expiredItems);
-
-  const replacementsOrdered = expiry_records.filter(
-    (e) => (e.is_expired || e.days_until_expiry <= 30) && e.replacement_ordered,
-  ).length;
-  const totalNeedingReplacement = expiredItems + nearExpiryItems;
-  const replacementOrderRate = pct(replacementsOrdered, totalNeedingReplacement);
 
   // Expiry monitoring rate: percentage of items that are not expired
   const expiryMonitoringRate =
@@ -424,18 +369,6 @@ export function computeFirstAidKitMedicalSupplies(
 
   // --- Accessibility rate ---
   const totalAccessibilityAudits = accessibility_records.length;
-  const accessibleKits = accessibility_records.filter(
-    (a) => a.is_accessible_24hr,
-  ).length;
-  const signedKits = accessibility_records.filter(
-    (a) => a.is_clearly_signed,
-  ).length;
-  const unlockedKits = accessibility_records.filter(
-    (a) => a.is_unlocked,
-  ).length;
-  const locationCompliantKits = accessibility_records.filter(
-    (a) => a.location_compliant,
-  ).length;
   const meetsHseKits = accessibility_records.filter(
     (a) => a.meets_hse_guidance,
   ).length;
@@ -444,9 +377,6 @@ export function computeFirstAidKitMedicalSupplies(
   ).length;
   const staffKnowLocation = accessibility_records.filter(
     (a) => a.staff_know_location,
-  ).length;
-  const visitorsInformed = accessibility_records.filter(
-    (a) => a.visitors_informed,
   ).length;
 
   // Full accessibility: accessible 24hr, clearly signed, unlocked, location compliant
@@ -468,16 +398,6 @@ export function computeFirstAidKitMedicalSupplies(
 
   // Child awareness rate: children know where the kits are
   const childAwarenessRate = pct(childrenKnowLocation, totalAccessibilityAudits);
-
-  // Average distance from main area
-  const totalDistance = accessibility_records.reduce(
-    (sum, a) => sum + a.distance_from_main_area_metres,
-    0,
-  );
-  const avgDistanceMetres =
-    totalAccessibilityAudits > 0
-      ? Math.round((totalDistance / totalAccessibilityAudits) * 10) / 10
-      : null;
 
   // Kits too far from main area (> 50 metres)
   const kitsTooFar = accessibility_records.filter(
@@ -508,10 +428,6 @@ export function computeFirstAidKitMedicalSupplies(
   const staffTrainingRate =
     total_staff > 0 ? pct(uniqueStaffWithCurrentTraining, total_staff) : 0;
 
-  // Paediatric first aid qualified
-  const paediatricQualified = training_records.filter(
-    (t) => t.is_paediatric_qualified && t.is_current,
-  ).length;
   const uniquePaediatricStaff = new Set(
     training_records
       .filter((t) => t.is_paediatric_qualified && t.is_current)
@@ -520,10 +436,6 @@ export function computeFirstAidKitMedicalSupplies(
   const paediatricTrainedRate =
     total_staff > 0 ? pct(uniquePaediatricStaff, total_staff) : 0;
 
-  // Refresher compliance
-  const refreshersNeeded = training_records.filter(
-    (t) => t.is_current && !t.refresher_completed,
-  ).length;
   const refreshersCompleted = training_records.filter(
     (t) => t.refresher_completed,
   ).length;

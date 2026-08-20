@@ -372,13 +372,6 @@ export function computeNutritionDietaryManagement(
   ).length;
   const allergenCheckRate = pct(allergenChecks, totalMealPlans);
 
-  // Meal delivery rate (planned meals that were actually delivered)
-  const plannedMeals = meal_plan_records.filter((m) => m.planned).length;
-  const deliveredOfPlanned = meal_plan_records.filter(
-    (m) => m.planned && m.delivered,
-  ).length;
-  const mealDeliveryRate = pct(deliveredOfPlanned, plannedMeals);
-
   // ─── Dietary Requirement Metrics ──────────────────────────────────────
 
   const totalDietaryRequirements = dietary_requirement_records.length;
@@ -404,12 +397,6 @@ export function computeNutritionDietaryManagement(
     documentedRequirements,
     totalActiveDietaryReqs,
   );
-
-  // Care plan updated
-  const carePlanUpdated = activeDietaryRequirements.filter(
-    (d) => d.care_plan_updated,
-  ).length;
-  const carePlanUpdateRate = pct(carePlanUpdated, totalActiveDietaryReqs);
 
   // All staff informed
   const allStaffInformed = activeDietaryRequirements.filter(
@@ -442,10 +429,6 @@ export function computeNutritionDietaryManagement(
   const dietaryReviewsOverdue = activeDietaryRequirements.filter((d) =>
     isOverdue(d.review_due_date, today),
   ).length;
-  const dietaryReviewOverdueRate = pct(
-    dietaryReviewsOverdue,
-    totalActiveDietaryReqs,
-  );
 
   // Life-threatening requirements without emergency plans
   const lifeThreatening = activeDietaryRequirements.filter(
@@ -468,18 +451,6 @@ export function computeNutritionDietaryManagement(
       ? pct(uniqueChildrenAssessed, total_children)
       : null;
 
-  // BMI recorded
-  const bmiRecorded = nutrition_assessment_records.filter(
-    (a) => a.bmi_recorded,
-  ).length;
-  const bmiRecordingRate = pct(bmiRecorded, totalNutritionAssessments);
-
-  // Goals set
-  const goalsSet = nutrition_assessment_records.filter(
-    (a) => a.nutritional_goals_set,
-  ).length;
-  const goalsSetRate = pct(goalsSet, totalNutritionAssessments);
-
   // Goals met
   const goalsMet = nutrition_assessment_records.filter(
     (a) => a.nutritional_goals_set && a.goals_met,
@@ -501,24 +472,6 @@ export function computeNutritionDietaryManagement(
     referralsNeeded.length,
   );
 
-  // Dietary intake reviewed
-  const dietaryIntakeReviewed = nutrition_assessment_records.filter(
-    (a) => a.dietary_intake_reviewed,
-  ).length;
-  const dietaryIntakeReviewRate = pct(
-    dietaryIntakeReviewed,
-    totalNutritionAssessments,
-  );
-
-  // Height and weight recorded
-  const heightWeightRecorded = nutrition_assessment_records.filter(
-    (a) => a.height_recorded && a.weight_recorded,
-  ).length;
-  const heightWeightRecordingRate = pct(
-    heightWeightRecorded,
-    totalNutritionAssessments,
-  );
-
   // Concerns identified across assessments
   const totalConcernsIdentified = nutrition_assessment_records.reduce(
     (sum, a) => sum + a.concerns_identified.length,
@@ -536,60 +489,6 @@ export function computeNutritionDietaryManagement(
 
   // Average food hygiene score
   const foodHygieneScore = avgScore(food_hygiene_records);
-
-  // Individual compliance areas
-  const foodStorageCompliant = food_hygiene_records.filter(
-    (f) => f.food_storage_compliant,
-  ).length;
-  const foodStorageRate = pct(
-    foodStorageCompliant,
-    totalFoodHygieneInspections,
-  );
-
-  const tempRecordsMaintained = food_hygiene_records.filter(
-    (f) => f.temperature_records_maintained,
-  ).length;
-  const tempRecordsRate = pct(
-    tempRecordsMaintained,
-    totalFoodHygieneInspections,
-  );
-
-  const prepAreaClean = food_hygiene_records.filter(
-    (f) => f.preparation_area_clean,
-  ).length;
-  const prepAreaCleanRate = pct(prepAreaClean, totalFoodHygieneInspections);
-
-  const handHygieneCompliant = food_hygiene_records.filter(
-    (f) => f.hand_hygiene_compliant,
-  ).length;
-  const handHygieneRate = pct(
-    handHygieneCompliant,
-    totalFoodHygieneInspections,
-  );
-
-  const allergenLabellingCorrect = food_hygiene_records.filter(
-    (f) => f.allergen_labelling_correct,
-  ).length;
-  const allergenLabellingRate = pct(
-    allergenLabellingCorrect,
-    totalFoodHygieneInspections,
-  );
-
-  const wasteDisposalCompliant = food_hygiene_records.filter(
-    (f) => f.waste_disposal_compliant,
-  ).length;
-  const wasteDisposalRate = pct(
-    wasteDisposalCompliant,
-    totalFoodHygieneInspections,
-  );
-
-  const pestControlAdequate = food_hygiene_records.filter(
-    (f) => f.pest_control_adequate,
-  ).length;
-  const pestControlRate = pct(
-    pestControlAdequate,
-    totalFoodHygieneInspections,
-  );
 
   const staffFoodHygieneTrained = food_hygiene_records.filter(
     (f) => f.staff_food_hygiene_trained,
@@ -622,10 +521,6 @@ export function computeNutritionDietaryManagement(
   const sortedHygieneRecords = [...food_hygiene_records].sort(
     (a, b) => b.inspection_date.localeCompare(a.inspection_date),
   );
-  const mostRecentHygieneScore =
-    sortedHygieneRecords.length > 0
-      ? sortedHygieneRecords[0].overall_score
-      : null;
 
   // ─── Special Diet Metrics ─────────────────────────────────────────────
 
@@ -658,33 +553,6 @@ export function computeNutritionDietaryManagement(
     totalActiveSpecialDiets,
   );
 
-  // Staff trained for special diets
-  const specialDietStaffTrained = activeSpecialDiets.filter(
-    (s) => s.staff_trained,
-  ).length;
-  const specialDietStaffTrainedRate = pct(
-    specialDietStaffTrained,
-    totalActiveSpecialDiets,
-  );
-
-  // Child willingness/adherence
-  const childAdherenceWilling = activeSpecialDiets.filter(
-    (s) => s.child_adherence_willing,
-  ).length;
-  const childWillingnessRate = pct(
-    childAdherenceWilling,
-    totalActiveSpecialDiets,
-  );
-
-  // Positive outcomes
-  const outcomesRecorded = activeSpecialDiets.filter(
-    (s) => s.outcomes_positive !== null,
-  );
-  const positiveOutcomes = outcomesRecorded.filter(
-    (s) => s.outcomes_positive === true,
-  ).length;
-  const positiveOutcomeRate = pct(positiveOutcomes, outcomesRecorded.length);
-
   // Overdue special diet reviews
   const specialDietReviewsOverdue = activeSpecialDiets.filter((s) =>
     isOverdue(s.review_date, today),
@@ -703,11 +571,6 @@ export function computeNutritionDietaryManagement(
     specialDietsMonitored,
     totalActiveSpecialDiets,
   );
-
-  // Unique children on special diets
-  const uniqueChildrenOnSpecialDiet = new Set(
-    activeSpecialDiets.map((s) => s.child_id),
-  ).size;
 
   // ── Scoring: base 52, 9 bonus categories summing to 28 ───────────────
 

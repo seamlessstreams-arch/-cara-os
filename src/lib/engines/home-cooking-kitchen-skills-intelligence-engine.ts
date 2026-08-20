@@ -294,37 +294,9 @@ export function computeCookingKitchenSkills(
   const dishCompletionRate = pct(completedDishes, totalCookingSessions);
 
   const enjoyedSessions = cooking_session_records.filter((s) => s.attended && s.child_enjoyed).length;
-  const childEnjoymentRate = pct(enjoyedSessions, totalCookingSessions);
 
   const choseRecipeSessions = cooking_session_records.filter((s) => s.attended && s.child_chose_recipe).length;
   const recipeChoiceRate = pct(choseRecipeSessions, totalCookingSessions);
-
-  const handWashingBefore = cooking_session_records.filter((s) => s.attended && s.hand_washing_before).length;
-  const handWashingRate = pct(handWashingBefore, attendedSessions);
-
-  const apronWorn = cooking_session_records.filter((s) => s.attended && s.apron_worn).length;
-  const apronRate = pct(apronWorn, attendedSessions);
-
-  const allergenAware = cooking_session_records.filter((s) => s.attended && s.allergen_awareness_demonstrated).length;
-  const allergenAwarenessRate = pct(allergenAware, attendedSessions);
-
-  const dietaryMet = cooking_session_records.filter((s) => s.attended && s.dietary_requirements_met).length;
-  const dietaryComplianceRate = pct(dietaryMet, attendedSessions);
-
-  // Session type distribution
-  const independentSessions = cooking_session_records.filter(
-    (s) => s.attended && s.session_type === "independent",
-  ).length;
-  const independentSessionRate = pct(independentSessions, attendedSessions);
-
-  // Difficulty level distribution
-  const advancedSessions = cooking_session_records.filter(
-    (s) => s.attended && s.difficulty_level === "advanced",
-  ).length;
-  const intermediateSessions = cooking_session_records.filter(
-    (s) => s.attended && s.difficulty_level === "intermediate",
-  ).length;
-  const advancedIntermediateRate = pct(advancedSessions + intermediateSessions, attendedSessions);
 
   // Dish category variety
   const uniqueDishCategories = new Set(
@@ -346,7 +318,6 @@ export function computeCookingKitchenSkills(
       }
     }
   }
-  const totalUniqueSkills = allSkillsPractised.size;
 
   // ══════════════════════════════════════════════════════════════════════════
   // KITCHEN SAFETY METRICS
@@ -356,35 +327,8 @@ export function computeCookingKitchenSkills(
   const overallSafe = kitchen_safety_records.filter((k) => k.overall_safe).length;
   const kitchenSafetyRate = pct(overallSafe, totalKitchenSafetyRecords);
 
-  const knifeSafe = kitchen_safety_records.filter((k) => k.knife_safety_competent).length;
-  const knifeSafetyRate = pct(knifeSafe, totalKitchenSafetyRecords);
-
-  const hobSafe = kitchen_safety_records.filter((k) => k.hob_safety_competent).length;
-  const hobSafetyRate = pct(hobSafe, totalKitchenSafetyRecords);
-
-  const ovenSafe = kitchen_safety_records.filter((k) => k.oven_safety_competent).length;
-  const ovenSafetyRate = pct(ovenSafe, totalKitchenSafetyRecords);
-
-  const microwaveSafe = kitchen_safety_records.filter((k) => k.microwave_safety_competent).length;
-  const microwaveSafetyRate = pct(microwaveSafe, totalKitchenSafetyRecords);
-
-  const electricalSafe = kitchen_safety_records.filter((k) => k.electrical_appliance_safety).length;
-  const electricalSafetyRate = pct(electricalSafe, totalKitchenSafetyRecords);
-
   const foodHygiene = kitchen_safety_records.filter((k) => k.food_hygiene_compliant).length;
   const foodHygieneRate = pct(foodHygiene, totalKitchenSafetyRecords);
-
-  const handWashCompliant = kitchen_safety_records.filter((k) => k.hand_washing_compliant).length;
-  const handWashComplianceRate = pct(handWashCompliant, totalKitchenSafetyRecords);
-
-  const cleaningAfter = kitchen_safety_records.filter((k) => k.cleaning_after_cooking).length;
-  const cleaningAfterRate = pct(cleaningAfter, totalKitchenSafetyRecords);
-
-  const fireSafety = kitchen_safety_records.filter((k) => k.fire_safety_awareness).length;
-  const fireSafetyRate = pct(fireSafety, totalKitchenSafetyRecords);
-
-  const firstAid = kitchen_safety_records.filter((k) => k.first_aid_awareness).length;
-  const firstAidRate = pct(firstAid, totalKitchenSafetyRecords);
 
   const crossContamAware = kitchen_safety_records.filter((k) => k.allergies_cross_contamination_aware).length;
   const crossContaminationRate = pct(crossContamAware, totalKitchenSafetyRecords);
@@ -422,46 +366,19 @@ export function computeCookingKitchenSkills(
   ).length;
   const mealPreparationRate = pct(assistedOrAbove, totalMealPrepRecords);
 
-  const recipeFollowed = meal_preparation_records.filter((m) => m.recipe_followed).length;
-  const recipeFollowRate = pct(recipeFollowed, totalMealPrepRecords);
-
   const portionAppropriate = meal_preparation_records.filter((m) => m.portion_appropriate).length;
   const portionRate = pct(portionAppropriate, totalMealPrepRecords);
 
-  const presentationGood = meal_preparation_records.filter((m) => m.presentation_good).length;
-  const presentationRate = pct(presentationGood, totalMealPrepRecords);
-
-  const timeManagementGood = meal_preparation_records.filter((m) => m.time_management_good).length;
-  const timeManagementRate = pct(timeManagementGood, totalMealPrepRecords);
-
   const wasteMinimal = meal_preparation_records.filter((m) => m.waste_minimal).length;
   const wasteMinimalRate = pct(wasteMinimal, totalMealPrepRecords);
-
-  const servedOthers = meal_preparation_records.filter((m) => m.served_others).length;
-  const servedOthersRate = pct(servedOthers, totalMealPrepRecords);
-
-  const positiveFeedback = meal_preparation_records.filter((m) => m.received_positive_feedback).length;
-  const positiveFeedbackRate = pct(positiveFeedback, totalMealPrepRecords);
 
   const staffScoreSum = meal_preparation_records.reduce((sum, m) => sum + (m.staff_assessment_score ?? 0), 0);
   const avgStaffScore = totalMealPrepRecords > 0
     ? Math.round((staffScoreSum / totalMealPrepRecords) * 100) / 100
     : null;
 
-  // Progression tracking
-  const improved = meal_preparation_records.filter((m) => m.progression_from_last === "improved").length;
   const declined = meal_preparation_records.filter((m) => m.progression_from_last === "declined").length;
-  const progressionRate = pct(improved, totalMealPrepRecords);
   const declineRate = pct(declined, totalMealPrepRecords);
-
-  // Skill area variety
-  const uniqueSkillAreas = new Set(meal_preparation_records.map((m) => m.skill_area)).size;
-
-  // Unique children in meal prep
-  const uniqueChildrenMealPrep = new Set(
-    meal_preparation_records.map((m) => m.child_id),
-  ).size;
-  const mealPrepChildCoverage = total_children > 0 ? pct(uniqueChildrenMealPrep, total_children) : 0;
 
   // ══════════════════════════════════════════════════════════════════════════
   // NUTRITIONAL UNDERSTANDING METRICS
@@ -479,34 +396,17 @@ export function computeCookingKitchenSkills(
   ).length;
   const applicationRate = pct(canApplyKnowledge, totalNutritionalRecords);
 
-  const nutritionalEngaged = nutritional_understanding_records.filter((n) => n.engaged).length;
-  const nutritionalEngagementRate = pct(nutritionalEngaged, totalNutritionalRecords);
-
   const nutritionalPositive = nutritional_understanding_records.filter(
     (n) => n.engaged && n.child_feedback_positive,
   ).length;
-  const nutritionalPositiveFeedbackRate = pct(nutritionalPositive, totalNutritionalRecords);
 
   const linkedToCooking = nutritional_understanding_records.filter(
     (n) => n.linked_to_cooking_session,
   ).length;
   const linkedToCookingRate = pct(linkedToCooking, totalNutritionalRecords);
 
-  const avgNutritionalScore = totalNutritionalRecords > 0
-    ? Math.round(
-        nutritional_understanding_records.reduce((sum, n) => sum + n.score_achieved, 0) /
-          totalNutritionalRecords,
-      )
-    : null;
-
   // Topic variety
   const uniqueTopics = new Set(nutritional_understanding_records.map((n) => n.topic)).size;
-
-  // Unique children in nutritional understanding
-  const uniqueChildrenNutrition = new Set(
-    nutritional_understanding_records.map((n) => n.child_id),
-  ).size;
-  const nutritionChildCoverage = total_children > 0 ? pct(uniqueChildrenNutrition, total_children) : 0;
 
   // ══════════════════════════════════════════════════════════════════════════
   // INDEPENDENCE METRICS
@@ -518,11 +418,6 @@ export function computeCookingKitchenSkills(
     (r) => r.current_level === "mostly_independent" || r.current_level === "fully_independent",
   ).length;
   const independenceRate = pct(mostlyOrFullyIndependent, totalIndependenceRecords);
-
-  const fullyIndependent = independence_records.filter(
-    (r) => r.current_level === "fully_independent",
-  ).length;
-  const fullyIndependentRate = pct(fullyIndependent, totalIndependenceRecords);
 
   const goalsSet = independence_records.filter((r) => r.goal_set).length;
   const goalSettingRate = pct(goalsSet, totalIndependenceRecords);
@@ -542,11 +437,7 @@ export function computeCookingKitchenSkills(
   const progressMakingRate = pct(significantProgress + someProgress, totalIndependenceRecords);
   const indDeclineRate = pct(indDeclined, totalIndependenceRecords);
 
-  const ageAppropriate = independence_records.filter((r) => r.age_appropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalIndependenceRecords);
-
   const childMotivated = independence_records.filter((r) => r.child_motivated).length;
-  const motivationRate = pct(childMotivated, totalIndependenceRecords);
 
   const supportPlan = independence_records.filter((r) => r.support_plan_in_place).length;
   const supportPlanRate = pct(supportPlan, totalIndependenceRecords);
@@ -554,26 +445,10 @@ export function computeCookingKitchenSkills(
   const transitionRelevant = independence_records.filter((r) => r.transition_relevance).length;
   const transitionRelevanceRate = pct(transitionRelevant, totalIndependenceRecords);
 
-  // Barriers analysis
-  const totalBarriers = independence_records.reduce(
-    (sum, r) => sum + r.barriers_identified.length,
-    0,
-  );
   const recordsWithBarriers = independence_records.filter(
     (r) => r.barriers_identified.length > 0,
   ).length;
   const barriersRate = pct(recordsWithBarriers, totalIndependenceRecords);
-
-  // Independence area variety
-  const uniqueIndependenceAreas = new Set(
-    independence_records.map((r) => r.independence_area),
-  ).size;
-
-  // Unique children in independence records
-  const uniqueChildrenIndependence = new Set(
-    independence_records.map((r) => r.child_id),
-  ).size;
-  const independenceChildCoverage = total_children > 0 ? pct(uniqueChildrenIndependence, total_children) : 0;
 
   // ══════════════════════════════════════════════════════════════════════════
   // COMPOSITE CHILD ENJOYMENT RATE

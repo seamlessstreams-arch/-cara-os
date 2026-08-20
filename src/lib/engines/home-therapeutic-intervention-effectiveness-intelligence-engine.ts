@@ -364,7 +364,6 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // --- Intervention outcome metrics ---
   const totalInterventions = intervention_outcomes.length;
-  const activeInterventions = intervention_outcomes.filter((i) => i.active).length;
   const positiveOutcomes = intervention_outcomes.filter(
     (i) => i.outcome_measured && i.positive_outcome,
   ).length;
@@ -373,20 +372,6 @@ export function computeTherapeuticInterventionEffectiveness(
 
   const evidenceDocumented = intervention_outcomes.filter((i) => i.evidence_documented).length;
   const evidenceDocumentationRate = pct(evidenceDocumented, totalInterventions);
-
-  const reviewsCompleted = intervention_outcomes.filter((i) => i.review_completed).length;
-  const interventionReviewRate = pct(reviewsCompleted, totalInterventions);
-
-  // --- Intervention improvement analysis ---
-  const interventionsWithImprovement = intervention_outcomes.filter(
-    (i) => (i.current_score ?? 0) > (i.baseline_score ?? 0),
-  ).length;
-  const interventionsDeclined = intervention_outcomes.filter(
-    (i) => (i.current_score ?? 0) < (i.baseline_score ?? 0),
-  ).length;
-  const interventionsOnTarget = intervention_outcomes.filter(
-    (i) => (i.current_score ?? 0) >= (i.target_score ?? 0),
-  ).length;
 
   // --- Therapeutic progress metrics ---
   const totalProgressAssessments = therapeutic_progress_records.length;
@@ -405,44 +390,16 @@ export function computeTherapeuticInterventionEffectiveness(
     (sum, p) => sum + p.domains_improving,
     0,
   );
-  const domainsStableTotal = therapeutic_progress_records.reduce(
-    (sum, p) => sum + p.domains_stable,
-    0,
-  );
   const domainsDecliningTotal = therapeutic_progress_records.reduce(
     (sum, p) => sum + p.domains_declining,
     0,
   );
   const progressImprovementRate = pct(domainsImprovingTotal, domainsAssessedTotal);
 
-  const progressRecsActioned = therapeutic_progress_records.reduce(
-    (sum, p) => sum + p.recommendations_actioned,
-    0,
-  );
-  const progressRecsMade = therapeutic_progress_records.reduce(
-    (sum, p) => sum + p.recommendations_made,
-    0,
-  );
-  const progressRecsActionedRate = pct(progressRecsActioned, progressRecsMade);
-
   const childInvolvedInAssessment = therapeutic_progress_records.filter(
     (p) => p.child_involved_in_assessment,
   ).length;
-  const childInvolvementInAssessmentRate = pct(childInvolvedInAssessment, totalProgressAssessments);
 
-  // Overall progress distribution
-  const significantImprovement = therapeutic_progress_records.filter(
-    (p) => p.overall_progress === "significant_improvement",
-  ).length;
-  const improvement = therapeutic_progress_records.filter(
-    (p) => p.overall_progress === "improvement",
-  ).length;
-  const stable = therapeutic_progress_records.filter(
-    (p) => p.overall_progress === "stable",
-  ).length;
-  const decline = therapeutic_progress_records.filter(
-    (p) => p.overall_progress === "decline",
-  ).length;
   const significantDecline = therapeutic_progress_records.filter(
     (p) => p.overall_progress === "significant_decline",
   ).length;
@@ -463,26 +420,11 @@ export function computeTherapeuticInterventionEffectiveness(
   const goalsNotStarted = treatment_plans.reduce((sum, p) => sum + p.goals_not_started, 0);
   const treatmentAdherenceRate = pct(goalsOnTrack + goalsAchieved, totalPlanGoals);
 
-  const interventionsPlanned = treatment_plans.reduce(
-    (sum, p) => sum + p.interventions_planned,
-    0,
-  );
-  const interventionsDelivered = treatment_plans.reduce(
-    (sum, p) => sum + p.interventions_delivered,
-    0,
-  );
-  const interventionDeliveryRate = pct(interventionsDelivered, interventionsPlanned);
-
   const childInvolvedInPlanning = treatment_plans.filter(
     (p) => p.child_involved_in_planning,
   ).length;
-  const carerInvolvedInPlanning = treatment_plans.filter(
-    (p) => p.carer_involved_in_planning,
-  ).length;
   const multiAgencyInput = treatment_plans.filter((p) => p.multi_agency_input).length;
 
-  const childPlanningInvolvementRate = pct(childInvolvedInPlanning, totalTreatmentPlans);
-  const carerPlanningInvolvementRate = pct(carerInvolvedInPlanning, totalTreatmentPlans);
   const multiAgencyRate = pct(multiAgencyInput, totalTreatmentPlans);
 
   const reviewOverduePlans = treatment_plans.filter((p) => p.active && p.review_overdue).length;
@@ -491,7 +433,6 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // --- Therapeutic relationship metrics ---
   const totalRelationships = therapeutic_relationship_records.length;
-  const activeRelationships = therapeutic_relationship_records.filter((r) => r.active).length;
 
   const trustSum = therapeutic_relationship_records.reduce(
     (sum, r) => sum + r.trust_rating,
@@ -560,13 +501,9 @@ export function computeTherapeuticInterventionEffectiveness(
   const childFeelsSafe = therapeutic_relationship_records.filter(
     (r) => r.child_feels_safe,
   ).length;
-  const childFeedbackPositive = therapeutic_relationship_records.filter(
-    (r) => r.child_feedback_positive,
-  ).length;
 
   const childFeelsHeardRate = pct(childFeelsHeard, totalRelationships);
   const childFeelsSafeRate = pct(childFeelsSafe, totalRelationships);
-  const childFeedbackPositiveRate = pct(childFeedbackPositive, totalRelationships);
 
   // --- Child involvement composite ---
   // Combine child involvement in assessments and planning

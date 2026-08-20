@@ -136,11 +136,6 @@ describe("Supervision Intelligence", () => {
         makeRecord({ staffId: "s1", date: makeDate(50), wellbeingScore: 4 }),
       ];
       const result = analyseSupervisions(records, STAFF);
-      const profile = result.overdueStaff.find((p) => p.staffId === "s1") ??
-        result.upcomingDue.find((p) => p.staffId === "s1");
-      // s1's wellbeing went from 4 to 2 — declining
-      // However, s1 may not be in overdueStaff if recent. Check directly
-      const allProfiles = [...result.overdueStaff, ...result.upcomingDue];
       // Since the supervision was only 10 days ago, s1 shouldn't be overdue
       expect(result.wellbeingConcerns.some((c) => c.staffName === "Staff 1")).toBe(true);
     });

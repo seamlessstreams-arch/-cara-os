@@ -324,12 +324,6 @@ export function computeHomeworkEnvironmentStudySpace(
   ).length;
   const spaceIssueResolutionRate = pct(spaceIssuesResolved, spaceIssuesIdentified);
 
-  const distractionFreeCount = study_space_records.filter((s) => s.space_free_from_distractions).length;
-  const distractionFreeRate = pct(distractionFreeCount, totalSpaceAssessments);
-
-  const privateWhenNeededCount = study_space_records.filter((s) => s.private_when_needed).length;
-  const privacyRate = pct(privateWhenNeededCount, totalSpaceAssessments);
-
   // --- Noise environment metrics ---
   const totalNoiseAssessments = noise_environment_records.length;
 
@@ -344,19 +338,6 @@ export function computeHomeworkEnvironmentStudySpace(
   ).length;
   const noiseMitigationRate = pct(noiseMitigationInPlace, noiseNeedingMitigation);
 
-  const mitigationEffective = noise_environment_records.filter(
-    (n) => n.noise_mitigation_in_place && n.mitigation_effective,
-  ).length;
-  const mitigationTotal = noise_environment_records.filter(
-    (n) => n.noise_mitigation_in_place,
-  ).length;
-  const mitigationEffectivenessRate = pct(mitigationEffective, mitigationTotal);
-
-  const childReportedDisturbance = noise_environment_records.filter(
-    (n) => n.child_reported_disturbance,
-  ).length;
-  const childNoiseDisturbanceRate = pct(childReportedDisturbance, totalNoiseAssessments);
-
   const severeConcentrationImpact = noise_environment_records.filter(
     (n) => n.impact_on_concentration === "severe" || n.impact_on_concentration === "moderate",
   ).length;
@@ -367,11 +348,6 @@ export function computeHomeworkEnvironmentStudySpace(
     (n) => n.follow_up_needed && n.follow_up_completed,
   ).length;
   const noiseFollowUpRate = pct(noiseFollowUpCompleted, noiseFollowUpNeeded);
-
-  const staffActionOnNoise = noise_environment_records.filter(
-    (n) => !n.noise_level_acceptable && n.staff_action_taken,
-  ).length;
-  const staffNoiseActionRate = pct(staffActionOnNoise, noiseNeedingMitigation);
 
   // --- Equipment metrics ---
   const totalEquipmentAssessments = equipment_records.length;
@@ -444,34 +420,8 @@ export function computeHomeworkEnvironmentStudySpace(
   const deskLampCount = lighting_records.filter((l) => l.desk_lamp_available).length;
   const deskLampRate = pct(deskLampCount, totalLightingAssessments);
 
-  const adjustableCount = lighting_records.filter((l) => l.light_adjustable).length;
-  const adjustableRate = pct(adjustableCount, totalLightingAssessments);
-
-  const meetsStandardCount = lighting_records.filter((l) => l.meets_recommended_standard).length;
-  const meetsStandardRate = pct(meetsStandardCount, totalLightingAssessments);
-
-  const lightIssuesIdentified = lighting_records.filter(
-    (l) => l.issues_identified.length > 0,
-  ).length;
-  const lightIssuesResolved = lighting_records.filter(
-    (l) => l.issues_identified.length > 0 && l.issues_resolved,
-  ).length;
-  const lightIssueResolutionRate = pct(lightIssuesResolved, lightIssuesIdentified);
-
-  const naturalLightCount = lighting_records.filter((l) => l.natural_light_adequate).length;
-  const naturalLightRate = pct(naturalLightCount, totalLightingAssessments);
-
   // --- Child satisfaction metrics ---
   const totalSatisfactionSurveys = child_satisfaction_records.length;
-
-  const overallSatisfactionSum = child_satisfaction_records.reduce(
-    (sum, c) => sum + c.overall_satisfaction,
-    0,
-  );
-  const avgOverallSatisfaction =
-    totalSatisfactionSurveys > 0
-      ? Math.round((overallSatisfactionSum / totalSatisfactionSurveys) * 100) / 100
-      : null;
 
   // Child satisfaction rate: proportion scoring 4 or 5 out of 5
   const satisfiedChildren = child_satisfaction_records.filter(
@@ -498,15 +448,6 @@ export function computeHomeworkEnvironmentStudySpace(
     (c) => c.prefers_different_location,
   ).length;
   const locationDissatisfactionRate = pct(prefersDifferent, totalSatisfactionSurveys);
-
-  const avgStudyHours =
-    totalSatisfactionSurveys > 0
-      ? Math.round(
-          (child_satisfaction_records.reduce((sum, c) => sum + c.study_hours_per_week, 0) /
-            totalSatisfactionSurveys) *
-            100,
-        ) / 100
-      : null;
 
   const avgHomeworkCompletion =
     totalSatisfactionSurveys > 0

@@ -321,9 +321,6 @@ export function computeMinorRepairsMaintenance(
 
   // --- Maintenance request response metrics ---
   const totalMaintenanceRequests = maintenance_request_records.length;
-  const acknowledgedRequests = maintenance_request_records.filter(
-    (r) => r.acknowledged,
-  ).length;
   const acknowledgedWithinTarget = maintenance_request_records.filter(
     (r) => r.acknowledged_within_target,
   ).length;
@@ -343,7 +340,6 @@ export function computeMinorRepairsMaintenance(
   const childAreaResolved = maintenance_request_records.filter(
     (r) => r.affects_child_area && r.status === "completed",
   ).length;
-  const childAreaResolutionRate = pct(childAreaResolved, childAreaRequests);
 
   const emergencyRequests = maintenance_request_records.filter(
     (r) => r.priority === "emergency",
@@ -361,25 +357,9 @@ export function computeMinorRepairsMaintenance(
   ).length;
   const urgentResolutionRate = pct(urgentResolved, urgentRequests);
 
-  const childReportedRequests = maintenance_request_records.filter(
-    (r) => r.child_reported,
-  ).length;
-  const childReportedResolved = maintenance_request_records.filter(
-    (r) => r.child_reported && r.status === "completed",
-  ).length;
-  const childReportedResolutionRate = pct(childReportedResolved, childReportedRequests);
-
-  const openRequests = maintenance_request_records.filter(
-    (r) => r.status === "open" || r.status === "in_progress",
-  ).length;
   const deferredRequests = maintenance_request_records.filter(
     (r) => r.status === "deferred",
   ).length;
-
-  const completedRequests = maintenance_request_records.filter(
-    (r) => r.status === "completed",
-  ).length;
-  const overallCompletionRate = pct(completedRequests, totalMaintenanceRequests);
 
   // --- Repair completion metrics ---
   const totalRepairCompletions = repair_completion_records.length;
@@ -414,7 +394,6 @@ export function computeMinorRepairsMaintenance(
   const childAreaRestored = repair_completion_records.filter(
     (r) => r.child_area_restored,
   ).length;
-  const childAreaRestoredRate = pct(childAreaRestored, totalRepairCompletions);
 
   const photoEvidenceRepairs = repair_completion_records.filter(
     (r) => r.photographic_evidence,
@@ -487,30 +466,6 @@ export function computeMinorRepairsMaintenance(
   ).length;
   const childFriendlyRate = pct(childFriendlyAreas, totalConditionAudits);
 
-  const avgCleanlinessScore =
-    totalConditionAudits > 0
-      ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + (a.cleanliness_score ?? 0), 0) /
-            totalConditionAudits) *
-            100,
-        ) / 100
-      : null;
-  const avgDecorationScore =
-    totalConditionAudits > 0
-      ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + (a.decoration_score ?? 0), 0) /
-            totalConditionAudits) *
-            100,
-        ) / 100
-      : null;
-  const avgStructuralScore =
-    totalConditionAudits > 0
-      ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + (a.structural_score ?? 0), 0) /
-            totalConditionAudits) *
-            100,
-        ) / 100
-      : null;
   const avgSafetyScore =
     totalConditionAudits > 0
       ? Math.round(
@@ -533,14 +488,6 @@ export function computeMinorRepairsMaintenance(
     totalConditionIssuesFound,
   );
 
-  const auditFollowUpRequired = condition_audit_records.filter(
-    (a) => a.follow_up_required,
-  ).length;
-  const auditFollowUpCompleted = condition_audit_records.filter(
-    (a) => a.follow_up_required && a.follow_up_completed,
-  ).length;
-  const auditFollowUpRate = pct(auditFollowUpCompleted, auditFollowUpRequired);
-
   const childFeedbackSought = condition_audit_records.filter(
     (a) => a.child_feedback_sought,
   ).length;
@@ -550,11 +497,6 @@ export function computeMinorRepairsMaintenance(
     (a) => a.child_feedback_sought && a.child_feedback_positive,
   ).length;
   const childFeedbackPositiveRate = pct(childFeedbackPositive, childFeedbackSought);
-
-  const auditPhotoEvidence = condition_audit_records.filter(
-    (a) => a.photographic_evidence,
-  ).length;
-  const auditPhotoRate = pct(auditPhotoEvidence, totalConditionAudits);
 
   // --- Preventative maintenance metrics ---
   const totalPreventativeTasks = preventative_maintenance_records.length;
@@ -591,10 +533,6 @@ export function computeMinorRepairsMaintenance(
   const childEnvCompletedOnSchedule = preventative_maintenance_records.filter(
     (p) => p.affects_child_environment && p.completed_on_schedule,
   ).length;
-  const childEnvPreventativeRate = pct(
-    childEnvCompletedOnSchedule,
-    affectsChildEnvPreventative,
-  );
 
   // --- Child environment composite ---
   // Composite across child area resolution, child area restoration, child-friendly,

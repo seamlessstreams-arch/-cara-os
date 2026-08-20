@@ -292,14 +292,6 @@ export function computeWeeklyPlannerActivitySchedule(
   ).length;
   const managerApprovalRate = pct(approvedSchedules, totalSchedules);
 
-  const totalActivitiesPlanned = schedule_creation_records.reduce(
-    (sum, r) => sum + r.total_activities_planned, 0,
-  );
-  const avgActivitiesPerWeek: number | null =
-    totalSchedules > 0
-      ? Math.round((totalActivitiesPlanned / totalSchedules) * 10) / 10
-      : null;
-
   const highRevisionSchedules = schedule_creation_records.filter(
     (r) => r.revision_count >= 3,
   ).length;
@@ -313,40 +305,28 @@ export function computeWeeklyPlannerActivitySchedule(
   const uniqueCategoryCount = uniqueCategories.size;
 
   const outdoorActivities = activity_variety_records.filter((r) => r.is_outdoor).length;
-  const outdoorRate = pct(outdoorActivities, totalVarietyRecords);
 
   const indoorActivities = activity_variety_records.filter((r) => r.is_indoor).length;
-  const indoorRate = pct(indoorActivities, totalVarietyRecords);
 
   const groupActivities = activity_variety_records.filter((r) => r.is_group).length;
-  const groupRate = pct(groupActivities, totalVarietyRecords);
 
   const individualActivities = activity_variety_records.filter((r) => r.is_individual).length;
-  const individualRate = pct(individualActivities, totalVarietyRecords);
 
   const educationalActivities = activity_variety_records.filter((r) => r.is_educational).length;
-  const educationalRate = pct(educationalActivities, totalVarietyRecords);
 
   const recreationalActivities = activity_variety_records.filter((r) => r.is_recreational).length;
-  const recreationalRate = pct(recreationalActivities, totalVarietyRecords);
 
   const therapeuticActivities = activity_variety_records.filter((r) => r.is_therapeutic).length;
-  const therapeuticRate = pct(therapeuticActivities, totalVarietyRecords);
 
   const lifeSkillsActivities = activity_variety_records.filter((r) => r.is_life_skills).length;
-  const lifeSkillsRate = pct(lifeSkillsActivities, totalVarietyRecords);
 
   const culturalActivities = activity_variety_records.filter((r) => r.is_cultural).length;
-  const culturalRate = pct(culturalActivities, totalVarietyRecords);
 
   const physicalActivities = activity_variety_records.filter((r) => r.is_physical).length;
-  const physicalRate = pct(physicalActivities, totalVarietyRecords);
 
   const creativeActivities = activity_variety_records.filter((r) => r.is_creative).length;
-  const creativeRate = pct(creativeActivities, totalVarietyRecords);
 
   const communityActivities = activity_variety_records.filter((r) => r.is_community).length;
-  const communityRate = pct(communityActivities, totalVarietyRecords);
 
   const ageAppropriateActivities = activity_variety_records.filter((r) => r.age_appropriate).length;
   const ageAppropriateRate = pct(ageAppropriateActivities, totalVarietyRecords);
@@ -434,11 +414,6 @@ export function computeWeeklyPlannerActivitySchedule(
       ? Math.round((consultationRate + preferencesRate + feltListenedToRate) / 3)
       : null;
 
-  // Unique children consulted
-  const uniqueChildrenConsulted = new Set(
-    child_input_records.filter((r) => r.consulted_before_planning).map((r) => r.child_id),
-  ).size;
-
   // --- Communication effectiveness ---
   const totalCommunicationRecords = communication_records.length;
   const schedulesDisplayed = communication_records.filter(
@@ -456,20 +431,10 @@ export function computeWeeklyPlannerActivitySchedule(
   ).length;
   const staffShareRate = pct(sharedWithStaff, totalCommunicationRecords);
 
-  const sharedWithCarers = communication_records.filter(
-    (r) => r.shared_with_carers,
-  ).length;
-  const carerShareRate = pct(sharedWithCarers, totalCommunicationRecords);
-
   const sharedBeforeWeek = communication_records.filter(
     (r) => r.shared_before_week_start,
   ).length;
   const earlyShareRate = pct(sharedBeforeWeek, totalCommunicationRecords);
-
-  const formatAccessible = communication_records.filter(
-    (r) => r.format_accessible,
-  ).length;
-  const accessibilityRate = pct(formatAccessible, totalCommunicationRecords);
 
   const changesCommunicated = communication_records.filter(
     (r) => r.changes_communicated,
@@ -481,11 +446,6 @@ export function computeWeeklyPlannerActivitySchedule(
   ).length;
   const childFriendlyRate = pct(childFriendlyFormat, totalCommunicationRecords);
 
-  const digitalCopyAvailable = communication_records.filter(
-    (r) => r.digital_copy_available,
-  ).length;
-  const digitalAvailabilityRate = pct(digitalCopyAvailable, totalCommunicationRecords);
-
   // Composite communication rate
   const communicationRate: number | null =
     totalCommunicationRecords > 0
@@ -494,9 +454,6 @@ export function computeWeeklyPlannerActivitySchedule(
 
   // --- Adherence to planned activities ---
   const totalAdherenceRecords = adherence_records.length;
-  const plannedActivities = adherence_records.filter(
-    (r) => r.was_planned,
-  ).length;
   const deliveredActivities = adherence_records.filter(
     (r) => r.was_delivered,
   ).length;
@@ -510,7 +467,6 @@ export function computeWeeklyPlannerActivitySchedule(
   const notDelivered = adherence_records.filter(
     (r) => r.was_planned && !r.was_delivered,
   ).length;
-  const nonDeliveryRate = pct(notDelivered, plannedActivities);
 
   const alternativeProvided = adherence_records.filter(
     (r) => r.was_planned && !r.was_delivered && r.alternative_provided,
@@ -538,10 +494,6 @@ export function computeWeeklyPlannerActivitySchedule(
     totalAdherenceRecords > 0
       ? Math.round((deliveryRate + asPlannedRate) / 2)
       : null;
-
-  const uniqueStaffDelivering = new Set(
-    adherence_records.filter((r) => r.staff_id).map((r) => r.staff_id),
-  ).size;
 
   // --- Child satisfaction composite ---
   // Average of the present sub-satisfaction averages (variety / child-input /

@@ -286,32 +286,6 @@ export function computeRecordKeepingDocumentationQuality(
   ).length;
   const dailyLogCompletionRate = pct(logsCompletedOnTime, totalLogs);
 
-  // Daily log quality sub-metrics
-  const logsWithWellbeing = daily_log_records.filter(
-    (l) => l.covers_wellbeing,
-  ).length;
-  const wellbeingCoverageRate = pct(logsWithWellbeing, totalLogs);
-
-  const logsWithActivities = daily_log_records.filter(
-    (l) => l.covers_activities,
-  ).length;
-  const activityCoverageRate = pct(logsWithActivities, totalLogs);
-
-  const logsWithMood = daily_log_records.filter(
-    (l) => l.covers_mood,
-  ).length;
-  const moodCoverageRate = pct(logsWithMood, totalLogs);
-
-  const logsWithInteractions = daily_log_records.filter(
-    (l) => l.covers_interactions,
-  ).length;
-  const interactionCoverageRate = pct(logsWithInteractions, totalLogs);
-
-  const logsWithMeals = daily_log_records.filter(
-    (l) => l.covers_meals,
-  ).length;
-  const mealCoverageRate = pct(logsWithMeals, totalLogs);
-
   const comprehensiveLogs = daily_log_records.filter(
     (l) =>
       l.covers_wellbeing &&
@@ -335,12 +309,6 @@ export function computeRecordKeepingDocumentationQuality(
   const logsFactualObjective = daily_log_records.filter(
     (l) => l.factual_and_objective,
   ).length;
-  const factualObjectiveRate = pct(logsFactualObjective, totalLogs);
-
-  const logsWithAdequateDetail = daily_log_records.filter(
-    (l) => l.word_count >= 50,
-  ).length;
-  const detailRate = pct(logsWithAdequateDetail, totalLogs);
 
   // Unique children covered by daily logs
   const uniqueChildrenWithLogs = new Set(
@@ -426,10 +394,6 @@ export function computeRecordKeepingDocumentationQuality(
     .reduce((sum, ra) => sum + ra.mitigations_implemented, 0);
   const mitigationImplementationRate = pct(mitigationsImplemented, totalMitigations);
 
-  // High/very-high risk assessments
-  const highRiskAssessments = risk_assessment_records.filter(
-    (ra) => (ra.risk_level === "high" || ra.risk_level === "very_high") && ra.is_current,
-  ).length;
   const highRiskOverdue = risk_assessment_records.filter(
     (ra) =>
       (ra.risk_level === "high" || ra.risk_level === "very_high") &&
@@ -457,7 +421,6 @@ export function computeRecordKeepingDocumentationQuality(
   const incidentsManagerSignedOff = incident_report_records.filter(
     (ir) => ir.manager_signed_off,
   ).length;
-  const managerSignOffRate = pct(incidentsManagerSignedOff, totalIncidents);
 
   // Ofsted notification compliance
   const ofstedNotificationRequired = incident_report_records.filter(
@@ -494,10 +457,6 @@ export function computeRecordKeepingDocumentationQuality(
   ).length;
   const lessonsLearnedRate = pct(incidentsWithLessonsLearned, totalIncidents);
 
-  // Critical/high severity incidents
-  const criticalIncidents = incident_report_records.filter(
-    (ir) => ir.severity === "critical" || ir.severity === "high",
-  ).length;
   const criticalIncidentsLateReported = incident_report_records.filter(
     (ir) =>
       (ir.severity === "critical" || ir.severity === "high") &&

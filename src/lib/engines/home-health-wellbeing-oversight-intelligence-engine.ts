@@ -338,11 +338,6 @@ export function computeHealthWellbeingOversight(
   ).length;
   const allergiesDocumentedRate = pct(passportsAllergiesDocumented, totalPassports);
 
-  const passportsMedsDocumented = health_passports.filter(
-    (p) => p.medications_documented,
-  ).length;
-  const medsDocumentedRate = pct(passportsMedsDocumented, totalPassports);
-
   // Health passport currency: updated within last 90 days
   const ninetyDaysAgo = new Date(today);
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
@@ -353,8 +348,6 @@ export function computeHealthWellbeingOversight(
   ).length;
   const healthPassportCurrencyRate = pct(currentPassports, totalPassports);
 
-  // --- Health record entry metrics ---
-  const totalRecordEntries = health_record_entries.length;
   const entriesRequiringFollowUp = health_record_entries.filter(
     (e) => e.follow_up_required,
   ).length;
@@ -362,16 +355,6 @@ export function computeHealthWellbeingOversight(
     (e) => e.follow_up_required && e.follow_up_completed,
   ).length;
   const followUpCompletionRate = pct(entriesFollowUpCompleted, entriesRequiringFollowUp);
-
-  const referralEntries = health_record_entries.filter(
-    (e) => e.entry_type === "referral",
-  ).length;
-  const appointmentEntries = health_record_entries.filter(
-    (e) => e.entry_type === "appointment",
-  ).length;
-  const observationEntries = health_record_entries.filter(
-    (e) => e.entry_type === "observation",
-  ).length;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // Bonuses sum to exactly 28: 4+3+3+3+3+3+2+3+4 = 28

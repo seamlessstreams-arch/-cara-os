@@ -290,11 +290,6 @@ export function computeHomeworkAcademicSupport(
   ).length;
   const homeworkBarrierRate = pct(homeworkBarriersTotal, totalHomeworkRecords);
 
-  const homeworkQuietSpace = homework_support_records.filter(
-    (r) => r.quiet_space_available,
-  ).length;
-  const homeworkQuietSpaceRate = pct(homeworkQuietSpace, totalHomeworkRecords);
-
   const supportQualityScores: Record<string, number> = {
     excellent: 5,
     good: 4,
@@ -311,83 +306,13 @@ export function computeHomeworkAcademicSupport(
       ? Math.round((totalSupportQuality / totalHomeworkRecords) * 100) / 100
       : null;
 
-  const totalTimeAllocated = homework_support_records.reduce(
-    (sum, r) => sum + r.time_allocated_minutes,
-    0,
-  );
-  const avgTimeAllocated: number | null =
-    totalHomeworkRecords > 0
-      ? Math.round(totalTimeAllocated / totalHomeworkRecords)
-      : null;
-
-  const homeworkFullyCompleted = homework_support_records.filter(
-    (r) => r.outcome === "completed",
-  ).length;
-  const homeworkPartiallyCompleted = homework_support_records.filter(
-    (r) => r.outcome === "partially_completed",
-  ).length;
-  const homeworkNotCompleted = homework_support_records.filter(
-    (r) => r.outcome === "not_completed",
-  ).length;
-  const homeworkOutcomeDenominator = homeworkFullyCompleted + homeworkPartiallyCompleted + homeworkNotCompleted;
-  const homeworkOutcomeRate = pct(homeworkFullyCompleted, homeworkOutcomeDenominator);
-
-  const childAskedForHelp = homework_support_records.filter(
-    (r) => r.child_asked_for_help,
-  ).length;
-  const childHelpSeekingRate = pct(childAskedForHelp, totalHomeworkRecords);
-
   // --- Study environment quality ---
   const totalStudyEnvRecords = study_environment_records.length;
-  const qualityScores: Record<string, number> = {
-    excellent: 4,
-    good: 3,
-    adequate: 2,
-    poor: 1,
-  };
-  const totalEnvQuality = study_environment_records.reduce(
-    (sum, r) => sum + (qualityScores[r.overall_quality] ?? 2),
-    0,
-  );
-  const envQualityRate: number | null =
-    totalStudyEnvRecords > 0
-      ? Math.round((totalEnvQuality / (totalStudyEnvRecords * 4)) * 100)
-      : null;
 
   const quietSpaceAvailable = study_environment_records.filter(
     (r) => r.quiet_space_available,
   ).length;
   const quietSpaceRate = pct(quietSpaceAvailable, totalStudyEnvRecords);
-
-  const deskProvided = study_environment_records.filter(
-    (r) => r.desk_provided,
-  ).length;
-  const deskRate = pct(deskProvided, totalStudyEnvRecords);
-
-  const lightingAdequate = study_environment_records.filter(
-    (r) => r.lighting_adequate,
-  ).length;
-  const lightingRate = pct(lightingAdequate, totalStudyEnvRecords);
-
-  const freeFromDistractions = study_environment_records.filter(
-    (r) => r.free_from_distractions,
-  ).length;
-  const distractionFreeRate = pct(freeFromDistractions, totalStudyEnvRecords);
-
-  const studyMaterials = study_environment_records.filter(
-    (r) => r.study_materials_available,
-  ).length;
-  const studyMaterialsRate = pct(studyMaterials, totalStudyEnvRecords);
-
-  const internetAccess = study_environment_records.filter(
-    (r) => r.internet_access_available,
-  ).length;
-  const internetAccessRate = pct(internetAccess, totalStudyEnvRecords);
-
-  const timeProtected = study_environment_records.filter(
-    (r) => r.time_protected,
-  ).length;
-  const timeProtectedRate = pct(timeProtected, totalStudyEnvRecords);
 
   const envSatisfactionSum = study_environment_records.reduce(
     (sum, r) => sum + r.child_satisfaction,
@@ -397,11 +322,6 @@ export function computeHomeworkAcademicSupport(
     totalStudyEnvRecords > 0
       ? Math.round((envSatisfactionSum / totalStudyEnvRecords) * 100) / 100
       : null;
-
-  const envImprovementsNeeded = study_environment_records.filter(
-    (r) => r.improvements_needed.length > 0,
-  ).length;
-  const envImprovementsRate = pct(envImprovementsNeeded, totalStudyEnvRecords);
 
   const excellentOrGoodEnv = study_environment_records.filter(
     (r) => r.overall_quality === "excellent" || r.overall_quality === "good",
@@ -421,7 +341,6 @@ export function computeHomeworkAcademicSupport(
   const tutoringEngaged = tutoring_records.filter(
     (r) => r.child_engaged,
   ).length;
-  const tutoringEngagementRate = pct(tutoringEngaged, totalTutoringRecords);
 
   const tutoringProgressNoted = tutoring_records.filter(
     (r) => r.progress_noted,
@@ -437,35 +356,16 @@ export function computeHomeworkAcademicSupport(
       ? Math.round((tutoringSatisfactionSum / totalTutoringRecords) * 100) / 100
       : null;
 
-  const tutorFeedbackProvided = tutoring_records.filter(
-    (r) => r.tutor_feedback_provided,
-  ).length;
-  const tutorFeedbackRate = pct(tutorFeedbackProvided, totalTutoringRecords);
-
   const linkedToCurriculum = tutoring_records.filter(
     (r) => r.linked_to_school_curriculum,
   ).length;
   const curriculumAlignmentRate = pct(linkedToCurriculum, totalTutoringRecords);
-
-  const tutoringOutcomeDocumented = tutoring_records.filter(
-    (r) => r.outcome_documented,
-  ).length;
-  const tutoringDocumentationRate = pct(tutoringOutcomeDocumented, totalTutoringRecords);
 
   const uniqueChildrenWithTutoring = new Set(
     tutoring_records.map((r) => r.child_id),
   ).size;
   const tutoringCoverageRate =
     total_children > 0 ? pct(uniqueChildrenWithTutoring, total_children) : tutoringAttendanceRate;
-
-  const totalSessionDuration = tutoring_records.reduce(
-    (sum, r) => sum + r.session_duration_minutes,
-    0,
-  );
-  const avgSessionDuration: number | null =
-    totalTutoringRecords > 0
-      ? Math.round(totalSessionDuration / totalTutoringRecords)
-      : null;
 
   // --- Educational resource availability ---
   const totalResourceRecords = educational_resource_records.length;
@@ -482,25 +382,10 @@ export function computeHomeworkAcademicSupport(
   ).length;
   const ageAppropriateRate = pct(resourcesAgeAppropriate, totalResourceRecords);
 
-  const resourcesCurriculumAligned = educational_resource_records.filter(
-    (r) => r.curriculum_aligned,
-  ).length;
-  const resourceCurriculumRate = pct(resourcesCurriculumAligned, totalResourceRecords);
-
   const resourcesInUse = educational_resource_records.filter(
     (r) => r.child_using_resource,
   ).length;
   const resourceUsageRate = pct(resourcesInUse, totalResourceRecords);
-
-  const budgetAllocated = educational_resource_records.filter(
-    (r) => r.budget_allocated,
-  ).length;
-  const budgetAllocationRate = pct(budgetAllocated, totalResourceRecords);
-
-  const goodConditionResources = educational_resource_records.filter(
-    (r) => r.condition === "new" || r.condition === "good",
-  ).length;
-  const resourceConditionRate = pct(goodConditionResources, totalResourceRecords);
 
   const resourceAvailabilityRate: number | null =
     totalResourceRecords > 0
@@ -513,11 +398,6 @@ export function computeHomeworkAcademicSupport(
     (r) => r.staff_attended,
   ).length;
   const staffAttendanceRate = pct(staffAttendedLiaison, totalLiaisonRecords);
-
-  const schoolEngaged = school_liaison_records.filter(
-    (r) => r.school_engaged,
-  ).length;
-  const schoolEngagementRate = pct(schoolEngaged, totalLiaisonRecords);
 
   const totalActionsAgreed = school_liaison_records.reduce(
     (sum, r) => sum + r.actions_agreed,
@@ -533,16 +413,6 @@ export function computeHomeworkAcademicSupport(
     (r) => r.academic_progress_discussed,
   ).length;
   const academicDiscussionRate = pct(academicProgressDiscussed, totalLiaisonRecords);
-
-  const attendanceDiscussed = school_liaison_records.filter(
-    (r) => r.attendance_discussed,
-  ).length;
-  const attendanceDiscussionRate = pct(attendanceDiscussed, totalLiaisonRecords);
-
-  const additionalSupportIdentified = school_liaison_records.filter(
-    (r) => r.additional_support_identified,
-  ).length;
-  const additionalSupportRate = pct(additionalSupportIdentified, totalLiaisonRecords);
 
   const followUpRequired = school_liaison_records.filter(
     (r) => r.follow_up_date !== null,

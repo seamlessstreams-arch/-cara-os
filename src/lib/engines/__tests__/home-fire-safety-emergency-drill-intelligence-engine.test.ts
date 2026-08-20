@@ -831,17 +831,6 @@ describe("bonus isolation", () => {
     });
 
     it("+1 when issueResolution >=70 and <90", () => {
-      // 7/10 issue drills resolved → 70%
-      const drills = Array.from({ length: 10 }, (_, i) =>
-        makeDrill({
-          id: `d${i}`,
-          result: i < 4 ? "satisfactory" : "issues_identified",
-          within_target: false,
-          all_occupants_evacuated: false,
-          issues_found: i >= 4 ? ["problem"] : [],
-          all_issues_resolved: i < 4 ? true : (i - 4 < 4), // first 4 of 6 issue-drills resolved → wait
-        })
-      );
       // Let me recalculate: drills 0-3 satisfactory (no issues), drills 4-9 issues_identified with issues
       // issuesDrills.length = 6, resolved = drills where i-4 < 4 → i < 8 → drills 4,5,6,7 resolved
       // But I set all_issues_resolved for i<4 (no issues) and (i-4<4) → i<8

@@ -664,16 +664,6 @@ export function computeSaferRecruitmentIntelligence(
     });
   }
 
-  // Positive: verbal verification of all references
-  const allRefsVerballyVerified =
-    activeRefs.length > 0 &&
-    activeRefs.every(
-      (r) =>
-        r.verbal_verification_completed ||
-        r.status === "not_requested" ||
-        r.status === "requested" ||
-        r.status === "chased",
-    );
   const receivedRefs = activeRefs.filter(
     (r) => r.status === "received" || r.status === "satisfactory",
   );

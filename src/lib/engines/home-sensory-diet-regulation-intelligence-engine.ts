@@ -294,10 +294,6 @@ export function computeSensoryDietRegulation(
   const dietPlanCoverageRate =
     total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
 
-  // --- Plan quality metrics ---
-  const plansWithOT = activeDietPlans.filter((p) => p.ot_involved).length;
-  const otInvolvementInPlanningRate = pct(plansWithOT, activeDietPlans.length);
-
   const plansChildParticipated = activeDietPlans.filter(
     (p) => p.child_participated_in_planning,
   ).length;
@@ -307,11 +303,6 @@ export function computeSensoryDietRegulation(
     (p) => p.staff_trained_on_plan,
   ).length;
   const staffTrainedOnPlanRate = pct(plansStaffTrained, activeDietPlans.length);
-
-  const plansAccessible = activeDietPlans.filter(
-    (p) => p.plan_accessible_to_staff,
-  ).length;
-  const planAccessibilityRate = pct(plansAccessible, activeDietPlans.length);
 
   const totalActivitiesPrescribed = activeDietPlans.reduce(
     (sum, p) => sum + p.activities_prescribed,
@@ -364,15 +355,6 @@ export function computeSensoryDietRegulation(
   ).length;
   const independentUseRate = pct(strategiesUsedIndependently, totalActiveStrategies);
 
-  const childEngagementSum = regulation_strategy_records.reduce(
-    (sum, s) => sum + s.child_engagement_rating,
-    0,
-  );
-  const childEngagementAvg: number | null =
-    totalStrategies > 0
-      ? Math.round((childEngagementSum / totalStrategies) * 100) / 100
-      : null;
-
   const staffConsistencySum = regulation_strategy_records.reduce(
     (sum, s) => sum + s.staff_consistency_rating,
     0,
@@ -396,12 +378,6 @@ export function computeSensoryDietRegulation(
     (s) => s.review_overdue && s.active,
   ).length;
 
-  const uniqueChildrenWithStrategies = new Set(
-    activeStrategies.map((s) => s.child_id),
-  ).size;
-  const strategyChildCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithStrategies, total_children) : 0;
-
   // ================================================================
   // SENSORY BREAK SCHEDULING
   // ================================================================
@@ -411,11 +387,6 @@ export function computeSensoryDietRegulation(
     (b) => b.scheduled,
   ).length;
   const breakSchedulingRate = pct(scheduledBreaks, totalBreaks);
-
-  const breaksTimingAppropriate = sensory_break_records.filter(
-    (b) => b.timing_appropriate,
-  ).length;
-  const timingAppropriateRate = pct(breaksTimingAppropriate, totalBreaks);
 
   const childRequestedBreaks = sensory_break_records.filter(
     (b) => b.child_requested,
@@ -427,30 +398,10 @@ export function computeSensoryDietRegulation(
   ).length;
   const breakEffectivenessRate = pct(breaksWithImprovement, totalBreaks);
 
-  const breaksReturnedToActivity = sensory_break_records.filter(
-    (b) => b.returned_to_activity,
-  ).length;
-  const returnToActivityRate = pct(breaksReturnedToActivity, totalBreaks);
-
-  const breakOutcomeSum = sensory_break_records.reduce(
-    (sum, b) => sum + b.outcome_rating,
-    0,
-  );
-  const breakOutcomeAvg: number | null =
-    totalBreaks > 0
-      ? Math.round((breakOutcomeSum / totalBreaks) * 100) / 100
-      : null;
-
   const breaksDocumented = sensory_break_records.filter(
     (b) => b.notes_recorded,
   ).length;
   const breakDocumentationRate = pct(breaksDocumented, totalBreaks);
-
-  const uniqueChildrenWithBreaks = new Set(
-    sensory_break_records.map((b) => b.child_id),
-  ).size;
-  const breakChildCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithBreaks, total_children) : 0;
 
   // ================================================================
   // OCCUPATIONAL THERAPY INTEGRATION
@@ -471,15 +422,10 @@ export function computeSensoryDietRegulation(
     (sum, o) => sum + o.goals_set,
     0,
   );
-  const totalGoalsProgressed = occupational_therapy_records.reduce(
-    (sum, o) => sum + o.goals_progressed,
-    0,
-  );
   const totalGoalsAchieved = occupational_therapy_records.reduce(
     (sum, o) => sum + o.goals_achieved,
     0,
   );
-  const goalProgressRate = pct(totalGoalsProgressed + totalGoalsAchieved, totalGoalsSet);
   const goalAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
 
   const totalRecommendationsMade = occupational_therapy_records.reduce(
@@ -492,25 +438,10 @@ export function computeSensoryDietRegulation(
   );
   const recommendationImplementationRate = pct(totalRecommendationsImplemented, totalRecommendationsMade);
 
-  const sessionsWithStaffTraining = occupational_therapy_records.filter(
-    (o) => o.staff_training_provided,
-  ).length;
-  const staffTrainingRate = pct(sessionsWithStaffTraining, totalOTSessions);
-
-  const sessionsWithReport = occupational_therapy_records.filter(
-    (o) => o.report_provided,
-  ).length;
-  const reportProvisionRate = pct(sessionsWithReport, totalOTSessions);
-
   const sessionsCarePlanUpdated = occupational_therapy_records.filter(
     (o) => o.care_plan_updated,
   ).length;
   const carePlanUpdateRate = pct(sessionsCarePlanUpdated, totalOTSessions);
-
-  const sessionsChildPresent = occupational_therapy_records.filter(
-    (o) => o.child_present,
-  ).length;
-  const childPresentRate = pct(sessionsChildPresent, totalOTSessions);
 
   const overdueOTSessions = occupational_therapy_records.filter(
     (o) => o.session_overdue && o.active,
@@ -521,10 +452,6 @@ export function computeSensoryDietRegulation(
   // ================================================================
 
   const totalSelfRegAssessments = self_regulation_records.length;
-
-  const uniqueChildrenWithSelfReg = new Set(
-    self_regulation_records.map((r) => r.child_id),
-  ).size;
 
   // Self-regulation rate: children showing improvement (current > baseline)
   const childrenImproving = self_regulation_records.filter(
@@ -548,34 +475,6 @@ export function computeSensoryDietRegulation(
         )
       : null;
 
-  // Emotional, sensory, behavioural sub-scores
-  const emotionalRegSum = self_regulation_records.reduce(
-    (sum, r) => sum + r.emotional_regulation_score,
-    0,
-  );
-  const emotionalRegAvg: number | null =
-    totalSelfRegAssessments > 0
-      ? Math.round((emotionalRegSum / totalSelfRegAssessments) * 100) / 100
-      : null;
-
-  const sensoryRegSum = self_regulation_records.reduce(
-    (sum, r) => sum + r.sensory_regulation_score,
-    0,
-  );
-  const sensoryRegAvg: number | null =
-    totalSelfRegAssessments > 0
-      ? Math.round((sensoryRegSum / totalSelfRegAssessments) * 100) / 100
-      : null;
-
-  const behaviouralRegSum = self_regulation_records.reduce(
-    (sum, r) => sum + r.behavioural_regulation_score,
-    0,
-  );
-  const behaviouralRegAvg: number | null =
-    totalSelfRegAssessments > 0
-      ? Math.round((behaviouralRegSum / totalSelfRegAssessments) * 100) / 100
-      : null;
-
   // Skills acquisition
   const canIdentifyTriggers = self_regulation_records.filter(
     (r) => r.can_identify_triggers,
@@ -591,17 +490,6 @@ export function computeSensoryDietRegulation(
     (r) => r.can_use_strategies_independently,
   ).length;
   const independentStrategyUseRate = pct(canUseIndependently, totalSelfRegAssessments);
-
-  // Strategy knowledge vs usage
-  const totalStrategiesKnown = self_regulation_records.reduce(
-    (sum, r) => sum + r.strategies_known_count,
-    0,
-  );
-  const totalStrategiesUsed = self_regulation_records.reduce(
-    (sum, r) => sum + r.strategies_used_count,
-    0,
-  );
-  const strategyUtilisationRate = pct(totalStrategiesUsed, totalStrategiesKnown);
 
   // Progress trend analysis
   const improvingChildren = self_regulation_records.filter(

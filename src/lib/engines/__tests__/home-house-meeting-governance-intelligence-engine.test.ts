@@ -944,29 +944,6 @@ describe("Rating threshold boundaries", () => {
   });
 
   it("score 65 is good (at threshold)", () => {
-    // Need exactly 65: 52 + 13 from modifiers
-    // 1 meeting (+0), 85% attend (+6), 0 prev actions with meeting (+2),
-    //   100% feedback (+5), agenda 2 (+1), duration 20-29 (+2)
-    // 52 +0+6+2+5+1+2 = 68 => too high
-    // 1 meeting (+0), 65-84% attend (+2), 0 prev actions with mtg (+2),
-    //   100% feedback (+5), agenda 3 (+4), duration 20-29 (+2)
-    // 52 +0+2+2+5+4+2 = 67 => still not 65
-    // 1 meeting (+0), 65-84% attend (+2), 0 prev actions (+2),
-    //   60-89% feedback (+2), agenda 3 (+4), duration 20-29 (+2)
-    // 52 +0+2+2+2+4+2 = 64 => not 65
-    // 1 meeting (+0), 85% attend (+6), 0 prev actions (+2),
-    //   60-89% feedback (+2), agenda 2 (+1), duration 20-29 (+2)
-    // 52+0+6+2+2+1+2 = 65 => yes!
-    const meetings = [
-      makeMeeting({
-        children_present_count: 6,
-        children_absent_count: 1, // 6/7 = 86% => +6
-        previous_actions_total: 0,
-        previous_actions_completed: 0, // 0 prev actions + meeting => +2
-        child_feedback_count: 1, // 1/1 = 100% but we need 60-89%. With 1 meeting 100% hits >=90 => +5 not +2
-        // Hmm, with 1 meeting, any feedback > 0 means 100%. Need 2 meetings.
-      }),
-    ];
     // Retry with 2 meetings to control feedback rate
     // 2 meetings (+2), one with feedback, one without => 50% feedback (<60, not <40) => 0
     // Need 60-89%: 2 of 3 meetings => 67%

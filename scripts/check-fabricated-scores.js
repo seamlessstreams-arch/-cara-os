@@ -322,18 +322,6 @@ const ALLOWED = new Map([
     "repairCompletionRate — no repairs requested ⇒ nothing to complete (inverse-frequency)",
   ],
   [
-    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:childAffectedCount:100",
-    "alternativeProvidedRate — no children affected by facility issues ⇒ no accommodation needed (inverse-frequency)",
-  ],
-  [
-    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:hwCorrectiveRequiredCount:100",
-    "hwCorrectiveCompletionRate — no hot-water corrective actions required ⇒ nothing to complete (inverse-frequency)",
-  ],
-  [
-    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:privacyComplaintCount:100",
-    "complaintResolutionRate — no privacy complaints ⇒ nothing to resolve (inverse-frequency)",
-  ],
-  [
     "src/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine.ts:activeBSPs:1",
     "cascading divide-by-zero fallback (`X.length > 0 ? X.length : Y.length > 0 ? Y.length : 1`) to prevent NaN in the compliance rate denominator; the fallback of 1 is a divisor floor, not a score (regex-tightening 2026-07-29 re-attributed the site from :activeBSPsWithReviewDue:1 to :activeBSPs:1 which is the innermost fallback)",
   ],

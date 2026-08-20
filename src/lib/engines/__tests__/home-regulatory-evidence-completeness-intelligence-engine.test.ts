@@ -271,11 +271,6 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
         makeRiskAssessment({ id: "ra-2", status: "archived", has_mitigations: false, child_id: "child-2" }),
       ]; // currency 50%, mitigation 50%
 
-      const incidents = [
-        makeIncident({ id: "i-1", severity: "high", has_report: true, has_follow_up: false, has_notification: true, child_id: "child-1" }),
-        makeIncident({ id: "i-2", severity: "low", has_report: false, has_follow_up: false, has_notification: false, child_id: "child-2" }),
-      ]; // report 50%, follow-up 0%, high sev: 1 with notification -> 100%
-
       // highSevNotificationRate = 100 -> +2 bonus (oops, not exactly 52)
       // Let me adjust: 2 high sev, 1 with notification -> 50% -> no penalty (>=50), no bonus (<100)
       const incidents2 = [

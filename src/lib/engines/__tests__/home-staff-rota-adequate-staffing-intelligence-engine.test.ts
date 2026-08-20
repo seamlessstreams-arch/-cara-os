@@ -1576,10 +1576,6 @@ describe("computeStaffRotaAdequateStaffing", () => {
     });
 
     it("rota planning 40-69% concern", () => {
-      const rotas = [
-        makeRota({ id: "rp1", days_advance_published: 14, all_shifts_filled: true, skill_mix_adequate: true, senior_cover_every_shift: false, rota_approved_by_manager: false }),
-        makeRota({ id: "rp2", days_advance_published: 3, all_shifts_filled: false, skill_mix_adequate: false, senior_cover_every_shift: false, rota_approved_by_manager: false }),
-      ];
       // 3/10 = 30%... need 40-69
       // Let's use: pub=1, fill=1, skill=1, senior=1, approved=1 => 5/10 = 50%
       const rotas2 = [

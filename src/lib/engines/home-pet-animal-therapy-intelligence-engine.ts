@@ -303,7 +303,6 @@ export function computePetAnimalTherapy(
   const sessionsWithPositiveFeedback = therapy_session_records.filter(
     (s) => s.child_feedback_positive,
   ).length;
-  const sessionFeedbackRate = pct(sessionsWithPositiveFeedback, totalSessions);
 
   const sessionsWithRiskAssessment = therapy_session_records.filter(
     (s) => s.risk_assessment_completed,
@@ -314,29 +313,6 @@ export function computePetAnimalTherapy(
     (s) => s.notes_recorded,
   ).length;
   const sessionDocumentationRate = pct(sessionsWithNotes, totalSessions);
-
-  const sessionsWithFollowUp = therapy_session_records.filter(
-    (s) => s.follow_up_planned,
-  ).length;
-  const followUpRate = pct(sessionsWithFollowUp, totalSessions);
-
-  const sessionEngagementSum = therapy_session_records.reduce(
-    (sum, s) => sum + s.child_engagement_rating,
-    0,
-  );
-  const sessionEngagementAvg: number | null =
-    totalSessions > 0
-      ? Math.round((sessionEngagementSum / totalSessions) * 100) / 100
-      : null;
-
-  const sessionOutcomeSum = therapy_session_records.reduce(
-    (sum, s) => sum + s.outcome_rating,
-    0,
-  );
-  const sessionOutcomeAvg: number | null =
-    totalSessions > 0
-      ? Math.round((sessionOutcomeSum / totalSessions) * 100) / 100
-      : null;
 
   const sessionGoalAchievementAvg: number | null =
     sessionsWithGoalsSet > 0
@@ -356,35 +332,10 @@ export function computePetAnimalTherapy(
     careWithResponsibilityAssigned,
   );
 
-  const uniqueChildrenWithCare = new Set(
-    pet_care_records.map((c) => c.child_id),
-  ).size;
-  const careParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenWithCare, total_children) : 0;
-
   const childInitiatedCare = pet_care_records.filter(
     (c) => c.child_initiated,
   ).length;
   const childInitiatedCareRate = pct(childInitiatedCare, totalCareRecords);
-
-  const careSupervised = pet_care_records.filter(
-    (c) => c.supervised,
-  ).length;
-  const supervisionRate = pct(careSupervised, totalCareRecords);
-
-  const careEngagementSum = pet_care_records.reduce(
-    (sum, c) => sum + c.child_engagement_rating,
-    0,
-  );
-  const careEngagementAvg: number | null =
-    totalCareRecords > 0
-      ? Math.round((careEngagementSum / totalCareRecords) * 100) / 100
-      : null;
-
-  const careNotesRecorded = pet_care_records.filter(
-    (c) => c.notes_recorded,
-  ).length;
-  const careDocumentationRate = pct(careNotesRecorded, totalCareRecords);
 
   // --- Animal interaction outcomes ---
   const totalInteractions = animal_interaction_records.length;
@@ -407,16 +358,6 @@ export function computePetAnimalTherapy(
     (i) => i.risk_assessment_current,
   ).length;
   const interactionRiskAssessmentRate = pct(interactionsWithRiskAssessment, totalInteractions);
-
-  const interactionsWithStaff = animal_interaction_records.filter(
-    (i) => i.staff_present,
-  ).length;
-  const interactionSupervisionRate = pct(interactionsWithStaff, totalInteractions);
-
-  const interactionsWithNotes = animal_interaction_records.filter(
-    (i) => i.notes_recorded,
-  ).length;
-  const interactionDocumentationRate = pct(interactionsWithNotes, totalInteractions);
 
   // Mood improvement
   const moodImprovementValues = animal_interaction_records
@@ -446,21 +387,6 @@ export function computePetAnimalTherapy(
   ).length;
   const vetComplianceRate = pct(vetUpToDate, totalWelfareChecks);
 
-  const environmentSuitable = animal_welfare_records.filter(
-    (w) => w.environment_suitable,
-  ).length;
-  const environmentRate = pct(environmentSuitable, totalWelfareChecks);
-
-  const dietAppropriate = animal_welfare_records.filter(
-    (w) => w.diet_appropriate,
-  ).length;
-  const dietRate = pct(dietAppropriate, totalWelfareChecks);
-
-  const exerciseAdequate = animal_welfare_records.filter(
-    (w) => w.exercise_adequate,
-  ).length;
-  const exerciseRate = pct(exerciseAdequate, totalWelfareChecks);
-
   const insuranceCurrent = animal_welfare_records.filter(
     (w) => w.insurance_current,
   ).length;
@@ -489,26 +415,11 @@ export function computePetAnimalTherapy(
 
   // --- Child engagement rates ---
   const totalEngagementRecords = child_engagement_records.length;
-  const uniqueChildrenWithEngagement = new Set(
-    child_engagement_records.map((e) => e.child_id),
-  ).size;
-  const childEngagementCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithEngagement, total_children) : 0;
 
   const highModerateEngagement = child_engagement_records.filter(
     (e) => e.engagement_level === "high" || e.engagement_level === "moderate",
   ).length;
   const childEngagementRate = pct(highModerateEngagement, totalEngagementRecords);
-
-  const therapeuticBenefitObserved = child_engagement_records.filter(
-    (e) => e.therapeutic_benefit_observed,
-  ).length;
-  const therapeuticBenefitRate = pct(therapeuticBenefitObserved, totalEngagementRecords);
-
-  const confidenceImproved = child_engagement_records.filter(
-    (e) => e.confidence_improved,
-  ).length;
-  const confidenceImprovementRate = pct(confidenceImproved, totalEngagementRecords);
 
   const empathyDemonstrated = child_engagement_records.filter(
     (e) => e.empathy_demonstrated,
@@ -548,15 +459,6 @@ export function computePetAnimalTherapy(
   const overdueEngagementReviews = child_engagement_records.filter(
     (e) => e.review_overdue,
   ).length;
-
-  const progressRatingSum = child_engagement_records.reduce(
-    (sum, e) => sum + e.overall_progress_rating,
-    0,
-  );
-  const progressRatingAvg: number | null =
-    totalEngagementRecords > 0
-      ? Math.round((progressRatingSum / totalEngagementRecords) * 100) / 100
-      : null;
 
   // --- Child benefit rate (composite across sessions, interactions, engagement) ---
   const totalBenefitOpportunities =

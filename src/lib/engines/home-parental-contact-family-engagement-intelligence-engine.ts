@@ -331,20 +331,10 @@ export function computeParentalContactFamilyEngagement(
   const swInformedRate = pct(contactsSWInformed, contactsOccurred);
 
   // ─── 6. Child wanted contact rate ─────────────────────────────────────
-  const childWantedContact = contact_schedule_records.filter(
-    (c) => c.child_wanted_contact,
-  ).length;
-  const childWantedContactRate = pct(childWantedContact, totalScheduledContacts);
 
   // ─── 7. Family visit metrics ──────────────────────────────────────────
   const totalFamilyVisits = family_visit_records.length;
   const visitsOccurred = family_visit_records.filter((v) => v.occurred).length;
-  const visitOccurrenceRate = pct(visitsOccurred, totalFamilyVisits);
-
-  const visitQualityRatings = family_visit_records
-    .filter((v) => v.occurred && v.quality_rating !== null)
-    .map((v) => v.quality_rating);
-  const visitQualityAvg = safeAvg(visitQualityRatings);
 
   const visitsWithHighQuality = family_visit_records.filter(
     (v) => v.occurred && v.quality_rating !== null && v.quality_rating >= 4,
@@ -360,11 +350,6 @@ export function computeParentalContactFamilyEngagement(
     (v) => v.occurred && v.report_completed,
   ).length;
   const visitReportRate = pct(visitsWithReport, visitsOccurred);
-
-  const visitsWithPositiveFeedback = family_visit_records.filter(
-    (v) => v.occurred && v.child_feedback_positive === true,
-  ).length;
-  const visitPositiveFeedbackRate = pct(visitsWithPositiveFeedback, visitsOccurred);
 
   const visitsWithSafeguardingConcerns = family_visit_records.filter(
     (v) => v.safeguarding_concerns_raised,
@@ -386,30 +371,14 @@ export function computeParentalContactFamilyEngagement(
   ).length;
   const parentInvitationRate = pct(parentInvited, totalEngagementRecords);
 
-  const parentViewsRecorded = parental_engagement_records.filter(
-    (e) => e.parent_participated && e.parent_views_recorded,
-  ).length;
-  const parentViewsRecordedRate = pct(parentViewsRecorded, parentParticipated);
-
   const parentViewsIncorporated = parental_engagement_records.filter(
     (e) => e.parent_participated && e.parent_views_incorporated,
   ).length;
   const parentViewsIncorporationRate = pct(parentViewsIncorporated, parentParticipated);
 
-  const engagementSupportOffered = parental_engagement_records.filter(
-    (e) => !e.parent_participated && e.support_offered,
-  ).length;
-  const nonParticipatingParents = totalEngagementRecords - parentParticipated;
-  const supportOfferedRate = pct(engagementSupportOffered, nonParticipatingParents);
-
   const engagementWithBarriers = parental_engagement_records.filter(
     (e) => e.barriers_identified !== null && e.barriers_identified !== "",
   ).length;
-
-  const engagementQualityRatings = parental_engagement_records
-    .filter((e) => e.parent_participated && e.quality_rating !== null)
-    .map((e) => e.quality_rating);
-  const engagementQualityAvg = safeAvg(engagementQualityRatings);
 
   // ─── 9. Supervised contact metrics ────────────────────────────────────
   const totalSupervisedSessions = supervised_contact_records.length;
@@ -455,23 +424,8 @@ export function computeParentalContactFamilyEngagement(
   ).length;
   const incidentReportingRate = pct(supervisedIncidentsReported, supervisedIncidents);
 
-  const supervisedReportsCompleted = supervised_contact_records.filter(
-    (s) => s.report_completed,
-  ).length;
-  const supervisedReportRate = pct(supervisedReportsCompleted, totalSupervisedSessions);
-
-  const supervisedQualityRatings = supervised_contact_records
-    .filter((s) => s.quality_rating !== null)
-    .map((s) => s.quality_rating);
-  const supervisedQualityAvg = safeAvg(supervisedQualityRatings);
-
-  const supervisedRecommendationsMade = supervised_contact_records.filter(
-    (s) => s.recommendations_made,
-  ).length;
-
   // ─── 10. Family support metrics ───────────────────────────────────────
   const totalFamilySupport = family_support_records.length;
-  const activeFamilySupport = family_support_records.filter((f) => f.active).length;
 
   const uniqueChildrenWithSupport = new Set(
     family_support_records.filter((f) => f.active).map((f) => f.child_id),
@@ -489,16 +443,6 @@ export function computeParentalContactFamilyEngagement(
   );
   const familySupportAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
 
-  const supportOutcomesDocumented = family_support_records.filter(
-    (f) => f.outcomes_documented,
-  ).length;
-  const supportOutcomesRate = pct(supportOutcomesDocumented, totalFamilySupport);
-
-  const supportQualityRatings = family_support_records
-    .filter((f) => f.quality_rating !== null)
-    .map((f) => f.quality_rating);
-  const supportQualityAvg = safeAvg(supportQualityRatings);
-
   const significantProgress = family_support_records.filter(
     (f) => f.progress_rating === "significant",
   ).length;
@@ -507,32 +451,15 @@ export function computeParentalContactFamilyEngagement(
   ).length;
   const positiveProgressRate = pct(significantProgress + moderateProgress, totalFamilySupport);
 
-  const childEngagementPositive = family_support_records.filter(
-    (f) => f.child_engagement_positive,
-  ).length;
-  const childSupportEngagementRate = pct(childEngagementPositive, totalFamilySupport);
-
-  const parentEngagementPositive = family_support_records.filter(
-    (f) => f.parent_engagement_positive,
-  ).length;
-  const parentSupportEngagementRate = pct(parentEngagementPositive, totalFamilySupport);
-
   const regressedRecords = family_support_records.filter(
     (f) => f.progress_rating === "regressed",
   ).length;
 
-  // Family therapy and sibling contact counts
-  const familyTherapySessions = family_support_records.filter(
-    (f) => f.support_type === "family_therapy",
-  ).length;
   const siblingContactRecords = family_support_records.filter(
     (f) => f.support_type === "sibling_contact",
   ).length;
   const lifeStoryWorkRecords = family_support_records.filter(
     (f) => f.support_type === "life_story_work",
-  ).length;
-  const reunificationRecords = family_support_records.filter(
-    (f) => f.support_type === "reunification_planning",
   ).length;
 
   // ─── 11. Child voice in contact (composite across all arrays) ─────────
