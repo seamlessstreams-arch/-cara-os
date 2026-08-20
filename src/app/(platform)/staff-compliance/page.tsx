@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { PrintButton } from "@/components/common/print-button";
 import { api } from "@/hooks/use-api";
-import { ShieldCheck, MessageCircle, Star, GraduationCap, Fingerprint, ArrowRight, AlertTriangle } from "lucide-react";
+import { ShieldCheck, MessageCircle, Star, GraduationCap, Fingerprint, AlertTriangle } from "lucide-react";
 import type { StaffComplianceLevel, StaffComplianceRow } from "@/lib/engines/staff-compliance-engine";
 import type { StaffComplianceResult } from "@/lib/engines/staff-compliance-engine";
 

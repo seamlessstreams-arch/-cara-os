@@ -9,9 +9,17 @@ import { Button } from "@/components/ui/button";
 import { cn, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
-  MessageSquare, Clock, CheckCircle2, AlertTriangle, Plus,
-  ChevronRight, Calendar, Search, Users, ShieldAlert,
-  TrendingUp, BarChart2, ArrowUpDown,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Plus,
+  ChevronRight,
+  Calendar,
+  Search,
+  Users,
+  ShieldAlert,
+  TrendingUp,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

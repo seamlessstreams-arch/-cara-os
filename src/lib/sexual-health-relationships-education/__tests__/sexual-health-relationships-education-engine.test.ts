@@ -32,10 +32,6 @@ import type {
   RSEPolicy,
   StaffRSETraining,
   TopicArea,
-  DeliveryMethod,
-  AgeAppropriateness,
-  EngagementLevel,
-  Rating,
 } from "../sexual-health-relationships-education-engine";
 
 // ── Factory Helpers ──────────────────────────────────────────────────────────

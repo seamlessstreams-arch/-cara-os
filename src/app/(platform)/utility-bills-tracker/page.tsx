@@ -16,8 +16,6 @@ import {
   Wifi,
   Phone,
   Building2,
-  Trash2,
-  Tv,
   Receipt,
   AlertTriangle,
   CheckCircle,

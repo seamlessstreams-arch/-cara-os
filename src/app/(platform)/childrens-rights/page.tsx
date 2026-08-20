@@ -41,15 +41,26 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Shield, Heart, BookOpen, Users, Scale, Mic, Home, GraduationCap,
-  HeartPulse, Globe, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle,
-  Star, Lock, Loader2,
+  Shield,
+  Heart,
+  BookOpen,
+  Users,
+  Scale,
+  Mic,
+  GraduationCap,
+  HeartPulse,
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertTriangle,
+  Star,
+  Lock,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getYPName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import type { ChildrensRightEntry, RightsComplianceLevel } from "@/types/extended";
-import { RIGHTS_COMPLIANCE_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

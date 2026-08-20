@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import type {
   ChildBankAccount,
-  ChildBankAccountType,
   ChildBankSupportLevel,
   ChildBankTransactionType,
 } from "@/types/extended";

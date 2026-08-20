@@ -20,8 +20,6 @@ import {
   Minus,
   AlertTriangle,
   CheckCircle2,
-  Brain,
-  FileText,
   ChevronDown,
   ChevronUp,
   Loader2,

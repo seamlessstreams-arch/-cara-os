@@ -12,7 +12,6 @@ import {
   getRatingLabel,
   type ModuleIntelligenceScore,
   type HomeIntelligenceDomain,
-  type Rating,
 } from "../home-intelligence-engine";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

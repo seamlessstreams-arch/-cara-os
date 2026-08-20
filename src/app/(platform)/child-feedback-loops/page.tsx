@@ -31,7 +31,6 @@ import {
   FEEDBACK_LOOP_TYPE_LABEL,
   FEEDBACK_DECISION_LABEL,
 } from "@/types/extended";
-import type { FeedbackDecision } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

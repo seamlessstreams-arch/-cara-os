@@ -44,7 +44,6 @@ import {
 import type {
   StrategicRiskRecord,
   StrategicRiskCategory,
-  StrategicRiskVelocity,
   StrategicRiskTrendDirection,
   StrategicRiskAppetiteAlignment,
   StrategicRiskKRIStatus,

@@ -10,8 +10,6 @@ import {
   type DigitalPlanInput,
   type PhoneRecordInput,
   type RseDigitalInput,
-  type DigitalSafetyResult,
-  type DigitalSafetyRating,
 } from "../home-digital-literacy-online-safety-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -9,7 +9,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,8 +17,17 @@ import { useAuthContext } from "@/contexts/auth-context";
 import type { ResourceLibraryEntry, LearningPathway } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
-  Search, Pin, PinOff, CheckCircle2, BookOpen, Library, Filter,
-  ArrowUpDown, BarChart3, Users, Sparkles, Layers,
+  Search,
+  Pin,
+  PinOff,
+  CheckCircle2,
+  BookOpen,
+  Library,
+  Filter,
+  ArrowUpDown,
+  BarChart3,
+  Users,
+  Layers,
 } from "lucide-react";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";

@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import type {
   TutoringRecord,
-  TutoringFormat,
   TutoringFundingSource,
   TutoringMotivation,
 } from "@/types/extended";

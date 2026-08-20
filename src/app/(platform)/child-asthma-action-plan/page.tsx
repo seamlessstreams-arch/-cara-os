@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { AsthmaPlan, AsthmaDiagnosis } from "@/types/extended";
+import type { AsthmaPlan } from "@/types/extended";
 import { ASTHMA_DIAGNOSIS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";

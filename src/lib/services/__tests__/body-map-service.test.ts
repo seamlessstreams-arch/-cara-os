@@ -6,7 +6,7 @@
 // Reg 36 (records — body map documentation).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { _testing } from "../body-map-service";
 import { todayStr } from "@/lib/utils";
 import {
@@ -21,7 +21,6 @@ import type {
   MarkType,
   BodyLocation,
   ExplanationSource,
-  ActionTaken,
 } from "../body-map-service";
 
 const { computeBodyMapMetrics, identifyBodyMapAlerts } = _testing;

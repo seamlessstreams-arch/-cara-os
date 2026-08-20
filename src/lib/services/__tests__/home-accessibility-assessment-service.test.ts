@@ -17,10 +17,6 @@ import {
 
 import type {
   HomeAccessibilityAssessmentRow,
-  AccessibilityArea,
-  ComplianceLevel,
-  AdjustmentStatus,
-  NeedType,
 } from "../home-accessibility-assessment-service";
 
 const {

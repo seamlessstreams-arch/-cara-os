@@ -4,15 +4,25 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Shield, CheckCircle2, AlertTriangle, Clock, Download,
-  Fingerprint, FileCheck, User, Users, Globe, GraduationCap,
-  Briefcase, Heart, ExternalLink, FileText, ClipboardCheck,
-  LayoutGrid, List, Filter, ChevronDown, Search,
+  Shield,
+  AlertTriangle,
+  Download,
+  Fingerprint,
+  FileCheck,
+  User,
+  Users,
+  Globe,
+  GraduationCap,
+  Briefcase,
+  Heart,
+  FileText,
+  ClipboardCheck,
+  LayoutGrid,
+  List,
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";

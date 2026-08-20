@@ -13,8 +13,15 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Users, Eye, Shield, AlertTriangle, Heart, BookOpen,
-  Sparkles, GraduationCap, Home, UserCheck, FileSearch,
+  Users,
+  Eye,
+  Shield,
+  AlertTriangle,
+  Heart,
+  BookOpen,
+  Home,
+  UserCheck,
+  FileSearch,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

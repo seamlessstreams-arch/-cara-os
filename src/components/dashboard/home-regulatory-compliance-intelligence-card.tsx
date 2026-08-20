@@ -11,10 +11,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  AlertTriangle, Brain, Loader2, AlertCircle,
-  Sparkles, ShieldCheck, FileCheck, Eye,
-  TrendingUp, TrendingDown, Minus, Clock,
-  BookOpen, ClipboardCheck,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  AlertCircle,
+  Sparkles,
+  ShieldCheck,
+  FileCheck,
+  Eye,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  BookOpen,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";

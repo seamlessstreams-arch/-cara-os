@@ -12,12 +12,7 @@ import { cn } from "@/lib/utils";
 import {
   Sparkles,
   X,
-  Command,
   Keyboard,
-  Mic,
-  Search,
-  FileText,
-  CheckCircle2,
 } from "lucide-react";
 
 interface CaraShortcutsGuideProps {

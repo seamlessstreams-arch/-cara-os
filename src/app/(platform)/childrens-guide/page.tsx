@@ -38,9 +38,18 @@ function useHomeName(fallback = "This home"): string {
 }
 import { useState } from "react";
 import {
-  BookOpen, Heart, Shield, Users, MessageSquare,
-  Phone, Star, Home, Smile, HelpCircle,
-  ChevronDown, ChevronUp, CheckCircle2,
+  BookOpen,
+  Shield,
+  Users,
+  MessageSquare,
+  Phone,
+  Star,
+  Home,
+  Smile,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";

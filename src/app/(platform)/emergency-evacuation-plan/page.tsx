@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { EvacuationPlan, EvacuationScenarioType } from "@/types/extended";
+import type { EvacuationPlan } from "@/types/extended";
 import { EVACUATION_SCENARIO_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

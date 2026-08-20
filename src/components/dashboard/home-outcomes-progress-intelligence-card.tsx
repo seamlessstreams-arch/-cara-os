@@ -10,10 +10,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  Loader2, AlertCircle, AlertTriangle,
-  Sparkles, Brain, Target,
-  TrendingUp, TrendingDown, Minus,
-  Users, MessageSquare,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+  Sparkles,
+  Brain,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

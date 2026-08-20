@@ -11,8 +11,6 @@ import {
   daysUntil,
   average,
   type ReferralInput,
-  type ReferralSource,
-  type ReferralStatus,
 } from "../admission-referral-intelligence-engine";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

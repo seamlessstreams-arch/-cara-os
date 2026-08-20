@@ -22,11 +22,6 @@ import {
 
 import type {
   HomeEmergencyLightingRow,
-  TestType,
-  LuminaireType,
-  TestResult,
-  BatteryCondition,
-  ComplianceStatus,
 } from "../home-emergency-lighting-service";
 
 const {

@@ -16,12 +16,19 @@ import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  Wallet, Calendar, Receipt, TrendingDown, TrendingUp,
-  AlertTriangle, CheckCircle2, Clock
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  Wallet,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 import type { PettyCashEntry, PettyCashTransactionType, PettyCashCategory } from "@/types/extended";
-import { PETTY_CASH_TRANSACTION_TYPE_LABEL, PETTY_CASH_CATEGORY_LABEL } from "@/types/extended";
+import { PETTY_CASH_TRANSACTION_TYPE_LABEL } from "@/types/extended";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

@@ -63,7 +63,7 @@ export async function GET(
       return NextResponse.json({ error: "Suggestion not found" }, { status: 404 });
     }
     return NextResponse.json({ data: suggestion });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to fetch suggestion" },
       { status: 500 },
@@ -144,7 +144,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({ data: updated });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to update suggestion" },
       { status: 500 },

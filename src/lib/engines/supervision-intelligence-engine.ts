@@ -10,7 +10,7 @@
 // SCCIF: Leadership & Management — "Are staff supervised and supported?"
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
 import { todayStr } from "@/lib/utils";
 
 // ── Input Types ─────────────────────────────────────────────────────────────

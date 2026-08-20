@@ -11,9 +11,16 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  Sparkles, Clock, AlertTriangle, TrendingUp,
-  TrendingDown, Minus, Users, ChevronDown,
-  ChevronUp, Zap, Target,
+  Sparkles,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Users,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Target,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";

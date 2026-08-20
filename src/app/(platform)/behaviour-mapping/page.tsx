@@ -8,8 +8,12 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Activity, ChevronDown, ChevronUp, AlertTriangle, Clock, MapPin,
-  TrendingUp, TrendingDown, Minus, ArrowUpDown, Users, Loader2,
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+  ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";

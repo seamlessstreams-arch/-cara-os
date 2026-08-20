@@ -22,9 +22,7 @@ import {
   Star,
   Heart,
   Users,
-  Clock,
   Calendar,
-  Sparkles,
   Loader2,
 } from "lucide-react";
 import {

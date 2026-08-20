@@ -22,13 +22,17 @@ import {
   AlertTriangle, Gift, CheckCircle2, ArrowRight, ArrowLeft, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
-  GiftRecord, GiftDirection, GiftRecipientType, GiftSource, GiftApprovalStatus,
+  GiftRecord,
+  GiftDirection,
+  GiftApprovalStatus,
 } from "@/types/extended";
 import {
-  GIFT_DIRECTION_LABEL, GIFT_RECIPIENT_TYPE_LABEL, GIFT_SOURCE_LABEL, GIFT_APPROVAL_STATUS_LABEL,
+  GIFT_DIRECTION_LABEL,
+  GIFT_SOURCE_LABEL,
+  GIFT_APPROVAL_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

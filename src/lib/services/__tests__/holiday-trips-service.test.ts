@@ -19,7 +19,6 @@ import type {
   TripType,
   TripStatus,
   RiskAssessmentStatus,
-  ChildEnjoyment,
 } from "../holiday-trips-service";
 
 const { computeTripMetrics, identifyTripAlerts } = _testing;

@@ -111,7 +111,7 @@ export function wellDoneLead(name: string, period: string, seed: number): string
     `${cap(name)}, this ${period} has shown so much of the best of you.`,
   ]);
 }
-export function proudClose(name: string, seed: number, slot: number): string {
+export function proudClose(_name: string, seed: number, slot: number): string {
   return pick(seed, 60 + slot, [
     `You should be really proud of how that has gone.`,
     `That's genuinely something to be proud of.`,

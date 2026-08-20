@@ -27,7 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { SecureStorageRecord, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus, SecureStorageAction } from "@/types/extended";
+import type { SecureStorageRecord, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus } from "@/types/extended";
 import {
   SECURE_STORAGE_CATEGORY_LABEL,
   SECURE_STORAGE_LOCATION_LABEL,

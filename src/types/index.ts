@@ -4,13 +4,27 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type {
-  SystemRole, TaskPriority, TaskStatus, TaskCategory,
-  IncidentType, IncidentSeverity, ShiftType, LeaveType,
-  EmploymentType, EmploymentStatus, TrainingCategory,
-  ComplianceStatus, DocumentCategory, MedicationType,
-  AdministrationStatus, SupervisionType, AppraisalRating,
-  ExpenseCategory, ExpenseStatus, RecruitmentStage,
-  CareFormType, CareFormStatus,
+  SystemRole,
+  TaskPriority,
+  TaskStatus,
+  TaskCategory,
+  IncidentType,
+  IncidentSeverity,
+  ShiftType,
+  LeaveType,
+  EmploymentType,
+  EmploymentStatus,
+  TrainingCategory,
+  ComplianceStatus,
+  DocumentCategory,
+  MedicationType,
+  AdministrationStatus,
+  SupervisionType,
+  ExpenseCategory,
+  ExpenseStatus,
+  RecruitmentStage,
+  CareFormType,
+  CareFormStatus,
 } from "@/lib/constants";
 
 // ── Base ─────────────────────────────────────────────────────────────────────

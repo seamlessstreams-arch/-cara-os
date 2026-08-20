@@ -15,17 +15,9 @@ import {
   evaluateTrainingCompliance,
   evaluateSupervisionCompliance,
   identifyTrainingGaps,
-  formatTrainingName,
 } from "@/lib/hr-files/workforce-engine";
 import type {
   StaffMember,
-  TrainingRecord,
-  SupervisionRecord,
-  AbsenceRecord,
-  WorkforceMetrics,
-  TrainingComplianceResult,
-  SupervisionComplianceResult,
-  TrainingGap,
 } from "@/lib/hr-files/workforce-engine";
 
 import { seedDay } from "@/lib/seed-date";

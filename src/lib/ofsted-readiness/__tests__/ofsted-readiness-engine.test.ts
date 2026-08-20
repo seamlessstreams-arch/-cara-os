@@ -22,10 +22,7 @@ import {
 import type {
   JudgmentArea,
   EvidenceStrength,
-  InspectionReadiness,
   SCCIFRequirement,
-  AreaStatus,
-  Rating,
   AreaScore,
   SCCIFEvidenceItem,
   InspectionHistory,

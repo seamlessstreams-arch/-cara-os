@@ -7,13 +7,13 @@
 // approval.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, use, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,8 +25,17 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Wand2, Plus, Search, Filter, AlertTriangle, CheckCircle,
-  Clock, Eye, Layers, Cpu, Zap, RefreshCw,
+  Wand2,
+  Plus,
+  Search,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Eye,
+  Layers,
+  Cpu,
+  Zap,
+  RefreshCw,
 } from "lucide-react";
 import type { YoungPerson, StaffMember } from "@/types";
 

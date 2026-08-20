@@ -3,13 +3,18 @@
 import React, { useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  FileCheck, AlertTriangle, CheckCircle2, Clock, AlertCircle,
-  Loader2, Info, Plus, Calendar, Search,
+  FileCheck,
+  AlertTriangle,
+  AlertCircle,
+  Loader2,
+  Info,
+  Plus,
+  Calendar,
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn, londonDayDiff } from "@/lib/utils";

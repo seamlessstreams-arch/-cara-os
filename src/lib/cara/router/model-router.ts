@@ -22,19 +22,13 @@ import type {
 } from "../core/types";
 import {
   TASK_DEFAULT_RISK,
-  TASK_PROVIDER_PREFERENCE,
   TASKS_REQUIRING_APPROVAL,
-  PROVIDER_MAX_SENSITIVITY,
-  DEFAULT_COST_LIMITS,
 } from "../core/constants";
 import {
   CaraRoutingBlockedError,
-  CaraSafetyBlockError,
-  CaraPermissionDeniedError,
   isRetryableError,
 } from "../core/errors";
-import { getProvider, getAvailableProviders } from "../providers";
-import type { BaseCaraProvider } from "../providers";
+import { getProvider } from "../providers";
 import {
   classifyInputSensitivity,
   redactSensitiveData,

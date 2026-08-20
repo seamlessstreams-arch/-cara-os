@@ -20,16 +20,32 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import type { InductionRecord } from "@/types/extended";
-import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
-  ShieldCheck, CheckCircle2, Clock, AlertTriangle, User,
-  ChevronRight, ChevronDown, ChevronUp, Plus, Calendar,
-  Rocket, Flag, Award, BookOpen, Pill, Shield, Users,
-  Heart, Flame, Loader2, FileCheck, Briefcase, Star, Search, ArrowUpDown,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Calendar,
+  Rocket,
+  Flag,
+  Award,
+  BookOpen,
+  Shield,
+  Users,
+  Heart,
+  Loader2,
+  FileCheck,
+  Briefcase,
+  Star,
+  Search,
+  ArrowUpDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/auth-context";
 import { NewInductionDialog } from "@/components/workforce/new-record-dialogs";

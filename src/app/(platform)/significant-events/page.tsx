@@ -16,13 +16,25 @@ import { PrintButton } from "@/components/ui/print-button";
 import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  Flag, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Star, Heart, Shield, Bell, Users, Loader2
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  Flag,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Star,
+  Heart,
+  Shield,
+  Bell,
+  Users,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import type { SigEventCategory, SigEventSeverity, SigEventNotifyStatus, SignificantEvent } from "@/types/extended";
+import type { SigEventCategory, SigEventSeverity, SignificantEvent } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

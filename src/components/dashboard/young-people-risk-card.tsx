@@ -36,10 +36,17 @@ function useYoungPeople(status = "current") {
       ),
   });
 }
-import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
+import { cn, londonDayDiff } from "@/lib/utils";
 import {
-  Heart, AlertTriangle, Shield, Loader2, ChevronRight,
-  User, BookOpen, Pill, MapPin, Flame, CheckCircle2,
+  Heart,
+  AlertTriangle,
+  Loader2,
+  ChevronRight,
+  User,
+  BookOpen,
+  Pill,
+  MapPin,
+  Flame,
 } from "lucide-react";
 
 // ── Risk level colours ───────────────────────────────────────────────────────

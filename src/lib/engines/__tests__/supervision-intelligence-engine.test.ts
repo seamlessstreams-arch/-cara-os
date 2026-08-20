@@ -15,7 +15,6 @@ import {
   type SupervisionInput,
   type TrainingInput,
   type SupervisionActionInput,
-  type SupervisionIntelligenceInput,
 } from "../supervision-intelligence-engine";
 
 // ── Factories ─────────────────────────────────────────────────────────────────

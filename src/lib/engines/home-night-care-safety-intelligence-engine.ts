@@ -5,7 +5,7 @@
 // CHR 2015 Reg 12/25: Night care and safety.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Input types ─────────────────────────────────────────────────────────────
 

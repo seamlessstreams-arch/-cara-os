@@ -4,7 +4,7 @@
 // and constant validation for CHR 2015 Reg 8/36, Children Act 1989 compliance.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { todayStr } from "@/lib/utils";
 import {
   _testing,
@@ -16,9 +16,6 @@ import {
 import type {
   LegalRecord,
   LegalStatus,
-  OrderType,
-  CourtType,
-  HearingOutcome,
 } from "../legal-status-service";
 
 vi.mock("@/lib/supabase/server", () => ({

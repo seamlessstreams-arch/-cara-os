@@ -353,7 +353,7 @@ function assessRHICompliance(episodes: MissingEpisode[]): RHICompliance {
   };
 }
 
-function identifyPatterns(episodes: MissingEpisode[], input: MissingInput): MissingPattern[] {
+function identifyPatterns(episodes: MissingEpisode[], _input: MissingInput): MissingPattern[] {
   const patterns: MissingPattern[] = [];
   if (episodes.length < 2) return patterns;
 
@@ -494,7 +494,7 @@ function scoreRisk(riskLevel: string): number {
   }
 }
 
-function scoreCompliance(rhi: RHICompliance, input: MissingInput, episodes: MissingEpisode[]): number {
+function scoreCompliance(rhi: RHICompliance, input: MissingInput, _episodes: MissingEpisode[]): number {
   let score = 0;
 
   // RHI offer rate (30 points)

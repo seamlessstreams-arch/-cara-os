@@ -23,7 +23,6 @@ import {
   Heart,
   Star,
   Plus,
-  ChevronDown,
   ChevronUp,
   Calendar,
   Link2,

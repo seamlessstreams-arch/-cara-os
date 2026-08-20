@@ -7,7 +7,6 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { BriefcaseMedical, ChevronRight, Brain, Loader2, TrendingDown, TrendingUp, Minus, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

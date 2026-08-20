@@ -54,7 +54,6 @@ import {
   Activity,
   BarChart3,
   CheckCircle2,
-  XCircle,
   Clock,
   RefreshCw,
   Send,

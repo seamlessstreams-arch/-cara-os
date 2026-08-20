@@ -10,12 +10,18 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Sparkles, Shield, AlertTriangle, CheckCircle2, Clock,
-  Loader2, ChevronDown, ChevronUp, Scale, Calendar,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Scale,
+  Calendar,
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────

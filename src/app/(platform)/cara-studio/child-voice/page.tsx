@@ -14,9 +14,17 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  MessageCircle, Heart, AlertTriangle, TrendingUp,
-  Smile, Frown, Meh, AlertCircle, Clock, Quote,
-  Sparkles, Search, Filter,
+  MessageCircle,
+  AlertTriangle,
+  TrendingUp,
+  Smile,
+  Frown,
+  Meh,
+  AlertCircle,
+  Clock,
+  Quote,
+  Sparkles,
+  Search,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

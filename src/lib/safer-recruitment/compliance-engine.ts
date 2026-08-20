@@ -18,7 +18,6 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { Role } from "../permissions/types";
 import { rate } from "../metrics/rate";
 import { londonDayDiff } from "@/lib/utils";
 

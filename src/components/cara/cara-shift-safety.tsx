@@ -9,8 +9,14 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Loader2, ShieldCheck, ShieldAlert, ShieldX,
-  ChevronDown, ChevronUp, RefreshCw, Sparkles, AlertTriangle,
+  Loader2,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

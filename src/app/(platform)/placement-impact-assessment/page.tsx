@@ -11,12 +11,8 @@ import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type {
   PlacementImpactAssessment,
-  ImpactOnChildAssessment,
-  CompatibilityFactor,
-  PlacementImpactStatus,
-  ImpactRiskLevel,
 } from "@/types/extended";
-import { PLACEMENT_IMPACT_STATUS_LABEL, IMPACT_RISK_LEVEL_LABEL } from "@/types/extended";
+import { PLACEMENT_IMPACT_STATUS_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import {
   ChevronUp,
@@ -28,7 +24,6 @@ import {
   Shield,
   Heart,
   ArrowUpDown,
-  XCircle,
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

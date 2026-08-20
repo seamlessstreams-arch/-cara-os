@@ -29,15 +29,28 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
-  Search, ArrowUpDown, X, Plus, Star, ThumbsDown,
-  CheckCircle2, AlertTriangle, User, Calendar,
-  ChevronDown, ChevronUp, Shield, Award, Heart,
-  Smile, Frown, TrendingUp, Sparkles, Loader2,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Star,
+  ThumbsDown,
+  CheckCircle2,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Award,
+  Smile,
+  Frown,
+  TrendingUp,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SanctionRewardEntry, SRDirection, SRRewardType, SRSanctionType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 

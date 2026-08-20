@@ -211,7 +211,7 @@ function deriveRelationalOpportunity(context: LifeSpaceContext, record: CaraPrac
 
 // ── Recording prompt ──────────────────────────────────────────────────────────
 
-function deriveRecordingPrompt(context: LifeSpaceContext, practiceValue: PracticeValue): string {
+function deriveRecordingPrompt(_context: LifeSpaceContext, practiceValue: PracticeValue): string {
   const prompts: Partial<Record<PracticeValue, string>> = {
     trust_building:
       "Record what the child allowed or accepted. Small moments of trust are significant therapeutic progress worth noting.",

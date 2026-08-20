@@ -22,7 +22,6 @@ import type {
   CheckInSleepQuality,
   CheckInAppetite,
   CheckInEnergy,
-  CheckInConversationLength,
 } from "@/types/extended";
 import {
   CHECK_IN_SLEEP_QUALITY_LABEL,

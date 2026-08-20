@@ -2,10 +2,20 @@
 
 import { useState, useMemo } from "react";
 import {
-  Scale, Plus, Search, ArrowUpDown, Filter,
-  AlertTriangle, CheckCircle2, Clock,
-  ChevronDown, ChevronUp, Users, Shield,
-  ThumbsUp, ThumbsDown, Loader2,
+  Scale,
+  Plus,
+  Search,
+  ArrowUpDown,
+  Filter,
+  CheckCircle2,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  Shield,
+  ThumbsUp,
+  ThumbsDown,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -17,7 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, STAFF } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
 import { IMPACT_ASSESSMENT_STATUS_LABEL, IMPACT_RECOMMENDATION_LABEL } from "@/types/extended";

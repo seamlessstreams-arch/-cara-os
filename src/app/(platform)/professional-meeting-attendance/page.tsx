@@ -30,7 +30,6 @@ import type {
   ProfessionalMeetingAttendance,
   ProfMeetingType,
   ProfMeetingActionStatus,
-  ProfMeetingAction,
 } from "@/types/extended";
 import {
   PROF_MEETING_TYPE_LABEL,

@@ -22,12 +22,6 @@ import type {
   StaffProtectionRecord,
   WhistleblowingPolicy,
   ConcernCulture,
-  ConcernCategory,
-  ConcernSeverity,
-  ConcernStatus,
-  ResolutionOutcome,
-  ProtectionStatus,
-  ReporterType,
 } from "../whistleblowing-concerns-engine";
 
 // ── Test Fixtures ──────────────────────────────────────────────────────────

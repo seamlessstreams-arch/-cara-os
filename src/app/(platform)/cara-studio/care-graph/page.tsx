@@ -7,14 +7,22 @@
 // people, events, themes, risks, interventions, and relationships between them.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Network, Users, AlertTriangle, Heart, Shield,
-  Sparkles, Search, ChevronRight, Activity,
-  User, Calendar, BookOpen, Target,
+  Network,
+  Users,
+  AlertTriangle,
+  Heart,
+  Shield,
+  Search,
+  ChevronRight,
+  Activity,
+  User,
+  BookOpen,
+  Target,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

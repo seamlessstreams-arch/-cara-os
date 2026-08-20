@@ -2,15 +2,25 @@
 
 import { useState, useMemo } from "react";
 import {
-  Home, Search, ArrowUpDown, Filter,
-  AlertTriangle, CheckCircle2, TrendingUp, TrendingDown,
-  ChevronDown, ChevronUp, Calendar, Shield,
-  Heart, Target, Clock, Loader2,
+  Home,
+  Search,
+  ArrowUpDown,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  TrendingDown,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Shield,
+  Heart,
+  Target,
+  Clock,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,8 +28,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, StabilityRiskLevel, StabilityTrend } from "@/types/extended";
-import { STABILITY_RISK_LEVEL_LABEL } from "@/types/extended";
+import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, StabilityRiskLevel } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

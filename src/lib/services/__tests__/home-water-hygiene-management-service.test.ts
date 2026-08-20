@@ -18,9 +18,6 @@ import {
 
 import type {
   HomeWaterHygieneManagementRow,
-  CheckType,
-  SampleResult,
-  ComplianceStatus,
 } from "../home-water-hygiene-management-service";
 
 const {

@@ -11,8 +11,6 @@ import {
   type WellbeingFollowupRecordInput,
   type LearningExtractionRecordInput,
   type SupportAccessRecordInput,
-  type StaffDebriefingResult,
-  type StaffDebriefingRating,
 } from "../home-staff-debriefing-critical-incident-support-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

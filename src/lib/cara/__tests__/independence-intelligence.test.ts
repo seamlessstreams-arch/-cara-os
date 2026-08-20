@@ -7,8 +7,6 @@ import {
   analyseIndependence,
   IndependenceInput,
   LifeSkill,
-  SkillLevel,
-  EETStatus,
   PathwayPlan,
   AccommodationPlan,
 } from "../independence-intelligence";

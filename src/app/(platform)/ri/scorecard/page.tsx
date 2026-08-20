@@ -40,7 +40,6 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { RiChallengeLog, RiAlert, RiReg45Evidence, TrainingNeed } from "@/types/extended";
 
@@ -399,7 +398,7 @@ function useYoungPeople(status = "current") {
 }
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import { below, meanOf, meets } from "@/lib/metrics/rate";
-import { Sparkles, TrendingUp, TrendingDown, Minus, BarChart3, Zap, CircleDot, Shield, Users, Heart, Building2, FileCheck } from "lucide-react";
+import { Sparkles, TrendingUp, TrendingDown, Minus, BarChart3, Zap, Shield, Users, Heart, FileCheck } from "lucide-react";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

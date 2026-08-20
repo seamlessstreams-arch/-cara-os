@@ -6,10 +6,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   analyseHealth,
   type HealthInput,
-  type HealthAssessment,
-  type Immunisation,
-  type HealthAppointment,
-  type Medication,
 } from "../health-intelligence";
 
 const FIXED_NOW = "2026-05-16T12:00:00Z";

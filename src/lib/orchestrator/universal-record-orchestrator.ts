@@ -19,7 +19,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
-import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { generateId } from "@/lib/utils";
 import { recordEvent } from "@/lib/timeline/timeline-service";

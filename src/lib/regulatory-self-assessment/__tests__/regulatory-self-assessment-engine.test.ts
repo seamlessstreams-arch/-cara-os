@@ -18,14 +18,9 @@ import {
   ALL_REGULATION_AREAS,
 } from "../regulatory-self-assessment-engine";
 import type {
-  RegulationArea,
-  ComplianceLevel,
-  EvidenceType,
-  ActionPriority,
   SelfAssessmentEntry,
   ImprovementAction,
   ExternalFeedback,
-  OverallRating,
 } from "../regulatory-self-assessment-engine";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────

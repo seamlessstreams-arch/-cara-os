@@ -37,10 +37,21 @@ import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { BehaviourEntry, BehaviourDirection, BehaviourIntensity } from "@/types/extended";
 import {
-  Search, ArrowUpDown, X, Plus, Activity,
-  CheckCircle2, AlertTriangle, User, Calendar,
-  ChevronDown, ChevronUp, Shield, Smile, Frown,
-  TrendingUp, Zap, Heart, Loader2,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Activity,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Smile,
+  Frown,
+  TrendingUp,
+  Zap,
+  Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

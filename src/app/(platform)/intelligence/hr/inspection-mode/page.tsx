@@ -53,8 +53,6 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
-  Building2,
-  Activity,
   Scale,
 } from "lucide-react";
 import type {

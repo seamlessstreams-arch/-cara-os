@@ -17,9 +17,7 @@ import { cn, londonDayDiff } from "@/lib/utils";
 import Link from "next/link";
 import {
   Scale,
-  CheckCircle2,
   AlertTriangle,
-  Clock,
   FileText,
   Shield,
   Users,
@@ -30,7 +28,6 @@ import {
   Activity,
   ChevronRight,
   Sparkles,
-  Loader2,
 } from "lucide-react";
 
 import { seedDay } from "@/lib/seed-date";

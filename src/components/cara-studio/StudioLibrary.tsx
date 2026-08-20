@@ -15,8 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  FileText, Search, Filter, ChevronLeft, ChevronRight,
-  Loader2, Eye, CheckCircle2, Archive, Clock,
+  FileText,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Eye,
+  Archive,
+  Clock,
 } from "lucide-react";
 import { GENERATION_TYPES, STATUSES } from "@/lib/cara-studio/types";
 import type { GenerationType, GenerationStatus } from "@/lib/cara-studio/types";

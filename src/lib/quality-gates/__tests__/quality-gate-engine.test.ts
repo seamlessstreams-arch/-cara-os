@@ -11,7 +11,6 @@ import {
   buildGateBoard,
   checkIncidentClose,
   evaluateTransition,
-  type TransitionInput,
 } from "../quality-gate-engine";
 import type { GateBoardInput } from "../types";
 

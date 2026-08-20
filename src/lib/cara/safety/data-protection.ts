@@ -19,7 +19,7 @@ import {
   PROVIDER_MAX_SENSITIVITY,
   TASK_DEFAULT_SENSITIVITY,
 } from "../core/constants";
-import { CaraSafetyBlockError, CaraRedactionError } from "../core/errors";
+import { CaraSafetyBlockError } from "../core/errors";
 
 // ── Sensitivity Classification ────────────────────────────────────────────
 

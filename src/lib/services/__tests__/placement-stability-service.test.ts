@@ -7,7 +7,7 @@
 // Reg 9 (quality of care — continuity and stability).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { _testing } from "../placement-stability-service";
 import { todayStr } from "@/lib/utils";
 import {
@@ -19,10 +19,6 @@ import {
 
 import type {
   PlacementMove,
-  PlacementType,
-  MoveReason,
-  StabilityRisk,
-  DisruptionOutcome,
 } from "../placement-stability-service";
 
 const { computeStabilityMetrics, identifyStabilityAlerts } = _testing;

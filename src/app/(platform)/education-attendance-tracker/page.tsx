@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import type { EduAttendanceRecord, EduProvision, EduSession, EduAttendanceCode } from "@/types/extended";
+import type { EduAttendanceRecord, EduAttendanceCode } from "@/types/extended";
 import { EDU_PROVISION_LABEL, EDU_SESSION_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";

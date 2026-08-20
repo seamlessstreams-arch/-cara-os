@@ -10,8 +10,12 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles, CheckCircle2, AlertCircle, XCircle,
-  ChevronDown, ChevronUp, Shield, Scale,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 import { seedDay } from "@/lib/seed-date";

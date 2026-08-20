@@ -14,17 +14,13 @@ import {
   ClipboardList,
   GraduationCap,
   Heart,
-  Calendar,
   Clock,
   AlertTriangle,
   CheckCircle2,
   Shield,
-  Award,
-  TrendingUp,
-  CalendarDays,
 } from "lucide-react";
 import { getStore } from "@/lib/db/store";
-import { todayStr, formatDate, formatRelative, initials } from "@/lib/utils";
+import { todayStr, formatRelative, initials } from "@/lib/utils";
 import { CalmStatusBadge } from "@/components/ui/calm-status-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
 import { DomainCreateMenu } from "@/components/common/domain-create-menu";

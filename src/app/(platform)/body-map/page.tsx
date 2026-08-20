@@ -35,10 +35,23 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry } from "@/types/extended";
 import {
-  Search, Filter, ArrowUpDown, X, Plus,
-  AlertTriangle, Shield, CheckCircle2, Clock, User,
-  Calendar, Eye, ChevronDown, ChevronUp, Loader2,
-  PersonStanding, CircleDot, FileText, Link2,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Shield,
+  CheckCircle2,
+  Clock,
+  User,
+  Calendar,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  PersonStanding,
+  CircleDot,
+  FileText,
+  Link2,
 } from "lucide-react";
 
 import { api } from "@/hooks/use-api";

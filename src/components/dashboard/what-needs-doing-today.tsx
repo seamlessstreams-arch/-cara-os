@@ -31,8 +31,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn, formatRelative, isOverdue, isDueToday, todayStr } from "@/lib/utils";
+import { cn, isOverdue, isDueToday, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 
 // ── Types ────────────────────────────────────────────────────────────────────

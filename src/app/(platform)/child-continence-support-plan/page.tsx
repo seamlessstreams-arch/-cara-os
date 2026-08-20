@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
+import type { ContinencePlan } from "@/types/extended";
 import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

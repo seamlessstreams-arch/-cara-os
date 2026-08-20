@@ -16,7 +16,6 @@ import {
   type OutdoorEngagementInput,
   type FitnessAssessmentInput,
   type ActivityAccessibilityInput,
-  type PhysicalActivityRecreationResult,
 } from "../home-physical-activity-recreation-intelligence-engine";
 
 const TODAY = "2026-05-28";

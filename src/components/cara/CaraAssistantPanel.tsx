@@ -126,7 +126,7 @@ export function CaraAssistantPanel({
         setMessages(prev => [...prev, assistantMessage]);
         onResult?.(result);
       }
-    } catch (err) {
+    } catch (_err) {
       const errorMessage: Message = {
         id: crypto.randomUUID(),
         role: "system",

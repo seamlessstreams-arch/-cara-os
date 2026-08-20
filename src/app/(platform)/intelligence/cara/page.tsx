@@ -40,7 +40,7 @@ function useHomeName(fallback = "This home"): string {
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -159,9 +159,19 @@ function useCaraAuditTrail(params?: { childId?: string; homeId?: string }) {
 }
 
 import {
-  Sparkles, Shield, Lightbulb, CalendarDays, Brain,
-  ScanSearch, ClipboardList, BookOpen, Users, Layers,
-  CheckCircle2, ChevronRight, AlertTriangle, FileText,
+  Sparkles,
+  Shield,
+  Lightbulb,
+  Brain,
+  ScanSearch,
+  ClipboardList,
+  BookOpen,
+  Users,
+  Layers,
+  CheckCircle2,
+  ChevronRight,
+  AlertTriangle,
+  FileText,
 } from "lucide-react";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 

@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UsersRound, Brain, Loader2, Info, AlertTriangle } from "lucide-react";
+import { UsersRound, Loader2, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import type { StaffRecordingPracticeResult } from "@/lib/staff-recording-practice/staff-recording-practice-engine";

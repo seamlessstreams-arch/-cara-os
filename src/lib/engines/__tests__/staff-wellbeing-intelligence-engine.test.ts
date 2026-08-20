@@ -7,10 +7,6 @@ import {
   type SupervisionInput,
   type SicknessInput,
   type WellbeingCheckInput,
-  type DebriefInput,
-  type RecognitionInput,
-  type GrievanceInput,
-  type IncidentInvolvementInput,
 } from "../staff-wellbeing-intelligence-engine";
 
 // ── Helpers ────────────────────────────────────────────────────────────────

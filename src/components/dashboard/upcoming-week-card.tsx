@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { CalendarDays, ArrowRight } from "lucide-react";
 import { SOURCE_COLOR, formatTime } from "@/components/calendar/calendar-bits";
-import { CALENDAR_SOURCE_LABELS, type CalendarItem, type CalendarFeed } from "@/lib/calendar/calendar-types";
+import { type CalendarItem, type CalendarFeed } from "@/lib/calendar/calendar-types";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");

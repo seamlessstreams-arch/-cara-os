@@ -15,8 +15,15 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import { cn, formatRelative, londonDayDiff } from "@/lib/utils";
 import {
-  Calendar, Cake, GraduationCap, Users, Clock,
-  Award, FileText, Heart, Loader2, ChevronRight,
+  Calendar,
+  Cake,
+  GraduationCap,
+  Users,
+  Award,
+  FileText,
+  Heart,
+  Loader2,
+  ChevronRight,
   AlertTriangle,
 } from "lucide-react";
 

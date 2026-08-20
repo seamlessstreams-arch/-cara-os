@@ -17,10 +17,6 @@ import {
 
 import type {
   BedroomAuditRecord,
-  AuditType,
-  RoomCondition,
-  PersonalisationLevel,
-  SafetyRating,
 } from "../bedroom-audit-service";
 
 const { computeBedroomAuditMetrics, identifyBedroomAuditAlerts } = _testing;

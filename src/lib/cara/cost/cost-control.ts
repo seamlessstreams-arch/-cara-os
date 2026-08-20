@@ -13,7 +13,7 @@ import type {
   CaraCostEstimate,
   CaraCostUsage,
 } from "../core/types";
-import { DEFAULT_COST_LIMITS, PROVIDER_COST_PER_1K } from "../core/constants";
+import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { CaraCostLimitError } from "../core/errors";
 import { getProvider } from "../providers";
 import { todayStr } from "@/lib/utils";

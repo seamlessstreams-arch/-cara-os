@@ -216,7 +216,7 @@ interface ActiveSessionProps {
   onEnd: (responses: InteractiveSessionResponse[]) => void;
 }
 
-function ActiveSessionView({ session, onEnd }: ActiveSessionProps) {
+function ActiveSessionView({ session: _session, onEnd }: ActiveSessionProps) {
   const [activityIdx, setActivityIdx] = useState(0);
   const [responses, setResponses] = useState<InteractiveSessionResponse[]>([]);
   const [currentResponse, setCurrentResponse] = useState<string | number | null>(null);

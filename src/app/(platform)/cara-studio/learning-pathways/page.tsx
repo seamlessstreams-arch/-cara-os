@@ -14,9 +14,17 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  GraduationCap, Target, CheckCircle2, AlertTriangle,
-  Clock, TrendingUp, Users, Sparkles, AlertCircle,
-  ChevronDown, ChevronRight, BookOpen,
+  GraduationCap,
+  Target,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  Users,
+  Sparkles,
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────────────

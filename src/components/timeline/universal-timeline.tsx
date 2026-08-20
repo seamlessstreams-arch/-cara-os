@@ -13,10 +13,28 @@ import { api } from "@/hooks/use-api";
 import { cn, londonDayDiff } from "@/lib/utils";
 import type { TimelineEvent, TimelineEventType, TimelineRiskLevel, TimelineFilter } from "@/lib/timeline/types";
 import {
-  FileText, AlertTriangle, Shield, Heart, GraduationCap, Pill,
-  Users, ClipboardCheck, Star, MessageSquare, Flame, Eye,
-  UserCheck, BookOpen, Calendar, Search, ChevronDown, Clock,
-  Activity, MapPin, FileWarning, Sparkles, CheckCircle2,
+  FileText,
+  AlertTriangle,
+  Shield,
+  Heart,
+  GraduationCap,
+  Pill,
+  Users,
+  ClipboardCheck,
+  MessageSquare,
+  Flame,
+  Eye,
+  UserCheck,
+  BookOpen,
+  Calendar,
+  Search,
+  ChevronDown,
+  Clock,
+  Activity,
+  MapPin,
+  FileWarning,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 interface TimelineResponse {

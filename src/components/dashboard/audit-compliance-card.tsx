@@ -13,8 +13,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ClipboardCheck, ChevronRight, AlertTriangle, Brain, Loader2,
-  BarChart3, Clock, Shield, FileWarning, Star, CheckCircle2,
+  ClipboardCheck,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  BarChart3,
+  Shield,
+  FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuditQualityIntelligenceResult } from "@/lib/engines/audit-quality-intelligence-engine";

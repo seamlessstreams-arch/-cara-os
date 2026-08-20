@@ -8,7 +8,6 @@
 
 import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -117,11 +116,36 @@ function useUpdatePracticeBankEntry() {
 }
 import { cn, formatDate } from "@/lib/utils";
 import {
-  Shield, Heart, Brain, Zap, Users, Mic, Activity, GraduationCap,
-  Layers, Trophy, TrendingUp, TrendingDown, Minus, AlertTriangle,
-  CheckCircle2, XCircle, MessageSquareQuote, Star,
-  BookOpen, Wrench, Languages, Compass, RefreshCw, Sparkles,
-  ChevronRight, Copy, RotateCcw, Loader2, Cpu, ToggleLeft, ToggleRight,
+  Shield,
+  Heart,
+  Brain,
+  Zap,
+  Users,
+  Mic,
+  Activity,
+  GraduationCap,
+  Layers,
+  Trophy,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  MessageSquareQuote,
+  Star,
+  BookOpen,
+  Wrench,
+  Languages,
+  Compass,
+  RefreshCw,
+  Sparkles,
+  Copy,
+  RotateCcw,
+  Loader2,
+  Cpu,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import type {
   ChildExperienceSnapshot, PatternAlert, Intervention, PracticeBankEntry,

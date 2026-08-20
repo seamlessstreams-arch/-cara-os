@@ -12,7 +12,7 @@ import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Check, X, TrendingUp, Users, FileText, Clock } from "lucide-react";
+import { Sparkles, Check, X, TrendingUp, Users, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn, formatDate } from "@/lib/utils";
 import type { IssueType } from "@/lib/writing-assistant/types";

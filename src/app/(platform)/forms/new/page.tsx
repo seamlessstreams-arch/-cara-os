@@ -81,7 +81,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import { currentUserId } from "@/lib/auth/current-user";
-import { CARE_FORM_TYPE_LABELS, type CareFormType } from "@/lib/constants";
+import { type CareFormType } from "@/lib/constants";
 import type { CareForm, YoungPerson, StaffMember } from "@/types";
 
 // Best-effort map from a registry form to one of the fixed CareForm types. The

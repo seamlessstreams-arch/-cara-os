@@ -22,7 +22,6 @@ import {
   type FormDomain,
   type FormDefinition,
   DOMAIN_CONFIG,
-  CATEGORY_LABELS,
   FORM_REGISTRY,
   getFormCategories,
 } from "@/config/form-registry";

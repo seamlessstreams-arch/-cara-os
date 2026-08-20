@@ -48,7 +48,6 @@ import {
 import type {
   CaraTaskResult,
   CaraTaskRequest,
-  CaraRouteDecision,
 } from "../core/types";
 
 // ══════════════════════════════════════════════════════════════════════════════

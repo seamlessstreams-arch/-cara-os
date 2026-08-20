@@ -33,10 +33,25 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
-  Search, ArrowUpDown, X, Plus, CalendarDays,
-  CheckCircle2, AlertTriangle, Clock, User, Calendar,
-  ChevronDown, ChevronUp, Stethoscope, Heart, Brain,
-  Eye, Shield, MapPin, XCircle, Phone, Loader2,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Stethoscope,
+  Heart,
+  Brain,
+  Eye,
+  Shield,
+  MapPin,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 
 import { api } from "@/hooks/use-api";

@@ -18,7 +18,7 @@ import {
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { LocalityRisk, LocalityRiskCategory, LocalityRiskLevel, LocalityMitigation } from "@/types/extended";
+import type { LocalityRisk, LocalityRiskLevel, LocalityMitigation } from "@/types/extended";
 import { LOCALITY_RISK_CATEGORY_LABEL, LOCALITY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

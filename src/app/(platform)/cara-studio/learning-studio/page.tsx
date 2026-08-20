@@ -13,9 +13,19 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  BookOpen, Sparkles, FileText, HelpCircle, CreditCard,
-  ClipboardCheck, Users, Brain, Eye, Mic, Video, Layout,
-  Lightbulb, Search,
+  BookOpen,
+  Sparkles,
+  FileText,
+  HelpCircle,
+  CreditCard,
+  ClipboardCheck,
+  Users,
+  Brain,
+  Mic,
+  Video,
+  Layout,
+  Lightbulb,
+  Search,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

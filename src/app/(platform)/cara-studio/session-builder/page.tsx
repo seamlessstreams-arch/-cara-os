@@ -13,9 +13,17 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Sparkles, CheckCircle2, Clock, Eye, Target, Users,
-  Heart, Shield, BookOpen, GraduationCap, Palette,
-  MessageCircle, ChevronDown, ChevronRight,
+  Sparkles,
+  Target,
+  Users,
+  Heart,
+  Shield,
+  BookOpen,
+  GraduationCap,
+  Palette,
+  MessageCircle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

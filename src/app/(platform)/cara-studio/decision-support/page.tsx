@@ -13,9 +13,12 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Scale, CheckCircle2, AlertTriangle, HelpCircle,
-  Sparkles, Eye, Target, ThumbsUp, ThumbsDown,
-  Clock, ArrowRight,
+  Scale,
+  CheckCircle2,
+  AlertTriangle,
+  HelpCircle,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

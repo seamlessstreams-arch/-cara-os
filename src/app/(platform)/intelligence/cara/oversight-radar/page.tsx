@@ -39,7 +39,7 @@ function useHomeName(fallback = "This home"): string {
 }
 import React, { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -141,8 +141,12 @@ function useCaraRecommendations(params?: { childId?: string; homeId?: string; st
 }
 
 import {
-  ScanSearch, Loader2, AlertTriangle, CheckCircle2,
-  User, BookOpen, ClipboardList, Lightbulb, Info,
+  ScanSearch,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  BookOpen,
+  ClipboardList,
 } from "lucide-react";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 

@@ -7,14 +7,21 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Moon, Clock, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
-  Eye, ShieldAlert, Pill, ArrowUpDown, Users, Loader2,
+  Moon,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  ShieldAlert,
+  Pill,
+  ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import type { NightCheckStatus, NightLogEntry } from "@/types/extended";
+import type { NightLogEntry } from "@/types/extended";
 
 const NIGHT_LOGS_KEY = "night-logs";
 const NIGHT_LOGS_API = "/api/v1/night-logs";

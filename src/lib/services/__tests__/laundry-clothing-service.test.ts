@@ -17,10 +17,6 @@ import {
 
 import type {
   LaundryClothingRecord,
-  ClothingEventType,
-  ClothingCondition,
-  LaundryStandard,
-  ChoiceLevel,
 } from "../laundry-clothing-service";
 
 const { computeLaundryClothingMetrics, identifyLaundryClothingAlerts } = _testing;

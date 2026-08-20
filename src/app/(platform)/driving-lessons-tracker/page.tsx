@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import type { DrivingRecord, DrivingStage, DrivingFundingSource, DrivingTheoryAttempt, DrivingPracticalAttempt } from "@/types/extended";
+import type { DrivingRecord, DrivingStage, DrivingFundingSource } from "@/types/extended";
 import { DRIVING_STAGE_LABEL, DRIVING_FUNDING_SOURCE_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";

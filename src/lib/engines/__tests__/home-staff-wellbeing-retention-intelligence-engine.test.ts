@@ -11,8 +11,6 @@ import {
   type StaffRetentionRecordInput,
   type WellbeingSupportRecordInput,
   type ExitInterviewRecordInput,
-  type StaffWellbeingRetentionResult,
-  type StaffWellbeingRating,
 } from "../home-staff-wellbeing-retention-intelligence-engine";
 
 // ── Record Helpers ─────────────────────────────────────────────────────────

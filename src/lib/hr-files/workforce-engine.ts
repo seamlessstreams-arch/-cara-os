@@ -22,7 +22,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { Role } from "../permissions/types";
-import { isAtLeast } from "../permissions/role-rules";
 import { rate } from "../metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,35 @@ import { Input } from "@/components/ui/input";
 import { cn, todayStr } from "@/lib/utils";
 import type { FormFieldDefinition, FormFieldType } from "@/types/operations";
 import {
-  Plus, Trash2, GripVertical, ChevronDown, ChevronUp,
-  Settings, Eye, Save, Copy, FileText, Type,
-  AlignLeft, Hash, Calendar, Clock, List,
-  CheckSquare, ToggleLeft, Upload, PenTool,
-  Star, SlidersHorizontal, Users, Heart,
-  Heading, Info, Layers, Repeat,
-  Sparkles, Shield, AlertTriangle,
+  Plus,
+  Trash2,
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+  Settings,
+  Eye,
+  Save,
+  Copy,
+  FileText,
+  Type,
+  AlignLeft,
+  Hash,
+  Calendar,
+  Clock,
+  List,
+  CheckSquare,
+  ToggleLeft,
+  Upload,
+  PenTool,
+  Star,
+  SlidersHorizontal,
+  Users,
+  Heart,
+  Heading,
+  Info,
+  Layers,
+  Repeat,
+  Sparkles,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

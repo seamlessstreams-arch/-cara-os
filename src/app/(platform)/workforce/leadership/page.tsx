@@ -8,9 +8,17 @@ import { cn } from "@/lib/utils";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
-  Telescope, Sparkles, ChevronRight, ArrowUpRight,
-  CheckCircle2, AlertTriangle, Clock, Search,
-  Users, TrendingUp, Target, Award,
+  Telescope,
+  Sparkles,
+  ChevronRight,
+  ArrowUpRight,
+  CheckCircle2,
+  AlertTriangle,
+  Search,
+  Users,
+  TrendingUp,
+  Target,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
@@ -47,7 +55,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { PATHWAY_STAGE_LABELS, PATHWAY_STAGE_ORDER, type PathwayStage } from "@/types/extended";
+import { PATHWAY_STAGE_LABELS, type PathwayStage } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";

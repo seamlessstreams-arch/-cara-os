@@ -8,8 +8,6 @@ import {
   CARA_WRITING_STYLE_PROMPT,
 } from "@/lib/cara/writingStyleRules";
 import type { CaraStudioFramework, CaraStudioTone, CaraStudioArtifactType } from "@/types/cara-studio";
-import type { PracticeIntelligenceFramework } from "@/types/practice-intelligence";
-
 // ── Base system prompt ───────────────────────────────────────────────────────
 
 export const CARA_STUDIO_SYSTEM_PROMPT = `${CARA_PROFESSIONAL_IDENTITY_PROMPT}

@@ -8,7 +8,7 @@ interface CardSkeletonProps {
   className?: string;
 }
 
-export function CardSkeleton({ label, className }: CardSkeletonProps) {
+export function CardSkeleton({ label: _label, className }: CardSkeletonProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="space-y-2">

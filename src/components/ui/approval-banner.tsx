@@ -3,8 +3,11 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import {
-  CheckCircle2, Clock, XCircle, AlertTriangle,
-  User, ArrowRight,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertTriangle,
+  User,
 } from "lucide-react";
 
 type ApprovalStatus = "pending" | "approved" | "rejected" | "changes_requested";

@@ -5,8 +5,7 @@ import { processCareEvent, retryFailedRoutes } from "@/lib/care-events/processor
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
 import { proposeRecordsFromCareEvent } from "@/lib/cara/cara-care-event-bridge";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
-import { generateId, todayStr } from "@/lib/utils";
-import { getUserIdFromRequest, requirePermission, requirePermissionAsync } from "@/lib/auth-guard";
+import { getUserIdFromRequest, requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type {
   SubmitCareEventPayload,

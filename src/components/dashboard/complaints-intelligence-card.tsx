@@ -10,7 +10,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  MessageSquare, Brain, Loader2, AlertTriangle, Clock, CheckCircle2,
+  MessageSquare,
+  Brain,
+  Loader2,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ComplaintsIntelligenceResult } from "@/lib/engines/complaints-intelligence-engine";

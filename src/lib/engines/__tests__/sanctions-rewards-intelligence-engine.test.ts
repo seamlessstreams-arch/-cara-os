@@ -11,7 +11,6 @@ import {
   type SanctionRewardInput,
   type ChildRef,
   type StaffRef,
-  type Direction,
 } from "../sanctions-rewards-intelligence-engine";
 
 // ── Constants ───────────────────────────────────────────────────────────────

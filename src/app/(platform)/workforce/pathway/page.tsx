@@ -19,9 +19,20 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import {
-  ChevronRight, ChevronDown, ChevronUp, Milestone, ArrowRight,
-  CheckCircle2, Clock, User, TrendingUp, Star, Target,
-  ArrowUpDown, Shield, Sparkles, GraduationCap, BarChart3, Users, Search,
+  ChevronDown,
+  ChevronUp,
+  Milestone,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  User,
+  TrendingUp,
+  Star,
+  Target,
+  Sparkles,
+  BarChart3,
+  Users,
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -59,9 +70,10 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
   });
 }
 import {
-  PATHWAY_STAGE_LABELS, PATHWAY_STAGE_ORDER,
-  COMPETENCY_DOMAIN_LABELS, ALL_COMPETENCY_DOMAINS,
-  type PathwayStage, type StaffCompetencyProfile,
+  PATHWAY_STAGE_LABELS,
+  PATHWAY_STAGE_ORDER,
+  type PathwayStage,
+  type StaffCompetencyProfile,
 } from "@/types/extended";
 
 // ── useCompetencyProfiles (inlined from use-workforce) ──────────────────────

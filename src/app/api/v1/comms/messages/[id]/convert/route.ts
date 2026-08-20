@@ -104,7 +104,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         },
         { id: `evt_cap_${msg.id}_${actionType}`, now },
       );
-    } catch (err) {
+    } catch (_err) {
       return NextResponse.json(
         { error: "Could not capture record" },
         { status: 500 },

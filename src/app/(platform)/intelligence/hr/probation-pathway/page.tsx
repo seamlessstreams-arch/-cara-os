@@ -33,7 +33,6 @@ import {
   Sparkles,
   CheckCircle2,
   AlertTriangle,
-  Clock,
   UserCheck,
   Target,
   ClipboardCheck,

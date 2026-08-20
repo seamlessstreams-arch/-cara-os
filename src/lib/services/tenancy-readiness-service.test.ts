@@ -4,8 +4,6 @@ import {
   computeAlerts,
   validateTenancyReadiness,
   SKILL_AREAS,
-  DELIVERY_METHODS,
-  COMPETENCY_LEVELS,
   type TenancyReadinessRow,
 } from "./tenancy-readiness-service";
 

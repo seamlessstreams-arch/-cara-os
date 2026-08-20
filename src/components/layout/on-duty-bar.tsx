@@ -15,8 +15,7 @@ import React from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
-import { Users, Circle } from "lucide-react";
+import { Users } from "lucide-react";
 
 const SHIFT_LABEL: Record<string, string> = {
   day: "Day",

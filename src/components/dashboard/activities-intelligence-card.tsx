@@ -17,8 +17,10 @@ import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Palette, AlertTriangle, CheckCircle2, Trophy,
-  Users, MapPin,
+  Palette,
+  AlertTriangle,
+  CheckCircle2,
+  Trophy,
 } from "lucide-react";
 
 interface ActivitiesData {

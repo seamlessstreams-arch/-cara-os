@@ -24,9 +24,21 @@ import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import type { RiskAssessment, RiskDomain, RiskLevel, RiskTrend, RiskMitigation } from "@/types/extended";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Shield, ArrowUp, ArrowDown, Minus, Loader2, ArrowUpRight,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Shield,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Loader2,
+  ArrowUpRight,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

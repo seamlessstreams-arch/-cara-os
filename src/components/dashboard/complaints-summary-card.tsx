@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { Complaint } from "@/types/extended";
 import { api } from "@/hooks/use-api";
 import {

@@ -13,10 +13,27 @@ import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import {
-  MessageSquare, Plus, CheckCircle2, AlertTriangle, Clock,
-  Calendar, Target, Award, Smile, Meh, Frown, UserCheck,
-  ClipboardList, Filter, X, Loader2, Sparkles, Brain, ChevronDown, ChevronUp,
-  Search, BarChart3, Heart, ArrowUpDown,
+  MessageSquare,
+  Plus,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  Target,
+  Award,
+  Smile,
+  Meh,
+  Frown,
+  UserCheck,
+  ClipboardList,
+  X,
+  Loader2,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Heart,
+  ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";

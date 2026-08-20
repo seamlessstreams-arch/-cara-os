@@ -77,7 +77,7 @@ export interface RelationalSafetyMapData {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function daysBetween(dateStr: string, now: Date): number {
+function daysBetween(dateStr: string, _now: Date): number {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 9999;
   const days = -londonDayDiff(d);

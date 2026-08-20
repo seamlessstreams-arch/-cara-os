@@ -3,7 +3,6 @@ import {
   computeHomeDeprivationOfLiberty,
   type DeprivationOfLibertyInput,
   type DeprivationOfLibertyRecordInput,
-  type DeprivationOfLibertyResult,
 } from "../home-deprivation-of-liberty-intelligence-engine";
 
 // ── Helpers ────────────────────────────────────────────────────────────────

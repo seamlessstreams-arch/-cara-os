@@ -12,7 +12,6 @@ import { describe, it, expect } from "vitest";
 import {
   generateManagementOversight,
   type ManagementOversightInput,
-  type ManagementOversightOutput,
 } from "../management-oversight";
 
 // ── Test fixtures ──────────────────────────────────────────────────────────

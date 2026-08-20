@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { todayStr, daysFromNow } from "@/lib/utils";
+import { todayStr } from "@/lib/utils";
 import type { StaffMember, YoungPerson, Incident, DailyLogEntry, Task } from "@/types";
 
 export interface StaffHandoverContext {

@@ -17,7 +17,7 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
-import type { FoodBudgetWeekRecord, FoodBudgetSpendItem, FoodBudgetTreatItem } from "@/types/extended";
+import type { FoodBudgetWeekRecord } from "@/types/extended";
 import {
   Select,
   SelectContent,

@@ -14,11 +14,9 @@ import { classifyRisk } from "../risk-classifier";
 import { reviewSafety } from "../safety-governor";
 import {
   getModelProfile,
-  getModelProfileForAgent,
   getModelProfileIdForAgent,
   getModelProfileIdForTask,
   applyRiskOverride,
-  MODEL_PROFILES,
 } from "../model-registry";
 import { estimateCost, recordCost } from "../cost-tracker";
 import { formatResponse, formatBlockedResponse } from "../response-formatter";
@@ -28,7 +26,6 @@ import type {
   EvidenceItem,
   RouteDecision,
   SafetyReview,
-  RiskLevel,
 } from "../types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

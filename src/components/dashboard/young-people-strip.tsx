@@ -38,8 +38,14 @@ function useYoungPeople(status = "current") {
 }
 import { cn, formatRelative } from "@/lib/utils";
 import {
-  Heart, AlertTriangle, Pill, BookOpen, Shield,
-  MapPin, Loader2, ChevronRight, Clock, User,
+  Heart,
+  Pill,
+  BookOpen,
+  Shield,
+  MapPin,
+  Loader2,
+  ChevronRight,
+  User,
 } from "lucide-react";
 
 // ── Risk flag colours ───────────────────────────────────────────────────────

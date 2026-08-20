@@ -11,8 +11,18 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
-  Microscope, Sparkles, CheckCircle2, Star, Clock, Plus,
-  ThumbsUp, AlertTriangle, ChevronRight, Search, Users, Eye, ArrowUpDown,
+  Microscope,
+  Sparkles,
+  CheckCircle2,
+  Star,
+  Clock,
+  Plus,
+  ThumbsUp,
+  AlertTriangle,
+  ChevronRight,
+  Search,
+  Eye,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

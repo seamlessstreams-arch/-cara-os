@@ -6,8 +6,15 @@ import { cn } from "@/lib/utils";
 import { useMounted } from "@/hooks/use-mounted";
 import { getStore } from "@/lib/db/store";
 import {
-  X, FileText, AlertTriangle, Moon, ArrowRightLeft, Pill, Timer,
-  Play, Square, Clock,
+  X,
+  FileText,
+  AlertTriangle,
+  Moon,
+  ArrowRightLeft,
+  Pill,
+  Timer,
+  Square,
+  Clock,
 } from "lucide-react";
 
 interface ShiftModeProps { onExit: () => void }

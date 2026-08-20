@@ -24,8 +24,6 @@ import type {
   LeisurePolicy,
   StaffLeisureTraining,
   ActivityType,
-  ParticipationLevel,
-  Rating,
 } from "../recreational-leisure-access-engine";
 
 // ── Test Fixtures ────────────────────────────────────────────────────────

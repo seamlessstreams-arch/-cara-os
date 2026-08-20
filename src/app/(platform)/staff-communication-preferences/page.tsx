@@ -18,7 +18,7 @@ import {
 import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
-import type { StaffCommunicationPreferenceRecord, StaffCommsContactMethod, StaffCommsFeedbackStyle } from "@/types/extended";
+import type { StaffCommunicationPreferenceRecord, StaffCommsContactMethod } from "@/types/extended";
 import {
   STAFF_COMMS_CONTACT_METHOD_LABEL,
   STAFF_COMMS_FEEDBACK_STYLE_LABEL,

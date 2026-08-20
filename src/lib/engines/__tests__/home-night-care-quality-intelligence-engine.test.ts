@@ -7,10 +7,6 @@ import {
   type NightStaffHandoverInput,
   type SleepAssessmentInput,
   type NightAnxietySupportInput,
-  type NightCareQualityResult,
-  type NightCareRating,
-  type NightCareInsight,
-  type NightCareRecommendation,
 } from "../home-night-care-quality-intelligence-engine";
 
 /* ── Helpers ────────────────────────────────────────────────────────────────── */

@@ -14,10 +14,6 @@ import {
   type RiskAssessmentInput,
   type ChildInput,
   type MitigationInput,
-  type RiskLevel,
-  type RiskTrend,
-  type RiskStatus,
-  type MitigationEffectiveness,
 } from "../risk-assessment-intelligence-engine";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

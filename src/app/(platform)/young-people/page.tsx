@@ -7,11 +7,29 @@ import { Badge } from "@/components/ui/badge";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  AlertTriangle, User, Shield, Calendar, GraduationCap,
-  ChevronRight, ChevronDown, Clock, ClipboardList, Search, Heart,
-  Pill, MapPin, Flame, BookOpen, UserX, Users,
-  Target, TrendingUp, TrendingDown, Minus, ExternalLink,
-  FileText, ShieldAlert,
+  AlertTriangle,
+  User,
+  Shield,
+  Calendar,
+  GraduationCap,
+  ChevronRight,
+  ChevronDown,
+  Clock,
+  ClipboardList,
+  Search,
+  Heart,
+  Pill,
+  MapPin,
+  Flame,
+  BookOpen,
+  UserX,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ExternalLink,
+  FileText,
+  ShieldAlert,
 } from "lucide-react";
 import type { YoungPerson, StaffMember } from "@/types";
 

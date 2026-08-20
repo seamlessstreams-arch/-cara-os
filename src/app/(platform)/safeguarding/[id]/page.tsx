@@ -36,7 +36,7 @@ import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
-import type { DocumentIntelRisk, UploadedDocument } from "@/types/documents";
+import type { UploadedDocument } from "@/types/documents";
 import type { TrainingNeed } from "@/types/extended";
 
 type SingleResponse<T> = { data: T };

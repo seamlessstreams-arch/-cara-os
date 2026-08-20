@@ -10,17 +10,11 @@ import { todayStr } from "@/lib/utils";
 import {
   ASSESSMENT_AREAS,
   PERFORMANCE_RATINGS,
-  IMPROVEMENT_STATUSES,
-  MEASUREMENT_PERIODS,
   _testing,
 } from "../environmental-impact-assessment-service";
 
 import type {
   EnvironmentalImpactAssessmentRow,
-  AssessmentArea,
-  PerformanceRating,
-  ImprovementStatus,
-  MeasurementPeriod,
 } from "../environmental-impact-assessment-service";
 
 const {

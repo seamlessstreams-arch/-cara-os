@@ -13,9 +13,6 @@ import {
 } from "../duty-of-candour-service";
 import type {
   CandourRecord,
-  CandourTrigger,
-  CandourStatus,
-  InvestigationOutcome,
 } from "../duty-of-candour-service";
 
 const { computeCandourMetrics, identifyCandourAlerts } = _testing;

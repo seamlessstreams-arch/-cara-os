@@ -17,10 +17,6 @@ import {
 
 import type {
   YoungPersonEmploymentSupportRow,
-  SupportType,
-  EmploymentStatus,
-  ReadinessLevel,
-  ProgressStatus,
 } from "../young-person-employment-support-service";
 
 const {

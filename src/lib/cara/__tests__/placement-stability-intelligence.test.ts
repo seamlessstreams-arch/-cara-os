@@ -7,7 +7,6 @@ import {
   analysePlacementStability,
   PlacementStabilityInput,
   PlacementHistory,
-  DisruptionIndicator,
 } from "../placement-stability-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

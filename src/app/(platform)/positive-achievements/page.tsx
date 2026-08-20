@@ -28,7 +28,6 @@ function usePositiveAchievements(childId?: string) {
     },
   });
 }
-import { POSITIVE_ACHIEVEMENT_CATEGORY_LABEL } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Star, Trophy, Sparkles,
   ChevronDown, ChevronUp, User, Calendar, Heart,

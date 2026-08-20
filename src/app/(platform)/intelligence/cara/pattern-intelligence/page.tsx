@@ -15,7 +15,6 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,20 +29,16 @@ import {
   Sparkles,
   AlertTriangle,
   AlertOctagon,
-  TrendingUp,
   Users,
   Clock,
   Eye,
   Shield,
   MessageSquare,
-  Activity,
   Radar,
   ChevronRight,
   Brain,
-  UserCheck,
   FileSearch,
   Zap,
-  BarChart3,
   Quote,
   Calendar,
   CheckCircle2,

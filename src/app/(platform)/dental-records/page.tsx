@@ -26,8 +26,8 @@ import {
   CalendarDays, Sparkles, FileText, User, Heart, ClipboardList,
 } from "lucide-react";
 import type {
-  DentalRecord, DentalRegistrationStatus, DentalRecallInterval,
-  DentalOralHygienePractice, DentalCheckUpEntry,
+  DentalRecord,
+  DentalRegistrationStatus,
 } from "@/types/extended";
 import {
   DENTAL_REGISTRATION_STATUS_LABEL,

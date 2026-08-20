@@ -16,12 +16,18 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  RefreshCw, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Heart, Shield, Users, MessageSquare
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Heart,
+  Shield,
 } from "lucide-react";
-import type { DebriefRecord, ReflectiveDebriefType, DebriefFollowUpAction } from "@/types/extended";
-import { REFLECTIVE_DEBRIEF_TYPE_LABEL } from "@/types/extended";
+import type { DebriefRecord, ReflectiveDebriefType } from "@/types/extended";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

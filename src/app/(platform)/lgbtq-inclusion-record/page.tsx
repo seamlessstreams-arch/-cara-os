@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, londonDayDiff } from "@/lib/utils";
+import { londonDayDiff } from "@/lib/utils";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useQuery } from "@tanstack/react-query";
 import type { LgbtqInclusionRecord, OutStatus } from "@/types/extended";

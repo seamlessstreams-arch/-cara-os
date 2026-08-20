@@ -17,13 +17,6 @@ import {
   type VehicleInput,
   type VehicleCheckInput,
   type PremisesSafetyIntelligenceInput,
-  type CheckStatus,
-  type CheckResult,
-  type RiskLevel,
-  type MaintenancePriority,
-  type MaintenanceStatus,
-  type VehicleStatus,
-  type VehicleCheckResult,
 } from "../premises-safety-intelligence-engine";
 
 const TODAY = "2026-05-25";

@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { StaffRecognitionRecord, StaffRecognitionType, StaffRecognitionRecognisedBy } from "@/types/extended";
+import type { StaffRecognitionRecord, StaffRecognitionType } from "@/types/extended";
 import {
   STAFF_RECOGNITION_TYPE_LABEL,
   STAFF_RECOGNITION_RECOGNISED_BY_LABEL,

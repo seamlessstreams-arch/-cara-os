@@ -30,7 +30,7 @@ import {
   recordOutcome,
   updateIntegration,
 } from "../capture-service";
-import type { EthicalIntelligenceEvent, EthicalSourceRef } from "../types";
+import type { EthicalSourceRef } from "../types";
 
 const SRC: EthicalSourceRef[] = [{ recordType: "incidents", recordId: "inc_test_1" }];
 

@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const suggestions = await getSuggestions(filters);
     return NextResponse.json({ data: suggestions });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to fetch suggestions" },
       { status: 500 },
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ data: persisted }, { status: 201 });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to generate suggestions" },
       { status: 500 },

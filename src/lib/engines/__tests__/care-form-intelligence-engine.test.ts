@@ -10,8 +10,6 @@ import {
   computeCareFormIntelligence,
   daysBetween,
   type CareFormInput,
-  type CareFormStatus,
-  type CareFormPriority,
   type StaffRef,
 } from "../care-form-intelligence-engine";
 

@@ -9,8 +9,6 @@ import {
   type AppraisalInput,
   type SupervisionInput,
   type TrainingInput,
-  type StaffPerformanceCompositeResult,
-  type StaffPerformanceRating,
 } from "../home-staff-performance-composite-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -41,7 +41,6 @@ import {
   Pencil,
   BookOpen,
   LayoutList,
-  Download,
   Info,
   TrendingUp,
   AlertTriangle,

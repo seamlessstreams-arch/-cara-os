@@ -9,7 +9,6 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -39,7 +38,6 @@ import type {
   MedErrorSeverity,
   MedErrorStatus,
   MedRemedialStatus,
-  MedRemedialAction,
   MedicationError,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

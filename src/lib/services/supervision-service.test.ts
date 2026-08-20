@@ -4,9 +4,6 @@ import {
   computeSupervisionQuality,
   isSupervisionOverdue,
   computeNextDueDate,
-  SUPERVISION_FREQUENCIES,
-  type SupervisionComplianceResult,
-  type SupervisionQualityResult,
 } from "./supervision-service";
 
 // ── Factories ───────────────────────────────────────────────────────────

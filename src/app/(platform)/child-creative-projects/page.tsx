@@ -31,8 +31,6 @@ import {
 import type {
   CreativeProjectRecord,
   CreativeProjectMedium,
-  CreativeProjectStatus,
-  CreativeProjectFunding,
 } from "@/types/extended";
 import {
   CREATIVE_PROJECT_MEDIUM_LABEL,

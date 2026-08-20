@@ -10,7 +10,7 @@
 // "Children are prepared for their next placement or independence."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,

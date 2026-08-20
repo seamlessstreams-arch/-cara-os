@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate, daysFromNow } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -29,7 +29,6 @@ import {
 import type {
   GenogramEntry,
   FamilyContactStatus,
-  FamilyMemberStatus,
 } from "@/types/extended";
 import {
   FAMILY_CONTACT_STATUS_LABEL,

@@ -3,8 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type {
   StaffAppraisalProfile,
-  AppraisalAlert,
-  CaraAppraisalInsight,
   CompetencyAnalysis,
   RatingBreakdown,
   AppraisalIntelligenceResult,

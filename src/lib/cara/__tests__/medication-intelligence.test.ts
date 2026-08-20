@@ -3,7 +3,6 @@ import { todayStr, daysFromNow} from "@/lib/utils";
 import {
   analyseMedications,
   type MedicationRecord,
-  type MedicationProfile,
 } from "../medication-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -21,7 +21,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { CaseFileAudit } from "@/types/extended";
 import {
   CASE_FILE_AUDIT_TYPE_LABEL,
-  CASE_FILE_ACTION_STATUS_LABEL,
   RAG_RATING_LABEL,
 } from "@/types/extended";
 import type { RagRating, CaseFileActionStatus } from "@/types/extended";

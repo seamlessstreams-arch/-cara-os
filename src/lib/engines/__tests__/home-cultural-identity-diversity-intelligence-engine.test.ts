@@ -7,7 +7,6 @@ import {
   type CulturalVisitInput,
   type DiversityCalendarEventInput,
   type PersonalPassportInput,
-  type CulturalIdentityDiversityResult,
 } from "../home-cultural-identity-diversity-intelligence-engine";
 
 /* ── Helpers ────────────────────────────────────────────────────────────────── */

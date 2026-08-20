@@ -9,12 +9,10 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -25,7 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName } from "@/lib/seed-data";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type {
   OutcomeTarget, OutcomeReview, OutcomeDomain, OutcomeRating,
   OutcomeDirection,
@@ -33,10 +31,29 @@ import type {
 import { OUTCOME_DOMAIN_LABELS, OUTCOME_RATING_LABELS } from "@/types/extended";
 import { toast } from "sonner";
 import {
-  Target, TrendingUp, TrendingDown, Minus, Star, ChevronDown, ChevronUp,
-  MessageSquare, Plus, BarChart3, User, Activity, Brain, Heart, BookOpen,
-  Shield, Lightbulb, Sparkles, CheckCircle2, Clock, AlertTriangle,
-  ChevronRight, Loader2, Eye, Search, ArrowUpDown,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  Plus,
+  BarChart3,
+  User,
+  Activity,
+  Brain,
+  Heart,
+  BookOpen,
+  Shield,
+  Lightbulb,
+  Sparkles,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Loader2,
+  Search,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

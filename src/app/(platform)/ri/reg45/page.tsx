@@ -49,9 +49,20 @@ import { Textarea } from "@/components/ui/textarea";
 import type { RiReg45Evidence, TrainingNeed, RiAlert, RiChallengeLog } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
-  FileText, Sparkles, CheckCircle2, Clock, AlertTriangle,
-  ChevronDown, ChevronUp, Send, BookOpen, ShieldCheck, ClipboardCheck,
-  Users, Zap, Copy, ChevronRight,
+  FileText,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Send,
+  BookOpen,
+  ShieldCheck,
+  ClipboardCheck,
+  Users,
+  Zap,
+  Copy,
+  ChevronRight,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
 import { currentUserId } from "@/lib/auth/current-user";

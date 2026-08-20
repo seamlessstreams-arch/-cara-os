@@ -2,8 +2,6 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import type { AppraisalRecord, AppraisalRating, CompetencyDomain, ALL_COMPETENCY_DOMAINS } from "@/types/extended";
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const staffId = searchParams.get("staff_id");

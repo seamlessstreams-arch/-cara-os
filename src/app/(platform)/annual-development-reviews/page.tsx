@@ -29,7 +29,6 @@ import type {
   AnnualDevelopmentReview,
   ADRReviewStatus,
   ADRPerformanceRating,
-  ADRObjective,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

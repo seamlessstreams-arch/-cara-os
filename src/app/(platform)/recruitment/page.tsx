@@ -4,20 +4,33 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
-  UserPlus, Search, Plus, Filter, AlertTriangle, AlertCircle,
-  Users, Clock, Zap, TrendingUp, Briefcase, Shield, FileCheck,
-  User, Globe, GraduationCap, Heart, ChevronRight, Eye,
-  BarChart3, Download, CheckCircle2, XCircle, ArrowUpDown,
+  UserPlus,
+  Search,
+  Plus,
+  Filter,
+  AlertTriangle,
+  AlertCircle,
+  Users,
+  Clock,
+  Zap,
+  TrendingUp,
+  Briefcase,
+  Shield,
+  FileCheck,
+  User,
+  Eye,
+  BarChart3,
+  Download,
+  XCircle,
+  ArrowUpDown,
 } from "lucide-react";
-import { cn, formatDate, daysFromNow } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

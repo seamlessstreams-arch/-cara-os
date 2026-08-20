@@ -18,9 +18,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  CheckCircle2, XCircle, AlertTriangle, Clock, Zap, Database,
-  FileText, Shield, RefreshCw, ChevronDown, ChevronUp, Sparkles,
-  Info, Activity, BookOpen, Users,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  Zap,
+  Database,
+  Shield,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Info,
+  Activity,
+  BookOpen,
 } from "lucide-react";
 
 // ─── Inlined from the former use-cara-health hook ────────────────────────────

@@ -3,16 +3,21 @@
 import { useState, useMemo } from "react";
 import { PacePanel } from "@/components/pace/pace-panel";
 import {
-  HandMetal, Plus, Search, ArrowUpDown,
-  AlertTriangle, CheckCircle2, Clock,
-  ChevronDown, ChevronUp, Shield, Heart,
-  RefreshCw, Loader2,
+  HandMetal,
+  Plus,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Heart,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,

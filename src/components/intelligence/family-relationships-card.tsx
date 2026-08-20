@@ -10,9 +10,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, CheckCircle2, ChevronRight, Heart,
-  Loader2, Shield, Users, AlertCircle, Sparkles, HeartHandshake,
-  MapPin, Phone,
+  AlertTriangle,
+  Brain,
+  Heart,
+  Loader2,
+  Shield,
+  Users,
+  AlertCircle,
+  Sparkles,
+  HeartHandshake,
+  MapPin,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FamilyRelationshipsResult, RelationshipHealth } from "@/lib/engines/family-relationships-intelligence-engine";

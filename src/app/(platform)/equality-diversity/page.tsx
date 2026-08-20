@@ -31,7 +31,6 @@ import type {
   EqualityTrainingRecord,
   EqualityMonitoringData,
   EqualityInitiativeStatus,
-  ProtectedCharacteristic,
 } from "@/types/extended";
 import {
   EQUALITY_INITIATIVE_STATUS_LABEL,

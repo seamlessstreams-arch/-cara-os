@@ -2,7 +2,7 @@
 import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -10,14 +10,26 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Award, Calendar, CheckCircle2, AlertTriangle, FileText,
-  Star, Clock, Download, TrendingUp, Shield,
-  Brain, Copy, Loader2, Sparkles, AlertCircle, Zap, ClipboardList,
+  Award,
+  Calendar,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+  Clock,
+  Download,
+  TrendingUp,
+  Brain,
+  Copy,
+  Loader2,
+  Sparkles,
+  AlertCircle,
+  Zap,
+  ClipboardList,
 } from "lucide-react";
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision, CareEvent } from "@/types/care-events";
+import type { AnnexAEvidenceItem, Reg45EvidenceItem, CareEvent } from "@/types/care-events";
 import type { Task } from "@/types/index";
 import type { ActionOutcome, HealthCheckScore, InspectionRecord, PatternAlert, HomeClimateSnapshot } from "@/types/extended";
 import { cn, formatDate, daysFromNow, todayStr, londonDayDiff } from "@/lib/utils";

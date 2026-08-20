@@ -26,7 +26,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import type { OccupationalTherapyRecord, OtSessionType, OtRecommendation } from "@/types/extended";
+import type { OccupationalTherapyRecord, OtSessionType } from "@/types/extended";
 import { OT_SESSION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

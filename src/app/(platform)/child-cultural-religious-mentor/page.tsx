@@ -9,7 +9,6 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
   Star,
-  Heart,
   Users,
   ChevronUp,
   ChevronDown,
@@ -30,7 +29,6 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   CulturalReligiousMentor,
   CulturalMentorRole,
-  MentorContactFrequency,
   MentorRelationshipQuality,
 } from "@/types/extended";
 import {

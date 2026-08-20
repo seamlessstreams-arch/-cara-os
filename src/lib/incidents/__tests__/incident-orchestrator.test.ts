@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createIncident, getAuditLog, type CreateIncidentInput } from "../incident-orchestrator";
 import { getStore } from "@/lib/db/store";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";

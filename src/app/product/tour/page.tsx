@@ -8,11 +8,32 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  LayoutDashboard, Radar, CalendarCheck2, ShieldCheck, LineChart, Siren,
-  ArrowRight, ArrowUpRight, CheckCircle2, PenLine, ClipboardCheck,
-  Users, Clock, AlertTriangle, Sparkles, Brain, CheckCircle,
-  Zap, Shield, Target, TrendingUp, TrendingDown, Minus,
-  Bell, FileText, Eye, ChevronRight,
+  LayoutDashboard,
+  Radar,
+  CalendarCheck2,
+  ShieldCheck,
+  LineChart,
+  Siren,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  PenLine,
+  ClipboardCheck,
+  Users,
+  Clock,
+  AlertTriangle,
+  Sparkles,
+  Brain,
+  CheckCircle,
+  Zap,
+  Shield,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Bell,
+  Eye,
+  ChevronRight,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";

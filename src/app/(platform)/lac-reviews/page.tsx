@@ -20,9 +20,18 @@ import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import type { LACReview, LACReviewType, LACReviewOutcome, LACChildParticipation, LACPlacementStability } from "@/types/extended";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  Gavel, Calendar, Clock, Users, CheckCircle2,
-  AlertTriangle, FileText, Target, Star, Loader2
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  Gavel,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Star,
+  Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

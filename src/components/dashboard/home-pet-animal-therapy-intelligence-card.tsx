@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PawPrint } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { PetAnimalTherapyRating } from "@/lib/engines/home-pet-animal-therapy-intelligence-engine";
 

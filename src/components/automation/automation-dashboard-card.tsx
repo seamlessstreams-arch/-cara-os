@@ -13,11 +13,8 @@ import {
   Zap, Loader2, CheckCircle2, AlertTriangle, XCircle,
   ChevronRight, ToggleLeft, ToggleRight, Activity,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type {
   AutomationRule,
-  AutomationTrigger,
-  AutomationRun,
 } from "@/lib/automation/types";
 
 // ── Types ───────────────────────────────────────────────────────────────────

@@ -25,7 +25,6 @@ import type {
   ChildReportSection,
   ChildReportEvidence,
   ChildReportAction,
-  NormalisedEvidence,
 } from "@/types/cara-reports";
 import { getSectionsForReportType } from "@/lib/cara/reports/report-templates";
 import type { SectionTemplate } from "@/lib/cara/reports/report-templates";

@@ -17,8 +17,6 @@ import {
 import {
   generateWhistleblowingConcernsIntelligence,
   getDemoWhistleblowingConcernsData,
-  getConcernCategoryLabel,
-  getConcernSeverityLabel,
 } from "@/lib/whistleblowing-concerns";
 import type {
   Rating,

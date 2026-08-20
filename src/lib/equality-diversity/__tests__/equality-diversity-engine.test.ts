@@ -26,13 +26,6 @@ import type {
   EDITrainingRecord,
   EDIIncident,
   AccessibilityAudit,
-  ProtectedCharacteristic,
-  SupportStatus,
-  TrainingStatus,
-  IncidentCategory,
-  IncidentSeverity,
-  IncidentOutcome,
-  CulturalPlanStatus,
 } from "../equality-diversity-engine";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────

@@ -7,7 +7,6 @@ import {
   Clock,
   AlertTriangle,
   XCircle,
-  ChevronRight,
   Upload,
   User,
   FileText,

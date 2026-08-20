@@ -3,13 +3,21 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ClipboardCheck, AlertTriangle, CheckCircle2, Clock, Mail, Phone,
-  Loader2, AlertCircle, Search, Building2, User, Flag, ExternalLink,
+  ClipboardCheck,
+  CheckCircle2,
+  Clock,
+  Mail,
+  Loader2,
+  AlertCircle,
+  Search,
+  Building2,
+  User,
+  Flag,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

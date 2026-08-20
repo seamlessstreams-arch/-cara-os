@@ -10,8 +10,14 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Award, ChevronRight, Brain, Loader2,
-  BookOpen, Users, Shield, CheckCircle2, AlertTriangle,
+  Award,
+  ChevronRight,
+  Brain,
+  Loader2,
+  BookOpen,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";

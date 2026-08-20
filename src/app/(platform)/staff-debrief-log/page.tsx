@@ -6,7 +6,6 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import { Badge } from "@/components/ui/badge";
 import {
   Heart, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock,
   Users, ArrowUpDown, Brain, Loader2,

@@ -16,7 +16,7 @@ export interface CornerstoneNotification {
 
 const notificationState: Map<string, { read: boolean; dismissed: boolean }> = new Map();
 
-export function generateNotifications(staffId: string): CornerstoneNotification[] {
+export function generateNotifications(_staffId: string): CornerstoneNotification[] {
   const store = getStore();
   const now = new Date();
   const today = now.toISOString().slice(0, 10);

@@ -9,9 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Users, Search, Phone, Mail, Building2, Shield,
-  GraduationCap, Briefcase, UserCheck, Plus,
-  ChevronRight,
+  Users,
+  Search,
+  Phone,
+  Mail,
+  Building2,
+  Shield,
+  GraduationCap,
+  Briefcase,
+  UserCheck,
+  Plus,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

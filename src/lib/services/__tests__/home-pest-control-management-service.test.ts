@@ -20,10 +20,6 @@ import {
 
 import type {
   HomePestControlManagementRow,
-  PestType,
-  SeverityLevel,
-  TreatmentMethod,
-  ComplianceStatus,
 } from "../home-pest-control-management-service";
 
 const {

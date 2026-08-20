@@ -10,7 +10,6 @@ import {
   ArrowUpDown,
   Search,
   AlertTriangle,
-  Star,
   ThumbsUp,
   Heart,
 } from "lucide-react";
@@ -26,7 +25,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/hooks/use-api";
-import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { YPFeedbackEntry, YPFeedbackCategory, YPFeedbackMethod, YPFeedbackSentiment } from "@/types/extended";

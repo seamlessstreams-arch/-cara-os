@@ -63,7 +63,7 @@ export interface TriggerEmergencyResult {
   broadcast_message_id: string | null;
 }
 
-export function triggerEmergency(input: TriggerEmergencyInput, nowIso: string): TriggerEmergencyResult {
+export function triggerEmergency(input: TriggerEmergencyInput, _nowIso: string): TriggerEmergencyResult {
   const broadcastId = broadcast(input);
   const alert = db.emergencyAlerts.create({
     home_id: input.homeId,

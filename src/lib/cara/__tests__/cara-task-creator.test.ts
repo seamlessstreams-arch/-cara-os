@@ -4,8 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import { parseTasksFromText } from "@/components/cara/cara-task-creator";
-import type { ParsedTask } from "@/components/cara/cara-task-creator";
-
 // ─── Task parser ─────────────────────────────────────────────────────────────
 
 describe("parseTasksFromText", () => {

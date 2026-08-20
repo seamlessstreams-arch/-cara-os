@@ -14,7 +14,7 @@ import {
   type WheelchairAccessRecordInput,
   type ModificationRecordInput,
 } from "../home-bathroom-accessibility-adaptations-intelligence-engine";
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

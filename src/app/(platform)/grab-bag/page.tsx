@@ -21,14 +21,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
 import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";

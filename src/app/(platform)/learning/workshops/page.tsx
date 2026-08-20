@@ -23,7 +23,12 @@ import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import {
-  Sparkles, Presentation, Clock, ChevronDown, ChevronUp, Save, FileText,
+  Sparkles,
+  Presentation,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Save,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 

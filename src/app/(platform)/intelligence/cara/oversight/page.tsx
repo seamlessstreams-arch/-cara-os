@@ -38,9 +38,17 @@ function useYoungPeople(status = "current") {
 import { cn } from "@/lib/utils";
 import type { CaraOversightStyle, CaraOversight } from "@/types/extended";
 import {
-  Sparkles, Loader2, AlertTriangle, CheckCircle2,
-  ClipboardList, Edit3, Brain, Shield, Eye, FileText,
-  TrendingUp, Target, BookOpen, Scale, ScanSearch,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  Edit3,
+  Brain,
+  Shield,
+  Target,
+  Scale,
+  ScanSearch,
 } from "lucide-react";
 
 type SingleResponse<T> = { data: T };

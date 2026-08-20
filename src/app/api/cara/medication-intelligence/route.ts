@@ -10,7 +10,7 @@ import { analyseMedications, type MedicationRecord, type MedicationProfile } fro
 
 // ── Demo data ───────────────────────────────────────────────────────────────
 
-function getDemoData(homeId: string) {
+function getDemoData(_homeId: string) {
   const d = (daysAgo: number) => new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
 
   const records: MedicationRecord[] = [

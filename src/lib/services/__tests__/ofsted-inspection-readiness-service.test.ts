@@ -17,10 +17,6 @@ import {
 
 import type {
   OfstedInspectionReadinessRow,
-  ReadinessArea,
-  ReadinessRating,
-  EvidenceStatus,
-  InspectionType,
 } from "../ofsted-inspection-readiness-service";
 
 const {

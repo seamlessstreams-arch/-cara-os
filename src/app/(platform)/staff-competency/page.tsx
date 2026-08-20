@@ -24,7 +24,6 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
-import { Badge }        from "@/components/ui/badge";
 import { cn, todayStr }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";

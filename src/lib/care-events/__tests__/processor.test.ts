@@ -4,7 +4,7 @@
 // role permissions, retry behaviour, and filing cabinet auto-filing.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { db, getStore } from "@/lib/db/store";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { classifyCareEvent, buildRoutingSummary } from "../routing-engine";

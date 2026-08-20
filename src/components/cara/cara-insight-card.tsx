@@ -17,12 +17,10 @@ import Link from "next/link";
 import {
   Sparkles,
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   Shield,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Users,
   Activity,
   Brain,

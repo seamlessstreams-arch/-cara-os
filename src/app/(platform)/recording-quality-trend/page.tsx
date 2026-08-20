@@ -7,8 +7,7 @@
 
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LineChart, Brain, Loader2, Info, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { LineChart, Loader2, Info, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";

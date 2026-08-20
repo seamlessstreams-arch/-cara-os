@@ -4,7 +4,7 @@
 // identification, constant validation, and CRUD fallback behaviour.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { _testing } from "../key-documents-service";
 import { todayStr } from "@/lib/utils";
 import {
@@ -15,9 +15,6 @@ import {
 
 import type {
   KeyDocument,
-  DocumentType,
-  DocumentStatus,
-  ReviewFrequency,
 } from "../key-documents-service";
 
 const { computeDocumentMetrics, identifyDocumentAlerts } = _testing;

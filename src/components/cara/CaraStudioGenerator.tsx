@@ -84,7 +84,7 @@ export function CaraStudioGenerator({
         setResult(data.result);
         onGenerated?.(data.result);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Network error — could not reach Cara Studio");
     } finally {
       setIsGenerating(false);

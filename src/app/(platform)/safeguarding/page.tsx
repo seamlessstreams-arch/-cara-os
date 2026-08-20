@@ -2,16 +2,31 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import {
-  AlertTriangle, Shield, Eye, CheckCircle2, Clock, FileText,
-  Plus, Users, MapPin, Calendar, Phone, Bell, TrendingUp,
-  ArrowUpRight, Loader2, X, ChevronRight, UserCheck, Sparkles,
-  Link2, BookOpen, Activity, Brain, Link, Search, ArrowUpDown,
+  AlertTriangle,
+  Shield,
+  Eye,
+  CheckCircle2,
+  Clock,
+  Plus,
+  Users,
+  Bell,
+  TrendingUp,
+  ArrowUpRight,
+  Loader2,
+  X,
+  ChevronRight,
+  UserCheck,
+  Sparkles,
+  Link2,
+  BookOpen,
+  Brain,
+  Link,
+  Search,
+  ArrowUpDown,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -40,7 +55,7 @@ function useYoungPeople(status = "current") {
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { LogConcernDialog } from "@/components/safeguarding/log-concern-dialog";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
-import { todayStr, cn, formatDate, formatRelative } from "@/lib/utils";
+import { todayStr, cn, formatDate } from "@/lib/utils";
 import { careToast } from "@/lib/toast";
 import type { Incident, YoungPerson, StaffMember } from "@/types";
 import type { MissingEpisode, ChronologyEntry, ChronologyCategory, TrainingNeed } from "@/types/extended";

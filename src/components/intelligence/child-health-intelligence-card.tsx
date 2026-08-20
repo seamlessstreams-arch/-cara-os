@@ -11,9 +11,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, Loader2, Heart, Pill, Stethoscope,
-  AlertCircle, Sparkles, TrendingUp, TrendingDown, Minus,
-  Eye, Smile, ShieldCheck, CalendarCheck, Syringe,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Heart,
+  Pill,
+  Stethoscope,
+  AlertCircle,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Eye,
+  Smile,
+  CalendarCheck,
+  Syringe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChildHealthIntelligenceResult, HealthStatus } from "@/lib/engines/child-health-intelligence-engine";

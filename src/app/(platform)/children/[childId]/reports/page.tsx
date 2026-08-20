@@ -13,7 +13,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   REPORT_TYPE_LABELS,
   REPORT_STATUS_LABELS,
@@ -25,7 +24,6 @@ import {
   FileText,
   ArrowLeft,
   Calendar,
-  ShieldCheck,
   Quote,
   AlertTriangle,
 } from "lucide-react";

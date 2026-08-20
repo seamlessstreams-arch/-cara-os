@@ -10,17 +10,11 @@ import { todayStr } from "@/lib/utils";
 import {
   TRANSACTION_TYPES,
   AUDIT_OUTCOMES,
-  RECONCILIATION_STATUSES,
-  SPENDING_CATEGORIES,
   _testing,
 } from "../childrens-pocket-money-audit-service";
 
 import type {
   ChildrensPocketMoneyAuditRow,
-  TransactionType,
-  AuditOutcome,
-  ReconciliationStatus,
-  SpendingCategory,
 } from "../childrens-pocket-money-audit-service";
 
 const {

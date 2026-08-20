@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import type { ChildReport, ReportType, ReportStatus } from "@/types/cara-reports";
 import {
   REPORT_TYPES,
@@ -32,7 +31,6 @@ import {
   REPORT_AUDIENCE_LABELS,
 } from "@/types/cara-reports";
 import {
-  Sparkles,
   FileText,
   Plus,
   Search,

@@ -341,7 +341,7 @@ function detectSequentialPatterns(events: TimelineEvent[], childId: string): Det
 
 // ── Escalation Detection ────────────────────────────────────────────────────
 
-function detectEscalation(events: TimelineEvent[], childId: string, windowDays: number): DetectedPattern[] {
+function detectEscalation(events: TimelineEvent[], childId: string, _windowDays: number): DetectedPattern[] {
   const patterns: DetectedPattern[] = [];
   const negativeEvents = events.filter((e) => NEGATIVE_CATEGORIES.includes(e.category));
 
@@ -585,7 +585,7 @@ function detectCyclicalPatterns(events: TimelineEvent[], childId: string): Detec
 
 // ── Improvement Detection ───────────────────────────────────────────────────
 
-function detectImprovements(events: TimelineEvent[], childId: string, windowDays: number): DetectedPattern[] {
+function detectImprovements(events: TimelineEvent[], childId: string, _windowDays: number): DetectedPattern[] {
   const patterns: DetectedPattern[] = [];
 
   // Check for decreasing negative events

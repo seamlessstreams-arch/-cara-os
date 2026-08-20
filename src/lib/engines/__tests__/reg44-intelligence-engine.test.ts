@@ -11,7 +11,6 @@ import {
   average,
   type VisitInput,
   type RecommendationInput,
-  type Reg44IntelligenceInput,
 } from "../reg44-intelligence-engine";
 
 // ── Factories ─────────────────────────────────────────────────────────────────

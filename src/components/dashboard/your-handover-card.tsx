@@ -7,8 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRightLeft, Clock, AlertTriangle, BookOpen,
-  CheckSquare, Loader2, ChevronRight, Sparkles,
+  ArrowRightLeft,
+  Clock,
+  AlertTriangle,
+  BookOpen,
+  Loader2,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";

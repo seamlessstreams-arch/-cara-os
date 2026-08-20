@@ -63,10 +63,25 @@ import Link from "next/link";
 import { useAuthContext } from "@/contexts/auth-context";
 import { NewAppraisalDialog } from "@/components/workforce/new-record-dialogs";
 import {
-  UserCheck, AlertTriangle, CheckCircle2, Clock, Calendar,
-  ChevronRight, ChevronDown, ChevronUp, Plus, Search, User,
-  Star, TrendingUp, BarChart3, Award, FileText, Brain,
-  ArrowUpDown, Users, Target, Eye, Sparkles,
+  UserCheck,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  User,
+  Star,
+  TrendingUp,
+  BarChart3,
+  Award,
+  FileText,
+  ArrowUpDown,
+  Users,
+  Target,
+  Sparkles,
 } from "lucide-react";
 
 // ── useAppraisals (inlined from use-workforce) ───────────────────────────────

@@ -12,7 +12,6 @@ import {
   can,
   checkHrAccess,
   HR_PERMISSIONS,
-  type HrRole,
   type HrAction,
   type HrPermissionContext,
   type HrAccessRequest,
@@ -30,7 +29,6 @@ import {
   ENGINE_VERSION,
   type SuspensionDecisionInput,
   type SuspensionRiskFactor,
-  type SuspensionRiskRating,
 } from "@/lib/hr/suspensionDecision";
 
 import { renderLetterTemplate, type LetterContext } from "@/lib/hr/letterTemplates";

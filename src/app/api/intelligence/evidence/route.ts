@@ -2,7 +2,6 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
-import { scanEvidenceGaps, type EvidenceGapScanInput } from "@/lib/intelligence/evidence-gap-scanner";
 import { evidenceItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
 import { todayStr } from "@/lib/utils";
 

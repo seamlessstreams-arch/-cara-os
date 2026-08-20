@@ -10,9 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  ClipboardCheck, AlertTriangle, CheckCircle2, ChevronLeft,
-  User, Calendar, Brain, Sparkles, ExternalLink, Upload,
-  ShieldAlert, Clock, ArrowRight,
+  ClipboardCheck,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  User,
+  Calendar,
+  Brain,
+  Sparkles,
+  ShieldAlert,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import type { Audit, TrainingNeed } from "@/types/extended";

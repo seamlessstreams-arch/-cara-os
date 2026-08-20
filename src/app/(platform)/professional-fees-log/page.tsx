@@ -30,8 +30,6 @@ import type {
   ProfessionalFeeRecord,
   PractitionerType,
   FeeStatus,
-  FundingSource,
-  FeePaymentMethod,
 } from "@/types/extended";
 import {
   PRACTITIONER_TYPE_LABEL,

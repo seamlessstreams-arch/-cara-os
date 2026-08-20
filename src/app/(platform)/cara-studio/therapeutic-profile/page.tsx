@@ -14,9 +14,19 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Heart, Brain, AlertTriangle, Shield, Users, MessageCircle,
-  CheckCircle2, XCircle, Sparkles, Target, BookOpen,
-  Lightbulb, Music, Activity, Clock, Star,
+  Heart,
+  AlertTriangle,
+  Shield,
+  Users,
+  MessageCircle,
+  CheckCircle2,
+  XCircle,
+  Target,
+  BookOpen,
+  Lightbulb,
+  Music,
+  Activity,
+  Star,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

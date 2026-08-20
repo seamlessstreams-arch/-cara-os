@@ -15,12 +15,11 @@ import {
   Heart,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn, todayStr }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -28,8 +27,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import type { HealthAssessment, HealthAssessmentType, HealthAssessmentStatus, SdqScores, SdqBand, HealthFollowUp, HealthNeed } from "@/types/extended";
-import { HEALTH_ASSESSMENT_TYPE_LABEL, HEALTH_ASSESSMENT_STATUS_LABEL, SDQ_BAND_LABEL, HEALTH_FOLLOW_UP_STATUS_LABEL } from "@/types/extended";
+import type { HealthAssessment, HealthAssessmentType, HealthAssessmentStatus, SdqBand, HealthFollowUp, HealthNeed } from "@/types/extended";
+import { HEALTH_ASSESSMENT_TYPE_LABEL, SDQ_BAND_LABEL, HEALTH_FOLLOW_UP_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";

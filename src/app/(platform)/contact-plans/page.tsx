@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -15,7 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { ContactPlan, ContactPlanArrangement } from "@/types/extended";
 import {
   CONTACT_METHOD_TYPE_LABEL,
-  CONTACT_PLAN_SUPERVISION_LEVEL_LABEL,
   CONTACT_PLAN_STATUS_LABEL,
 } from "@/types/extended";
 import {

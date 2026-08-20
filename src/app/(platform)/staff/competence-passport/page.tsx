@@ -34,7 +34,6 @@ import {
   Calendar,
   Star,
   FileCheck,
-  Heart,
   Award,
   Ban,
   ThumbsUp,

@@ -7,7 +7,6 @@ import {
   analyseKeyworking,
   KeyworkingInput,
   KeyworkSession,
-  SessionTopic,
 } from "../keyworking-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -16,8 +16,14 @@ import { api } from "@/hooks/use-api";
 import { getYPName } from "@/lib/seed-data";
 import { cn, londonDayDiff } from "@/lib/utils";
 import {
-  ClipboardList, Loader2, AlertTriangle, CheckCircle2,
-  ChevronRight, Calendar, Target, Flame, Clock,
+  ClipboardList,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  Calendar,
+  Target,
+  Flame,
+  Clock,
 } from "lucide-react";
 import type { CarePlan } from "@/types/extended";
 

@@ -17,10 +17,6 @@ import {
 
 import type {
   HomeEnergyEfficiencyRow,
-  EnergyArea,
-  EfficiencyRating,
-  ImprovementStatus,
-  AssessmentType,
 } from "../home-energy-efficiency-service";
 
 const {

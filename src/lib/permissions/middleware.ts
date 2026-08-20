@@ -271,7 +271,7 @@ function extractQueryParam(req: NextRequest, key: string): string | undefined {
 
 // ── Convenience: Quick Role Check (for simple routes) ──────────────────────
 
-export function requireRole(minRole: Role) {
+export function requireRole(_minRole: Role) {
   return function <T extends ProtectedHandler>(handler: T): T {
     // This is a decorator-style wrapper for use with withPermission
     return handler;
@@ -280,7 +280,7 @@ export function requireRole(minRole: Role) {
 
 // ── Export helper for extracting user from request ─────────────────────────
 
-export async function getUserContext(req: NextRequest): Promise<UserContext | null> {
+export async function getUserContext(_req: NextRequest): Promise<UserContext | null> {
   const sb = createServerClient();
   if (!sb || !isSupabaseEnabled()) return getDemoContext().user;
 

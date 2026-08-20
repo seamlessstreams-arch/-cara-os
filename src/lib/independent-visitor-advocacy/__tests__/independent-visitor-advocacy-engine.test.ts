@@ -23,8 +23,6 @@ import type {
   AdvocacyReferral,
   AdvocacyPolicy,
   StaffAdvocacyTraining,
-  VisitOutcome,
-  ReferralOutcome,
 } from "../independent-visitor-advocacy-engine";
 
 // -- Factories ----------------------------------------------------------------

@@ -33,13 +33,6 @@ import type {
   MatchingRecord,
   MatchingFactorScore,
   PlacementOutcome,
-  OutcomeAssessment,
-  PlacementStatus,
-  EndingReason,
-  DisruptionFactor,
-  SupportType,
-  OutcomeArea,
-  ProgressRating,
   MatchingFactor,
 } from "../placement-stability-engine";
 

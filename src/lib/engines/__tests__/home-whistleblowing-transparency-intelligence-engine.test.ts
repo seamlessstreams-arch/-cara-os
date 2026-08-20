@@ -10,7 +10,6 @@ import {
   type WhistleblowingRecordInput,
   type TransparencyCultureInput,
   type WhistleblowingInput,
-  type WhistleblowingResult,
 } from "../home-whistleblowing-transparency-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

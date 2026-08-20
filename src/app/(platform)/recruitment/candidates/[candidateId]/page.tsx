@@ -5,17 +5,34 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import {
-  ChevronLeft, AlertTriangle, CheckCircle2, Clock, Shield,
-  FileCheck, User, Users, Globe, GraduationCap, Briefcase, Heart,
-  ChevronRight, Star, Mail, Phone, Calendar, Sparkles, Activity,
-  FileText, Eye, Flag, Fingerprint, Building2, Zap, Copy,
-  ExternalLink, MoreHorizontal, RefreshCw, ClipboardCheck, UserPlus,
+  ChevronLeft,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Shield,
+  FileCheck,
+  User,
+  Users,
+  Globe,
+  GraduationCap,
+  Briefcase,
+  Heart,
+  ChevronRight,
+  Star,
+  Calendar,
+  Sparkles,
+  Activity,
+  FileText,
+  Flag,
+  Fingerprint,
+  Zap,
+  ExternalLink,
+  ClipboardCheck,
+  UserPlus,
 } from "lucide-react";
 import { toastSuccess, toastError, toastInfo } from "@/lib/toast";
 import { Input } from "@/components/ui/input";

@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, daysFromNow } from "@/lib/utils";
+import { daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,

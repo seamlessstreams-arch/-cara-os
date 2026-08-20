@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface CaraProviderStatusProps {
   className?: string;

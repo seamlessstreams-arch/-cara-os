@@ -11,8 +11,6 @@ import {
   type OverseasCheckRecordInput,
   type BarredListRecordInput,
   type ReferenceVerificationRecordInput,
-  type DbsVettingResult,
-  type DbsVettingRating,
 } from "../home-dbs-renewal-staff-vetting-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -27,7 +27,6 @@ import type {
   AccommodationPlan,
   SupportArrangement,
   SkillCategory,
-  SkillLevel,
 } from "../leaving-care-engine";
 
 // ── Test Fixtures ──────────────────────────────────────────────────────────

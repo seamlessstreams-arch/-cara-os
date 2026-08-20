@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import {
-  FileText, Eye, CheckCircle, XCircle, Clock, AlertTriangle,
-  Send, Trash2, Archive, RotateCcw, Lock, ShieldAlert,
+  FileText,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Send,
+  Trash2,
+  Archive,
+  RotateCcw,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import type { CaraArtifact, CaraArtifactStatus, CaraArtifactType } from "@/types/cara-studio";

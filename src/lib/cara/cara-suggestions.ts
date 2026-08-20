@@ -22,7 +22,7 @@ import {
   CARA_WRITING_STYLE_PROMPT,
   applyCaraPostprocessor,
 } from "@/lib/cara/writingStyleRules";
-import { checkCaraAccess, type CaraActor } from "@/lib/cara/cara-permissions";
+import { type CaraActor } from "@/lib/cara/cara-permissions";
 import type {
   CaraSuggestion,
   CaraSuggestionLink,

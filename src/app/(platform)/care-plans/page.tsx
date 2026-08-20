@@ -21,9 +21,26 @@ import type {
   CarePlan, CarePlanGoal, CarePlanGoalStatus, CarePlanDomain,
 } from "@/types/extended";
 import {
-  ClipboardList, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp,
-  Sparkles, User, Calendar, Heart, Target, ArrowRight, BookOpen, BarChart3,
-  Search, ListCollapse, Expand, Trophy, Activity, ArrowUpDown, Plus,
+  ClipboardList,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  User,
+  Calendar,
+  Heart,
+  Target,
+  ArrowRight,
+  BarChart3,
+  Search,
+  ListCollapse,
+  Expand,
+  Trophy,
+  Activity,
+  ArrowUpDown,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";

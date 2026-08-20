@@ -13,12 +13,32 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
-  AlertTriangle, ShieldAlert, Clock, ClipboardCheck,
-  Users, GraduationCap, MessageSquareWarning, Brain,
-  ChevronDown, ChevronUp, Download, FileText, Eye,
-  ClipboardList, Sparkles, CheckCircle2, ArrowUpRight,
-  Filter, Calendar, AlertCircle, UserCheck, Pill,
-  FileSearch, BookOpen, Scale, Activity, Siren,
+  AlertTriangle,
+  ShieldAlert,
+  Clock,
+  ClipboardCheck,
+  Users,
+  GraduationCap,
+  MessageSquareWarning,
+  Brain,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Eye,
+  ClipboardList,
+  Sparkles,
+  CheckCircle2,
+  ArrowUpRight,
+  Filter,
+  Calendar,
+  AlertCircle,
+  UserCheck,
+  Pill,
+  FileSearch,
+  BookOpen,
+  Scale,
+  Activity,
+  Siren,
 } from "lucide-react";
 import { cn, localMonthKey, daysFromNow } from "@/lib/utils";
 import { CaraDailyIntelligence } from "@/components/cara/cara-daily-intelligence";
@@ -29,306 +49,11 @@ import { RiskIntelligenceCard } from "@/components/dashboard/risk-intelligence-c
 import { IncidentAnalyticsCard } from "@/components/dashboard/incident-analytics-card";
 import { RecordingQualityCard } from "@/components/dashboard/recording-quality-card";
 import { RecordingCultureCard } from "@/components/dashboard/recording-culture-card";
-import { RecordingTrendCard } from "@/components/dashboard/recording-trend-card";
 import { SafeguardingIntelligenceCard } from "@/components/dashboard/safeguarding-intelligence-card";
 import { MedicationIntelligenceCard } from "@/components/dashboard/medication-intelligence-card";
 import { ContactEngagementCard } from "@/components/dashboard/contact-engagement-card";
 import { EducationIntelligenceCard } from "@/components/dashboard/education-intelligence-card";
 import { HealthWellbeingCard } from "@/components/dashboard/health-wellbeing-card";
-import { MissingFromCareCard } from "@/components/dashboard/missing-from-care-card";
-import { ComplaintsNotificationsCard } from "@/components/dashboard/complaints-notifications-card";
-import { PlacementIntelligenceCard } from "@/components/dashboard/placement-intelligence-card";
-import { BehaviourIntelligenceCard } from "@/components/dashboard/behaviour-intelligence-card";
-import { RotaIntelligenceCard } from "@/components/dashboard/rota-intelligence-card";
-import { PremisesIntelligenceCard } from "@/components/dashboard/premises-intelligence-card";
-import { TrainingIntelligenceCard } from "@/components/dashboard/training-intelligence-card";
-import { FinanceIntelligenceCard } from "@/components/dashboard/finance-intelligence-card";
-import { LifeSkillsCard } from "@/components/dashboard/life-skills-card";
-import { NotifiableEventsCard } from "@/components/dashboard/notifiable-events-card";
-import { SCCIFEvaluationCard } from "@/components/dashboard/sccif-evaluation-card";
-import { VisitorsCard } from "@/components/dashboard/visitors-card";
-import { OutcomesCard } from "@/components/dashboard/outcomes-card";
-import { HandoverCard } from "@/components/dashboard/handover-card";
-import { AppraisalsCard } from "@/components/dashboard/appraisals-card";
-import { MeetingsCard } from "@/components/dashboard/meetings-card";
-import { RestraintCard } from "@/components/dashboard/restraint-card";
-import { QualityAssuranceCard } from "@/components/dashboard/quality-assurance-card";
-import { PossessionsCard } from "@/components/dashboard/possessions-card";
-import { EmergencyCard } from "@/components/dashboard/emergency-card";
-import { SaferRecruitmentCard } from "@/components/dashboard/safer-recruitment-card";
-import { LeavingCareCard } from "@/components/dashboard/leaving-care-card";
-import { StaffDisciplinaryCard } from "@/components/dashboard/staff-disciplinary-card";
-import { SanctionsRewardsCard } from "@/components/dashboard/sanctions-rewards-card";
-import { ContextualSafeguardingCard } from "@/components/dashboard/contextual-safeguarding-card";
-import { DeprivationOfLibertyCard } from "@/components/dashboard/deprivation-of-liberty-card";
-import { WhistleblowingCard } from "@/components/dashboard/whistleblowing-card";
-import { PoliciesRegisterCard } from "@/components/dashboard/policies-register-card";
-import { AdvocacyCard } from "@/components/dashboard/advocacy-card";
-import { MultiAgencyCard } from "@/components/dashboard/multi-agency-card";
-import { NightMonitoringCard } from "@/components/dashboard/night-monitoring-card";
-import { CulturalIdentityCard } from "@/components/dashboard/cultural-identity-card";
-import { SubstanceMisuseCard } from "@/components/dashboard/substance-misuse-card";
-import { IndependentVisitorsCard } from "@/components/dashboard/independent-visitors-card";
-import { BusinessContinuityCard } from "@/components/dashboard/business-continuity-card";
-import { StatementOfPurposeCard } from "@/components/dashboard/statement-of-purpose-card";
-import { Reg45ReportsCard } from "@/components/dashboard/reg45-reports-card";
-import { ChildrensGuideCard } from "@/components/dashboard/childrens-guide-card";
-import { TransitionPlanningCard } from "@/components/dashboard/transition-planning-card";
-import { ChildrensParticipationCard } from "@/components/dashboard/childrens-participation-card";
-import { FoodNutritionCard } from "@/components/dashboard/food-nutrition-card";
-import { PocketMoneyCard } from "@/components/dashboard/pocket-money-card";
-import { EnvironmentalSafetyCard } from "@/components/dashboard/environmental-safety-card";
-import { RecordsManagementCard } from "@/components/dashboard/records-management-card";
-import { SleepPatternsCard } from "@/components/dashboard/sleep-patterns-card";
-import { StakeholderEngagementCard } from "@/components/dashboard/stakeholder-engagement-card";
-import { ImpactRiskAssessmentCard } from "@/components/dashboard/impact-risk-assessment-card";
-import { StaffWellbeingCard } from "@/components/dashboard/staff-wellbeing-card";
-import { KpiTrackingCard } from "@/components/dashboard/kpi-tracking-card";
-import { ProfessionalDevelopmentCard } from "@/components/dashboard/professional-development-card";
-import { TherapeuticInterventionsCard } from "@/components/dashboard/therapeutic-interventions-card";
-import { WorkforcePlanningCard } from "@/components/dashboard/workforce-planning-card";
-import { CarePlanningCard } from "@/components/dashboard/care-planning-card";
-import { FamilyEngagementCard } from "@/components/dashboard/family-engagement-card";
-import { CommissioningReferralsCard } from "@/components/dashboard/commissioning-referrals-card";
-import { ChildrensRightsCard } from "@/components/dashboard/childrens-rights-card";
-import { PracticeLearningCard } from "@/components/dashboard/practice-learning-card";
-import { StaffAbsenceCard } from "@/components/dashboard/staff-absence-card";
-import { ActivityPlanningCard } from "@/components/dashboard/activity-planning-card";
-import { OnlineSafetyCard } from "@/components/dashboard/online-safety-card";
-import { LACReviewCard } from "@/components/dashboard/lac-review-card";
-import { StaffInductionCard } from "@/components/dashboard/staff-induction-card";
-import { DutyOfCandourCard } from "@/components/dashboard/duty-of-candour-card";
-import { AntiBullyingCard } from "@/components/dashboard/anti-bullying-card";
-import { ConsentManagementCard } from "@/components/dashboard/consent-management-card";
-import { SignificantEventsCard } from "@/components/dashboard/significant-events-card";
-import { LegalStatusCard } from "@/components/dashboard/legal-status-card";
-import { BodyMapCard } from "@/components/dashboard/body-map-card";
-import { KeyDocumentsCard } from "@/components/dashboard/key-documents-card";
-import { PlacementStabilityCard } from "@/components/dashboard/placement-stability-card";
-import { ProviderVisitsCard } from "@/components/dashboard/provider-visits-card";
-import { MatchingReferralCard } from "@/components/dashboard/matching-referral-card";
-import { IndependencePreparationCard } from "@/components/dashboard/independence-preparation-card";
-import { SensoryProfileCard } from "@/components/dashboard/sensory-profile-card";
-import { PeerMentoringCard } from "@/components/dashboard/peer-mentoring-card";
-import { ContactMonitoringCard } from "@/components/dashboard/contact-monitoring-card";
-import { AttachmentRelationshipsCard } from "@/components/dashboard/attachment-relationships-card";
-import { DiversityInclusionCard } from "@/components/dashboard/diversity-inclusion-card";
-import { EmergencyPlacementCard } from "@/components/dashboard/emergency-placement-card";
-import { CourtProceedingsCard } from "@/components/dashboard/court-proceedings-card";
-import { BehaviourSupportPlansCard } from "@/components/dashboard/behaviour-support-plans-card";
-import { DischargeTransitionCard } from "@/components/dashboard/discharge-transition-card";
-import { MedicationErrorsCard } from "@/components/dashboard/medication-errors-card";
-import { ChildrensAchievementsCard } from "@/components/dashboard/childrens-achievements-card";
-import { RiskRegisterCard } from "@/components/dashboard/risk-register-card";
-import { DelegatedAuthorityCard } from "@/components/dashboard/delegated-authority-card";
-import { LanguageCommunicationCard } from "@/components/dashboard/language-communication-card";
-import { IndividualRiskAssessmentCard } from "@/components/dashboard/individual-risk-assessment-card";
-import { ParentalResponsibilityCard } from "@/components/dashboard/parental-responsibility-card";
-import { ChildrensWishesFeelingsCard } from "@/components/dashboard/childrens-wishes-feelings-card";
-import { DailyRoutineCard } from "@/components/dashboard/daily-routine-card";
-import { ChildExploitationScreeningCard } from "@/components/dashboard/child-exploitation-screening-card";
-import { TraumaInformedCareCard } from "@/components/dashboard/trauma-informed-care-card";
-import { RespiteShortBreaksCard } from "@/components/dashboard/respite-short-breaks-card";
-import { MedicationAdministrationCard } from "@/components/dashboard/medication-administration-card";
-import { StaffSupervisionSessionsCard } from "@/components/dashboard/staff-supervision-sessions-card";
-import { FireSafetyCard } from "@/components/dashboard/fire-safety-card";
-import { SecureStorageCard } from "@/components/dashboard/secure-storage-card";
-import { ComplaintsInvestigationCard } from "@/components/dashboard/complaints-investigation-card";
-import { WorkforceDiversityCard } from "@/components/dashboard/workforce-diversity-card";
-import { VisitorManagementCard } from "@/components/dashboard/visitor-management-card";
-import { EmergencyAdmissionsCard } from "@/components/dashboard/emergency-admissions-card";
-import { StaffGrievanceCard } from "@/components/dashboard/staff-grievance-card";
-import { EqualityHumanRightsCard } from "@/components/dashboard/equality-human-rights-card";
-import { ChildrensFundManagementCard } from "@/components/dashboard/childrens-fund-management-card";
-import { StaffAttendanceCard } from "@/components/dashboard/staff-attendance-card";
-import { AllegationManagementCard } from "@/components/dashboard/allegation-management-card";
-import { TransportSafetyCard } from "@/components/dashboard/transport-safety-card";
-import { StaffTeamMeetingsCard } from "@/components/dashboard/staff-team-meetings-card";
-import { CctvSurveillanceCard } from "@/components/dashboard/cctv-surveillance-card";
-import { MealtimesNutritionCard } from "@/components/dashboard/mealtimes-nutrition-card";
-import { BuildingSecurityCard } from "@/components/dashboard/building-security-card";
-import { WaterSafetyCard } from "@/components/dashboard/water-safety-card";
-import { InfectionControlCard } from "@/components/dashboard/infection-control-card";
-import { MaintenanceRepairsCard } from "@/components/dashboard/maintenance-repairs-card";
-import { GiftsHospitalityCard } from "@/components/dashboard/gifts-hospitality-card";
-import { BedroomAuditCard } from "@/components/dashboard/bedroom-audit-card";
-import { LaundryClothingCard } from "@/components/dashboard/laundry-clothing-card";
-import { EmergencyDrillCard } from "@/components/dashboard/emergency-drill-card";
-import { HealthAppointmentsCard } from "@/components/dashboard/health-appointments-card";
-import { CommunalAreaAuditCard } from "@/components/dashboard/communal-area-audit-card";
-import { NotificationsRegisterCard } from "@/components/dashboard/notifications-register-card";
-import { StaffExitInterviewsCard } from "@/components/dashboard/staff-exit-interviews-card";
-import { ChildrensMeetingsCard } from "@/components/dashboard/childrens-meetings-card";
-import { HolidayTripsCard } from "@/components/dashboard/holiday-trips-card";
-import { DataProtectionCard } from "@/components/dashboard/data-protection-card";
-import { PanelDecisionsCard } from "@/components/dashboard/panel-decisions-card";
-import { VehicleManagementCard } from "@/components/dashboard/vehicle-management-card";
-import { PestControlCard } from "@/components/dashboard/pest-control-card";
-import { ChildrensFeedbackCard } from "@/components/dashboard/childrens-feedback-card";
-import { UtilityManagementCard } from "@/components/dashboard/utility-management-card";
-import { VolunteerManagementCard } from "@/components/dashboard/volunteer-management-card";
-import { RoomTemperatureCard } from "@/components/dashboard/room-temperature-card";
-import { MedicationAuditCard } from "@/components/dashboard/medication-audit-card";
-import { ChildrensAbsenceCard } from "@/components/dashboard/childrens-absence-card";
-import { HomeImprovementCard } from "@/components/dashboard/home-improvement-card";
-import { CleaningScheduleCard } from "@/components/dashboard/cleaning-schedule-card";
-import { KeyHoldingCard } from "@/components/dashboard/key-holding-card";
-import { PersonalHygieneCard } from "@/components/dashboard/personal-hygiene-card";
-import { MissingPersonRiskCard } from "@/components/dashboard/missing-person-risk-card";
-import { SafeguardingReferralCard } from "@/components/dashboard/safeguarding-referral-card";
-import { MedicationStorageCard } from "@/components/dashboard/medication-storage-card";
-import { AdmissionAssessmentCard } from "@/components/dashboard/admission-assessment-card";
-import { StaffCompetencyAssessmentCard } from "@/components/dashboard/staff-competency-assessment-card";
-import { EnvironmentalAuditCard } from "@/components/dashboard/environmental-audit-card";
-import { ProfessionalConsultationCard } from "@/components/dashboard/professional-consultation-card";
-import { OfstedActionPlanCard } from "@/components/dashboard/ofsted-action-plan-card";
-import { LifeStoryWorkCard } from "@/components/dashboard/life-story-work-card";
-import { PositiveHandlingCard } from "@/components/dashboard/positive-handling-card";
-import { ShiftHandoverQualityCard } from "@/components/dashboard/shift-handover-quality-card";
-import { ChildrensProgressTrackingCard } from "@/components/dashboard/childrens-progress-tracking-card";
-import { KeyworkerSessionsCard } from "@/components/dashboard/keyworker-sessions-card";
-import { RestraintDebriefCard } from "@/components/dashboard/restraint-debrief-card";
-import { StaffReflectivePracticeCard } from "@/components/dashboard/staff-reflective-practice-card";
-import { StaffHandoverNotesCard } from "@/components/dashboard/staff-handover-notes-card";
-import { ChildRiskAssessmentReviewCard } from "@/components/dashboard/child-risk-assessment-review-card";
-import { HomeDecorationPersonalisationCard } from "@/components/dashboard/home-decoration-personalisation-card";
-import { MedicationConsentCard } from "@/components/dashboard/medication-consent-card";
-import { StaffLoneWorkingCard } from "@/components/dashboard/staff-lone-working-card";
-import { ChildrensTherapySessionsCard } from "@/components/dashboard/childrens-therapy-sessions-card";
-import { NightWakingMonitoringCard } from "@/components/dashboard/night-waking-monitoring-card";
-import { CommunityLinksIntegrationCard } from "@/components/dashboard/community-links-integration-card";
-import { StaffMedicationCompetencyCard } from "@/components/dashboard/staff-medication-competency-card";
-import { BoundaryManagementCard } from "@/components/dashboard/boundary-management-card";
-import { InternetUsageMonitoringCard } from "@/components/dashboard/internet-usage-monitoring-card";
-import { SleepQualityAssessmentCard } from "@/components/dashboard/sleep-quality-assessment-card";
-import { CulturalIdentitySupportCard } from "@/components/dashboard/cultural-identity-support-card";
-import { PocketMoneyManagementCard } from "@/components/dashboard/pocket-money-management-card";
-import { ChildWellbeingCheckinCard } from "@/components/dashboard/child-wellbeing-checkin-card";
-import { StaffDebriefSupportCard } from "@/components/dashboard/staff-debrief-support-card";
-import { EducationAttendanceTrackingCard } from "@/components/dashboard/education-attendance-tracking-card";
-import { ContactSupervisionCard } from "@/components/dashboard/contact-supervision-card";
-import { SelfHarmRiskMonitoringCard } from "@/components/dashboard/self-harm-risk-monitoring-card";
-import { RoomSharingAssessmentCard } from "@/components/dashboard/room-sharing-assessment-card";
-import { MedicationSideEffectsCard } from "@/components/dashboard/medication-side-effects-card";
-import { PeerRelationshipAssessmentCard } from "@/components/dashboard/peer-relationship-assessment-card";
-import { HomeEnvironmentInspectionCard } from "@/components/dashboard/home-environment-inspection-card";
-import { ComplaintResolutionTrackingCard } from "@/components/dashboard/complaint-resolution-tracking-card";
-import { StaffSupervisionComplianceCard } from "@/components/dashboard/staff-supervision-compliance-card";
-import { ChildDevelopmentMilestoneCard } from "@/components/dashboard/child-development-milestone-card";
-import { VisitorFeedbackCollectionCard } from "@/components/dashboard/visitor-feedback-collection-card";
-import { StaffShiftPatternMonitoringCard } from "@/components/dashboard/staff-shift-pattern-monitoring-card";
-import { ChildDigitalWellbeingCard } from "@/components/dashboard/child-digital-wellbeing-card";
-import { FamilyEngagementTrackingCard } from "@/components/dashboard/family-engagement-tracking-card";
-import { TransitionPlanningReadinessCard } from "@/components/dashboard/transition-planning-readiness-card";
-import { KeyWorkerAllocationCard } from "@/components/dashboard/key-worker-allocation-card";
-import { ConsentCapacityMonitoringCard } from "@/components/dashboard/consent-capacity-monitoring-card";
-import { BehaviourPatternAnalysisCard } from "@/components/dashboard/behaviour-pattern-analysis-card";
-import { PhysicalActivityTrackingCard } from "@/components/dashboard/physical-activity-tracking-card";
-import { ReligiousCulturalObservanceCard } from "@/components/dashboard/religious-cultural-observance-card";
-import { SiblingContactQualityCard } from "@/components/dashboard/sibling-contact-quality-card";
-import { PrivacyDignityMonitoringCard } from "@/components/dashboard/privacy-dignity-monitoring-card";
-import { ChildrensAspirationsGoalsCard } from "@/components/dashboard/childrens-aspirations-goals-card";
-import { CreativeEnrichmentActivitiesCard } from "@/components/dashboard/creative-enrichment-activities-card";
-import { MedicationEffectivenessReviewCard } from "@/components/dashboard/medication-effectiveness-review-card";
-import { HealthScreeningImmunisationCard } from "@/components/dashboard/health-screening-immunisation-card";
-import { SocialSkillsDevelopmentCard } from "@/components/dashboard/social-skills-development-card";
-import { RestorativeJusticePracticeCard } from "@/components/dashboard/restorative-justice-practice-card";
-import { LeisureRecreationActivitiesCard } from "@/components/dashboard/leisure-recreation-activities-card";
-import { HomeworkAcademicSupportCard } from "@/components/dashboard/homework-academic-support-card";
-import { AdvocacyRepresentationCard } from "@/components/dashboard/advocacy-representation-card";
-import { CelebrationMilestonesCard } from "@/components/dashboard/celebration-milestones-card";
-import { WorkExperienceEmploymentCard } from "@/components/dashboard/work-experience-employment-card";
-import { DeviceScreenTimeMonitoringCard } from "@/components/dashboard/device-screen-time-monitoring-card";
-import { FinancialLiteracySavingsCard } from "@/components/dashboard/financial-literacy-savings-card";
-import { FirstAidMedicalEmergencyCard } from "@/components/dashboard/first-aid-medical-emergency-card";
-import { OutdoorSpacesPlayAreasCard } from "@/components/dashboard/outdoor-spaces-play-areas-card";
-import { PositiveBehaviourReinforcementCard } from "@/components/dashboard/positive-behaviour-reinforcement-card";
-import { DentalOpticalHealthCard } from "@/components/dashboard/dental-optical-health-card";
-import { SelfEsteemConfidenceBuildingCard } from "@/components/dashboard/self-esteem-confidence-building-card";
-import { ArrivalSettlingExperienceCard } from "@/components/dashboard/arrival-settling-experience-card";
-import { HealthyEatingCookingSkillsCard } from "@/components/dashboard/healthy-eating-cooking-skills-card";
-import { RelationshipEducationSafetyCard } from "@/components/dashboard/relationship-education-safety-card";
-import { PetCareResponsibilityCard } from "@/components/dashboard/pet-care-responsibility-card";
-import { GardenHorticultureActivitiesCard } from "@/components/dashboard/garden-horticulture-activities-card";
-import { FaithSpiritualObservanceCard } from "@/components/dashboard/faith-spiritual-observance-card";
-import { StaffPatternIntelligenceCard } from "@/components/dashboard/staff-pattern-intelligence-card";
-import { StaffPerformanceDipCard } from "@/components/dashboard/staff-performance-dip-card";
-import { StaffBurnoutIndicatorCard } from "@/components/dashboard/staff-burnout-indicator-card";
-import { StaffDevelopmentPlanCard } from "@/components/dashboard/staff-development-plan-card";
-import { StaffSupportPlanCard } from "@/components/dashboard/staff-support-plan-card";
-import { StaffPracticeRiskAssessmentCard } from "@/components/dashboard/staff-practice-risk-assessment-card";
-import { StaffTriggerMapCard } from "@/components/dashboard/staff-trigger-map-card";
-import { StaffSupportActionCard } from "@/components/dashboard/staff-support-action-card";
-import { StaffReviewOutcomeCard } from "@/components/dashboard/staff-review-outcome-card";
-import { StaffConfidenceIndicatorCard } from "@/components/dashboard/staff-confidence-indicator-card";
-import { StaffMandatoryTrainingCard } from "@/components/dashboard/staff-mandatory-training-card";
-import { YoungPersonDailyDiaryCard } from "@/components/dashboard/young-person-daily-diary-card";
-import { ProfessionalNetworkDirectoryCard } from "@/components/dashboard/professional-network-directory-card";
-import { MenuPlanningDietaryCard } from "@/components/dashboard/menu-planning-dietary-card";
-import { EhcpSendMonitoringCard } from "@/components/dashboard/ehcp-send-monitoring-card";
-import { PlacementMatchingAssessmentCard } from "@/components/dashboard/placement-matching-assessment-card";
-import { Reg44IndependentVisitorCard } from "@/components/dashboard/reg44-independent-visitor-card";
-import { EmotionalWellbeingOutcomeCard } from "@/components/dashboard/emotional-wellbeing-outcome-card";
-import { ComplianceCertificateCard } from "@/components/dashboard/compliance-certificate-card";
-import { HomeClosurePlanningCard } from "@/components/dashboard/home-closure-planning-card";
-import { ParentalContactArrangementCard } from "@/components/dashboard/parental-contact-arrangement-card";
-import { SafeguardingPartnershipCard } from "@/components/dashboard/safeguarding-partnership-card";
-import { LacHealthAssessmentCard } from "@/components/dashboard/lac-health-assessment-card";
-import { StaffWhistleblowingInvestigationCard } from "@/components/dashboard/staff-whistleblowing-investigation-card";
-import { HomeAtmosphereAssessmentCard } from "@/components/dashboard/home-atmosphere-assessment-card";
-import { QualityOfCareReviewCard } from "@/components/dashboard/quality-of-care-review-card";
-import { MedicationIncidentReportingCard } from "@/components/dashboard/medication-incident-reporting-card";
-import { StaffAnnualLeaveCard } from "@/components/dashboard/staff-annual-leave-card";
-import { ChildrensPocketMoneyAuditCard } from "@/components/dashboard/childrens-pocket-money-audit-card";
-import { StaffConflictOfInterestCard } from "@/components/dashboard/staff-conflict-of-interest-card";
-import { EnvironmentalImpactAssessmentCard } from "@/components/dashboard/environmental-impact-assessment-card";
-import { StaffRetentionExitAnalysisCard } from "@/components/dashboard/staff-retention-exit-analysis-card";
-import { ChildSexualExploitationRiskCard } from "@/components/dashboard/child-sexual-exploitation-risk-card";
-import { OfstedInspectionReadinessCard } from "@/components/dashboard/ofsted-inspection-readiness-card";
-import { YoungPersonEmploymentSupportCard } from "@/components/dashboard/young-person-employment-support-card";
-import { SleepDisturbanceInterventionCard } from "@/components/dashboard/sleep-disturbance-intervention-card";
-import { ChildCriminalExploitationRiskCard } from "@/components/dashboard/child-criminal-exploitation-risk-card";
-import { StaffSicknessManagementCard } from "@/components/dashboard/staff-sickness-management-card";
-import { HomeInsuranceComplianceCard } from "@/components/dashboard/home-insurance-compliance-card";
-import { ChildVoiceParticipationTrackingCard } from "@/components/dashboard/child-voice-participation-tracking-card";
-import { StaffCodeOfConductComplianceCard } from "@/components/dashboard/staff-code-of-conduct-compliance-card";
-import { HomeEnergyEfficiencyCard } from "@/components/dashboard/home-energy-efficiency-card";
-import { ChildRadicalisationPreventionCard } from "@/components/dashboard/child-radicalisation-prevention-card";
-import { StaffNvqQualificationTrackingCard } from "@/components/dashboard/staff-nvq-qualification-tracking-card";
-import { HomeAccessibilityAssessmentCard } from "@/components/dashboard/home-accessibility-assessment-card";
-import { ChildNutritionWeightMonitoringCard } from "@/components/dashboard/child-nutrition-weight-monitoring-card";
-import { StaffDbsRenewalTrackingCard } from "@/components/dashboard/staff-dbs-renewal-tracking-card";
-import { HomeFireRiskAssessmentCard } from "@/components/dashboard/home-fire-risk-assessment-card";
-import { ChildSubstanceMisuseScreeningCard } from "@/components/dashboard/child-substance-misuse-screening-card";
-import { StaffReturnToWorkInterviewCard } from "@/components/dashboard/staff-return-to-work-interview-card";
-import { HomeLegionellaRiskAssessmentCard } from "@/components/dashboard/home-legionella-risk-assessment-card";
-import { ChildBereavementSupportCard } from "@/components/dashboard/child-bereavement-support-card";
-import { StaffMandatoryRefresherTrainingCard } from "@/components/dashboard/staff-mandatory-refresher-training-card";
-import { HomeAsbestosManagementCard } from "@/components/dashboard/home-asbestos-management-card";
-import { ChildGangsAffiliationRiskCard } from "@/components/dashboard/child-gangs-affiliation-risk-card";
-import { StaffAgencyWorkerComplianceCard } from "@/components/dashboard/staff-agency-worker-compliance-card";
-import { HomeRadonTestingCard } from "@/components/dashboard/home-radon-testing-card";
-import { ChildFgmRiskAssessmentCard } from "@/components/dashboard/child-fgm-risk-assessment-card";
-import { StaffProfessionalRegistrationCard } from "@/components/dashboard/staff-professional-registration-card";
-import { HomeElectricalSafetyCard } from "@/components/dashboard/home-electrical-safety-card";
-import { ChildForcedMarriageRiskCard } from "@/components/dashboard/child-forced-marriage-risk-card";
-import { StaffSecondmentManagementCard } from "@/components/dashboard/staff-secondment-management-card";
-import { HomeGasSafetyCard } from "@/components/dashboard/home-gas-safety-card";
-import { ChildModernSlaveryRiskCard } from "@/components/dashboard/child-modern-slavery-risk-card";
-import { StaffPayrollComplianceCard } from "@/components/dashboard/staff-payroll-compliance-card";
-import { HomeLiftEquipmentSafetyCard } from "@/components/dashboard/home-lift-equipment-safety-card";
-import { ChildHonourBasedAbuseRiskCard } from "@/components/dashboard/child-honour-based-abuse-risk-card";
-import { StaffExitInterviewManagementCard } from "@/components/dashboard/staff-exit-interview-management-card";
-import { HomeWaterHygieneManagementCard } from "@/components/dashboard/home-water-hygiene-management-card";
-import { ChildRadicalisationRiskCard } from "@/components/dashboard/child-radicalisation-risk-card";
-import { StaffWhistleblowingManagementCard } from "@/components/dashboard/staff-whistleblowing-management-card";
-import { HomePestControlManagementCard } from "@/components/dashboard/home-pest-control-management-card";
-import { ChildTraffickingRiskCard } from "@/components/dashboard/child-trafficking-risk-card";
-import { StaffOvertimeManagementCard } from "@/components/dashboard/staff-overtime-management-card";
-import { HomeCctvComplianceCard } from "@/components/dashboard/home-cctv-compliance-card";
-import { ChildOnlineSafetyMonitoringCard } from "@/components/dashboard/child-online-safety-monitoring-card";
-import { StaffLoneWorkingRiskCard } from "@/components/dashboard/staff-lone-working-risk-card";
-import { HomeEmergencyLightingCard } from "@/components/dashboard/home-emergency-lighting-card";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";

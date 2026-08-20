@@ -4,11 +4,18 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type {
-  StaffMember, YoungPerson, Task, Incident, Shift, LeaveRequest,
-  TrainingRecord, Supervision, Medication, MedicationAdministration,
-  DailyLogEntry, Expense, Candidate, Document, Home,
+  StaffMember,
+  YoungPerson,
+  Task,
+  Incident,
+  Shift,
+  LeaveRequest,
+  TrainingRecord,
+  Medication,
+  DailyLogEntry,
+  Home,
 } from "@/types";
-import { daysFromNow, todayStr, generateId } from "./utils";
+import { daysFromNow, todayStr } from "./utils";
 
 import { seedDay } from "@/lib/seed-date";
 const today = todayStr();

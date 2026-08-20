@@ -18,9 +18,6 @@ import {
 import type {
   HomeAsbestosManagementRow,
   AsbestosType,
-  ConditionRating,
-  ManagementAction,
-  ComplianceStatus,
 } from "../home-asbestos-management-service";
 
 const {

@@ -25,9 +25,6 @@ import {
 } from "@/components/ui/select";
 import type {
   FireEquipmentCheck,
-  FireEquipmentType,
-  FireInspectionType,
-  FireCheckResult,
   FireComplianceStatus,
 } from "@/types/extended";
 import {

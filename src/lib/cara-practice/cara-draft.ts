@@ -87,7 +87,7 @@ function questionsBlock(a: CaraPracticeOutput, domain: string): string {
 
 // ── Per-type deterministic scaffolds ──────────────────────────────────────────
 
-function professionalRecord(content: string, a: CaraPracticeOutput): CaraDraftSection[] {
+function professionalRecord(_content: string, a: CaraPracticeOutput): CaraDraftSection[] {
   const protective =
     a.protectiveFactors.length > 0
       ? a.protectiveFactors.map((p) => `Claimed: ${p.factorDescription}. ${p.challenge}`).join("\n")
@@ -144,7 +144,7 @@ function supervisionReflection(a: CaraPracticeOutput): CaraDraftSection[] {
   ];
 }
 
-function carePlanImpact(content: string, a: CaraPracticeOutput): CaraDraftSection[] {
+function carePlanImpact(_content: string, a: CaraPracticeOutput): CaraDraftSection[] {
   const gaps =
     a.developmentalGaps.length > 0
       ? a.developmentalGaps.map((g) => `• ${g.domain}: ${g.gapDescription} Impact: ${g.impactOnChild}`).join("\n")

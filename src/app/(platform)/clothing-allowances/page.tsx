@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -11,7 +11,6 @@ import {
   Search,
   Wallet,
   TrendingUp,
-  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell }    from "@/components/layout/page-shell";
@@ -25,7 +24,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { ClothingAllowanceRecord, ClothingPurchaseCategory, ClothingPurchase } from "@/types/extended";
+import type { ClothingAllowanceRecord, ClothingPurchaseCategory } from "@/types/extended";
 import { CLOTHING_PURCHASE_CATEGORY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

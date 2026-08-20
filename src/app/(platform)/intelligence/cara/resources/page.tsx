@@ -43,8 +43,14 @@ import type {
   ChildResourceType, ResourceWritingStyle, ChildResource, ChildResourceContent,
 } from "@/types/extended";
 import {
-  FileText, Plus, Sparkles, Loader2, AlertTriangle,
-  CheckCircle2, X, Star, Printer,
+  FileText,
+  Plus,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  X,
+  Star,
 } from "lucide-react";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };

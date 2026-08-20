@@ -22,7 +22,6 @@ import {
   Sparkle,
   Cpu,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ConfidencePill } from "./confidence-pill";
 import { UncertaintyRegisterPanel } from "./uncertainty-register-panel";
 import type { PracticeReasoning, ReasoningFinding } from "@/lib/cara-reasoning/types";

@@ -41,14 +41,22 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Home, Heart, GraduationCap, Shield, Users, Star, MapPin,
-  ChevronDown, ChevronUp, CheckCircle2, Stethoscope, Activity,
-  Palette, BookOpen, Loader2,
+  Home,
+  Heart,
+  GraduationCap,
+  Shield,
+  Users,
+  Star,
+  MapPin,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  Stethoscope,
+  Palette,
+  Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { LocalOfferSection, LocalOfferCategory } from "@/types/extended";
-import { LOCAL_OFFER_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

@@ -38,14 +38,19 @@ function useHomeName(fallback = "This home"): string {
 }
 import { useState } from "react";
 import {
-  FileText, Edit, CheckCircle2,
-  ChevronDown, ChevronUp, Calendar, Users,
-  Shield, Heart, GraduationCap, Home,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Users,
+  Shield,
+  Heart,
+  GraduationCap,
+  Home,
   AlertTriangle,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

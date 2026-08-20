@@ -3,7 +3,7 @@
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, TrendingDown, CheckCircle, AlertTriangle, Users, Clock, BarChart2, Star } from "lucide-react";
+import { ShieldAlert, CheckCircle, AlertTriangle, Clock, BarChart2, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { DisruptionPreventionRating, DisruptionPreventionResult } from "@/lib/engines/home-placement-disruption-prevention-intelligence-engine";
 

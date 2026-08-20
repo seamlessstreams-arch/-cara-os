@@ -16,8 +16,17 @@ import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
 import {
-  Sparkles, AlertTriangle, Heart, GraduationCap, Eye, ClipboardList,
-  Send, Loader2, ChevronDown, Check, Info, Clock,
+  AlertTriangle,
+  Heart,
+  GraduationCap,
+  Eye,
+  ClipboardList,
+  Send,
+  Loader2,
+  ChevronDown,
+  Check,
+  Info,
+  Clock,
 } from "lucide-react";
 
 interface UniversalStaffEntryProps {

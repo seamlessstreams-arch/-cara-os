@@ -150,7 +150,7 @@ function generateStaffFlags(text: string, primaryType: string): StaffClassificat
   return flags;
 }
 
-function suggestStaffTitle(text: string, primaryType: string, staffName: string): string {
+function suggestStaffTitle(_text: string, primaryType: string, staffName: string): string {
   const label = STAFF_TYPE_PATTERNS.find((p) => p.type === primaryType)?.label ?? "Staff Record";
   if (primaryType === "supervision") return `${staffName} — supervision`;
   if (primaryType === "training_record") return `${staffName} — training record`;

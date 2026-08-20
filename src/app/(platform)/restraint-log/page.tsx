@@ -25,9 +25,18 @@ import { PrintButton } from "@/components/ui/print-button";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Heart, Shield, Users, Eye, Loader2
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  Shield,
+  Eye,
+  Loader2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

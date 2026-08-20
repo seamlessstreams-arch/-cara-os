@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -30,11 +30,28 @@ import type { RiGovernanceReport, RiReportType, RiReportStatus } from "@/types/e
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import {
-  Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  Plus, FileText, BarChart3, Shield, Award, Calendar,
-  Eye, CheckCircle2, Sparkles, Loader2, Clock,
-  AlertTriangle, TrendingUp, User, X, Gavel,
-  ScrollText, Activity, RefreshCw,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  FileText,
+  BarChart3,
+  Shield,
+  Award,
+  Calendar,
+  Eye,
+  CheckCircle2,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
+  TrendingUp,
+  User,
+  X,
+  Gavel,
+  ScrollText,
+  Activity,
 } from "lucide-react";
 
 const RI_GOVERNANCE_REPORTS_KEY = "ri-governance-reports";

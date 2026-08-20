@@ -23,13 +23,6 @@ import type {
   PerformanceReview,
   PDPGoal,
   CompetencyAssessment,
-  QualificationType,
-  QualificationStatus,
-  PerformanceRating,
-  ReviewStatus,
-  PDPGoalStatus,
-  CompetencyArea,
-  CompetencyLevel,
 } from "../staff-performance-engine";
 
 // ── Shared Constants ───────────────────────────────────────────────────────

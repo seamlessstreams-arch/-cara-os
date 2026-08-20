@@ -13,10 +13,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  AlertTriangle, ArrowLeft, Calendar, Clock, MapPin, User,
-  CheckCircle2, XCircle, Bell, FileText, Shield, ClipboardCheck,
-  Loader2, AlertCircle, ChevronRight, Heart, BookOpen,
-  Brain, Sparkles, Library,
+  AlertTriangle,
+  ArrowLeft,
+  Clock,
+  MapPin,
+  User,
+  CheckCircle2,
+  Bell,
+  FileText,
+  Shield,
+  ClipboardCheck,
+  Loader2,
+  AlertCircle,
+  ChevronRight,
+  Heart,
+  BookOpen,
+  Brain,
+  Sparkles,
+  Library,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

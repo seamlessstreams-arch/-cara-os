@@ -10,8 +10,6 @@ import {
   type ChildFeedbackInput,
   type ChildFriendlyPolicyInput,
   type ChildExpertInput,
-  type ChildrensVoiceRating,
-  type ChildrensVoiceResult,
 } from "../home-childrens-voice-participation-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -7,14 +7,12 @@
 // sources disagree — different risk levels, conflicting descriptions, etc.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  AlertOctagon, Search, CheckCircle2, AlertTriangle,
-  Sparkles, Eye, Clock, XCircle,
+  AlertOctagon,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

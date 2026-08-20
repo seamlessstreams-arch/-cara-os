@@ -4,13 +4,7 @@ import {
   type TherapeuticProgressInput,
   type TherapySessionInput,
   type KeyworkSessionInput,
-  type BehaviourEntryInput,
   type OutcomeTargetInput,
-  type OutcomeReviewInput,
-  type CamhsReferralInput,
-  type MentalHealthCheckInInput,
-  type ChildIncidentInput,
-  type RestraintRecordInput,
 } from "../therapeutic-progress-intelligence-engine";
 
 // ── Helpers ────────────────────────────────────────────────────────────────

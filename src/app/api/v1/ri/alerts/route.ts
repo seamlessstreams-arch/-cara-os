@@ -2,7 +2,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
-import type { RiAlert, RiAlertType, RiAlertSeverity } from "@/types/extended";
+import type { RiAlertSeverity } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const homeId = req.nextUrl.searchParams.get("home_id") ?? "home_oak";

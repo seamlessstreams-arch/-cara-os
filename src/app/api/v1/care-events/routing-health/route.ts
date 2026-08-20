@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     let result: ReturnType<typeof retryFailedRoutes>;
     try {
       result = retryFailedRoutes(careEventId);
-    } catch (e) {
+    } catch (_e) {
       return NextResponse.json(
         { error: "Retry failed" },
         { status: 500 },
