@@ -302,12 +302,6 @@ export function computeCctvSurveillanceGovernance(
   const policiesCoveringChildrenRights = cctv_policy_records.filter((p) => p.approved && p.covers_children_rights).length;
   const childrenRightsCoverageRate = pct(policiesCoveringChildrenRights, totalPolicyRecords);
 
-  const policiesCoveringStaffRights = cctv_policy_records.filter((p) => p.approved && p.covers_staff_rights).length;
-  const staffRightsCoverageRate = pct(policiesCoveringStaffRights, totalPolicyRecords);
-
-  const policiesCoveringVisitorNotification = cctv_policy_records.filter((p) => p.approved && p.covers_visitor_notification).length;
-  const visitorNotificationRate = pct(policiesCoveringVisitorNotification, totalPolicyRecords);
-
   const rmSignedPolicies = cctv_policy_records.filter((p) => p.approved && p.registered_manager_signed).length;
   const rmSignedRate = pct(rmSignedPolicies, totalPolicyRecords);
 
@@ -339,9 +333,6 @@ export function computeCctvSurveillanceGovernance(
   const childrenConsulted = privacy_impact_records.filter((p) => p.children_consulted).length;
   const childrenConsultedRate = pct(childrenConsulted, totalPrivacyImpactRecords);
 
-  const staffConsulted = privacy_impact_records.filter((p) => p.staff_consulted).length;
-  const staffConsultedRate = pct(staffConsulted, totalPrivacyImpactRecords);
-
   const riskMitigationsDocumented = privacy_impact_records.filter((p) => p.risk_mitigations_documented).length;
   const riskMitigationRate = pct(riskMitigationsDocumented, totalPrivacyImpactRecords);
 
@@ -350,11 +341,6 @@ export function computeCctvSurveillanceGovernance(
 
   const piaOverdue = privacy_impact_records.filter((p) => p.review_overdue).length;
   const piaOverdueRate = pct(piaOverdue, totalPrivacyImpactRecords);
-
-  const approvedAssessments = privacy_impact_records.filter(
-    (p) => p.outcome === "approved" || p.outcome === "approved_with_conditions",
-  ).length;
-  const assessmentApprovalRate = pct(approvedAssessments, totalPrivacyImpactRecords);
 
   // Composite privacy impact rate: average of justification, proportionality, alternatives, risk mitigation, DPO approval
   const privacyImpactRate: number | null =
@@ -411,12 +397,6 @@ export function computeCctvSurveillanceGovernance(
   const informedOfRights = child_awareness_records.filter((c) => c.child_informed_of_rights).length;
   const rightsAwarenessRate = pct(informedOfRights, totalChildAwarenessRecords);
 
-  const informedOfComplaintProcess = child_awareness_records.filter((c) => c.child_informed_of_complaint_process).length;
-  const complaintProcessAwarenessRate = pct(informedOfComplaintProcess, totalChildAwarenessRecords);
-
-  const viewsRecorded = child_awareness_records.filter((c) => c.child_views_recorded).length;
-  const viewsRecordedRate = pct(viewsRecorded, totalChildAwarenessRecords);
-
   const viewsPositive = child_awareness_records.filter((c) => c.child_views_recorded && c.child_views_positive).length;
   const positiveViewsRate = pct(viewsPositive, totalChildAwarenessRecords);
 
@@ -453,16 +433,6 @@ export function computeCctvSurveillanceGovernance(
   const breachRecords = data_protection_records.filter((d) => d.breach_occurred).length;
   const breachRate = pct(breachRecords, totalDataProtectionRecords);
 
-  const breachesReportedToIco = data_protection_records.filter(
-    (d) => d.breach_occurred && d.breach_reported_to_ico,
-  ).length;
-  const breachReportingRate = pct(breachesReportedToIco, breachRecords);
-
-  const breachesReportedWithin72hrs = data_protection_records.filter(
-    (d) => d.breach_occurred && d.breach_reported_within_72hrs,
-  ).length;
-  const timelyBreachReportingRate = pct(breachesReportedWithin72hrs, breachRecords);
-
   const criticalBreaches = data_protection_records.filter(
     (d) => d.breach_occurred && (d.breach_severity === "critical" || d.breach_severity === "high"),
   ).length;
@@ -472,9 +442,6 @@ export function computeCctvSurveillanceGovernance(
 
   const trainingUpToDate = data_protection_records.filter((d) => d.staff_trained && d.training_up_to_date).length;
   const trainingCurrentRate = pct(trainingUpToDate, totalDataProtectionRecords);
-
-  const dpoInvolved = data_protection_records.filter((d) => d.dpo_involved).length;
-  const dpoInvolvementRate = pct(dpoInvolved, totalDataProtectionRecords);
 
   const icoRegistrationCurrent = data_protection_records.filter((d) => d.ico_registration_current).length;
   const icoRegistrationRate = pct(icoRegistrationCurrent, totalDataProtectionRecords);

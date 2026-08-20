@@ -284,11 +284,6 @@ export function computePocketMoneyFinancialLiteracy(
   ).length;
   const childInitiatedRate = pct(childInitiatedSavings, activeSavings);
 
-  const savingsOnTrack = savings_programme_records.filter(
-    (s) => s.active && s.target_amount > 0 && s.current_balance >= s.target_amount * 0.5,
-  ).length;
-  const savingsProgressRate = pct(savingsOnTrack, activeSavings);
-
   // --- Financial education ---
   const totalEducation = financial_education_records.length;
   const uniqueChildrenWithEducation = new Set(
@@ -328,17 +323,9 @@ export function computePocketMoneyFinancialLiteracy(
   const reconciled = money_handling_records.filter((m) => m.reconciled).length;
   const moneyHandlingAccuracyRate = pct(reconciled, totalMoneyHandling);
 
-  const receiptsPresent = money_handling_records.filter((m) => m.receipt_present).length;
-  const receiptPresentRate = pct(receiptsPresent, totalMoneyHandling);
-
   const dualSigned = money_handling_records.filter((m) => m.dual_signed).length;
   const dualSignedRate = pct(dualSigned, totalMoneyHandling);
 
-  const audited = money_handling_records.filter((m) => m.audited).length;
-  const auditedRate = pct(audited, totalMoneyHandling);
-
-  const discrepancies = money_handling_records.filter((m) => m.discrepancy_amount > 0).length;
-  const discrepancyRate = pct(discrepancies, totalMoneyHandling);
   const unresolvedDiscrepancies = money_handling_records.filter(
     (m) => m.discrepancy_amount > 0 && !m.discrepancy_resolved,
   ).length;

@@ -198,17 +198,6 @@ describe("rating thresholds", () => {
   });
 
   it("score exactly 45 is adequate", () => {
-    const plan = makePlan({
-      co_produced_with_count: 0,
-      child_signed_off: false,
-      warning_signs_external_count: 0,
-      internal_coping_strategy_count: 0,
-      social_distraction_count: 0,
-      has_child_voice: false,
-      means_restriction_count: 0,
-      has_next_review_date: false,
-      next_review_date: "",
-    });
     // 52 -5(coprod<25) -5(warning<25 ext=0) -4(coping<20) +5(contact>=80) -4(voice<20) -3(review<25&&means<20) = 36
     // That's inadequate. Let's adjust to get near 45.
     const plan2 = makePlan({

@@ -98,7 +98,6 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   const hospitalVisits = recent.filter(a => a.hospital_visit).length;
   const riddorCount = recent.filter(a => a.riddor_reportable).length;
   const investigated = recent.filter(a => a.investigated).length;
-  const debriefed = recent.filter(a => a.debrief_completed).length;
   const unexplainedInjuries = recentInjuries.filter(i => i.origin === "unexplained");
   const selfHarmInjuries = recentInjuries.filter(i => i.origin === "self_harm");
   const bodyMapDone = recentInjuries.filter(i => i.body_map_completed).length;

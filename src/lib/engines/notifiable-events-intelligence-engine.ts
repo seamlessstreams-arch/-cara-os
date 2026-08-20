@@ -155,13 +155,11 @@ export function computeNotifiableEventsIntelligence(input: EngineInput): Notifia
   }
 
   const childMap = new Map(children.map((c) => [c.id, c.name]));
-  const staffMap = new Map(staff.map((s) => [s.id, s.name]));
 
   // ── Overview ────────────────────────────────────────────────────────────
   const notifiedWithin24h = events.filter((e) => e.ofsted_status === "notified_within_24h").length;
   const notifiedLate = events.filter((e) => e.ofsted_status === "notified_late").length;
   const pending = events.filter((e) => e.ofsted_status === "pending").length;
-  const completed = notifiedWithin24h + notifiedLate;
   const complianceRate = rate(notifiedWithin24h, events.length);
 
   const eventsLast30 = events.filter((e) => daysBetween(e.date, today) >= 0 && daysBetween(e.date, today) <= 30).length;

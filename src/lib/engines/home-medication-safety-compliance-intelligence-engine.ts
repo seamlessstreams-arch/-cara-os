@@ -296,9 +296,6 @@ export function computeMedicationSafetyCompliance(
     (e) => e.investigation_completed,
   ).length;
   const errorInvestigationRate = pct(investigatedErrors, totalErrors);
-  const errorsWithActions = medication_errors.filter(
-    (e) => e.actions_taken && e.actions_taken.trim() !== "",
-  ).length;
 
   // --- Audit metrics ---
   const totalAudits = medication_audit_records.length;
@@ -306,11 +303,6 @@ export function computeMedicationSafetyCompliance(
     (a) => a.all_records_accurate,
   ).length;
   const auditComplianceRate = pct(accurateAudits, totalAudits);
-
-  const auditsWithControlledCheck = medication_audit_records.filter(
-    (a) => a.controlled_drugs_checked,
-  ).length;
-  const controlledDrugAuditRate = pct(auditsWithControlledCheck, totalAudits);
 
   const auditsWithMarCorrect = medication_audit_records.filter(
     (a) => a.mar_charts_correct,
@@ -338,20 +330,10 @@ export function computeMedicationSafetyCompliance(
   ).length;
   const storagePassRate = pct(storageFullyCompliant, totalStorageAudits);
 
-  const temperatureCompliant = medication_storage_audits.filter(
-    (s) => s.temperature_in_range,
-  ).length;
-  const temperatureComplianceRate = pct(temperatureCompliant, totalStorageAudits);
-
   const lockedStorageCompliant = medication_storage_audits.filter(
     (s) => s.locked_storage_verified,
   ).length;
   const lockedStorageRate = pct(lockedStorageCompliant, totalStorageAudits);
-
-  const expiryChecked = medication_storage_audits.filter(
-    (s) => s.expiry_dates_checked,
-  ).length;
-  const expiryCheckRate = pct(expiryChecked, totalStorageAudits);
 
   // --- Emergency protocol metrics ---
   const totalProtocols = emergency_medication_protocols.length;
@@ -369,14 +351,6 @@ export function computeMedicationSafetyCompliance(
     (p) => p.staff_trained_count >= 2,
   ).length;
   const staffCompetencyRate = pct(protocolsWithAdequateTraining, totalProtocols);
-
-  const totalStaffTrained = emergency_medication_protocols.reduce(
-    (sum, p) => sum + p.staff_trained_count,
-    0,
-  );
-  const avgStaffTrained = totalProtocols > 0
-    ? Math.round(totalStaffTrained / totalProtocols)
-    : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // Bonuses sum to exactly 28: 4+3+3+3+3+3+3+3+3 = 28

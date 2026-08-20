@@ -473,23 +473,6 @@ describe("computeSubstanceMisuseScreening", () => {
         makeScreening({ id: "scr_2", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: false, professional_support_count: 0, has_child_insight: false, shared_with_social_worker: false, shared_with_camhs: false }),
       ];
       const r = computeSubstanceMisuseScreening(baseInput({ total_children: 5, screenings }));
-      // 1/5 = 20% → mod1:-5
-      // harm: 1/3 ≈ 33% → gap → 0
-      // prof: 1/3 ≈ 33% → gap → 0
-      // insight: 1/3 ≈ 33% → gap → 0
-      // sharing: 1/3 ≈ 33% → gap → 0
-      // high risk: 3, with support: 1 (prof>0), rate: 33% → >=30 <50 → gap → 0
-      // 52 - 5 + 0 + 0 + 0 + 0 + 0 = 47 → not 44 either
-      // The high risk support rate is based on professional_support_count > 0 for high risk records.
-      // scr_0 is high_risk with professional_support_count=1 → counted.
-      // highRiskSupportRate = pct(1, 3) = 33% → gap (>=30, <50 → not >=50, not <30) → 0
-      // So mod6 = 0, not -3. I need 0 high risk with support.
-      // Let me fix: all 3 high risk with 0 professional_support_count
-      const screenings2 = [
-        makeScreening({ id: "scr_0", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: true, professional_support_count: 0, has_child_insight: true, shared_with_social_worker: true, shared_with_camhs: false }),
-        makeScreening({ id: "scr_1", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: false, professional_support_count: 0, has_child_insight: false, shared_with_social_worker: false, shared_with_camhs: false }),
-        makeScreening({ id: "scr_2", child_id: "yp_0", risk_level: "high_risk", has_harm_reduction: false, professional_support_count: 0, has_child_insight: false, shared_with_social_worker: false, shared_with_camhs: false }),
-      ];
       // Now: prof support rate: 0/3 = 0% → <20 → mod3:-4
       // insight: 1/3 = 33% → gap → 0
       // sharing: 1/3 = 33% → gap → 0

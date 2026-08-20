@@ -317,9 +317,6 @@ export function computeDampMouldManagement(
   ).length;
   const dampSurveyRate = pct(surveysWithinRange, totalDampSurveys);
 
-  const dampDetected = damp_survey_records.filter((s) => s.damp_detected).length;
-  const dampDetectionRate = pct(dampDetected, totalDampSurveys);
-
   const actionsRequired = damp_survey_records.filter((s) => s.action_required).length;
   const actionsTaken = damp_survey_records.filter(
     (s) => s.action_required && s.action_taken,
@@ -333,26 +330,6 @@ export function computeDampMouldManagement(
     (s) => s.follow_up_date !== null && s.follow_up_completed,
   ).length;
   const followUpCompletionRate = pct(followUpsCompleted, followUpsRequired);
-
-  const childRoomsAffectedSurvey = damp_survey_records.filter(
-    (s) => s.child_rooms_affected,
-  ).length;
-  const childRoomAffectedRate = pct(childRoomsAffectedSurvey, totalDampSurveys);
-
-  const totalRecsAdeSurvey = damp_survey_records.reduce(
-    (sum, s) => sum + s.recommendations_made,
-    0,
-  );
-  const totalRecsActionedSurvey = damp_survey_records.reduce(
-    (sum, s) => sum + s.recommendations_actioned,
-    0,
-  );
-  const surveyRecsActionedRate = pct(totalRecsActionedSurvey, totalRecsAdeSurvey);
-
-  const severeSurveys = damp_survey_records.filter(
-    (s) => s.severity === "severe" || s.severity === "critical",
-  ).length;
-  const severeSurveyRate = pct(severeSurveys, totalDampSurveys);
 
   // --- Mould inspection metrics ---
   const totalMouldInspections = mould_inspection_records.length;
@@ -369,11 +346,6 @@ export function computeDampMouldManagement(
   ).length;
   const childBedroomMouldRate = pct(childBedroomAffected, totalMouldInspections);
 
-  const sporeRiskAssessed = mould_inspection_records.filter(
-    (m) => m.mould_found && m.spore_risk_assessed,
-  ).length;
-  const sporeAssessmentRate = pct(sporeRiskAssessed, mouldFound);
-
   const immediateActionOnMould = mould_inspection_records.filter(
     (m) => m.mould_found && m.immediate_action_taken,
   ).length;
@@ -382,7 +354,6 @@ export function computeDampMouldManagement(
   const reportedToManagement = mould_inspection_records.filter(
     (m) => m.mould_found && m.reported_to_management,
   ).length;
-  const managementReportingRate = pct(reportedToManagement, mouldFound);
 
   // --- Remediation metrics ---
   const totalRemediations = remediation_records.length;
@@ -396,21 +367,6 @@ export function computeDampMouldManagement(
   ).length;
   const withinTargetRate = pct(completedWithinTarget, completedRemediations);
 
-  const qualityChecked = remediation_records.filter(
-    (r) => r.completed && r.quality_checked,
-  ).length;
-  const qualityCheckRate = pct(qualityChecked, completedRemediations);
-
-  const qualitySatisfactory = remediation_records.filter(
-    (r) => r.completed && r.quality_checked && r.quality_satisfactory,
-  ).length;
-  const qualitySatisfactoryRate = pct(qualitySatisfactory, qualityChecked);
-
-  const followUpInspectionsDone = remediation_records.filter(
-    (r) => r.completed && r.follow_up_inspection_completed,
-  ).length;
-  const followUpInspectionRate = pct(followUpInspectionsDone, completedRemediations);
-
   const recurrenceDetected = remediation_records.filter(
     (r) => r.completed && r.recurrence_detected,
   ).length;
@@ -419,12 +375,10 @@ export function computeDampMouldManagement(
   const childRoomRemediation = remediation_records.filter(
     (r) => r.child_room_involved,
   ).length;
-  const childRoomRemediationRate = pct(childRoomRemediation, totalRemediations);
 
   const childInformedWorks = remediation_records.filter(
     (r) => r.child_room_involved && r.child_informed_of_works,
   ).length;
-  const childInformedWorksRate = pct(childInformedWorks, childRoomRemediation);
 
   const outstandingRemediations = remediation_records.filter(
     (r) => !r.completed,
@@ -441,25 +395,6 @@ export function computeDampMouldManagement(
     (v) => v.meets_building_regs,
   ).length;
   const buildingRegsRate = pct(meetsBuildingRegs, totalVentilationAssessments);
-
-  const humidityAcceptable = ventilation_assessment_records.filter(
-    (v) => v.humidity_acceptable,
-  ).length;
-  const humidityAcceptableRate = pct(
-    humidityAcceptable,
-    totalVentilationAssessments,
-  );
-
-  const extractorFanWorking = ventilation_assessment_records.filter(
-    (v) =>
-      (v.ventilation_type === "extractor_fan" || v.ventilation_type === "mechanical") &&
-      v.extractor_fan_working,
-  ).length;
-  const extractorFanTotal = ventilation_assessment_records.filter(
-    (v) =>
-      v.ventilation_type === "extractor_fan" || v.ventilation_type === "mechanical",
-  ).length;
-  const extractorFanWorkingRate = pct(extractorFanWorking, extractorFanTotal);
 
   const condensationObserved = ventilation_assessment_records.filter(
     (v) => v.condensation_observed,
@@ -485,21 +420,8 @@ export function computeDampMouldManagement(
   ).length;
   const maintenanceCompletionRate = pct(maintenanceCompleted, maintenanceRequired);
 
-  const ventRecsTotal = ventilation_assessment_records.reduce(
-    (sum, v) => sum + v.recommendations_made,
-    0,
-  );
-  const ventRecsActioned = ventilation_assessment_records.reduce(
-    (sum, v) => sum + v.recommendations_actioned,
-    0,
-  );
-  const ventRecsActionedRate = pct(ventRecsActioned, ventRecsTotal);
-
   // --- Health impact metrics ---
   const totalHealthImpacts = health_impact_records.length;
-  const linkedToDampMould = health_impact_records.filter(
-    (h) => h.linked_to_damp_mould,
-  ).length;
 
   const treatmentRequiredHealth = health_impact_records.filter(
     (h) => h.treatment_required,
@@ -515,28 +437,11 @@ export function computeDampMouldManagement(
   const childViewsRecorded = health_impact_records.filter(
     (h) => h.child_views_recorded,
   ).length;
-  const childViewsRate = pct(childViewsRecorded, totalHealthImpacts);
 
   const socialWorkerInformed = health_impact_records.filter(
     (h) => h.social_worker_informed,
   ).length;
   const socialWorkerInformedRate = pct(socialWorkerInformed, totalHealthImpacts);
-
-  const placingAuthorityInformed = health_impact_records.filter(
-    (h) => h.placing_authority_informed,
-  ).length;
-  const placingAuthorityInformedRate = pct(
-    placingAuthorityInformed,
-    totalHealthImpacts,
-  );
-
-  const followUpHealthChecks = health_impact_records.filter(
-    (h) => h.follow_up_health_check,
-  ).length;
-  const followUpHealthCompleted = health_impact_records.filter(
-    (h) => h.follow_up_health_check && h.follow_up_completed,
-  ).length;
-  const followUpHealthRate = pct(followUpHealthCompleted, followUpHealthChecks);
 
   const severeHealthImpacts = health_impact_records.filter(
     (h) => h.severity === "severe",

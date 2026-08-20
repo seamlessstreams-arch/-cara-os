@@ -324,24 +324,10 @@ export function computeWashingMachineDryerMaintenance(
   ).length;
   const certificateRate = pct(certificatesOnFile, totalServicingRecords);
 
-  // Qualified engineer rate
-  const qualifiedEngineerServices = servicing_records.filter(
-    (s) => s.engineer_qualified,
-  ).length;
-  const qualifiedEngineerRate = pct(qualifiedEngineerServices, totalServicingRecords);
-
   // Overdue servicing count
   const overdueServicing = servicing_records.filter(
     (s) => s.service_overdue,
   ).length;
-
-  // Unique appliances with at least one service record
-  const appliancesServiced = new Set(
-    servicing_records.map((s) => s.appliance_id),
-  ).size;
-  const applianceServicingCoverage = totalAppliances > 0
-    ? pct(appliancesServiced, totalAppliances)
-    : 0;
 
   // ══════════════════════════════════════════════════════════════════════
   // 2. BREAKDOWN RESPONSE RATE
@@ -354,12 +340,6 @@ export function computeWashingMachineDryerMaintenance(
     (b) => b.response_within_24h,
   ).length;
   const breakdownResponseRate = pct(respondedWithin24h, totalBreakdowns);
-
-  // Breakdowns responded to within 48h
-  const respondedWithin48h = breakdown_records.filter(
-    (b) => b.response_within_48h,
-  ).length;
-  const breakdownResponse48hRate = pct(respondedWithin48h, totalBreakdowns);
 
   // Resolution rate
   const resolvedBreakdowns = breakdown_records.filter(
@@ -412,13 +392,6 @@ export function computeWashingMachineDryerMaintenance(
     (b) => b.impact_on_children === "health_hygiene_risk",
   ).length;
 
-  // Significant disruption or worse
-  const significantDisruption = breakdown_records.filter(
-    (b) =>
-      b.impact_on_children === "significant_disruption" ||
-      b.impact_on_children === "health_hygiene_risk",
-  ).length;
-
   // ══════════════════════════════════════════════════════════════════════
   // 3. CHILD ACCESS RATE
   // ══════════════════════════════════════════════════════════════════════
@@ -430,14 +403,6 @@ export function computeWashingMachineDryerMaintenance(
     (c) => c.can_use_washing_machine || c.can_use_dryer,
   ).length;
   const childAccessRate = pct(childrenWithAccess, totalChildAccessRecords);
-
-  // Unique children covered by access records
-  const uniqueChildrenWithAccess = new Set(
-    child_access_records.map((c) => c.child_id),
-  ).size;
-  const childAccessCoverage = total_children > 0
-    ? pct(uniqueChildrenWithAccess, total_children)
-    : 0;
 
   // Training completion rate
   const childrenTrained = child_access_records.filter(
@@ -457,18 +422,6 @@ export function computeWashingMachineDryerMaintenance(
   ).length;
   const preferenceRate = pct(preferencesRespected, totalChildAccessRecords);
 
-  // Laundry schedule agreed rate
-  const schedulesAgreed = child_access_records.filter(
-    (c) => c.laundry_schedule_agreed,
-  ).length;
-  const scheduleAgreedRate = pct(schedulesAgreed, totalChildAccessRecords);
-
-  // Personal items separated rate
-  const personalItemsSeparated = child_access_records.filter(
-    (c) => c.personal_items_separated,
-  ).length;
-  const personalSeparationRate = pct(personalItemsSeparated, totalChildAccessRecords);
-
   // Child satisfaction average (1-5)
   const satisfactionSum = child_access_records.reduce(
     (sum, c) => sum + c.child_satisfaction_rating,
@@ -479,12 +432,6 @@ export function computeWashingMachineDryerMaintenance(
     totalChildAccessRecords > 0
       ? Math.round((satisfactionSum / totalChildAccessRecords) * 100) / 100
       : null;
-
-  // Children with barriers
-  const childrenWithBarriers = child_access_records.filter(
-    (c) => c.barriers_to_access.length > 0,
-  ).length;
-  const barriersRate = pct(childrenWithBarriers, totalChildAccessRecords);
 
   // ══════════════════════════════════════════════════════════════════════
   // 4. CHILD INDEPENDENCE RATE
@@ -536,12 +483,6 @@ export function computeWashingMachineDryerMaintenance(
   ).length;
   const hygieneCycleRate = pct(completedHygieneCycles, totalHygieneCycles);
 
-  // On-time completion rate
-  const onTimeHygieneCycles = hygiene_cycle_records.filter(
-    (h) => h.completed && h.completed_on_time,
-  ).length;
-  const hygieneOnTimeRate = pct(onTimeHygieneCycles, totalHygieneCycles);
-
   // Temperature verification rate
   const temperatureVerified = hygiene_cycle_records.filter(
     (h) => h.completed && h.temperature_verified,
@@ -553,29 +494,6 @@ export function computeWashingMachineDryerMaintenance(
     (h) => h.infection_control_compliant,
   ).length;
   const infectionControlRate = pct(infectionControlCompliant, totalHygieneCycles);
-
-  // Overdue (scheduled but not completed on time)
-  const overdueHygieneCycles = hygiene_cycle_records.filter(
-    (h) => !h.completed && !h.completed_on_time,
-  ).length;
-
-  // Unique appliances with hygiene cycles
-  const appliancesWithHygieneCycles = new Set(
-    hygiene_cycle_records.map((h) => h.appliance_id),
-  ).size;
-  const hygieneCoveragePct = totalAppliances > 0
-    ? pct(appliancesWithHygieneCycles, totalAppliances)
-    : 0;
-
-  // Cycle type distribution
-  const hotWashCycles = hygiene_cycle_records.filter(
-    (h) =>
-      h.cycle_type === "hot_wash_60" ||
-      h.cycle_type === "hot_wash_90" ||
-      h.cycle_type === "anti_bacterial" ||
-      h.cycle_type === "sanitise",
-  ).length;
-  const hotWashPct = pct(hotWashCycles, totalHygieneCycles);
 
   // ══════════════════════════════════════════════════════════════════════
   // 6. ENERGY EFFICIENCY RATE
@@ -611,14 +529,6 @@ export function computeWashingMachineDryerMaintenance(
       ? Math.round(ecoModeUsageSum / ecoModeAvailable)
       : null;
 
-  // Efficiency check compliance
-  const efficiencyChecksOverdue = energy_records.filter(
-    (e) => e.efficiency_check_overdue,
-  ).length;
-  const efficiencyCheckRate = totalEnergyRecords > 0
-    ? pct(totalEnergyRecords - efficiencyChecksOverdue, totalEnergyRecords)
-    : 0;
-
   // Appliances recommended for replacement
   const replacementRecommended = energy_records.filter(
     (e) => e.replacement_recommended,
@@ -632,23 +542,6 @@ export function computeWashingMachineDryerMaintenance(
   // Very old appliances (>15 years)
   const veryOldAppliances = energy_records.filter(
     (e) => e.age_years > 15,
-  ).length;
-
-  // Total annual cost estimate
-  const totalAnnualCost = energy_records.reduce(
-    (sum, e) => sum + e.annual_cost_estimate_gbp,
-    0,
-  );
-  // fab-0: null when no energy records.
-  const avgAnnualCostPerAppliance: number | null =
-    totalEnergyRecords > 0
-      ? Math.round((totalAnnualCost / totalEnergyRecords) * 100) / 100
-      : null;
-
-  // Poor energy ratings (D or worse)
-  const poorEnergyRatings = ["D", "E", "F", "G"];
-  const poorRatedAppliances = energy_records.filter(
-    (e) => poorEnergyRatings.indexOf(e.energy_rating) !== -1,
   ).length;
 
   // ══════════════════════════════════════════════════════════════════════

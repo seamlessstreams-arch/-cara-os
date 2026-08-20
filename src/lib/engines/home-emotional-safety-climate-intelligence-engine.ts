@@ -316,15 +316,6 @@ export function computeEmotionalSafetyClimate(
   const debriefVoiceCaptured = post_incident_debriefs.filter(
     (d) => d.child_voice_captured,
   ).length;
-  const debriefFeelingsExplored = post_incident_debriefs.filter(
-    (d) => d.child_feelings_explored,
-  ).length;
-  const debriefLearningIdentified = post_incident_debriefs.filter(
-    (d) => d.learning_identified,
-  ).length;
-  const debriefWithFollowUp = post_incident_debriefs.filter(
-    (d) => d.follow_up_actions !== null && d.follow_up_actions.trim() !== "",
-  ).length;
 
   // --- Staff debrief metrics ---
   const totalStaffDebriefs = staff_debriefs.length;
@@ -333,9 +324,6 @@ export function computeEmotionalSafetyClimate(
   ).length;
   const staffSupportOffered = staff_debriefs.filter(
     (d) => d.support_offered,
-  ).length;
-  const staffLearningIdentified = staff_debriefs.filter(
-    (d) => d.learning_identified,
   ).length;
 
   const staffSupportRate = pct(staffSupportOffered, totalStaffDebriefs);

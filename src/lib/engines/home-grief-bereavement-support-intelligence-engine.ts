@@ -390,14 +390,6 @@ export function computeGriefBereavementSupport(
   ).length;
   const memoryWorkBenefitRate = pct(memoryWorkStaffBenefit, totalMemoryWork);
 
-  const followUpPlanned = memory_work_records.filter(
-    (m) => m.follow_up_planned,
-  ).length;
-  const followUpCompleted = memory_work_records.filter(
-    (m) => m.follow_up_planned && m.follow_up_completed,
-  ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
-
   const childLedMemoryWork = memory_work_records.filter(
     (m) => m.facilitated_by === "child_led",
   ).length;
@@ -483,16 +475,6 @@ export function computeGriefBereavementSupport(
   ).length;
   const anniversaryManagementRate = pct(anniversariesWithPlan, totalAnniversaries);
 
-  const anniversariesSharedWithStaff = anniversary_management_records.filter(
-    (a) => a.plan_in_place && a.plan_shared_with_staff,
-  ).length;
-  const staffAwarenessRate = pct(anniversariesSharedWithStaff, anniversariesWithPlan);
-
-  const anniversariesSharedWithChild = anniversary_management_records.filter(
-    (a) => a.plan_shared_with_child,
-  ).length;
-  const childInvolvedInPlanRate = pct(anniversariesSharedWithChild, totalAnniversaries);
-
   const childPreferencesRecorded = anniversary_management_records.filter(
     (a) => a.child_preferences_recorded,
   ).length;
@@ -516,11 +498,6 @@ export function computeGriefBereavementSupport(
     (a) => a.child_feedback_positive === true,
   ).length;
   const anniversaryFeedbackRate = pct(feedbackPositiveAnniv, occurredAnniversaries.length);
-
-  const debriefCompleted = occurredAnniversaries.filter(
-    (a) => a.debrief_completed === true,
-  ).length;
-  const debriefRate = pct(debriefCompleted, occurredAnniversaries.length);
 
   // --- Child coping rate (composite: child-reported improvement + counselling helpful + memory work meaningful) ---
   const totalCopingOpportunities =

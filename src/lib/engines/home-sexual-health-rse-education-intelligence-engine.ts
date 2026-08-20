@@ -309,20 +309,10 @@ export function computeSexualHealthRseEducation(
   ).length;
   const rseFacilitatorQualifiedRate = pct(rseFacilitatorQualified, totalRseSessions);
 
-  const rseAgeAppropriate = rse_education_records.filter(
-    (r) => r.age_appropriate,
-  ).length;
-  const rseAgeAppropriateRate = pct(rseAgeAppropriate, totalRseSessions);
-
   const rseNotesRecorded = rse_education_records.filter(
     (r) => r.notes_recorded,
   ).length;
   const rseDocumentationRate = pct(rseNotesRecorded, totalRseSessions);
-
-  const rseParentInformed = rse_education_records.filter(
-    (r) => r.parent_carer_informed,
-  ).length;
-  const rseParentInformedRate = pct(rseParentInformed, totalRseSessions);
 
   const rseFollowUpNeeded = rse_education_records.filter(
     (r) => r.follow_up_needed,
@@ -367,16 +357,6 @@ export function computeSexualHealthRseEducation(
   ).length;
   const confidentialityExplainedRate = pct(screeningConfidentialityExplained, totalScreenings);
 
-  const screeningChildComfortable = sexual_health_screening_records.filter(
-    (s) => s.child_comfortable,
-  ).length;
-  const screeningComfortRate = pct(screeningChildComfortable, totalScreenings);
-
-  const screeningOutcomeRecorded = sexual_health_screening_records.filter(
-    (s) => s.completed && s.outcome_recorded,
-  ).length;
-  const screeningOutcomeRate = pct(screeningOutcomeRecorded, completedScreenings);
-
   const screeningFollowUpNeeded = sexual_health_screening_records.filter(
     (s) => s.follow_up_needed,
   ).length;
@@ -384,11 +364,6 @@ export function computeSexualHealthRseEducation(
     (s) => s.follow_up_needed && s.follow_up_completed,
   ).length;
   const screeningFollowUpRate = pct(screeningFollowUpCompleted, screeningFollowUpNeeded);
-
-  const screeningStaffSupported = sexual_health_screening_records.filter(
-    (s) => s.staff_supported_attendance,
-  ).length;
-  const screeningStaffSupportRate = pct(screeningStaffSupported, totalScreenings);
 
   // Screening compliance average (composite of completion + consent + confidentiality)
   const screeningComplianceAvg =
@@ -400,11 +375,6 @@ export function computeSexualHealthRseEducation(
 
   // --- Age-appropriate guidance ---
   const totalGuidance = age_guidance_records.length;
-  const uniqueChildrenWithGuidance = new Set(
-    age_guidance_records.map((g) => g.child_id),
-  ).size;
-  const ageAppropriateCoverage =
-    total_children > 0 ? pct(uniqueChildrenWithGuidance, total_children) : 0;
 
   const guidanceAgeAppropriate = age_guidance_records.filter(
     (g) => g.age_appropriate,
@@ -416,45 +386,10 @@ export function computeSexualHealthRseEducation(
   ).length;
   const developmentalConsiderationRate = pct(guidanceDevelopmentalConsidered, totalGuidance);
 
-  const guidanceUnderstandingConfirmed = age_guidance_records.filter(
-    (g) => g.child_understanding_confirmed,
-  ).length;
-  const understandingConfirmedRate = pct(guidanceUnderstandingConfirmed, totalGuidance);
-
-  const guidanceQuestionsAnswered = age_guidance_records.filter(
-    (g) => g.child_questions_answered,
-  ).length;
-  const questionsAnsweredRate = pct(guidanceQuestionsAnswered, totalGuidance);
-
   const guidanceCulturalSensitivity = age_guidance_records.filter(
     (g) => g.cultural_sensitivity_considered,
   ).length;
   const culturalSensitivityRate = pct(guidanceCulturalSensitivity, totalGuidance);
-
-  const guidanceQualifiedDeliverer = age_guidance_records.filter(
-    (g) => g.delivered_by_qualified,
-  ).length;
-  const guidanceQualifiedRate = pct(guidanceQualifiedDeliverer, totalGuidance);
-
-  const guidanceNotesRecorded = age_guidance_records.filter(
-    (g) => g.notes_recorded,
-  ).length;
-  const guidanceDocumentationRate = pct(guidanceNotesRecorded, totalGuidance);
-
-  const guidanceFollowUpNeeded = age_guidance_records.filter(
-    (g) => g.follow_up_planned,
-  ).length;
-  const guidanceFollowUpCompleted = age_guidance_records.filter(
-    (g) => g.follow_up_planned && g.follow_up_completed,
-  ).length;
-  const guidanceFollowUpRate = pct(guidanceFollowUpCompleted, guidanceFollowUpNeeded);
-
-  // Guidance topic coverage
-  const guidanceTopicsCovered = new Set(
-    age_guidance_records.map((g) => g.topic),
-  ).size;
-  const totalGuidanceTopics = 10;
-  const guidanceTopicCoverageRate = pct(guidanceTopicsCovered, totalGuidanceTopics);
 
   // --- Consent education ---
   const totalConsentSessions = consent_education_records.length;
@@ -484,34 +419,14 @@ export function computeSexualHealthRseEducation(
   ).length;
   const knowsWhoToTellRate = pct(consentKnowsWhoToTell, totalConsentSessions);
 
-  const consentAgeAppropriate = consent_education_records.filter(
-    (c) => c.age_appropriate,
-  ).length;
-  const consentAgeAppropriateRate = pct(consentAgeAppropriate, totalConsentSessions);
-
   const consentScenarioPractice = consent_education_records.filter(
     (c) => c.scenario_practice_included,
   ).length;
   const scenarioPracticeRate = pct(consentScenarioPractice, totalConsentSessions);
 
-  const consentFeedbackPositive = consent_education_records.filter(
-    (c) => c.child_feedback_positive,
-  ).length;
-  const consentFeedbackRate = pct(consentFeedbackPositive, totalConsentSessions);
-
-  const consentFacilitatorQualified = consent_education_records.filter(
-    (c) => c.facilitator_qualified,
-  ).length;
-  const consentFacilitatorQualifiedRate = pct(consentFacilitatorQualified, totalConsentSessions);
-
   const overdueConsentReviews = consent_education_records.filter(
     (c) => c.review_overdue,
   ).length;
-
-  const consentNotesRecorded = consent_education_records.filter(
-    (c) => c.notes_recorded,
-  ).length;
-  const consentDocumentationRate = pct(consentNotesRecorded, totalConsentSessions);
 
   // Consent understanding average (composite of understanding + articulation + pressure + knows who to tell)
   const consentUnderstandingAvg =
@@ -529,11 +444,6 @@ export function computeSexualHealthRseEducation(
   const safeguardingAwarenessRate =
     total_children > 0 ? pct(uniqueChildrenSafeguarding, total_children) : 0;
 
-  const sgKnowsSafeAdults = safeguarding_awareness_records.filter(
-    (s) => s.child_knows_safe_adults,
-  ).length;
-  const safeAdultsRate = pct(sgKnowsSafeAdults, totalSafeguardingAssessments);
-
   const sgKnowsHowToReport = safeguarding_awareness_records.filter(
     (s) => s.child_knows_how_to_report,
   ).length;
@@ -544,30 +454,15 @@ export function computeSexualHealthRseEducation(
   ).length;
   const understandsExploitationRate = pct(sgUnderstandsExploitation, totalSafeguardingAssessments);
 
-  const sgUnderstandsOnlineRisks = safeguarding_awareness_records.filter(
-    (s) => s.child_understands_online_risks,
-  ).length;
-  const understandsOnlineRisksRate = pct(sgUnderstandsOnlineRisks, totalSafeguardingAssessments);
-
   const sgUnderstandsGrooming = safeguarding_awareness_records.filter(
     (s) => s.child_understands_grooming,
   ).length;
   const understandsGroomingRate = pct(sgUnderstandsGrooming, totalSafeguardingAssessments);
 
-  const sgCanIdentifyUnsafe = safeguarding_awareness_records.filter(
-    (s) => s.child_can_identify_unsafe_situations,
-  ).length;
-  const identifiesUnsafeRate = pct(sgCanIdentifyUnsafe, totalSafeguardingAssessments);
-
   const sgWillingToDisclose = safeguarding_awareness_records.filter(
     (s) => s.child_willingness_to_disclose,
   ).length;
   const willingnessToDiscloseRate = pct(sgWillingToDisclose, totalSafeguardingAssessments);
-
-  const sgSupportPlanInPlace = safeguarding_awareness_records.filter(
-    (s) => s.support_plan_in_place,
-  ).length;
-  const supportPlanRate = pct(sgSupportPlanInPlace, totalSafeguardingAssessments);
 
   const overdueSafeguardingReviews = safeguarding_awareness_records.filter(
     (s) => s.review_overdue,

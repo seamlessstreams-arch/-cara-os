@@ -280,19 +280,13 @@ export function computeYouthJusticeOffending(
   const totalYotRecords = yot_liaison_records.length;
 
   const yotMeetingsAttended = yot_liaison_records.filter((r) => r.meeting_attended).length;
-  const yotAttendanceRate = pct(yotMeetingsAttended, totalYotRecords);
 
   const childAttendedYot = yot_liaison_records.filter((r) => r.child_attended).length;
-  const childYotAttendanceRate = pct(childAttendedYot, totalYotRecords);
-
-  const staffAttendedYot = yot_liaison_records.filter((r) => r.home_staff_attended).length;
-  const staffYotAttendanceRate = pct(staffAttendedYot, totalYotRecords);
 
   const yotActionsCompleted = yot_liaison_records.filter((r) => r.actions_completed).length;
   const yotActionCompletionRate = pct(yotActionsCompleted, totalYotRecords);
 
   const yotInfoShared = yot_liaison_records.filter((r) => r.information_shared_with_team).length;
-  const yotInfoSharingRate = pct(yotInfoShared, totalYotRecords);
 
   const yotChildViewsCaptured = yot_liaison_records.filter((r) => r.child_views_captured).length;
   const yotChildViewsRate = pct(yotChildViewsCaptured, totalYotRecords);
@@ -311,11 +305,8 @@ export function computeYouthJusticeOffending(
   // --- Behaviour plan metrics ---
   const totalBehaviourPlans = behaviour_plan_records.length;
 
-  const activePlans = behaviour_plan_records.filter((p) => p.plan_active).length;
-
   const totalTargetsSet = behaviour_plan_records.reduce((sum, p) => sum + p.total_targets, 0);
   const totalTargetsMet = behaviour_plan_records.reduce((sum, p) => sum + p.targets_met, 0);
-  const targetComplianceRate = pct(totalTargetsMet, totalTargetsSet);
 
   const plansReviewed = behaviour_plan_records.filter((p) => p.plan_reviewed).length;
   const planReviewRate = pct(plansReviewed, totalBehaviourPlans);
@@ -324,13 +315,9 @@ export function computeYouthJusticeOffending(
   const childPlanInvolvementRate = pct(childInvolvedInPlanning, totalBehaviourPlans);
 
   const childEngagedWithPlan = behaviour_plan_records.filter((p) => p.child_engaged_with_plan).length;
-  const childPlanEngagementRate = pct(childEngagedWithPlan, totalBehaviourPlans);
 
   const evidenceOfChange = behaviour_plan_records.filter((p) => p.evidence_of_change).length;
   const evidenceOfChangeRate = pct(evidenceOfChange, totalBehaviourPlans);
-
-  const professionalInput = behaviour_plan_records.filter((p) => p.professional_input_received).length;
-  const professionalInputRate = pct(professionalInput, totalBehaviourPlans);
 
   const progressSum = behaviour_plan_records.reduce((sum, p) => sum + p.progress_rating, 0);
   const avgProgressRating =
@@ -347,26 +334,19 @@ export function computeYouthJusticeOffending(
   const totalRjRecords = restorative_justice_records.length;
 
   const rjParticipated = restorative_justice_records.filter((r) => r.child_participated).length;
-  const rjParticipationRate = pct(rjParticipated, totalRjRecords);
 
   const rjEngaged = restorative_justice_records.filter((r) => r.child_engaged).length;
-  const rjEngagementRate = pct(rjEngaged, totalRjRecords);
 
   const rjEmpathy = restorative_justice_records.filter((r) => r.child_showed_empathy).length;
   const rjEmpathyRate = pct(rjEmpathy, totalRjRecords);
 
   const rjOutcomeAchieved = restorative_justice_records.filter((r) => r.outcome_achieved).length;
-  const rjOutcomeRate = pct(rjOutcomeAchieved, totalRjRecords);
 
   const rjFollowUpRequired = restorative_justice_records.filter((r) => r.follow_up_required).length;
   const rjFollowUpCompleted = restorative_justice_records.filter((r) => r.follow_up_required && r.follow_up_completed).length;
   const rjFollowUpCompletionRate = pct(rjFollowUpCompleted, rjFollowUpRequired);
 
-  const rjStaffSupported = restorative_justice_records.filter((r) => r.staff_supported_child).length;
-  const rjStaffSupportRate = pct(rjStaffSupported, totalRjRecords);
-
   const rjReflectionDocumented = restorative_justice_records.filter((r) => r.child_reflection_documented).length;
-  const rjReflectionRate = pct(rjReflectionDocumented, totalRjRecords);
 
   // RJ composite: participated + engaged + outcome achieved + reflection documented
   const rjCompositeNumerator = rjParticipated + rjEngaged + rjOutcomeAchieved + rjReflectionDocumented;
@@ -376,8 +356,6 @@ export function computeYouthJusticeOffending(
   // --- Court order metrics ---
   const totalCourtOrders = court_order_records.length;
 
-  const activeOrders = court_order_records.filter((o) => o.order_active).length;
-
   const totalConditionsCount = court_order_records.reduce((sum, o) => sum + o.total_conditions, 0);
   const totalConditionsComplied = court_order_records.reduce((sum, o) => sum + o.conditions_complied_with, 0);
   const conditionComplianceRate = pct(totalConditionsComplied, totalConditionsCount);
@@ -386,10 +364,8 @@ export function computeYouthJusticeOffending(
   const breachRate = pct(breachOccurred, totalCourtOrders);
 
   const homeSupportedCompliance = court_order_records.filter((o) => o.home_supported_compliance).length;
-  const homeSupportRate = pct(homeSupportedCompliance, totalCourtOrders);
 
   const monitoringInPlace = court_order_records.filter((o) => o.monitoring_in_place).length;
-  const monitoringRate = pct(monitoringInPlace, totalCourtOrders);
 
   // Court order adherence composite: conditions complied + home supported + monitoring
   const courtAdherenceNumerator = totalConditionsComplied + homeSupportedCompliance + monitoringInPlace;
@@ -399,31 +375,19 @@ export function computeYouthJusticeOffending(
   // --- Prevention programme metrics ---
   const totalPreventionProgrammes = prevention_programme_records.length;
 
-  const activeProgrammes = prevention_programme_records.filter((p) => p.programme_active).length;
-
   const totalSessionsPlanned = prevention_programme_records.reduce((sum, p) => sum + p.sessions_planned, 0);
   const totalSessionsAttended = prevention_programme_records.reduce((sum, p) => sum + p.sessions_attended, 0);
   const sessionAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
 
   const preventionEngaged = prevention_programme_records.filter((p) => p.child_engaged).length;
-  const preventionEngagementRate = pct(preventionEngaged, totalPreventionProgrammes);
 
   const preventionProgressPositive = prevention_programme_records.filter((p) => p.child_progress_positive).length;
-  const preventionProgressRate = pct(preventionProgressPositive, totalPreventionProgrammes);
 
   const measurableOutcomes = prevention_programme_records.filter((p) => p.measurable_outcomes_documented).length;
   const measurableOutcomesRate = pct(measurableOutcomes, totalPreventionProgrammes);
 
   const noReoffending = prevention_programme_records.filter((p) => !p.reoffending_since_start).length;
   const noReoffendingRate = pct(noReoffending, totalPreventionProgrammes);
-
-  const professionalFeedbackPositive = prevention_programme_records.filter(
-    (p) => p.professional_feedback_positive === true,
-  ).length;
-  const professionalFeedbackCount = prevention_programme_records.filter(
-    (p) => p.professional_feedback_positive !== null,
-  ).length;
-  const professionalFeedbackRate = pct(professionalFeedbackPositive, professionalFeedbackCount);
 
   // Prevention effectiveness composite: attended sessions + engaged + progress + no reoffending
   const prevEffNumerator = totalSessionsAttended + preventionEngaged + preventionProgressPositive + noReoffending;

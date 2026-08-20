@@ -304,10 +304,6 @@ export function computeHolidayTripPlanning(
   const socialWorkerNotified = holiday_plan_records.filter((h) => h.social_worker_notified).length;
   const socialWorkerNotificationRate = pct(socialWorkerNotified, totalHolidayPlans);
 
-  const completedHolidays = holiday_plan_records.filter((h) => h.status === "completed").length;
-  const cancelledHolidays = holiday_plan_records.filter((h) => h.status === "cancelled").length;
-  const completionRate = pct(completedHolidays, totalHolidayPlans > 0 ? totalHolidayPlans - cancelledHolidays : 0);
-
   // Holiday type distribution
   const holidayTypes: Record<string, number> = {};
   for (const h of holiday_plan_records) {
@@ -324,13 +320,10 @@ export function computeHolidayTripPlanning(
   const totalRiskAssessments = trip_risk_assessment_records.length;
 
   const mitigationInPlace = trip_risk_assessment_records.filter((r) => r.mitigation_in_place).length;
-  const mitigationRate = pct(mitigationInPlace, totalRiskAssessments);
 
   const riskReviewed = trip_risk_assessment_records.filter((r) => r.reviewed).length;
-  const riskReviewRate = pct(riskReviewed, totalRiskAssessments);
 
   const riskApproved = trip_risk_assessment_records.filter((r) => r.approved).length;
-  const riskApprovalRate = pct(riskApproved, totalRiskAssessments);
 
   const dynamicRAPlanned = trip_risk_assessment_records.filter((r) => r.dynamic_risk_assessment_planned).length;
   const dynamicRARate = pct(dynamicRAPlanned, totalRiskAssessments);
@@ -362,13 +355,8 @@ export function computeHolidayTripPlanning(
   const totalConsentRecords = consent_management_records.length;
 
   const consentReceived = consent_management_records.filter((c) => c.consent_received).length;
-  const consentReceivedRate = pct(consentReceived, totalConsentRecords);
 
   const consentDocumented = consent_management_records.filter((c) => c.consent_documented).length;
-  const consentDocumentedRate = pct(consentDocumented, totalConsentRecords);
-
-  const consentRefused = consent_management_records.filter((c) => c.refused).length;
-  const consentRefusedRate = pct(consentRefused, totalConsentRecords);
 
   // Composite consent compliance: received + documented
   const consentComplianceNumerator = consentReceived + consentDocumented;
@@ -387,13 +375,6 @@ export function computeHolidayTripPlanning(
     consentTypes[c.consent_type] = (consentTypes[c.consent_type] ?? 0) + 1;
   }
 
-  // Holiday plans with consent
-  const holidayPlanIdsWithConsent = new Set(
-    consent_management_records.filter((c) => c.consent_received).map((c) => c.holiday_plan_id),
-  );
-  const plansWithConsent = holiday_plan_records.filter((h) => holidayPlanIdsWithConsent.has(h.id)).length;
-  const consentCoverageRate = pct(plansWithConsent, totalHolidayPlans);
-
   // --- Experience quality metrics ---
   const totalExperiences = experience_records.length;
 
@@ -404,7 +385,6 @@ export function computeHolidayTripPlanning(
       : null;
 
   const positiveFeedback = experience_records.filter((e) => e.child_feedback_positive).length;
-  const positiveFeedbackRate = pct(positiveFeedback, totalExperiences);
 
   const memorableMoments = experience_records.filter((e) => e.memorable_moment_captured).length;
   const memorableMomentRate = pct(memorableMoments, totalExperiences);
@@ -416,7 +396,6 @@ export function computeHolidayTripPlanning(
   const newSkillRate = pct(newSkills, totalExperiences);
 
   const socialInteractionPositive = experience_records.filter((e) => e.social_interaction_positive).length;
-  const socialInteractionRate = pct(socialInteractionPositive, totalExperiences);
 
   // Composite experience quality: feedback_positive + memorable + photos + skills + social
   const expQualityNumerator = positiveFeedback + memorableMoments + photosTaken + newSkills + socialInteractionPositive;
@@ -437,10 +416,8 @@ export function computeHolidayTripPlanning(
   const totalParticipation = child_participation_records.length;
 
   const childInvolved = child_participation_records.filter((p) => p.child_involved).length;
-  const childInvolvementRate = pct(childInvolved, totalParticipation);
 
   const viewsRecorded = child_participation_records.filter((p) => p.child_views_recorded).length;
-  const viewsRecordedRate = pct(viewsRecorded, totalParticipation);
 
   const viewsActedUpon = child_participation_records.filter((p) => p.child_views_acted_upon).length;
   const viewsActedUponRate = pct(viewsActedUpon, totalParticipation);
@@ -469,12 +446,6 @@ export function computeHolidayTripPlanning(
   for (const p of child_participation_records) {
     participationTypes[p.participation_type] = (participationTypes[p.participation_type] ?? 0) + 1;
   }
-
-  // Unique children with participation records
-  const uniqueChildrenWithParticipation = new Set(
-    child_participation_records.map((p) => p.child_id),
-  ).size;
-  const participationCoverageRate = total_children > 0 ? pct(uniqueChildrenWithParticipation, total_children) : 0;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

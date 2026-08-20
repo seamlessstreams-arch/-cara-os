@@ -281,22 +281,6 @@ export function computeAdvocacyIndependentVisitor(
   const allocatedIV = independent_visitor_records.filter((r) => r.allocated).length;
   const visitorAllocationRate = pct(allocatedIV, totalIVRecords);
 
-  const uniqueChildrenWithIV = new Set(
-    independent_visitor_records.filter((r) => r.allocated).map((r) => r.child_id),
-  ).size;
-
-  const dbsCleared = independent_visitor_records.filter((r) => r.dbs_cleared).length;
-  const dbsClearanceRate = pct(dbsCleared, totalIVRecords);
-
-  const trainingCompleted = independent_visitor_records.filter((r) => r.training_completed).length;
-  const trainingRate = pct(trainingCompleted, totalIVRecords);
-
-  const childConsented = independent_visitor_records.filter((r) => r.child_consented).length;
-  const consentRate = pct(childConsented, totalIVRecords);
-
-  const childMatched = independent_visitor_records.filter((r) => r.child_matched).length;
-  const matchingRate = pct(childMatched, totalIVRecords);
-
   const matchQualityGood = independent_visitor_records.filter(
     (r) => r.matching_quality === "excellent" || r.matching_quality === "good",
   ).length;
@@ -328,15 +312,9 @@ export function computeAdvocacyIndependentVisitor(
   );
   const ivIssueResolutionRate = pct(totalIVIssuesResolved, totalIVIssuesRaised);
 
-  const ivReportSubmitted = independent_visitor_records.filter(
-    (r) => r.visitor_report_submitted,
-  ).length;
-  const ivReportRate = pct(ivReportSubmitted, totalIVRecords);
-
   const ivWishesRecorded = independent_visitor_records.filter(
     (r) => r.child_wishes_recorded,
   ).length;
-  const ivWishesRate = pct(ivWishesRecorded, totalIVRecords);
 
   // --- Advocacy service access ---
   const totalAdvocacyRecords = advocacy_service_records.length;
@@ -345,25 +323,10 @@ export function computeAdvocacyIndependentVisitor(
   ).length;
   const advocacyAccessRate = pct(advocateAllocated, totalAdvocacyRecords);
 
-  const referralAccepted = advocacy_service_records.filter(
-    (r) => r.referral_accepted,
-  ).length;
-  const referralAcceptanceRate = pct(referralAccepted, totalAdvocacyRecords);
-
-  const advocacyPlanInPlace = advocacy_service_records.filter(
-    (r) => r.advocacy_plan_in_place,
-  ).length;
-  const advocacyPlanRate = pct(advocacyPlanInPlace, totalAdvocacyRecords);
-
   const childInformedOfRights = advocacy_service_records.filter(
     (r) => r.child_informed_of_rights,
   ).length;
   const rightsInformedRate = pct(childInformedOfRights, totalAdvocacyRecords);
-
-  const childUnderstandsRole = advocacy_service_records.filter(
-    (r) => r.child_understands_role,
-  ).length;
-  const roleUnderstandingRate = pct(childUnderstandsRole, totalAdvocacyRecords);
 
   const totalAdvocacyMeetingsAttended = advocacy_service_records.reduce(
     (sum, r) => sum + r.meetings_attended_by_advocate, 0,
@@ -377,11 +340,6 @@ export function computeAdvocacyIndependentVisitor(
     (r) => r.outcome_achieved,
   ).length;
   const outcomeRate = pct(outcomeAchieved, totalAdvocacyRecords);
-
-  const outcomeDocumented = advocacy_service_records.filter(
-    (r) => r.outcome_documented,
-  ).length;
-  const outcomeDocumentedRate = pct(outcomeDocumented, totalAdvocacyRecords);
 
   const advocacySatisfactionSum = advocacy_service_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -407,27 +365,6 @@ export function computeAdvocacyIndependentVisitor(
   const viewsSought = representation_records.filter(
     (r) => r.child_views_sought,
   ).length;
-  const viewsSoughtRate = pct(viewsSought, totalRepRecords);
-
-  const viewsDocumented = representation_records.filter(
-    (r) => r.child_views_documented,
-  ).length;
-  const viewsDocumentedRate = pct(viewsDocumented, totalRepRecords);
-
-  const viewsPresented = representation_records.filter(
-    (r) => r.child_views_presented,
-  ).length;
-  const viewsPresentedRate = pct(viewsPresented, totalRepRecords);
-
-  const childAttended = representation_records.filter(
-    (r) => r.child_attended_meeting,
-  ).length;
-  const childAttendanceRate = pct(childAttended, totalRepRecords);
-
-  const advocatePresent = representation_records.filter(
-    (r) => r.advocate_present,
-  ).length;
-  const advocatePresenceRate = pct(advocatePresent, totalRepRecords);
 
   const childFeltHeard = representation_records.filter(
     (r) => r.child_felt_heard,
@@ -461,16 +398,6 @@ export function computeAdvocacyIndependentVisitor(
   ).length;
   const visitComplianceRate = pct(visitsCompleted, totalVisitRecords);
 
-  const withinTimescale = visit_compliance_records.filter(
-    (r) => r.within_timescale,
-  ).length;
-  const timescaleRate = pct(withinTimescale, totalVisitRecords);
-
-  const visitPrivate = visit_compliance_records.filter(
-    (r) => r.visit_private,
-  ).length;
-  const privacyRate = pct(visitPrivate, totalVisitRecords);
-
   const seenAlone = visit_compliance_records.filter(
     (r) => r.child_seen_alone,
   ).length;
@@ -479,7 +406,6 @@ export function computeAdvocacyIndependentVisitor(
   const visitViewsRecorded = visit_compliance_records.filter(
     (r) => r.child_views_recorded,
   ).length;
-  const visitViewsRate = pct(visitViewsRecorded, totalVisitRecords);
 
   const totalFollowUp = visit_compliance_records.reduce(
     (sum, r) => sum + r.follow_up_actions, 0,
@@ -498,11 +424,6 @@ export function computeAdvocacyIndependentVisitor(
     (r) => r.report_filed_on_time,
   ).length;
   const reportTimelinessRate = pct(reportOnTime, totalVisitRecords);
-
-  const visitQualityGood = visit_compliance_records.filter(
-    (r) => r.visit_quality === "excellent" || r.visit_quality === "good",
-  ).length;
-  const visitQualityRate = pct(visitQualityGood, totalVisitRecords);
 
   // --- Child satisfaction composite ---
   const totalSatRecords = child_satisfaction_records.length;

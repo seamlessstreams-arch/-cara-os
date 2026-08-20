@@ -942,29 +942,6 @@ describe("computeOutcomeStarAssessment", () => {
       const result2 = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: assessments2 }),
       );
-      // coverage = 1/5 = 20% => -5
-      // repeat = 1/4 = 25% => no mod
-      // withPrevious=1, improving=0 (3 not > 3) => 0% < 20 => -4
-      // action plan = 1/4 = 25% => no mod (between 25-49)
-      // child voice = 1/4 = 25% => no mod
-      // fullDomain = 0%, staff = 0% => both <25 => -3
-      // 52 - 5 + 0 - 4 + 0 + 0 - 3 = 40 => inadequate
-      // Try differently. Let's build from +7 to get 45 from modifier sum of -7
-      // We need exactly -7 from base 52.
-      // +6(cov) +2(rep) -4(imp) -4(action) -4(child) -3(domain) = -7. Yes!
-      const assessments3 = Array.from({ length: 5 }, (_, i) =>
-        makeAssessment({
-          id: `a-${i}`,
-          child_id: `child-${i}`,
-          has_previous_scores: true,
-          domains_improved_count: 0,
-          domains_declined_count: 8,
-          action_plan_count: 0,
-          has_child_views: false,
-          has_staff_views: false,
-          domain_count: 3,
-        }),
-      );
       // Make repeat rate = 40-69% for +2: all 5 have previous = 100% => +5
       // That changes things. Need repeat = 40-69%
       // Actually all have has_previous_scores=true => 100% => +5
@@ -1532,22 +1509,6 @@ describe("computeOutcomeStarAssessment", () => {
     });
 
     it("has all 7 concerns when everything is bad", () => {
-      // We need total > 0 for most concerns, but total === 0 for the first concern
-      // These are mutually exclusive. Test max with total > 0:
-      // Can get 6 concerns (all except the no-assessments one)
-      const assessments = Array.from({ length: 10 }, (_, i) =>
-        makeAssessment({
-          id: `a-${i}`,
-          child_id: `child-${i % 2}`, // only 2 unique children
-          has_previous_scores: i < 3, // 3/10 = 30% repeat, not < 20
-          domains_improved_count: 0,
-          domains_declined_count: 8,
-          action_plan_count: 0,
-          has_child_views: false,
-          has_staff_views: false,
-          domain_count: 3,
-        }),
-      );
       // For repeat < 20, need 1/10 = 10%
       // For declining > 2, need 3+ declining with previous
       // For improvement < 20, need all non-improving

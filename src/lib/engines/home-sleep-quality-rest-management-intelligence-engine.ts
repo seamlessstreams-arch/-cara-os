@@ -307,15 +307,6 @@ export function computeSleepQualityRestManagement(
   ).length;
   const envIssueResolutionRate = pct(envIssuesResolved, envIssuesIdentified);
 
-  const envScoreSum = sleep_environment_records.reduce(
-    (sum, e) => sum + (e.overall_environment_score ?? 0),
-    0,
-  );
-  const avgEnvironmentScore =
-    totalEnvironmentRecords > 0
-      ? Math.round((envScoreSum / totalEnvironmentRecords) * 100) / 100
-      : null;
-
   // --- Disturbance metrics ---
   const totalDisturbances = sleep_disturbance_records.length;
 
@@ -344,16 +335,13 @@ export function computeSleepQualityRestManagement(
   const totalBedtimeSupport = bedtime_support_records.length;
 
   const supportProvided = bedtime_support_records.filter((b) => b.support_provided).length;
-  const supportProvidedRate = pct(supportProvided, totalBedtimeSupport);
 
   const childEngaged = bedtime_support_records.filter((b) => b.child_engaged).length;
-  const childEngagementRate = pct(childEngaged, totalBedtimeSupport);
 
   const childFeedbackPositive = bedtime_support_records.filter((b) => b.child_feedback_positive).length;
   const childSatisfactionRate = pct(childFeedbackPositive, totalBedtimeSupport);
 
   const consistentWithPlan = bedtime_support_records.filter((b) => b.consistency_with_plan).length;
-  const planConsistencyRate = pct(consistentWithPlan, totalBedtimeSupport);
 
   // Bedtime support quality is composite: provided + engaged + positive + consistent
   const bedtimeSupportQualityNumerator = supportProvided + childEngaged + childFeedbackPositive + consistentWithPlan;
@@ -362,8 +350,6 @@ export function computeSleepQualityRestManagement(
 
   // --- Improvement plan metrics ---
   const totalImprovementPlans = sleep_improvement_records.length;
-
-  const activePlans = sleep_improvement_records.filter((p) => p.plan_active).length;
 
   const uniqueChildrenWithPlans = new Set(
     sleep_improvement_records.filter((p) => p.plan_active).map((p) => p.child_id),
@@ -389,9 +375,6 @@ export function computeSleepQualityRestManagement(
     totalImprovementPlans > 0
       ? Math.round((progressSum / totalImprovementPlans) * 100) / 100
       : null;
-
-  const outcomesDocumented = sleep_improvement_records.filter((p) => p.outcomes_documented).length;
-  const outcomesDocumentedRate = pct(outcomesDocumented, totalImprovementPlans);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

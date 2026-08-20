@@ -335,12 +335,10 @@ export function computePolicyReviewCycleCompliance(
   const approvedVersions = version_control_records.filter(
     (r) => r.approval_date !== null && r.approval_date !== "",
   ).length;
-  const approvalRate = pct(approvedVersions, totalVersionRecords);
 
   const archivedVersions = version_control_records.filter(
     (r) => r.superseded_version_archived,
   ).length;
-  const archiveRate = pct(archivedVersions, totalVersionRecords);
 
   const changeLogMaintained = version_control_records.filter(
     (r) => r.change_log_maintained,
@@ -350,7 +348,6 @@ export function computePolicyReviewCycleCompliance(
   const rationalDocumented = version_control_records.filter(
     (r) => r.rationale_documented,
   ).length;
-  const rationaleRate = pct(rationalDocumented, totalVersionRecords);
 
   // Version control composite: approved + archived + change_log + rationale
   const versionControlNumerator = approvedVersions + archivedVersions + changeLogMaintained + rationalDocumented;
@@ -376,27 +373,10 @@ export function computePolicyReviewCycleCompliance(
   ).length;
   const comprehensionRate = pct(comprehensionConfirmed, totalAcknowledgementRecords);
 
-  const assessmentRequired = acknowledgement_records.filter(
-    (r) => r.assessment_passed !== null,
-  ).length;
-  const assessmentPassed = acknowledgement_records.filter(
-    (r) => r.assessment_passed === true,
-  ).length;
-  const assessmentPassRate = pct(assessmentPassed, assessmentRequired);
-
-  const timelyAcknowledgements = acknowledgement_records.filter(
-    (r) => r.acknowledged && r.days_to_acknowledge <= 14,
-  ).length;
-  const timelyAcknowledgementRate = pct(timelyAcknowledgements, totalAcknowledgementRecords);
-
   const outstandingAcknowledgements = acknowledgement_records.filter(
     (r) => !r.acknowledged,
   ).length;
   const outstandingAckRate = pct(outstandingAcknowledgements, totalAcknowledgementRecords);
-
-  const remindersNeeded = acknowledgement_records.filter(
-    (r) => !r.acknowledged && r.reminder_sent,
-  ).length;
 
   // --- Regulatory alignment metrics ---
   const totalAlignmentRecords = alignment_records.length;
@@ -405,11 +385,6 @@ export function computePolicyReviewCycleCompliance(
     (r) => r.alignment_status === "fully_aligned",
   ).length;
   const regulatoryAlignmentRate = pct(fullyAligned, totalAlignmentRecords);
-
-  const partiallyAligned = alignment_records.filter(
-    (r) => r.alignment_status === "partially_aligned",
-  ).length;
-  const partialAlignmentRate = pct(partiallyAligned, totalAlignmentRecords);
 
   const notAligned = alignment_records.filter(
     (r) => r.alignment_status === "not_aligned",
@@ -436,11 +411,6 @@ export function computePolicyReviewCycleCompliance(
   ).length;
   const legislativeTrackingRate = pct(legislativeTracked, totalAlignmentRecords);
 
-  const ofstedRecsAddressed = alignment_records.filter(
-    (r) => r.ofsted_recommendation_addressed,
-  ).length;
-  const ofstedRecRate = pct(ofstedRecsAddressed, totalAlignmentRecords);
-
   // --- Accessibility metrics ---
   const totalAccessibilityRecords = accessibility_records.length;
 
@@ -461,9 +431,6 @@ export function computePolicyReviewCycleCompliance(
   }
   const accessibilityRate = pct(totalAccessChecksPassed, totalAccessChecksPossible);
 
-  const staffAccessible = accessibility_records.filter((r) => r.staff_accessible).length;
-  const staffAccessRate = pct(staffAccessible, totalAccessibilityRecords);
-
   const youngPeopleVersions = accessibility_records.filter(
     (r) => r.young_people_version_available,
   ).length;
@@ -473,11 +440,6 @@ export function computePolicyReviewCycleCompliance(
     (r) => r.easy_read_version_available,
   ).length;
   const easyReadRate = pct(easyReadAvailable, totalAccessibilityRecords);
-
-  const translatedAvailable = accessibility_records.filter(
-    (r) => r.translated_versions_available,
-  ).length;
-  const translationRate = pct(translatedAvailable, totalAccessibilityRecords);
 
   const accessIssuesIdentified = accessibility_records.filter(
     (r) => r.accessibility_issues.length > 0,

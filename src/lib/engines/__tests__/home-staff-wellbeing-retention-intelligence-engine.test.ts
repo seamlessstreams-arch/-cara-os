@@ -146,7 +146,6 @@ function outstandingInput(overrides: Partial<StaffWellbeingRetentionInput> = {})
   // With total_staff = 10 and 1 sickness, 1/10 = 10% → <=10 → +4. Let's use 10 staff.
   // Actually pct(1, 10) = Math.round((1/10)*100) = 10. 10 <= 10 → +4.
   const totalStaff = 10;
-  const staffIds10 = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10"];
 
   return {
     today: "2026-05-28",

@@ -277,22 +277,12 @@ export function computeIndependenceLifeSkillsDevelopment(
   ).length;
   const assessmentChildInvolvementRate = pct(assessmentsWithChildInvolvement, totalAssessments);
 
-  const assessmentsWithKeyWorker = life_skills_assessment_records.filter(
-    (a) => a.key_worker_involved,
-  ).length;
-  const keyWorkerInvolvementRate = pct(assessmentsWithKeyWorker, totalAssessments);
-
   const overdueAssessmentReviews = life_skills_assessment_records.filter(
     (a) => a.review_overdue,
   ).length;
   const assessmentReviewComplianceRate = totalAssessments > 0
     ? pct(totalAssessments - overdueAssessmentReviews, totalAssessments)
     : null;
-
-  const assessmentChildFeedbackPositive = life_skills_assessment_records.filter(
-    (a) => a.child_feedback_positive,
-  ).length;
-  const assessmentFeedbackRate = pct(assessmentChildFeedbackPositive, totalAssessments);
 
   // --- Skills improvement tracking ---
   const assessmentsWithPreviousScore = life_skills_assessment_records.filter(
@@ -312,43 +302,6 @@ export function computeIndependenceLifeSkillsDevelopment(
   );
   const goalsAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
 
-  // --- Average skill scores ---
-  const avgCookingScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.cooking_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgCleaningScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.cleaning_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgLaundryScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.laundry_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgBudgetingScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.budgeting_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgPersonalHygieneScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.personal_hygiene_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgTravelScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.travel_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-  const avgSocialSkillsScore = totalAssessments > 0
-    ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + (a.social_skills_score ?? 0), 0) / totalAssessments) * 100,
-      ) / 100
-    : null;
-
   // --- Cooking programme metrics ---
   const totalCookingSessions = cooking_programme_records.length;
   const uniqueChildrenCooking = new Set(
@@ -361,11 +314,6 @@ export function computeIndependenceLifeSkillsDevelopment(
     (c) => c.skill_level === "independent" || c.skill_level === "supervised",
   ).length;
   const cookingCompetencyRate = pct(cookingIndependentOrSupervised, totalCookingSessions);
-
-  const cookingHygieneCompliant = cooking_programme_records.filter(
-    (c) => c.hygiene_standards_met,
-  ).length;
-  const cookingHygieneRate = pct(cookingHygieneCompliant, totalCookingSessions);
 
   const cookingSafetyCompliant = cooking_programme_records.filter(
     (c) => c.safety_standards_met,
@@ -392,11 +340,6 @@ export function computeIndependenceLifeSkillsDevelopment(
   ).length;
   const cookingDocumentationRate = pct(cookingNotesRecorded, totalCookingSessions);
 
-  const cookingIndependentSessions = cooking_programme_records.filter(
-    (c) => c.skill_level === "independent",
-  ).length;
-  const cookingFullIndependenceRate = pct(cookingIndependentSessions, totalCookingSessions);
-
   // --- Travel training metrics ---
   const totalTravelSessions = travel_training_records.length;
   const uniqueChildrenTravel = new Set(
@@ -415,15 +358,9 @@ export function computeIndependenceLifeSkillsDevelopment(
   ).length;
   const travelRiskAssessmentRate = pct(travelRiskAssessmentCompleted, totalTravelSessions);
 
-  const travelMilestonesAchieved = travel_training_records.filter(
-    (t) => t.milestone_achieved,
-  ).length;
-  const travelMilestoneRate = pct(travelMilestonesAchieved, totalTravelSessions);
-
   const travelChildFeedbackPositive = travel_training_records.filter(
     (t) => t.child_feedback_positive,
   ).length;
-  const travelFeedbackRate = pct(travelChildFeedbackPositive, totalTravelSessions);
 
   const travelChildConfidenceSum = travel_training_records.reduce(
     (sum, t) => sum + t.child_confidence_rating, 0,
@@ -432,18 +369,6 @@ export function computeIndependenceLifeSkillsDevelopment(
     totalTravelSessions > 0
       ? Math.round((travelChildConfidenceSum / totalTravelSessions) * 100) / 100
       : null;
-
-  const travelStaffConfidenceSum = travel_training_records.reduce(
-    (sum, t) => sum + t.staff_confidence_rating, 0,
-  );
-  const travelStaffConfidenceAvg =
-    totalTravelSessions > 0
-      ? Math.round((travelStaffConfidenceSum / totalTravelSessions) * 100) / 100
-      : null;
-
-  const travelIndependentJourneys = travel_training_records.filter(
-    (t) => t.competency_level === "independent" && !t.accompanied,
-  ).length;
 
   // --- Personal care metrics ---
   const totalPersonalCareRecords = personal_care_records.length;
@@ -458,35 +383,14 @@ export function computeIndependenceLifeSkillsDevelopment(
   ).length;
   const personalCareRate = pct(personalCareIndependent, totalPersonalCareRecords);
 
-  const personalCareImprovement = personal_care_records.filter(
-    (p) => p.improvement_noted,
-  ).length;
-  const personalCareImprovementRate = pct(personalCareImprovement, totalPersonalCareRecords);
-
   const personalCareChildEngaged = personal_care_records.filter(
     (p) => p.child_engaged,
   ).length;
-  const personalCareEngagementRate = pct(personalCareChildEngaged, totalPersonalCareRecords);
 
   const personalCareDignityRespected = personal_care_records.filter(
     (p) => p.dignity_respected,
   ).length;
   const personalCareDignityRate = pct(personalCareDignityRespected, totalPersonalCareRecords);
-
-  const personalCareAgeAppropriate = personal_care_records.filter(
-    (p) => p.age_appropriate_support,
-  ).length;
-  const personalCareAgeApproRate = pct(personalCareAgeAppropriate, totalPersonalCareRecords);
-
-  const personalCareKeyWorkerDiscussed = personal_care_records.filter(
-    (p) => p.key_worker_discussed,
-  ).length;
-  const personalCareKeyWorkerRate = pct(personalCareKeyWorkerDiscussed, totalPersonalCareRecords);
-
-  const personalCareFullIndependence = personal_care_records.filter(
-    (p) => p.independence_level === "independent",
-  ).length;
-  const personalCareFullIndependenceRate = pct(personalCareFullIndependence, totalPersonalCareRecords);
 
   // --- Independence milestones ---
   const totalMilestones = independence_milestone_records.length;
@@ -508,11 +412,6 @@ export function computeIndependenceLifeSkillsDevelopment(
     (m) => m.achieved && m.evidenced_in_records,
   ).length;
   const milestoneEvidenceRate = pct(evidencedMilestones, achievedMilestones);
-
-  const childProudMilestones = independence_milestone_records.filter(
-    (m) => m.achieved && m.child_proud,
-  ).length;
-  const milestoneChildProudRate = pct(childProudMilestones, achievedMilestones);
 
   const sharedWithSWMilestones = independence_milestone_records.filter(
     (m) => m.achieved && m.shared_with_social_worker,

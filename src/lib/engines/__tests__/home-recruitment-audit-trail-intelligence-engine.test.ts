@@ -1185,30 +1185,6 @@ describe("computeRecruitmentAuditTrail", () => {
           has_notes: i < 9, // notes 90% → +5, completeness 90% → wait, that's +6
         }),
       );
-      // Let me construct this more carefully
-      // Want: notes ≥90 (+5), state ≥80 (+5), completeness 70-89 (+3), depth <2 (0)
-      // notes 90%, state 100%, completeness 90% = +6 not +3. Let me rethink.
-      // Want exactly 65: 52 + 13 in bonuses
-      // notes ≥ 80 (+3), state ≥ 80 (+5), completeness ≥ 70 (+3), depth ≥ 2 (+2) = 13 → 65
-      const entries2 = Array.from({ length: 4 }, (_, i) =>
-        makeAuditEntry({
-          id: `ae-${i}`,
-          candidate_id: "c1",
-          has_before_state: true,
-          has_after_state: true,
-          has_notes: i < 3, // notes 75%? No, 3/4 = 75%. Need 80%.
-        }),
-      );
-      // 5 entries, 4 with notes = 80%
-      const entries3 = Array.from({ length: 5 }, (_, i) =>
-        makeAuditEntry({
-          id: `ae-${i}`,
-          candidate_id: "c1",
-          has_before_state: true,
-          has_after_state: true,
-          has_notes: i < 4, // notes 80% → +3, completeness 80% → wait, 4/5 = 80% → +3 for completeness? No, 80% >= 70% → +3
-        }),
-      );
       // depth: 5/1 = 5 → +4
       // 52 + 3 + 5 + 3 + 4 = 67, not 65
       // Let me try: notes 80% (+3), state 60-79% (+3), completeness <70 (0), depth ≥ 4 (+4) = 10 → 62. Not 65.

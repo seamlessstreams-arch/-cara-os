@@ -992,7 +992,6 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
     });
 
     it("no penalty when rates < 40 but arrays are empty", () => {
-      const input = baseInput({ total_children: 0 });
       // This hits insufficient_data, but let's test with a non-zero children count
       // and at least one record in another array
       const input2 = baseInput({

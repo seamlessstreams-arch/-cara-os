@@ -319,29 +319,11 @@ export function computeAdmissionsMatchingAssessment(
   const timelyAssessments = referral_assessment_records.filter((r) => r.assessment_completed && r.assessment_timely).length;
   const timelyAssessmentRate = pct(timelyAssessments, totalReferralAssessments);
 
-  const presentingNeedsDocumented = referral_assessment_records.filter((r) => r.presenting_needs_documented).length;
-  const presentingNeedsRate = pct(presentingNeedsDocumented, totalReferralAssessments);
-
-  const riskFactorsIdentified = referral_assessment_records.filter((r) => r.risk_factors_identified).length;
-  const riskIdentificationRate = pct(riskFactorsIdentified, totalReferralAssessments);
-
-  const backgroundReviewed = referral_assessment_records.filter((r) => r.background_history_reviewed).length;
-  const backgroundReviewRate = pct(backgroundReviewed, totalReferralAssessments);
-
   const safeguardingChecked = referral_assessment_records.filter((r) => r.safeguarding_history_checked).length;
   const safeguardingCheckRate = pct(safeguardingChecked, totalReferralAssessments);
 
   const sopAligned = referral_assessment_records.filter((r) => r.statement_of_purpose_aligned).length;
   const sopAlignmentRate = pct(sopAligned, totalReferralAssessments);
-
-  const prevPlacementsReviewed = referral_assessment_records.filter((r) => r.previous_placements_reviewed).length;
-  const prevPlacementsRate = pct(prevPlacementsReviewed, totalReferralAssessments);
-
-  const healthAssessed = referral_assessment_records.filter((r) => r.health_needs_assessed).length;
-  const educationAssessed = referral_assessment_records.filter((r) => r.education_needs_assessed).length;
-  const emotionalAssessed = referral_assessment_records.filter((r) => r.emotional_needs_assessed).length;
-  const holisticNeedsCount = healthAssessed + educationAssessed + emotionalAssessed;
-  const holisticNeedsRate = pct(holisticNeedsCount, totalReferralAssessments * 3);
 
   const referralQualitySum = referral_assessment_records.reduce((s, r) => s + r.quality_rating, 0);
   const avgReferralQuality: number | null = totalReferralAssessments > 0
@@ -357,15 +339,8 @@ export function computeAdmissionsMatchingAssessment(
   const individualImpactsAssessed = impact_risk_assessment_records.filter((a) => a.individual_impacts_assessed).length;
   const individualImpactRate = pct(individualImpactsAssessed, totalImpactAssessments);
 
-  const totalRisksIdentified = impact_risk_assessment_records.reduce((s, a) => s + a.risks_identified_count, 0);
-  const totalMitigationsDocumented = impact_risk_assessment_records.reduce((s, a) => s + a.mitigations_documented_count, 0);
-  const mitigationDocumentationRate = pct(totalMitigationsDocumented, totalRisksIdentified);
-
   const mitigationsAdequate = impact_risk_assessment_records.filter((a) => a.mitigations_adequate).length;
   const mitigationAdequacyRate = pct(mitigationsAdequate, totalImpactAssessments);
-
-  const staffCapacityAssessed = impact_risk_assessment_records.filter((a) => a.staff_capacity_assessed).length;
-  const staffCapacityRate = pct(staffCapacityAssessed, totalImpactAssessments);
 
   const peerDynamicsConsidered = impact_risk_assessment_records.filter((a) => a.peer_dynamics_considered).length;
   const peerDynamicsRate = pct(peerDynamicsConsidered, totalImpactAssessments);
@@ -373,14 +348,8 @@ export function computeAdmissionsMatchingAssessment(
   const safeguardingImplicationsReviewed = impact_risk_assessment_records.filter((a) => a.safeguarding_implications_reviewed).length;
   const safeguardingImplicationsRate = pct(safeguardingImplicationsReviewed, totalImpactAssessments);
 
-  const triggerRisksAssessed = impact_risk_assessment_records.filter((a) => a.trigger_risks_assessed).length;
-  const triggerRiskRate = pct(triggerRisksAssessed, totalImpactAssessments);
-
   const managerSignOff = impact_risk_assessment_records.filter((a) => a.has_manager_sign_off).length;
   const managerSignOffRate = pct(managerSignOff, totalImpactAssessments);
-
-  const impactReviewScheduled = impact_risk_assessment_records.filter((a) => a.has_review_date).length;
-  const impactReviewScheduledRate = pct(impactReviewScheduled, totalImpactAssessments);
 
   const highRiskImpacts = impact_risk_assessment_records.filter((a) => a.risk_level === "high" || a.risk_level === "very_high").length;
 
@@ -403,17 +372,9 @@ export function computeAdmissionsMatchingAssessment(
   const childViewsSought = matching_criteria_records.filter((m) => m.child_views_sought).length;
   const matchingChildViewsRate = pct(childViewsSought, totalMatchingRecords);
 
-  const staffViewsSought = matching_criteria_records.filter((m) => m.staff_views_sought).length;
-  const matchingStaffViewsRate = pct(staffViewsSought, totalMatchingRecords);
-
-  const placingAuthorityViews = matching_criteria_records.filter((m) => m.placing_authority_views_obtained).length;
-  const placingAuthorityRate = pct(placingAuthorityViews, totalMatchingRecords);
-
   const matchingRationale = matching_criteria_records.filter((m) => m.has_rationale).length;
   const matchingRationaleRate = pct(matchingRationale, totalMatchingRecords);
 
-  const strongMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "strong").length;
-  const acceptableMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "acceptable").length;
   const poorMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "poor").length;
   const marginalMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "marginal").length;
 
@@ -426,11 +387,6 @@ export function computeAdmissionsMatchingAssessment(
   const behaviouralCompat = matching_criteria_records.filter((m) => m.behavioural_compatibility_assessed).length;
   const domainCoverageCount = ageCompat + needsCompat + riskCompat + culturalCompat + emotionalCompat + behaviouralCompat;
   const domainCoverageRate = pct(domainCoverageCount, totalMatchingRecords * 6);
-
-  const matchingQualitySum = matching_criteria_records.reduce((s, m) => s + m.quality_rating, 0);
-  const avgMatchingQuality: number | null = totalMatchingRecords > 0
-    ? Math.round((matchingQualitySum / totalMatchingRecords) * 100) / 100
-      : null;
 
   // Composite matching quality rate
   const matchingQualityRate: number | null = totalMatchingRecords > 0
@@ -445,40 +401,18 @@ export function computeAdmissionsMatchingAssessment(
   const sopChecked = placement_suitability_records.filter((s) => s.statement_of_purpose_check).length;
   const sopCheckRate = pct(sopChecked, totalSuitabilityReviews);
 
-  const staffingAssessed = placement_suitability_records.filter((s) => s.staffing_capacity_assessed).length;
-  const staffingAssessedRate = pct(staffingAssessed, totalSuitabilityReviews);
-
   const regulatoryMet = placement_suitability_records.filter((s) => s.regulatory_requirements_met).length;
   const regulatoryMetRate = pct(regulatoryMet, totalSuitabilityReviews);
 
   const decisionRationale = placement_suitability_records.filter((s) => s.has_decision_rationale).length;
   const decisionRationaleRate = pct(decisionRationale, totalSuitabilityReviews);
 
-  const suitableOutcomes = placement_suitability_records.filter((s) => s.outcome === "suitable").length;
   const unsuitableOutcomes = placement_suitability_records.filter((s) => s.outcome === "unsuitable").length;
   const conditionalOutcomes = placement_suitability_records.filter((s) => s.outcome === "conditional").length;
-  const deferredOutcomes = placement_suitability_records.filter((s) => s.outcome === "deferred").length;
 
   const conditionsDocumented = placement_suitability_records.filter((s) => s.conditions_count > 0 && s.conditions_documented).length;
   const totalWithConditions = placement_suitability_records.filter((s) => s.conditions_count > 0).length;
   const conditionsDocRate = pct(conditionsDocumented, totalWithConditions);
-
-  const specialistAvailable = placement_suitability_records.filter((s) => s.specialist_provision_available).length;
-  const specialistRate = pct(specialistAvailable, totalSuitabilityReviews);
-
-  const locationAssessed = placement_suitability_records.filter((s) => s.location_suitability_assessed).length;
-  const locationRate = pct(locationAssessed, totalSuitabilityReviews);
-
-  const educationConfirmed = placement_suitability_records.filter((s) => s.education_provision_confirmed).length;
-  const suitabilityEdRate = pct(educationConfirmed, totalSuitabilityReviews);
-
-  const contactFeasible = placement_suitability_records.filter((s) => s.contact_arrangements_feasible).length;
-  const contactFeasibleRate = pct(contactFeasible, totalSuitabilityReviews);
-
-  const suitabilityQualitySum = placement_suitability_records.reduce((s, p) => s + p.quality_rating, 0);
-  const avgSuitabilityQuality: number | null = totalSuitabilityReviews > 0
-    ? Math.round((suitabilityQualitySum / totalSuitabilityReviews) * 100) / 100
-      : null;
 
   // Composite suitability review rate
   const suitabilityReviewRate: number | null = totalSuitabilityReviews > 0
@@ -508,37 +442,10 @@ export function computeAdmissionsMatchingAssessment(
   const placementPlanDrafted = admission_planning_records.filter((a) => a.placement_plan_drafted).length;
   const placementPlanRate = pct(placementPlanDrafted, totalAdmissionPlans);
 
-  const riskPlanUpdated = admission_planning_records.filter((a) => a.risk_management_plan_updated).length;
-  const riskPlanRate = pct(riskPlanUpdated, totalAdmissionPlans);
-
   const childConsulted = admission_planning_records.filter((a) => a.child_consulted).length;
-  const childConsultedRate = pct(childConsulted, totalAdmissionPlans);
-
-  const childViewsRecorded = admission_planning_records.filter((a) => a.child_views_recorded).length;
-  const childViewsRecordedRate = pct(childViewsRecorded, totalAdmissionPlans);
 
   const firstReviewScheduled = admission_planning_records.filter((a) => a.first_review_scheduled).length;
   const firstReviewRate = pct(firstReviewScheduled, totalAdmissionPlans);
-
-  const welcomePackProvided = admission_planning_records.filter((a) => a.welcome_pack_provided).length;
-  const welcomePackRate = pct(welcomePackProvided, totalAdmissionPlans);
-
-  const bedroomPrepared = admission_planning_records.filter((a) => a.bedroom_prepared).length;
-  const bedroomPrepRate = pct(bedroomPrepared, totalAdmissionPlans);
-
-  const edArrangementsConfirmed = admission_planning_records.filter((a) => a.education_arrangements_confirmed).length;
-  const planEdRate = pct(edArrangementsConfirmed, totalAdmissionPlans);
-
-  const healthBooked = admission_planning_records.filter((a) => a.health_appointments_booked).length;
-  const healthBookedRate = pct(healthBooked, totalAdmissionPlans);
-
-  const contactAgreed = admission_planning_records.filter((a) => a.contact_plan_agreed).length;
-  const contactAgreedRate = pct(contactAgreed, totalAdmissionPlans);
-
-  const planQualitySum = admission_planning_records.reduce((s, a) => s + a.quality_rating, 0);
-  const avgPlanQuality: number | null = totalAdmissionPlans > 0
-    ? Math.round((planQualitySum / totalAdmissionPlans) * 100) / 100
-      : null;
 
   // Composite admission planning rate
   const admissionPlanningRate: number | null = totalAdmissionPlans > 0

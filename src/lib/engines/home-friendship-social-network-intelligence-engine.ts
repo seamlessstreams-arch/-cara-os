@@ -296,16 +296,6 @@ export function computeFriendshipSocialNetwork(
   ).length;
   const childInvolvementRate = pct(childInvolvedInMapping, totalMappings);
 
-  const mappingsWithSupportPlans = friendship_mapping_records.filter(
-    (m) => m.support_plan_in_place,
-  ).length;
-  const supportPlanRate = pct(mappingsWithSupportPlans, totalMappings);
-
-  const mappingsWithConcerns = friendship_mapping_records.filter(
-    (m) => m.concerns_identified,
-  ).length;
-  const concernsRate = pct(mappingsWithConcerns, totalMappings);
-
   const overdueMappingReviews = friendship_mapping_records.filter(
     (m) => m.review_overdue,
   ).length;
@@ -392,16 +382,6 @@ export function computeFriendshipSocialNetwork(
     (n) => n.review_overdue,
   ).length;
 
-  // --- Network satisfaction average ---
-  const networkSatisfactionSum = social_network_records.reduce(
-    (sum, n) => sum + n.child_satisfaction_with_network,
-    0,
-  );
-  const networkSatisfactionAvg: number | null =
-    totalNetworks > 0
-      ? Math.round((networkSatisfactionSum / totalNetworks) * 100) / 100
-      : null;
-
   // --- Peer support quality ---
   const totalPeerActivities = peer_support_records.length;
   const uniqueChildrenInPeerSupport = new Set(
@@ -419,15 +399,6 @@ export function computeFriendshipSocialNetwork(
       ? Math.round((peerEngagementSum / totalPeerActivities) * 100) / 100
       : null;
 
-  const peerInteractionQualitySum = peer_support_records.reduce(
-    (sum, p) => sum + p.peer_interaction_quality,
-    0,
-  );
-  const peerInteractionQualityAvg: number | null =
-    totalPeerActivities > 0
-      ? Math.round((peerInteractionQualitySum / totalPeerActivities) * 100) / 100
-      : null;
-
   const positiveOutcomeActivities = peer_support_records.filter(
     (p) => p.outcome_positive,
   ).length;
@@ -437,11 +408,6 @@ export function computeFriendshipSocialNetwork(
     (p) => p.child_reported_enjoyment,
   ).length;
   const peerEnjoymentRate = pct(childEnjoyedActivities, totalPeerActivities);
-
-  const staffFacilitatedActivities = peer_support_records.filter(
-    (p) => p.staff_facilitated,
-  ).length;
-  const staffFacilitationRate = pct(staffFacilitatedActivities, totalPeerActivities);
 
   const peerActivitiesWithNotes = peer_support_records.filter(
     (p) => p.notes_recorded,
@@ -463,32 +429,9 @@ export function computeFriendshipSocialNetwork(
   ).length;
   const isolationPreventionRate = pct(isolationImproved, totalIsolationRecords);
 
-  const isolationEngagementSum = isolation_prevention_records.reduce(
-    (sum, i) => sum + i.child_engagement,
-    0,
-  );
-  const isolationEngagementAvg: number | null =
-    totalIsolationRecords > 0
-      ? Math.round((isolationEngagementSum / totalIsolationRecords) * 100) / 100
-      : null;
-
-  const isolationProgressSum = isolation_prevention_records.reduce(
-    (sum, i) => sum + i.progress_rating,
-    0,
-  );
-  const isolationProgressAvg: number | null =
-    totalIsolationRecords > 0
-      ? Math.round((isolationProgressSum / totalIsolationRecords) * 100) / 100
-      : null;
-
   const overdueIsolationReviews = isolation_prevention_records.filter(
     (i) => i.review_overdue && i.intervention_active,
   ).length;
-
-  const escalatedToProf = isolation_prevention_records.filter(
-    (i) => i.escalated_to_professional,
-  ).length;
-  const escalationRate = pct(escalatedToProf, totalIsolationRecords);
 
   const highRiskWithEscalation = isolation_prevention_records.filter(
     (i) => i.risk_level === "high" && i.escalated_to_professional,
@@ -500,18 +443,6 @@ export function computeFriendshipSocialNetwork(
 
   // --- Child satisfaction ---
   const totalSurveys = child_satisfaction_records.length;
-  const uniqueChildrenSurveyed = new Set(
-    child_satisfaction_records.map((s) => s.child_id),
-  ).size;
-
-  const satisfactionSum = child_satisfaction_records.reduce(
-    (sum, s) => sum + s.satisfaction_with_friendships,
-    0,
-  );
-  const satisfactionAvg: number | null =
-    totalSurveys > 0
-      ? Math.round((satisfactionSum / totalSurveys) * 100) / 100
-      : null;
 
   const satisfiedChildren = child_satisfaction_records.filter(
     (s) => s.satisfaction_with_friendships >= 4,
@@ -522,15 +453,6 @@ export function computeFriendshipSocialNetwork(
     (s) => s.confidence_in_social_situations >= 4,
   ).length;
   const childConfidenceRate = pct(confidentChildren, totalSurveys);
-
-  const confidenceSum = child_satisfaction_records.reduce(
-    (sum, s) => sum + s.confidence_in_social_situations,
-    0,
-  );
-  const confidenceAvg: number | null =
-    totalSurveys > 0
-      ? Math.round((confidenceSum / totalSurveys) * 100) / 100
-      : null;
 
   const childrenFeelIncluded = child_satisfaction_records.filter(
     (s) => s.feels_included,
@@ -556,15 +478,6 @@ export function computeFriendshipSocialNetwork(
     (s) => s.wants_more_social_opportunities,
   ).length;
   const wantMoreSocialRate = pct(childrenWantingMoreSocial, totalSurveys);
-
-  const contactSatisfactionSum = child_satisfaction_records.reduce(
-    (sum, s) => sum + s.satisfaction_with_contact_arrangements,
-    0,
-  );
-  const contactSatisfactionAvg: number | null =
-    totalSurveys > 0
-      ? Math.round((contactSatisfactionSum / totalSurveys) * 100) / 100
-      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

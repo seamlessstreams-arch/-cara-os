@@ -207,7 +207,6 @@ function toRating(score: number): PocketMoneyAuditRating {
   return "inadequate";
 }
 
-
 // ── Empty Result Factory ────────────────────────────────────────────────────
 
 function emptyResult(
@@ -312,38 +311,11 @@ export function computePocketMoneyAuditReconciliation(
   ).length;
   const auditPassRate = pct(auditsPassed, totalAudits);
 
-  const auditsFullPass = audit_records.filter((a) => a.audit_outcome === "pass").length;
-  const auditCleanPassRate = pct(auditsFullPass, totalAudits);
-
-  const receiptsPresent = audit_records.filter((a) => a.receipts_present).length;
-  const receiptsPresentRate = pct(receiptsPresent, totalAudits);
-
-  const receiptsMatch = audit_records.filter((a) => a.receipts_match_records).length;
-  const receiptsMatchRate = pct(receiptsMatch, totalAudits);
-
-  const signaturesPresent = audit_records.filter((a) => a.signatures_present).length;
-  const signaturesPresentRate = pct(signaturesPresent, totalAudits);
-
   const childSignatures = audit_records.filter((a) => a.child_signature_obtained).length;
   const childSignatureRate = pct(childSignatures, totalAudits);
 
-  const runningTotalAccurate = audit_records.filter((a) => a.running_total_accurate).length;
-  const runningTotalAccurateRate = pct(runningTotalAccurate, totalAudits);
-
   const cashCountMatches = audit_records.filter((a) => a.cash_count_matches).length;
   const cashCountMatchRate = pct(cashCountMatches, totalAudits);
-
-  const ledgerUpToDate = audit_records.filter((a) => a.ledger_up_to_date).length;
-  const ledgerUpToDateRate = pct(ledgerUpToDate, totalAudits);
-
-  const allEntriesDated = audit_records.filter((a) => a.all_entries_dated).length;
-  const allEntriesDatedRate = pct(allEntriesDated, totalAudits);
-
-  const allEntriesDescribed = audit_records.filter((a) => a.all_entries_described).length;
-  const allEntriesDescribedRate = pct(allEntriesDescribed, totalAudits);
-
-  const noUnauthorized = audit_records.filter((a) => a.no_unauthorized_transactions).length;
-  const noUnauthorizedRate = pct(noUnauthorized, totalAudits);
 
   // Composite audit compliance: pass + receipts + signatures + running total + cash count + ledger + dated + described + no unauthorized
   const auditComplianceChecks = [
@@ -380,11 +352,6 @@ export function computePocketMoneyAuditReconciliation(
   // --- Reconciliation accuracy metrics ---
   const totalReconciliations = reconciliation_records.length;
 
-  const reconBalanced = reconciliation_records.filter(
-    (r) => r.reconciliation_outcome === "balanced" || r.reconciliation_outcome === "variance_explained",
-  ).length;
-  const reconBalancedRate = pct(reconBalanced, totalReconciliations);
-
   const reconFullyBalanced = reconciliation_records.filter(
     (r) => r.reconciliation_outcome === "balanced",
   ).length;
@@ -395,26 +362,8 @@ export function computePocketMoneyAuditReconciliation(
   ).length;
   const reconUnexplainedRate = pct(reconUnexplained, totalReconciliations);
 
-  const allTransactionsAccounted = reconciliation_records.filter((r) => r.all_transactions_accounted).length;
-  const transactionsAccountedRate = pct(allTransactionsAccounted, totalReconciliations);
-
-  const bankStatementsMatched = reconciliation_records.filter((r) => r.bank_statement_matched).length;
-  const bankStatementMatchRate = pct(bankStatementsMatched, totalReconciliations);
-
-  const pettyCashReconciled = reconciliation_records.filter((r) => r.petty_cash_reconciled).length;
-  const pettyCashReconciledRate = pct(pettyCashReconciled, totalReconciliations);
-
-  const savingsVerified = reconciliation_records.filter((r) => r.savings_balance_verified).length;
-  const savingsVerifiedRate = pct(savingsVerified, totalReconciliations);
-
   const supervisorReviewed = reconciliation_records.filter((r) => r.supervisor_reviewed).length;
   const supervisorReviewRate = pct(supervisorReviewed, totalReconciliations);
-
-  const varianceExplained = reconciliation_records.filter((r) => r.variance_explained).length;
-  const varianceExplainedRate = pct(
-    varianceExplained,
-    reconciliation_records.filter((r) => r.variance_amount !== 0).length,
-  );
 
   // Composite reconciliation accuracy: balanced + all accounted + bank matched + petty cash + savings + supervisor reviewed
   const reconAccuracyChecks = [
@@ -442,13 +391,6 @@ export function computePocketMoneyAuditReconciliation(
   ).length;
   const discrepancyResolutionRate = pct(discrepanciesResolved, totalDiscrepancies);
 
-  const discrepanciesOpen = discrepancy_records.filter(
-    (d) => d.resolution_status === "open" || d.resolution_status === "investigating",
-  ).length;
-  const discrepanciesEscalated = discrepancy_records.filter(
-    (d) => d.resolution_status === "escalated",
-  ).length;
-
   const criticalDiscrepancies = discrepancy_records.filter(
     (d) => d.severity === "critical" || d.severity === "major",
   ).length;
@@ -460,9 +402,6 @@ export function computePocketMoneyAuditReconciliation(
   const preventiveActionTaken = discrepancy_records.filter((d) => d.preventive_action_taken).length;
   const preventiveActionRate = pct(preventiveActionTaken, totalDiscrepancies);
 
-  const childInformedOfDiscrepancy = discrepancy_records.filter((d) => d.child_informed).length;
-  const childInformedRate = pct(childInformedOfDiscrepancy, totalDiscrepancies);
-
   // Timeliness: resolved discrepancies within target timeframes
   const resolvedDiscrepancies = discrepancy_records.filter(
     (d) => d.resolution_status === "resolved" && d.days_to_resolve !== null,
@@ -473,7 +412,6 @@ export function computePocketMoneyAuditReconciliation(
   const resolvedWithin14Days = resolvedDiscrepancies.filter(
     (d) => d.days_to_resolve !== null && d.days_to_resolve <= 14,
   ).length;
-  const timelyResolutionRate = pct(resolvedWithin14Days, resolvedDiscrepancies.length);
   const rapidResolutionRate = pct(resolvedWithin7Days, resolvedDiscrepancies.length);
 
   const avgDaysToResolve =
@@ -514,18 +452,6 @@ export function computePocketMoneyAuditReconciliation(
   }
   const transparencyRate = pct(totalTransparencyChecksPassed, totalTransparencyChecksPossible);
 
-  const childAccessToRecords = transparency_records.filter((t) => t.child_has_access_to_records).length;
-  const childAccessRate = pct(childAccessToRecords, totalTransparency);
-
-  const recordsExplained = transparency_records.filter((t) => t.records_explained_to_child).length;
-  const recordsExplainedRate = pct(recordsExplained, totalTransparency);
-
-  const regularStatements = transparency_records.filter((t) => t.child_receives_regular_statements).length;
-  const regularStatementsRate = pct(regularStatements, totalTransparency);
-
-  const amountAgreed = transparency_records.filter((t) => t.pocket_money_amount_agreed).length;
-  const amountAgreedRate = pct(amountAgreed, totalTransparency);
-
   const childInvolvedBudget = transparency_records.filter((t) => t.child_involved_in_budget_decisions).length;
   const childBudgetInvolvementRate = pct(childInvolvedBudget, totalTransparency);
 
@@ -562,12 +488,6 @@ export function computePocketMoneyAuditReconciliation(
   }
   const childAwarenessRate = pct(totalAwarenessChecksPassed, totalAwarenessChecksPossible);
 
-  const understandsAmount = child_awareness_records.filter((c) => c.understands_pocket_money_amount).length;
-  const understandsAmountRate = pct(understandsAmount, totalAwareness);
-
-  const knowsHowToCheck = child_awareness_records.filter((c) => c.knows_how_to_check_balance).length;
-  const knowsHowToCheckRate = pct(knowsHowToCheck, totalAwareness);
-
   const feelsManageFairly = child_awareness_records.filter((c) => c.feels_money_is_managed_fairly).length;
   const feelsFairRate = pct(feelsManageFairly, totalAwareness);
 
@@ -576,15 +496,6 @@ export function computePocketMoneyAuditReconciliation(
 
   const canManageBudget = child_awareness_records.filter((c) => c.can_manage_small_budget).length;
   const budgetManagementRate = pct(canManageBudget, totalAwareness);
-
-  const hasSupportPlan = child_awareness_records.filter((c) => c.support_plan_in_place).length;
-  const supportPlanRate = pct(hasSupportPlan, totalAwareness);
-
-  const confidenceSum = child_awareness_records.reduce((sum, c) => sum + c.confidence_level, 0);
-  const avgConfidence =
-    totalAwareness > 0
-      ? Math.round((confidenceSum / totalAwareness) * 100) / 100
-      : null;
 
   const childrenWithConcerns = child_awareness_records.filter((c) => c.has_raised_concerns).length;
   const concernsAddressed = child_awareness_records.filter(

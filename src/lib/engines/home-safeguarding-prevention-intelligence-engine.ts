@@ -190,7 +190,6 @@ export function computeHomeSafeguardingPrevention(
   // -- Prevent Screenings -----------------------------------------------------
   const uniqueScreenedChildren = new Set(prevent_screenings.map(p => p.child_id));
   const preventChildCoverage = pct(uniqueScreenedChildren.size, total_children);
-  const preventChildVoiceConsulted = prevent_screenings.filter(p => p.child_voice_consulted).length;
 
   // -- Prevent Records --------------------------------------------------------
   const preventTrainedCount = prevent_records.filter(p => p.training_completed).length;
@@ -208,7 +207,6 @@ export function computeHomeSafeguardingPrevention(
     c => c.post_hearing_support_count > 0,
   ).length;
   const courtSupportRate = pct(courtWithSupport, court_attendance_records.length);
-  const courtChildVoice = court_attendance_records.filter(c => c.child_voice_provided).length;
 
   // -- Scoring ----------------------------------------------------------------
   // Base 52 + max bonuses 28 = 80

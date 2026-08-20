@@ -280,26 +280,9 @@ export function computeTransitionLeavingCareReadiness(
     ? pct(plansWithReviewDate - overduePlans, plansWithReviewDate)
     : null;
 
-  // Plans with goals set
-  const plansWithGoals = transition_planning_records.filter(
-    (t) => t.goals_set,
-  ).length;
-  const goalsSetRate = pct(plansWithGoals, totalTransitionPlans);
-
-  // Plans reviewed
-  const plansReviewed = transition_planning_records.filter(
-    (t) => t.reviewed,
-  ).length;
-  const plansReviewedRate = pct(plansReviewed, totalTransitionPlans);
-
   // --- Pathway plan metrics ---
   const totalPathwayPlans = pathway_plans.length;
   const currentPathwayPlans = pathway_plans.filter((p) => p.current);
-
-  // Unique children with current pathway plan
-  const childrenWithPathwayPlan = new Set(
-    currentPathwayPlans.map((p) => p.child_id),
-  ).size;
 
   // Pathway plan currency: last_reviewed within 180 days
   const oneEightyDaysAgo = new Date(today);
@@ -350,14 +333,6 @@ export function computeTransitionLeavingCareReadiness(
     leaving_care_packages.filter((l) => l.housing_arranged).length,
     totalLeavingCarePackages,
   );
-  const financialSupportRate = pct(
-    leaving_care_packages.filter((l) => l.financial_support_confirmed).length,
-    totalLeavingCarePackages,
-  );
-  const healthPassportProvidedRate = pct(
-    leaving_care_packages.filter((l) => l.health_passport_provided).length,
-    totalLeavingCarePackages,
-  );
 
   // --- Independence pathway metrics ---
   const totalIndependencePathways = independence_pathways.length;
@@ -378,15 +353,6 @@ export function computeTransitionLeavingCareReadiness(
       i.social_skills_assessed,
   ).length;
   const comprehensiveAssessmentRate = pct(comprehensiveAssessments, totalIndependencePathways);
-
-  // Average readiness score
-  const totalReadinessScore = independence_pathways.reduce(
-    (sum, i) => sum + (i.overall_readiness_score ?? 0),
-    0,
-  );
-  const avgReadinessScore = totalIndependencePathways > 0
-    ? Math.round(totalReadinessScore / totalIndependencePathways)
-    : null;
 
   // --- Aftercare metrics ---
   const totalAftercareRecords = aftercare_records.length;

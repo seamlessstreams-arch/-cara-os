@@ -350,7 +350,6 @@ export function computeCommunityIntegrationVolunteering(
 
   const totalCommunityActivities = community_activity_records.length;
   const caAttended = ca90d.filter((r) => r.attended).length;
-  const caAttendanceRate = pct(caAttended, ca90d.length);
 
   const caChildIds = new Set(ca90d.filter((r) => r.attended).map((r) => r.child_id));
   const communityParticipationRate = pct(caChildIds.size, total_children);
@@ -375,9 +374,6 @@ export function computeCommunityIntegrationVolunteering(
 
   const caUniqueTypes = new Set(ca90d.filter((r) => r.attended).map((r) => r.activity_type));
   const caTypeVariety = caUniqueTypes.size;
-
-  const caFeedback = ca90d.filter((r) => r.attended && r.child_feedback && r.child_feedback.trim().length > 0).length;
-  const caFeedbackRate = pct(caFeedback, caAttended);
 
   // ── Volunteering Metrics ───────────────────────────────────────────────
 
@@ -411,12 +407,6 @@ export function computeCommunityIntegrationVolunteering(
   const volSkills = vol90d.filter((r) => r.skills_developed && r.skills_developed.length > 0).length;
   const volSkillsRate = pct(volSkills, vol90d.length);
 
-  const volFeedback = vol90d.filter((r) => r.child_feedback && r.child_feedback.trim().length > 0).length;
-  const volFeedbackRate = pct(volFeedback, vol90d.length);
-
-  const volTotalHours = vol90d.reduce((s, r) => s + r.hours, 0);
-  const volAvgHours = vol90d.length > 0 ? Math.round((volTotalHours / vol90d.length) * 10) / 10 : null;
-
   const volUniqueTypes = new Set(vol90d.map((r) => r.volunteering_type));
 
   // ── Social Inclusion Metrics ───────────────────────────────────────────
@@ -446,17 +436,6 @@ export function computeCommunityIntegrationVolunteering(
     (r) => r.review_date && daysBetween(r.review_date, today) > 0 && !r.reviewed,
   ).length;
 
-  const siReviewed = social_inclusion_records.filter((r) => r.reviewed).length;
-  const siReviewRate = pct(siReviewed, social_inclusion_records.length);
-
-  const siProfessional = si90d.filter((r) => r.professional_involved).length;
-  const siProfessionalRate = pct(siProfessional, si90d.length);
-
-  const siFeedback = si90d.filter((r) => r.child_feedback && r.child_feedback.trim().length > 0).length;
-  const siFeedbackRate = pct(siFeedback, si90d.length);
-
-  const siUniqueTypes = new Set(si90d.map((r) => r.programme_type));
-
   // ── Neighbourhood Relations Metrics ────────────────────────────────────
 
   const nr90d = neighbourhood_records.filter((r) => {
@@ -476,9 +455,6 @@ export function computeCommunityIntegrationVolunteering(
   const nrFollowUpNeeded = nr90d.filter((r) => r.follow_up_needed).length;
   const nrFollowUpCompleted = nr90d.filter((r) => r.follow_up_needed && r.follow_up_completed).length;
   const nrFollowUpRate = pct(nrFollowUpCompleted, nrFollowUpNeeded);
-
-  const nrPerceptionImproved = nr90d.filter((r) => r.community_perception_improved).length;
-  const nrPerceptionRate = pct(nrPerceptionImproved, nr90d.length);
 
   const nrPositiveFeedback = nr90d.filter((r) => r.interaction_type === "positive_feedback").length;
   const nrJointActivities = nr90d.filter((r) => r.interaction_type === "joint_activity").length;
@@ -517,8 +493,6 @@ export function computeCommunityIntegrationVolunteering(
   const lsChildSatisfactionRate = pct(lsChildSatisfied, ls90d.length);
 
   const lsUniqueTypes = new Set(ls90d.map((r) => r.service_type));
-
-  const lsReferrals = ls90d.filter((r) => r.referral_made).length;
 
   // ── Composite Child Satisfaction ───────────────────────────────────────
   // Average of satisfaction signals across all domains

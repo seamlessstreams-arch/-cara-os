@@ -283,19 +283,11 @@ export function computeDailyRoutineStructure(
       ? Math.round((consistencySum / totalRoutineRecords) * 100) / 100
       : null;
 
-  const routinesOnTime = routine_schedule_records.filter(
-    (r) => r.actual_start_time !== null && r.actual_start_time !== "",
-  ).length;
-  const routineTimeliness = pct(routinesOnTime, totalRoutineRecords);
-
   // --- Activity plan metrics ---
   const totalActivityRecords = activity_plan_records.length;
 
   const activitiesCompleted = activity_plan_records.filter((a) => a.completed).length;
   const activityCompletionRate = pct(activitiesCompleted, totalActivityRecords);
-
-  const activitiesPlanned = activity_plan_records.filter((a) => a.planned).length;
-  const activityPlanningRate = pct(activitiesPlanned, totalActivityRecords);
 
   const childEnjoyedActivity = activity_plan_records.filter((a) => a.child_enjoyed).length;
   const activityEnjoymentRate = pct(childEnjoyedActivity, totalActivityRecords);
@@ -306,17 +298,12 @@ export function computeDailyRoutineStructure(
   // Activity variety: count unique activity types
   const activityTypes = new Set(activity_plan_records.map((a) => a.activity_type));
   const activityVarietyCount = activityTypes.size;
-  // We consider 5+ types out of 8 as good variety
-  const activityVarietyRate = pct(activityVarietyCount, 8);
 
   // --- Meal routine metrics ---
   const totalMealRecords = meal_routine_records.length;
 
   const mealsOnTime = meal_routine_records.filter((m) => m.meal_on_time).length;
   const mealRegularityRate = pct(mealsOnTime, totalMealRecords);
-
-  const childPresentAtMeal = meal_routine_records.filter((m) => m.child_present).length;
-  const mealAttendanceRate = pct(childPresentAtMeal, totalMealRecords);
 
   const childInvolvedInPrep = meal_routine_records.filter((m) => m.child_involved_in_preparation).length;
   const mealInvolvementRate = pct(childInvolvedInPrep, totalMealRecords);
@@ -348,23 +335,17 @@ export function computeDailyRoutineStructure(
   const ageAppropriateBedtime = bedtime_routine_records.filter((b) => b.age_appropriate_bedtime).length;
   const ageAppropriateBedtimeRate = pct(ageAppropriateBedtime, totalBedtimeRecords);
 
-  const consistentWithPrevious = bedtime_routine_records.filter((b) => b.consistent_with_previous_nights).length;
-  const bedtimeConsistencyRate = pct(consistentWithPrevious, totalBedtimeRecords);
-
   // --- Child participation metrics ---
   const totalParticipationRecords = child_participation_records.length;
 
   const childConsulted = child_participation_records.filter((p) => p.child_consulted).length;
-  const consultationRate = pct(childConsulted, totalParticipationRecords);
 
   const viewsRecorded = child_participation_records.filter((p) => p.child_views_recorded).length;
-  const viewsRecordedRate = pct(viewsRecorded, totalParticipationRecords);
 
   const viewsActioned = child_participation_records.filter((p) => p.views_actioned).length;
   const viewsActionedRate = pct(viewsActioned, totalParticipationRecords);
 
   const childSatisfiedOutcome = child_participation_records.filter((p) => p.child_satisfied_with_outcome).length;
-  const participationSatisfactionRate = pct(childSatisfiedOutcome, totalParticipationRecords);
 
   // Composite child participation rate: consulted + views recorded + actioned + satisfied
   const participationNumerator = childConsulted + viewsRecorded + viewsActioned + childSatisfiedOutcome;

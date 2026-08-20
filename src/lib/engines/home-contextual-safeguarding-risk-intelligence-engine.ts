@@ -113,7 +113,6 @@ export function computeContextualSafeguarding(
   const total = risks.length;
 
   const activeRisks = risks.filter(r => r.status === "active" || r.status === "escalated");
-  const monitoringRisks = risks.filter(r => r.status === "monitoring");
   const resolvedRisks = risks.filter(r => r.status === "resolved");
   const highRisks = risks.filter(r => r.risk_level === "high" || r.risk_level === "very_high");
 
@@ -146,9 +145,6 @@ export function computeContextualSafeguarding(
 
   // High-risk with protective actions
   const highRiskWithProtection = highRisks.filter(r => r.protective_action_count > 0).length;
-
-  // High-risk with multi-agency
-  const highRiskWithMultiAgency = highRisks.filter(r => r.multi_agency_action_count > 0).length;
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;

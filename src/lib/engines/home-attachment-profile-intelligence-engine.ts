@@ -144,14 +144,6 @@ export function computeAttachmentProfile(
   const withStaffGuidance = profiles.filter(p => p.staff_guidance_count > 0).length;
   const staffGuidanceRate = pct(withStaffGuidance, total);
 
-  // Review currency
-  const todayMs = new Date(today).getTime();
-  const profilesWithCurrentReview = profiles.filter(p => {
-    if (!p.has_review_date || !p.review_date) return false;
-    const reviewMs = new Date(p.review_date).getTime();
-    return reviewMs >= todayMs - 180 * 86400000; // within 180 days
-  }).length;
-
   const withTherapeuticApproach = profiles.filter(p => p.therapeutic_approach_count > 0).length;
   const withProtectiveFactors = profiles.filter(p => p.protective_factor_count > 0).length;
 

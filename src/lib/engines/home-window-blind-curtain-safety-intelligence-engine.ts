@@ -311,17 +311,6 @@ export function computeWindowBlindCurtainSafety(
   const windowRestrictorRate = pct(restrictorCompliant, totalRestrictorRecords);
 
   const restrictorsFitted = window_restrictor_records.filter((r) => r.restrictor_fitted).length;
-  const restrictorFittedRate = pct(restrictorsFitted, totalRestrictorRecords);
-
-  const restrictorsFunctional = window_restrictor_records.filter(
-    (r) => r.restrictor_fitted && r.restrictor_functional,
-  ).length;
-  const restrictorFunctionalRate = pct(restrictorsFunctional, totalRestrictorRecords);
-
-  const openingCompliant = window_restrictor_records.filter(
-    (r) => r.restrictor_fitted && r.opening_within_100mm,
-  ).length;
-  const openingComplianceRate = pct(openingCompliant, totalRestrictorRecords);
 
   const keysSecure = window_restrictor_records.filter(
     (r) => r.restrictor_fitted && r.key_accessible_to_staff_only,
@@ -332,7 +321,6 @@ export function computeWindowBlindCurtainSafety(
   const restrictorIssuesResolved = window_restrictor_records.filter(
     (r) => r.issue_identified && r.issue_resolved,
   ).length;
-  const restrictorIssueResolutionRate = pct(restrictorIssuesResolved, restrictorIssues);
 
   // Upper floor windows (floor_level >= 1) — these are critical
   const upperFloorRecords = window_restrictor_records.filter((r) => r.floor_level >= 1);
@@ -348,27 +336,14 @@ export function computeWindowBlindCurtainSafety(
   const cordFreeCount = blind_cord_records.filter((r) => r.cord_free_alternative).length;
   const cordFreeRate = pct(cordFreeCount, totalBlindRecords);
 
-  const cordPresentCount = blind_cord_records.filter((r) => r.cord_present).length;
-  const cordsSecured = blind_cord_records.filter(
-    (r) => r.cord_present && r.cord_secured,
-  ).length;
-  const cordSecuredRate = pct(cordsSecured, cordPresentCount);
-
   const childAccessibleCords = blind_cord_records.filter(
     (r) => r.cord_present && r.child_accessible,
   ).length;
-  const childAccessibleCordRate = pct(childAccessibleCords, totalBlindRecords);
-
-  const safetyDevicesFitted = blind_cord_records.filter(
-    (r) => r.cord_present && r.safety_device_fitted,
-  ).length;
-  const safetyDeviceRate = pct(safetyDevicesFitted, cordPresentCount || 1);
 
   const blindIssues = blind_cord_records.filter((r) => r.issue_identified).length;
   const blindIssuesResolved = blind_cord_records.filter(
     (r) => r.issue_identified && r.issue_resolved,
   ).length;
-  const blindIssueResolutionRate = pct(blindIssuesResolved, blindIssues);
 
   // --- Curtain condition metrics ---
   const curtainChecks = [
@@ -390,12 +365,6 @@ export function computeWindowBlindCurtainSafety(
   }
   const curtainConditionRate = pct(totalCurtainChecksPassed, totalCurtainChecksPossible);
 
-  const curtainsGoodCondition = curtain_condition_records.filter(
-    (c) => c.overall_condition === "good",
-  ).length;
-  const curtainsFairCondition = curtain_condition_records.filter(
-    (c) => c.overall_condition === "fair",
-  ).length;
   const curtainsPoorCondition = curtain_condition_records.filter(
     (c) => c.overall_condition === "poor",
   ).length;
@@ -406,9 +375,6 @@ export function computeWindowBlindCurtainSafety(
   const fireRetardantCount = curtainsPresent.filter((c) => c.fire_retardant).length;
   const fireRetardantRate = pct(fireRetardantCount, curtainsPresent.length);
 
-  const railSecureCount = curtainsPresent.filter((c) => c.rail_secure).length;
-  const railSecureRate = pct(railSecureCount, curtainsPresent.length);
-
   const childSafeRailCount = curtainsPresent.filter((c) => c.child_safe_rail).length;
   const childSafeRailRate = pct(childSafeRailCount, curtainsPresent.length);
 
@@ -416,7 +382,6 @@ export function computeWindowBlindCurtainSafety(
   const curtainIssuesResolved = curtain_condition_records.filter(
     (c) => c.issue_identified && c.issue_resolved,
   ).length;
-  const curtainIssueResolutionRate = pct(curtainIssuesResolved, curtainIssues);
 
   // --- Blackout provision metrics ---
   const blackoutProvided = blackout_records.filter((r) => r.blackout_provided).length;
@@ -440,7 +405,6 @@ export function computeWindowBlindCurtainSafety(
   const blackoutIssuesResolved = blackout_records.filter(
     (r) => r.issue_identified && r.issue_resolved,
   ).length;
-  const blackoutIssueResolutionRate = pct(blackoutIssuesResolved, blackoutIssues);
 
   // --- Child safety composite rate ---
   // Child safety = combination of: upper-floor restrictor compliance,

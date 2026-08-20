@@ -1564,46 +1564,6 @@ describe("Edge cases", () => {
   });
 
   it("boundary: score exactly 80 is outstanding", () => {
-    // We need exactly 80. Base=52.  Need modifiers summing to +28.
-    // Max is +30 (+5+6+5+5+4+5). Need +28: drop 2 from one modifier.
-    // Change one modifier from +5 to +2 (a -3 delta doesn't work neatly).
-    // Actually: +5+6+5+5+4+5=30. 52+30=82. Need 80 => modifiers=+28.
-    // Change hygiene from +5 to +2 (+3 delta) => +27. Not right.
-    // Change categories from +4 to +1 (+3 delta) => +27. Still off.
-    // Change engaged from +6 to +2 (+4 delta) => +26. Nope.
-    // Let's compute differently. Need score=80: need modifiers=+28.
-    // +5+6+5+5+4+5=30. Need to lose 2. Change recipes from +5 to +2 (+3 delta). Lose 3 → +27. Nope.
-    // Change voice from +5 to +2 (+3 delta). Lose 3. Need lose 2.
-    // Independence or hygiene +5→+2=lose3. Cats +4→+1=lose3. Engaged +6→+2=lose4.
-    // Could do voice:+2, hygiene:+5, independence:+5, engaged:+6, cats:+4, recipes:+5 = +27. No.
-    // Let's try: indep=+2, rest maxed. +2+6+5+5+4+5=+27. Score=79. Close.
-    // Then indep=+2, voice=+2, rest maxed: +2+6+2+5+4+5=+24. Score=76.
-    // 80 exactly is hard to construct. Let's try:
-    // indep=+5(>=60), engaged=+2(>=60), voice=+5(>=80), recipe=+5(>=80), cats=+4(>=6), hygiene=+5(>=50)
-    // = +5+2+5+5+4+5 = +26. 52+26=78. No.
-    // indep=+5, engaged=+6, voice=+2, recipe=+5, cats=+4, hygiene=+5 = +27. 52+27=79.
-    // indep=+5, engaged=+6, voice=+5, recipe=+2, cats=+4, hygiene=+5 = +27. 52+27=79.
-    // Hmm. The modifiers are: {-5,-3,0,+2,+5} for indep, {-5,0,+2,+6} for engaged, {-4,0,+2,+5} for voice,
-    // {-5,-1,0,+2,+5} for recipe, {-4,-1,0,+1,+4} for cats, {-3,-2,0,+2,+5} for hygiene.
-    // Need sum = 28. Max=30. Need to remove 2 from max.
-    // cats: +4→+1 loses 3. hygiene: +5→+2 loses 3. voice: +5→+2 loses 3. recipe: +5→+2 loses 3.
-    // engaged: +6→+2 loses 4. indep: +5→+2 loses 3.
-    // No single modifier loses exactly 2. Try two modifications:
-    // cats +4→+1 (lose 3) + indep +5→+5 (lose 0) = lose 3. Nope.
-    // engaged +6→+2 (lose 4) + cats +1→+4 (gain 3) = net lose 1. Still off.
-    // Actually, cats: +4 and +1 are the only two positive options. So can't get +3 or +2 from cats.
-    // With the available modifier values, let's enumerate all combos that sum to 28:
-    // The positive combos summing to 28 from {+5,+6,+5,+5,+4,+5}max:
-    // Replace engaged +6 with +2: sum = 5+2+5+5+4+5 = 26 (no)
-    // Need exactly 28. From max 30, we need net -2.
-    // Two mods at +2 instead of +5 loses 6. One mod +2 instead of +5 loses 3.
-    // cats at +1 instead of +4 loses 3. engaged at +2 instead of +6 loses 4.
-    // To lose exactly 2: impossible with these step sizes!
-    // So score=80 cannot be achieved. Score=79 is good boundary (still good rating).
-    // Let's test score=80 boundary differently — score=79 is good, score=82 is outstanding.
-    // We already test 82 as outstanding. Let's verify 79 is good.
-    // 79 is tested in various modifier isolation tests. Let's do a direct boundary test:
-    const cats = ["knife_skills", "hob_cooking", "oven_baking", "recipe_planning", "budgeting", "cultural_cooking"];
     // Aim for score=79: indep +5, engaged +6, voice +5, recipe +5, cats +1 (3 unique), hygiene +5.
     // +5+6+5+5+1+5 = +27 => 52+27=79. Good.
     // 3 categories: need exactly 3 unique from 6 records.

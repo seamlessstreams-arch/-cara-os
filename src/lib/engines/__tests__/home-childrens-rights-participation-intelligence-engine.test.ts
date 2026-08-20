@@ -598,13 +598,6 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
     });
 
     it("+2 when healthy rate 70-89% and avg evidence >= 1", () => {
-      const pledges = [
-        makePledge({ id: "p-1", status: "met", evidence_of_delivery_count: 2 }),
-        makePledge({ id: "p-2", status: "active", evidence_of_delivery_count: 1 }),
-        makePledge({ id: "p-3", status: "active", evidence_of_delivery_count: 1 }),
-        makePledge({ id: "p-4", status: "under_review", evidence_of_delivery_count: 0 }),
-        makePledge({ id: "p-5", status: "withdrawn", evidence_of_delivery_count: 0 }),
-      ];
       // healthy: met(1) + active(2) = 3/5 = 60% → not >= 70, so check next
       // Actually 60 < 70 → +0. Need 4/5.
       const pledges2 = [

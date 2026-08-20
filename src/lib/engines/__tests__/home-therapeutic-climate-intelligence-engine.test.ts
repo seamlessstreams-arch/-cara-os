@@ -171,27 +171,6 @@ describe("computeHomeTherapeuticClimate", () => {
     });
 
     it("rates adequate with mixed concerns — score ~50", () => {
-      // Low positive ratio, some restraints with debrief gaps
-      const behaviour = [
-        makeBehaviour({ id: "b1", direction: "positive" }),
-        makeBehaviour({ id: "b2", direction: "concerning", intensity: "high" }),
-        makeBehaviour({ id: "b3", direction: "concerning", intensity: "medium" }),
-      ];
-      // 33% positive → ≥30 → +0
-      const restraints = [
-        makeRestraint({ id: "r1", child_debriefed: false, staff_debriefed: false }),
-        makeRestraint({ id: "r2", child_debriefed: true, staff_debriefed: true }),
-      ];
-      // 2 restraints, rate 0.5 → +2
-      // debrief: 50% child → <70 → -2
-      const incidents = [
-        makeIncident({ id: "i1" }),
-        makeIncident({ id: "i2" }),
-        makeIncident({ id: "i3", severity: "high" }),
-      ];
-      // 3 incidents, rate 0.75 → ≤1.0 → +2
-      // 1 high → +1
-      const missing_episodes = [makeMissing(), makeMissing({ id: "m2" })];
       // 2 missing → ≤3 → +0
       // All events on c1 → calm rate 75% → +3
       // 0 injuries → +3
@@ -248,13 +227,6 @@ describe("computeHomeTherapeuticClimate", () => {
         makeRestraint({ id: "r3", child_id: "c3", child_debriefed: false, staff_debriefed: false }),
         makeRestraint({ id: "r4", child_id: "c4", child_debriefed: false, staff_debriefed: false }),
         makeRestraint({ id: "r5", child_id: "c1", child_debriefed: false, staff_debriefed: false }),
-      ];
-      // 5 restraints, 1.25 per child → >1.0 → -3
-      // debrief 0% → -2
-      const incidents = [
-        makeIncident({ id: "i1", child_id: "c1", severity: "high" }),
-        makeIncident({ id: "i2", child_id: "c2", severity: "high" }),
-        makeIncident({ id: "i3", child_id: "c3", severity: "critical" }),
       ];
       // 3 incidents, 0.75 rate → +2
       // 3 high/crit → -2

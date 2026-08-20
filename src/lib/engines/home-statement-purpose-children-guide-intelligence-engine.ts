@@ -342,17 +342,6 @@ export function computeStatementPurposeChildrenGuide(
   });
   const statementCurrencyRate = pct(currencyValidStatements.length, Math.max(currentStatementCount, 1));
 
-  // Section completeness
-  const totalSectionsComplete = statement_records.reduce(
-    (sum, s) => sum + s.sections_complete,
-    0,
-  );
-  const totalSectionsTotal = statement_records.reduce(
-    (sum, s) => sum + s.sections_total,
-    0,
-  );
-  const sectionCompletenessRate = pct(totalSectionsComplete, totalSectionsTotal);
-
   // Schedule 1 coverage — 14 mandatory areas
   const schedule1Fields = [
     "covers_ethos",
@@ -414,9 +403,6 @@ export function computeStatementPurposeChildrenGuide(
   const easyReadGuides = guide_records.filter((g) => g.easy_read_version);
   const easyReadRate = pct(easyReadGuides.length, totalGuideRecords);
 
-  const translatedGuides = guide_records.filter((g) => g.translated);
-  const translatedRate = pct(translatedGuides.length, totalGuideRecords);
-
   // Guide section coverage
   const guideCoverageFields = [
     "covers_daily_routine",
@@ -446,11 +432,6 @@ export function computeStatementPurposeChildrenGuide(
   // Child feedback on guides
   const feedbackCollected = guide_records.filter((g) => g.child_feedback_collected);
   const feedbackCollectedRate = pct(feedbackCollected.length, totalGuideRecords);
-
-  const feedbackPositive = guide_records.filter(
-    (g) => g.child_feedback_collected && g.child_feedback_positive,
-  );
-  const feedbackPositiveRate = pct(feedbackPositive.length, feedbackCollected.length);
 
   // Guide section completeness
   const guideSectionsComplete = guide_records.reduce(
@@ -488,11 +469,6 @@ export function computeStatementPurposeChildrenGuide(
   );
   const reviewOnTimeRate = pct(completedOnTime.length, totalReviewCycleRecords);
 
-  const approvedReviews = review_cycle_records.filter(
-    (r) => r.outcome === "approved",
-  );
-  const reviewApprovalRate = pct(approvedReviews.length, totalReviewCycleRecords);
-
   const reviewsWithAmendments = review_cycle_records.filter(
     (r) => r.outcome === "amendments_required" || r.outcome === "major_revision",
   );
@@ -517,12 +493,6 @@ export function computeStatementPurposeChildrenGuide(
     0,
   );
   const reviewCoverageRate = pct(reviewSectionsReviewed, reviewSectionsTotal);
-
-  // Young people consulted during reviews
-  const ypConsultedReviews = review_cycle_records.filter(
-    (r) => r.young_people_consulted,
-  );
-  const ypConsultedRate = pct(ypConsultedReviews.length, totalReviewCycleRecords);
 
   // Staff consulted during reviews
   const staffConsultedReviews = review_cycle_records.filter(
@@ -576,25 +546,10 @@ export function computeStatementPurposeChildrenGuide(
   const viewsActioned = involvement_records.filter((i) => i.views_actioned);
   const viewsActionedRate = pct(viewsActioned.length, totalInvolvementRecords);
 
-  const changesMadeFromFeedback = involvement_records.filter(
-    (i) => i.changes_made_from_feedback,
-  );
-  const changesMadeRate = pct(changesMadeFromFeedback.length, totalInvolvementRecords);
-
   const supportedToParticipate = involvement_records.filter(
     (i) => i.supported_to_participate,
   );
   const supportedRate = pct(supportedToParticipate.length, totalInvolvementRecords);
-
-  const accessibleFormatUsed = involvement_records.filter(
-    (i) => i.accessible_format_used,
-  );
-  const accessibleInvolvementRate = pct(accessibleFormatUsed.length, totalInvolvementRecords);
-
-  const positiveFeedback = involvement_records.filter(
-    (i) => i.feedback_positive,
-  );
-  const positiveFeedbackInvolvementRate = pct(positiveFeedback.length, totalInvolvementRecords);
 
   // Unique children involved
   const uniqueChildrenInvolved = new Set(
@@ -643,30 +598,8 @@ export function computeStatementPurposeChildrenGuide(
   );
   const ofstedTimelyRate = pct(ofstedTimelySubmissions.length, totalOfstedSubmissions);
 
-  const acknowledgedSubmissions = submission_records.filter(
-    (s) => s.acknowledged,
-  );
-  const acknowledgedRate = pct(acknowledgedSubmissions.length, totalSubmissionRecords);
-
-  const feedbackReceivedSubmissions = submission_records.filter(
-    (s) => s.feedback_received,
-  );
-  const submissionFeedbackRate = pct(feedbackReceivedSubmissions.length, totalSubmissionRecords);
-
-  const positiveFeedbackSubmissions = submission_records.filter(
-    (s) => s.feedback_received && s.feedback_positive,
-  );
-  const submissionPositiveFeedbackRate = pct(
-    positiveFeedbackSubmissions.length,
-    feedbackReceivedSubmissions.length,
-  );
-
   const amendmentsRequiredSubmissions = submission_records.filter(
     (s) => s.amendments_required,
-  );
-  const submissionAmendmentRate = pct(
-    amendmentsRequiredSubmissions.length,
-    totalSubmissionRecords,
   );
 
   const amendmentsCompletedSubmissions = submission_records.filter(

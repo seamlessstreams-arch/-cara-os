@@ -308,17 +308,8 @@ export function computeRewardsIncentivesManagement(
   }
   const rewardFairnessRate = pct(totalFairnessChecksPassed, totalFairnessChecksPossible);
 
-  const schemesWithClearCriteria = reward_scheme_records.filter((r) => r.criteria_clear).length;
-  const clearCriteriaRate = pct(schemesWithClearCriteria, totalSchemeRecords);
-
   const schemesAchievable = reward_scheme_records.filter((r) => r.criteria_achievable).length;
   const achievableCriteriaRate = pct(schemesAchievable, totalSchemeRecords);
-
-  const schemesAgeAppropriate = reward_scheme_records.filter((r) => r.criteria_age_appropriate).length;
-  const ageAppropriateRate = pct(schemesAgeAppropriate, totalSchemeRecords);
-
-  const schemesIndividualised = reward_scheme_records.filter((r) => r.criteria_individualised).length;
-  const individualisedRate = pct(schemesIndividualised, totalSchemeRecords);
 
   const meaningfulRewards = reward_scheme_records.filter((r) => r.reward_meaningful_to_child).length;
   const meaningfulRewardRate = pct(meaningfulRewards, totalSchemeRecords);
@@ -326,19 +317,12 @@ export function computeRewardsIncentivesManagement(
   const childConsultedOnDesign = reward_scheme_records.filter((r) => r.child_consulted_on_design).length;
   const childConsultedRate = pct(childConsultedOnDesign, totalSchemeRecords);
 
-  const childUnderstandsScheme = reward_scheme_records.filter((r) => r.child_understands_scheme).length;
-  const childUnderstandsRate = pct(childUnderstandsScheme, totalSchemeRecords);
-
   const schemesReviewed = reward_scheme_records.filter((r) => r.reviewed).length;
   const schemeReviewRate = pct(schemesReviewed, totalSchemeRecords);
 
   const positiveOutcomesAchieved = reward_scheme_records.filter((r) => r.positive_outcomes_achieved).length;
   const schemePositiveOutcomeRate = pct(positiveOutcomesAchieved, totalSchemeRecords);
 
-  const outcomesDocumented = reward_scheme_records.filter((r) => r.outcomes_documented).length;
-  const schemeOutcomesDocumentedRate = pct(outcomesDocumented, totalSchemeRecords);
-
-  const activeSchemes = reward_scheme_records.filter((r) => r.scheme_active).length;
   const uniqueChildrenWithSchemes = new Set(
     reward_scheme_records.filter((r) => r.scheme_active).map((r) => r.child_id),
   ).size;
@@ -362,43 +346,20 @@ export function computeRewardsIncentivesManagement(
   }
   const reinforcementConsistencyRate = pct(totalReinforcementChecksPassed, totalReinforcementChecksPossible);
 
-  const timelyReinforcement = reinforcement_records.filter((r) => r.timely).length;
-  const timelyRate = pct(timelyReinforcement, totalReinforcementRecords);
-
-  const specificReinforcement = reinforcement_records.filter((r) => r.specific).length;
-  const specificRate = pct(specificReinforcement, totalReinforcementRecords);
-
-  const genuineReinforcement = reinforcement_records.filter((r) => r.genuine).length;
-  const genuineRate = pct(genuineReinforcement, totalReinforcementRecords);
-
-  const consistentWithPlan = reinforcement_records.filter((r) => r.consistent_with_plan).length;
-  const planConsistencyRate = pct(consistentWithPlan, totalReinforcementRecords);
-
   const childResponsePositive = reinforcement_records.filter((r) => r.child_response_positive).length;
   const reinforcementPositiveResponseRate = pct(childResponsePositive, totalReinforcementRecords);
-
-  const peerWitnessed = reinforcement_records.filter((r) => r.witnessed_by_peers).length;
-  const peerWitnessedRate = pct(peerWitnessed, totalReinforcementRecords);
 
   // --- Incentive programme metrics ---
   const totalProgrammeRecords = incentive_programme_records.length;
 
-  const activeProgrammes = incentive_programme_records.filter((p) => p.active).length;
-
   const goalsCleared = incentive_programme_records.filter((p) => p.goals_clearly_defined).length;
-  const goalsDefinedRate = pct(goalsCleared, totalProgrammeRecords);
 
   const progressTracked = incentive_programme_records.filter((p) => p.progress_tracked).length;
-  const progressTrackedRate = pct(progressTracked, totalProgrammeRecords);
 
   const milestonesCelebrated = incentive_programme_records.filter((p) => p.milestones_celebrated).length;
   const milestonesCelebratedRate = pct(milestonesCelebrated, totalProgrammeRecords);
 
-  const childrenInvolvedInDesign = incentive_programme_records.filter((p) => p.children_involved_in_design).length;
-  const programmeChildInvolvementRate = pct(childrenInvolvedInDesign, totalProgrammeRecords);
-
   const effectivenessReviewed = incentive_programme_records.filter((p) => p.effectiveness_reviewed).length;
-  const programmeEffectivenessReviewRate = pct(effectivenessReviewed, totalProgrammeRecords);
 
   const effectivenessSum = incentive_programme_records.reduce((sum, p) => sum + p.effectiveness_rating, 0);
   const avgEffectivenessRating =
@@ -406,14 +367,7 @@ export function computeRewardsIncentivesManagement(
       ? Math.round((effectivenessSum / totalProgrammeRecords) * 100) / 100
       : null;
 
-  const programmeOutcomesDocumented = incentive_programme_records.filter((p) => p.outcomes_documented).length;
-  const programmeOutcomesDocumentedRate = pct(programmeOutcomesDocumented, totalProgrammeRecords);
-
   const programmePositiveOutcomes = incentive_programme_records.filter((p) => p.positive_outcomes_achieved).length;
-  const programmePositiveOutcomeRate = pct(programmePositiveOutcomes, totalProgrammeRecords);
-
-  const adjustmentsMade = incentive_programme_records.filter((p) => p.adjustments_made).length;
-  const adjustmentsRate = pct(adjustmentsMade, totalProgrammeRecords);
 
   // Programme effectiveness composite: goals + tracked + reviewed + positive outcomes
   const programmeEffectivenessNumerator = goalsCleared + progressTracked + effectivenessReviewed + programmePositiveOutcomes;
@@ -429,7 +383,6 @@ export function computeRewardsIncentivesManagement(
   const totalParticipationRecords = child_participation_records.length;
 
   const voiceCaptured = child_participation_records.filter((p) => p.child_voice_captured).length;
-  const voiceCapturedRate = pct(voiceCaptured, totalParticipationRecords);
 
   const viewsActedUpon = child_participation_records.filter((p) => p.child_views_acted_upon).length;
   const viewsActedUponRate = pct(viewsActedUpon, totalParticipationRecords);
@@ -438,26 +391,11 @@ export function computeRewardsIncentivesManagement(
   const childSatisfactionRate = pct(satisfiedWithOutcome, totalParticipationRecords);
 
   const participationVoluntary = child_participation_records.filter((p) => p.participation_voluntary).length;
-  const voluntaryRate = pct(participationVoluntary, totalParticipationRecords);
-
-  const supportProvided = child_participation_records.filter((p) => p.support_provided_to_participate).length;
-  const supportProvidedRate = pct(supportProvided, totalParticipationRecords);
-
-  const ageAppropriateMethod = child_participation_records.filter((p) => p.age_appropriate_method).length;
-  const ageAppropriateMethodRate = pct(ageAppropriateMethod, totalParticipationRecords);
-
-  const feedbackDocumented = child_participation_records.filter((p) => p.feedback_documented).length;
-  const feedbackDocumentedRate = pct(feedbackDocumented, totalParticipationRecords);
 
   // Child participation composite: voice captured + views acted upon + satisfied + voluntary
   const childParticipationNumerator = voiceCaptured + viewsActedUpon + satisfiedWithOutcome + participationVoluntary;
   const childParticipationDenominator = totalParticipationRecords * 4;
   const childParticipationRate = pct(childParticipationNumerator, childParticipationDenominator);
-
-  const uniqueChildrenParticipating = new Set(
-    child_participation_records.map((p) => p.child_id),
-  ).size;
-  const participationCoverageRate = total_children > 0 ? pct(uniqueChildrenParticipating, total_children) : 0;
 
   // --- Equity review metrics ---
   const totalEquityReviews = equity_review_records.length;
@@ -480,35 +418,13 @@ export function computeRewardsIncentivesManagement(
   }
   const equityRate = pct(totalEquityChecksPassed, totalEquityChecksPossible);
 
-  const fairDistribution = equity_review_records.filter((e) => e.reward_distribution_fair).length;
-  const fairDistributionRate = pct(fairDistribution, totalEquityReviews);
-
-  const culturalSensitivity = equity_review_records.filter((e) => e.cultural_sensitivity_considered).length;
-  const culturalSensitivityRate = pct(culturalSensitivity, totalEquityReviews);
-
-  const disabilityAdjustments = equity_review_records.filter((e) => e.disability_adjustments_made).length;
-  const disabilityAdjustmentRate = pct(disabilityAdjustments, totalEquityReviews);
-
   const noDiscriminatoryPatterns = equity_review_records.filter((e) => e.no_discriminatory_patterns).length;
   const noDiscriminatoryPatternsRate = pct(noDiscriminatoryPatterns, totalEquityReviews);
 
-  const childrenConsultedOnFairness = equity_review_records.filter((e) => e.children_consulted_on_fairness).length;
-  const childrenConsultedFairnessRate = pct(childrenConsultedOnFairness, totalEquityReviews);
-
-  const exclusionDocumented = equity_review_records.filter((e) => e.exclusion_reasons_documented).length;
-  const exclusionDocumentedRate = pct(exclusionDocumented, totalEquityReviews);
-
   const actionPlansCreated = equity_review_records.filter((e) => e.action_plan_created).length;
-  const actionPlanCreatedRate = pct(actionPlansCreated, totalEquityReviews);
 
   const actionPlansCompleted = equity_review_records.filter((e) => e.action_plan_created && e.action_plan_completed).length;
   const actionPlanCompletionRate = pct(actionPlansCompleted, actionPlansCreated);
-
-  const equityScoreSum = equity_review_records.reduce((sum, e) => sum + e.overall_equity_rating, 0);
-  const avgEquityRating =
-    totalEquityReviews > 0
-      ? Math.round((equityScoreSum / totalEquityReviews) * 100) / 100
-      : null;
 
   const totalChildrenExcluded = equity_review_records.reduce(
     (sum, e) => sum + e.children_excluded_from_schemes_count,

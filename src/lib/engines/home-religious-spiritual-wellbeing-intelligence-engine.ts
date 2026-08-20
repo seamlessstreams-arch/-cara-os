@@ -256,10 +256,6 @@ export function computeReligiousSpiritualWellbeing(
   const supportedFaithRecords = faith_observance_records.filter((r) => r.supported).length;
   const faithSupportCoverageRate = pct(supportedFaithRecords, totalFaithRecords);
 
-  const uniqueChildrenWithFaith = new Set(
-    faith_observance_records.map((r) => r.child_id),
-  ).size;
-
   const staffFacilitated = faith_observance_records.filter((r) => r.staff_facilitated).length;
   const staffFacilitationRate = pct(staffFacilitated, totalFaithRecords);
 
@@ -370,11 +366,6 @@ export function computeReligiousSpiritualWellbeing(
   ).length;
   const worshipBarrierRate = pct(worshipBarriersTotal, totalWorshipRecords);
 
-  const transportProvided = worship_access_records.filter(
-    (r) => r.transport_provided,
-  ).length;
-  const transportRate = pct(transportProvided, totalWorshipRecords);
-
   // --- Celebration participation ---
   const totalCelebrationRecords = celebration_participation_records.length;
   const participated = celebration_participation_records.filter(
@@ -396,15 +387,6 @@ export function computeReligiousSpiritualWellbeing(
     (r) => r.child_led,
   ).length;
   const childLedRate = pct(childLed, totalCelebrationRecords);
-
-  const celebrationSatisfactionSum = celebration_participation_records.reduce(
-    (sum, r) => sum + r.child_satisfaction, 0,
-  );
-  // fab-0: null when no celebration records.
-  const celebrationSatisfactionAvg: number | null =
-    totalCelebrationRecords > 0
-      ? Math.round((celebrationSatisfactionSum / totalCelebrationRecords) * 100) / 100
-      : null;
 
   const educationalCelebrations = celebration_participation_records.filter(
     (r) => r.educational_component,

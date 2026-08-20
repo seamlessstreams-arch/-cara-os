@@ -753,24 +753,6 @@ describe("computeHomeworkAcademicSupport", () => {
           outcome: "completed",
         }),
       );
-      // hwCompletionRate=100% -> B1=+4
-      // staffSupportRate=0% -> no B7
-      // childEngagementRate = pct(0+1+1, 10+2+2) = pct(2,14) = 14% -> <30 penalty -3
-      // So we need to manage engagement. Let's set child_engaged to match neutral on tut/res but override hw.
-      // Actually childEngagement penalty would fire. Let's accept that and compute:
-      // 52 + 4 (B1) - 3 (childEngagement<30) = 53
-      // But we want isolation. Let me prevent the penalty by adding enough engaged records.
-      // Instead, override tutoring/resources to have more engaged:
-      const tRecs = Array.from({ length: 5 }, (_, i) =>
-        makeTutoring({
-          id: `t_${i}`,
-          child_id: "child_1",
-          session_planned: true,
-          session_attended: i < 3, // 3/5=60% attendance
-          child_engaged: true, // all engaged
-          progress_noted: i < 3, // 3/5=60%, B9 triggers at >=60 -> +1. Hmm.
-        }),
-      );
       // tutoringProgressRate = pct(3,5) = 60 -> B9=+1. We need to avoid this.
       // Set progress_noted=false on 3:
       const tRecsFixed = Array.from({ length: 5 }, (_, i) =>
@@ -881,12 +863,6 @@ describe("computeHomeworkAcademicSupport", () => {
 
     // Bonus 3: tutoringCoverageRate >=80 -> +3
     it("B3: tutoringCoverageRate >=80 adds +3", () => {
-      // Need 3 unique children out of total_children=3 -> 100%
-      const tRecs = [
-        makeTutoring({ id: "t1", child_id: "child_1", child_engaged: false, progress_noted: false }),
-        makeTutoring({ id: "t2", child_id: "child_2", child_engaged: false, progress_noted: false }),
-        makeTutoring({ id: "t3", child_id: "child_3", child_engaged: false, progress_noted: false }),
-      ];
       // tutoringCoverage=100% -> B3=+3
       // tutoringEngagement=0%, but that only affects childEngagementRate
       // tutoringProgress=0% -> no B9
@@ -3023,16 +2999,6 @@ describe("computeHomeworkAcademicSupport", () => {
         makeStudyEnvironment({
           id: `se_${i}`,
           overall_quality: i === 0 ? "good" : "poor", // 1/5=20% -> P2=-5
-        }),
-      );
-      const tRecs = Array.from({ length: 5 }, (_, i) =>
-        makeTutoring({
-          id: `t_${i}`,
-          child_id: "child_1",
-          session_planned: true,
-          session_attended: i < 3,
-          child_engaged: false, // 0 engaged
-          progress_noted: i < 4, // 4/5=80% -> wait, >=80 -> B9=+2, not +1!
         }),
       );
       // Need tutoringProgressRate >=60 but <80 for B9=+1.

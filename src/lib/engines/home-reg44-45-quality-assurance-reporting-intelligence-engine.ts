@@ -330,21 +330,6 @@ export function computeReg4445QualityAssuranceReporting(
   ).length;
   const reg44CompletionRate = pct(submittedReg44, totalReg44);
 
-  const withinDeadlineReg44 = reg44_report_records.filter(
-    (r) => r.report_submitted && r.submitted_within_deadline,
-  ).length;
-  const reg44TimelinessRate = pct(withinDeadlineReg44, submittedReg44);
-
-  const sharedWithOfstedReg44 = reg44_report_records.filter(
-    (r) => r.report_submitted && r.report_shared_with_ofsted,
-  ).length;
-  const reg44OfstedSharingRate = pct(sharedWithOfstedReg44, submittedReg44);
-
-  const sharedWithPlacingAuthReg44 = reg44_report_records.filter(
-    (r) => r.report_submitted && r.report_shared_with_placing_authorities,
-  ).length;
-  const reg44PlacingAuthSharingRate = pct(sharedWithPlacingAuthReg44, submittedReg44);
-
   const independentVisitors = reg44_report_records.filter(
     (r) => r.visitor_independent,
   ).length;
@@ -354,21 +339,6 @@ export function computeReg4445QualityAssuranceReporting(
     (r) => r.child_views_captured,
   ).length;
   const reg44ChildViewsRate = pct(childViewsCaptured, totalReg44);
-
-  const unannouncedVisits = reg44_report_records.filter(
-    (r) => r.unannounced,
-  ).length;
-  const unannouncedRate = pct(unannouncedVisits, totalReg44);
-
-  const nightVisits = reg44_report_records.filter(
-    (r) => r.night_visit_included,
-  ).length;
-  const nightVisitRate = pct(nightVisits, totalReg44);
-
-  const previousActionsReviewed = reg44_report_records.filter(
-    (r) => r.previous_actions_reviewed,
-  ).length;
-  const previousActionsReviewedRate = pct(previousActionsReviewed, totalReg44);
 
   const reg44QualitySum = reg44_report_records
     .filter((r) => r.report_submitted)
@@ -444,16 +414,6 @@ export function computeReg4445QualityAssuranceReporting(
   ).length;
   const devPlanUpdateRate = pct(devPlanUpdated, totalReg45);
 
-  const reg45SharedOfsted = reg45_review_records.filter(
-    (r) => r.shared_with_ofsted,
-  ).length;
-  const reg45OfstedSharingRate = pct(reg45SharedOfsted, totalReg45);
-
-  const reg45SharedPlacingAuth = reg45_review_records.filter(
-    (r) => r.shared_with_placing_authorities,
-  ).length;
-  const reg45PlacingAuthSharingRate = pct(reg45SharedPlacingAuth, totalReg45);
-
   const reg45QualitySum = reg45_review_records.reduce(
     (sum, r) => sum + r.review_quality_rating,
     0,
@@ -500,16 +460,6 @@ export function computeReg4445QualityAssuranceReporting(
     0,
   );
   const reg44ConsideredInReg45Rate = pct(totalReg44Considered, totalReg44Available);
-
-  const reg45PreviousActionsCompleted = reg45_review_records.reduce(
-    (sum, r) => sum + r.actions_from_previous_review_completed,
-    0,
-  );
-  const reg45PreviousActionsTotal = reg45_review_records.reduce(
-    (sum, r) => sum + r.actions_from_previous_review_total,
-    0,
-  );
-  const reg45PrevActionRate = pct(reg45PreviousActionsCompleted, reg45PreviousActionsTotal);
 
   // ── Stakeholder engagement composite ──────────────────────────────────
 
@@ -558,11 +508,6 @@ export function computeReg4445QualityAssuranceReporting(
   ).length;
   const evidenceRate = pct(evidenceOfCompletion, completedActions);
 
-  const impactAssessed = action_plan_records.filter(
-    (a) => a.impact_on_children_assessed,
-  ).length;
-  const impactAssessmentRate = pct(impactAssessed, totalActionPlans);
-
   const followUpRequired = action_plan_records.filter(
     (a) => a.follow_up_required,
   ).length;
@@ -574,13 +519,9 @@ export function computeReg4445QualityAssuranceReporting(
   const criticalActions = action_plan_records.filter(
     (a) => a.priority === "critical",
   ).length;
-  const criticalCompleted = action_plan_records.filter(
-    (a) => a.priority === "critical" && a.status === "completed",
-  ).length;
   const criticalOverdue = action_plan_records.filter(
     (a) => a.priority === "critical" && a.status === "overdue",
   ).length;
-  const criticalCompletionRate = pct(criticalCompleted, criticalActions);
 
   const actionsBySource: Record<string, number> = {};
   for (const ap of action_plan_records) {
@@ -590,9 +531,6 @@ export function computeReg4445QualityAssuranceReporting(
   // ── Quality Improvement Metrics ───────────────────────────────────────
 
   const totalQualityCycles = quality_improvement_records.length;
-  const completedCycles = quality_improvement_records.filter(
-    (q) => q.status === "completed",
-  ).length;
   const abandonedCycles = quality_improvement_records.filter(
     (q) => q.status === "abandoned",
   ).length;
@@ -622,40 +560,6 @@ export function computeReg4445QualityAssuranceReporting(
   ).length;
   const cycleChildConsultationRate = pct(childrenConsultedInCycles, totalQualityCycles);
 
-  const linkedToReg44 = quality_improvement_records.filter(
-    (q) => q.linked_to_reg44_finding,
-  ).length;
-  const linkedToReg45 = quality_improvement_records.filter(
-    (q) => q.linked_to_reg45_finding,
-  ).length;
-  const linkedToRegFindings = pct(linkedToReg44 + linkedToReg45, totalQualityCycles);
-
-  const cycleActionsPlanned = quality_improvement_records.reduce(
-    (sum, q) => sum + q.actions_planned,
-    0,
-  );
-  const cycleActionsCompleted = quality_improvement_records.reduce(
-    (sum, q) => sum + q.actions_completed,
-    0,
-  );
-  const cycleActionCompletionRate = pct(cycleActionsCompleted, cycleActionsPlanned);
-
-  const improvementProgressValues = quality_improvement_records
-    .filter((q) => q.target_measure > q.baseline_measure)
-    .map((q) => {
-      const range = q.target_measure - q.baseline_measure;
-      const progress = q.current_measure - q.baseline_measure;
-      return clamp(Math.round((progress / range) * 100), 0, 100);
-    });
-  // fab-0: null when no eligible improvement values.
-  const avgImprovementProgress: number | null =
-    improvementProgressValues.length > 0
-      ? Math.round(
-          improvementProgressValues.reduce((sum, v) => sum + v, 0) /
-            improvementProgressValues.length,
-        )
-      : null;
-
   // ── Notification Metrics ──────────────────────────────────────────────
 
   const totalNotifications = notification_records.length;
@@ -668,29 +572,6 @@ export function computeReg4445QualityAssuranceReporting(
     (n) => n.notified_ofsted,
   ).length;
   const ofstedNotificationRate = pct(notifiedOfsted, totalNotifications);
-
-  const notifiedPlacingAuth = notification_records.filter(
-    (n) => n.notified_placing_authority,
-  ).length;
-  const placingAuthNotificationRate = pct(notifiedPlacingAuth, totalNotifications);
-
-  const notifiedLocalAuth = notification_records.filter(
-    (n) => n.notified_local_authority,
-  ).length;
-  const localAuthNotificationRate = pct(notifiedLocalAuth, totalNotifications);
-
-  const followUpReportsRequired = notification_records.filter(
-    (n) => n.follow_up_report_required,
-  ).length;
-  const followUpReportsSubmitted = notification_records.filter(
-    (n) => n.follow_up_report_required && n.follow_up_report_submitted,
-  ).length;
-  const followUpReportRate = pct(followUpReportsSubmitted, followUpReportsRequired);
-
-  const followUpOnTime = notification_records.filter(
-    (n) => n.follow_up_report_required && n.follow_up_submitted_on_time,
-  ).length;
-  const followUpOnTimeRate = pct(followUpOnTime, followUpReportsRequired);
 
   const investigationsCompleted = notification_records.filter(
     (n) => n.investigation_completed,

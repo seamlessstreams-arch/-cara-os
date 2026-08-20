@@ -139,7 +139,6 @@ export function computeMultidisciplinaryFormulation(
   const reviewScheduledRate = pct(withReviewDate, total);
 
   const uniqueModels = new Set(formulations.map(f => f.model_used)).size;
-  const withHypotheses = formulations.filter(f => f.key_hypothesis_count > 0).length;
   const withRiskFactors = formulations.filter(f => f.risk_factor_count > 0).length;
   const withShareableSummary = formulations.filter(f => f.has_shareable_summary).length;
 

@@ -168,14 +168,6 @@ export function computeRiskManagementPlan(
   // Protective factors
   const withProtectiveFactors = plans.filter(p => p.protective_factor_count > 0).length;
 
-  // Review compliance
-  const todayMs = new Date(today).getTime();
-  const withCurrentReview = plans.filter(p => {
-    if (!p.has_review_date || !p.review_date) return false;
-    const reviewMs = new Date(p.review_date).getTime();
-    return reviewMs >= todayMs;
-  }).length;
-
   // Risk category diversity
   const uniqueCategories = new Set(plans.map(p => p.risk_category)).size;
 

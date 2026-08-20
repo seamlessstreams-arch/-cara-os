@@ -342,7 +342,6 @@ export function computeSharpsDisposalHazardousWaste(
   const hazRiskAssessRate = pct(hazRiskAssessed, totalHazardousRecords);
 
   const hazStaffTrained = hazardous_waste_records.filter((r) => r.staff_handling_trained).length;
-  const hazStaffTrainedRate = pct(hazStaffTrained, totalHazardousRecords);
 
   const hazSpillKit = hazardous_waste_records.filter((r) => r.spill_kit_available).length;
   const hazSpillKitRate = pct(hazSpillKit, totalHazardousRecords);
@@ -382,20 +381,12 @@ export function computeSharpsDisposalHazardousWaste(
   const coshhFirstAid = coshh_records.filter((r) => r.first_aid_measures_documented).length;
   const coshhFirstAidRate = pct(coshhFirstAid, totalCoshhRecords);
 
-  const coshhPPEReqDoc = coshh_records.filter((r) => r.ppe_requirements_documented).length;
-  const coshhPPEDocRate = pct(coshhPPEReqDoc, totalCoshhRecords);
-
-  const coshhPPEAvail = coshh_records.filter((r) => r.ppe_available).length;
-  const coshhPPEAvailRate = pct(coshhPPEAvail, totalCoshhRecords);
-
   const coshhStaffTrained = coshh_records.filter((r) => r.staff_trained).length;
-  const coshhStaffTrainedRate = pct(coshhStaffTrained, totalCoshhRecords);
 
   const coshhAccessibleToChildren = coshh_records.filter((r) => r.accessible_to_children).length;
   const coshhChildAccessRate = pct(coshhAccessibleToChildren, totalCoshhRecords);
 
   const coshhHighRisk = coshh_records.filter((r) => r.risk_level === "high" || r.risk_level === "very_high").length;
-  const coshhHighRiskRate = pct(coshhHighRisk, totalCoshhRecords);
 
   const coshhHighRiskLocked = coshh_records.filter(
     (r) => (r.risk_level === "high" || r.risk_level === "very_high") && r.storage_locked,
@@ -431,9 +422,6 @@ export function computeSharpsDisposalHazardousWaste(
   const clinicalStorageSecure = clinical_waste_records.filter((r) => r.storage_location_secure).length;
   const clinicalStorageRate = pct(clinicalStorageSecure, totalClinicalRecords);
 
-  const clinicalTempCompliant = clinical_waste_records.filter((r) => r.storage_temperature_compliant).length;
-  const clinicalTempRate = pct(clinicalTempCompliant, totalClinicalRecords);
-
   const clinicalOnSchedule = clinical_waste_records.filter((r) => r.collection_on_schedule).length;
   const clinicalScheduleRate = pct(clinicalOnSchedule, totalClinicalRecords);
 
@@ -444,7 +432,6 @@ export function computeSharpsDisposalHazardousWaste(
   const clinicalDutyRate = pct(clinicalDutyOfCare, totalClinicalRecords);
 
   const clinicalStaffTrained = clinical_waste_records.filter((r) => r.staff_handling_trained).length;
-  const clinicalStaffTrainedRate = pct(clinicalStaffTrained, totalClinicalRecords);
 
   const clinicalPPEWorn = clinical_waste_records.filter((r) => r.ppe_worn).length;
   const clinicalPPERate = pct(clinicalPPEWorn, totalClinicalRecords);
@@ -478,12 +465,6 @@ export function computeSharpsDisposalHazardousWaste(
 
   const childKnowsReporting = child_safety_records.filter((r) => r.child_knows_reporting_process).length;
   const childReportingKnowledgeRate = pct(childKnowsReporting, totalChildSafetyRecords);
-
-  const riskAssessmentIncludesChild = child_safety_records.filter((r) => r.risk_assessment_includes_child).length;
-  const riskAssessmentChildRate = pct(riskAssessmentIncludesChild, totalChildSafetyRecords);
-
-  const hazardReportedByChild = child_safety_records.filter((r) => r.hazard_reported_by_child).length;
-  const childHazardReportRate = pct(hazardReportedByChild, totalChildSafetyRecords);
 
   const childIncidentsTotal = child_safety_records.reduce((sum, r) => sum + r.incidents_involving_child, 0);
   const childIncidentsResolved = child_safety_records.reduce((sum, r) => sum + r.incidents_resolved, 0);

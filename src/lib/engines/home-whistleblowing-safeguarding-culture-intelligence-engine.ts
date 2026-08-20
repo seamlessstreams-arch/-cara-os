@@ -434,16 +434,6 @@ export function computeWhistleblowingSafeguardingCulture(
       ? Math.round(trainingScoreSum / scoredTraining)
       : null;
 
-  // Unique staff with current training
-  const staffWithCurrentTraining = new Set(
-    safeguarding_training_records
-      .filter((r) => {
-        if (!r.expiry_date) return r.passed;
-        return r.expiry_date >= today && r.passed;
-      })
-      .map((r) => r.staff_id),
-  ).size;
-
   // Training types coverage
   const trainingTypes = new Set(
     safeguarding_training_records.map((r) => r.training_type),
@@ -502,20 +492,10 @@ export function computeWhistleblowingSafeguardingCulture(
   ).length;
   const visibilityRate = pct(whistleblowingVisible, totalAudits);
 
-  const safeguardingPostersDisplayed = culture_audit_records.filter(
-    (r) => r.safeguarding_posters_displayed,
-  ).length;
-  const posterRate = pct(safeguardingPostersDisplayed, totalAudits);
-
   const childrenKnowComplain = culture_audit_records.filter(
     (r) => r.children_know_how_to_complain,
   ).length;
   const complainKnowledgeRate = pct(childrenKnowComplain, totalAudits);
-
-  const previousActionsCompleted = culture_audit_records.filter(
-    (r) => r.actions_from_previous_audit_completed,
-  ).length;
-  const previousActionsRate = pct(previousActionsCompleted, totalAudits);
 
   const totalActionsRaised = culture_audit_records.reduce(
     (sum, r) => sum + r.total_actions_raised, 0,
@@ -560,20 +540,10 @@ export function computeWhistleblowingSafeguardingCulture(
   ).length;
   const correctChannelRate = pct(correctChannel, totalProtection);
 
-  const bodyMapCompleted = child_protection_records.filter(
-    (r) => r.body_map_completed,
-  ).length;
-  const bodyMapRate = pct(bodyMapCompleted, totalProtection);
-
   const childVoiceCaptured = child_protection_records.filter(
     (r) => r.child_voice_captured,
   ).length;
   const childVoiceRate = pct(childVoiceCaptured, totalProtection);
-
-  const managerInformed = child_protection_records.filter(
-    (r) => r.manager_informed,
-  ).length;
-  const managerInformedRate = pct(managerInformed, totalProtection);
 
   const ladoReferralsNeeded = child_protection_records.filter(
     (r) => r.lado_referral_made !== null,
@@ -582,16 +552,6 @@ export function computeWhistleblowingSafeguardingCulture(
     (r) => r.lado_referral_made === true,
   ).length;
   const ladoReferralRate = pct(ladoReferralsMade, ladoReferralsNeeded.length);
-
-  const ladoTimely = ladoReferralsNeeded.filter(
-    (r) => r.lado_referral_timely === true,
-  ).length;
-  const ladoTimelyRate = pct(ladoTimely, ladoReferralsNeeded.length);
-
-  const socialWorkerInformed = child_protection_records.filter(
-    (r) => r.social_worker_informed,
-  ).length;
-  const socialWorkerRate = pct(socialWorkerInformed, totalProtection);
 
   const multiAgencyResponse = child_protection_records.filter(
     (r) => r.multi_agency_response,
@@ -617,20 +577,6 @@ export function computeWhistleblowingSafeguardingCulture(
     (r) => r.staff_debriefed,
   ).length;
   const debriefRate = pct(staffDebriefed, totalProtection);
-
-  const qualityScores: Record<string, number> = {
-    excellent: 100,
-    good: 75,
-    adequate: 50,
-    poor: 25,
-  };
-  const protectionQualitySum = child_protection_records.reduce(
-    (sum, r) => sum + (qualityScores[r.quality_rating] ?? 50), 0,
-  );
-  const avgProtectionQuality: number | null =
-    totalProtection > 0
-      ? Math.round(protectionQualitySum / totalProtection)
-      : null;
 
   const poorQuality = child_protection_records.filter(
     (r) => r.quality_rating === "poor",

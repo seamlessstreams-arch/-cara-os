@@ -305,7 +305,6 @@ export function computeChildVoiceParticipation(
   const positiveMeetingFeedback = meeting_attendance_records.filter(
     (m) => m.attended && m.child_feedback_positive,
   ).length;
-  const meetingFeedbackPositiveRate = pct(positiveMeetingFeedback, attendedMeeting);
 
   const uniqueChildrenInMeetings = new Set(
     meeting_attendance_records.filter((m) => m.attended).map((m) => m.child_id),
@@ -319,9 +318,6 @@ export function computeChildVoiceParticipation(
 
   const viewsRecorded = consultation_records.filter((c) => c.child_views_recorded).length;
   const viewsRecordedRate = pct(viewsRecorded, totalConsultationRecords);
-
-  const viewsShared = consultation_records.filter((c) => c.views_shared_with_staff).length;
-  const viewsSharedRate = pct(viewsShared, totalConsultationRecords);
 
   const outcomeCommunicated = consultation_records.filter(
     (c) => c.outcome_communicated_to_child,
@@ -348,11 +344,6 @@ export function computeChildVoiceParticipation(
         )
       : null;
 
-  const uniqueChildrenInConsultations = new Set(
-    consultation_records.filter((c) => c.child_engaged).map((c) => c.child_id),
-  ).size;
-  const consultationChildCoverage = total_children > 0 ? pct(uniqueChildrenInConsultations, total_children) : 0;
-
   // --- Feedback action metrics ---
   const totalFeedbackRecords = feedback_action_records.length;
   const feedbackReceived = feedback_action_records.filter((f) => f.feedback_received).length;
@@ -360,11 +351,6 @@ export function computeChildVoiceParticipation(
     (f) => f.feedback_received && f.acknowledged,
   ).length;
   const feedbackAcknowledgedRate = pct(feedbackAcknowledged, feedbackReceived);
-
-  const actionPlanned = feedback_action_records.filter(
-    (f) => f.feedback_received && f.action_planned,
-  ).length;
-  const actionPlannedRate = pct(actionPlanned, feedbackReceived);
 
   const actionTaken = feedback_action_records.filter(
     (f) => f.feedback_received && f.action_taken,
@@ -379,10 +365,6 @@ export function computeChildVoiceParticipation(
   const childSatisfiedWithOutcome = feedback_action_records.filter(
     (f) => f.feedback_received && f.child_satisfied_with_outcome,
   ).length;
-  const feedbackSatisfactionRate = pct(childSatisfiedWithOutcome, feedbackReceived);
-
-  const escalatedFeedback = feedback_action_records.filter((f) => f.escalated).length;
-  const escalationRate = pct(escalatedFeedback, totalFeedbackRecords);
 
   // Null on empty — no actions taken ⇒ no delay to report.
   const avgDaysToAction: number | null =
@@ -394,11 +376,6 @@ export function computeChildVoiceParticipation(
         )
       : null;
 
-  const uniqueChildrenWithFeedback = new Set(
-    feedback_action_records.filter((f) => f.feedback_received).map((f) => f.child_id),
-  ).size;
-  const feedbackChildCoverage = total_children > 0 ? pct(uniqueChildrenWithFeedback, total_children) : 0;
-
   // --- Council engagement metrics ---
   const totalCouncilRecords = council_engagement_records.length;
   const attendedCouncil = council_engagement_records.filter((c) => c.attended).length;
@@ -408,19 +385,6 @@ export function computeChildVoiceParticipation(
     (c) => c.attended && c.contributed,
   ).length;
   const councilContributionRate = pct(contributedCouncil, attendedCouncil);
-
-  const agendaItemRaised = council_engagement_records.filter(
-    (c) => c.agenda_item_raised,
-  ).length;
-  const agendaItemRaisedRate = pct(agendaItemRaised, totalCouncilRecords);
-
-  const agendaItemActioned = council_engagement_records.filter(
-    (c) => c.agenda_item_raised && c.agenda_item_actioned,
-  ).length;
-  const agendaActionedRate = pct(agendaItemActioned, agendaItemRaised);
-
-  const minutesShared = council_engagement_records.filter((c) => c.minutes_shared).length;
-  const minutesSharedRate = pct(minutesShared, totalCouncilRecords);
 
   const feltListenedTo = council_engagement_records.filter(
     (c) => c.attended && c.child_felt_listened_to,
@@ -439,11 +403,6 @@ export function computeChildVoiceParticipation(
           (councilAttendanceRate + councilContributionRate + councilFeltListenedRate) / 3,
         )
       : null;
-
-  const uniqueChildrenInCouncil = new Set(
-    council_engagement_records.filter((c) => c.attended).map((c) => c.child_id),
-  ).size;
-  const councilChildCoverage = total_children > 0 ? pct(uniqueChildrenInCouncil, total_children) : 0;
 
   // Leadership roles
   const leadershipRoles = council_engagement_records.filter(
@@ -493,11 +452,6 @@ export function computeChildVoiceParticipation(
           (feelsListenedToRate + feelsViewsMatterRate + feelsChangesHappenRate) / 3,
         )
       : null;
-
-  const uniqueChildrenFeelingHeard = new Set(
-    feeling_heard_records.map((f) => f.child_id),
-  ).size;
-  const feelingHeardChildCoverage = total_children > 0 ? pct(uniqueChildrenFeelingHeard, total_children) : 0;
 
   // --- Child satisfaction composite ---
   // Across meeting feedback, consultation satisfaction, feedback satisfaction, council felt listened, feeling heard

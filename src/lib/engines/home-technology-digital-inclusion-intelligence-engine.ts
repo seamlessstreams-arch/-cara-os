@@ -270,10 +270,6 @@ export function computeTechnologyDigitalInclusion(
   const accessibleDevices = device_access_records.filter((r) => r.accessible_when_needed).length;
   const deviceAccessRate = pct(accessibleDevices, totalDeviceRecords);
 
-  const uniqueChildrenWithDevices = new Set(
-    device_access_records.map((r) => r.child_id),
-  ).size;
-
   const internetEnabled = device_access_records.filter((r) => r.internet_enabled).length;
   const internetEnabledRate = pct(internetEnabled, totalDeviceRecords);
 
@@ -300,11 +296,6 @@ export function computeTechnologyDigitalInclusion(
     (r) => r.issues_reported.length > 0,
   ).length;
   const deviceIssueRate = pct(devicesWithIssues, totalDeviceRecords);
-
-  const personalDevices = device_access_records.filter(
-    (r) => r.ownership === "personal",
-  ).length;
-  const personalDeviceRate = pct(personalDevices, totalDeviceRecords);
 
   // --- Digital skills ---
   const totalSkillsRecords = digital_skills_records.length;
@@ -396,13 +387,6 @@ export function computeTechnologyDigitalInclusion(
     (r) => r.follow_up_needed && r.follow_up_completed,
   ).length;
   const followUpRate = pct(followUpCompleted, followUpNeeded);
-
-  const staffDelivered = internet_safety_records.filter((r) => r.staff_delivered).length;
-  const staffDeliveryRate = pct(staffDelivered, totalSafetyRecords);
-
-  const uniqueChildrenWithSafety = new Set(
-    internet_safety_records.map((r) => r.child_id),
-  ).size;
 
   const uniqueTopics = new Set(
     internet_safety_records.map((r) => r.topic),

@@ -290,27 +290,14 @@ export function computeItEquipmentConnectivity(
   const wifiMeetsTarget = wifi_records.filter((w) => w.meets_target).length;
   const wifiReliabilityRate = pct(wifiMeetsTarget, totalWifiRecords);
 
-  const wifiSecured = wifi_records.filter((w) => w.password_secured).length;
-  const wifiSecuredRate = pct(wifiSecured, totalWifiRecords);
-
   const contentFilterActive = wifi_records.filter((w) => w.content_filter_active).length;
   const contentFilterRate = pct(contentFilterActive, totalWifiRecords);
 
   const parentalControlsEnabled = wifi_records.filter((w) => w.parental_controls_enabled).length;
   const parentalControlsRate = pct(parentalControlsEnabled, totalWifiRecords);
 
-  const childAccessibleWifi = wifi_records.filter((w) => w.child_accessible).length;
-  const childAccessibleWifiRate = pct(childAccessibleWifi, totalWifiRecords);
-
-  const backupAvailable = wifi_records.filter((w) => w.backup_connection_available).length;
-  const backupRate = pct(backupAvailable, totalWifiRecords);
-
   const totalOutageMinutes = wifi_records.reduce((sum, w) => sum + w.outage_minutes, 0);
   const avgOutageMinutes = totalWifiRecords > 0 ? Math.round(totalOutageMinutes / totalWifiRecords) : null;
-
-  const outagesReported = wifi_records.filter((w) => w.outage_minutes > 0 && w.outage_reported).length;
-  const outagesTotal = wifi_records.filter((w) => w.outage_minutes > 0).length;
-  const outageReportingRate = pct(outagesReported, outagesTotal);
 
   const excellentOrGoodSignal = wifi_records.filter(
     (w) => w.signal_strength === "excellent" || w.signal_strength === "good",
@@ -321,14 +308,6 @@ export function computeItEquipmentConnectivity(
   const totalDeviceRecords = device_records.length;
   const operationalDevices = device_records.filter((d) => d.operational).length;
   const deviceAvailabilityRate = pct(operationalDevices, totalDeviceRecords);
-
-  const devicesWithAntivirus = device_records.filter((d) => d.operational && d.has_antivirus).length;
-  const antivirusRate = pct(devicesWithAntivirus, totalDeviceRecords);
-
-  const devicesWithContentFilter = device_records.filter(
-    (d) => d.operational && d.has_content_filter,
-  ).length;
-  const deviceContentFilterRate = pct(devicesWithContentFilter, totalDeviceRecords);
 
   const devicesMeetingEdNeeds = device_records.filter(
     (d) => d.operational && d.meets_educational_needs,
@@ -346,12 +325,6 @@ export function computeItEquipmentConnectivity(
   const agingDevices = device_records.filter((d) => d.age_years >= 5).length;
   const agingDeviceRate = pct(agingDevices, totalDeviceRecords);
 
-  const accessibleDevices = device_records.filter(
-    (d) => d.operational && d.accessible_features_enabled,
-  ).length;
-  const accessibilityRate = pct(accessibleDevices, totalDeviceRecords);
-
-  const childAssignedDevices = device_records.filter((d) => d.child_id !== null).length;
   const uniqueChildrenWithDevice = new Set(
     device_records.filter((d) => d.child_id !== null).map((d) => d.child_id),
   ).size;
@@ -359,32 +332,11 @@ export function computeItEquipmentConnectivity(
 
   // --- Printer access metrics ---
   const totalPrinterRecords = printer_records.length;
-  const operationalPrinters = printer_records.filter((p) => p.operational).length;
-  const printerOperationalRate = pct(operationalPrinters, totalPrinterRecords);
 
   const printersAccessibleToChildren = printer_records.filter(
     (p) => p.operational && p.accessible_to_children,
   ).length;
   const printerAccessRate = pct(printersAccessibleToChildren, totalPrinterRecords);
-
-  const printersWithAdequateSupplies = printer_records.filter(
-    (p) =>
-      p.operational &&
-      (p.ink_toner_level === "full" || p.ink_toner_level === "adequate") &&
-      p.paper_stocked,
-  ).length;
-  const printerSuppliesRate = pct(printersWithAdequateSupplies, totalPrinterRecords);
-
-  const homeworkPrinters = printer_records.filter(
-    (p) => p.operational && p.usage_allowed_for_homework,
-  ).length;
-  const homeworkPrinterRate = pct(homeworkPrinters, totalPrinterRecords);
-
-  const printerServiceDue = printer_records.filter((p) => p.service_due).length;
-  const printerServiceDueRate = pct(printerServiceDue, totalPrinterRecords);
-
-  const wifiPrinters = printer_records.filter((p) => p.operational && p.wifi_enabled).length;
-  const wifiPrinterRate = pct(wifiPrinters, totalPrinterRecords);
 
   // --- Software currency metrics ---
   const totalSoftwareRecords = software_records.length;
@@ -397,26 +349,6 @@ export function computeItEquipmentConnectivity(
   const securityPatched = software_records.filter((s) => s.security_patched).length;
   const securityPatchRate = pct(securityPatched, totalSoftwareRecords);
 
-  const autoUpdateEnabled = software_records.filter((s) => s.auto_update_enabled).length;
-  const autoUpdateRate = pct(autoUpdateEnabled, totalSoftwareRecords);
-
-  const childAppropriateSoftware = software_records.filter((s) => s.child_appropriate).length;
-  const childAppropriateRate = pct(childAppropriateSoftware, totalSoftwareRecords);
-
-  const accessibilitySoftware = software_records.filter((s) => s.accessibility_compliant).length;
-  const softwareAccessibilityRate = pct(accessibilitySoftware, totalSoftwareRecords);
-
-  const educationalSoftware = software_records.filter((s) => s.category === "education").length;
-  const educationalSoftwareRate = pct(educationalSoftware, totalSoftwareRecords);
-
-  // Software deployment coverage
-  const totalDevicesNeeded = software_records.reduce((sum, s) => sum + s.total_devices_needed, 0);
-  const totalDevicesInstalled = software_records.reduce(
-    (sum, s) => sum + s.installed_on_device_count,
-    0,
-  );
-  const deploymentRate = pct(totalDevicesInstalled, totalDevicesNeeded);
-
   // --- Digital access equity metrics ---
   const totalDigitalAccessRecords = digital_access_records.length;
 
@@ -425,28 +357,15 @@ export function computeItEquipmentConnectivity(
   ).length;
   const digitalAccessRate = pct(childrenWithAccess, totalDigitalAccessRecords);
 
-  const childrenWithInternet = digital_access_records.filter(
-    (d) => d.internet_access_available,
-  ).length;
-  const internetAccessRate = pct(childrenWithInternet, totalDigitalAccessRecords);
-
   const homeworkAccessAdequate = digital_access_records.filter(
     (d) => d.homework_access_adequate,
   ).length;
   const homeworkAccessRate = pct(homeworkAccessAdequate, totalDigitalAccessRecords);
 
-  const educationalSwAvailable = digital_access_records.filter(
-    (d) => d.educational_software_available,
-  ).length;
-  const edSoftwareAccessRate = pct(educationalSwAvailable, totalDigitalAccessRecords);
-
   const onlineSafetyTrained = digital_access_records.filter(
     (d) => d.online_safety_training_completed,
   ).length;
   const onlineSafetyTrainingRate = pct(onlineSafetyTrained, totalDigitalAccessRecords);
-
-  const supervisedAccess = digital_access_records.filter((d) => d.supervised_access).length;
-  const supervisedAccessRate = pct(supervisedAccess, totalDigitalAccessRecords);
 
   const skillsAssessed = digital_access_records.filter(
     (d) => d.digital_skills_assessed,

@@ -303,27 +303,12 @@ export function computeSiblingContactRelationships(
   ).length;
   const documentationRate = pct(considerationDocumented, totalPlacementRecords);
 
-  const placedTogether = sibling_placement_records.filter((p) => p.placement_together).length;
-  const placedTogetherRate = pct(placedTogether, totalPlacementRecords);
-
   const separatedRecords = sibling_placement_records.filter((p) => !p.placement_together);
   const separationJustified = separatedRecords.filter((p) => p.separation_justified).length;
   const separationJustifiedRate = pct(separationJustified, separatedRecords.length);
 
   const childViewsSought = sibling_placement_records.filter((p) => p.child_views_sought).length;
   const childViewsRate = pct(childViewsSought, totalPlacementRecords);
-
-  const siblingViewsSought = sibling_placement_records.filter((p) => p.sibling_views_sought).length;
-  const siblingViewsRate = pct(siblingViewsSought, totalPlacementRecords);
-
-  const socialWorkerConsulted = sibling_placement_records.filter((p) => p.social_worker_consulted).length;
-  const socialWorkerConsultRate = pct(socialWorkerConsulted, totalPlacementRecords);
-
-  const reunificationPlans = separatedRecords.filter((p) => p.plan_to_reunify).length;
-  const reunificationPlanRate = pct(reunificationPlans, separatedRecords.length);
-
-  const reviewsCompleted = sibling_placement_records.filter((p) => p.review_completed).length;
-  const reviewCompletionRate = pct(reviewsCompleted, totalPlacementRecords);
 
   // --- Contact facilitation metrics ---
   const totalContactRecords = contact_facilitation_records.length;
@@ -333,11 +318,6 @@ export function computeSiblingContactRelationships(
 
   const cancelledContacts = contact_facilitation_records.filter((c) => c.cancelled).length;
   const cancellationRate = pct(cancelledContacts, totalContactRecords);
-
-  const rescheduledContacts = contact_facilitation_records.filter(
-    (c) => c.cancelled && c.rescheduled,
-  ).length;
-  const rescheduledRate = cancelledContacts > 0 ? pct(rescheduledContacts, cancelledContacts) : 0;
 
   const contactPlanFollowed = nonCancelled.filter((c) => c.contact_plan_followed).length;
   const contactPlanRate = pct(contactPlanFollowed, nonCancelled.length);
@@ -357,9 +337,6 @@ export function computeSiblingContactRelationships(
       ? Math.round((qualitySum / nonCancelled.length) * 100) / 100
       : null;
 
-  const transportProvided = nonCancelled.filter((c) => c.transport_provided).length;
-  const transportRate = pct(transportProvided, nonCancelled.length);
-
   // Contact type diversity
   const contactTypes = new Set(nonCancelled.map((c) => c.contact_type));
   const contactTypeDiversity = contactTypes.size;
@@ -377,20 +354,10 @@ export function computeSiblingContactRelationships(
   ).length;
   const poorRelationshipRate = pct(poorOrEstrangedRelationships, totalAssessmentRecords);
 
-  const secureAttachments = relationship_assessment_records.filter(
-    (a) => a.attachment_strength === "secure",
-  ).length;
-  const secureAttachmentRate = pct(secureAttachments, totalAssessmentRecords);
-
   const positiveInteractions = relationship_assessment_records.filter(
     (a) => a.positive_interactions_observed,
   ).length;
   const positiveInteractionRate = pct(positiveInteractions, totalAssessmentRecords);
-
-  const sharedInterests = relationship_assessment_records.filter(
-    (a) => a.shared_interests_identified,
-  ).length;
-  const sharedInterestsRate = pct(sharedInterests, totalAssessmentRecords);
 
   const therapeuticRecommended = relationship_assessment_records.filter(
     (a) => a.therapeutic_support_recommended,
@@ -400,45 +367,13 @@ export function computeSiblingContactRelationships(
   ).length;
   const therapeuticFollowThroughRate = pct(therapeuticInPlace, therapeuticRecommended);
 
-  const improvementPlansCreated = relationship_assessment_records.filter(
-    (a) => a.improvement_plan_created,
-  ).length;
-
-  const childParticipatedAssessment = relationship_assessment_records.filter(
-    (a) => a.child_participated,
-  ).length;
-  const childParticipationAssessmentRate = pct(childParticipatedAssessment, totalAssessmentRecords);
-
-  const siblingParticipatedAssessment = relationship_assessment_records.filter(
-    (a) => a.sibling_participated,
-  ).length;
-  const siblingParticipationAssessmentRate = pct(siblingParticipatedAssessment, totalAssessmentRecords);
-
-  const protectiveFactors = relationship_assessment_records.filter(
-    (a) => a.protective_factors_present,
-  ).length;
-  const protectiveFactorRate = pct(protectiveFactors, totalAssessmentRecords);
-
-  const riskFactors = relationship_assessment_records.filter(
-    (a) => a.risk_factors_present,
-  ).length;
-  const riskFactorRate = pct(riskFactors, totalAssessmentRecords);
-
   const frequentConflict = relationship_assessment_records.filter(
     (a) => a.conflict_frequency === "frequent" || a.conflict_frequency === "constant",
   ).length;
   const frequentConflictRate = pct(frequentConflict, totalAssessmentRecords);
 
-  const excellentCommunication = relationship_assessment_records.filter(
-    (a) => a.communication_quality === "excellent" || a.communication_quality === "good",
-  ).length;
-  const goodCommunicationRate = pct(excellentCommunication, totalAssessmentRecords);
-
   // --- Sibling event metrics ---
   const totalEventRecords = sibling_event_records.length;
-
-  const eventsWithSiblings = sibling_event_records.filter((e) => e.siblings_present).length;
-  const siblingPresenceRate = pct(eventsWithSiblings, totalEventRecords);
 
   const totalChildrenInvited = sibling_event_records.reduce(
     (sum, e) => sum + e.children_invited.length,
@@ -450,16 +385,6 @@ export function computeSiblingContactRelationships(
   );
   const eventParticipationRate = pct(totalChildrenAttended, totalChildrenInvited);
 
-  const positiveChildFeedback = sibling_event_records.filter(
-    (e) => e.child_feedback_positive,
-  ).length;
-  const childEventFeedbackRate = pct(positiveChildFeedback, totalEventRecords);
-
-  const positiveSiblingFeedback = sibling_event_records.filter(
-    (e) => e.sibling_feedback_positive,
-  ).length;
-  const siblingEventFeedbackRate = pct(positiveSiblingFeedback, totalEventRecords);
-
   const eventQualitySum = sibling_event_records.reduce(
     (sum, e) => sum + e.event_quality_rating,
     0,
@@ -468,14 +393,6 @@ export function computeSiblingContactRelationships(
     totalEventRecords > 0
       ? Math.round((eventQualitySum / totalEventRecords) * 100) / 100
       : null;
-
-  const plannedEvents = sibling_event_records.filter((e) => e.planned_in_advance).length;
-  const plannedRate = pct(plannedEvents, totalEventRecords);
-
-  const childInvolvedPlanning = sibling_event_records.filter(
-    (e) => e.child_involved_in_planning,
-  ).length;
-  const childPlanningRate = pct(childInvolvedPlanning, totalEventRecords);
 
   const memoryBookUpdated = sibling_event_records.filter((e) => e.memory_book_updated).length;
   const memoryBookRate = pct(memoryBookUpdated, totalEventRecords);
@@ -512,9 +429,6 @@ export function computeSiblingContactRelationships(
       ? Math.round((wishAcknowledgedRate + wishActedUponRate) / 2)
       : null;
 
-  const outcomeRecorded = child_wishes_records.filter((w) => w.outcome_recorded).length;
-  const outcomeRecordedRate = pct(outcomeRecorded, totalWishesRecords);
-
   const outcomeShared = child_wishes_records.filter((w) => w.outcome_shared_with_child).length;
   const outcomeSharedRate = pct(outcomeShared, totalWishesRecords);
 
@@ -532,9 +446,6 @@ export function computeSiblingContactRelationships(
     (w) => w.recorded_in_care_plan,
   ).length;
   const carePlanRate = pct(recordedInCarePlan, totalWishesRecords);
-
-  const advocateInvolved = child_wishes_records.filter((w) => w.advocate_involved).length;
-  const advocateRate = pct(advocateInvolved, totalWishesRecords);
 
   // Wish category breakdown
   const wishCategories: Record<string, number> = {};

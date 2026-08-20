@@ -312,15 +312,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   ).length;
   const actionPlanRate = pct(actionPlans, completedDebriefings);
 
-  // Follow-up from debriefings
-  const followUpNeeded = debriefing_records.filter(
-    (r) => r.follow_up_scheduled,
-  ).length;
-  const followUpCompleted = debriefing_records.filter(
-    (r) => r.follow_up_scheduled && r.follow_up_completed,
-  ).length;
-  const debriefFollowUpRate = pct(followUpCompleted, followUpNeeded);
-
   // Overdue debriefings
   const overdueDebriefings = debriefing_records.filter(
     (r) => r.status === "overdue",
@@ -378,24 +369,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   ).length;
   const incidentDebriefRate = pct(incidentDebriefCompleted, totalCriticalIncidents);
 
-  // External support offered rate
-  const externalSupportOffered = critical_incident_records.filter(
-    (r) => r.external_support_offered,
-  ).length;
-  const externalSupportRate = pct(externalSupportOffered, totalCriticalIncidents);
-
-  // Incident documented rate
-  const incidentDocumented = critical_incident_records.filter(
-    (r) => r.incident_documented,
-  ).length;
-  const incidentDocumentedRate = pct(incidentDocumented, totalCriticalIncidents);
-
-  // Lessons identified rate
-  const lessonsIdentified = critical_incident_records.filter(
-    (r) => r.lessons_identified,
-  ).length;
-  const lessonsIdentifiedRate = pct(lessonsIdentified, totalCriticalIncidents);
-
   // Staff welfare check completed rate
   const welfareCheckCompleted = critical_incident_records.filter(
     (r) => r.staff_welfare_check_completed,
@@ -406,22 +379,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const criticalSeverityIncidents = critical_incident_records.filter(
     (r) => r.severity === "critical",
   ).length;
-
-  // High severity incidents
-  const highSeverityIncidents = critical_incident_records.filter(
-    (r) => r.severity === "high",
-  ).length;
-
-  // Total staff involved across all incidents
-  const totalStaffInvolved = critical_incident_records.reduce(
-    (sum, r) => sum + r.staff_involved_count,
-    0,
-  );
-
-  // Incident type variety
-  const uniqueIncidentTypes = new Set(
-    critical_incident_records.map((r) => r.incident_type),
-  ).size;
 
   // Support acceptance rate (of those offered)
   const supportAccepted = critical_incident_records.filter(
@@ -464,11 +421,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     (r) => r.status === "overdue",
   ).length;
 
-  // Follow-up type variety
-  const uniqueFollowupTypes = new Set(
-    wellbeing_followup_records.map((r) => r.followup_type),
-  ).size;
-
   // Further follow-up needed but not scheduled
   const furtherNeeded = wellbeing_followup_records.filter(
     (r) => r.needs_further_followup,
@@ -489,11 +441,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
             completedFollowupDays.length,
         )
       : null;
-
-  // Unique staff receiving follow-up
-  const uniqueStaffFollowup = new Set(
-    wellbeing_followup_records.map((r) => r.staff_id),
-  ).size;
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 4: LEARNING EXTRACTION METRICS
@@ -531,17 +478,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   ).length;
   const documentedInLogRate = pct(documentedInLog, totalLearningExtractions);
 
-  // Review date set rate
-  const reviewDateSet = learning_extraction_records.filter(
-    (r) => r.review_date_set,
-  ).length;
-  const reviewDateSetRate = pct(reviewDateSet, totalLearningExtractions);
-
-  // Learning type variety
-  const uniqueLearningTypes = new Set(
-    learning_extraction_records.map((r) => r.learning_type),
-  ).size;
-
   // Learning extraction rate (overall quality composite)
   // Combines: shared + implemented + documented
   const learningExtractionQuality =
@@ -560,12 +496,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     (r) => r.accessed,
   ).length;
   const supportAccessRate = pct(supportAccessed, totalSupportAccesses);
-
-  // Timely access rate (of those who accessed)
-  const timelyAccess = support_access_records.filter(
-    (r) => r.accessed && r.timely_access,
-  ).length;
-  const timelyAccessRate = pct(timelyAccess, supportAccessed);
 
   // Staff found helpful rate (of those who accessed)
   const foundHelpful = support_access_records.filter(
@@ -612,11 +542,6 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const awarenessBarriers = support_access_records.filter(
     (r) => r.barrier_type === "awareness",
   ).length;
-
-  // Access route variety
-  const uniqueAccessRoutes = new Set(
-    support_access_records.map((r) => r.access_route),
-  ).size;
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 6: STAFF SATISFACTION COMPOSITE

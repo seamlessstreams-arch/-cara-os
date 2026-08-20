@@ -225,10 +225,6 @@ export function computeLivingEnvironmentStandards(
         ) / 10
       : null;
 
-  const cleaningIssuesCount = cleaning_entries.filter(
-    c => c.issues_noted !== null && c.issues_noted.trim().length > 0,
-  ).length;
-
   // ── Maintenance metrics ───────────────────────────────────────────────
   const completedMaintenance = maintenance_items.filter(m => m.status === "completed");
   const maintenanceCompletionRate = pct(completedMaintenance.length, maintenance_items.length);
@@ -248,10 +244,6 @@ export function computeLivingEnvironmentStandards(
   const kitchenPassCount = kitchen_hygiene_checks.filter(c => c.overall_pass).length;
   const kitchenHygienePassRate = pct(kitchenPassCount, kitchen_hygiene_checks.length);
 
-  const fridgeTempFailRate = pct(
-    kitchen_hygiene_checks.filter(c => !c.fridge_temp_ok).length,
-    kitchen_hygiene_checks.length,
-  );
   const surfacesCleanRate = pct(
     kitchen_hygiene_checks.filter(c => c.surfaces_clean).length,
     kitchen_hygiene_checks.length,
@@ -276,10 +268,6 @@ export function computeLivingEnvironmentStandards(
 
   const childChoseDecorRate = pct(
     bedroom_profiles.filter(b => b.child_chose_decor).length,
-    bedroom_profiles.length,
-  );
-  const adequateStorageRate = pct(
-    bedroom_profiles.filter(b => b.adequate_storage).length,
     bedroom_profiles.length,
   );
   const privacyLockRate = pct(

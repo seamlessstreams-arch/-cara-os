@@ -148,7 +148,6 @@ describe("identifyLeavingCareAlerts", () => {
     const plans = [
       makePlan({ id: "p1", status: "active", next_review_date: "2026-04-01", child_name: "Bob" }),
     ];
-    const now = new Date("2026-05-21T12:00:00Z");
     const alerts = identifyLeavingCareAlerts(plans, [], []);
     const found = alerts.find((a) => a.type === "overdue_pathway_review");
     expect(found).toBeDefined();

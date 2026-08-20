@@ -240,8 +240,6 @@ function avg(arr: number[]): number {
 }
 
 const PRESENT_CODES = ["/", "\\", "L"]; // present, present pm, late (counts as present)
-const ABSENT_CODES = ["U", "N", "O", "I", "M"]; // various absence
-const EXCLUDED_CODES = ["E"];
 
 // ── Main Computation ────────────────────────────────────────────────────────
 

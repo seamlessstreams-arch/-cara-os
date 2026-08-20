@@ -423,7 +423,6 @@ export function computeRiskIntelligenceDashboard(
   };
 
   // ── Exploitation Overview ─────────────────────────────────────────────
-  const activeExploitationChildren = new Set(activeScreenings.map((s) => s.child_id));
   const highRiskExploitationChildren = new Set(
     activeScreenings.filter((s) => s.risk_level === "high" || s.risk_level === "very_high").map((s) => s.child_id),
   );

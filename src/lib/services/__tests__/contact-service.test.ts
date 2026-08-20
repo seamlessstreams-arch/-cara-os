@@ -326,7 +326,6 @@ describe("computeChildContactProfile", () => {
   });
 
   it("counts total contacts in last 30 days", () => {
-    const today = new Date();
     const recent = daysFromNow(-5);
     const old = daysFromNow(-60);
 
@@ -340,7 +339,6 @@ describe("computeChildContactProfile", () => {
   });
 
   it("counts family contacts in last 30 days", () => {
-    const today = new Date();
     const recent = daysFromNow(-5);
 
     const records = [

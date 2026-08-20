@@ -157,7 +157,6 @@ export function computeStaffCompetencyTraining(
   const totalCpd = cpd_records.length;
   const completedCpd = cpd_records.filter(c => c.status === "completed").length;
   const overdueCpd = cpd_records.filter(c => c.status === "overdue").length;
-  const inProgressCpd = cpd_records.filter(c => c.status === "in_progress").length;
   const cpdEngagementRate = totalCpd > 0
     ? pct(completedCpd, totalCpd)
     : null;

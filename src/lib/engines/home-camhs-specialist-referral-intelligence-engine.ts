@@ -86,7 +86,6 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const attendRate = pct(allAttended, allAppts);
   const avgWait = waiting.length > 0 ? Math.round(waiting.reduce((s, r) => s + r.waiting_days, 0) / waiting.length) : null;
   const outcomeRecorded = camhs_referrals.filter(r => r.outcome_recorded).length;
-  const outcomeRate = pct(outcomeRecorded, camhs_referrals.length);
 
   // ── Emergency referrals ─────────────────────────────────────────────────
   const emergResponse = emergency_referrals.filter(e => e.response_within_24h).length;
@@ -100,7 +99,6 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const specAttended = specialist_contacts.filter(c => c.attended).length;
   const specAttendRate = pct(specAttended, specialist_contacts.length);
   const specOutcome = specialist_contacts.filter(c => c.outcome_recorded).length;
-  const specOutcomeRate = pct(specOutcome, specialist_contacts.length);
 
   // ── Scoring ─────────────────────────────────────────────────────────────
   let score = 52; // base

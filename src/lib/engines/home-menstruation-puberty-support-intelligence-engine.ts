@@ -356,10 +356,6 @@ export function computeMenstruationPubertySupport(
   const parentInformed = puberty_education_records.filter((r) => r.parent_carer_informed).length;
   const parentInformedRate = pct(parentInformed, totalEducationRecords);
 
-  const uniqueChildrenEducated = new Set(
-    puberty_education_records.map((r) => r.child_id),
-  ).size;
-
   // Puberty education composite rate
   const pubertyEducationRate: number | null =
     totalEducationRecords > 0
@@ -385,11 +381,6 @@ export function computeMenstruationPubertySupport(
   ).length;
   const preferredStaffRate = pct(preferredStaffAvailable, totalMenstruationRecords);
 
-  const medicalNeedsAddressed = menstruation_support_records.filter(
-    (r) => r.medical_needs_addressed,
-  ).length;
-  const medicalAddressedRate = pct(medicalNeedsAddressed, totalMenstruationRecords);
-
   const painManaged = menstruation_support_records.filter(
     (r) => r.pain_managed_effectively,
   ).length;
@@ -410,15 +401,6 @@ export function computeMenstruationPubertySupport(
     (r) => r.school_absence_due_to_period && r.school_absence_managed,
   ).length;
   const schoolAbsenceManagedRate = pct(schoolAbsenceManaged, schoolAbsenceDueToPeriod);
-
-  const menstruationVoiceCaptured = menstruation_support_records.filter(
-    (r) => r.child_voice_captured,
-  ).length;
-  const menstruationVoiceRate = pct(menstruationVoiceCaptured, totalMenstruationRecords);
-
-  const uniqueChildrenSupported = new Set(
-    menstruation_support_records.map((r) => r.child_id),
-  ).size;
 
   // Menstruation support composite rate
   const menstruationSupportRate: number | null =
@@ -449,9 +431,6 @@ export function computeMenstruationPubertySupport(
 
   const stockAdequate = product_availability_records.filter((r) => r.stock_adequate).length;
   const stockAdequateRate = pct(stockAdequate, totalProductRecords);
-
-  const budgetAllocated = product_availability_records.filter((r) => r.budget_allocated).length;
-  const budgetAllocatedRate = pct(budgetAllocated, totalProductRecords);
 
   // Product availability composite rate
   const productAvailabilityRate: number | null =
@@ -542,14 +521,6 @@ export function computeMenstruationPubertySupport(
     (r) => r.concerns_identified && r.concerns_actioned,
   ).length;
   const bcConcernActionRate = pct(bcConcernsActioned, bcConcernsIdentified);
-
-  const bcFollowUpPlanned = body_confidence_records.filter((r) => r.follow_up_planned).length;
-  const bcFollowUpCompleted = body_confidence_records.filter((r) => r.follow_up_completed).length;
-  const bcFollowUpCompletionRate = pct(bcFollowUpCompleted, bcFollowUpPlanned);
-
-  const uniqueChildrenBodyConfidence = new Set(
-    body_confidence_records.map((r) => r.child_id),
-  ).size;
 
   // Body confidence composite rate
   const bodyConfidenceRate: number | null =
@@ -1429,9 +1400,6 @@ export function computeMenstruationPubertySupport(
   // --- Diversity insight ---
   const educationTopics = new Set(
     puberty_education_records.map((r) => r.topic).filter((t) => t),
-  );
-  const supportTypes = new Set(
-    menstruation_support_records.map((r) => r.support_type).filter((t) => t),
   );
   if (educationTopics.size >= 5 && totalEducationRecords > 0) {
     insights.push({

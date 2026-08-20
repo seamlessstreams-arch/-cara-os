@@ -796,23 +796,6 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
     });
 
     it("score at exact boundary 80 is outstanding", () => {
-      // 52 + 6(comp) + 5(ind) + 5(voice) + 5(actions) + 4(sharing) + 5(factors) = 82
-      // Need 80: 52 + 6 + 5 + 5 + 5 + 4 + 2 = 79. Off by one. Try: 52 + 6 + 5 + 5 + 5 + 1 + 5 = 79. Try: 52 + 6 + 5 + 5 + 2 + 4 + 5 = 79.
-      // 52 + 6 + 5 + 5 + 5 + 4 + 5 = 82. Use all max => 82.
-      // For exactly 80: 52 + 6 + 5 + 5 + 2 + 4 + 5 = 79. Not quite.
-      // 52 + 6 + 5 + 5 + 5 + 2 + 5 = 80 with actionRate>=85, sharingRate at 50-79
-      const interviews = Array.from({ length: 10 }, (_, i) =>
-        makeInterview({
-          interview_status: i < 9 ? "completed" : "pending", // 90% => +6
-          independent_of_home: i < 8, // 80% => +5
-          has_child_voice: i < 9, // 90% => +5
-          actions_total: 2,
-          actions_completed: 2, // 100% => +5
-          shared_with_count: i < 5 ? 1 : 0, // 50% => +1
-          has_push_factors: i < 8, // 80% => +5
-          has_pull_factors: false,
-        }),
-      );
       // 52 + 6 + 5 + 5 + 5 + 1 + 5 = 79. Still need 80.
       // Change sharing to >=80: shared_with_count: i < 8 ? 1 : 0 => 80% => +4. 52+6+5+5+5+4+5=82.
       // Hmm. Let's try actions at 60-84 => +2: 52+6+5+5+2+4+5=79. And factors 50-79 => +2: 52+6+5+5+2+4+2=76.

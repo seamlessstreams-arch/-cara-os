@@ -362,11 +362,6 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const idScores = emotion_identification_records.map((r) => r.current_score);
   const avgIdScore = avg((idScores.filter((v): v is number => v !== null) ?? 0));
 
-  // Correct identification rate across all assessments
-  const totalPresented = emotion_identification_records.reduce((s, r) => s + r.emotions_presented, 0);
-  const totalCorrect = emotion_identification_records.reduce((s, r) => s + r.emotions_correctly_identified, 0);
-  const correctIdRate = pct(totalCorrect, totalPresented);
-
   // Nuanced emotion recognition
   const nuancedCount = emotion_identification_records.filter((r) => r.nuanced_emotions_identified).length;
   const nuancedRate = pct(nuancedCount, totalIdRecords);
@@ -427,10 +422,6 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const differentiateCount = feelings_vocabulary_records.filter((r) => r.can_differentiate_similar).length;
   const differentiateRate = pct(differentiateCount, totalVocabRecords);
 
-  // Applies in context
-  const appliesContextCount = feelings_vocabulary_records.filter((r) => r.applies_in_context).length;
-  const appliesContextRate = pct(appliesContextCount, totalVocabRecords);
-
   // Age appropriate
   const ageAppropriateCount = feelings_vocabulary_records.filter((r) => r.age_appropriate).length;
   const ageAppropriateRate = pct(ageAppropriateCount, totalVocabRecords);
@@ -472,21 +463,9 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const toolEffectivenessScores = expression_tool_records.map((r) => r.effectiveness_rating);
   const avgToolEffectiveness = avg(toolEffectivenessScores);
 
-  // Average child preference
-  const toolPreferenceScores = expression_tool_records.map((r) => r.child_preference_rating);
-  const avgToolPreference = avg(toolPreferenceScores);
-
   // Staff confidence
   const staffConfidentTools = expression_tool_records.filter((r) => r.staff_confidence_using).length;
   const staffToolConfidenceRate = pct(staffConfidentTools, totalToolRecords);
-
-  // Culturally appropriate
-  const culturallyAppropriateTools = expression_tool_records.filter((r) => r.culturally_appropriate).length;
-  const culturallyAppropriateRate = pct(culturallyAppropriateTools, totalToolRecords);
-
-  // Adapted for needs
-  const adaptedTools = expression_tool_records.filter((r) => r.adapted_for_needs).length;
-  const adaptedToolRate = pct(adaptedTools, totalToolRecords);
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 4: Therapeutic Journaling Metrics
@@ -508,17 +487,9 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const staffRespondedJournals = therapeutic_journal_records.filter((r) => r.staff_responded).length;
   const staffResponseRate = pct(staffRespondedJournals, totalJournalEntries);
 
-  // Timely response rate
-  const timelyResponses = therapeutic_journal_records.filter((r) => r.response_timely).length;
-  const timelyResponseRate = pct(timelyResponses, totalJournalEntries);
-
   // Average journal depth
   const depthScores = therapeutic_journal_records.map((r) => r.depth_rating);
   const avgJournalDepth = avg(depthScores);
-
-  // Therapeutic value
-  const therapeuticValues = therapeutic_journal_records.map((r) => r.therapeutic_value_rating);
-  const avgTherapeuticValue = avg(therapeuticValues);
 
   // Child found helpful
   const helpfulJournals = therapeutic_journal_records.filter((r) => r.child_found_helpful).length;
@@ -535,23 +506,11 @@ export function computeEmotionalLiteracyFeelingsExpression(
   // Journal type diversity
   const journalTypes = new Set(therapeutic_journal_records.map((r) => r.journal_type)).size;
 
-  // Average emotions per entry
-  const totalEmotionsExpressed = therapeutic_journal_records.reduce(
-    (s, r) => s + r.emotions_expressed.length,
-    0,
-  );
-  const avgEmotionsPerEntry = totalJournalEntries > 0
-    ? Math.round((totalEmotionsExpressed / totalJournalEntries) * 100) / 100
-    : null;
-
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 5: Staff Attunement Metrics
   // ════════════════════════════════════════════════════════════════════════
 
   const totalAttunementObs = staff_attunement_records.length;
-  const uniqueStaffObserved = new Set(
-    staff_attunement_records.map((r) => r.staff_id),
-  ).size;
 
   // Staff attunement rate (composite of key indicators)
   const recognisedCount = staff_attunement_records.filter((r) => r.recognised_emotional_state).length;
@@ -566,12 +525,6 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const validatedFeelings = staff_attunement_records.filter((r) => r.validated_feelings).length;
   const validationRate = pct(validatedFeelings, totalAttunementObs);
 
-  const offeredCoping = staff_attunement_records.filter((r) => r.offered_coping_strategy).length;
-  const copingOfferRate = pct(offeredCoping, totalAttunementObs);
-
-  const followedPlan = staff_attunement_records.filter((r) => r.followed_individual_plan).length;
-  const planFollowRate = pct(followedPlan, totalAttunementObs);
-
   const coRegulationEffective = staff_attunement_records.filter((r) => r.co_regulation_effective).length;
   const coRegulationRate = pct(coRegulationEffective, totalAttunementObs);
 
@@ -583,9 +536,6 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   const trainingCompleted = staff_attunement_records.filter((r) => r.training_completed).length;
   const staffTrainingRate = pct(trainingCompleted, totalAttunementObs);
-
-  const confidenceScores = staff_attunement_records.map((r) => r.confidence_rating);
-  const avgStaffConfidence = avg(confidenceScores);
 
   // Composite staff attunement rate (weighted average of key indicators)
   const staffAttunementRate =

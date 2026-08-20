@@ -289,11 +289,6 @@ export function computeHomeOnCallGovernance(
     (quality.feedback_rate ?? 0) >= 25 ? 0 : -2;
   score += mod5;
 
-  // mod6: Escalation appropriateness (±3)
-  // Critical calls should be escalated; routine should not
-  const criticalEscalated = allCalls.filter(
-    (c) => c.call_type === "critical" && c.escalated,
-  ).length;
   const criticalNotEscalated = allCalls.filter(
     (c) => c.call_type === "critical" && !c.escalated,
   ).length;

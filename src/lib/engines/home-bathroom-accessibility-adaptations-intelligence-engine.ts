@@ -408,13 +408,6 @@ export function computeBathroomAccessibilityAdaptations(
   ).length;
   const nonSlipStandardRate = pct(nonSlipMeetsStandard, totalNonSlipRecords);
 
-  const nonSlipGoodCondition = non_slip_records.filter(
-    (n) =>
-      n.installed &&
-      (n.condition === "excellent" || n.condition === "good"),
-  ).length;
-  const nonSlipConditionRate = pct(nonSlipGoodCondition, totalNonSlipRecords);
-
   const nonSlipPoorCondition = non_slip_records.filter(
     (n) =>
       n.installed &&
@@ -451,11 +444,6 @@ export function computeBathroomAccessibilityAdaptations(
     (w) => w.transfer_space_available,
   ).length;
   const transferSpaceRate = pct(wheelchairTransferSpace, totalWheelchairRecords);
-
-  const wheelchairAccessibleFixtures = wheelchair_records.filter(
-    (w) => w.accessible_fixtures,
-  ).length;
-  const accessibleFixturesRate = pct(wheelchairAccessibleFixtures, totalWheelchairRecords);
 
   const wheelchairEmergencyPullCord = wheelchair_records.filter(
     (w) => w.emergency_pull_cord,
@@ -499,13 +487,6 @@ export function computeBathroomAccessibilityAdaptations(
     (m) => m.installed && m.care_plan_linked,
   ).length;
   const modificationCarePlanRate = pct(modificationsCarePlanLinked, totalModificationRecords);
-
-  const modificationsGoodCondition = modification_records.filter(
-    (m) =>
-      m.installed &&
-      (m.condition === "excellent" || m.condition === "good"),
-  ).length;
-  const modificationConditionRate = pct(modificationsGoodCondition, totalModificationRecords);
 
   const modificationsPoorCondition = modification_records.filter(
     (m) =>
@@ -553,7 +534,6 @@ export function computeBathroomAccessibilityAdaptations(
   for (const n of non_slip_records) allBathroomIds.add(n.bathroom_id);
   for (const w of wheelchair_records) allBathroomIds.add(w.bathroom_id);
   for (const m of modification_records) allBathroomIds.add(m.bathroom_id);
-  const totalBathrooms = allBathroomIds.size;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

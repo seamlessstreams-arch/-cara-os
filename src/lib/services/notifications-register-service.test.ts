@@ -5,8 +5,6 @@ import {
   type NotificationRecord,
 } from "./notifications-register-service";
 
-const NOW = new Date("2026-05-21T12:00:00Z");
-
 function makeRecord(overrides: Partial<NotificationRecord> = {}): NotificationRecord {
   return {
     id: "nr-1",

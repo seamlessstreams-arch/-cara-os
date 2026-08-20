@@ -308,11 +308,6 @@ export function computeStaffDisciplinaryConductIntelligence(
     totalCases,
   );
 
-  const policyReviewedRate = pct(
-    cases.filter((c) => c.policy_reviewed).length,
-    totalCases,
-  );
-
   // ── Scoring ───────────────────────────────────────────────────────
   let score = 52;
 

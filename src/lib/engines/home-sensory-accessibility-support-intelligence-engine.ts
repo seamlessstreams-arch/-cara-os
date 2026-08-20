@@ -277,11 +277,6 @@ export function computeSensoryAccessibilitySupport(
   ).length;
   const childInvolvementRate = pct(profilesWithChildInvolvement, totalProfiles);
 
-  const profilesWithProfessionalInput = sensory_profile_records.filter(
-    (p) => p.professional_input,
-  ).length;
-  const professionalInputRate = pct(profilesWithProfessionalInput, totalProfiles);
-
   const overdueProfileReviews = sensory_profile_records.filter(
     (p) => p.review_overdue,
   ).length;
@@ -307,7 +302,6 @@ export function computeSensoryAccessibilitySupport(
   const adaptationChildFeedbackPositive = accessibility_adaptation_records.filter(
     (a) => a.implemented && a.child_feedback_positive,
   ).length;
-  const adaptationFeedbackRate = pct(adaptationChildFeedbackPositive, implementedAdaptations);
 
   const overdueAdaptationReviews = accessibility_adaptation_records.filter(
     (a) => a.review_overdue,
@@ -336,26 +330,6 @@ export function computeSensoryAccessibilitySupport(
   ).length;
   const childInitiatedRate = pct(childRequestedSessions, totalSessions);
 
-  const sessionEngagementSum = sensory_room_records.reduce(
-    (sum, s) => sum + s.child_engagement_rating,
-    0,
-  );
-  const sessionEngagementAvg =
-    totalSessions > 0
-      ? Math.round((sessionEngagementSum / totalSessions) * 100) / 100
-      : null;
-
-  const sessionOutcomeSum = sensory_room_records.reduce(
-    (sum, s) => sum + s.outcome_rating,
-    0,
-  );
-  const sessionOutcomeAvg =
-    totalSessions > 0
-      ? Math.round((sessionOutcomeSum / totalSessions) * 100) / 100
-      : null;
-
-  // --- Equipment maintenance ---
-  const totalEquipment = sensory_equipment_records.length;
   const activeEquipment = sensory_equipment_records.filter(
     (e) => e.in_use,
   ).length;

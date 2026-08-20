@@ -250,7 +250,6 @@ describe("rating thresholds", () => {
 
   // Score exactly 65 → good
   it("good at exactly 65", () => {
-    const assessments = makeMany(10);
     // Need score = 65. Start with all perfect = 82. Need to drop 17 points total.
     // coverage 60-89% → +2: drop 4 → 78. Need 13 more.
     // deadline 50-69% → no bonus, no penalty (0 instead of +5): drop 5 → 73. Need 8 more.
@@ -1734,10 +1733,6 @@ describe("modifier boundary combinations", () => {
   });
 
   it("all modifiers in neutral/dead zone produce base score 52", () => {
-    // coverage 40-59% → 0, deadline 50-69% → 0, immunisation 50-69% → 0,
-    // dental_optical 40-59% → 0, child_contrib 30-49% → 0, report_sharing 40-59% → 0
-    // 52 + 0 + 0 + 0 + 0 + 0 + 0 = 52 → adequate
-    const assessments = makeMany(10);
     // coverage: 5/10 = 50%
     // But we have 10 assessments, 10 unique kids, so coverage = 10/total_children
     // We want 50% coverage: 10 kids assessed, 20 total

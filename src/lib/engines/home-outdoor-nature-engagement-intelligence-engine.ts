@@ -270,9 +270,6 @@ export function computeOutdoorNatureEngagement(
   const childInitiatedOutdoor = outdoor_activity_records.filter((r) => r.child_initiated).length;
   const childInitiatedRate = pct(childInitiatedOutdoor, totalOutdoorRecords);
 
-  const staffLedOutdoor = outdoor_activity_records.filter((r) => r.staff_led).length;
-  const staffLedRate = pct(staffLedOutdoor, totalOutdoorRecords);
-
   const outdoorEnjoymentSum = outdoor_activity_records.reduce(
     (sum, r) => sum + r.child_enjoyment, 0,
   );
@@ -304,9 +301,6 @@ export function computeOutdoorNatureEngagement(
     nature_learning_records.map((r) => r.child_id),
   ).size;
 
-  const objectivesSet = nature_learning_records.filter((r) => r.learning_objectives_set).length;
-  const objectivesSetRate = pct(objectivesSet, totalNatureLearning);
-
   const objectivesMet = nature_learning_records.filter((r) => r.learning_objectives_met).length;
   const objectivesMetRate = pct(objectivesMet, totalNatureLearning);
 
@@ -324,9 +318,6 @@ export function computeOutdoorNatureEngagement(
   const linkedToEducation = nature_learning_records.filter((r) => r.linked_to_education).length;
   const educationLinkRate = pct(linkedToEducation, totalNatureLearning);
 
-  const natureResourcesProvided = nature_learning_records.filter((r) => r.resources_provided).length;
-  const natureResourceRate = pct(natureResourcesProvided, totalNatureLearning);
-
   const outcomesDocumented = nature_learning_records.filter((r) => r.outcome_documented).length;
   const outcomeDocRate = pct(outcomesDocumented, totalNatureLearning);
 
@@ -341,9 +332,6 @@ export function computeOutdoorNatureEngagement(
 
   // --- Garden/allotment projects ---
   const totalGardenRecords = garden_project_records.length;
-  const uniqueChildrenGarden = new Set(
-    garden_project_records.map((r) => r.child_id),
-  ).size;
 
   const gardenParticipating = garden_project_records.filter((r) => r.child_participation).length;
   const gardenParticipationRate = pct(gardenParticipating, totalGardenRecords);
@@ -353,12 +341,6 @@ export function computeOutdoorNatureEngagement(
 
   const gardenActive = garden_project_records.filter((r) => r.active).length;
   const gardenActiveRate = pct(gardenActive, totalGardenRecords);
-
-  const responsibilityAssigned = garden_project_records.filter((r) => r.responsibility_assigned).length;
-  const responsibilityRate = pct(responsibilityAssigned, totalGardenRecords);
-
-  const progressDocumented = garden_project_records.filter((r) => r.progress_documented).length;
-  const gardenProgressDocRate = pct(progressDocumented, totalGardenRecords);
 
   const therapeuticBenefit = garden_project_records.filter((r) => r.therapeutic_benefit_noted).length;
   const therapeuticRate = pct(therapeuticBenefit, totalGardenRecords);
@@ -374,18 +356,8 @@ export function computeOutdoorNatureEngagement(
       ? Math.round((gardenSatisfactionSum / totalGardenRecords) * 100) / 100
       : null;
 
-  const gardenWithSkills = garden_project_records.filter((r) => r.skills_gained.length > 0).length;
-  const gardenSkillsRate = pct(gardenWithSkills, totalGardenRecords);
-
-  const uniqueProjectTypes = new Set(
-    garden_project_records.map((r) => r.project_type),
-  ).size;
-
   // --- Environmental exploration diversity ---
   const totalExplorationRecords = exploration_records.length;
-  const uniqueChildrenExploration = new Set(
-    exploration_records.map((r) => r.child_id),
-  ).size;
 
   const newEnvironments = exploration_records.filter((r) => r.new_environment).length;
   const newEnvironmentRate = pct(newEnvironments, totalExplorationRecords);
@@ -396,9 +368,6 @@ export function computeOutdoorNatureEngagement(
   const sensoryEngaged = exploration_records.filter((r) => r.sensory_engagement).length;
   const sensoryEngagementRate = pct(sensoryEngaged, totalExplorationRecords);
 
-  const discoveryDocumented = exploration_records.filter((r) => r.discovery_documented).length;
-  const discoveryDocRate = pct(discoveryDocumented, totalExplorationRecords);
-
   const explorationEnjoymentSum = exploration_records.reduce(
     (sum, r) => sum + r.child_enjoyment, 0,
   );
@@ -406,9 +375,6 @@ export function computeOutdoorNatureEngagement(
     totalExplorationRecords > 0
       ? Math.round((explorationEnjoymentSum / totalExplorationRecords) * 100) / 100
       : null;
-
-  const educationalExploration = exploration_records.filter((r) => r.educational_value).length;
-  const educationalExplorationRate = pct(educationalExploration, totalExplorationRecords);
 
   const repeatRequested = exploration_records.filter((r) => r.repeat_requested).length;
   const repeatRequestRate = pct(repeatRequested, totalExplorationRecords);
@@ -425,9 +391,6 @@ export function computeOutdoorNatureEngagement(
   // --- Outdoor safety compliance ---
   const totalSafetyRecords = outdoor_safety_records.length;
 
-  const safetyCompleted = outdoor_safety_records.filter((r) => r.completed).length;
-  const safetyCompletionRate = pct(safetyCompleted, totalSafetyRecords);
-
   const safetyCompliant = outdoor_safety_records.filter((r) => r.compliant).length;
   const safetyComplianceRate = pct(safetyCompliant, totalSafetyRecords);
 
@@ -441,10 +404,6 @@ export function computeOutdoorNatureEngagement(
 
   const safetyStaffTrained = outdoor_safety_records.filter((r) => r.staff_trained).length;
   const safetyTrainingRate = pct(safetyStaffTrained, totalSafetyRecords);
-
-  const uniqueSafetyTypes = new Set(
-    outdoor_safety_records.map((r) => r.safety_type),
-  ).size;
 
   // --- Child enjoyment composite ---
   const enjoymentCount =

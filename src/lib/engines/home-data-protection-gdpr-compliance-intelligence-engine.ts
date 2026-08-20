@@ -351,7 +351,6 @@ export function computeDataProtectionGdprCompliance(
   const completedSars = sar_records.filter((r) => r.outcome === "completed" || r.outcome === "partially_completed").length;
   const sarsWithinDeadline = sar_records.filter((r) => r.completed_within_deadline).length;
   const sarsQualityChecked = sar_records.filter((r) => r.quality_checked).length;
-  const sarsDpoInvolved = sar_records.filter((r) => r.dpo_involved).length;
   const sarsSatisfied = sar_records.filter((r) => r.complainant_satisfied).length;
 
   const sarsAcknowledgedTimely = sar_records.filter((r) => {
@@ -363,7 +362,6 @@ export function computeDataProtectionGdprCompliance(
   const sarCompletionRate = pct(completedSars, totalSars);
   const sarDeadlineRate = pct(sarsWithinDeadline, totalSars);
   const sarQualityRate = pct(sarsQualityChecked, totalSars);
-  const sarDpoRate = pct(sarsDpoInvolved, totalSars);
   const sarSatisfactionRate = pct(sarsSatisfied, totalSars);
   const sarAcknowledgementRate = pct(sarsAcknowledgedTimely, totalSars);
 
@@ -396,8 +394,6 @@ export function computeDataProtectionGdprCompliance(
   const icoTimelinessRate = pct(icoWithin72h, icoReportableBreaches);
 
   const childrenDataBreaches = breach_records.filter((r) => r.children_data_involved).length;
-  const individualsNotified = breach_records.filter((r) => r.individuals_notified).length;
-  const totalRecordsAffected = breach_records.reduce((sum, r) => sum + r.records_affected, 0);
 
   const rootCauseRate = pct(breachesWithRootCause, totalBreaches);
   const correctiveActionRate = pct(breachesWithCorrectiveAction, totalBreaches);
@@ -424,8 +420,6 @@ export function computeDataProtectionGdprCompliance(
   const lawfulBasisStated = privacy_notice_records.filter((r) => r.lawful_basis_stated).length;
   const dataRightsExplained = privacy_notice_records.filter((r) => r.data_rights_explained).length;
   const retentionStated = privacy_notice_records.filter((r) => r.retention_periods_stated).length;
-  const contactIncluded = privacy_notice_records.filter((r) => r.contact_details_included).length;
-  const accessibleFormat = privacy_notice_records.filter((r) => r.accessible_format).length;
   const publishedNotices = privacy_notice_records.filter((r) => r.published).length;
 
   const noticesOverdue = privacy_notice_records.filter((r) => {

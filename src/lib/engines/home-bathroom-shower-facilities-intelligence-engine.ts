@@ -314,38 +314,13 @@ export function computeBathroomShowerFacilities(
   const cleanAudits = cleanliness_audit_records.filter((a) => a.overall_score >= 4).length;
   const cleanlinessRate = pct(cleanAudits, totalCleanlinessAudits);
 
-  const surfacesCleanCount = cleanliness_audit_records.filter((a) => a.surfaces_clean).length;
-  const surfacesCleanRate = pct(surfacesCleanCount, totalCleanlinessAudits);
-
-  const floorCleanCount = cleanliness_audit_records.filter((a) => a.floor_clean).length;
-  const floorCleanRate = pct(floorCleanCount, totalCleanlinessAudits);
-
-  const toiletCleanCount = cleanliness_audit_records.filter((a) => a.toilet_clean).length;
-  const toiletCleanRate = pct(toiletCleanCount, totalCleanlinessAudits);
-
-  const sinkCleanCount = cleanliness_audit_records.filter((a) => a.sink_clean).length;
-  const sinkCleanRate = pct(sinkCleanCount, totalCleanlinessAudits);
-
-  const showerBathCleanCount = cleanliness_audit_records.filter((a) => a.shower_bath_clean).length;
-  const showerBathCleanRate = pct(showerBathCleanCount, totalCleanlinessAudits);
-
-  const suppliesStockedCount = cleanliness_audit_records.filter((a) => a.supplies_stocked).length;
-  const suppliesStockedRate = pct(suppliesStockedCount, totalCleanlinessAudits);
-
   const mouldDetectedCount = cleanliness_audit_records.filter((a) => a.mould_detected).length;
   const mouldRate = pct(mouldDetectedCount, totalCleanlinessAudits);
-
-  const limescaleDetectedCount = cleanliness_audit_records.filter((a) => a.limescale_detected).length;
-  const limescaleRate = pct(limescaleDetectedCount, totalCleanlinessAudits);
 
   const ventilationAdequateCount = cleanliness_audit_records.filter((a) => a.ventilation_adequate).length;
   const ventilationRate = pct(ventilationAdequateCount, totalCleanlinessAudits);
 
-  const odourFreeCount = cleanliness_audit_records.filter((a) => a.odour_free).length;
-  const odourFreeRate = pct(odourFreeCount, totalCleanlinessAudits);
-
   const hazardsFoundCount = cleanliness_audit_records.filter((a) => a.hazards_found).length;
-  const hazardRate = pct(hazardsFoundCount, totalCleanlinessAudits);
 
   const correctiveActionTakenCount = cleanliness_audit_records.filter(
     (a) => a.hazards_found && a.corrective_action_taken,
@@ -361,50 +336,14 @@ export function computeBathroomShowerFacilities(
   // --- Shower availability metrics ---
   const totalShowerAvailabilityChecks = shower_availability_records.length;
 
-  const showerFunctionalCount = shower_availability_records.filter((s) => s.shower_functional).length;
-  const showerFunctionalRate = pct(showerFunctionalCount, totalShowerAvailabilityChecks);
-
-  const bathFunctionalCount = shower_availability_records.filter((s) => s.bath_functional).length;
-  const bathFunctionalRate = pct(bathFunctionalCount, totalShowerAvailabilityChecks);
-
-  const hotWaterAvailableCount = shower_availability_records.filter((s) => s.hot_water_available).length;
-  const hotWaterAvailableRate = pct(hotWaterAvailableCount, totalShowerAvailabilityChecks);
-
-  const coldWaterAvailableCount = shower_availability_records.filter((s) => s.cold_water_available).length;
-  const coldWaterAvailableRate = pct(coldWaterAvailableCount, totalShowerAvailabilityChecks);
-
-  const adequatePressureCount = shower_availability_records.filter((s) => s.adequate_water_pressure).length;
-  const adequatePressureRate = pct(adequatePressureCount, totalShowerAvailabilityChecks);
-
-  const drainageClearCount = shower_availability_records.filter((s) => s.drainage_clear).length;
-  const drainageClearRate = pct(drainageClearCount, totalShowerAvailabilityChecks);
-
   const antiSlipCount = shower_availability_records.filter((s) => s.anti_slip_measures_in_place).length;
   const antiSlipRate = pct(antiSlipCount, totalShowerAvailabilityChecks);
-
-  const showerCurtainIntactCount = shower_availability_records.filter((s) => s.shower_curtain_screen_intact).length;
-  const showerCurtainIntactRate = pct(showerCurtainIntactCount, totalShowerAvailabilityChecks);
 
   const repairRequestedCount = shower_availability_records.filter((s) => s.repair_requested).length;
   const repairCompletedCount = shower_availability_records.filter(
     (s) => s.repair_requested && s.repair_completed,
   ).length;
   const repairCompletionRate = repairRequestedCount > 0 ? pct(repairCompletedCount, repairRequestedCount) : 100;
-
-  const childAffectedCount = shower_availability_records.filter((s) => s.child_affected).length;
-  const childAffectedRate = pct(childAffectedCount, totalShowerAvailabilityChecks);
-
-  const alternativeProvidedCount = shower_availability_records.filter(
-    (s) => s.child_affected && s.alternative_provided,
-  ).length;
-  const alternativeProvidedRate = childAffectedCount > 0 ? pct(alternativeProvidedCount, childAffectedCount) : 100;
-
-  // Zero downtime records
-  const zeroDowntimeCount = shower_availability_records.filter((s) => s.downtime_hours === 0).length;
-  const zeroDowntimeRate = pct(zeroDowntimeCount, totalShowerAvailabilityChecks);
-
-  const poorShowerheadCount = shower_availability_records.filter((s) => s.showerhead_condition === "poor").length;
-  const poorShowerheadRate = pct(poorShowerheadCount, totalShowerAvailabilityChecks);
 
   // Composite shower availability: shower_functional OR bath_functional AND hot_water_available
   const showerAvailableComposite = shower_availability_records.filter(
@@ -421,17 +360,9 @@ export function computeBathroomShowerFacilities(
   const tmvFittedCount = hot_water_records.filter((h) => h.tmv_fitted).length;
   const tmvFittedRate = pct(tmvFittedCount, totalHotWaterRecords);
 
-  const tmvTestedCount = hot_water_records.filter((h) => h.tmv_tested).length;
-  const tmvTestedRate = pct(tmvTestedCount, totalHotWaterRecords);
-
-  const tmvPassedCount = hot_water_records.filter((h) => h.tmv_tested && h.tmv_test_passed).length;
-  const tmvPassedRate = tmvTestedCount > 0 ? pct(tmvPassedCount, tmvTestedCount) : 0;
-
   const scaldingRiskCount = hot_water_records.filter((h) => h.scalding_risk_identified).length;
-  const scaldingRiskRate = pct(scaldingRiskCount, totalHotWaterRecords);
 
   const scaldingIncidentCount = hot_water_records.filter((h) => h.scalding_incident_occurred).length;
-  const scaldingIncidentRate = pct(scaldingIncidentCount, totalHotWaterRecords);
 
   const legionellaCheckedCount = hot_water_records.filter((h) => h.legionella_check_completed).length;
   const legionellaCheckedRate = pct(legionellaCheckedCount, totalHotWaterRecords);
@@ -444,13 +375,6 @@ export function computeBathroomShowerFacilities(
   const waterQualityAcceptableCount = hot_water_records.filter((h) => h.water_quality_acceptable).length;
   const waterQualityRate = pct(waterQualityAcceptableCount, totalHotWaterRecords);
 
-  const hwCorrectiveRequiredCount = hot_water_records.filter((h) => h.corrective_action_required).length;
-  const hwCorrectiveCompletedCount = hot_water_records.filter(
-    (h) => h.corrective_action_required && h.corrective_action_completed,
-  ).length;
-  const hwCorrectiveCompletionRate =
-    hwCorrectiveRequiredCount > 0 ? pct(hwCorrectiveCompletedCount, hwCorrectiveRequiredCount) : 100;
-
   // --- Privacy metrics ---
   const totalPrivacyRecords = privacy_records.length;
 
@@ -458,45 +382,17 @@ export function computeBathroomShowerFacilities(
   const lockFittedRate = pct(lockFittedCount, totalPrivacyRecords);
 
   const lockFunctionalCount = privacy_records.filter((p) => p.lock_fitted && p.lock_functional).length;
-  const lockFunctionalRate = lockFittedCount > 0 ? pct(lockFunctionalCount, lockFittedCount) : 0;
-
-  const lockOverridableCount = privacy_records.filter(
-    (p) => p.lock_fitted && p.lock_functional && p.lock_overridable_externally,
-  ).length;
-  const lockOverridableRate = lockFunctionalCount > 0 ? pct(lockOverridableCount, lockFunctionalCount) : 0;
-
-  const frostedWindowCount = privacy_records.filter((p) => p.frosted_window_or_blind).length;
-  const frostedWindowRate = pct(frostedWindowCount, totalPrivacyRecords);
 
   const adequateScreeningCount = privacy_records.filter((p) => p.adequate_screening).length;
-  const adequateScreeningRate = pct(adequateScreeningCount, totalPrivacyRecords);
-
-  const individualTowelsCount = privacy_records.filter((p) => p.individual_towels_provided).length;
-  const individualTowelsRate = pct(individualTowelsCount, totalPrivacyRecords);
-
-  const personalStorageCount = privacy_records.filter((p) => p.personal_storage_available).length;
-  const personalStorageRate = pct(personalStorageCount, totalPrivacyRecords);
 
   const knockPolicyCount = privacy_records.filter((p) => p.knock_before_entry_policy_observed).length;
   const knockPolicyRate = pct(knockPolicyCount, totalPrivacyRecords);
 
   const childConsultedPrivacyCount = privacy_records.filter((p) => p.child_consulted_on_privacy).length;
-  const childConsultedPrivacyRate = pct(childConsultedPrivacyCount, totalPrivacyRecords);
 
   const childSatisfiedPrivacyCount = privacy_records.filter(
     (p) => p.child_consulted_on_privacy && p.child_satisfied_with_privacy,
   ).length;
-  const childSatisfiedPrivacyRate =
-    childConsultedPrivacyCount > 0 ? pct(childSatisfiedPrivacyCount, childConsultedPrivacyCount) : 0;
-
-  const privacyComplaintCount = privacy_records.filter((p) => p.privacy_complaint_received).length;
-  const privacyComplaintRate = pct(privacyComplaintCount, totalPrivacyRecords);
-
-  const complaintResolvedCount = privacy_records.filter(
-    (p) => p.privacy_complaint_received && p.complaint_resolved,
-  ).length;
-  const complaintResolutionRate =
-    privacyComplaintCount > 0 ? pct(complaintResolvedCount, privacyComplaintCount) : 100;
 
   // Composite privacy rate: lock functional + adequate screening + knock policy
   const privacyCompositeNumerators: number[] = [];
@@ -512,46 +408,10 @@ export function computeBathroomShowerFacilities(
   // --- Accessibility metrics ---
   const totalAccessibilityRecords = accessibility_records.length;
 
-  const wheelchairAccessibleCount = accessibility_records.filter((a) => a.wheelchair_accessible).length;
-  const wheelchairAccessibleRate = pct(wheelchairAccessibleCount, totalAccessibilityRecords);
-
-  const grabRailsFittedCount = accessibility_records.filter((a) => a.grab_rails_fitted).length;
-  const grabRailsFittedRate = pct(grabRailsFittedCount, totalAccessibilityRecords);
-
-  const grabRailsSecureCount = accessibility_records.filter(
-    (a) => a.grab_rails_fitted && a.grab_rails_secure,
-  ).length;
-  const grabRailsSecureRate = grabRailsFittedCount > 0 ? pct(grabRailsSecureCount, grabRailsFittedCount) : 0;
-
-  const nonSlipFlooringCount = accessibility_records.filter((a) => a.non_slip_flooring).length;
-  const nonSlipFlooringRate = pct(nonSlipFlooringCount, totalAccessibilityRecords);
-
-  const levelAccessShowerCount = accessibility_records.filter((a) => a.level_access_shower).length;
-  const levelAccessShowerRate = pct(levelAccessShowerCount, totalAccessibilityRecords);
-
-  const adequateSpaceCount = accessibility_records.filter((a) => a.adequate_space_for_mobility).length;
-  const adequateSpaceRate = pct(adequateSpaceCount, totalAccessibilityRecords);
-
-  const emergencyPullCordFittedCount = accessibility_records.filter((a) => a.emergency_pull_cord_fitted).length;
-  const emergencyPullCordFittedRate = pct(emergencyPullCordFittedCount, totalAccessibilityRecords);
-
-  const emergencyPullCordFunctionalCount = accessibility_records.filter(
-    (a) => a.emergency_pull_cord_fitted && a.emergency_pull_cord_functional,
-  ).length;
-  const emergencyPullCordFunctionalRate =
-    emergencyPullCordFittedCount > 0 ? pct(emergencyPullCordFunctionalCount, emergencyPullCordFittedCount) : 0;
-
-  const heightAppropriateCount = accessibility_records.filter((a) => a.height_appropriate_fittings).length;
-  const heightAppropriateRate = pct(heightAppropriateCount, totalAccessibilityRecords);
-
-  const sensoryAdjustmentsCount = accessibility_records.filter((a) => a.sensory_adjustments_made).length;
-  const sensoryAdjustmentsRate = pct(sensoryAdjustmentsCount, totalAccessibilityRecords);
-
   const needsAssessmentCount = accessibility_records.filter((a) => a.individual_needs_assessment_completed).length;
   const needsAssessmentRate = pct(needsAssessmentCount, totalAccessibilityRecords);
 
   const adaptationsMatchCount = accessibility_records.filter((a) => a.adaptations_match_care_plan).length;
-  const adaptationsMatchRate = pct(adaptationsMatchCount, totalAccessibilityRecords);
 
   const childIndependentCount = accessibility_records.filter((a) => a.child_can_use_independently).length;
   const childIndependentRate = pct(childIndependentCount, totalAccessibilityRecords);

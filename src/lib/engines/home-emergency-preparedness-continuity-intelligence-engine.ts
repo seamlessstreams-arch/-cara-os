@@ -286,7 +286,6 @@ export function computeEmergencyPreparednessContinuity(
 
   // Drill type coverage: how many of the 4 types have been covered
   const drillTypesCovered = new Set(fire_drill_records.map((d) => d.drill_type)).size;
-  const drillTypeCoverageRate = pct(drillTypesCovered, 4);
 
   // Drills with debrief completed
   const drillsWithDebrief = fire_drill_records.filter((d) => d.debrief_completed).length;
@@ -304,24 +303,6 @@ export function computeEmergencyPreparednessContinuity(
     (d) => d.issues_identified.length > 0 && d.issues_resolved,
   ).length;
   const drillIssueResolutionRate = pct(drillsWithIssuesResolved, drillsWithIssues);
-
-  // Average evacuation time compared to target
-  const avgEvacTime =
-    totalDrills > 0
-      ? Math.round(
-          fire_drill_records.reduce((sum, d) => sum + d.evacuation_time_seconds, 0) /
-            totalDrills,
-        )
-      : null;
-  const avgTargetTime =
-    totalDrills > 0
-      ? Math.round(
-          fire_drill_records.reduce(
-            (sum, d) => sum + d.target_evacuation_time_seconds,
-            0,
-          ) / totalDrills,
-        )
-      : null;
 
   // Check if most recent drill is overdue (> 30 days ago)
   const sortedDrills = [...fire_drill_records].sort(
@@ -374,12 +355,6 @@ export function computeEmergencyPreparednessContinuity(
   // Children briefed on plans
   const childrenBriefedPlans = evacuation_plans.filter((p) => p.children_briefed).length;
   const childrenBriefedRate = pct(childrenBriefedPlans, totalEvacPlans);
-
-  // Plans with approval
-  const approvedPlans = evacuation_plans.filter(
-    (p) => p.approved_by !== null && p.approved_by !== "",
-  ).length;
-  const planApprovalRate = pct(approvedPlans, totalEvacPlans);
 
   // Plan type coverage
   const planTypesCovered = new Set(evacuation_plans.map((p) => p.plan_type)).size;
@@ -496,7 +471,6 @@ export function computeEmergencyPreparednessContinuity(
   const currentCertificates = certificateRecords.filter(
     (r) => r.is_current && r.certificate_expiry !== null && r.certificate_expiry >= today,
   ).length;
-  const certificateCurrencyRate = pct(currentCertificates, certificateRecords.length);
 
   // Unique staff with current certificates
   const staffWithCerts = new Set(

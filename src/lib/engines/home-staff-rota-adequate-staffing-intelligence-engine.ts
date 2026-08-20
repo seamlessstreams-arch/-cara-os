@@ -307,11 +307,6 @@ export function computeStaffRotaAdequateStaffing(
   const uncoveredShifts = shift_coverage_records.filter((r) => !r.shift_fully_covered).length;
   const coverArrangementRate = pct(coverArrangedWhenNeeded, uncoveredShifts);
 
-  const totalShiftIncidents = shift_coverage_records.reduce(
-    (sum, r) => sum + r.shift_incidents_count,
-    0,
-  );
-
   // Vacancy reasons analysis
   const vacancyReasons: Record<string, number> = {};
   for (const r of shift_coverage_records) {
@@ -326,25 +321,8 @@ export function computeStaffRotaAdequateStaffing(
   const ratiosMet = ratio_compliance_records.filter((r) => r.ratio_met).length;
   const ratioComplianceRate = pct(ratiosMet, totalRatioRecords);
 
-  const ratioBreaches = ratio_compliance_records.filter((r) => !r.ratio_met).length;
-
-  const totalBreachMinutes = ratio_compliance_records.reduce(
-    (sum, r) => sum + r.ratio_breach_duration_minutes,
-    0,
-  );
-
-  const correctiveActionTaken = ratio_compliance_records.filter(
-    (r) => !r.ratio_met && r.corrective_action_taken,
-  ).length;
-  const correctiveActionRate = pct(correctiveActionTaken, ratioBreaches);
-
   const seniorOnDuty = ratio_compliance_records.filter((r) => r.senior_staff_on_duty).length;
   const seniorCoverRate = pct(seniorOnDuty, totalRatioRecords);
-
-  const managerNotifiedOfBreaches = ratio_compliance_records.filter(
-    (r) => !r.ratio_met && r.manager_notified,
-  ).length;
-  const breachNotificationRate = pct(managerNotifiedOfBreaches, ratioBreaches);
 
   // --- Overtime metrics (inverted: lower overtime = better) ---
   const totalOvertimeRecords = overtime_records.length;
@@ -359,11 +337,6 @@ export function computeStaffRotaAdequateStaffing(
     (r) => r.working_time_directive_compliant,
   ).length;
   const wtdComplianceRate = pct(wtdCompliant, totalOvertimeRecords);
-
-  const fatigueAcknowledged = overtime_records.filter(
-    (r) => r.fatigue_risk_acknowledged,
-  ).length;
-  const fatigueAcknowledgementRate = pct(fatigueAcknowledged, totalOvertimeRecords);
 
   // Staff with consecutive days > 6
   const highConsecutiveDays = overtime_records.filter(
@@ -385,11 +358,6 @@ export function computeStaffRotaAdequateStaffing(
 
   // --- Agency usage metrics (inverted: lower agency = better) ---
   const totalAgencyRecords = agency_usage_records.length;
-
-  const totalAgencyHours = agency_usage_records.reduce(
-    (sum, r) => sum + r.hours_worked,
-    0,
-  );
 
   const agencyInducted = agency_usage_records.filter((r) => r.agency_staff_inducted).length;
   const agencyInductionRate = pct(agencyInducted, totalAgencyRecords);
@@ -429,7 +397,6 @@ export function computeStaffRotaAdequateStaffing(
   const rotaPublicationRate = pct(rotasPublishedOnTime, totalRotaRecords);
 
   const allShiftsFilled = rota_planning_records.filter((r) => r.all_shifts_filled).length;
-  const rotaFillRate = pct(allShiftsFilled, totalRotaRecords);
 
   const skillMixAdequate = rota_planning_records.filter(
     (r) => r.skill_mix_adequate,
@@ -439,12 +406,10 @@ export function computeStaffRotaAdequateStaffing(
   const seniorCoverEveryShift = rota_planning_records.filter(
     (r) => r.senior_cover_every_shift,
   ).length;
-  const seniorCoverRotaRate = pct(seniorCoverEveryShift, totalRotaRecords);
 
   const preferencesConsidered = rota_planning_records.filter(
     (r) => r.staff_preferences_considered,
   ).length;
-  const preferencesRate = pct(preferencesConsidered, totalRotaRecords);
 
   const contingencyInPlace = rota_planning_records.filter(
     (r) => r.contingency_plan_in_place,
@@ -454,10 +419,8 @@ export function computeStaffRotaAdequateStaffing(
   const rotaApproved = rota_planning_records.filter(
     (r) => r.rota_approved_by_manager,
   ).length;
-  const rotaApprovalRate = pct(rotaApproved, totalRotaRecords);
 
   const staffConsulted = rota_planning_records.filter((r) => r.staff_consulted).length;
-  const staffConsultationRate = pct(staffConsulted, totalRotaRecords);
 
   const fairnessScoreSum = rota_planning_records.reduce(
     (sum, r) => sum + r.fairness_score,
@@ -478,11 +441,6 @@ export function computeStaffRotaAdequateStaffing(
     totalRotaRecords > 0
       ? Math.round((totalChangesAfterPub / totalRotaRecords) * 100) / 100
       : null;
-
-  const totalUnfilledShifts = rota_planning_records.reduce(
-    (sum, r) => sum + r.unfilled_shifts_count,
-    0,
-  );
 
   // Composite rota planning rate: published on time + all filled + skill mix + senior cover + approved
   const rotaPlanningNumerator =

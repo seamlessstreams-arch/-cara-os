@@ -324,7 +324,6 @@ export function computeClothingLabellingStorage(
   ).length;
   const shoeStorageAvailable = storage_records.filter((r) => r.shoe_storage_available).length;
   const storageLockable = storage_records.filter((r) => r.storage_lockable).length;
-  const childHasKey = storage_records.filter((r) => r.child_has_key).length;
   const storageClean = storage_records.filter((r) => r.storage_clean).length;
   const storagePersonalised = storage_records.filter((r) => r.storage_personalised).length;
 
@@ -349,7 +348,6 @@ export function computeClothingLabellingStorage(
   const storageSatisfactionRate = pct(storageSatisfied, totalStorageRecords);
 
   const lockableRate = pct(storageLockable, totalStorageRecords);
-  const childKeyRate = pct(childHasKey, totalStorageRecords);
   const personalisedRate = pct(storagePersonalised, totalStorageRecords);
 
   const totalOverflowItems = storage_records.reduce(
@@ -371,11 +369,6 @@ export function computeClothingLabellingStorage(
   );
   const outgrownReplacementRate = pct(outgrownReplaced, outgrownIdentified);
 
-  const seasonalAvailable = rotation_records.filter(
-    (r) => r.seasonal_items_available,
-  ).length;
-  const seasonalAvailabilityRate = pct(seasonalAvailable, totalRotationRecords);
-
   const weatherAppropriate = rotation_records.filter(
     (r) => r.weather_appropriate_clothing,
   ).length;
@@ -385,9 +378,6 @@ export function computeClothingLabellingStorage(
     (r) => r.child_involved_in_choices,
   ).length;
   const childInvolvedRotationRate = pct(childInvolvedRotation, totalRotationRecords);
-
-  const budgetAllocated = rotation_records.filter((r) => r.budget_allocated).length;
-  const budgetAllocatedRate = pct(budgetAllocated, totalRotationRecords);
 
   const shoppingTripOffered = rotation_records.filter(
     (r) => r.shopping_trip_offered,
@@ -444,11 +434,6 @@ export function computeClothingLabellingStorage(
   ).length;
   const ownershipSatisfactionRate = pct(ownershipSatisfied, totalOwnershipRecords);
 
-  const pocketMoneyForClothing = ownership_records.filter(
-    (r) => r.pocket_money_for_clothing,
-  ).length;
-  const pocketMoneyRate = pct(pocketMoneyForClothing, totalOwnershipRecords);
-
   // Composite ownership respect rate
   const ownershipComponents = totalOwnershipRecords > 0
     ? [
@@ -469,9 +454,6 @@ export function computeClothingLabellingStorage(
   );
   const totalItemsGood = condition_records.reduce(
     (sum, r) => sum + r.items_good_condition, 0,
-  );
-  const totalItemsFair = condition_records.reduce(
-    (sum, r) => sum + r.items_fair_condition, 0,
   );
   const totalItemsPoor = condition_records.reduce(
     (sum, r) => sum + r.items_poor_condition, 0,
@@ -514,11 +496,6 @@ export function computeClothingLabellingStorage(
     (r) => r.stains_or_damage_noted,
   ).length;
   const stainsDamageRate = pct(stainsDamage, totalConditionRecords);
-
-  const repairCompleted = condition_records.filter(
-    (r) => r.repair_completed,
-  ).length;
-  const repairCompletedRate = pct(repairCompleted, stainsDamage);
 
   // --- Child satisfaction composite ---
   // Combine satisfaction from storage, rotation, ownership

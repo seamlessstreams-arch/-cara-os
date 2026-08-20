@@ -285,7 +285,6 @@ export function computeUtilityBillsCostManagement(
   const bestDealRate = pct(bestDealConfirmed, totalBillRecords);
 
   const billsReviewed = cost_monitoring_records.filter((r) => r.review_date !== null && r.review_date !== "").length;
-  const billReviewRate = pct(billsReviewed, totalBillRecords);
 
   // Composite cost monitoring rate: meter readings + tariff review + best deal + bill review
   const costMonitoringNumerator = meterReadingsTaken + tariffsReviewed + bestDealConfirmed + billsReviewed;
@@ -393,19 +392,6 @@ export function computeUtilityBillsCostManagement(
   ).length;
   const correctiveEffectivenessRate = pct(correctiveActionEffective, overspendRecords.length);
 
-  const totalVarianceGbp = budget_records.reduce(
-    (sum, b) => sum + Math.abs(b.variance_gbp),
-    0,
-  );
-  const avgVariancePct =
-    totalBudgetRecords > 0
-      ? Math.round(
-          budget_records.reduce((sum, b) => sum + Math.abs((b.variance_pct ?? 0)), 0) /
-            totalBudgetRecords *
-            100,
-        ) / 100
-      : null;
-
   // --- Sustainability metrics ---
   const totalSustainabilityRecords = sustainability_records.length;
 
@@ -429,15 +415,9 @@ export function computeUtilityBillsCostManagement(
   ).length;
   const measurableImpactRate = pct(measurableImpact, totalSustainabilityRecords);
 
-  const ongoingInitiatives = sustainability_records.filter(
-    (s) => s.ongoing,
-  ).length;
-  const ongoingRate = pct(ongoingInitiatives, totalSustainabilityRecords);
-
   const reviewedInitiatives = sustainability_records.filter(
     (s) => s.reviewed,
   ).length;
-  const initiativeReviewRate = pct(reviewedInitiatives, totalSustainabilityRecords);
 
   // Composite sustainability rate: children involved + awareness + staff trained + measurable impact + reviewed
   const sustainabilityNumerator = childrenInvolved + childAwarenessActivities + staffTrained + measurableImpact + reviewedInitiatives;

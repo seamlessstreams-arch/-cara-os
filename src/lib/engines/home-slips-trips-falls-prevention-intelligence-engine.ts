@@ -312,13 +312,6 @@ export function computeSlipsTripsFallsPrevention(
   const childrenConsulted = risk_assessment_records.filter((r) => r.children_consulted).length;
   const childrenConsultedRate = pct(childrenConsulted, totalRiskAssessments);
 
-  const weatherDocumented = risk_assessment_records.filter((r) => r.weather_considerations_documented).length;
-  const weatherDocRate = pct(weatherDocumented, totalRiskAssessments);
-
-  const outdoorAssessments = risk_assessment_records.filter(
-    (r) => r.environment_type === "outdoor" || r.environment_type === "both",
-  ).length;
-
   // --- Flooring condition ---
   const totalFlooringRecords = flooring_condition_records.length;
   const flooringGoodFair = flooring_condition_records.filter(
@@ -338,9 +331,6 @@ export function computeSlipsTripsFallsPrevention(
   const repairsNeeded = flooring_condition_records.filter((r) => r.repair_needed).length;
   const repairsCompleted = flooring_condition_records.filter((r) => r.repair_needed && r.repair_completed).length;
   const repairCompletionRate = pct(repairsCompleted, repairsNeeded);
-
-  const matsSecured = flooring_condition_records.filter((r) => r.mat_secured).length;
-  const matSecuredRate = pct(matsSecured, totalFlooringRecords);
 
   const thresholdsSafe = flooring_condition_records.filter((r) => r.threshold_safe).length;
   const thresholdSafeRate = pct(thresholdsSafe, totalFlooringRecords);
@@ -382,14 +372,8 @@ export function computeSlipsTripsFallsPrevention(
   const handrailSecure = stairway_safety_records.filter((r) => r.handrail_secure).length;
   const handrailRate = pct(handrailSecure, totalStairwayRecords);
 
-  const handrailBothSides = stairway_safety_records.filter((r) => r.handrail_both_sides).length;
-  const handrailBothRate = pct(handrailBothSides, totalStairwayRecords);
-
   const treadsNonSlip = stairway_safety_records.filter((r) => r.treads_non_slip).length;
   const treadsRate = pct(treadsNonSlip, totalStairwayRecords);
-
-  const nosingsVisible = stairway_safety_records.filter((r) => r.nosings_visible).length;
-  const nosingsRate = pct(nosingsVisible, totalStairwayRecords);
 
   const stairLightingAdequate = stairway_safety_records.filter((r) => r.lighting_adequate).length;
   const stairLightingRate = pct(stairLightingAdequate, totalStairwayRecords);
@@ -450,7 +434,6 @@ export function computeSlipsTripsFallsPrevention(
   const recurrenceRate = pct(recurrences, totalIncidents);
 
   const injuriesSustained = incident_records.filter((r) => r.injury_sustained).length;
-  const injuryRate = pct(injuriesSustained, totalIncidents);
 
   const medicalRequired = incident_records.filter((r) => r.medical_attention_required).length;
   const medicalRate = pct(medicalRequired, totalIncidents);
@@ -458,17 +441,8 @@ export function computeSlipsTripsFallsPrevention(
   const parentNotified = incident_records.filter((r) => r.parent_carer_notified).length;
   const parentNotificationRate = pct(parentNotified, totalIncidents);
 
-  const socialWorkerNotified = incident_records.filter((r) => r.social_worker_notified).length;
-  const socialWorkerNotificationRate = pct(socialWorkerNotified, totalIncidents);
-
   const firstAidGiven = incident_records.filter((r) => r.injury_sustained && r.first_aid_given).length;
   const firstAidRate = pct(firstAidGiven, injuriesSustained);
-
-  const footwearAppropriate = incident_records.filter((r) => r.footwear_appropriate).length;
-  const footwearRate = pct(footwearAppropriate, totalIncidents);
-
-  const lightingAdequateIncidents = incident_records.filter((r) => r.lighting_adequate).length;
-  const lightingAdequateRate = pct(lightingAdequateIncidents, totalIncidents);
 
   // --- Staff awareness composite ---
   const staffAwarenessNumerators: number[] = [];

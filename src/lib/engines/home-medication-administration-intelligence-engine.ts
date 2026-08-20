@@ -198,7 +198,6 @@ export function computeMedicationAdministration(
   const given = records.filter(r => r.status === "given");
   const late = records.filter(r => r.status === "late");
   const refused = records.filter(r => r.status === "refused");
-  const withheld = records.filter(r => r.status === "withheld");
   // "missed" (dose not given at all) and "not_available" (stock-out) are canonical
   // AdministrationStatus values that staff can record on the MAR; the engine
   // previously checked a non-existent "omitted" and so never surfaced them.

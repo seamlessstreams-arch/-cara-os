@@ -232,12 +232,6 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
       daily_logs.push(makeLog({ child_id: "C3", date, mood_score: 7 }));
     }
 
-    // 2 followup summaries; only 1 has a subsequent log → 50% → +2
-    const summaries: DailySummaryInput[] = [
-      makeSummary({ id: "s1", child_id: "C1", date: "2025-03-05", requires_followup: true }),
-      makeSummary({ id: "s2", child_id: "C2", date: "2025-03-14", requires_followup: true }),
-      // C1 has subsequent logs after 2025-03-05 (yes). C2 has summary on 03-14, log on 03-15 (yes)
-    ];
     // Both C1 and C2 have logs after their summary dates, so 100% → +4.
     // We need exactly +2 from mod5. Let's make C2's summary date = today so no subsequent log.
     const summariesAdj: DailySummaryInput[] = [

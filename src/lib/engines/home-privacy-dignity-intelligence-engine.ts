@@ -301,11 +301,6 @@ export function computePrivacyDignity(
   ).length;
   const correspondencePrivacyRate = pct(correspondencePrivacyCount, totalPrivacyAudits);
 
-  const privateMeetingCount = privacy_audit_records.filter(
-    (r) => r.private_meeting_space_available,
-  ).length;
-  const privateMeetingRate = pct(privateMeetingCount, totalPrivacyAudits);
-
   const privacyAuditSatisfactionSum = privacy_audit_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
@@ -322,10 +317,6 @@ export function computePrivacyDignity(
     (sum, r) => sum + r.issues_resolved, 0,
   );
   const privacyIssueResolutionRate = pct(privacyIssuesResolved, privacyIssuesTotal);
-
-  const uniqueChildrenAudited = new Set(
-    privacy_audit_records.map((r) => r.child_id),
-  ).size;
 
   // --- Knock-before-entry compliance ---
   const totalKnockRecords = knock_entry_records.length;
@@ -350,11 +341,6 @@ export function computePrivacyDignity(
     (r) => r.child_complaint_raised,
   ).length;
   const knockComplaintRate = pct(knockComplaints, totalKnockRecords);
-
-  const knockComplaintsResolved = knock_entry_records.filter(
-    (r) => r.child_complaint_raised && r.complaint_resolved,
-  ).length;
-  const knockComplaintResolutionRate = pct(knockComplaintsResolved, knockComplaints);
 
   const nightEntries = knock_entry_records.filter(
     (r) => r.time_of_day === "night",
@@ -409,11 +395,6 @@ export function computePrivacyDignity(
       ? Math.round((boundarySatisfactionSum / totalBoundaryRecords) * 100) / 100
       : null;
 
-  const childCommunicatedBoundary = boundary_respect_records.filter(
-    (r) => r.child_communicated_boundary,
-  ).length;
-  const childBoundaryVoiceRate = pct(childCommunicatedBoundary, totalBoundaryRecords);
-
   // --- Confidentiality ---
   const totalConfidentialityRecords = confidentiality_records.length;
   const storedSecurely = confidentiality_records.filter(
@@ -444,16 +425,6 @@ export function computePrivacyDignity(
   const seriousConfBreaches = confidentiality_records.filter(
     (r) => r.breach_occurred && (r.breach_severity === "serious" || r.breach_severity === "moderate"),
   ).length;
-
-  const confBreachesReported = confidentiality_records.filter(
-    (r) => r.breach_occurred && r.breach_reported,
-  ).length;
-  const confBreachReportRate = pct(confBreachesReported, confidentialityBreaches);
-
-  const confBreachesResolved = confidentiality_records.filter(
-    (r) => r.breach_occurred && r.breach_resolved,
-  ).length;
-  const confBreachResolutionRate = pct(confBreachesResolved, confidentialityBreaches);
 
   const dataMinimisation = confidentiality_records.filter(
     (r) => r.data_minimisation_applied,
@@ -524,11 +495,6 @@ export function computePrivacyDignity(
     (r) => r.complaint_raised,
   ).length;
   const dignityComplaintRate = pct(dignityComplaints, totalDignityRecords);
-
-  const dignityComplaintsResolved = dignity_care_records.filter(
-    (r) => r.complaint_raised && r.complaint_resolved,
-  ).length;
-  const dignityComplaintResolutionRate = pct(dignityComplaintsResolved, dignityComplaints);
 
   // --- Child satisfaction composite ---
   const satisfactionDenominator = totalPrivacyAudits + totalBoundaryRecords + totalDignityRecords;

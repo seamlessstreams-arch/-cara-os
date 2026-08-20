@@ -295,24 +295,6 @@ export function computeMissingPersonAbsentAuthority(
   ).length;
   const highRiskPoliceNotificationRate = pct(highRiskPoliceNotified, highRiskEpisodes.length);
 
-  // --- LA notification ---
-  const laNotified = missing_protocol_records.filter(
-    (p) => p.local_authority_notified,
-  ).length;
-  const laNotificationRate = pct(laNotified, totalEpisodes);
-
-  // --- DSL informed ---
-  const dslInformed = missing_protocol_records.filter(
-    (p) => p.designated_safeguarding_lead_informed,
-  ).length;
-  const dslInformedRate = pct(dslInformed, totalEpisodes);
-
-  // --- Search actions documented ---
-  const searchDocumented = missing_protocol_records.filter(
-    (p) => p.search_actions_documented,
-  ).length;
-  const searchDocumentedRate = pct(searchDocumented, totalEpisodes);
-
   // --- Trigger factors recorded ---
   const triggersRecorded = missing_protocol_records.filter(
     (p) => p.trigger_factors_recorded,
@@ -345,22 +327,6 @@ export function computeMissingPersonAbsentAuthority(
   const ongoingEpisodes = missing_protocol_records.filter(
     (p) => p.outcome === "ongoing",
   ).length;
-
-  // --- Risk level distribution ---
-  const veryHighRiskEpisodes = missing_protocol_records.filter(
-    (p) => p.risk_level === "very_high",
-  ).length;
-  const highRiskCount = highRiskEpisodes.length;
-
-  // --- Average episode duration ---
-  const totalDuration = missing_protocol_records.reduce(
-    (sum, p) => sum + p.duration_hours,
-    0,
-  );
-  const avgDurationHours =
-    totalEpisodes > 0
-      ? Math.round((totalDuration / totalEpisodes) * 100) / 100
-      : null;
 
   // ── Return Interview Metrics ──────────────────────────────────────────
 
@@ -399,20 +365,6 @@ export function computeMissingPersonAbsentAuthority(
   ).length;
   const pushPullRate = pct(pushPullExplored, totalReturnInterviews);
 
-  // --- Safeguarding concerns identification ---
-  const safeguardingConcernsIdentified = return_interview_records.filter(
-    (r) => r.safeguarding_concerns_identified,
-  ).length;
-
-  // --- Referrals made where concerns identified ---
-  const interviewsWithConcerns = return_interview_records.filter(
-    (r) => r.safeguarding_concerns_identified,
-  );
-  const referralsMade = interviewsWithConcerns.filter(
-    (r) => r.referrals_made,
-  ).length;
-  const referralRate = pct(referralsMade, interviewsWithConcerns.length);
-
   // --- Actions follow-up ---
   const interviewsWithActions = return_interview_records.filter(
     (r) => r.actions_agreed,
@@ -431,12 +383,6 @@ export function computeMissingPersonAbsentAuthority(
     totalReturnInterviews > 0
       ? Math.round((qualitySum / totalReturnInterviews) * 100) / 100
       : null;
-
-  // --- Information shared with placing authority ---
-  const infoSharedWithPA = return_interview_records.filter(
-    (r) => r.information_shared_with_placing_authority,
-  ).length;
-  const infoSharedRate = pct(infoSharedWithPA, totalReturnInterviews);
 
   // ── Risk Assessment Update Metrics ────────────────────────────────────
 
@@ -478,24 +424,6 @@ export function computeMissingPersonAbsentAuthority(
   ).length;
   const carePlanUpdateRate = pct(carePlanUpdated, totalRiskUpdates);
 
-  // --- Multi-agency input ---
-  const multiAgencyInput = risk_assessment_update_records.filter(
-    (r) => r.multi_agency_input,
-  ).length;
-  const multiAgencyInputRate = pct(multiAgencyInput, totalRiskUpdates);
-
-  // --- Triggers updated ---
-  const triggersUpdated = risk_assessment_update_records.filter(
-    (r) => r.triggers_updated,
-  ).length;
-  const triggersUpdatedRate = pct(triggersUpdated, totalRiskUpdates);
-
-  // --- Protective factors reviewed ---
-  const protectiveFactorsReviewed = risk_assessment_update_records.filter(
-    (r) => r.protective_factors_reviewed,
-  ).length;
-  const protectiveFactorsRate = pct(protectiveFactorsReviewed, totalRiskUpdates);
-
   // --- Risk escalation/de-escalation tracking ---
   const riskEscalated = risk_assessment_update_records.filter(
     (r) => riskLevelToNum(r.risk_level_after) > riskLevelToNum(r.risk_level_before),
@@ -520,51 +448,6 @@ export function computeMissingPersonAbsentAuthority(
   ).length;
   const referenceObtainedRate = pct(referenceObtained, totalPoliceLiaisons);
 
-  // --- Timely response ---
-  const timelyResponse = police_liaison_records.filter(
-    (r) => r.response_timely,
-  ).length;
-  const timelyResponseRate = pct(timelyResponse, totalPoliceLiaisons);
-
-  // --- Information quality ---
-  const infoQualitySum = police_liaison_records.reduce(
-    (sum, r) => sum + r.information_quality_rating,
-    0,
-  );
-  const infoQualityAvg =
-    totalPoliceLiaisons > 0
-      ? Math.round((infoQualitySum / totalPoliceLiaisons) * 100) / 100
-      : null;
-
-  // --- Joint risk assessment ---
-  const jointRiskAssessment = police_liaison_records.filter(
-    (r) => r.joint_risk_assessment,
-  ).length;
-  const jointRiskAssessmentRate = pct(jointRiskAssessment, totalPoliceLiaisons);
-
-  // --- Outcome documented ---
-  const outcomeDocumented = police_liaison_records.filter(
-    (r) => r.outcome_documented,
-  ).length;
-  const outcomeDocumentedRate = pct(outcomeDocumented, totalPoliceLiaisons);
-
-  // --- Follow-up completion ---
-  const liaisonsWithFollowUp = police_liaison_records.filter(
-    (r) => r.follow_up_actions_agreed,
-  );
-  const followUpCompleted = liaisonsWithFollowUp.filter(
-    (r) => r.follow_up_completed,
-  ).length;
-  const liaisonFollowUpRate = pct(followUpCompleted, liaisonsWithFollowUp.length);
-
-  // --- Liaison types ---
-  const strategyDiscussions = police_liaison_records.filter(
-    (r) => r.liaison_type === "strategy_discussion",
-  ).length;
-  const intelligenceSharing = police_liaison_records.filter(
-    (r) => r.liaison_type === "intelligence_sharing",
-  ).length;
-
   // ── Pattern Analysis Metrics ──────────────────────────────────────────
 
   const totalPatternAnalyses = pattern_analysis_records.length;
@@ -582,19 +465,6 @@ export function computeMissingPersonAbsentAuthority(
   const patternsIdentified = pattern_analysis_records.filter(
     (r) => r.pattern_identified,
   ).length;
-  const patternIdentificationRate = pct(patternsIdentified, totalPatternAnalyses);
-
-  // --- Prevention strategy developed ---
-  const preventionDeveloped = pattern_analysis_records.filter(
-    (r) => r.prevention_strategy_developed,
-  ).length;
-  const preventionDevelopedRate = pct(preventionDeveloped, totalPatternAnalyses);
-
-  // --- Prevention strategy implemented ---
-  const preventionImplemented = pattern_analysis_records.filter(
-    (r) => r.prevention_strategy_implemented,
-  ).length;
-  const preventionImplementedRate = pct(preventionImplemented, totalPatternAnalyses);
 
   // --- Prevention effectiveness ---
   const preventionEffective = pattern_analysis_records.filter(
@@ -609,12 +479,6 @@ export function computeMissingPersonAbsentAuthority(
     (r) => r.multi_agency_mapping_completed,
   ).length;
   const multiAgencyMappingRate = pct(multiAgencyMapping, totalPatternAnalyses);
-
-  // --- Contextual safeguarding mapping ---
-  const contextualMapping = pattern_analysis_records.filter(
-    (r) => r.contextual_safeguarding_mapping,
-  ).length;
-  const contextualMappingRate = pct(contextualMapping, totalPatternAnalyses);
 
   // --- Shared with placing authority ---
   const sharedWithPA = pattern_analysis_records.filter(

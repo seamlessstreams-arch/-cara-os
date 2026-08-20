@@ -318,12 +318,6 @@ export function computeCulturalEventsCelebrations(
   const eventPositiveFeedback = cultural_event_records.filter(
     (e) => e.child_feedback_positive,
   ).length;
-  const eventFeedbackPositiveRate = pct(eventPositiveFeedback, totalCulturalEvents);
-
-  const eventsLinkedToHeritage = cultural_event_records.filter(
-    (e) => e.linked_to_child_heritage,
-  ).length;
-  const heritageLinkedRate = pct(eventsLinkedToHeritage, totalCulturalEvents);
 
   const externalCommunityEvents = cultural_event_records.filter(
     (e) => e.external_community_involved,
@@ -349,21 +343,10 @@ export function computeCulturalEventsCelebrations(
     (c) => c.educational_component,
   ).length;
 
-  const celebrationsWithExternalVisitor = diversity_celebration_records.filter(
-    (c) => c.external_speaker_or_visitor,
-  ).length;
-
   const celebrationsWithFeedback = diversity_celebration_records.filter(
     (c) => c.child_feedback_collected,
   ).length;
   const celebrationFeedbackRate = pct(celebrationsWithFeedback, totalDiversityCelebrations);
-
-  const avgCelebrationParticipation = totalDiversityCelebrations > 0
-    ? Math.round(
-        diversity_celebration_records.reduce((sum, c) => sum + (c.participation_rate_pct ?? 0), 0) /
-          totalDiversityCelebrations,
-      )
-    : null;
 
   const celebrationQualityRatings = diversity_celebration_records.map((c) => c.quality_rating);
   const avgCelebrationQuality = avgRating(celebrationQualityRatings);
@@ -375,11 +358,6 @@ export function computeCulturalEventsCelebrations(
   const diversityCelebrationRate = total_children > 0
     ? pct(childrenInCelebrations, total_children)
     : null;
-
-  // Unique celebration types
-  const uniqueCelebrationTypes = new Set(
-    diversity_celebration_records.map((c) => c.celebration_type),
-  ).size;
 
   // --- Heritage day metrics ---
   const heritageDaysAcknowledged = heritage_day_records.filter(
@@ -402,11 +380,6 @@ export function computeCulturalEventsCelebrations(
   ).length;
   const heritageFeedbackPositiveRate = pct(heritagePositiveFeedback, totalHeritageDays);
 
-  const heritageResourcesProvided = heritage_day_records.filter(
-    (h) => h.resources_provided,
-  ).length;
-  const heritageResourceRate = pct(heritageResourcesProvided, totalHeritageDays);
-
   // Unique heritage types represented
   const uniqueHeritageTypes = new Set(
     heritage_day_records.map((h) => h.heritage_type),
@@ -419,17 +392,6 @@ export function computeCulturalEventsCelebrations(
 
   // Heritage acknowledgement rate as proportion of children with heritage acknowledged
   // (for the 6-rate grid, we use heritage_acknowledgement_rate as the raw acknowledgement %)
-
-  // --- Festival inclusion metrics ---
-  const festivalsWithInclusivePlanning = festival_inclusion_records.filter(
-    (f) => f.inclusive_planning,
-  ).length;
-  const festivalInclusivePlanningRate = pct(festivalsWithInclusivePlanning, totalFestivalInclusions);
-
-  const festivalsDietaryAccommodated = festival_inclusion_records.filter(
-    (f) => f.dietary_needs_accommodated,
-  ).length;
-  const festivalDietaryRate = pct(festivalsDietaryAccommodated, totalFestivalInclusions);
 
   const festivalsReligiousSensitivity = festival_inclusion_records.filter(
     (f) => f.religious_sensitivity_observed,
@@ -444,13 +406,6 @@ export function computeCulturalEventsCelebrations(
     (f) => f.child_feedback_collected,
   ).length;
   const festivalFeedbackRate = pct(festivalsFeedbackCollected, totalFestivalInclusions);
-
-  const avgFestivalParticipation = totalFestivalInclusions > 0
-    ? Math.round(
-        festival_inclusion_records.reduce((sum, f) => sum + (f.participation_rate_pct ?? 0), 0) /
-          totalFestivalInclusions,
-      )
-    : null;
 
   const festivalQualityRatings = festival_inclusion_records.map((f) => f.quality_rating);
   const avgFestivalQuality = avgRating(festivalQualityRatings);
@@ -468,12 +423,6 @@ export function computeCulturalEventsCelebrations(
     ? pct(childrenInFestivals, total_children)
     : null;
 
-  // --- Child-led activity metrics ---
-  const childInitiatedActivities = child_led_activity_records.filter(
-    (a) => a.child_initiated,
-  ).length;
-  const childInitiatedRate = pct(childInitiatedActivities, totalChildLedActivities);
-
   const childLedWithPeerParticipation = child_led_activity_records.filter(
     (a) => a.peers_participated,
   ).length;
@@ -489,11 +438,6 @@ export function computeCulturalEventsCelebrations(
   ).length;
   const confidenceImprovementRate = pct(childLedConfidenceImproved, totalChildLedActivities);
 
-  const childLedLinkedToIdentity = child_led_activity_records.filter(
-    (a) => a.linked_to_identity,
-  ).length;
-  const identityLinkedRate = pct(childLedLinkedToIdentity, totalChildLedActivities);
-
   const childLedStaffSupported = child_led_activity_records.filter(
     (a) => a.staff_supported,
   ).length;
@@ -508,11 +452,6 @@ export function computeCulturalEventsCelebrations(
   const childLedRate = total_children > 0
     ? pct(childrenLeadingActivities, total_children)
     : null;
-
-  // Unique child-led activity types
-  const uniqueChildLedTypes = new Set(
-    child_led_activity_records.map((a) => a.activity_type),
-  ).size;
 
   // --- Child satisfaction rate (composite) ---
   // Combines positive feedback from events, heritage days, and child-led satisfaction ratings

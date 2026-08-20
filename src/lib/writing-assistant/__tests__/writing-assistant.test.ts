@@ -4,7 +4,6 @@ import { checkWriting, scoreWriting } from "../engine";
 import { redact, rehydrate, hasUnresolvedPlaceholders } from "../redaction";
 import type { WritingIssue } from "../types";
 
-const types = (issues: WritingIssue[]) => issues.map((i) => i.type);
 const find = (issues: WritingIssue[], pred: (i: WritingIssue) => boolean) => issues.find(pred);
 
 describe("care rules — positioned detectors", () => {

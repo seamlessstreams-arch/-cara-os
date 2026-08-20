@@ -351,13 +351,6 @@ export function computeNoiseSoundManagement(
 
   // Resolution effectiveness (for non-compliant records)
   const nonCompliantRecords = quiet_hours_records.filter((r) => !r.compliant);
-  const effectiveResolutions = nonCompliantRecords.filter(
-    (r) => r.resolution_effective,
-  ).length;
-  const resolutionEffectivenessRate = pct(
-    effectiveResolutions,
-    nonCompliantRecords.length,
-  );
 
   // Staff prompt response rate
   const staffRespondedPromptly = quiet_hours_records.filter(
@@ -371,12 +364,6 @@ export function computeNoiseSoundManagement(
     disruptedQuietHours.length,
   );
 
-  // Child feedback obtained rate on quiet hours
-  const feedbackObtained = quiet_hours_records.filter(
-    (r) => r.child_feedback_obtained,
-  ).length;
-  const quietHoursFeedbackRate = pct(feedbackObtained, totalQuietHoursRecords);
-
   // Average disruption duration (minutes) for non-compliant
   const totalDisruptionMinutes = nonCompliantRecords.reduce(
     (sum, r) => sum + r.duration_of_disruption_minutes,
@@ -386,12 +373,6 @@ export function computeNoiseSoundManagement(
     nonCompliantRecords.length > 0
       ? Math.round(totalDisruptionMinutes / nonCompliantRecords.length)
       : null;
-
-  // Total children affected across disruptions
-  const totalChildrenAffected = quiet_hours_records.reduce(
-    (sum, r) => sum + r.children_affected_count,
-    0,
-  );
 
   // ══════════════════════════════════════════════════════════════════════════
   // SENSORY ENVIRONMENT METRICS
@@ -404,12 +385,6 @@ export function computeNoiseSoundManagement(
     (r) => r.adaptation_in_place,
   ).length;
   const adaptationInPlaceRate = pct(adaptationsInPlace, totalSensoryRecords);
-
-  // Children using their adaptations
-  const childrenUsingAdaptations = sensory_environment_records.filter(
-    (r) => r.adaptation_in_place && r.child_using_adaptation,
-  ).length;
-  const adaptationUsageRate = pct(childrenUsingAdaptations, adaptationsInPlace);
 
   // Effectiveness rating average
   const effectivenessSum = sensory_environment_records
@@ -437,24 +412,6 @@ export function computeNoiseSoundManagement(
     (r) => r.linked_to_care_plan,
   ).length;
   const linkedToCarePlanRate = pct(linkedToCarePlan, totalSensoryRecords);
-
-  // Professionally recommended rate
-  const professionallyRecommended = sensory_environment_records.filter(
-    (r) => r.professional_recommended,
-  ).length;
-  const professionalRecommendedRate = pct(
-    professionallyRecommended,
-    totalSensoryRecords,
-  );
-
-  // Unique children with sensory adaptations
-  const uniqueChildrenWithAdaptations = new Set(
-    sensory_environment_records
-      .filter((r) => r.adaptation_in_place)
-      .map((r) => r.child_id),
-  ).size;
-  const sensoryChildCoverage =
-    total_children > 0 ? pct(uniqueChildrenWithAdaptations, total_children) : 0;
 
   // Composite sensory environment rate
   // Weight: 30% in place, 25% child feedback, 25% reviewed with child, 20% linked to care plan
@@ -509,18 +466,10 @@ export function computeNoiseSoundManagement(
   const significantImpact = sound_insulation_records.filter(
     (r) => r.impact_on_children === "significant",
   ).length;
-  const moderateImpact = sound_insulation_records.filter(
-    (r) => r.impact_on_children === "moderate",
-  ).length;
   const noImpact = sound_insulation_records.filter(
     (r) => r.impact_on_children === "none",
   ).length;
   const noImpactRate = pct(noImpact, totalInsulationRecords);
-
-  // Location coverage for insulation
-  const insulationLocations = new Set(
-    sound_insulation_records.map((r) => r.location),
-  ).size;
 
   // Composite sound insulation rate
   // Weight: 40% meets standard, 30% good condition, 30% no impact
@@ -571,12 +520,6 @@ export function computeNoiseSoundManagement(
     (r) => r.staff_responsive_to_concerns,
   ).length;
   const staffResponsiveRate = pct(staffResponsive, totalComfortRecords);
-
-  // Adaptations helpful rate (for those who have adaptations)
-  const adaptationsHelpful = child_comfort_records.filter(
-    (r) => r.adaptations_helpful,
-  ).length;
-  const adaptationsHelpfulRate = pct(adaptationsHelpful, totalComfortRecords);
 
   // Average overall satisfaction
   const satisfactionSum = child_comfort_records.reduce(

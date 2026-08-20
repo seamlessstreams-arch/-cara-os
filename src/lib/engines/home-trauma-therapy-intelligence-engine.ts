@@ -129,7 +129,6 @@ export function computeTraumaTherapy(
 
   const uniqueModalities = new Set(logs.map(l => l.modality)).size;
 
-  const withEscalation = logs.filter(l => l.has_escalation_flags).length;
   const totalEscalations = logs.reduce((s, l) => s + l.escalation_flag_count, 0);
   const withRegulationStrategies = attendedSessions.filter(l => l.regulation_strategy_count > 0).length;
 

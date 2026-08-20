@@ -276,7 +276,6 @@ export function computePhysicalActivityRecreation(
 
   // --- Exercise programme metrics ---
   const totalExerciseProgrammes = exercise_programme_records.length;
-  const activeExerciseProgrammes = exercise_programme_records.filter((e) => e.active).length;
 
   const totalSessionsPlanned = exercise_programme_records.reduce(
     (sum, e) => sum + e.sessions_planned,
@@ -287,17 +286,6 @@ export function computePhysicalActivityRecreation(
     0,
   );
   const exerciseEngagementRate = pct(totalSessionsAttended, totalSessionsPlanned);
-
-  const highEngagement = exercise_programme_records.filter(
-    (e) => e.engagement_level === "high",
-  ).length;
-  const moderateEngagement = exercise_programme_records.filter(
-    (e) => e.engagement_level === "moderate",
-  ).length;
-  const highOrModerateEngagementRate = pct(
-    highEngagement + moderateEngagement,
-    totalExerciseProgrammes,
-  );
 
   const childEnjoysExercise = exercise_programme_records.filter((e) => e.child_enjoys).length;
   const exerciseEnjoymentRate = pct(childEnjoysExercise, totalExerciseProgrammes);
@@ -350,17 +338,6 @@ export function computePhysicalActivityRecreation(
   ).length;
   const recreationalEnjoymentRate = pct(childEnjoyedActivities, totalRecActivities);
 
-  const fullParticipation = recreational_activity_records.filter(
-    (r) => r.participation_level === "full",
-  ).length;
-  const partialParticipation = recreational_activity_records.filter(
-    (r) => r.participation_level === "partial",
-  ).length;
-  const recParticipationRate = pct(
-    fullParticipation + partialParticipation,
-    totalRecActivities,
-  );
-
   const inclusiveActivities = recreational_activity_records.filter(
     (r) => r.inclusive,
   ).length;
@@ -386,12 +363,6 @@ export function computePhysicalActivityRecreation(
   ).length;
   const communityBasedRate = pct(communityBasedActivities, totalRecActivities);
 
-  const uniqueChildrenWithRecActivities = new Set(
-    recreational_activity_records.map((r) => r.child_id),
-  ).size;
-  const recActivityCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithRecActivities, total_children) : 0;
-
   // --- Outdoor engagement metrics ---
   const totalOutdoorEngagements = outdoor_engagement_records.length;
 
@@ -410,16 +381,6 @@ export function computePhysicalActivityRecreation(
       ? Math.round((outdoorEnjoymentSum / totalOutdoorEngagements) * 100) / 100
       : null;
 
-  const outdoorPhysicalBenefit = outdoor_engagement_records.filter(
-    (o) => o.physical_benefit,
-  ).length;
-  const outdoorPhysicalBenefitRate = pct(outdoorPhysicalBenefit, totalOutdoorEngagements);
-
-  const outdoorWellbeingBenefit = outdoor_engagement_records.filter(
-    (o) => o.wellbeing_benefit,
-  ).length;
-  const outdoorWellbeingBenefitRate = pct(outdoorWellbeingBenefit, totalOutdoorEngagements);
-
   const outdoorRiskAssessed = outdoor_engagement_records.filter(
     (o) => o.risk_assessed,
   ).length;
@@ -435,19 +396,6 @@ export function computePhysicalActivityRecreation(
   ).length;
   const weatherAppropriateRate = pct(weatherAppropriate, totalOutdoorEngagements);
 
-  const distinctOutdoorTypes = new Set(
-    outdoor_engagement_records.map((o) => o.activity_type),
-  );
-  const outdoorDiversityCount = distinctOutdoorTypes.size;
-
-  const avgOutdoorDuration =
-    totalOutdoorEngagements > 0
-      ? Math.round(
-          outdoor_engagement_records.reduce((sum, o) => sum + o.duration_minutes, 0) /
-            totalOutdoorEngagements,
-        )
-      : null;
-
   // --- Fitness assessment metrics ---
   const totalFitnessAssessments = fitness_assessment_records.length;
 
@@ -457,11 +405,6 @@ export function computePhysicalActivityRecreation(
   const fitnessAssessmentCoverageRate =
     total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
 
-  const recsGiven = fitness_assessment_records.filter(
-    (f) => f.activity_recommendations_given,
-  ).length;
-  const recsGivenRate = pct(recsGiven, totalFitnessAssessments);
-
   const followUpPlanned = fitness_assessment_records.filter(
     (f) => f.follow_up_planned,
   ).length;
@@ -470,20 +413,10 @@ export function computePhysicalActivityRecreation(
   ).length;
   const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
 
-  const childInvolvedGoalSetting = fitness_assessment_records.filter(
-    (f) => f.child_involved_in_goal_setting,
-  ).length;
-  const childInvolvedGoalSettingRate = pct(childInvolvedGoalSetting, totalFitnessAssessments);
-
   const healthProfInvolved = fitness_assessment_records.filter(
     (f) => f.health_professional_involved,
   ).length;
   const healthProfInvolvedRate = pct(healthProfInvolved, totalFitnessAssessments);
-
-  const excellentOrGoodFitness = fitness_assessment_records.filter(
-    (f) => f.fitness_level === "excellent" || f.fitness_level === "good",
-  ).length;
-  const goodFitnessRate = pct(excellentOrGoodFitness, totalFitnessAssessments);
 
   const bmiRecorded = fitness_assessment_records.filter((f) => f.bmi_recorded).length;
   const bmiRecordedRate = pct(bmiRecorded, totalFitnessAssessments);
@@ -515,11 +448,6 @@ export function computePhysicalActivityRecreation(
   ).length;
   const activityAccessibilityRate = pct(ableToParticipate, totalAccessibilityRecords);
 
-  const equipmentAvailable = activity_accessibility_records.filter(
-    (a) => a.equipment_available,
-  ).length;
-  const equipmentAvailableRate = pct(equipmentAvailable, totalAccessibilityRecords);
-
   const transportArranged = activity_accessibility_records.filter(
     (a) => a.transport_arranged,
   ).length;
@@ -534,10 +462,6 @@ export function computePhysicalActivityRecreation(
     (a) => a.equal_opportunity,
   ).length;
   const equalOpportunityRate = pct(equalOpportunity, totalAccessibilityRecords);
-
-  const uniqueChildrenWithAccessibility = new Set(
-    activity_accessibility_records.filter((a) => a.child_able_to_participate).map((a) => a.child_id),
-  ).size;
 
   // ── Scoring: base 52, 9 bonus categories summing to 28 (max 80) ──────
 

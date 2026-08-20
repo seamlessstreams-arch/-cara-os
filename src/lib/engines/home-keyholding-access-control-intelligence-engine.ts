@@ -289,10 +289,6 @@ export function computeKeyholdingAccessControl(
   const holderRecordedRate = pct(holderRecorded, totalKeyRegisterRecords);
 
   const holderAuthorised = key_register_records.filter((k) => k.holder_authorised).length;
-  const holderAuthorisedRate = pct(holderAuthorised, totalKeyRegisterRecords);
-
-  const auditPassed = key_register_records.filter((k) => k.audit_passed).length;
-  const keyAuditPassRate = pct(auditPassed, totalKeyRegisterRecords);
 
   const duplicateExists = key_register_records.filter((k) => k.duplicate_exists).length;
   const duplicateRate = pct(duplicateExists, totalKeyRegisterRecords);
@@ -308,9 +304,6 @@ export function computeKeyholdingAccessControl(
   const accessLogged = access_control_records.filter((a) => a.access_logged).length;
   const accessLoggedRate = pct(accessLogged, totalAccessControlRecords);
 
-  const accessControlActive = access_control_records.filter((a) => a.access_control_active).length;
-  const accessControlActiveRate = pct(accessControlActive, totalAccessControlRecords);
-
   const unauthorisedAttempts = access_control_records.filter(
     (a) => a.unauthorised_access_attempt,
   ).length;
@@ -319,12 +312,6 @@ export function computeKeyholdingAccessControl(
   const visitorProtocolFollowed = access_control_records.filter(
     (a) => a.visitor_protocol_followed,
   ).length;
-  const visitorProtocolRate = pct(visitorProtocolFollowed, totalAccessControlRecords);
-
-  const childSafeLockFitted = access_control_records.filter(
-    (a) => a.child_safe_lock_fitted,
-  ).length;
-  const childSafeLockRate = pct(childSafeLockFitted, totalAccessControlRecords);
 
   const emergencyOverrideTested = access_control_records.filter(
     (a) => a.emergency_override_tested,
@@ -389,16 +376,6 @@ export function computeKeyholdingAccessControl(
   const totalChildSafeRecords = child_safe_records.length;
   const compliantChildSafe = child_safe_records.filter((c) => c.compliant).length;
   const childSafeRate = pct(compliantChildSafe, totalChildSafeRecords);
-
-  const measuresInPlace = child_safe_records.filter(
-    (c) => c.child_safe_measures_in_place,
-  ).length;
-  const measuresInPlaceRate = pct(measuresInPlace, totalChildSafeRecords);
-
-  const lockAppropriate = child_safe_records.filter(
-    (c) => c.lock_type_appropriate,
-  ).length;
-  const lockAppropriateRate = pct(lockAppropriate, totalChildSafeRecords);
 
   const canExitSafely = child_safe_records.filter(
     (c) => c.child_can_exit_safely,

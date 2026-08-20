@@ -390,25 +390,10 @@ export function computeDigitalSafetyOnlineProtection(
   const socialMediaRiskAssessmentRate =
     total_children > 0 ? pct(childrenWithAssessments, total_children) : 0;
 
-  const privacyReviewed = social_media_assessments.filter(
-    (a) => a.privacy_settings_reviewed,
-  ).length;
   const privacyAppropriate = social_media_assessments.filter(
     (a) => a.privacy_settings_appropriate,
   ).length;
   const privacySettingsComplianceRate = pct(privacyAppropriate, totalSocialMediaAssessments);
-
-  const highRiskAssessments = social_media_assessments.filter(
-    (a) => a.risk_level === "high" || a.risk_level === "critical",
-  ).length;
-
-  const mitigationCompleted = social_media_assessments.filter(
-    (a) => a.mitigation_completed,
-  ).length;
-  const mitigationCompletionRate = pct(
-    mitigationCompleted,
-    social_media_assessments.filter((a) => a.risks_identified.length > 0).length,
-  );
 
   const childInvolved = social_media_assessments.filter(
     (a) => a.child_involved_in_assessment,
@@ -448,16 +433,6 @@ export function computeDigitalSafetyOnlineProtection(
   ).length;
   const termsExplainedRate = pct(termsExplained, activeAgreements);
 
-  const childUnderstands = online_access_agreements.filter(
-    (a) => a.active && a.child_understands_terms,
-  ).length;
-  const childUnderstandsRate = pct(childUnderstands, activeAgreements);
-
-  const reviewedAgreements = online_access_agreements.filter(
-    (a) => a.active && a.reviewed,
-  ).length;
-  const agreementReviewRate = pct(reviewedAgreements, activeAgreements);
-
   const overdueAgreements = online_access_agreements.filter(
     (a) => a.active && a.overdue,
   ).length;
@@ -482,17 +457,11 @@ export function computeDigitalSafetyOnlineProtection(
   ).size;
 
   const completedLiteracy = digital_literacy_records.filter((r) => r.completed).length;
-  const literacyCompletionRate = pct(completedLiteracy, totalDigitalLiteracyRecords);
 
   const highEngagement = digital_literacy_records.filter(
     (r) => r.engagement_level === "high" || r.engagement_level === "medium",
   ).length;
   const digitalLiteracyEngagementRate = pct(highEngagement, totalDigitalLiteracyRecords);
-
-  const positiveFeedback = digital_literacy_records.filter(
-    (r) => r.child_feedback_positive,
-  ).length;
-  const positiveFeedbackRate = pct(positiveFeedback, totalDigitalLiteracyRecords);
 
   const certifications = digital_literacy_records.filter(
     (r) => r.certification_earned,

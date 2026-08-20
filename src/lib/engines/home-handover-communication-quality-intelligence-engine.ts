@@ -269,9 +269,6 @@ export function computeHandoverCommunicationQuality(
   // --- Handover quality metrics ---
   const totalHandovers = handover_records.length;
 
-  const completedHandovers = handover_records.filter((r) => r.handover_completed).length;
-  const handoverCompletionRate = pct(completedHandovers, totalHandovers);
-
   const faceToFaceHandovers = handover_records.filter(
     (r) => r.handover_method === "face_to_face" || r.handover_method === "mixed",
   ).length;
@@ -293,12 +290,6 @@ export function computeHandoverCommunicationQuality(
     incidentIncluded + emotionalCovered + appointmentsCovered;
   const contentCompletenessRate = pct(contentChecksPassed, contentChecksPossible);
 
-  const qualitySum = handover_records.reduce((sum, r) => sum + r.quality_rating, 0);
-  const avgQualityRating =
-    totalHandovers > 0
-      ? Math.round((qualitySum / totalHandovers) * 100) / 100
-      : null;
-
   const managerReviewedHandovers = handover_records.filter((r) => r.manager_reviewed).length;
   const managerReviewRate = pct(managerReviewedHandovers, totalHandovers);
 
@@ -319,24 +310,10 @@ export function computeHandoverCommunicationQuality(
   // --- Communication log metrics ---
   const totalCommLogs = communication_log_records.length;
 
-  const completeCommLogs = communication_log_records.filter(
-    (r) => (r.completeness_score ?? 0) >= 4,
-  ).length;
-  const logCompletenessRate = pct(completeCommLogs, totalCommLogs);
-
-  const timelyEntries = communication_log_records.filter((r) => r.timely_entry).length;
-  const timelyEntryRate = pct(timelyEntries, totalCommLogs);
-
-  const relevantDetail = communication_log_records.filter((r) => r.relevant_detail_included).length;
-  const relevantDetailRate = pct(relevantDetail, totalCommLogs);
-
   const professionalLanguage = communication_log_records.filter(
     (r) => r.professional_language_used,
   ).length;
   const professionalLanguageRate = pct(professionalLanguage, totalCommLogs);
-
-  const actionsDocumented = communication_log_records.filter((r) => r.actions_documented).length;
-  const actionsDocumentedRate = pct(actionsDocumented, totalCommLogs);
 
   const logFollowUpRequired = communication_log_records.filter(
     (r) => r.follow_up_identified,
@@ -345,11 +322,6 @@ export function computeHandoverCommunicationQuality(
     (r) => r.follow_up_identified && r.follow_up_completed,
   ).length;
   const logFollowUpRate = pct(logFollowUpCompleted, logFollowUpRequired);
-
-  const logManagerReviewed = communication_log_records.filter(
-    (r) => r.reviewed_by_manager,
-  ).length;
-  const logManagerReviewRate = pct(logManagerReviewed, totalCommLogs);
 
   // Composite communication log rate: timely + complete + relevant detail + professional
   const qualityLogs = communication_log_records.filter(
@@ -363,34 +335,6 @@ export function computeHandoverCommunicationQuality(
 
   // --- Critical info transfer metrics ---
   const totalCriticalInfo = critical_info_records.length;
-
-  const allStaffNotified = critical_info_records.filter(
-    (r) => r.all_relevant_staff_notified,
-  ).length;
-  const staffNotificationRate = pct(allStaffNotified, totalCriticalInfo);
-
-  const acknowledgedAll = critical_info_records.filter(
-    (r) => r.total_staff_to_notify > 0 && r.acknowledged_by_count >= r.total_staff_to_notify,
-  ).length;
-  const fullAcknowledgementRate = pct(acknowledgedAll, totalCriticalInfo);
-
-  const documentedInHandover = critical_info_records.filter(
-    (r) => r.documented_in_handover,
-  ).length;
-  const handoverDocumentationRate = pct(documentedInHandover, totalCriticalInfo);
-
-  const critFollowUpSet = critical_info_records.filter(
-    (r) => r.follow_up_actions_set,
-  ).length;
-  const critFollowUpCompleted = critical_info_records.filter(
-    (r) => r.follow_up_actions_set && r.follow_up_completed,
-  ).length;
-  const critFollowUpRate = pct(critFollowUpCompleted, critFollowUpSet);
-
-  const escalatedToManager = critical_info_records.filter(
-    (r) => r.escalated_to_manager,
-  ).length;
-  const escalationRate = pct(escalatedToManager, totalCriticalInfo);
 
   const accurateInfo = critical_info_records.filter(
     (r) => r.information_accurate,
@@ -417,12 +361,6 @@ export function computeHandoverCommunicationQuality(
   // --- Timeliness metrics ---
   const totalTimeliness = timeliness_records.length;
 
-  const onTimeHandovers = timeliness_records.filter((r) => r.handover_started_on_time).length;
-  const onTimeRate = pct(onTimeHandovers, totalTimeliness);
-
-  const adequateDuration = timeliness_records.filter((r) => r.adequate_duration).length;
-  const adequateDurationRate = pct(adequateDuration, totalTimeliness);
-
   const overlapAvailable = timeliness_records.filter((r) => r.overlap_period_available).length;
   const overlapRate = pct(overlapAvailable, totalTimeliness);
 
@@ -434,14 +372,6 @@ export function computeHandoverCommunicationQuality(
 
   const noInterruptions = timeliness_records.filter((r) => r.interruptions_count === 0).length;
   const noInterruptionsRate = pct(noInterruptions, totalTimeliness);
-
-  const avgDuration =
-    totalTimeliness > 0
-      ? Math.round(
-          timeliness_records.reduce((sum, r) => sum + r.handover_duration_minutes, 0) /
-            totalTimeliness,
-        )
-      : null;
 
   // Composite timeliness rate: on time + adequate duration + both present + no rushing
   const timelyHandovers = timeliness_records.filter(
@@ -467,22 +397,6 @@ export function computeHandoverCommunicationQuality(
     (r) => r.completed && r.completed_on_time,
   ).length;
   const onTimeCompletionRate = pct(completedOnTime, totalActions);
-
-  const verifiedByManager = action_completion_records.filter(
-    (r) => r.completed && r.verified_by_manager,
-  ).length;
-  const actionVerificationRate = pct(verifiedByManager, completedActions);
-
-  const outcomeRecorded = action_completion_records.filter(
-    (r) => r.completed && r.outcome_recorded,
-  ).length;
-  const outcomeRecordRate = pct(outcomeRecorded, completedActions);
-
-  const urgentActions = action_completion_records.filter((r) => r.priority === "urgent").length;
-  const urgentCompleted = action_completion_records.filter(
-    (r) => r.priority === "urgent" && r.completed,
-  ).length;
-  const urgentCompletionRate = pct(urgentCompleted, urgentActions);
 
   const carriedForwardActions = action_completion_records.filter(
     (r) => r.carried_forward_count > 0,

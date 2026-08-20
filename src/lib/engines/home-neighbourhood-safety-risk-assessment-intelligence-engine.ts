@@ -304,11 +304,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   const mitigationDocRate = pct(mitigationsDocumented, totalRiskAssessments);
   const mitigationImplRate = pct(mitigationsImplemented, totalRiskAssessments);
 
-  const crimeReviewed = risk_assessment_records.filter(
-    (r) => r.local_crime_reviewed,
-  ).length;
-  const crimeReviewRate = pct(crimeReviewed, totalRiskAssessments);
-
   const exploitationReviewed = risk_assessment_records.filter(
     (r) => r.exploitation_risk_reviewed,
   ).length;
@@ -318,26 +313,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     (r) => r.gang_activity_reviewed,
   ).length;
   const gangReviewRate = pct(gangReviewed, totalRiskAssessments);
-
-  const asbReviewed = risk_assessment_records.filter(
-    (r) => r.antisocial_behaviour_reviewed,
-  ).length;
-  const asbReviewRate = pct(asbReviewed, totalRiskAssessments);
-
-  const drugReviewed = risk_assessment_records.filter(
-    (r) => r.drug_activity_reviewed,
-  ).length;
-  const drugReviewRate = pct(drugReviewed, totalRiskAssessments);
-
-  const trafficReviewed = risk_assessment_records.filter(
-    (r) => r.traffic_risk_reviewed,
-  ).length;
-  const trafficReviewRate = pct(trafficReviewed, totalRiskAssessments);
-
-  const environmentalReviewed = risk_assessment_records.filter(
-    (r) => r.environmental_risk_reviewed,
-  ).length;
-  const environmentalReviewRate = pct(environmentalReviewed, totalRiskAssessments);
 
   const managerApproved = risk_assessment_records.filter(
     (r) => r.approved_by_manager,
@@ -415,14 +390,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   const childInvolvedMapping = safety_mapping_records.filter(
     (r) => r.child_involvement,
   ).length;
-  const childMappingInvolvementRate = pct(childInvolvedMapping, totalMappings);
 
-  const totalSafeZones = safety_mapping_records.reduce(
-    (sum, r) => sum + r.safe_zones_identified, 0,
-  );
-  const totalRiskZones = safety_mapping_records.reduce(
-    (sum, r) => sum + r.risk_zones_identified, 0,
-  );
   const totalChildFriendlySpaces = safety_mapping_records.reduce(
     (sum, r) => sum + r.child_friendly_spaces, 0,
   );
@@ -456,11 +424,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     (r) => r.children_informed,
   ).length;
   const childrenInformedHazardRate = pct(childrenInformedHazards, totalHazards);
-
-  const highCriticalHazards = hazard_records.filter(
-    (r) => r.severity === "high" || r.severity === "critical",
-  ).length;
-  const highCriticalHazardRate = pct(highCriticalHazards, totalHazards);
 
   const unresolvedHighCritical = hazard_records.filter(
     (r) => (r.severity === "high" || r.severity === "critical") && !r.resolved,
@@ -514,11 +477,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     (r) => r.adequate_lighting,
   ).length;
   const routeLightingRate = pct(routeAdequateLighting, totalRoutes);
-
-  const routePedestrian = route_safety_records.filter(
-    (r) => r.pedestrian_access,
-  ).length;
-  const routePedestrianRate = pct(routePedestrian, totalRoutes);
 
   const routeAlternative = route_safety_records.filter(
     (r) => r.alternative_route_available,
@@ -574,16 +532,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     (r) => r.safeguarding_protocols_agreed,
   ).length;
   const safeguardingProtocolRate = pct(safeguardingProtocols, totalPartnerships);
-
-  const childBenefitDocumented = community_partnership_records.filter(
-    (r) => r.children_benefit_documented,
-  ).length;
-  const childBenefitRate = pct(childBenefitDocumented, totalPartnerships);
-
-  const keyContactNamed = community_partnership_records.filter(
-    (r) => r.key_contact_named,
-  ).length;
-  const keyContactRate = pct(keyContactNamed, totalPartnerships);
 
   const effectivenessSum = community_partnership_records.reduce(
     (sum, r) => sum + r.partnership_effectiveness, 0,

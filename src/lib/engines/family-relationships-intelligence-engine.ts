@@ -344,7 +344,6 @@ function computeContactCompliance(input: FamilyRelationshipsInput): ContactCompl
 
   // Which active arrangements had no session in last 30 days
   const sessions30d = input.family_time_sessions.filter((s) => withinDays(s.date, input.today, 30));
-  const contactedMembers30d = new Set(sessions30d.map((s) => s.family_member || s.family_member_name));
   // Simplified: count arrangements with no matching session
   const withoutSession = active.filter(() => {
     // Without contact_person_id matching, we count active arrangements with no sessions as a conservative estimate

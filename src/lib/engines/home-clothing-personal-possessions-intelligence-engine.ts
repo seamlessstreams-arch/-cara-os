@@ -306,17 +306,6 @@ export function computeClothingPersonalPossessions(
   const childChoseItems = clothing_allowance_records.filter(
     (r) => r.child_chose_own_items,
   ).length;
-  const childChoseItemsRate = pct(childChoseItems, totalAllowanceRecords);
-
-  const ageAppropriateCount = clothing_allowance_records.filter(
-    (r) => r.age_appropriate,
-  ).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalAllowanceRecords);
-
-  const seasonalNeedsMet = clothing_allowance_records.filter(
-    (r) => r.seasonal_needs_met,
-  ).length;
-  const seasonalNeedsMetRate = pct(seasonalNeedsMet, totalAllowanceRecords);
 
   const receiptsRetained = clothing_allowance_records.filter(
     (r) => r.receipts_retained,
@@ -347,40 +336,9 @@ export function computeClothingPersonalPossessions(
   ).length;
   const wardrobeAdequacyRate = pct(adequateWardrobes, totalWardrobeReviews);
 
-  const adequateClothing = wardrobe_review_records.filter(
-    (r) => r.adequate_clothing,
-  ).length;
-  const adequateClothingRate = pct(adequateClothing, totalWardrobeReviews);
-
-  const adequateFootwear = wardrobe_review_records.filter(
-    (r) => r.adequate_footwear,
-  ).length;
-  const adequateFootwearRate = pct(adequateFootwear, totalWardrobeReviews);
-
-  const adequateOuterwear = wardrobe_review_records.filter(
-    (r) => r.adequate_outerwear,
-  ).length;
-  const adequateOuterwearRate = pct(adequateOuterwear, totalWardrobeReviews);
-
-  const adequateSchoolUniform = wardrobe_review_records.filter(
-    (r) => r.adequate_school_uniform,
-  ).length;
-  const adequateSchoolUniformRate = pct(adequateSchoolUniform, totalWardrobeReviews);
-
-  const adequateNightwear = wardrobe_review_records.filter(
-    (r) => r.adequate_nightwear,
-  ).length;
-  const adequateNightwearRate = pct(adequateNightwear, totalWardrobeReviews);
-
-  const adequateUnderwear = wardrobe_review_records.filter(
-    (r) => r.adequate_underwear,
-  ).length;
-  const adequateUnderwearRate = pct(adequateUnderwear, totalWardrobeReviews);
-
   const childConsulted = wardrobe_review_records.filter(
     (r) => r.child_consulted,
   ).length;
-  const childConsultedRate = pct(childConsulted, totalWardrobeReviews);
 
   const childSatisfied = wardrobe_review_records.filter(
     (r) => r.child_satisfied,
@@ -407,14 +365,6 @@ export function computeClothingPersonalPossessions(
   );
   const replacementRate = pct(totalItemsReplaced, totalItemsNeedingReplacement);
 
-  const actionPlanCreated = wardrobe_review_records.filter(
-    (r) => r.action_plan_created,
-  ).length;
-  const actionPlanCompleted = wardrobe_review_records.filter(
-    (r) => r.action_plan_created && r.action_plan_completed,
-  ).length;
-  const actionPlanCompletionRate = pct(actionPlanCompleted, actionPlanCreated);
-
   const uniqueChildrenReviewed = new Set(
     wardrobe_review_records.map((r) => r.child_id),
   ).size;
@@ -440,36 +390,20 @@ export function computeClothingPersonalPossessions(
   );
   const inventoryCompletenessRate = pct(totalItemsAccountedFor, totalItemsRecorded);
 
-  const completeInventories = personal_inventory_records.filter(
-    (r) => r.inventory_complete,
-  ).length;
-  const inventoryCompleteRate = pct(completeInventories, totalInventoryRecords);
-
   const totalMissing = personal_inventory_records.reduce(
     (sum, r) => sum + r.items_missing,
     0,
   );
-  const totalDamaged = personal_inventory_records.reduce(
-    (sum, r) => sum + r.items_damaged,
-    0,
-  );
   const missingRate = pct(totalMissing, totalItemsRecorded);
-  const damagedRate = pct(totalDamaged, totalItemsRecorded);
 
   const sentimentalSafeguarded = personal_inventory_records.filter(
     (r) => r.sentimental_items_safeguarded,
   ).length;
   const sentimentalSafeguardedRate = pct(sentimentalSafeguarded, totalInventoryRecords);
 
-  const electronicsRecorded = personal_inventory_records.filter(
-    (r) => r.electronics_recorded,
-  ).length;
-  const electronicsRecordedRate = pct(electronicsRecorded, totalInventoryRecords);
-
   const childInvolvedInventory = personal_inventory_records.filter(
     (r) => r.child_involved_in_inventory,
   ).length;
-  const childInvolvedInventoryRate = pct(childInvolvedInventory, totalInventoryRecords);
 
   const storageAdequate = personal_inventory_records.filter(
     (r) => r.storage_adequate,
@@ -485,12 +419,6 @@ export function computeClothingPersonalPossessions(
     (r) => r.photographic_record,
   ).length;
   const photographicRecordRate = pct(photographicRecord, totalInventoryRecords);
-
-  const uniqueChildrenInventoried = new Set(
-    personal_inventory_records.map((r) => r.child_id),
-  ).size;
-  const inventoryChildCoverage =
-    total_children > 0 ? pct(uniqueChildrenInventoried, total_children) : 0;
 
   // --- Clothing request metrics ---
   const totalRequestRecords = clothing_request_records.length;
@@ -527,7 +455,6 @@ export function computeClothingPersonalPossessions(
   const choiceRespectedRequest = clothing_request_records.filter(
     (r) => r.child_choice_respected,
   ).length;
-  const choiceRespectedRequestRate = pct(choiceRespectedRequest, totalRequestRecords);
 
   // --- Possession safeguarding metrics ---
   const totalSafeguardingRecords = possession_safeguarding_records.length;
@@ -541,38 +468,6 @@ export function computeClothingPersonalPossessions(
     (r) => r.incident_documented,
   ).length;
   const documentedRate = pct(documentedIncidents, totalSafeguardingRecords);
-
-  const childInformedIncidents = possession_safeguarding_records.filter(
-    (r) => r.child_informed,
-  ).length;
-  const childInformedRate = pct(childInformedIncidents, totalSafeguardingRecords);
-
-  const childSatisfiedIncidents = possession_safeguarding_records.filter(
-    (r) => r.resolved && r.child_satisfied,
-  ).length;
-  const childSatisfiedIncidentRate = pct(childSatisfiedIncidents, resolvedIncidents);
-
-  const replacementsProvided = possession_safeguarding_records.filter(
-    (r) => r.replacement_provided,
-  ).length;
-  const replacementProvidedRate = pct(replacementsProvided, totalSafeguardingRecords);
-
-  const compensationOffered = possession_safeguarding_records.filter(
-    (r) => r.compensation_offered,
-  ).length;
-
-  const lossTheftDamage = possession_safeguarding_records.filter(
-    (r) => r.event_type === "loss" || r.event_type === "theft" || r.event_type === "damage",
-  );
-  const lossTheftDamageCount = lossTheftDamage.length;
-  const lossTheftDamageResolved = lossTheftDamage.filter((r) => r.resolved).length;
-  const lossTheftDamageResolvedRate = pct(lossTheftDamageResolved, lossTheftDamageCount);
-
-  const sentimentalIncidents = possession_safeguarding_records.filter(
-    (r) => r.sentimental_value,
-  );
-  const sentimentalResolved = sentimentalIncidents.filter((r) => r.resolved).length;
-  const sentimentalResolvedRate = pct(sentimentalResolved, sentimentalIncidents.length);
 
   const confiscations = possession_safeguarding_records.filter(
     (r) => r.event_type === "confiscation",

@@ -299,35 +299,24 @@ export function computeEthnicHairSkincare(
   const hairCarePlansInPlace = hair_care_records.filter((h) => h.care_plan_in_place).length;
   const hairCarePlanRate = pct(hairCarePlansInPlace, totalHairCareRecords);
 
-  const hairCarePlansReviewed = hair_care_records.filter((h) => h.care_plan_in_place && h.care_plan_reviewed).length;
-  const hairCarePlanReviewRate = pct(hairCarePlansReviewed, totalHairCareRecords);
-
   const appropriateProductsUsed = hair_care_records.filter((h) => h.appropriate_products_used).length;
   const appropriateProductsRate = pct(appropriateProductsUsed, totalHairCareRecords);
 
   const culturallyMatchedProducts = hair_care_records.filter((h) => h.products_culturally_matched).length;
   const culturallyMatchedRate = pct(culturallyMatchedProducts, totalHairCareRecords);
 
-  const stylingPrefsDocumented = hair_care_records.filter((h) => h.styling_preferences_documented).length;
-  const stylingPrefsRate = pct(stylingPrefsDocumented, totalHairCareRecords);
-
   const childVoiceCapturedHair = hair_care_records.filter((h) => h.child_voice_captured).length;
   const childVoiceHairRate = pct(childVoiceCapturedHair, totalHairCareRecords);
 
   const childSatisfiedHair = hair_care_records.filter((h) => h.child_satisfied).length;
-  const childSatisfiedHairRate = pct(childSatisfiedHair, totalHairCareRecords);
 
   const protectiveStylingOffered = hair_care_records.filter((h) => h.protective_styling_offered).length;
   const protectiveStylingRate = pct(protectiveStylingOffered, totalHairCareRecords);
 
   const staffCompetentHair = hair_care_records.filter((h) => h.staff_competent).length;
-  const staffCompetentHairRate = pct(staffCompetentHair, totalHairCareRecords);
 
   const staffTrainedEthnicHair = hair_care_records.filter((h) => h.staff_trained_ethnic_hair).length;
   const staffTrainedEthnicHairRate = pct(staffTrainedEthnicHair, totalHairCareRecords);
-
-  const externalSpecialistsUsedHair = hair_care_records.filter((h) => h.external_specialist_used).length;
-  const externalSpecialistHairRate = pct(externalSpecialistsUsedHair, totalHairCareRecords);
 
   const frequencyAppropriate = hair_care_records.filter((h) => h.frequency_appropriate).length;
   const frequencyAppropriateRate = pct(frequencyAppropriate, totalHairCareRecords);
@@ -350,23 +339,14 @@ export function computeEthnicHairSkincare(
   const routinesInPlace = skincare_routine_records.filter((s) => s.routine_in_place).length;
   const routineInPlaceRate = pct(routinesInPlace, totalSkincareRecords);
 
-  const routinesDocumented = skincare_routine_records.filter((s) => s.routine_documented).length;
-  const routineDocumentedRate = pct(routinesDocumented, totalSkincareRecords);
-
   const routinesFollowed = skincare_routine_records.filter((s) => s.routine_followed_consistently).length;
   const routineFollowedRate = pct(routinesFollowed, totalSkincareRecords);
 
   const productsAppropriate = skincare_routine_records.filter((s) => s.products_appropriate_for_skin_type).length;
   const productsAppropriateRate = pct(productsAppropriate, totalSkincareRecords);
 
-  const productsCulturallySpecific = skincare_routine_records.filter((s) => s.products_culturally_specific).length;
-  const productsCulturallySpecificRate = pct(productsCulturallySpecific, totalSkincareRecords);
-
   const moisturisingAdequate = skincare_routine_records.filter((s) => s.moisturising_frequency_adequate).length;
   const moisturisingRate = pct(moisturisingAdequate, totalSkincareRecords);
-
-  const spfProvided = skincare_routine_records.filter((s) => s.spf_protection_provided).length;
-  const spfRate = pct(spfProvided, totalSkincareRecords);
 
   const dermatologicalNeedsIdentified = skincare_routine_records.filter((s) => s.dermatological_needs_identified).length;
   const dermatologicalNeedsMetCount = skincare_routine_records.filter((s) => s.dermatological_needs_identified && s.dermatological_needs_met).length;
@@ -375,14 +355,9 @@ export function computeEthnicHairSkincare(
   const childEducatedSkincare = skincare_routine_records.filter((s) => s.child_educated_on_routine).length;
   const childEducatedSkincareRate = pct(childEducatedSkincare, totalSkincareRecords);
 
-  const childIndependentSkincare = skincare_routine_records.filter((s) => s.child_independent_in_routine).length;
-  const childIndependentSkincareRate = pct(childIndependentSkincare, totalSkincareRecords);
-
   const childSatisfiedSkincare = skincare_routine_records.filter((s) => s.child_satisfied).length;
-  const childSatisfiedSkincareRate = pct(childSatisfiedSkincare, totalSkincareRecords);
 
   const staffKnowledgeableSkincare = skincare_routine_records.filter((s) => s.staff_knowledgeable).length;
-  const staffKnowledgeableSkincareRate = pct(staffKnowledgeableSkincare, totalSkincareRecords);
 
   // Unique children with skincare records
   const uniqueChildrenSkincare = new Set(skincare_routine_records.map((s) => s.child_id)).size;
@@ -405,17 +380,8 @@ export function computeEthnicHairSkincare(
   const budgetAdequate = product_provision_records.filter((p) => p.budget_adequate).length;
   const budgetAdequateRate = pct(budgetAdequate, totalProductRecords);
 
-  const childRequestedProducts = product_provision_records.filter((p) => p.requested_by_child).length;
-  const childRequestedRate = pct(childRequestedProducts, totalProductRecords);
-
   const childApprovedProducts = product_provision_records.filter((p) => p.child_approved).length;
   const childApprovedRate = pct(childApprovedProducts, totalProductRecords);
-
-  const specialistSourced = product_provision_records.filter((p) => p.sourced_from_specialist_supplier).length;
-  const specialistSourcedRate = pct(specialistSourced, totalProductRecords);
-
-  const replacementTimely = product_provision_records.filter((p) => p.replacement_ordered_timely).length;
-  const replacementTimelyRate = pct(replacementTimely, totalProductRecords);
 
   const qualitySum = product_provision_records.reduce((sum, p) => sum + p.quality_rating, 0);
   const avgProductQuality: number | null = totalProductRecords > 0
@@ -452,9 +418,6 @@ export function computeEthnicHairSkincare(
   const avgWaitingTime: number | null = totalSpecialistReferrals > 0
     ? Math.round(specialist_referral_records.reduce((sum, r) => sum + r.waiting_time_days, 0) / totalSpecialistReferrals)
       : null;
-
-  // Unique children with specialist referrals
-  const uniqueChildrenSpecialist = new Set(specialist_referral_records.map((r) => r.child_id)).size;
 
   // Composite specialist access rate
   const specialistAccessRate: number | null = totalSpecialistReferrals > 0
@@ -510,15 +473,8 @@ export function computeEthnicHairSkincare(
   const totalSatisDenom = satisfactionDenominators.reduce((a, b) => a + b, 0);
   const childSatisfactionRate = pct(totalSatisNum, totalSatisDenom);
 
-  // --- Additional satisfaction survey metrics ---
-  const feelsListenedTo = child_satisfaction_records.filter((s) => s.child_feels_listened_to).length;
-  const feelsListenedToRate = pct(feelsListenedTo, totalSatisfactionRecords);
-
   const feelsCulturallyRespected = child_satisfaction_records.filter((s) => s.child_feels_culturally_respected).length;
   const feelsCulturallyRespectedRate = pct(feelsCulturallyRespected, totalSatisfactionRecords);
-
-  const preferencesActedOn = child_satisfaction_records.filter((s) => s.child_preferences_acted_on).length;
-  const preferencesActedOnRate = pct(preferencesActedOn, totalSatisfactionRecords);
 
   const canChooseProducts = child_satisfaction_records.filter((s) => s.child_can_choose_products).length;
   const canChooseProductsRate = pct(canChooseProducts, totalSatisfactionRecords);
@@ -532,10 +488,6 @@ export function computeEthnicHairSkincare(
   const complaintsRaised = child_satisfaction_records.filter((s) => s.complaints_raised).length;
   const complaintsResolved = child_satisfaction_records.filter((s) => s.complaints_raised && s.complaint_resolved).length;
   const complaintResolutionRate = pct(complaintsResolved, complaintsRaised);
-
-  const avgSatisfactionRating: number | null = totalSatisfactionRecords > 0
-    ? Math.round((child_satisfaction_records.reduce((sum, s) => sum + s.satisfaction_rating, 0) / totalSatisfactionRecords) * 100) / 100
-      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

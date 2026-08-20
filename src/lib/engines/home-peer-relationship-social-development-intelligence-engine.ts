@@ -367,15 +367,6 @@ export function computePeerRelationshipSocialDevelopment(
   const assessmentChildVoice = peer_assessments.filter(
     (a) => a.child_voice_captured,
   ).length;
-  const assessmentChildVoiceRate = pct(assessmentChildVoice, totalAssessments);
-
-  const assessmentsWithFollowUp = peer_assessments.filter(
-    (a) => a.follow_up_date !== null,
-  ).length;
-  const followUpCompleted = peer_assessments.filter(
-    (a) => a.follow_up_completed,
-  ).length;
-  const assessmentFollowUpRate = pct(followUpCompleted, assessmentsWithFollowUp);
 
   // --- Social skills programme metrics ---
   const totalProgrammes = social_skills_programmes.length;
@@ -396,32 +387,10 @@ export function computePeerRelationshipSocialDevelopment(
   );
   const programmeAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
 
-  const progressRatingSum = social_skills_programmes.reduce(
-    (sum, p) => sum + p.progress_rating,
-    0,
-  );
-  const averageProgressRating =
-    totalProgrammes > 0
-      ? Math.round((progressRatingSum / totalProgrammes) * 100) / 100
-      : null;
-
   const programmesWithImprovement = social_skills_programmes.filter(
     (p) => p.measurable_improvement,
   ).length;
   const measureableImprovementRate = pct(programmesWithImprovement, totalProgrammes);
-
-  const programmesChildEngaged = social_skills_programmes.filter(
-    (p) => p.child_engaged,
-  ).length;
-  const childEngagementRate = pct(programmesChildEngaged, totalProgrammes);
-
-  const programmesReviewDue = social_skills_programmes.filter(
-    (p) => p.review_date !== null,
-  ).length;
-  const programmesReviewCompleted = social_skills_programmes.filter(
-    (p) => p.review_completed,
-  ).length;
-  const programmeReviewRate = pct(programmesReviewCompleted, programmesReviewDue);
 
   // --- Bullying incident metrics ---
   const totalBullyingIncidents = bullying_incidents.length;
@@ -446,11 +415,6 @@ export function computePeerRelationshipSocialDevelopment(
   ).length;
   const bullyingFollowUpRate = pct(bullyingFollowUps, totalBullyingIncidents);
 
-  const childSatisfiedBullying = bullying_incidents.filter(
-    (b) => b.child_satisfied_with_outcome,
-  ).length;
-  const bullyingSatisfactionRate = pct(childSatisfiedBullying, totalBullyingIncidents);
-
   const parentCarerInformed = bullying_incidents.filter(
     (b) => b.parent_carer_informed,
   ).length;
@@ -461,9 +425,6 @@ export function computePeerRelationshipSocialDevelopment(
   ).length;
   const socialWorkerInformedRate = pct(socialWorkerInformed, totalBullyingIncidents);
 
-  const highSeverityIncidents = bullying_incidents.filter(
-    (b) => b.severity === "high" || b.severity === "critical",
-  ).length;
   const highSeverityUnresolved = bullying_incidents.filter(
     (b) => (b.severity === "high" || b.severity === "critical") && !b.resolved,
   ).length;
@@ -472,16 +433,6 @@ export function computePeerRelationshipSocialDevelopment(
     (b) => b.resolution_type === "restorative" || b.resolution_type === "mediation",
   ).length;
   const restorativeRate = pct(restorativeResolutions, resolvedBullyingIncidents);
-
-  const avgDaysToInvestigate =
-    investigatedIncidents > 0
-      ? Math.round(
-          bullying_incidents
-            .filter((b) => b.days_to_investigate !== null)
-            .reduce((sum, b) => sum + (b.days_to_investigate ?? 0), 0) /
-            bullying_incidents.filter((b) => b.days_to_investigate !== null).length,
-        )
-      : 0;
 
   const avgDaysToResolve =
     resolvedBullyingIncidents > 0
@@ -512,28 +463,10 @@ export function computePeerRelationshipSocialDevelopment(
   );
   const friendshipGoalAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
 
-  const totalActivitiesPlanned = friendship_support_plans.reduce(
-    (sum, p) => sum + p.activities_planned,
-    0,
-  );
-  const totalActivitiesCompleted = friendship_support_plans.reduce(
-    (sum, p) => sum + p.activities_completed,
-    0,
-  );
-  const friendshipActivityCompletionRate = pct(
-    totalActivitiesCompleted,
-    totalActivitiesPlanned,
-  );
-
   const externalFriendshipsSupported = friendship_support_plans.filter(
     (p) => p.external_friendships_supported,
   ).length;
   const externalFriendshipRate = pct(externalFriendshipsSupported, totalFriendshipPlans);
-
-  const familyContactSupported = friendship_support_plans.filter(
-    (p) => p.family_contact_supported,
-  ).length;
-  const familyContactRate = pct(familyContactSupported, totalFriendshipPlans);
 
   const peerMatchingAttempted = friendship_support_plans.filter(
     (p) => p.peer_matching_attempted,
@@ -546,18 +479,6 @@ export function computePeerRelationshipSocialDevelopment(
   const childVoiceInPlans = friendship_support_plans.filter(
     (p) => p.child_voice_in_plan,
   ).length;
-  const childVoiceInPlansRate = pct(childVoiceInPlans, totalFriendshipPlans);
-
-  const friendshipPlansReviewDue = friendship_support_plans.filter(
-    (p) => p.review_date !== null,
-  ).length;
-  const friendshipPlansReviewCompleted = friendship_support_plans.filter(
-    (p) => p.review_completed,
-  ).length;
-  const friendshipPlanReviewRate = pct(
-    friendshipPlansReviewCompleted,
-    friendshipPlansReviewDue,
-  );
 
   // --- Social activity metrics ---
   const totalSocialActivities = social_activity_records.length;
@@ -566,14 +487,6 @@ export function computePeerRelationshipSocialDevelopment(
     (a) => a.attendance_status === "attended",
   ).length;
   const socialActivityParticipationRate = pct(attendedActivities, totalSocialActivities);
-
-  const uniqueChildrenParticipating = new Set(
-    social_activity_records
-      .filter((a) => a.attendance_status === "attended")
-      .map((a) => a.child_id),
-  ).size;
-  const childParticipationCoverage =
-    total_children > 0 ? pct(uniqueChildrenParticipating, total_children) : 0;
 
   const enjoyedActivities = social_activity_records.filter(
     (a) => a.child_enjoyed && a.attendance_status === "attended",

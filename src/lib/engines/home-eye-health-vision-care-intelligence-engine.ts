@@ -299,16 +299,8 @@ export function computeEyeHealthVisionCare(
   const eyeTestAttendanceRate = pct(eyeTestsAttended, totalEyeTestRecords);
 
   const eyeTestsConsented = eye_test_records.filter((r) => r.child_consented).length;
-  const eyeTestConsentRate = pct(eyeTestsConsented, totalEyeTestRecords);
 
   const childCooperative = eye_test_records.filter((r) => r.child_cooperative).length;
-  const cooperativeRate = pct(childCooperative, totalEyeTestRecords);
-
-  const colourVisionTested = eye_test_records.filter((r) => r.colour_vision_tested).length;
-  const colourVisionRate = pct(colourVisionTested, totalEyeTestRecords);
-
-  const fieldTestCompleted = eye_test_records.filter((r) => r.field_test_completed).length;
-  const fieldTestRate = pct(fieldTestCompleted, totalEyeTestRecords);
 
   const eyeTestsWithNextDate = eye_test_records.filter((r) => r.next_test_date !== null).length;
   const nextTestScheduledRate = pct(eyeTestsWithNextDate, totalEyeTestRecords);
@@ -317,7 +309,6 @@ export function computeEyeHealthVisionCare(
   const normalOutcomeRate = pct(normalOutcomes, totalEyeTestRecords);
 
   const prescriptionNeeded = eye_test_records.filter((r) => r.outcome === "prescription_needed").length;
-  const referralNeeded = eye_test_records.filter((r) => r.outcome === "referral_needed").length;
 
   // Composite eye test compliance: attended + consented + cooperative + next test scheduled
   const eyeTestComplianceNumerator = eyeTestsAttended + eyeTestsConsented + childCooperative + eyeTestsWithNextDate;
@@ -328,7 +319,6 @@ export function computeEyeHealthVisionCare(
   const totalPrescriptionRecords = prescription_records.length;
 
   const prescriptionsDispensed = prescription_records.filter((r) => r.dispensed).length;
-  const dispensedRate = pct(prescriptionsDispensed, totalPrescriptionRecords);
 
   const usingCorrectly = prescription_records.filter((r) => r.child_using_correctly).length;
   const correctUsageRate = pct(usingCorrectly, totalPrescriptionRecords);
@@ -336,11 +326,7 @@ export function computeEyeHealthVisionCare(
   const childComfortable = prescription_records.filter((r) => r.child_comfortable).length;
   const comfortRate = pct(childComfortable, totalPrescriptionRecords);
 
-  const prescriptionConsented = prescription_records.filter((r) => r.child_consented).length;
-  const prescriptionConsentRate = pct(prescriptionConsented, totalPrescriptionRecords);
-
   const reviewCompleted = prescription_records.filter((r) => r.review_completed).length;
-  const prescriptionReviewRate = pct(reviewCompleted, totalPrescriptionRecords);
 
   const replacementNeeded = prescription_records.filter((r) => r.replacement_needed).length;
   const replacementArranged = prescription_records.filter(
@@ -348,14 +334,10 @@ export function computeEyeHealthVisionCare(
   ).length;
   const replacementArrangedRate = pct(replacementArranged, replacementNeeded);
 
-  const costCoveredPrescription = prescription_records.filter((r) => r.cost_covered).length;
-  const prescriptionCostCoveredRate = pct(costCoveredPrescription, totalPrescriptionRecords);
-
   const prescriptionFollowUpRequired = prescription_records.filter((r) => r.follow_up_required).length;
   const prescriptionFollowUpCompleted = prescription_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const prescriptionFollowUpRate = pct(prescriptionFollowUpCompleted, prescriptionFollowUpRequired);
 
   // Composite prescription management: dispensed + using correctly + comfortable + review completed
   const prescriptionMgmtNumerator = prescriptionsDispensed + usingCorrectly + childComfortable + reviewCompleted;
@@ -369,13 +351,10 @@ export function computeEyeHealthVisionCare(
   const referralAttendanceRate = pct(referralsAttended, totalReferralRecords);
 
   const referralsConsented = optician_referral_records.filter((r) => r.child_consented).length;
-  const referralConsentRate = pct(referralsConsented, totalReferralRecords);
 
   const parentInformed = optician_referral_records.filter((r) => r.parent_carer_informed).length;
-  const parentInformedRate = pct(parentInformed, totalReferralRecords);
 
   const socialWorkerInformed = optician_referral_records.filter((r) => r.social_worker_informed).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalReferralRecords);
 
   const urgentReferrals = optician_referral_records.filter((r) => r.urgent).length;
   const urgentReferralsAttended = optician_referral_records.filter(
@@ -387,7 +366,6 @@ export function computeEyeHealthVisionCare(
   const referralFollowUpCompleted = optician_referral_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const referralFollowUpRate = pct(referralFollowUpCompleted, referralFollowUpRequired);
 
   const avgWaitingTime =
     totalReferralRecords > 0
@@ -403,10 +381,8 @@ export function computeEyeHealthVisionCare(
   const totalVisualAidRecords = visual_aid_records.length;
 
   const aidsInUse = visual_aid_records.filter((r) => r.child_using).length;
-  const aidUsageRate = pct(aidsInUse, totalVisualAidRecords);
 
   const aidsComfortable = visual_aid_records.filter((r) => r.child_comfortable_with_aid).length;
-  const aidComfortRate = pct(aidsComfortable, totalVisualAidRecords);
 
   const aidsSuitable = visual_aid_records.filter((r) => r.suitable_for_needs).length;
   const aidSuitabilityRate = pct(aidsSuitable, totalVisualAidRecords);
@@ -414,7 +390,6 @@ export function computeEyeHealthVisionCare(
   const aidsGoodCondition = visual_aid_records.filter(
     (r) => r.condition === "new" || r.condition === "good",
   ).length;
-  const aidConditionRate = pct(aidsGoodCondition, totalVisualAidRecords);
 
   const schoolNotified = visual_aid_records.filter((r) => r.school_notified).length;
   const schoolNotifiedRate = pct(schoolNotified, totalVisualAidRecords);
@@ -422,17 +397,8 @@ export function computeEyeHealthVisionCare(
   const spareAvailable = visual_aid_records.filter((r) => r.spare_available).length;
   const spareAvailableRate = pct(spareAvailable, totalVisualAidRecords);
 
-  const aidReplacementNeeded = visual_aid_records.filter((r) => r.replacement_needed).length;
-  const aidReplacementArranged = visual_aid_records.filter(
-    (r) => r.replacement_needed && r.replacement_arranged,
-  ).length;
-  const aidReplacementRate = pct(aidReplacementArranged, aidReplacementNeeded);
-
   const aidCheckOverdue = visual_aid_records.filter((r) => r.check_overdue).length;
   const aidCheckOverdueRate = pct(aidCheckOverdue, totalVisualAidRecords);
-
-  const aidsCostCovered = visual_aid_records.filter((r) => r.cost_covered).length;
-  const aidCostCoveredRate = pct(aidsCostCovered, totalVisualAidRecords);
 
   const aidsPoorOrBroken = visual_aid_records.filter(
     (r) => r.condition === "poor" || r.condition === "broken" || r.condition === "lost",
@@ -448,22 +414,13 @@ export function computeEyeHealthVisionCare(
   const totalEngagementRecords = child_engagement_records.length;
 
   const childParticipated = child_engagement_records.filter((r) => r.child_participated).length;
-  const participationRate = pct(childParticipated, totalEngagementRecords);
 
   const viewsSought = child_engagement_records.filter((r) => r.child_views_sought).length;
-  const viewsSoughtRate = pct(viewsSought, totalEngagementRecords);
-
-  const viewsRecorded = child_engagement_records.filter((r) => r.child_views_recorded).length;
-  const viewsRecordedRate = pct(viewsRecorded, totalEngagementRecords);
 
   const childUnderstood = child_engagement_records.filter((r) => r.child_understood_information).length;
-  const understandingRate = pct(childUnderstood, totalEngagementRecords);
 
   const childMadeChoices = child_engagement_records.filter((r) => r.child_made_choices).length;
   const choiceMakingRate = pct(childMadeChoices, totalEngagementRecords);
-
-  const ageAppropriate = child_engagement_records.filter((r) => r.age_appropriate_approach).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalEngagementRecords);
 
   const positiveExperience = child_engagement_records.filter((r) => r.positive_experience).length;
   const positiveExperienceRate = pct(positiveExperience, totalEngagementRecords);

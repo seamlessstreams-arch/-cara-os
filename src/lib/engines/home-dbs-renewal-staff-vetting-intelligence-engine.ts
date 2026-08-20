@@ -493,12 +493,6 @@ export function computeDbsRenewalStaffVetting(
   );
   const dbsPendingCount = dbsPending.length;
 
-  // Not started DBS
-  const dbsNotStarted = dbs_check_records.filter(r =>
-    r.status === "not_started"
-  );
-  const dbsNotStartedCount = dbsNotStarted.length;
-
   // Rejected DBS
   const dbsRejected = dbs_check_records.filter(r =>
     r.status === "rejected"
@@ -590,21 +584,6 @@ export function computeDbsRenewalStaffVetting(
   );
   const enhancedExpiredCount = enhancedExpired.length;
 
-  // Enhanced DBS pending
-  const enhancedPending = enhanced_dbs_records.filter(r =>
-    r.status === "pending"
-  ).length;
-
-  // Enhanced DBS not started
-  const enhancedNotStarted = enhanced_dbs_records.filter(r =>
-    r.status === "not_started"
-  ).length;
-
-  // Certificate verified for enhanced
-  const enhancedCertVerified = enhanced_dbs_records.filter(r =>
-    r.status === "completed" && r.certificate_verified
-  ).length;
-
   // On update service for enhanced
   const enhancedOnUpdateService = enhanced_dbs_records.filter(r =>
     r.status === "completed" && r.on_update_service
@@ -613,11 +592,6 @@ export function computeDbsRenewalStaffVetting(
   // Update check performed recently
   const enhancedUpdateChecked = enhanced_dbs_records.filter(r =>
     r.on_update_service && r.last_update_check_date && isWithinMonths(r.last_update_check_date, today, 3)
-  ).length;
-
-  // Update checks returned clear
-  const enhancedUpdateClear = enhanced_dbs_records.filter(r =>
-    r.on_update_service && r.update_check_clear
   ).length;
 
   // Regulated activity coverage
@@ -667,12 +641,6 @@ export function computeDbsRenewalStaffVetting(
   );
   const overseasPendingCount = overseasPending.length;
 
-  // Not available — some countries don't issue police checks
-  const overseasNotAvailable = overseas_check_records.filter(r =>
-    r.status === "not_available"
-  );
-  const overseasNotAvailableCount = overseasNotAvailable.length;
-
   // Not started
   const overseasNotStarted = overseas_check_records.filter(r =>
     r.status === "not_started"
@@ -685,23 +653,9 @@ export function computeDbsRenewalStaffVetting(
   );
   const overseasWaivedCount = overseasWaived.length;
 
-  // Verified overseas checks
-  const overseasVerified = overseas_check_records.filter(r =>
-    r.status === "completed" && r.verified
-  );
-  const overseasVerifiedCount = overseasVerified.length;
-
   // Letter of good standing obtained (for unavailable countries)
   const letterOfGoodStandingCount = overseas_check_records.filter(r =>
     r.status === "not_available" && r.letter_of_good_standing
-  ).length;
-
-  // Risk assessments for overseas checks with concerns
-  const overseasWithConcerns = overseas_check_records.filter(r =>
-    r.status === "completed" && !r.is_clear
-  );
-  const overseasRiskAssessmentsCompleted = overseasWithConcerns.filter(r =>
-    r.risk_assessment_completed
   ).length;
 
   // Current overseas checks
@@ -784,11 +738,6 @@ export function computeDbsRenewalStaffVetting(
   );
   const barredBothListsCheckedCount = barredBothListsChecked.length;
 
-  // Signed off
-  const barredSignedOff = barred_list_records.filter(r =>
-    r.status === "completed" && r.signed_off_by && r.signed_off_by.length > 0
-  ).length;
-
   // Barred list rate = completed & clear & current / total
   const barredListRate = pct(barredCurrentCount, totalBarred);
 
@@ -867,19 +816,6 @@ export function computeDbsRenewalStaffVetting(
     r.status === "declined"
   );
   const refsDeclinedCount = refsDeclined.length;
-
-  // Not started
-  const refsNotStarted = reference_verification_records.filter(r =>
-    r.status === "not_started"
-  );
-  const refsNotStartedCount = refsNotStarted.length;
-
-  // Employment references specifically
-  const employmentRefs = reference_verification_records.filter(r =>
-    r.reference_type === "employment"
-  );
-  const employmentRefsCompleted = employmentRefs.filter(r => r.status === "completed").length;
-  const employmentRefsTotal = employmentRefs.length;
 
   // Reference verification rate = verified & satisfactory / total refs
   const referenceVerificationRate = pct(refsVerifiedCount, totalRefs);

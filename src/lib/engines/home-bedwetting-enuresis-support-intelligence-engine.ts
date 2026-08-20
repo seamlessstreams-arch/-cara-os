@@ -307,15 +307,6 @@ export function computeBedwettingEnuresisSupport(
   // --- Management plan metrics ---
   const totalManagementPlans = management_plan_records.length;
 
-  const activePlans = management_plan_records.filter((p) => p.plan_active).length;
-  const activePlanRate = pct(activePlans, totalManagementPlans);
-
-  const uniqueChildrenWithPlans = new Set(
-    management_plan_records.filter((p) => p.plan_active).map((p) => p.child_id),
-  ).size;
-  const managementPlanCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
-
   const reviewedPlans = management_plan_records.filter((p) => p.reviewed).length;
   const planReviewRate = pct(reviewedPlans, totalManagementPlans);
 
@@ -324,26 +315,8 @@ export function computeBedwettingEnuresisSupport(
   ).length;
   const childInvolvementRate = pct(childInvolvedInPlanning, totalManagementPlans);
 
-  const parentInformed = management_plan_records.filter((p) => p.parent_carer_informed).length;
-  const parentInformedRate = pct(parentInformed, totalManagementPlans);
-
-  const triggersIdentified = management_plan_records.filter((p) => p.triggers_identified).length;
-  const triggersIdentifiedRate = pct(triggersIdentified, totalManagementPlans);
-
-  const nightRoutineDocumented = management_plan_records.filter((p) => p.night_routine_documented).length;
-  const nightRoutineRate = pct(nightRoutineDocumented, totalManagementPlans);
-
-  const fluidGuidanceIncluded = management_plan_records.filter((p) => p.fluid_intake_guidance_included).length;
-  const fluidGuidanceRate = pct(fluidGuidanceIncluded, totalManagementPlans);
-
-  const protectiveBedding = management_plan_records.filter((p) => p.protective_bedding_in_place).length;
-  const protectiveBeddingRate = pct(protectiveBedding, totalManagementPlans);
-
   const staffTrainedOnPlan = management_plan_records.filter((p) => p.staff_trained_on_plan).length;
   const staffTrainedRate = pct(staffTrainedOnPlan, totalManagementPlans);
-
-  const outcomesDocumented = management_plan_records.filter((p) => p.outcomes_documented).length;
-  const outcomesDocumentedRate = pct(outcomesDocumented, totalManagementPlans);
 
   const progressSum = management_plan_records.reduce((sum, p) => sum + p.progress_rating, 0);
   // Null on empty — no management plans ⇒ no progress to rate; "0/5" would
@@ -373,28 +346,6 @@ export function computeBedwettingEnuresisSupport(
 
   // --- Discreet support metrics ---
   const totalDiscreetSupport = discreet_support_records.length;
-
-  const handledDiscreetly = discreet_support_records.filter((s) => s.handled_discreetly).length;
-  const discretionRate = pct(handledDiscreetly, totalDiscreetSupport);
-
-  const otherChildrenUnaware = discreet_support_records.filter((s) => s.other_children_unaware).length;
-  const privacyRate = pct(otherChildrenUnaware, totalDiscreetSupport);
-
-  const staffApproachAppropriate = discreet_support_records.filter((s) => s.staff_approach_appropriate).length;
-  const staffApproachRate = pct(staffApproachAppropriate, totalDiscreetSupport);
-
-  const childDignityMaintained = discreet_support_records.filter((s) => s.child_dignity_maintained).length;
-  const supportDignityRate = pct(childDignityMaintained, totalDiscreetSupport);
-
-  const privateStorageUsed = discreet_support_records.filter((s) => s.private_storage_used).length;
-  const privateStorageRate = pct(privateStorageUsed, totalDiscreetSupport);
-
-  const timingAppropriate = discreet_support_records.filter((s) => s.timing_appropriate).length;
-  const timingRate = pct(timingAppropriate, totalDiscreetSupport);
-
-  const positiveFeedback = discreet_support_records.filter((s) => s.child_feedback === "positive").length;
-  const feedbackSought = discreet_support_records.filter((s) => s.child_feedback !== "not_sought" && s.child_feedback !== null).length;
-  const positiveFeedbackRate = pct(positiveFeedback, feedbackSought);
 
   // Discreet support rate: composite of discretion, privacy, staff approach, dignity, timing
   const supportQualityChecks = [
@@ -442,31 +393,6 @@ export function computeBedwettingEnuresisSupport(
   const overnightStaysSupported = dignity_preservation_records.filter((d) => d.overnight_stays_supported).length;
   const overnightSupportRate = pct(overnightStaysSupported, totalDignityRecords);
 
-  const schoolTripSupported = dignity_preservation_records.filter((d) => d.school_trip_support_provided).length;
-  const schoolTripSupportRate = pct(schoolTripSupported, totalDignityRecords);
-
-  const peerTeasingAddressed = dignity_preservation_records.filter((d) => d.peer_teasing_addressed).length;
-  const peerTeasingNeedingAddress = dignity_preservation_records.filter((d) => d.peer_teasing_incidents > 0).length;
-  const peerTeasingResolutionRate = pct(peerTeasingAddressed, peerTeasingNeedingAddress);
-
-  const dignityIssuesIdentified = dignity_preservation_records.filter(
-    (d) => d.issues_identified.length > 0,
-  ).length;
-  const dignityIssuesResolved = dignity_preservation_records.filter(
-    (d) => d.issues_identified.length > 0 && d.issues_resolved,
-  ).length;
-  const dignityIssueResolutionRate = pct(dignityIssuesResolved, dignityIssuesIdentified);
-
-  // Null on empty — no dignity records ⇒ no dignity score to compute.
-  const avgDignityScore: number | null =
-    totalDignityRecords > 0
-      ? Math.round(
-          (dignity_preservation_records.reduce((sum, d) => sum + d.overall_dignity_score, 0) /
-            totalDignityRecords) *
-            100,
-        ) / 100
-      : null;
-
   const noPeerAwareness = dignity_preservation_records.filter((d) => d.no_peer_awareness_incidents).length;
   const peerAwarenessRate = pct(noPeerAwareness, totalDignityRecords);
 
@@ -476,37 +402,14 @@ export function computeBedwettingEnuresisSupport(
   // --- Medical referral metrics ---
   const totalMedicalReferrals = medical_referral_records.length;
 
-  const referralsAccepted = medical_referral_records.filter((r) => r.referral_accepted).length;
-  const referralAcceptanceRate = pct(referralsAccepted, totalMedicalReferrals);
-
-  const appointmentsAttended = medical_referral_records.filter((r) => r.appointment_attended).length;
-  const appointmentAttendanceRate = pct(appointmentsAttended, totalMedicalReferrals);
-
-  const outcomesDocumentedReferral = medical_referral_records.filter((r) => r.outcome_documented).length;
-  const referralOutcomeRate = pct(outcomesDocumentedReferral, totalMedicalReferrals);
-
   const followUpRequired = medical_referral_records.filter((r) => r.follow_up_required).length;
   const followUpCompleted = medical_referral_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
   const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
 
-  const treatmentPlanReceived = medical_referral_records.filter((r) => r.treatment_plan_received).length;
-  const treatmentPlanRate = pct(treatmentPlanReceived, totalMedicalReferrals);
-
-  const treatmentImplemented = medical_referral_records.filter(
-    (r) => r.treatment_plan_received && r.treatment_plan_implemented,
-  ).length;
-  const treatmentImplementationRate = pct(treatmentImplemented, treatmentPlanReceived);
-
   const adviceSharedWithStaff = medical_referral_records.filter((r) => r.professional_advice_shared_with_staff).length;
   const adviceSharedRate = pct(adviceSharedWithStaff, totalMedicalReferrals);
-
-  const childConsented = medical_referral_records.filter((r) => r.child_consented_to_referral).length;
-  const childConsentRate = pct(childConsented, totalMedicalReferrals);
-
-  const socialWorkerInformed = medical_referral_records.filter((r) => r.social_worker_informed).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalMedicalReferrals);
 
   // Medical referral rate: composite of accepted, attended, outcome documented, advice shared
   const referralQualityChecks = [
@@ -541,30 +444,16 @@ export function computeBedwettingEnuresisSupport(
   ).length;
   const copingEffectivenessRate = pct(copingEffective, copingStrategiesInPlace);
 
-  const therapeuticOffered = emotional_wellbeing_records.filter((e) => e.therapeutic_support_offered).length;
-  const therapeuticOfferedRate = pct(therapeuticOffered, totalEmotionalRecords);
-
-  const therapeuticAccepted = emotional_wellbeing_records.filter(
-    (e) => e.therapeutic_support_offered && e.therapeutic_support_accepted,
-  ).length;
-  const therapeuticAcceptanceRate = pct(therapeuticAccepted, therapeuticOffered);
-
   const confidenceInManagement = emotional_wellbeing_records.filter((e) => e.confidence_in_management).length;
   const childConfidenceRate = pct(confidenceInManagement, totalEmotionalRecords);
 
-  const improvedProgress = emotional_wellbeing_records.filter((e) => e.progress_since_last_assessment === "improved").length;
-  const stableProgress = emotional_wellbeing_records.filter((e) => e.progress_since_last_assessment === "stable").length;
   const declinedProgress = emotional_wellbeing_records.filter((e) => e.progress_since_last_assessment === "declined").length;
   const assessmentsWithProgress = emotional_wellbeing_records.filter(
     (e) => e.progress_since_last_assessment !== "first_assessment",
   ).length;
-  const positiveProgressRate = pct(improvedProgress + stableProgress, assessmentsWithProgress);
 
   const feelsEmbarrassed = emotional_wellbeing_records.filter((e) => e.child_feels_embarrassed).length;
   const embarrassmentRate = pct(feelsEmbarrassed, totalEmotionalRecords);
-
-  const feelsDifferent = emotional_wellbeing_records.filter((e) => e.child_feels_different).length;
-  const feelsDifferentRate = pct(feelsDifferent, totalEmotionalRecords);
 
   const anxietyBedtime = emotional_wellbeing_records.filter((e) => e.child_anxiety_around_bedtime).length;
   const bedtimeAnxietyRate = pct(anxietyBedtime, totalEmotionalRecords);

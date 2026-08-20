@@ -274,11 +274,6 @@ export function computeVisitorManagementSecurity(
   ).length;
   const preRegistrationRate = pct(preRegisteredVisitors, totalRegistrations);
 
-  const approvedVisitors = visitor_registration_records.filter(
-    (r) => r.approved_by !== null && r.approved_by !== "",
-  ).length;
-  const approvalRate = pct(approvedVisitors, totalRegistrations);
-
   // --- DBS verification ---
   const dbsRequired = dbs_check_records.filter((d) => d.dbs_required);
   const totalDbsRequired = dbsRequired.length;
@@ -290,14 +285,6 @@ export function computeVisitorManagementSecurity(
     (d) => d.dbs_required && d.dbs_expired,
   ).length;
   const dbsExpiredRate = pct(dbsExpired, totalDbsRequired);
-
-  const enhancedDbs = dbs_check_records.filter(
-    (d) =>
-      d.dbs_required &&
-      d.dbs_verified &&
-      (d.dbs_level === "enhanced" || d.dbs_level === "enhanced_barred"),
-  ).length;
-  const enhancedDbsRate = pct(enhancedDbs, totalDbsRequired);
 
   // --- ID verification ---
   const totalIdChecks = id_verification_records.length;
@@ -315,7 +302,6 @@ export function computeVisitorManagementSecurity(
   const idRefusals = id_verification_records.filter(
     (v) => v.id_requested && !v.id_provided,
   ).length;
-  const idRefusalRate = pct(idRefusals, totalIdChecks);
 
   const refusalActioned = id_verification_records.filter(
     (v) =>
@@ -1039,12 +1025,6 @@ export function computeVisitorManagementSecurity(
   // Visitor type analysis
   const contractorVisits = visitor_registration_records.filter(
     (r) => r.visitor_type === "contractor",
-  ).length;
-  const familyVisits = visitor_registration_records.filter(
-    (r) => r.visitor_type === "family",
-  ).length;
-  const professionalVisits = visitor_registration_records.filter(
-    (r) => r.visitor_type === "professional",
   ).length;
 
   if (contractorVisits > 0 && totalRegistrations > 0) {

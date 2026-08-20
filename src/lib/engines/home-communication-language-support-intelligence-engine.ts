@@ -283,11 +283,6 @@ export function computeCommunicationLanguageSupport(
   const assessmentCoverageRate =
     total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
 
-  const needsIdentified = communication_assessment_records.filter(
-    (r) => r.communication_needs_identified,
-  ).length;
-  const needsIdentificationRate = pct(needsIdentified, totalAssessments);
-
   const needsDocumented = communication_assessment_records.filter(
     (r) => r.needs_documented,
   ).length;
@@ -341,18 +336,10 @@ export function computeCommunicationLanguageSupport(
   ).length;
   const therapyAttendanceRate = pct(sessionsAttended, totalTherapySessions);
 
-  const sessionsCompleted = speech_therapy_records.filter(
-    (r) => r.session_completed,
-  ).length;
-  const therapyCompletionRate = pct(sessionsCompleted, totalTherapySessions);
-
   const childEngagedInTherapy = speech_therapy_records.filter(
     (r) => r.child_engaged,
   ).length;
   const therapyEngagementRate = pct(childEngagedInTherapy, totalTherapySessions);
-
-  const targetsSet = speech_therapy_records.filter((r) => r.targets_set).length;
-  const targetsSetRate = pct(targetsSet, totalTherapySessions);
 
   const targetsMet = speech_therapy_records.filter((r) => r.targets_met).length;
   const targetsMetRate = pct(targetsMet, totalTherapySessions);
@@ -386,32 +373,18 @@ export function computeCommunicationLanguageSupport(
   const aidsAvailable = communication_aid_records.filter(
     (r) => r.aid_available,
   ).length;
-  const aidAvailabilityRate = pct(aidsAvailable, totalAids);
 
   const aidsInUse = communication_aid_records.filter(
     (r) => r.aid_in_use,
   ).length;
-  const aidUsageRate = pct(aidsInUse, totalAids);
 
   const aidsMaintained = communication_aid_records.filter(
     (r) => r.aid_maintained,
   ).length;
-  const aidMaintenanceRate = pct(aidsMaintained, totalAids);
 
   const childTrainedOnAid = communication_aid_records.filter(
     (r) => r.child_trained_on_aid,
   ).length;
-  const childAidTrainingRate = pct(childTrainedOnAid, totalAids);
-
-  const staffTrainedOnAid = communication_aid_records.filter(
-    (r) => r.staff_trained_on_aid,
-  ).length;
-  const staffAidTrainingRate = pct(staffTrainedOnAid, totalAids);
-
-  const aidsReviewed = communication_aid_records.filter(
-    (r) => r.reviewed,
-  ).length;
-  const aidReviewRate = pct(aidsReviewed, totalAids);
 
   const childFeedbackPositiveOnAids = communication_aid_records.filter(
     (r) => r.child_feedback_positive,
@@ -447,22 +420,18 @@ export function computeCommunicationLanguageSupport(
   const needsConsidered = inclusive_practice_records.filter(
     (r) => r.communication_needs_considered,
   ).length;
-  const needsConsideredRate = pct(needsConsidered, totalInclusivePractice);
 
   const adaptationsMade = inclusive_practice_records.filter(
     (r) => r.adaptations_made,
   ).length;
-  const adaptationRate = pct(adaptationsMade, totalInclusivePractice);
 
   const allChildrenIncluded = inclusive_practice_records.filter(
     (r) => r.all_children_included,
   ).length;
-  const inclusionRate = pct(allChildrenIncluded, totalInclusivePractice);
 
   const feedbackSought = inclusive_practice_records.filter(
     (r) => r.child_feedback_sought,
   ).length;
-  const feedbackSoughtRate = pct(feedbackSought, totalInclusivePractice);
 
   const feedbackPositive = inclusive_practice_records.filter(
     (r) => r.child_feedback_positive,
@@ -491,17 +460,10 @@ export function computeCommunicationLanguageSupport(
   const trainingCompleted = staff_communication_training_records.filter(
     (r) => r.training_completed,
   ).length;
-  const trainingCompletionRate = pct(trainingCompleted, totalTrainingRecords);
-
-  const competencyAssessed = staff_communication_training_records.filter(
-    (r) => r.competency_assessed,
-  ).length;
-  const competencyAssessmentRate = pct(competencyAssessed, totalTrainingRecords);
 
   const competencyPassed = staff_communication_training_records.filter(
     (r) => r.competency_passed,
   ).length;
-  const competencyPassRate = pct(competencyPassed, totalTrainingRecords);
 
   const appliedInPractice = staff_communication_training_records.filter(
     (r) => r.applied_in_practice,

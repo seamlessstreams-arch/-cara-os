@@ -269,9 +269,6 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   const smartMeterCount = energy_usage_records.filter((e) => e.smart_meter_installed).length;
   const smartMeterRate = pct(smartMeterCount, totalEnergyRecords);
 
-  const verifiedReadings = energy_usage_records.filter((e) => e.reading_verified).length;
-  const verifiedReadingRate = pct(verifiedReadings, totalEnergyRecords);
-
   const totalSavingMeasuresActive = energy_usage_records.reduce(
     (sum, e) => sum + e.energy_saving_measures_active,
     0,
@@ -290,19 +287,14 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   const contaminatedRecycling = recycling_records.filter((r) => r.contamination_found).length;
   const contaminationRate = pct(contaminatedRecycling, totalRecyclingRecords);
 
-  const binsCorrectlyUsed = recycling_records.filter((r) => r.bins_correctly_used).length;
-  const binUsageRate = pct(binsCorrectlyUsed, totalRecyclingRecords);
-
   const missedCollections = recycling_records.filter((r) => r.collection_missed).length;
   const missedCollectionRate = pct(missedCollections, totalRecyclingRecords);
 
   const childRecyclingParticipation = recycling_records.filter((r) => r.child_participated).length;
-  const childRecyclingParticipationRate = pct(childRecyclingParticipation, totalRecyclingRecords);
 
   // --- Eco-education metrics ---
   const totalEcoEducationRecords = eco_education_records.length;
   const attendedEcoEducation = eco_education_records.filter((e) => e.attended).length;
-  const ecoEducationAttendanceRate = pct(attendedEcoEducation, totalEcoEducationRecords);
 
   const engagedEcoEducation = eco_education_records.filter((e) => e.attended && e.engaged).length;
   const ecoEducationEngagementRate = pct(engagedEcoEducation, totalEcoEducationRecords);
@@ -311,14 +303,6 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     (e) => e.attended && e.learning_outcome_met,
   ).length;
   const learningOutcomeRate = pct(learningOutcomeMet, totalEcoEducationRecords);
-
-  const positiveFeedbackEco = eco_education_records.filter(
-    (e) => e.attended && e.child_feedback_positive,
-  ).length;
-  const positiveFeedbackRate = pct(positiveFeedbackEco, totalEcoEducationRecords);
-
-  const curriculumLinked = eco_education_records.filter((e) => e.linked_to_curriculum).length;
-  const curriculumLinkedRate = pct(curriculumLinked, totalEcoEducationRecords);
 
   const uniqueChildrenInEcoEd = new Set(
     eco_education_records.filter((e) => e.attended).map((e) => e.child_id),
@@ -379,9 +363,6 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     0,
   );
   const reductionCompletionRate = pct(totalReductionCompleted, totalReductionPlanned);
-
-  const offsetApplied = carbon_footprint_records.filter((c) => c.offset_applied).length;
-  const offsetRate = pct(offsetApplied, totalCarbonRecords);
 
   // --- Child participation composite ---
   // Composite across recycling participation, eco-education attendance, and sustainability involvement

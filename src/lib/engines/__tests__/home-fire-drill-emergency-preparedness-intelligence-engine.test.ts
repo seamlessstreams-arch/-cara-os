@@ -637,18 +637,6 @@ describe("Rating thresholds", () => {
   });
 
   it("score 65 boundary → good", () => {
-    // Need exactly 65: 52 +0(freq1) +6(sat100) +5(allPres100) +5(evac<=120) +0(issues40-59) -3(variety1)
-    // 52 +0 +6 +5 +5 +0 -3 = 65
-    // Need issues_addressed_rate between 40 and 59
-    // 2 of 4 issues with actions = 50%
-    const drills = [
-      ...Array.from({ length: 2 }, (_, i) =>
-        makeDrill({ id: `a${i}`, has_issues: true, has_actions: true }),
-      ),
-      ...Array.from({ length: 2 }, (_, i) =>
-        makeDrill({ id: `na${i}`, has_issues: true, has_actions: false }),
-      ),
-    ];
     // But this is 4 drills, freq = +2 → 67. Let me recalculate.
     // Actually for 4 drills freq is +2. Let me use 1 drill.
     // 1 drill with 50% issue rate: need 1 drill with issues=true, actions=false → 0% → -4

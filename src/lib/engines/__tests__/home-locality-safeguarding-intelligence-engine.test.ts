@@ -387,12 +387,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
         makeScreening({ id: "s3", child_id: "child_3", has_safety_plan: true }),
         makeScreening({ id: "s4", child_id: "child_4", has_safety_plan: true }),
       ];
-      // Missing with returnInterview >= 70 && policeRate >= 70 but not all 90% → +2
-      const missing = [
-        makeMissing({ id: "m1", return_interview_completed: true, police_notified: true, social_worker_notified: true }),
-        makeMissing({ id: "m2", return_interview_completed: true, police_notified: true, social_worker_notified: false }),
-        makeMissing({ id: "m3", return_interview_completed: false, police_notified: false, social_worker_notified: false }),
-      ];
       // return interview: 2/3 returned (all have date_returned) → 67%? Wait, all have date_returned by default.
       // returnedMissing = 3 (all have date_returned from default)
       // returnInterview: 2/3 = 67%... that's < 70%, would give -5 not +2
@@ -544,10 +538,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
       // mod5=0: intelRate between 50-69% (no bonus, no penalty)
       // mod6=0: missing present, return interview 50-69%
 
-      const risks = [
-        makeRisk({ id: "r1", mitigations_count: 5, effective_mitigations: 5, last_reviewed: "2026-05-20", has_description: true, has_intelligence: true }),
-        makeRisk({ id: "r2", mitigations_count: 5, effective_mitigations: 5, last_reviewed: "2026-05-18", has_description: true, has_intelligence: false }),
-      ];
       // mitigationEffectiveness: 10/10 = 100% → +6
       // reviewCurrency: 2/2 within 30 days = 100%... that's +5 not +2.
       // Let me adjust. I need review +2.
@@ -565,11 +555,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
       // intel: 2/4 have desc+intel = 50%... that's >= 50, not < 50 → 0 (no bonus, no penalty)
       // Good, mod5 = 0.
 
-      const screenings2 = [
-        makeScreening({ id: "s1", child_id: "child_1", has_safety_plan: true }),
-        makeScreening({ id: "s2", child_id: "child_2", has_safety_plan: true }),
-        makeScreening({ id: "s3", child_id: "child_3", has_safety_plan: true }),
-      ];
       // screening coverage: 3/4 = 75% → +2
       // safety plan: 3/3 = 100% → +5. That gives too much.
       // Need safety +2: 70-89%
@@ -675,9 +660,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
       // review: 1/2 = 50% → 0
       // intel: 1/2 = 50% → 0
 
-      const screenings = [
-        makeScreening({ id: "s1", child_id: "child_1", has_safety_plan: true }),
-      ];
       // screeningCoverage: 1/4 = 25% → < 50% → -5
       // safetyPlanRate: 1/1 = 100% → +5? That would ruin it.
       // I need safety 50-69%: need at least 2 screenings with ~60% safety.
@@ -1252,24 +1234,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
     });
 
     it("uses singular for 1 stale risk", () => {
-      const risks = [
-        makeRisk({ id: "r1", last_reviewed: "2025-01-01" }),
-        makeRisk({ id: "r2", last_reviewed: "2026-05-20" }),
-        makeRisk({ id: "r3", last_reviewed: "2026-05-20" }),
-        makeRisk({ id: "r4", last_reviewed: "2026-05-20" }),
-      ];
-      // 3/4 current = 75%, not < 50% so no concern
-      // Need < 50%. Use 2 risks, 0 current:
-      const risks2 = [
-        makeRisk({ id: "r1", last_reviewed: "2025-01-01" }),
-        makeRisk({ id: "r2", last_reviewed: "2026-05-20" }),
-      ];
-      // 1/2 = 50%. Not < 50%. Need lower.
-      const risks3 = [
-        makeRisk({ id: "r1", last_reviewed: "2025-01-01" }),
-        makeRisk({ id: "r2", last_reviewed: "2025-01-01" }),
-        makeRisk({ id: "r3", last_reviewed: "2026-05-20" }),
-      ];
       // 1/3 = 33% → concern. 2 stale risks → plural
       // For singular, need exactly 1 stale risk with < 50%:
       // Can't easily get < 50% with 1 stale if most are current.
@@ -1286,11 +1250,6 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
     });
 
     it("uses singular for 1 unscreened child", () => {
-      const screenings = [
-        makeScreening({ id: "s1", child_id: "child_1" }),
-        makeScreening({ id: "s2", child_id: "child_2" }),
-        makeScreening({ id: "s3", child_id: "child_3" }),
-      ];
       // 3/4 = 75% → not < 50%. Can't trigger concern with singular.
       // Use total_children: 2, 0 screened → concern "2 children have"
       // For singular: total_children: 2, 1 screened → 50%, not < 50%.

@@ -166,8 +166,6 @@ export function computeValuesMatch(employer: EmployerValuesProfile, candidate: C
   const sgHits = countVocabHits(candidate.safeguarding_mindset, SAFEGUARDING_VOCAB);
   const safeguardingScore = clamp01(sgHits / 3);
 
-  // weights (sum to 1; relational weight is variable, remainder rebalanced)
-  const baseRel = 0.18;
   const dims: MatchDimension[] = [
     { key: "values", label: "Values alignment", score: valuesScore, weight: 0.30, note: shared_values.length ? `Shares ${shared_values.length} core value${shared_values.length === 1 ? "" : "s"}: ${shared_values.join(", ")}.` : "No stated values overlap with the home's core values — explore at interview." },
     { key: "relational", label: "Relational & therapeutic practice", score: relationalScore, weight: relWeight, note: relationalHits ? `References ${relationalHits} relational-practice cue${relationalHits === 1 ? "" : "s"} (e.g. PACE, co-regulation, attunement).` : "Little relational-practice language evident — probe with a scenario." },
