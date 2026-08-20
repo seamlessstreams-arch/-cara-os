@@ -531,6 +531,8 @@ describe("computeManagementWalkroundOversight", () => {
     it("0 follow-ups with 0 walkrounds → -1", () => {
       const r = computeManagementWalkroundOversight(baseInput());
       // totalFollowUp=0 and total=0 → score -= 1
+      // 52 - 5(mod1) - 1(mod5) - 2(mod6) = 44
+      expect(r.walkround_score).toBe(44);
     });
   });
 

@@ -704,6 +704,8 @@ describe("Bonus 7 — actionCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 100% action completion
+    // 52 +4(survey) +4(mould) +4(remediation) +3(vent) +3(health) +3(awareness) +3(action) +0(followUp 0/0) +2(regs) = 78
+    expect(r.damp_score).toBe(78);
   });
 
   it("+1 when actionCompletionRate >= 70 but < 90", () => {
@@ -715,6 +717,8 @@ describe("Bonus 7 — actionCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 3/4 = 75% → +1
+    // 52 +4 +4 +4 +3 +3 +3 +1(action 75%) +0(followUp 0/0) +2 = 76
+    expect(r.damp_score).toBe(76);
   });
 
   it("+0 when actionCompletionRate < 70", () => {
@@ -725,6 +729,8 @@ describe("Bonus 7 — actionCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 1/3 = 33% → +0
+    // 52 +4 +4 +4 +3 +3 +3 +0(action 33%) +0(followUp 0/0) +2 = 75
+    expect(r.damp_score).toBe(75);
   });
 });
 
@@ -736,6 +742,8 @@ describe("Bonus 8 — followUpCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 100% follow-up
+    // 52 +4 +4 +4 +3 +3 +3 +0(action 0/0) +2(followUp 100%) +2 = 77
+    expect(r.damp_score).toBe(77);
   });
 
   it("+1 when followUpCompletionRate >= 70 but < 90", () => {
@@ -747,6 +755,8 @@ describe("Bonus 8 — followUpCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 3/4 = 75%
+    // 52 +4 +4 +4 +3 +3 +3 +0(action 0/0) +1(followUp 75%) +2 = 76
+    expect(r.damp_score).toBe(76);
   });
 
   it("+0 when followUpCompletionRate < 70", () => {
@@ -757,6 +767,8 @@ describe("Bonus 8 — followUpCompletionRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: surveys }));
     // 1/3 = 33%
+    // 52 +4 +4 +4 +3 +3 +3 +0(action 0/0) +0(followUp 33%) +2 = 75
+    expect(r.damp_score).toBe(75);
   });
 });
 
@@ -764,6 +776,8 @@ describe("Bonus 9 — buildingRegsRate", () => {
   it("+2 when buildingRegsRate >= 90", () => {
     const r = computeDampMouldManagement(baseInput());
     // All vents meet building regs → 100%
+    // All-excellent baseline: 52 +4 +4 +4 +3 +3 +3 +3 +2 +2(regs 100%) = 80
+    expect(r.damp_score).toBe(80);
   });
 
   it("+1 when buildingRegsRate >= 70 but < 90", () => {
@@ -775,6 +789,8 @@ describe("Bonus 9 — buildingRegsRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ ventilation_assessment_records: vents }));
     // 3/4 = 75%
+    // 52 +4 +4 +4 +3(vent 100%) +3 +3(awareness 8/8) +3 +2 +1(regs 75%) = 79
+    expect(r.damp_score).toBe(79);
   });
 
   it("+0 when buildingRegsRate < 70", () => {
@@ -785,6 +801,8 @@ describe("Bonus 9 — buildingRegsRate", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ ventilation_assessment_records: vents }));
     // 1/3 = 33%
+    // 52 +4 +4 +4 +3(vent 100%) +3 +3(awareness 7/7) +3 +2 +0(regs 33%) = 78
+    expect(r.damp_score).toBe(78);
   });
 });
 

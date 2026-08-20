@@ -726,6 +726,8 @@ describe("computeMedicationAdministration", () => {
         baseInput({ administrations: records }),
       );
       // administeredRecords.length = 0 → mod3 = -1
+      // 52 - 5(mod1) - 1(mod2) - 1(mod3) - 4(mod4) + 1(mod5) - 2(mod6) = 40
+      expect(result.medication_score).toBe(40);
     });
 
     it("awards +5 when witnessRate >= 95%", () => {
@@ -974,6 +976,8 @@ describe("computeMedicationAdministration", () => {
         baseInput({ administrations: records }),
       );
       // No PRN → +1
+      // 52 + 6(mod1) + 5(mod2) + 5(mod3) + 2(mod4) + 1(mod5) + 5(mod6) = 76
+      expect(result.medication_score).toBe(76);
     });
 
     it("awards +4 when prnDocRate >= 90%", () => {
@@ -1138,6 +1142,8 @@ describe("computeMedicationAdministration", () => {
         baseInput({ administrations: records }),
       );
       // adminRecords = 0 → mod6 = -2
+      // 52 - 5(mod1) - 1(mod2) - 1(mod3) - 4(mod4) + 1(mod5) - 2(mod6) = 40
+      expect(result.medication_score).toBe(40);
     });
 
     it("awards +5 when adminRate>=95, onTimeRate>=90, witnessRate>=90", () => {

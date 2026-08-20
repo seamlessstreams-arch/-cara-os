@@ -946,6 +946,8 @@ describe("modifier 6: frequency & documentation", () => {
     );
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
     // These rounds are all outside last 30 days → 0 nights with rounds → poor freq
+    // 52 + 6 + 5 + 2 + 5 + 4 - 3 = 71
+    expect(r.welfare_score).toBe(71);
   });
 
   it("documentation rate computed correctly", () => {
@@ -972,6 +974,8 @@ describe("modifier 6: frequency & documentation", () => {
     const rounds = generateNightlyRounds(10);
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
     // freq ok → +2 (notes 100% but freq only ok, not sufficient since exactly 10)
+    // 52 + 6 + 5 + 2 + 5 + 4 + 2 = 76
+    expect(r.welfare_score).toBe(76);
   });
 
   it("frequency poor when < 10 nights", () => {
@@ -979,6 +983,8 @@ describe("modifier 6: frequency & documentation", () => {
     const rounds = generateNightlyRounds(5);
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
     // freq poor → -3
+    // 52 + 6 + 5 + 2 + 5 + 4 - 3 = 71
+    expect(r.welfare_score).toBe(71);
   });
 
   it("all rounds outside 30d means poor frequency", () => {
@@ -990,6 +996,8 @@ describe("modifier 6: frequency & documentation", () => {
     );
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
     // 0 nights in 30d → poor freq → -3
+    // 52 + 6 + 5 + 2 + 5 + 4 - 3 = 71
+    expect(r.welfare_score).toBe(71);
   });
 });
 

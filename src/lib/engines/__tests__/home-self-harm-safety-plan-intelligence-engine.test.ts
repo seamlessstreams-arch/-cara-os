@@ -756,6 +756,7 @@ describe("modifier 6 — review compliance and means restriction", () => {
     const r = computeSelfHarmSafetyPlan(baseInput({ plans }));
     // reviewRate = 25, meansRate = 25 → not (>=75 && >=60), not (>=50 || >=40), not (<25 && <20)
     // 25 is not < 25 and 25 is not < 20 → no modifier (0)
+    expect(r.plan_score).toBe(77); // 52+6+5+5+5+4+0
   });
 
   it("subtracts -2 when total plans is 0", () => {
@@ -1925,6 +1926,7 @@ describe("modifier 6 boundary conditions", () => {
     ];
     const r = computeSelfHarmSafetyPlan(baseInput({ plans }));
     // reviewRate = 50 >= 50 → +2 (OR condition)
+    expect(r.plan_score).toBe(79); // 52+6+5+5+5+4+2
   });
 
   it("meansRate exactly 40 triggers +2 via OR condition", () => {
@@ -1940,6 +1942,7 @@ describe("modifier 6 boundary conditions", () => {
     );
     const r = computeSelfHarmSafetyPlan(baseInput({ plans }));
     // meansRate = 2/5 = 40 >= 40 → +2 (OR condition)
+    expect(r.plan_score).toBe(79); // 52+6+5+5+5+4+2
   });
 
   it("reviewRate 24 and meansRate 19 triggers -3", () => {
@@ -1972,6 +1975,7 @@ describe("modifier 6 boundary conditions", () => {
     // Actually: reviewRate >= 50 is false, meansRate >= 40 is false → does not enter +2 branch
     // reviewRate < 25 AND meansRate < 20: 0 < 25 = true, 20 < 20 = false → no -3
     // So no modifier applied for mod 6 → score gets 0 from mod6
+    expect(r.plan_score).toBe(77); // 52+6+5+5+5+4+0
   });
 
   it("reviewRate 25 and meansRate 0 does NOT trigger -3 (reviewRate not < 25)", () => {
@@ -1990,6 +1994,7 @@ describe("modifier 6 boundary conditions", () => {
     // +5: 25 < 75 → no; +2: 25 < 50 but meansRate 0 < 40 → no (OR: neither true)
     // -3: 25 < 25 false → no
     // No modifier applied
+    expect(r.plan_score).toBe(77); // 52+6+5+5+5+4+0
   });
 });
 

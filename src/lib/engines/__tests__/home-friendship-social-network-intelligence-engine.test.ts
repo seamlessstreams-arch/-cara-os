@@ -703,6 +703,17 @@ describe("scoring bonuses", () => {
       ],
     }));
     // 4/5 = 80% compliance => +1 (not +2)
+    const rNeutral = computeFriendshipSocialNetwork(baseInput({
+      friendship_mapping_records: [
+        makeMapping({ id: "fm_1", child_id: "yp_alex", review_overdue: false }),
+        makeMapping({ id: "fm_2", child_id: "yp_jordan", review_overdue: false }),
+        makeMapping({ id: "fm_3", child_id: "yp_casey", review_overdue: false }),
+        makeMapping({ id: "fm_4", child_id: "yp_sam", review_overdue: true }),
+        makeMapping({ id: "fm_5", child_id: "yp_robin", review_overdue: true }),
+      ],
+    }));
+    // neutral: 3/5 = 60% compliance => +0. Only bonus 8 differs → diff = 1
+    expect(r.friendship_score - rNeutral.friendship_score).toBe(1);
   });
 });
 

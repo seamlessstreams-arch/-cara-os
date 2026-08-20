@@ -678,6 +678,7 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
     it("+3 when 100% emergency ready", () => {
       const result = computeHomeSpecializedHealthPlans(baseInput());
       // allergy has emergency_protocol, epilepsy has rescue_med, diabetic has contacts
+      expect(result.health_plans_score).toBe(80);
     });
 
     it("-3 when emergency readiness < 50%", () => {
@@ -690,6 +691,7 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
         diabetic_care_plans: [makeDiabetic({ child_id: "c4", emergency_contacts_count: 0 })],
       }));
       // 0/4 = 0% → -3
+      expect(result.health_plans_score).toBe(74);
     });
 
     it("+0 when no emergency-applicable plans", () => {
@@ -706,6 +708,7 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
         total_children: 3,
       });
       // Only ADHD + autism → no emergency plans
+      expect(result.health_plans_score).toBe(62);
     });
   });
 
@@ -1041,6 +1044,8 @@ describe("Home Specialized Health Plans Intelligence Engine", () => {
         adhd_plans: [makeADHD({ child_id: "c1", review_date: "2026-01-01" })],
       }));
       // Future date → not overdue
+      expect(result.review_compliance.overdue_reviews).toBe(0);
+      expect(result.review_compliance.on_time_rate).toBe(100);
     });
 
     it("handles very old overdue dates", () => {

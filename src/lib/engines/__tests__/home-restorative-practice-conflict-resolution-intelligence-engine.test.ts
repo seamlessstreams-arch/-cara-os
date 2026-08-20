@@ -550,6 +550,7 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       // voice penalty fires: -4. So score = 52-4 = 48
       // To truly get base 52, we need to avoid ALL penalties.
       // Let's set childVoiceRate >= 40 by having child_voice_captured or child_participated
+      expect(r.restorative_score).toBe(48);
     });
 
     it("base score is exactly 52 with no bonuses and no penalties", () => {

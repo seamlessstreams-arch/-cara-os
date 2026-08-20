@@ -543,6 +543,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     );
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // both 100% => +5
+    expect(r.rmp_score).toBe(79); // 52 + 6 + 2 + 5 + 5 + 4 + 5
   });
 
   it("awards +2 when multiAgencyRate >= 40 (but protectiveRate < 40)", () => {
@@ -556,6 +557,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     ];
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // multiAgencyRate = 60%, protectiveRate = 20% => +2 (multiAgencyRate>=40)
+    expect(r.rmp_score).toBe(76); // 52 + 6 + 2 + 5 + 5 + 4 + 2
   });
 
   it("awards +2 when protectiveRate >= 40 (but multiAgencyRate < 40)", () => {
@@ -569,6 +571,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     ];
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // multiAgencyRate = 20%, protectiveRate = 60% => +2 (protectiveRate>=40)
+    expect(r.rmp_score).toBe(76); // 52 + 6 + 2 + 5 + 5 + 4 + 2
   });
 
   it("applies -3 when both multiAgencyRate < 20 AND protectiveRate < 20", () => {
@@ -581,6 +584,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     ];
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // both 0% => -3
+    expect(r.rmp_score).toBe(71); // 52 + 6 + 2 + 5 + 5 + 4 - 3
   });
 
   it("applies -2 when total plans is 0 (zero-plan penalty)", () => {
@@ -599,6 +603,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     ];
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // multiAgencyRate = 100%, protectiveRate = 40% => +2 (multiAgencyRate>=40 OR protectiveRate>=40)
+    expect(r.rmp_score).toBe(76); // 52 + 6 + 2 + 5 + 5 + 4 + 2 (not 79)
   });
 
   it("does not award +5 if protectiveRate >= 70 but multiAgencyRate < 70", () => {
@@ -612,6 +617,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     ];
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // multiAgencyRate = 40%, protectiveRate = 100% => +2
+    expect(r.rmp_score).toBe(76); // 52 + 6 + 2 + 5 + 5 + 4 + 2 (not 79)
   });
 
   it("boundary: exactly 70/70 for both => +5", () => {
@@ -626,6 +632,7 @@ describe("modifier 6 — multi-agency input and protective factors", () => {
     );
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // 7/10 = 70% for both => +5
+    expect(r.rmp_score).toBe(79); // 52 + 6 + 2 + 5 + 5 + 4 + 5
   });
 });
 
@@ -2188,5 +2195,6 @@ describe("no-modifier gap zones (score stays neutral)", () => {
     const r = computeRiskManagementPlan(baseInput({ plans }));
     // multiAgencyRate = 25%, protectiveRate = 25%
     // Neither >= 40 => not +2, not both < 20 => not -3 => 0 modifier
+    expect(r.rmp_score).toBe(74); // 52 + 6 + 2 + 5 + 5 + 4 + 0
   });
 });

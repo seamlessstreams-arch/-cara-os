@@ -776,6 +776,9 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
         total_children: 0,
       });
       // mod6: +0 (no records, no children)
+      // mod1: +5 (1 right fully_met), mod7: 1 domain → +0, all others +0
+      // Score: 52 + 5 + 0 + 0 + 0 + 0 + 0 + 0 + 0 = 57
+      expect(result.rights_score).toBe(57);
     });
 
     it("tracks overdue advocacy reviews", () => {
@@ -796,6 +799,8 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
     it("+3 when voice in 5+ domains", () => {
       const result = computeHomeChildrensRightsParticipation(baseInput());
       // All 6 domains active
+      // mod7: +3 → full outstanding score of 80
+      expect(result.rights_score).toBe(80);
     });
 
     it("+1 when voice in 3-4 domains", () => {
@@ -913,7 +918,9 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
       const result = computeHomeChildrensRightsParticipation(baseInput({
         feedback_loops: [],
       }));
-      // Both mod2 and mod8 → +0
+      // Both mod2 and mod8 → +0; mod7 loses loops domain → 5 → still +3
+      // Score: 52 + 5 + 0 + 3 + 4 + 3 + 3 + 3 + 0 = 73
+      expect(result.rights_score).toBe(73);
     });
   });
 

@@ -2444,6 +2444,7 @@ describe("computeConsentCapacityManagement", () => {
           ],
         });
         // rate = pct(1,3) = 33 → <40, so no warning insight (would need 40-69)
+        expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Age-appropriate information"))).toBe(false);
         // Let's make 40%+
         const r2 = run({
           total_children: 5,

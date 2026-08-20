@@ -1972,6 +1972,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       const r44 = [makeReg44({ id: "r44_0", previous_actions_total: 0, previous_actions_resolved: 0 })];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg44_report_records: r44 }));
       // No prev actions concern because totalPrevActionsTotal = 0
+      expect(r.insights.every(i => !i.text.includes("Previous Reg 44 action resolution"))).toBe(true);
     });
 
     it("reg45 with 0 children_total yields 0% child consultation without concern", () => {
@@ -1985,6 +1986,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       const notifs = [makeNotification({ id: "n_0", follow_up_report_required: false, follow_up_report_submitted: false })];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: notifs }));
       // followUpRequired = 0, so no concern
+      expect(r.concerns.every(c => !c.includes("required follow-ups completed"))).toBe(true);
     });
 
     it("dev plan update rate < 80% triggers warning insight", () => {
