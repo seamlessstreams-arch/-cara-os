@@ -58,6 +58,7 @@ export type CaraDataSensitivity =
 
 export type CaraProviderName =
   | "anthropic"
+  | "claude_subscription"
   | "bedrock"
   | "vertex_ai"
   | "mistral"

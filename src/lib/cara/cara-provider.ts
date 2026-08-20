@@ -18,9 +18,22 @@
 // and surface a clear "Cara is not configured yet" message in the UI.
 // ══════════════════════════════════════════════════════════════════════════════
 
+/** The current pinned default model — set here ONCE; every other module imports it. */
+import { subscriptionEnvironmentBlocked } from "./providers/subscription-availability";
+
+export const CARA_DEFAULT_MODEL = "claude-sonnet-5";
+
+/** How the call to Anthropic is authenticated: pay-per-token API key, or the
+ *  operator's own Claude Max subscription (local/self-host only, £0 API spend). */
+export type CaraAuthSource = "api_key" | "subscription";
+
 export interface CaraProviderConfig {
   configured: boolean;
+  /** The DATA RECIPIENT. Subscription auth still sends to Anthropic, so it is
+   *  "anthropic" here — the provider risk register keys off the recipient, not
+   *  the billing route. authSource carries the billing distinction. */
   providerId: "anthropic" | "none";
+  authSource: CaraAuthSource;
   textModel: string;
   transcribeModel: string;
   maxAudioBytes: number;
@@ -28,7 +41,7 @@ export interface CaraProviderConfig {
 }
 
 export function getCaraProviderConfig(): CaraProviderConfig {
-  const providerEnv = ((process.env.CARA_PROVIDER ?? process.env.CARA_PROVIDER) ?? process.env.AI_PROVIDER ?? "anthropic").toLowerCase();
+  const providerEnv = (process.env.CARA_PROVIDER ?? process.env.AI_PROVIDER ?? "anthropic").toLowerCase();
   // Cara's only AI provider (Anthropic) does not support audio transcription,
   // so there is no server-side transcription model. Left empty; the UI falls
   // back to the browser's built-in voice input.
@@ -36,14 +49,43 @@ export function getCaraProviderConfig(): CaraProviderConfig {
   const maxAudioMb = Number.parseInt((process.env.CARA_MAX_AUDIO_MB ?? process.env.CARA_MAX_AUDIO_MB) ?? "25", 10);
   const maxAudioBytes = Number.isFinite(maxAudioMb) ? maxAudioMb * 1024 * 1024 : 25 * 1024 * 1024;
 
+  const textModel = process.env.CARA_MODEL ?? process.env.CARA_TEXT_MODEL ?? CARA_DEFAULT_MODEL;
+
+  // Subscription auth: the owner's own Claude Max login via the Agent SDK.
+  // Local/self-host only — serverless (and CI) environments refuse at
+  // configuration time so the gateway degrades deterministically, exactly like
+  // an unconfigured provider. ANTHROPIC_API_KEY is not needed and is ignored.
+  if (providerEnv === "claude_subscription") {
+    const blocked = subscriptionEnvironmentBlocked();
+    if (blocked) {
+      return {
+        configured: false,
+        providerId: "anthropic",
+        authSource: "subscription",
+        textModel,
+        transcribeModel,
+        maxAudioBytes,
+        reason: `Claude subscription auth cannot run in a ${blocked} environment. It is for the owner's own local/self-hosted use only.`,
+      };
+    }
+    return {
+      configured: true,
+      providerId: "anthropic",
+      authSource: "subscription",
+      textModel,
+      transcribeModel,
+      maxAudioBytes,
+    };
+  }
+
   if (providerEnv === "anthropic") {
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    const textModel = (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "claude-sonnet-4-20250514";
 
     if (!apiKey || apiKey.includes("placeholder")) {
       return {
         configured: false,
         providerId: "anthropic",
+        authSource: "api_key",
         textModel,
         transcribeModel,
         maxAudioBytes,
@@ -54,6 +96,7 @@ export function getCaraProviderConfig(): CaraProviderConfig {
     return {
       configured: true,
       providerId: "anthropic",
+      authSource: "api_key",
       textModel,
       transcribeModel,
       maxAudioBytes,
@@ -61,14 +104,14 @@ export function getCaraProviderConfig(): CaraProviderConfig {
   }
 
   // Any other provider value is unsupported — Claude (Anthropic) only.
-  const textModel = (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "claude-sonnet-4-20250514";
   return {
     configured: false,
     providerId: "none",
+    authSource: "api_key",
     textModel,
     transcribeModel,
     maxAudioBytes,
-    reason: `Unsupported CARA_PROVIDER / AI_PROVIDER value "${providerEnv}". The only supported provider is "anthropic" (Claude).`,
+    reason: `Unsupported CARA_PROVIDER / AI_PROVIDER value "${providerEnv}". Supported values: "anthropic" (API key) and "claude_subscription" (owner's Max login, local only).`,
   };
 }
 
@@ -90,6 +133,10 @@ export interface CaraTextGenerationResult {
   text: string;
   llmUsed: boolean;
   providerId: CaraProviderConfig["providerId"];
+  /** How the model call was authenticated — "subscription" calls cost £0 in
+   *  API terms but still consume the owner's Max limits, so they are metered
+   *  in tokens and audited like any other model call. */
+  authSource?: CaraAuthSource;
   modelId: string;
   /** Token usage from the provider (present only when llmUsed). */
   tokensInput?: number;
@@ -125,6 +172,54 @@ async function generateTextInner(
       providerId: "none",
       modelId: config.textModel,
     };
+  }
+
+  // ── Subscription path (owner's Max login via the Agent SDK) ─────────────
+  // Same recipient (Anthropic), different auth. All gateway governance has
+  // already run by the time execution reaches this seam. Any failure — not
+  // logged in, SDK missing, timeout — degrades to the same deterministic
+  // fallback as an API-key failure. Never logs prompt or response text.
+  if (config.providerId === "anthropic" && config.authSource === "subscription") {
+    try {
+      const sub = await import("./providers/claude-subscription-provider");
+      const r = await sub.generateViaSubscription({
+        systemPrompt: input.systemPrompt,
+        userPrompt: input.userPrompt,
+        model: config.textModel,
+      });
+      // Metered in tokens with £0 cost — a subscription call must never claim
+      // an API spend that didn't happen, and never hide that a model ran.
+      void import("@/lib/hq/usage-meter")
+        .then((m) =>
+          m.recordAiUsage({
+            feature: input.feature ?? "cara_text",
+            model: config.textModel,
+            tokensInput: r.tokensInput,
+            tokensOutput: r.tokensOutput,
+            authSource: "subscription",
+          }),
+        )
+        .catch(() => {});
+      return {
+        text: r.text,
+        llmUsed: true,
+        providerId: "anthropic",
+        authSource: "subscription",
+        modelId: config.textModel,
+        tokensInput: r.tokensInput,
+        tokensOutput: r.tokensOutput,
+      };
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.warn("[cara-provider] generateText (subscription) failed:", errMsg);
+      return {
+        text: caraProviderErrorFallback(errMsg, "anthropic", input.expectJson === true),
+        llmUsed: false,
+        providerId: "anthropic",
+        authSource: "subscription",
+        modelId: config.textModel,
+      };
+    }
   }
 
   // ── Anthropic path ──────────────────────────────────────────────────────
@@ -171,13 +266,14 @@ async function generateTextInner(
       // Dynamic import keeps the server-only meter out of this module graph.
       void import("@/lib/hq/usage-meter")
         .then((m) =>
-          m.recordAiUsage({ feature: input.feature ?? "cara_text", model: config.textModel, tokensInput, tokensOutput }),
+          m.recordAiUsage({ feature: input.feature ?? "cara_text", model: config.textModel, tokensInput, tokensOutput, authSource: "api_key" }),
         )
         .catch(() => {});
       return {
         text,
         llmUsed: true,
         providerId: "anthropic",
+        authSource: "api_key",
         modelId: config.textModel,
         tokensInput,
         tokensOutput,

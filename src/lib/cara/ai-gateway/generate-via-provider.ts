@@ -76,6 +76,31 @@ export async function generateViaProvider(input: CaraTextGenerationInput): Promi
 /** Streaming generation: local emits its answer as one delta (the gateway's live
  *  safety circuit-breaker still scans it), else the external streaming path. */
 export async function streamViaProvider(input: CaraStreamInput, handlers: CaraStreamHandlers): Promise<CaraStreamResult> {
+  // Subscription auth has no streaming seam (the Agent SDK is single-shot
+  // here); like the local provider, it emits the whole answer as one delta so
+  // the gateway's live safety circuit-breaker still scans it. Failures return
+  // llmUsed:false and the caller emits its deterministic fallback.
+  const cfg = getCaraProviderConfig();
+  if (cfg.configured && cfg.authSource === "subscription") {
+    const r = await generateText({
+      systemPrompt: input.systemPrompt,
+      userPrompt: input.userPrompt,
+      maxOutputTokens: input.maxOutputTokens,
+      temperature: input.temperature,
+      feature: input.feature,
+    });
+    if (r.llmUsed) handlers.onTextDelta(r.text);
+    return {
+      llmUsed: r.llmUsed,
+      providerId: r.providerId,
+      authSource: r.authSource,
+      modelId: r.modelId,
+      tokensInput: r.tokensInput ?? 0,
+      tokensOutput: r.tokensOutput ?? 0,
+      cacheCreationInputTokens: 0,
+      cacheReadInputTokens: 0,
+    };
+  }
   const local = activeLocalProvider();
   if (local) {
     try {

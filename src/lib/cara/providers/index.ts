@@ -9,6 +9,7 @@ import { MistralProvider } from "./mistral-provider";
 import { VoyageProvider } from "./voyage-provider";
 import { CohereProvider } from "./cohere-provider";
 import { PerplexityProvider } from "./perplexity-provider";
+import { ClaudeSubscriptionProvider } from "./claude-subscription-provider";
 
 export { BaseCaraProvider } from "./base-provider";
 export { AnthropicProvider } from "./anthropic-provider";
@@ -16,6 +17,7 @@ export { MistralProvider } from "./mistral-provider";
 export { VoyageProvider } from "./voyage-provider";
 export { CohereProvider } from "./cohere-provider";
 export { PerplexityProvider } from "./perplexity-provider";
+export { ClaudeSubscriptionProvider } from "./claude-subscription-provider";
 
 export type { ProviderTextRequest, ProviderTextResponse, ProviderStreamChunk } from "./base-provider";
 
@@ -26,6 +28,7 @@ const providerInstances: Map<CaraProviderName, BaseCaraProvider> = new Map();
 function createProvider(name: CaraProviderName): BaseCaraProvider {
   switch (name) {
     case "anthropic": return new AnthropicProvider();
+    case "claude_subscription": return new ClaudeSubscriptionProvider();
     case "mistral": return new MistralProvider();
     case "voyage": return new VoyageProvider();
     case "cohere": return new CohereProvider();
@@ -58,7 +61,7 @@ export function getProvider(name: CaraProviderName): BaseCaraProvider {
  */
 export function getAvailableProviders(): BaseCaraProvider[] {
   const allNames: CaraProviderName[] = [
-    "anthropic", "bedrock", "vertex_ai",
+    "anthropic", "claude_subscription", "bedrock", "vertex_ai",
     "mistral", "voyage", "cohere", "perplexity",
   ];
   return allNames

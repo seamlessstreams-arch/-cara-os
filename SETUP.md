@@ -25,9 +25,9 @@ npm run dev
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `AI_PROVIDER` | AI provider: `anthropic` or `openai` | `anthropic` |
-| `ARIA_AI_ENABLED` | Enable AI features | `true` |
-| `ARIA_MODEL` | Model name | `claude-sonnet-4-20250514` |
+| `CARA_AI_ENABLED` | AI kill-switch: set `false` to hard-disable AI | `true` |
+| `CARA_MODEL` | Model pin (see docs/ai-providers.md) | `claude-sonnet-5` |
+| `AI_PROVIDER` | `anthropic` (API key) or `claude_subscription` (owner's Max login, **local only**) | `anthropic` |
 | `ANTHROPIC_API_KEY` | Anthropic API key (if using Anthropic) | `sk-ant-api03-...` |
 | `OPENAI_API_KEY` | OpenAI API key (if using OpenAI) | `sk-...` |
 
@@ -120,7 +120,7 @@ npx vitest watch
 vercel env add ANTHROPIC_API_KEY production
 vercel env add AI_PROVIDER production        # "anthropic"
 vercel env add ARIA_AI_ENABLED production     # "true"
-vercel env add ARIA_MODEL production          # "claude-sonnet-4-20250514"
+vercel env add CARA_MODEL production          # "claude-sonnet-5"
 
 # Deploy
 npx vercel --prod --yes

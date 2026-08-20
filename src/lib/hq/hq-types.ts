@@ -73,6 +73,8 @@ export interface HqAiUsageRow {
   /** Rough GBP estimate for margin watching — not billing. */
   cost_gbp: number;
   estimated: boolean;
+  /** "subscription" = owner's Claude Max login (£0 API spend, tokens real). */
+  auth_source: "api_key" | "subscription";
 }
 
 export interface HqApiCallRow {
