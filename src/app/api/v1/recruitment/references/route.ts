@@ -4,7 +4,6 @@ import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
-import { generateId } from "@/lib/utils";
 import type { CandidateReference } from "@/types/recruitment";
 
 // ── GET /api/v1/recruitment/references?candidate_id= ─────────────────────────

@@ -14,9 +14,6 @@ import {
 import type {
   Incident,
   RestraintRecord,
-  IncidentSeverity,
-  IncidentCategory,
-  RestraintType,
 } from "../incident-engine";
 
 // ── Constants ──────────────────────────────────────────────────────────────

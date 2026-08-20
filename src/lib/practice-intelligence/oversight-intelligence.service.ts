@@ -14,7 +14,6 @@ import type {
   ManagementOversightDraft,
   OversightContent,
   OversightType,
-  OversightAction,
   RegulatoryReference,
   EvidenceLink,
 } from "@/types/practice-intelligence";

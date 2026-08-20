@@ -11,8 +11,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  PhoneCall, ChevronRight, AlertTriangle, Brain,
-  Users, Loader2, Heart, Clock,
+  PhoneCall,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Users,
+  Loader2,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

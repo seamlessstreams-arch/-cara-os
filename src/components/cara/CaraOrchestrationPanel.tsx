@@ -9,10 +9,7 @@ import {
   Info,
   RefreshCw,
   Save,
-  FileCheck,
   UserCheck,
-  MessageSquarePlus,
-  ChevronDown,
   Lightbulb,
   Minimize2,
   Baby,
@@ -27,7 +24,7 @@ import { CaraAgentBadge } from "./CaraAgentBadge";
 import { CaraEvidencePanel } from "./CaraEvidencePanel";
 import { CaraSuggestedActionsPanel } from "./CaraSuggestedActionsPanel";
 import { CaraApprovalWorkflow } from "./CaraApprovalWorkflow";
-import type { CaraResponse, EvidenceItem, SuggestedAction } from "@/lib/cara/orchestrator/types";
+import type { CaraResponse } from "@/lib/cara/orchestrator/types";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CaraOrchestrationPanel — main "one calm assistant" intelligence interface

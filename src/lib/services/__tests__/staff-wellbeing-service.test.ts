@@ -31,10 +31,6 @@ import {
 import type {
   WellbeingCheck,
   DebriefRecord,
-  WellbeingRating,
-  StressLevel,
-  SupportType,
-  DebriefTrigger,
 } from "../staff-wellbeing-service";
 
 const { computeWellbeingMetrics, identifyWellbeingAlerts } = _testing;

@@ -29,8 +29,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import type {
   ParentalResponsibilityRecord,
-  PrPartyType,
-  PrAcquiredMethod,
   PrDelegatedTo,
   PrLegalStatus,
 } from "@/types/extended";

@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   let analysis: SuspensionDecisionAnalysis;
   try {
     analysis = analyseSuspensionDecision(input);
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Engine error" },
       { status: 500 },

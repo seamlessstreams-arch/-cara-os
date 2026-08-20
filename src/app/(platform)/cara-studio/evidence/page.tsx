@@ -7,14 +7,24 @@
 // Shows source type, confidence scoring, recency, and linked artifacts.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Database, Search, FileText, Calendar, BarChart3,
-  CheckCircle2, AlertTriangle, Clock, Sparkles, Filter,
-  Eye, Shield, Heart, Users, BookOpen, Pill,
+  Database,
+  Search,
+  FileText,
+  Calendar,
+  BarChart3,
+  CheckCircle2,
+  AlertTriangle,
+  Filter,
+  Shield,
+  Heart,
+  Users,
+  BookOpen,
+  Pill,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

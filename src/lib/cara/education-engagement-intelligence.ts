@@ -209,7 +209,7 @@ function calculateAttendanceScore(attendance: number, trend: string): number {
   return Math.max(0, Math.min(100, score));
 }
 
-function calculateEngagementScore(weeks: EducationWeek[], input: EducationInput): number {
+function calculateEngagementScore(weeks: EducationWeek[], _input: EducationInput): number {
   const ratedWeeks = weeks.filter(w => w.engagementRating != null);
   if (ratedWeeks.length === 0) {
     // Estimate from attendance and behaviour

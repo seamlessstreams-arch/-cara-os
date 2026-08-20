@@ -20,7 +20,6 @@ function useMoneyRecords() {
 }
 import { MONEY_SKILL_CATEGORY_LABEL, MONEY_COMPETENCY_LABEL } from "@/types/extended";
 import {
-  PoundSterling,
   ShieldCheck,
   BookOpen,
   ChevronUp,

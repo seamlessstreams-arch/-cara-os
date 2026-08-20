@@ -8,7 +8,6 @@ import {
   type ChildOutcomeInput,
   type OutcomeTargetInput,
   type OutcomeReviewInput,
-  type OutcomeDomain,
   type OutcomeRating,
   type OutcomeDirection,
   type OutcomeStatus,

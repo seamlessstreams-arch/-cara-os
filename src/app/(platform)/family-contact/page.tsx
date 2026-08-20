@@ -14,9 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
@@ -34,9 +31,27 @@ import type {
   ContactArrangementStatus,
 } from "@/types/extended";
 import {
-  PhoneCall, Users, AlertTriangle, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  XCircle, PauseCircle, RefreshCw, MessageSquare, Heart, Eye, Ban,
-  CalendarDays, MapPin, UserCheck, ShieldAlert, Info, Search, ArrowUpDown, ArrowUpRight,
+  PhoneCall,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
+  PauseCircle,
+  RefreshCw,
+  MessageSquare,
+  Heart,
+  Ban,
+  CalendarDays,
+  MapPin,
+  UserCheck,
+  ShieldAlert,
+  Info,
+  Search,
+  ArrowUpDown,
+  ArrowUpRight,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

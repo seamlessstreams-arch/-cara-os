@@ -30,7 +30,6 @@ import {
 import type {
   ExternalVisitor,
   VisitorType,
-  VisitPurposeCategory,
 } from "@/types/extended";
 import {
   VISITOR_TYPE_LABEL,

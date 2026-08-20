@@ -11,8 +11,15 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  PoundSterling, ChevronRight, AlertTriangle, Brain, Loader2,
-  Receipt, Wallet, Clock, Users, BarChart3, TrendingUp,
+  PoundSterling,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Receipt,
+  Clock,
+  Users,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

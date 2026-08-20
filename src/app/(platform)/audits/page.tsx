@@ -17,9 +17,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
-  ClipboardCheck, Plus, CheckCircle2, AlertTriangle,
-  Calendar, Download, X, Brain, Link, Search, LayoutList,
-  FolderOpen, BarChart3, TrendingUp, TrendingDown, Minus, ArrowUpDown,
+  ClipboardCheck,
+  Plus,
+  CheckCircle2,
+  AlertTriangle,
+  Calendar,
+  X,
+  Brain,
+  Link,
+  Search,
+  LayoutList,
+  FolderOpen,
+  BarChart3,
+  ArrowUpDown,
 } from "lucide-react";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";

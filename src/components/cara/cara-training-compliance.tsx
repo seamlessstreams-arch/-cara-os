@@ -10,8 +10,15 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Loader2, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  ChevronDown, ChevronUp, RefreshCw, XCircle, Award, BookOpen,
+  Loader2,
+  GraduationCap,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  XCircle,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

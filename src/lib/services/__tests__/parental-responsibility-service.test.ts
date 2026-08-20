@@ -28,10 +28,6 @@ import {
 
 import type {
   ParentalResponsibilityRecord,
-  CareOrderType,
-  PrHolder,
-  PrStatus,
-  ConsentArrangement,
 } from "../parental-responsibility-service";
 
 const { computePrMetrics, identifyPrAlerts } = _testing;

@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatDate } from "@/lib/utils";
 import {
-  HandHeart, Calendar, Clock, User, Target,
-  FileText, ChevronRight, Sparkles,
+  HandHeart,
+  Calendar,
+  Clock,
+  User,
+  Target,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 import { RecordAnythingButton } from "@/components/forms/record-anything-button";

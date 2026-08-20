@@ -24,9 +24,21 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { api } from "@/hooks/use-api";
 import type { KeyWorkingSession } from "@/types/extended";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  ListChecks, Heart, MessageSquare, Target, Shield,
-  AlertTriangle, CheckCircle2, Clock, Calendar, Star, BookOpen,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  ListChecks,
+  Heart,
+  MessageSquare,
+  Target,
+  Shield,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  Star,
+  BookOpen,
   Loader2,
 } from "lucide-react";
 import { CaraPanel } from "@/components/cara/cara-panel";

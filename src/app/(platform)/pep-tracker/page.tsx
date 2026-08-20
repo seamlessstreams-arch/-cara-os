@@ -9,20 +9,32 @@ import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-r
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  GraduationCap, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
-  Calendar, AlertTriangle, CheckCircle2, BookOpen, Target, Star, Clock,
-  ArrowUpDown, Loader2, Plus,
+  GraduationCap,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
+  Target,
+  Star,
+  Clock,
+  ArrowUpDown,
+  Loader2,
+  Plus,
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import type { PepRecord, PepStatus, PepAttainmentLevel, PepProgress, PepSenStatus, PepActionStatus } from "@/types/extended";
-import { PEP_STATUS_LABEL, PEP_ATTAINMENT_LEVEL_LABEL, PEP_PROGRESS_LABEL, PEP_SEN_STATUS_LABEL, PEP_ACTION_STATUS_LABEL } from "@/types/extended";
+import type { PepRecord, PepStatus, PepAttainmentLevel, PepProgress, PepSenStatus } from "@/types/extended";
+import { PEP_STATUS_LABEL, PEP_ATTAINMENT_LEVEL_LABEL, PEP_PROGRESS_LABEL, PEP_SEN_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpDown, ChevronDown, ChevronUp, Phone, AlertTriangle, ShieldCheck, Clock, Users, Filter, PhoneCall, Heart, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import type { OnCallShift, OnCallRole, OnCallShiftPattern } from "@/types/extended";
+import type { OnCallShift, OnCallRole } from "@/types/extended";
 import { ON_CALL_ROLE_LABEL, ON_CALL_SHIFT_PATTERN_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

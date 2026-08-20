@@ -40,7 +40,7 @@ function staffName(id: string): string {
 }
 
 /** Active on-call contact for the moment (from the on-call rota), if any. */
-function activeOnCall(homeId: string, nowIso: string): OnCallContact | null {
+function activeOnCall(_homeId: string, nowIso: string): OnCallContact | null {
   const today = nowIso.slice(0, 10);
   const shifts = (db.onCallShifts?.findAll?.() ?? []) as Array<{
     date_from?: string; date_to?: string; on_call_staff?: string; backup_staff?: string;

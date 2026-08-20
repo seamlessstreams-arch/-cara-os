@@ -12,7 +12,6 @@ import type { VolunteerRecord } from "@/types/extended";
 import { VOLUNTEER_CATEGORY_LABEL } from "@/types/extended";
 import {
   Heart,
-  Users,
   Sparkles,
   ChevronUp,
   ChevronDown,

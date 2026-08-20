@@ -10,8 +10,14 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
-  Plus, X, BookOpen, AlertTriangle, CheckSquare,
-  Pill, ArrowRightLeft, Shield, FileText,
+  Plus,
+  X,
+  BookOpen,
+  AlertTriangle,
+  CheckSquare,
+  Pill,
+  ArrowRightLeft,
+  Shield,
 } from "lucide-react";
 
 interface QuickAction {

@@ -9,7 +9,6 @@ import {
   ArrowUpDown,
   Search,
   AlertTriangle,
-  CheckCircle2,
   Clock,
   FileText,
 } from "lucide-react";
@@ -17,7 +16,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn, todayStr }           from "@/lib/utils";
-import { getStaffName, STAFF } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,

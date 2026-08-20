@@ -161,11 +161,27 @@ function useCreateHomeClimate() {
   });
 }
 import {
-  Users, AlertTriangle, TrendingUp, TrendingDown, Minus,
-  CheckCircle2, Activity, MessageSquareQuote, Brain,
-  ChevronRight, Loader2, AlertCircle, Shield, Zap, Layers,
-  GraduationCap, ClipboardList, Target, ScanSearch, Plus, Cpu,
-  Sparkles, X,
+  Users,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  CheckCircle2,
+  Activity,
+  MessageSquareQuote,
+  Brain,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
+  Shield,
+  GraduationCap,
+  ClipboardList,
+  Target,
+  ScanSearch,
+  Plus,
+  Cpu,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { ActionOutcomeAddModal } from "@/components/intelligence/action-outcome-add-modal";
 import { ActionOutcomeUpdateModal } from "@/components/intelligence/action-outcome-update-modal";

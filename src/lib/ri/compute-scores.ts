@@ -7,7 +7,6 @@ import type { TrainingNeed } from "@/types/extended";
 import type { TrainingRecord, DailyLogEntry, CareForm } from "@/types/index";
 import type { RiAlert, RiReg45Evidence } from "@/types/extended";
 import type { Incident } from "@/types/index";
-import type { Supervision } from "@/types/index";
 import type { Audit } from "@/types/extended";
 import type { RiChallengeLog } from "@/types/extended";
 import { weightedMeanOf } from "@/lib/metrics/rate";

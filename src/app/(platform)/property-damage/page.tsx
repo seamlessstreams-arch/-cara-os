@@ -23,7 +23,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type {
   PropertyDamageRecord,

@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -67,14 +66,30 @@ function useYoungPeople(status = "current") {
 }
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
-import { cn, formatDate, formatDateTime, todayStr, daysFromNow } from "@/lib/utils";
+import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
 import type { Medication, MedicationAdministration, YoungPerson, StaffMember } from "@/types";
 import type { TrainingNeed } from "@/types/extended";
 import {
-  Pill, Plus, AlertTriangle, CheckCircle2, Clock, Package,
-  Shield, FileText, Calendar, TriangleAlert, X, ChevronDown,
-  ChevronUp, Sparkles, Eye, ClipboardList, TrendingUp, Filter,
-  Info, RefreshCw, Activity, Brain, Search, ArrowUpDown, ArrowUpRight,
+  Pill,
+  Plus,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Package,
+  Shield,
+  FileText,
+  Calendar,
+  X,
+  Sparkles,
+  Eye,
+  ClipboardList,
+  Filter,
+  Info,
+  RefreshCw,
+  Activity,
+  Brain,
+  Search,
+  ArrowUpRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";

@@ -543,13 +543,13 @@ function scoreStatutoryCompliance(checks: StatutoryCheck[]): number {
   return Math.min(100, Math.round(score));
 }
 
-function scoreAttendance(dna: DNAPattern, appointments: HealthAppointment[]): number | null {
+function scoreAttendance(dna: DNAPattern, _appointments: HealthAppointment[]): number | null {
   if (dna.totalAppointments === 0) return null; // no appointments — attendance is unmeasured, not 75
   const attendedRate = 1 - dna.dnaRate;
   return Math.round(attendedRate * 100);
 }
 
-function scoreTimeliness(overdue: OverdueItem[], checks: StatutoryCheck[]): number {
+function scoreTimeliness(overdue: OverdueItem[], _checks: StatutoryCheck[]): number {
   if (overdue.length === 0) return 100;
   let deductions = 0;
   for (const item of overdue) {

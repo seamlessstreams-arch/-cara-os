@@ -12,8 +12,6 @@ import {
   average,
   type ChildInput,
   type ChronologyEventInput,
-  type EventCategory,
-  type EventSignificance,
 } from "../chronology-intelligence-engine";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

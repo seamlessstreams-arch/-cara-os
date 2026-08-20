@@ -18,12 +18,6 @@ import {
   type InductionInput,
   type DevelopmentPlanInput,
   type StaffDevelopmentIntelligenceInput,
-  type AppraisalType,
-  type AppraisalStatus,
-  type OverallRating,
-  type QualificationStatus,
-  type InductionStatus,
-  type DevelopmentPlanStatus,
 } from "../staff-development-intelligence-engine";
 
 const TODAY = "2026-05-25";

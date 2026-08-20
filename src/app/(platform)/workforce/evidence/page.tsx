@@ -8,9 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import {
-  Briefcase, FileText, Upload, ChevronRight, Search,
-  FolderOpen, Users, Award, ShieldCheck, Filter,
-  CheckCircle2, Clock,
+  Briefcase,
+  FileText,
+  Upload,
+  ChevronRight,
+  Search,
+  FolderOpen,
+  Users,
+  Award,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

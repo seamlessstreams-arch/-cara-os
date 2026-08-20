@@ -39,7 +39,7 @@ function useHomeName(fallback = "This home"): string {
 import React from "react";
 import { getStore } from "@/lib/db/store";
 import { cn, londonDayDiff } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Clock, Users, Shield, FileText, CheckSquare, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock, Users, Shield, CheckSquare, Sparkles } from "lucide-react";
 
 function useIntelligenceSummary() {
   const homeName = useHomeName();

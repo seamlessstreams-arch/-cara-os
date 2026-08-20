@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   computeInspectionReadiness,
-  type ReadinessModuleScore,
-  type InspectionReadinessResult,
 } from "./evidence-service";
 
 // We define minimal types matching CsEvidenceItem and CsRegulationMapping

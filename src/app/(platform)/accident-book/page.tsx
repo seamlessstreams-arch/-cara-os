@@ -18,8 +18,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, HardHat, Stethoscope, ShieldAlert,
+  Plus,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  Clock,
+  HardHat,
+  Stethoscope,
+  ShieldAlert,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";

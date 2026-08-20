@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -11,16 +10,22 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Plus, Search, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, Package, ClipboardCheck,
-  Calendar, Loader2,
+  Plus,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ClipboardCheck,
+  Calendar,
+  Loader2,
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";

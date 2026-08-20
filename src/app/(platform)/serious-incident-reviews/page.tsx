@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, FileText, Loader2 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { SeriousIncidentReviewRecord, SeriousIncidentReviewType, SeriousIncidentReviewStatus } from "@/types/extended";
 import {

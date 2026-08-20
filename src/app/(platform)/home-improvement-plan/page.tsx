@@ -8,10 +8,18 @@
 
 import { useState, useMemo } from "react";
 import {
-  Target, Plus, Search, ArrowUpDown, Filter,
-  CheckCircle2, AlertTriangle, Clock, TrendingUp,
-  ChevronDown, ChevronUp, Calendar, User, Flag,
-  FileText, ClipboardList, Hammer, ShieldCheck, BookOpen,
+  Target,
+  Plus,
+  Search,
+  ArrowUpDown,
+  Filter,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  ChevronDown,
+  ChevronUp,
+  FileText,
   Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
@@ -33,7 +41,6 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, ObjectiveStatus } from "@/types/extended";
 import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { api } from "@/hooks/use-api";

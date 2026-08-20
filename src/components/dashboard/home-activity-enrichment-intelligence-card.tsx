@@ -10,9 +10,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  AlertTriangle, Brain, Loader2, AlertCircle,
-  Sparkles, Palette, Activity, Star,
-  User, BarChart3, Zap,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  AlertCircle,
+  Sparkles,
+  Palette,
+  Star,
+  User,
+  BarChart3,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

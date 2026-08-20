@@ -2,7 +2,7 @@
 // CARA — RI Governance Scoring Engine Tests
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
 import type { TrainingNeed, RiAlert, Audit, RiReg45Evidence, RiChallengeLog } from "@/types/extended";

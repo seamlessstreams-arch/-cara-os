@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { Plus, CheckSquare, FileText, ChevronDown } from "lucide-react";
+import { CheckSquare, FileText, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";

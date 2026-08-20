@@ -23,7 +23,6 @@ import {
   FileText, Star, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { STAFF } from "@/lib/seed-data";
 import type { ShiftNoteRecord, ShiftNoteShiftType } from "@/types/extended";
 import { SHIFT_NOTE_SHIFT_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

@@ -3,8 +3,6 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, User, ChevronRight, BookOpen, AlertTriangle, Loader2, CheckCircle2, Layers, Sparkles, X, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";

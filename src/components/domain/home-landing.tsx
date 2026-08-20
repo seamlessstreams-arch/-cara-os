@@ -17,16 +17,11 @@ import {
   Sparkles,
   AlertTriangle,
   CheckCircle2,
-  Clock,
   Star,
-  Heart,
-  Calendar,
-  TrendingUp,
 } from "lucide-react";
 import { getStore } from "@/lib/db/store";
 import { todayStr, formatRelative, initials, daysFromNow } from "@/lib/utils";
 import { RiskBadge } from "@/components/ui/risk-badge";
-import { CalmStatusBadge } from "@/components/ui/calm-status-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
 import { WhatNeedsDoingToday } from "@/components/dashboard/what-needs-doing-today";
 import { DomainCreateMenu } from "@/components/common/domain-create-menu";

@@ -43,10 +43,23 @@ import type {
   InterventionSessionStatus,
 } from "@/types/extended";
 import {
-  Layers, Plus, Sparkles, Loader2, AlertTriangle,
-  CheckCircle2, ChevronDown, ChevronUp, ShieldAlert,
-  Activity, Eye, Zap, Wind, Heart, ArrowUpRight,
-  ClipboardList, BookOpen, X,
+  Layers,
+  Sparkles,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert,
+  Activity,
+  Eye,
+  Zap,
+  Wind,
+  Heart,
+  ArrowUpRight,
+  ClipboardList,
+  BookOpen,
+  X,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { AppRole } from "@/lib/permissions";

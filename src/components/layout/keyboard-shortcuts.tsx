@@ -9,7 +9,6 @@
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Keyboard, X } from "lucide-react";
 
 interface ShortcutGroup {

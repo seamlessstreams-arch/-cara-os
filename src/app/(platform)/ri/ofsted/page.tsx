@@ -49,8 +49,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
-  Award, Sparkles, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
-  MessageSquare, TrendingUp, FileText,
+  Award,
+  Sparkles,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  FileText,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

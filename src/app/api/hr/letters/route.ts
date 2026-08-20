@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         draftBody,
         enableLlm: true,
       });
-    } catch (err) {
+    } catch (_err) {
       return NextResponse.json(
         { error: "Guardian error" },
         { status: 500 },

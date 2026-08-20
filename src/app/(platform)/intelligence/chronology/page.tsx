@@ -9,7 +9,6 @@ import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DictationButton } from "@/components/common/dictation-button";
 import type { YoungPerson, StaffMember } from "@/types";
 

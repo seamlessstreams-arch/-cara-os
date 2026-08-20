@@ -611,7 +611,7 @@ function identifyRiskFactors(inputs: InspectionInputs, domains: DomainAssessment
   return factors;
 }
 
-function calculateInspectionLikelihood(inputs: InspectionInputs, riskFactors: string[]): "low" | "medium" | "high" {
+function calculateInspectionLikelihood(_inputs: InspectionInputs, riskFactors: string[]): "low" | "medium" | "high" {
   if (riskFactors.length >= 4) return "high";
   if (riskFactors.length >= 2) return "medium";
   return "low";

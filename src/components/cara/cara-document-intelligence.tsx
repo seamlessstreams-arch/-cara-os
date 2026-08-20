@@ -10,9 +10,17 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles, FileText, AlertTriangle, CheckCircle2,
-  Clock, XCircle, AlertCircle, ChevronDown, ChevronUp,
-  Shield, BookOpen, Award, Briefcase,
+  Sparkles,
+  FileText,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertCircle,
+  Shield,
+  BookOpen,
+  Award,
+  Briefcase,
 } from "lucide-react";
 
 import { seedDay } from "@/lib/seed-date";

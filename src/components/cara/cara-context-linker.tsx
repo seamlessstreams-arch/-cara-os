@@ -19,7 +19,6 @@ import {
   Link2,
   ChevronRight,
   CheckCircle2,
-  XCircle,
   Sparkles,
   FileText,
   Shield,

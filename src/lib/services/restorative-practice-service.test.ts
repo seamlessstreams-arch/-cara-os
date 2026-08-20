@@ -3,12 +3,6 @@ import {
   computeMetrics,
   computeAlerts,
   validateRestorativePractice,
-  SESSION_TYPES,
-  OUTCOME_RATINGS,
-  FORMAL_SESSION_TYPES,
-  INFORMAL_SESSION_TYPES,
-  MEDIATION_SESSION_TYPES,
-  GROUP_SESSION_TYPES,
 } from "./restorative-practice-service";
 import type { RestorativePracticeRow } from "./restorative-practice-service";
 

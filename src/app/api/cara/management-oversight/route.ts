@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
   let review: OversightReview;
   try {
     review = await analyseRecord(input);
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Engine error" },
       { status: 500 },

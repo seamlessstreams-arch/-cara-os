@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, Lightbulb, Shield } from "lucide-react";
+import { Sparkles, ArrowRight, AlertTriangle, TrendingUp, Lightbulb } from "lucide-react";
 
 type InsightSeverity = "info" | "suggestion" | "warning" | "critical";
 

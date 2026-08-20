@@ -8,9 +8,6 @@ import {
   ContactInput,
   ContactSession,
   ContactArrangement,
-  ContactType,
-  ContactPerson,
-  ContactOutcome,
 } from "../contact-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

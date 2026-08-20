@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { GardenPlotRecord, GardenPlanting, GardenPlotLocation, CropStatus } from "@/types/extended";
+import type { GardenPlotRecord, CropStatus } from "@/types/extended";
 import { GARDEN_PLOT_LOCATION_LABEL, CROP_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

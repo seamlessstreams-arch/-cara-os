@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAvailableProviders } from "@/lib/cara/providers";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const providers = getAvailableProviders();
 

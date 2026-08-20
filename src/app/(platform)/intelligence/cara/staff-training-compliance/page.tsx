@@ -6,7 +6,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle, Clock, GraduationCap } from "lucide-react";
+import { AlertTriangle, CheckCircle, GraduationCap } from "lucide-react";
 import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   CategoryRisk,

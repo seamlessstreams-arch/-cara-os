@@ -10,8 +10,6 @@ import {
   type TrainingMatrixInput,
   type CpdInput,
   type HandbookInput,
-  type StaffCompetencyResult,
-  type StaffCompetencyRating,
 } from "../home-staff-competency-training-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

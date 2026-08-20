@@ -7,7 +7,6 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
 import type { BedroomProfile } from "@/types/extended";
 import {
   ChevronDown,

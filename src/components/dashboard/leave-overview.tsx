@@ -17,8 +17,13 @@ import type { LeaveRequest } from "@/types";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, formatRelative, todayStr, londonDayDiff } from "@/lib/utils";
 import {
-  CalendarOff, Loader2, CheckCircle2, Palmtree, Stethoscope,
-  BookOpen, Clock, ChevronRight,
+  CalendarOff,
+  Loader2,
+  CheckCircle2,
+  Palmtree,
+  Stethoscope,
+  BookOpen,
+  Clock,
 } from "lucide-react";
 
 // ── Leave query (inlined from use-leave) ─────────────────────────────────────

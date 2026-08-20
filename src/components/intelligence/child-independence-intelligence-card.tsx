@@ -12,9 +12,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  AlertTriangle, Brain, Loader2, Rocket, MapPin,
-  AlertCircle, Sparkles, Users, GraduationCap, Home,
-  FileText, Target, Quote,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Rocket,
+  AlertCircle,
+  Sparkles,
+  Users,
+  GraduationCap,
+  Home,
+  FileText,
+  Target,
+  Quote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChildIndependenceResult, ReadinessStatus, SkillProficiency } from "@/lib/engines/child-independence-intelligence-engine";

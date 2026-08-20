@@ -151,7 +151,7 @@ function generateHomeFlags(text: string, primaryType: string): HomeClassificatio
   return flags;
 }
 
-function suggestHomeTitle(text: string, primaryType: string, homeName: string): string {
+function suggestHomeTitle(_text: string, primaryType: string, homeName: string): string {
   const label = HOME_TYPE_PATTERNS.find((p) => p.type === primaryType)?.label ?? "Home Record";
   if (primaryType === "fire_drill") return `${homeName} — fire safety`;
   if (primaryType === "health_safety_check") return `${homeName} — health & safety check`;

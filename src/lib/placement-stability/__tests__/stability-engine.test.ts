@@ -15,11 +15,7 @@ import type {
   Placement,
   MatchingAssessmentItem,
   StabilityMilestone,
-  DisruptionEvent,
-  RiskIndicator,
   MatchingDomain,
-  PlacementStatus,
-  EndReason,
 } from "../stability-engine";
 
 // ── Constants ──────────────────────────────────────────────────────────────

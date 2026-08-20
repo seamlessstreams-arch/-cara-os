@@ -14,7 +14,6 @@ import { db } from "@/lib/db/store";
 import type {
   CaraFormulation,
   CaraFormulationFactor,
-  CaraFormulationFactorType,
   CaraDecisionRecommendation,
   CaraDecisionAction,
   CaraDecisionPriority,

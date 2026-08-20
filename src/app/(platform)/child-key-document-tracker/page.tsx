@@ -12,7 +12,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -22,12 +21,28 @@ import {
 import { cn, londonDayDiff } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
-  Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, AlertOctagon, ShieldCheck, CheckCircle2,
-  FileText, Calendar, User, Eye, Lock, Package, BookOpen,
-  Clock, Users, FileWarning, Stamp, Loader2,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  AlertOctagon,
+  ShieldCheck,
+  CheckCircle2,
+  FileText,
+  Calendar,
+  User,
+  Eye,
+  Lock,
+  Package,
+  BookOpen,
+  Clock,
+  FileWarning,
+  Stamp,
+  Loader2,
 } from "lucide-react";
-import type { ChildKeyDocument, KeyDocStatus, KeyDocOriginalOrCopy } from "@/types/extended";
+import type { ChildKeyDocument, KeyDocStatus } from "@/types/extended";
 import { KEY_DOC_STATUS_LABEL, KEY_DOC_ORIGINAL_OR_COPY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

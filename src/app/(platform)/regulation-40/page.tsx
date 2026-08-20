@@ -9,7 +9,6 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { Task } from "@/types/index";
-import type { CareEvent } from "@/types/care-events";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,6 @@ import {
   AlertTriangle,
   Bell,
   BellOff,
-  CheckCircle2,
   Clock,
   Calendar,
   ChevronDown,

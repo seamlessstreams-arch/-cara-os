@@ -7,15 +7,21 @@
 // Shows status, type, child, confidence score, and links to detail view.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  History, Search, Filter, FileText, CheckCircle2,
-  AlertTriangle, Clock, Eye, Sparkles, ChevronRight,
-  Send, Archive, XCircle, BarChart3,
+  History,
+  Search,
+  FileText,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronRight,
+  Send,
+  Archive,
+  XCircle,
+  BarChart3,
 } from "lucide-react";
 import {
   ARTIFACT_TYPE_LABELS,

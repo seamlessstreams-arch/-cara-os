@@ -10,7 +10,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PenLine, Brain, Loader2, Info, AlertTriangle, Sparkles } from "lucide-react";
+import { PenLine, Loader2, Info, AlertTriangle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";

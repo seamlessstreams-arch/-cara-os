@@ -27,7 +27,6 @@ import {
 import type {
   CyclingBikeRecord,
   BikeabilityLevel,
-  HelmetCondition,
   BikeMaintenanceCompetence,
 } from "@/types/extended";
 import {

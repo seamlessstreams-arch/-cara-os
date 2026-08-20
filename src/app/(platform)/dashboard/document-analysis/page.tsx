@@ -199,7 +199,7 @@ function parseStructuredAnalysis(answer: string): Partial<AnalysisResult> {
   return {};
 }
 
-function buildDemoResponse(query: string, documentType: DocumentType): AnalysisResult {
+function buildDemoResponse(_query: string, documentType: DocumentType): AnalysisResult {
   return {
     answer:
       "## Document Analysis Summary\n\n" +

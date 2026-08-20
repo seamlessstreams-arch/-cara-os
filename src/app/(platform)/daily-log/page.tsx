@@ -13,10 +13,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  BookOpen, Plus, Heart, Activity, Star, Smile, Meh, Frown,
-  Moon, Sun, Utensils, ChevronDown, Loader2, AlertCircle, X, Sparkles,
-  Brain, CheckCircle2, ChevronUp, Search, BarChart3, AlertTriangle,
-  Users, ArrowUpDown,
+  BookOpen,
+  Plus,
+  Heart,
+  Activity,
+  Star,
+  Smile,
+  Meh,
+  Frown,
+  Moon,
+  Utensils,
+  ChevronDown,
+  Loader2,
+  AlertCircle,
+  X,
+  Sparkles,
+  Brain,
+  CheckCircle2,
+  ChevronUp,
+  Search,
+  AlertTriangle,
+  Users,
+  ArrowUpDown,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";

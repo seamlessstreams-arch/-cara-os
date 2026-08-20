@@ -12,7 +12,7 @@
 // Pure orchestration — no HTTP concerns. Called by the POST /api/incidents route.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { db, getStore } from "@/lib/db/store";
+import { getStore } from "@/lib/db/store";
 import { createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
 import type { Incident, Task } from "@/types";
 import { recordEvent } from "@/lib/timeline/timeline-service";

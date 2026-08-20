@@ -14,8 +14,13 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import {
-  BarChart3, Shield, Users, Heart, FileCheck,
-  Loader2, ChevronRight, Zap,
+  BarChart3,
+  Shield,
+  Users,
+  Heart,
+  FileCheck,
+  Loader2,
+  Zap,
 } from "lucide-react";
 
 type ScorecardMeta = {

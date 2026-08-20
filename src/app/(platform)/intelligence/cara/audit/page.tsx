@@ -8,8 +8,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { YoungPerson, StaffMember } from "@/types";
 
 interface YPEnriched extends YoungPerson {

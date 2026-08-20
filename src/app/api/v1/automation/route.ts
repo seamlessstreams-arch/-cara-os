@@ -36,7 +36,7 @@ export async function GET() {
         },
       },
     });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to fetch automation rules" },
       { status: 500 },

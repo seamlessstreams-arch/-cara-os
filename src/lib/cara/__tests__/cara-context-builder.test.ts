@@ -2,7 +2,7 @@
 // Tests — Cara Safe Context Builder
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 // Mock Supabase before importing
 vi.mock("@/lib/supabase/server", () => ({

@@ -17,10 +17,6 @@ import {
 
 import type {
   ComplianceCertificateRow,
-  CertificateType,
-  ComplianceStatus,
-  IssuingBody,
-  RenewalUrgency,
 } from "../compliance-certificate-service";
 
 const {

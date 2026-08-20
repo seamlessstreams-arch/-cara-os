@@ -58,15 +58,26 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Phone, User, Building, Shield, Heart, AlertTriangle,
-  Clock, Calendar, Edit2, Plus, Stethoscope, GraduationCap,
-  UserCheck, Baby, CheckCircle2, Info, Loader2,
+  Phone,
+  User,
+  Shield,
+  Heart,
+  AlertTriangle,
+  Clock,
+  Edit2,
+  Plus,
+  Stethoscope,
+  GraduationCap,
+  UserCheck,
+  Baby,
+  CheckCircle2,
+  Info,
+  Loader2,
 } from "lucide-react";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { EmergencyChildContact, EmergencyContactRole } from "@/types/extended";
-import { EMERGENCY_CONTACT_ROLE_LABEL } from "@/types/extended";
 import type { HomeEmergencyContact } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

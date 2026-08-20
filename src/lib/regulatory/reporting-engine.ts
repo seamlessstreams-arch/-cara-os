@@ -17,7 +17,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { Role } from "../permissions/types";
-import { isAtLeast } from "../permissions/role-rules";
 import { rate, rateOf } from "../metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────

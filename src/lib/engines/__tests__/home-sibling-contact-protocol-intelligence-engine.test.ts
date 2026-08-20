@@ -9,7 +9,6 @@ import {
   computeSiblingContactProtocol,
   type SiblingContactInput,
   type SiblingContactRecordInput,
-  type SiblingContactResult,
 } from "../home-sibling-contact-protocol-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

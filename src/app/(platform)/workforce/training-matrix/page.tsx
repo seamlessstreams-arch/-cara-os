@@ -12,16 +12,23 @@ import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { cn, londonDayDiff } from "@/lib/utils";
 import {
-  GraduationCap, CheckCircle2, Clock, AlertTriangle,
-  Search, BarChart3, ShieldAlert, Users, TrendingUp,
-  Filter, CalendarClock, X,
+  GraduationCap,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Search,
+  BarChart3,
+  ShieldAlert,
+  Users,
+  Filter,
+  CalendarClock,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

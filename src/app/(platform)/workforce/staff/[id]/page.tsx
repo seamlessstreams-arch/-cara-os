@@ -11,10 +11,23 @@ import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import {
-  Sparkles, ArrowLeft, Network, TrendingUp, BarChart2,
-  CheckCircle2, Clock, AlertTriangle, ArrowUpRight,
-  ThumbsUp, Star, ChevronRight, Calendar, User,
-  Microscope, GitMerge, Award, MessageSquare,
+  Sparkles,
+  ArrowLeft,
+  Network,
+  TrendingUp,
+  BarChart2,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ArrowUpRight,
+  ThumbsUp,
+  Star,
+  Calendar,
+  User,
+  Microscope,
+  GitMerge,
+  Award,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

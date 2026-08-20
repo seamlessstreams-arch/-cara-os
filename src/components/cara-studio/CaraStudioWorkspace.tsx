@@ -17,12 +17,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Sparkles, Loader2, Shield, AlertTriangle, CheckCircle2,
-  FileText, Heart, Play, Palette, Brain, Target, GraduationCap,
-  Layers, Users, BarChart3, BookOpen, Activity, Lightbulb,
-  MessageCircle, ClipboardCheck, Home,
+  Sparkles,
+  Loader2,
+  Shield,
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
+  Heart,
+  Play,
+  Brain,
+  Target,
+  GraduationCap,
+  Layers,
+  Users,
+  BarChart3,
+  BookOpen,
+  Activity,
+  Lightbulb,
+  MessageCircle,
+  ClipboardCheck,
+  Home,
 } from "lucide-react";
-import { GENERATION_TYPES, TONES, AUDIENCES, GENERATION_CATEGORIES } from "@/lib/cara-studio/types";
+import { TONES, AUDIENCES, GENERATION_CATEGORIES } from "@/lib/cara-studio/types";
 import type { GenerationType, Tone, Audience, GenerationOutput, SafetyAssessment } from "@/lib/cara-studio/types";
 import { ChildProfilePanel } from "./ChildProfilePanel";
 import { StudioOutputPreview } from "./StudioOutputPreview";

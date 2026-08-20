@@ -6,16 +6,25 @@
 // points, practice changes, and response timescales.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ClipboardCheck, Plus, Search, ArrowUpDown, Filter,
-  CheckCircle2, AlertTriangle, Clock, BookOpen, ChevronDown, ChevronUp,
-  Scale, ShieldCheck, Calendar, User, Flag, FileText,
+  ClipboardCheck,
+  Plus,
+  Search,
+  ArrowUpDown,
+  Filter,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Scale,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";

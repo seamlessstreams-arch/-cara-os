@@ -9,7 +9,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -48,7 +47,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import type { ShiftChecklist, ChecklistItem } from "@/types/extended";
+import type { ShiftChecklist } from "@/types/extended";
 import {
   END_OF_SHIFT_TYPE_LABEL,
   CHECKLIST_CATEGORY_LABEL,

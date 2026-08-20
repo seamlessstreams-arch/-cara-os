@@ -16,10 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   ThumbsUp,
   ThumbsDown,
-  TrendingUp,
-  AlertTriangle,
   BarChart3,
-  Sparkles,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────

@@ -34,7 +34,7 @@ import type {
   OnlineSafetySeverity,
   OnlineSafetyIncidentStatus,
 } from "@/types/extended";
-import { ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL, ONLINE_SAFETY_SEVERITY_LABEL, ONLINE_SAFETY_INCIDENT_STATUS_LABEL } from "@/types/extended";
+import { ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

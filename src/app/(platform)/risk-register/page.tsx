@@ -22,12 +22,27 @@ import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { RiskRegisterEntry, RiskRegisterCategory, RiskRegisterStatus, RiskRegisterLevel } from "@/types/extended";
-import { RISK_REGISTER_CATEGORY_LABEL, RISK_REGISTER_STATUS_LABEL, RISK_REGISTER_LEVEL_LABEL } from "@/types/extended";
 import {
-  Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  Plus, X, AlertTriangle, AlertOctagon, Shield, ShieldCheck,
-  CheckCircle2, Clock, User, Calendar, Target, Activity,
-  Loader2, TrendingUp, TrendingDown, Eye, Zap,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  X,
+  AlertTriangle,
+  AlertOctagon,
+  Shield,
+  ShieldCheck,
+  CheckCircle2,
+  User,
+  Calendar,
+  Target,
+  Activity,
+  Loader2,
+  TrendingDown,
+  Eye,
+  Zap,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 

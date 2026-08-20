@@ -10,9 +10,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  AlertTriangle, Brain, Loader2, GraduationCap, BookOpen,
-  AlertCircle, Sparkles, Calendar, TrendingUp, TrendingDown,
-  Minus, Award, ClipboardCheck, Pencil,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  GraduationCap,
+  BookOpen,
+  AlertCircle,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Award,
+  ClipboardCheck,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

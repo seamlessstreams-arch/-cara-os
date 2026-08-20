@@ -35,7 +35,7 @@ export async function GET(
   try {
     const timeline = await getAuditTimeline(suggestionId);
     return NextResponse.json({ data: timeline });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to fetch audit timeline" },
       { status: 500 },

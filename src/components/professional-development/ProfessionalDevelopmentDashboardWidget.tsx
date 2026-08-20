@@ -8,8 +8,6 @@ import type {
 import {
   getCPDCategoryLabel,
   getQualificationLevelLabel,
-  getQualificationStatusLabel,
-  getRatingLabel,
 } from "@/lib/professional-development/professional-development-engine";
 
 // ── Rating Badge ─────────────────────────────────────────────────────────────

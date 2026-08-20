@@ -32,9 +32,22 @@ import type {
   Complaint, ComplaintStatus, ComplaintOutcome, ComplaintCategory, ComplainantType,
 } from "@/types/extended";
 import {
-  MessageCircle, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp,
-  Sparkles, User, Calendar, Flag, Plus, Shield, AlertOctagon, Gavel,
-  Search, Filter, ArrowUpDown, ArrowUpRight,
+  MessageCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  User,
+  Calendar,
+  Flag,
+  Plus,
+  Shield,
+  AlertOctagon,
+  Gavel,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";

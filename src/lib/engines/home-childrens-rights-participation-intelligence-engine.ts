@@ -6,7 +6,7 @@
 // UNCRC Articles: Children's rights, participation, and voice.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, meets } from "@/lib/metrics/rate";
 
 // ── Input types ─────────────────────────────────────────────────────────────
 

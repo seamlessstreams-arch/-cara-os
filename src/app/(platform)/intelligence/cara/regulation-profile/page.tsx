@@ -14,7 +14,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import type { YoungPerson, StaffMember } from "@/types";
 
 interface YPEnriched extends YoungPerson {

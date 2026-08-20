@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getStore } from "@/lib/db/store";
 import { buildAskSnapshot } from "../build-snapshot";
-import { answerQuestion, resolveChild, roleTier } from "../ask-cara-engine";
+import { answerQuestion, resolveChild } from "../ask-cara-engine";
 import { buildGroundingPack } from "../build-grounding";
 import { buildRecordCatalogue } from "../record-catalogue";
 import { todayStr } from "@/lib/utils";

@@ -29,7 +29,7 @@ import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import type { NeedsAssessment, NeedsDomain, NeedsComplexity, NeedsDomainAssessment } from "@/types/extended";
+import type { NeedsAssessment, NeedsDomain, NeedsComplexity } from "@/types/extended";
 
 const NEEDS_ASSESSMENTS_KEY = "needs-assessments";
 const NEEDS_ASSESSMENTS_API = "/api/v1/needs-assessments";

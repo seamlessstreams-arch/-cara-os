@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { StaffTrainingResult, StaffTrainingProfile, TrainingCategory } from "@/lib/staff-training/staff-training-engine";
+import type { StaffTrainingResult, StaffTrainingProfile } from "@/lib/staff-training/staff-training-engine";
 import { getCategoryLabel, getRoleLabel } from "@/lib/staff-training/staff-training-engine";
 
 // ── Rating Badge ─────────────────────────────────────────────────────────────

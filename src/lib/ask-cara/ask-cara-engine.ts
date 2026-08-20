@@ -332,7 +332,7 @@ function skillMedication(snap: AskCaraSnapshot, asOf: string, child: AskCaraChil
   return answer({ intent: "medication", answered: true, text, sources: [{ label: "Medications", count: meds.length }, { label: "Med incidents (30d)", count: medErrors.length }], suggestions: sug(["What needs my attention?", "How many incidents this week?"]) });
 }
 
-function skillSafeguarding(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+function skillSafeguarding(snap: AskCaraSnapshot, _asOf: string): AskCaraAnswer {
   const open = snap.incidents.filter((i) => i.status !== "closed" && i.status !== "resolved" && mentionsAny((i.type ?? "").replace(/_/g, " "), SAFEGUARDING_TYPES));
   const children = new Set(open.map((i) => i.childId).filter(Boolean));
   const text = open.length === 0
@@ -521,7 +521,7 @@ function skillHomeOverview(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
 const ROLE_LABEL: Record<string, string> = { social_worker: "Social worker", iro: "IRO", camhs: "CAMHS", education: "Education", police: "Police", yot: "YOT / youth justice", gp: "GP", advocate: "Advocate" };
 const roleLabel = (r: string): string => ROLE_LABEL[r.toLowerCase()] ?? (r.charAt(0).toUpperCase() + r.slice(1).replace(/_/g, " "));
 
-function skillContacts(q: string, snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+function skillContacts(_q: string, snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
   if (!child) {
     return answer({ intent: "contacts", answered: false, text: "Tell me which child, and I'll give you their professional contacts — e.g. \"who is Alex's social worker?\"", sources: [], suggestions: sug(snap.children.slice(0, 3).map((c) => `Who is ${childLabel(c)}'s social worker?`)) });
   }
@@ -1488,7 +1488,7 @@ function skillPracticeGuidance(rawQuestion: string, child: AskCaraChild | null):
 // labelled as a general read. Runs LAST before the KB catch, so every
 // specialist engine still wins; tier-gating keeps management collections
 // (staff files, HR, finance, governance) away from lower tiers.
-function skillRecordLookup(q: string, snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null, tier: AccessTier): AskCaraAnswer | null {
+function skillRecordLookup(q: string, snap: AskCaraSnapshot, _asOf: string, child: AskCaraChild | null, tier: AccessTier): AskCaraAnswer | null {
   const catalogue = snap.catalogue ?? [];
   if (!catalogue.length) return null;
   const visible = catalogue.filter((e) => TIER_RANK[tier] >= TIER_RANK[e.tier]);

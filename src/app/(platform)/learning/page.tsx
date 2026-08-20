@@ -17,9 +17,17 @@ import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import {
-  BookOpen, Layers, BrainCircuit, HelpCircle, ClipboardList,
-  Library, Sparkles, ChevronRight, AlertTriangle, Users, GraduationCap,
-  FileText, Zap,
+  BookOpen,
+  BrainCircuit,
+  HelpCircle,
+  Library,
+  Sparkles,
+  ChevronRight,
+  AlertTriangle,
+  Users,
+  GraduationCap,
+  FileText,
+  Zap,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

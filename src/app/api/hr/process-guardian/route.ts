@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
   let review: GuardianReview;
   try {
     review = await reviewHrAction(input);
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Engine error" },
       { status: 500 },

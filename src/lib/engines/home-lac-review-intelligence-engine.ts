@@ -6,7 +6,7 @@
 // CHR 2015 Reg 36. SCCIF: "Experiences and progress", "Overall experiences."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Brain, Loader2, Info, AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
+import { Archive, Loader2, Info, AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/use-api";
 import type { EvidenceBankResult } from "@/lib/evidence-bank/evidence-bank-engine";

@@ -2,7 +2,7 @@
 // Cara Quality Ecology — Lifecycle Engine Tests
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   attemptTransition,
   checkOverdue,
@@ -10,7 +10,7 @@ import {
   getValidTransitions,
   calculateCompliance,
 } from "../lifecycle-engine";
-import type { ScheduledOccurrence, TaskTemplate, LifecycleStatus } from "../types";
+import type { ScheduledOccurrence, TaskTemplate } from "../types";
 import type { UserContext } from "../../permissions/types";
 
 // ── Constants ──────────────────────────────────────────────────────────────

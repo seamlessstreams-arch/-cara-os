@@ -19,7 +19,6 @@ import {
 import { api } from "@/hooks/use-api";
 import type { CareEventJob } from "@/types/care-events";
 import type {
-  RoutingHealthRow,
   RoutingHealthSummary,
 } from "@/lib/care-events/routing-health";
 import { useAuthContext } from "@/contexts/auth-context";

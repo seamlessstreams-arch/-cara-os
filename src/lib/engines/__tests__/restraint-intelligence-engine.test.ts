@@ -14,7 +14,6 @@ import {
   type ChildInput,
   type RestraintInput,
   type StaffInvolvedInput,
-  type RestraintIntelligenceInput,
 } from "../restraint-intelligence-engine";
 
 // ── Factories ─────────────────────────────────────────────────────────────────

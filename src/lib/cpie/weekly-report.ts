@@ -173,7 +173,7 @@ function secStruggled(i: WeeklyReportInput, name: string, a: string, b: string, 
   return { body: lines.join(" "), empty: false };
 }
 
-function secMedication(i: WeeklyReportInput, name: string, a: string, b: string, pd: string): SectionOut {
+function secMedication(i: WeeklyReportInput, _name: string, a: string, b: string, pd: string): SectionOut {
   const active = mine(i.medications, i.childId).filter((m) => m.is_active !== false && s(m.type) !== "prn");
   const prn = mine(i.medications, i.childId).filter((m) => s(m.type) === "prn");
   const health = weekly(i.dailyLogs, i.childId, ["date"], a, b).filter((d) => s(d.r.entry_type) === "health" && /medicat|meds|tablet|dose/i.test(s(d.r.content)));
@@ -211,7 +211,7 @@ function secFamily(i: WeeklyReportInput, name: string, a: string, b: string, pd:
   return { body: lines.join(" "), empty: false };
 }
 
-function secEducation(i: WeeklyReportInput, name: string, a: string, b: string, pd: string): SectionOut {
+function secEducation(i: WeeklyReportInput, _name: string, a: string, b: string, pd: string): SectionOut {
   const edu = weekly(i.educationRecords, i.childId, ["date", "record_date"], a, b);
   if (!edu.length) return { body: `There's no formal education recorded this ${pd} — this may reflect a school holiday, or a gap worth checking.`, empty: true };
   const seen = new Set<string>();
@@ -279,7 +279,7 @@ function secIndependence(i: WeeklyReportInput, name: string, a: string, b: strin
 const NEG_VOICE = /worried|worry|point|nothing changes|scared|hate|angry|unsafe|not safe|ignored|struggl|upset|\bsad\b|anxious|can'?t|frightened|fed up|don'?t feel/i;
 const cleanQuote = (v: string): string => stripEnd(s(v)).replace(/^[A-Za-z]+\s*[:\-]\s*/, "").replace(/^["'“]+|["'”]+$/g, "");
 
-function secVoiceWell(i: WeeklyReportInput, name: string, a: string, b: string, pd: string): SectionOut {
+function secVoiceWell(i: WeeklyReportInput, _name: string, a: string, b: string, pd: string): SectionOut {
   const fb = weekly(i.ypFeedback, i.childId, ["date"], a, b).filter((d) => /happy|ok/i.test(s(d.r.sentiment)) && !/unhappy/i.test(s(d.r.sentiment)));
   const kw = weekly(i.keyWorkingSessions, i.childId, ["date", "session_date"], a, b)
     .map((d) => cleanQuote(s(d.r.child_voice))).filter((v) => v.length >= 12 && !NEG_VOICE.test(v));

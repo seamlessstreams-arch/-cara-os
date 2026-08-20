@@ -19,13 +19,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type {
   ChildReport,
@@ -56,7 +49,6 @@ import {
   EyeOff,
   RotateCw,
   AlertTriangle,
-  Info,
   AlertCircle,
   ChevronDown,
   ChevronUp,

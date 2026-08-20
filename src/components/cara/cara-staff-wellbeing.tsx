@@ -10,9 +10,17 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles, Heart, Clock, BookOpen, AlertTriangle,
-  CheckCircle2, TrendingUp, TrendingDown, Minus,
-  ChevronDown, ChevronUp, Users, Shield, Coffee,
+  Sparkles,
+  Clock,
+  BookOpen,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ChevronDown,
+  ChevronUp,
+  Users,
   Calendar,
 } from "lucide-react";
 

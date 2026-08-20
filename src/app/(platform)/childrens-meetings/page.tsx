@@ -35,7 +35,6 @@ import type {
 import {
   CHILDRENS_MEETING_TYPE_LABEL,
   MEETING_MOOD_LABEL,
-  MEETING_ACTION_STATUS_LABEL,
 } from "@/types/extended";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

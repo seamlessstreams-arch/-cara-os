@@ -26,10 +26,20 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
-  Search, ArrowUpDown, X, Plus, Flame,
-  CheckCircle2, AlertTriangle, Clock, User, Calendar,
-  ChevronDown, ChevronUp, Shield, Timer, Users,
-  XCircle, Loader2,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Flame,
+  CheckCircle2,
+  AlertTriangle,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Timer,
+  Users,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

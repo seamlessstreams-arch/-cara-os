@@ -4,9 +4,9 @@
 //        gap detection, source gathering, filing path, stub provider.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { db } from "@/lib/db/store";
-import type { CaraArtifact, CaraQualityCheck } from "@/types/cara-studio";
+import type { CaraArtifact } from "@/types/cara-studio";
 import {
   submitArtifactForReview,
   approveArtifact,

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import type { HateIncident, HateTargetType, HatePerpetratorType, HateIncidentType, HateIncidentStatus } from "@/types/extended";
+import type { HateIncident, HateIncidentType, HateIncidentStatus } from "@/types/extended";
 import { HATE_TARGET_TYPE_LABEL, HATE_PERPETRATOR_TYPE_LABEL, HATE_INCIDENT_TYPE_LABEL, HATE_INCIDENT_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

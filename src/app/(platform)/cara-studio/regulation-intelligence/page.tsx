@@ -12,8 +12,9 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Scale, CheckCircle2, AlertTriangle, Shield, Eye,
-  BookOpen, TrendingUp, BarChart3, FileText,
+  Scale,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

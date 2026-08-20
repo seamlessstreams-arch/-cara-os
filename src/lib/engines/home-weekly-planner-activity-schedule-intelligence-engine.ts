@@ -14,7 +14,7 @@
 //             childInputRecords, communicationRecords, adherenceRecords
 // ==============================================================================
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 

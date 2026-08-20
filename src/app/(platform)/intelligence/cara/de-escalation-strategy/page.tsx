@@ -13,7 +13,6 @@ import type {
   BehaviourSignal,
   StrategyResult,
   TimeSlot,
-  StaffEngagementProfile,
   DeEscalationStrategyResponse,
 } from "@/app/api/v1/de-escalation-strategy-intelligence/route";
 

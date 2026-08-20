@@ -4,7 +4,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
-import { generateId, todayStr, daysFromNow } from "@/lib/utils";
+import { generateId, daysFromNow } from "@/lib/utils";
 import { ensureUploadedDocument } from "../../ensure";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {

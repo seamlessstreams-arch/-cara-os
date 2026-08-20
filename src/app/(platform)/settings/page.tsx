@@ -11,10 +11,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  Bell, Shield, Building, Users, Key,
-  Globe, Mail, Phone, CheckCircle2, Save, Smartphone,
-  Lock, Eye, EyeOff, Database, FileText, Zap, Monitor, User, X,
-  Palette, Upload, AlertCircle, ChevronDown, ChevronUp, Clock,
+  Bell,
+  Shield,
+  Building,
+  Users,
+  Key,
+  Globe,
+  CheckCircle2,
+  Save,
+  Smartphone,
+  Lock,
+  Eye,
+  EyeOff,
+  Database,
+  FileText,
+  Zap,
+  Monitor,
+  User,
+  X,
+  Palette,
+  Upload,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Clock,
 } from "lucide-react";
 import { HOME } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";

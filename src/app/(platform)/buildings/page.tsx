@@ -43,10 +43,26 @@ import { Input } from "@/components/ui/input";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
-  Building2, AlertTriangle, CheckCircle2, Clock, XCircle,
-  Plus, Search, Shield, Flame, Zap, Droplets, Thermometer,
-  FileText, Upload, ChevronRight, Calendar, AlertCircle,
-  ClipboardList, Wrench, Eye, CheckSquare, Filter, Car, TrendingDown,
+  Building2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Plus,
+  Search,
+  Shield,
+  Flame,
+  Zap,
+  FileText,
+  Upload,
+  ChevronRight,
+  Calendar,
+  AlertCircle,
+  ClipboardList,
+  Wrench,
+  Eye,
+  CheckSquare,
+  Car,
   ArrowUpDown,
 } from "lucide-react";
 import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";

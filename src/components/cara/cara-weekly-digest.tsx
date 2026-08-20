@@ -17,15 +17,12 @@ import Link from "next/link";
 import {
   Sparkles,
   Calendar,
-  CheckCircle2,
-  Clock,
   AlertTriangle,
   Shield,
   TrendingUp,
   ChevronRight,
   Users,
   FileText,
-  Loader2,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────

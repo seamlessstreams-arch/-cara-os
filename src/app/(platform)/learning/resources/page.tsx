@@ -72,7 +72,12 @@ function useCreateResourceLibraryEntry() {
   });
 }
 import {
-  Sparkles, BookOpen, CheckCircle2, Clock, FileText, Save, Plus,
+  Sparkles,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Save,
 } from "lucide-react";
 
 

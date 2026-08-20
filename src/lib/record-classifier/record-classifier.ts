@@ -258,7 +258,7 @@ function extractTags(text: string): string[] {
 
 // ─── Flag generation ─────────────────────────────────────────────────────────
 
-function generateFlags(text: string, primaryType: string, severity: string | null): ClassificationFlag[] {
+function generateFlags(text: string, primaryType: string, _severity: string | null): ClassificationFlag[] {
   const flags: ClassificationFlag[] = [];
   const lower = text.toLowerCase();
 

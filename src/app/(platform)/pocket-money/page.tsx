@@ -61,10 +61,21 @@ function useCreatePocketMoneyTransaction() {
   });
 }
 import {
-  Wallet, Search, Filter, ArrowUpDown, X, Plus,
-  TrendingUp, TrendingDown, PiggyBank, Receipt,
-  Calendar, User, ChevronDown, ChevronUp,
-  ShoppingBag, Banknote, ArrowDownLeft, ArrowUpRight,
+  Wallet,
+  Search,
+  Filter,
+  ArrowUpDown,
+  X,
+  Plus,
+  TrendingUp,
+  PiggyBank,
+  Receipt,
+  ChevronDown,
+  ChevronUp,
+  ShoppingBag,
+  Banknote,
+  ArrowDownLeft,
+  ArrowUpRight,
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

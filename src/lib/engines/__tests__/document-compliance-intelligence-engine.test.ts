@@ -14,7 +14,6 @@ import {
   type ReadReceiptInput,
   type StaffRef,
   type DocumentComplianceIntelligenceInput,
-  type DocumentCategory,
 } from "../document-compliance-intelligence-engine";
 
 const TODAY = "2026-05-25";

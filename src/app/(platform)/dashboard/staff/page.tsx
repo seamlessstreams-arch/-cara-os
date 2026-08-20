@@ -46,12 +46,29 @@ import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatRelative, isOverdue, londonDisplay, londonHour, londonTimeStr } from "@/lib/utils";
 import type { Task, Shift, YoungPerson } from "@/types";
-import type { BuildingCheck, Vehicle, HandoverEntry } from "@/types/extended";
+import type { BuildingCheck, Vehicle } from "@/types/extended";
 import {
-  CheckCircle2, Clock, AlertTriangle, BookOpen, Pill, Car, Building2,
-  Bell, ChevronRight, Circle, CalendarDays, Users, ArrowRightLeft,
-  Sparkles, Target, Heart, Home, Zap, CheckCheck, User, Shield,
-  AlarmClock, Clipboard, FileText, BadgeAlert, Info,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  BookOpen,
+  Pill,
+  Car,
+  Building2,
+  Bell,
+  ChevronRight,
+  CalendarDays,
+  Users,
+  ArrowRightLeft,
+  Sparkles,
+  Heart,
+  CheckCheck,
+  Shield,
+  AlarmClock,
+  Clipboard,
+  FileText,
+  BadgeAlert,
+  Info,
 } from "lucide-react";
 import { PrintButton } from "@/components/common/print-button";
 import { YourHandoverCard } from "@/components/dashboard/your-handover-card";

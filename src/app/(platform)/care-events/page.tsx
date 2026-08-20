@@ -4,7 +4,6 @@ import Link from "next/link";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,7 +46,7 @@ function useYoungPeople(status = "current") {
       ),
   });
 }
-import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import {
   CARE_EVENT_STATUS_LABEL, CARE_EVENT_CATEGORY_LABEL,
 } from "@/types/care-events";

@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ShiftPattern } from "@/lib/rota/shift-patterns";
 import { patternWorksOn } from "@/lib/rota/shift-patterns";
-import { CalendarRange, Plus, Pencil, Trash2, Sun, Moon, CalendarCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Sun, Moon, CalendarCheck } from "lucide-react";
 import { todayStr } from "@/lib/utils";
 
 // Types from use-shift-patterns

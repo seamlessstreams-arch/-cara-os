@@ -9,9 +9,21 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, Loader2, Shield, Siren, Moon,
-  AlertCircle, Sparkles, TrendingUp, TrendingDown, Minus,
-  ThumbsUp, ThumbsDown, FileText, Clock, UserX, Award,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Shield,
+  Siren,
+  Moon,
+  AlertCircle,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ThumbsUp,
+  FileText,
+  UserX,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

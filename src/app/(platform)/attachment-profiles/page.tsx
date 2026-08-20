@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import type { AttachmentProfile, AttachmentStyle, AttachmentProfileStatus, AttachmentBehaviour, AttachmentKeyRelationship } from "@/types/extended";
+import type { AttachmentProfile, AttachmentStyle, AttachmentProfileStatus } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

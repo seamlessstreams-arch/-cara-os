@@ -17,10 +17,6 @@ import {
 
 import type {
   HomeInsuranceComplianceRow,
-  InsuranceType,
-  ComplianceStatus,
-  CoverageLevel,
-  ReviewOutcome,
 } from "../home-insurance-compliance-service";
 
 const {

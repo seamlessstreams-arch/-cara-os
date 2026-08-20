@@ -6,7 +6,6 @@ import { api } from "@/hooks/use-api";
 import { careToast, toastSuccess } from "@/lib/toast";
 import React, { useState, useMemo } from "react";
 import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,14 +15,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  ArrowRightLeft, Plus, ChevronDown, ChevronRight, Clock, Users,
-  AlertTriangle, CheckCircle2, Loader2, AlertCircle, X, Pill,
-  ClipboardList, Smile, Meh, Frown, Flag, Sparkles,
-  Search, ArrowUpDown, BarChart3, FileCheck, Heart,
+  ArrowRightLeft,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  X,
+  Pill,
+  ClipboardList,
+  Smile,
+  Meh,
+  Frown,
+  Flag,
+  Sparkles,
+  Search,
+  FileCheck,
+  Heart,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { YoungPerson, Task, Incident, Shift } from "@/types";
-import { cn, formatDate, formatDateTime, todayStr } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { HandoverEntry, HandoverChildUpdate } from "@/types/extended";
 import type { StaffHandoverContext } from "@/app/api/v1/handover/staff-context/route";

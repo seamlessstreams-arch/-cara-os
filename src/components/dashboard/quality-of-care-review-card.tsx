@@ -10,8 +10,14 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Award, ChevronRight, AlertTriangle, Brain,
-  Star, Target, TrendingUp, FileSearch, Loader2,
+  Award,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Star,
+  Target,
+  FileSearch,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

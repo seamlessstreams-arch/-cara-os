@@ -10,9 +10,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, Loader2, Home, AlertCircle,
-  Sparkles, TrendingUp, TrendingDown, Minus, Activity,
-  Users, Calendar, Smile, Target, ClipboardCheck,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Home,
+  AlertCircle,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Users,
+  Smile,
+  Target,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlacementQuality, ChildPlacementQualityResult } from "@/lib/engines/child-placement-quality-engine";

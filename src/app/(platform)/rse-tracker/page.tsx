@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useQuery } from "@tanstack/react-query";
-import type { RseTrackerRecord, RseTrackerTopic, RseTrackerMethod } from "@/types/extended";
+import type { RseTrackerRecord, RseTrackerTopic } from "@/types/extended";
 import { RSE_TRACKER_TOPIC_LABEL, RSE_TRACKER_METHOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

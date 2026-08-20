@@ -446,7 +446,7 @@ function computeSicknessAnalysis(input: StaffWellbeingInput): SicknessAnalysis {
 
 // ── Early Warnings ──────────────────────────────────────────────────────────
 
-function identifyEarlyWarnings(profiles: StaffWellbeingProfile[], input: StaffWellbeingInput): EarlyWarning[] {
+function identifyEarlyWarnings(profiles: StaffWellbeingProfile[], _input: StaffWellbeingInput): EarlyWarning[] {
   const warnings: EarlyWarning[] = [];
 
   for (const p of profiles) {

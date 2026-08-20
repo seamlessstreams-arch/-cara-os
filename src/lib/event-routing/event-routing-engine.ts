@@ -291,7 +291,7 @@ function buildAlerts(plans: EventRoutingPlan[]): RoutingAlert[] {
   return alerts;
 }
 
-function buildInsights(plans: EventRoutingPlan[], overview: RoutingOverview): CaraRoutingInsight[] {
+function buildInsights(_plans: EventRoutingPlan[], overview: RoutingOverview): CaraRoutingInsight[] {
   const insights: CaraRoutingInsight[] = [];
 
   if (overview.external_notifications_pending > 0) {

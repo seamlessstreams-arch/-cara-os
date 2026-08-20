@@ -14,7 +14,6 @@ import type {
   CaraPracticeRecord,
   PoliceDecisionSupport,
   IntelligenceAuditEntry,
-  ImmediateRisk,
 } from "../types";
 
 const ENGINE = "AntiCriminalisationDecisionEngine";

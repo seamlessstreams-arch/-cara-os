@@ -27,11 +27,8 @@ import {
 } from "@/components/ui/select";
 import type {
   SafetyCheckRecord,
-  SafetyCheckCategory,
-  SafetyCheckScope,
   SafetyCheckOutcome,
   RemedialWorkStatus,
-  RemedialWork,
 } from "@/types/extended";
 import {
   SAFETY_CHECK_CATEGORY_LABEL,

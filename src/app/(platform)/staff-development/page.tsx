@@ -38,15 +38,24 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Users, TrendingUp, AlertTriangle, CheckCircle2,
-  MessageSquare, GraduationCap, Calendar, ChevronRight,
-  Brain, Clock, Search, ShieldAlert, Award, Sparkles,
-  ClipboardCheck, ArrowUpDown,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  MessageSquare,
+  GraduationCap,
+  Calendar,
+  ChevronRight,
+  Brain,
+  Clock,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  ArrowUpDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";

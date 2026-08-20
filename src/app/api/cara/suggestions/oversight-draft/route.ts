@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ data: draft }, { status: 201 });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to generate oversight draft" },
       { status: 500 },

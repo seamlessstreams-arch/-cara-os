@@ -22,9 +22,22 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  ArrowLeft, Save, Send, CheckCircle, XCircle, RotateCcw, Lock,
-  AlertTriangle, Cpu, Clock, FileText, History, ClipboardList, Wand2,
-  RefreshCw, ShieldAlert, Eye,
+  ArrowLeft,
+  Save,
+  Send,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Lock,
+  AlertTriangle,
+  Cpu,
+  Clock,
+  FileText,
+  ClipboardList,
+  Wand2,
+  RefreshCw,
+  ShieldAlert,
+  Eye,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { CaraStudioEvidencePanel } from "@/components/cara/studio-evidence-panel";

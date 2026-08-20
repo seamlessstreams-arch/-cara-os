@@ -9,7 +9,6 @@ import {
   type MedicationInput,
   type AdministrationInput,
   type MedErrorInput,
-  type MedType,
   type AdminStatus,
 } from "../child-medication-intelligence-engine";
 

@@ -26,8 +26,6 @@ import type {
   EnvironmentalAdaptation,
   ConsultationRecord,
   TraumaScreening,
-  TraumaPrinciple,
-  PracticeIndicator,
 } from "../trauma-informed-engine";
 
 // ── Reference Date ─────────────────────────────────────────────────────────

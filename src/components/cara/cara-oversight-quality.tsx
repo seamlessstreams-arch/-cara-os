@@ -9,9 +9,17 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  Brain, ChevronDown, ChevronUp, Sparkles, Shield,
-  AlertTriangle, CheckCircle2, Target, Eye, Gavel,
-  MessageSquare, ListChecks, TrendingUp, Lightbulb,
+  Brain,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Shield,
+  AlertTriangle,
+  Target,
+  Eye,
+  Gavel,
+  ListChecks,
+  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

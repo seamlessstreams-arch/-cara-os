@@ -5,7 +5,7 @@
 //            child daily summaries, filing cabinet, saved time metrics.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { daysFromNow, todayStr, generateId } from "@/lib/utils";
+import { daysFromNow, todayStr } from "@/lib/utils";
 import type {
   CareEvent, CareEventRoute, CareEventAuditLog,
   Reg45EvidenceItem, AnnexAEvidenceItem, ChildDailySummary,

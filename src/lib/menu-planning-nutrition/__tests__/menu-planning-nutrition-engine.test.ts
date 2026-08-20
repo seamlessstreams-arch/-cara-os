@@ -24,12 +24,6 @@ import type {
   MealFeedback,
   ChildParticipationRecord,
   NutritionAudit,
-  MealType,
-  NutritionalBalance,
-  CulturalAccommodation,
-  MenuVariety,
-  ChildParticipation,
-  Rating,
 } from "../menu-planning-nutrition-engine";
 
 // ── Constants ────────────────────────────────────────────────────────────────

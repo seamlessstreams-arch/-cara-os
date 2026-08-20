@@ -38,7 +38,6 @@ import {
   Phone,
   Users,
   FileText,
-  Clock,
   ChevronRight,
   ChevronLeft,
   Scale,

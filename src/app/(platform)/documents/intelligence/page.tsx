@@ -16,10 +16,22 @@ import type { UploadedDocument } from "@/types/documents";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import { documentDownloadHref } from "@/lib/compliance/document-file";
 import {
-  FileText, Sparkles, AlertTriangle, CheckCircle2,
-  Shield, Brain, ClipboardList, Search, X, ChevronDown, ChevronUp,
-  Loader2, BookOpen, TriangleAlert, Eye,
-  Upload, Filter, Download,
+  FileText,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  Shield,
+  ClipboardList,
+  Search,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  BookOpen,
+  TriangleAlert,
+  Eye,
+  Upload,
+  Download,
 } from "lucide-react";
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────

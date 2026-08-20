@@ -10,9 +10,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, Loader2, Heart, AlertCircle,
-  Sparkles, TrendingUp, TrendingDown, Minus, Smile,
-  Moon, ShieldCheck, Activity, User,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Heart,
+  AlertCircle,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Smile,
+  Moon,
+  ShieldCheck,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HomeTemperature, HomeWellbeingResult } from "@/lib/engines/home-wellbeing-intelligence-engine";

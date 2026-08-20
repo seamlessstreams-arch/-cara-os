@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,12 +15,23 @@ import { PrintButton } from "@/components/ui/print-button";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  Users, Calendar, Clock, MessageSquare, CheckCircle2,
-  AlertTriangle, ClipboardList, Mic, Star, Home, Loader2
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  Users,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ClipboardList,
+  Mic,
+  Star,
+  Home,
+  Loader2,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
-import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { HouseMeeting, HouseMeetingType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

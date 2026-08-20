@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
 import type { OperationalMeeting, OperationalMeetingType, OperationalActionStatus } from "@/types/extended";
-import { OPERATIONAL_MEETING_TYPE_LABEL, OPERATIONAL_ACTION_STATUS_LABEL } from "@/types/extended";
+import { OPERATIONAL_MEETING_TYPE_LABEL } from "@/types/extended";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Search,
   Users, Clock, CheckCircle2, AlertTriangle,

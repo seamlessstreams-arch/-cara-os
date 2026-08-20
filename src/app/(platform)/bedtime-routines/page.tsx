@@ -7,7 +7,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import type { BedtimeRoutine } from "@/types/extended";
 import {
   AGE_BAND_LABEL,

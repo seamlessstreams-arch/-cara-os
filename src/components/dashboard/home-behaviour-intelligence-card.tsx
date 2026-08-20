@@ -10,9 +10,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  Loader2, AlertCircle, AlertTriangle,
-  Sparkles, Brain, HeartHandshake,
-  ThumbsUp, Scale, BookOpen, Repeat,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+  Sparkles,
+  Brain,
+  HeartHandshake,
+  ThumbsUp,
+  Scale,
+  Repeat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

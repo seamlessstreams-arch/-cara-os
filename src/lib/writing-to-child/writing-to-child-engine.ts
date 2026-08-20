@@ -177,7 +177,7 @@ function childReadableSuggestion(input: WritingToChildInput, swapped: string, mi
   return lines.join("\n");
 }
 
-function professionalSuggestion(input: WritingToChildInput, swapped: string, missing: string[]): string {
+function professionalSuggestion(_input: WritingToChildInput, swapped: string, missing: string[]): string {
   const lines: string[] = [];
   lines.push(swapped.trim() || "[Re-record factually what was observed.]");
   lines.push("");

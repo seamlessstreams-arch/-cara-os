@@ -21,7 +21,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -75,10 +74,28 @@ function useUpdateIntervention() {
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { Intervention, InterventionStatus, InterventionOutcome } from "@/types/extended";
 import {
-  Activity, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp,
-  Plus, Pause, Play, Square, Search, ArrowUpDown, Filter,
-  Target, TrendingUp, TrendingDown, Minus, Eye, User, Calendar,
-  Sparkles, FileText, LinkIcon, Loader2, RefreshCw, X,
+  Activity,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Pause,
+  Play,
+  Square,
+  Search,
+  ArrowUpDown,
+  Filter,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Eye,
+  User,
+  Calendar,
+  LinkIcon,
+  Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

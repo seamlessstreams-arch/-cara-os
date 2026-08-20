@@ -42,9 +42,23 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ChevronDown, ChevronUp, BookOpen, Shield, Clock, Users,
-  AlertTriangle, Heart, Phone, FileText, Key, Flame, Pill,
-  GraduationCap, MessageSquare, Home, Car, Lock,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  Shield,
+  Clock,
+  Users,
+  AlertTriangle,
+  Heart,
+  FileText,
+  Key,
+  Flame,
+  Pill,
+  GraduationCap,
+  MessageSquare,
+  Home,
+  Car,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

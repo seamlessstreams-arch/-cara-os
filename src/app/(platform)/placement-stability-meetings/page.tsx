@@ -49,8 +49,6 @@ import {
   Home,
   AlertTriangle,
   CheckCircle2,
-  Users,
-  Shield,
   ArrowUpDown,
   TrendingUp,
   Heart,
@@ -58,7 +56,6 @@ import {
 } from "lucide-react";
 import type {
   PlacementStabilityMeeting,
-  StabilityMeetingAgreement,
   StabilityMeetingStatus,
   StabilityMeetingRiskLevel,
 } from "@/types/extended";

@@ -52,14 +52,38 @@ import type { CareEvent, CareEventStatus, CareEventCategory } from "@/types/care
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { careToast } from "@/lib/toast";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { cn, todayStr, formatRelative, isOverdue, isDueToday, londonDisplay, londonHour } from "@/lib/utils";
-import type { Task, Incident, YoungPerson, Shift } from "@/types";
+import { cn, formatRelative, isOverdue, isDueToday, londonDisplay, londonHour } from "@/lib/utils";
+import type { Task, Incident, Shift } from "@/types";
 import {
-  AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, Clock,
-  Shield, Users, Pill, GraduationCap, ChevronRight, Circle, Ban,
-  UserX, Eye, Timer, Building2, Car, Sparkles, TrendingUp, Heart,
-  AlertCircle, Flame, Target, RefreshCw, CheckCheck, MapPin,
-  Activity, Zap, TriangleAlert, XCircle,
+  AlertTriangle,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Shield,
+  Users,
+  Pill,
+  GraduationCap,
+  ChevronRight,
+  Circle,
+  Ban,
+  UserX,
+  Eye,
+  Timer,
+  Building2,
+  Car,
+  TrendingUp,
+  Heart,
+  AlertCircle,
+  Flame,
+  Target,
+  RefreshCw,
+  CheckCheck,
+  MapPin,
+  Activity,
+  Zap,
+  TriangleAlert,
+  XCircle,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";

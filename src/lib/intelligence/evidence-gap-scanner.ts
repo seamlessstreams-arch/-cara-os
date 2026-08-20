@@ -6,7 +6,7 @@
 // Room and the Manager Control Centre.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { EvidenceGap, EvidenceGapType, Urgency } from "@/types/intelligence.layer";
+import type { EvidenceGap, EvidenceGapType } from "@/types/intelligence.layer";
 import { londonDayDiff } from "@/lib/utils";
 
 export interface EvidenceGapScanInput {

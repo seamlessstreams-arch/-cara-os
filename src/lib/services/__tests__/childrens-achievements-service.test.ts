@@ -17,8 +17,6 @@ import {
 import type {
   Achievement,
   AchievementCategory,
-  AchievementSignificance,
-  CelebrationMethod,
 } from "../childrens-achievements-service";
 
 const { computeAchievementMetrics, identifyAchievementAlerts } = _testing;

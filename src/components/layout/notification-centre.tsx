@@ -45,9 +45,7 @@ function useHomeName(fallback = "This home"): string {
 }
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { cn, formatRelative } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-
+import { cn } from "@/lib/utils";
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 
 function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
@@ -94,10 +92,24 @@ function useMarkNotificationRead() {
 }
 import { useAuthContext } from "@/contexts/auth-context";
 import {
-  Bell, AlertTriangle, Pill, MapPin, Eye, Shield,
-  CheckCircle2, GraduationCap, Clock, ChevronRight,
-  Building2, UserX, Flame, X, CheckCheck, ArrowRightLeft,
-  Zap, ClipboardList, RefreshCw,
+  Bell,
+  AlertTriangle,
+  Pill,
+  MapPin,
+  Eye,
+  CheckCircle2,
+  GraduationCap,
+  Clock,
+  ChevronRight,
+  Building2,
+  UserX,
+  Flame,
+  X,
+  CheckCheck,
+  ArrowRightLeft,
+  Zap,
+  ClipboardList,
+  RefreshCw,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────

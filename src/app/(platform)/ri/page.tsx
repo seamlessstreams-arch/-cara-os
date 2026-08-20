@@ -137,9 +137,18 @@ import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import {
-  Shield, BarChart3, FileText, ClipboardCheck, AlertTriangle,
-  CheckCircle2, ChevronRight, TrendingUp, BookOpen, Gavel,
-  Building2, Sparkles, Eye, Award, Zap,
+  BarChart3,
+  FileText,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  TrendingUp,
+  BookOpen,
+  Gavel,
+  Sparkles,
+  Eye,
+  Award,
+  Zap,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

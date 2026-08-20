@@ -5,7 +5,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, AlertTriangle, TrendingUp, Star, School } from "lucide-react";
+import { GraduationCap, AlertTriangle, Star, School } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { EmptyState } from "@/components/ui/empty-state";

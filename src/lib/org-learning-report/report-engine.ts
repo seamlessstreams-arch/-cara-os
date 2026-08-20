@@ -9,7 +9,6 @@
 
 import {
   ORG_LEARNING_REPORT_VERSION,
-  type LearningEvidenceRef,
   type LearningTheme,
   type OrgLearningReportInput,
   type OrgLearningReport,

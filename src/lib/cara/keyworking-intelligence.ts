@@ -237,7 +237,7 @@ function analyseTopics(occurred: KeyworkSession[]): TopicCoverage[] {
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
-function scoreFrequency(compliance: number, missed: number, total: number): number {
+function scoreFrequency(compliance: number, _missed: number, total: number): number {
   if (total === 0) return 20; // No sessions is bad
   return Math.round(compliance * 100);
 }

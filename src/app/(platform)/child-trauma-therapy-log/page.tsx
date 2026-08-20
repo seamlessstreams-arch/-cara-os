@@ -24,7 +24,6 @@ import {
 import type {
   TraumaTherapyLog,
   TherapyModality,
-  TherapySessionFormat,
   TherapyPresentation,
 } from "@/types/extended";
 import {

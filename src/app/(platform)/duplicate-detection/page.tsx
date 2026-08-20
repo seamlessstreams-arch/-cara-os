@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CopyCheck, Brain, Loader2, Info, Link2, Layers, AlertTriangle } from "lucide-react";
+import { CopyCheck, Loader2, Info, Link2, Layers, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import type { DuplicateDetectionResult } from "@/lib/duplicate-detection/duplicate-detection-engine";

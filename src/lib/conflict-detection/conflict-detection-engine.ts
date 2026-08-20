@@ -474,7 +474,7 @@ function labelFor(category: ConflictCategory): string {
 
 // ── Cara insights ─────────────────────────────────────────────────────────────
 
-function buildInsights(overview: ConflictOverview, conflicts: ConflictFinding[]): CaraConflictInsight[] {
+function buildInsights(overview: ConflictOverview, _conflicts: ConflictFinding[]): CaraConflictInsight[] {
   const insights: CaraConflictInsight[] = [];
 
   if (overview.conflicts_found === 0) {

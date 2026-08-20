@@ -9,7 +9,6 @@ import {
   calculateQAMetrics,
 } from "../qa-sampling";
 import type {
-  QASampleSelection,
   StaffQAProfile,
   QAReviewInput,
   QAReview,

@@ -3,20 +3,32 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import {
-  FileText, Upload, Search, FolderOpen, Eye,
-  CheckSquare, AlertTriangle, Clock, Download, ExternalLink,
-  History, Shield, Users, BookOpen, ClipboardList,
-  Star, FileCheck, RefreshCw, Tag, Plus, CheckCircle2, ArrowUpDown,
+  FileText,
+  Upload,
+  Search,
+  FolderOpen,
+  Eye,
+  CheckSquare,
+  AlertTriangle,
+  Clock,
+  Download,
+  ExternalLink,
+  History,
+  Shield,
+  Users,
+  BookOpen,
+  ClipboardList,
+  Star,
+  FileCheck,
+  CheckCircle2,
+  ArrowUpDown,
 } from "lucide-react";
-import { getStaffName } from "@/lib/seed-data";
-
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
 
 interface StaffEnriched extends StaffMember {

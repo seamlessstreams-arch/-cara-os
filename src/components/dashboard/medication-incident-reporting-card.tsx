@@ -15,7 +15,7 @@ import {
   Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatRate, meets } from "@/lib/metrics/rate";
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { MedicationIntelligenceResult } from "@/lib/engines/medication-intelligence-engine";

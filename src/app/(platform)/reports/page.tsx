@@ -4,14 +4,24 @@ import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  BarChart3, Download,
-  Users, Shield, GraduationCap, Clock, Receipt, AlertTriangle,
-  CheckCircle2, Activity, FileText, Target,
-  ArrowUp, ArrowDown, Minus, Loader2,
+  BarChart3,
+  Users,
+  Shield,
+  GraduationCap,
+  Clock,
+  Receipt,
+  AlertTriangle,
+  CheckCircle2,
+  Activity,
+  FileText,
+  Target,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Loader2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -112,8 +122,6 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-
 // ── Leave query (inlined from use-leave) ─────────────────────────────────────
 
 interface LeaveMeta {

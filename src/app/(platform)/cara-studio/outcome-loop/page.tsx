@@ -15,8 +15,13 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  BarChart3, CheckCircle2, Clock, Target, TrendingUp,
-  AlertCircle, Sparkles, ArrowRight, Percent,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Target,
+  TrendingUp,
+  Sparkles,
+  Percent,
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────────────

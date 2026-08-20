@@ -8,7 +8,7 @@ import {
   type RouteSafetyRecordInput,
   type CommunityPartnershipRecordInput,
 } from "../home-neighbourhood-safety-risk-assessment-intelligence-engine";
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 /* ── helpers ────────────────────────────────────────────────────────────────── */
 

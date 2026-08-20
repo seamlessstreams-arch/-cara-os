@@ -12,7 +12,6 @@ import {
 } from "@/lib/services/legal-status-service";
 import type {
   LegalStatus,
-  OrderType,
 } from "@/lib/services/legal-status-service";
 
 export async function GET(request: NextRequest) {

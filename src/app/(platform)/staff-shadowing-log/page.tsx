@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { StaffShadowingRecord, StaffShadowingShiftType, StaffShadowingReadyStatus } from "@/types/extended";
+import type { StaffShadowingRecord, StaffShadowingReadyStatus } from "@/types/extended";
 import {
   STAFF_SHADOWING_SHIFT_TYPE_LABEL,
   STAFF_SHADOWING_READY_STATUS_LABEL,

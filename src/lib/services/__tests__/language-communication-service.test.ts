@@ -19,10 +19,6 @@ import {
 
 import type {
   LanguageRecord,
-  CommunicationNeed,
-  SupportType,
-  SupportStatus,
-  ProgressRating,
 } from "../language-communication-service";
 
 const { computeLanguageMetrics, identifyLanguageAlerts } = _testing;

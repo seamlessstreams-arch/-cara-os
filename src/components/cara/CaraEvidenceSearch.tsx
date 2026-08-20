@@ -95,7 +95,7 @@ export function CaraEvidenceSearch({
       } else {
         setResults(data.results ?? []);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Network error — could not reach evidence search");
       setResults([]);
     } finally {

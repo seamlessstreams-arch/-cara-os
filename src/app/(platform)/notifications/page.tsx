@@ -12,7 +12,7 @@ import {
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getYPName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/auth-context";
 import type {
@@ -23,14 +23,24 @@ import type {
   Notification,
 } from "@/types/extended";
 import {
-  ALERT_NOTIFICATION_TYPE_LABEL,
-  ALERT_SEVERITY_LABEL,
-} from "@/types/extended";
-import {
-  Search, ArrowUpDown, X, Bell, BellRing,
-  CheckCircle2, AlertTriangle, Clock, Calendar,
-  Shield, FileText, User, Pill, Flame,
-  GraduationCap, Heart, Eye, Loader2, Zap,
+  Search,
+  ArrowUpDown,
+  X,
+  Bell,
+  BellRing,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  Shield,
+  FileText,
+  Pill,
+  Flame,
+  GraduationCap,
+  Heart,
+  Eye,
+  Loader2,
+  Zap,
   ExternalLink,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

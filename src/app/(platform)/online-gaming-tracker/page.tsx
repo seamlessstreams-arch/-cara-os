@@ -25,8 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
-import { PEGI_RATING_LABEL } from "@/types/extended";
+import type { OnlineGamingRecord } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

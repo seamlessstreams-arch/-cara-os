@@ -19,7 +19,6 @@ import type {
   CaraResponse,
   CostEntry,
   EvidenceItem,
-  ModelProfileId,
   RiskLevel,
   RouteDecision,
   SafetyReview,

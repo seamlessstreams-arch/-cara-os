@@ -10,7 +10,6 @@ import React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 
@@ -29,9 +28,19 @@ export interface FeedItem {
 }
 import { cn, formatRelative } from "@/lib/utils";
 import {
-  Activity, AlertTriangle, CheckCircle2, BookOpen, Pill,
-  ArrowRightLeft, MapPin, Users, FileText, Shield, Clock,
-  ChevronRight, Heart, Loader2,
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  BookOpen,
+  Pill,
+  ArrowRightLeft,
+  Users,
+  FileText,
+  Shield,
+  Clock,
+  ChevronRight,
+  Heart,
+  Loader2,
 } from "lucide-react";
 
 // ── Type icons ───────────────────────────────────────────────────────────────

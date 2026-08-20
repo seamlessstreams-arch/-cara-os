@@ -11,8 +11,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Pill, ChevronRight, AlertTriangle, Brain,
-  CheckCircle2, Loader2, Users, Activity,
+  Pill,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Users,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";

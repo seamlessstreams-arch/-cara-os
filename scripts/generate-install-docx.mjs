@@ -1,7 +1,19 @@
 // Editable Word version of the install guide. Run: node scripts/generate-install-docx.mjs
 import {
-  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
-  AlignmentType, LevelFormat, BorderStyle, WidthType, ShadingType, VerticalAlign, HeadingLevel,
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  Table,
+  TableRow,
+  TableCell,
+  ImageRun,
+  AlignmentType,
+  LevelFormat,
+  BorderStyle,
+  WidthType,
+  ShadingType,
+  VerticalAlign,
 } from "docx";
 import { readFileSync, writeFileSync } from "node:fs";
 

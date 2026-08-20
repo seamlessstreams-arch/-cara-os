@@ -17,10 +17,7 @@ import {
 
 import type {
   HomeFireRiskAssessmentRow,
-  RiskRating,
   AssessmentArea,
-  ComplianceStatus,
-  ActionPriority,
 } from "../home-fire-risk-assessment-service";
 
 const {

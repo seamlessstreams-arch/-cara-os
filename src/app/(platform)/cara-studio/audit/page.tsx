@@ -8,14 +8,22 @@
 // Designed for regulatory inspection — complete traceability.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Shield, Clock, User, FileText, Sparkles, Search,
-  CheckCircle2, Send, Eye, AlertTriangle, Archive,
-  Edit3, Trash2, Plus,
+  Shield,
+  Sparkles,
+  Search,
+  CheckCircle2,
+  Send,
+  Eye,
+  AlertTriangle,
+  Archive,
+  Edit3,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

@@ -16,10 +16,6 @@ import {
 
 import type {
   GiftRecord,
-  GiftDirection,
-  GiftSource,
-  ApprovalStatus,
-  DeclarationStatus,
 } from "../gifts-hospitality-service";
 
 const { computeGiftMetrics, identifyGiftAlerts } = _testing;

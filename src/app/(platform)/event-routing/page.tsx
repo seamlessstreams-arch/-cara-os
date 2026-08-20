@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Route, Brain, Loader2, Info, Send, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Route, Loader2, Info, Send, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import type { EventRoutingResult } from "@/lib/event-routing/event-routing-engine";

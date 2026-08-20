@@ -9,7 +9,6 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Workflow, Brain, Loader2, Info, AlertTriangle, Clock, Send, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -16,7 +16,7 @@
 // This is the "fire alarm" of the system — necessary but never routine.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { Role, ResourceType, Action } from "./types";
+import type { Role, ResourceType } from "./types";
 import { isAtLeast } from "./role-rules";
 
 // ── Types ──────────────────────────────────────────────────────────────────

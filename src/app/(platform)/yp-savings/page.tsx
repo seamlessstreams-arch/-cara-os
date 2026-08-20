@@ -17,7 +17,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn, todayStr }           from "@/lib/utils";
-import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,

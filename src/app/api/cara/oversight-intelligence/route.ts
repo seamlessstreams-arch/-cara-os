@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
           caraLabel: "AI suggested draft",
         },
       });
-    } catch (err) {
+    } catch (_err) {
       return NextResponse.json(
         { error: "Analysis failed" },
         { status: 500 },
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
           caraLabel: "AI suggested draft",
         },
       });
-    } catch (err) {
+    } catch (_err) {
       return NextResponse.json(
         { error: "Generation failed" },
         { status: 500 },

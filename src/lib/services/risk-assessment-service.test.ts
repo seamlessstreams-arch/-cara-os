@@ -5,7 +5,6 @@ import {
   computeRiskTrend,
   isReviewOverdue,
   computeChildRiskSummary,
-  RISK_MATRIX,
 } from "./risk-assessment-service";
 import type { RiskLevel } from "./risk-assessment-service";
 

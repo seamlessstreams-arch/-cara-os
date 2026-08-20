@@ -10,9 +10,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, CheckCircle2, ChevronRight, Heart,
-  Loader2, Minus, TrendingDown, TrendingUp, Activity,
-  AlertCircle, Sparkles, Stethoscope, BookOpen,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Minus,
+  TrendingDown,
+  TrendingUp,
+  Activity,
+  AlertCircle,
+  Sparkles,
+  Stethoscope,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate } from "@/lib/metrics/rate";

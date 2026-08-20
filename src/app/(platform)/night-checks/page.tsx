@@ -18,10 +18,20 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
-  Moon, Sun, Search, ArrowUpDown, X, Plus,
-  AlertTriangle, Clock, Calendar,
-  Eye, CloudMoon, BedDouble,
-  Loader2, ChevronDown, ChevronUp,
+  Moon,
+  Sun,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  AlertTriangle,
+  Calendar,
+  Eye,
+  CloudMoon,
+  BedDouble,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";

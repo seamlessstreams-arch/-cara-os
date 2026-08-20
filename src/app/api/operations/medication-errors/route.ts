@@ -13,7 +13,6 @@ import {
 import type {
   ErrorType,
   ErrorSeverity,
-  RootCause,
   InvestigationStatus,
 } from "@/lib/services/medication-errors-service";
 

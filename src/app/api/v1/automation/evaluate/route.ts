@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         runs,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Failed to evaluate automation rules" },
       { status: 500 },

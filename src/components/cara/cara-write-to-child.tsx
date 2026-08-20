@@ -15,10 +15,24 @@
 
 import React, { useState, useCallback } from "react";
 import {
-  Sparkles, Heart, MessageCircle, Shield, AlertTriangle,
-  CheckCircle2, Edit3, Eye, Copy, ChevronDown, ChevronUp,
-  BookOpen, Users, FileText, Loader2, RotateCcw,
-  ThumbsUp, ThumbsDown, Clock, Lightbulb,
+  Sparkles,
+  Heart,
+  MessageCircle,
+  Shield,
+  AlertTriangle,
+  CheckCircle2,
+  Edit3,
+  Eye,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  Users,
+  FileText,
+  Loader2,
+  RotateCcw,
+  Clock,
+  Lightbulb,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────

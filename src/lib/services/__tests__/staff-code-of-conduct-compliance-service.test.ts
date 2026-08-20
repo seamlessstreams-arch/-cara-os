@@ -17,10 +17,6 @@ import {
 
 import type {
   StaffCodeOfConductComplianceRow,
-  ComplianceArea,
-  ComplianceStatus,
-  ReviewType,
-  ActionOutcome,
 } from "../staff-code-of-conduct-compliance-service";
 
 const {

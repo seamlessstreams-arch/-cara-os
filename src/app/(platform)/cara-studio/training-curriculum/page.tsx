@@ -13,9 +13,14 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  GraduationCap, Users, TrendingUp, AlertTriangle,
-  CheckCircle2, Clock, Target, BookOpen, Award,
-  ChevronDown, ChevronRight,
+  GraduationCap,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Target,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

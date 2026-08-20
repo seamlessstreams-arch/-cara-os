@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import type { WorkforceOversight } from "@/lib/oversight/workforce-oversight";
 import type { WorkforceEvidencePack } from "@/lib/oversight/workforce-evidence";

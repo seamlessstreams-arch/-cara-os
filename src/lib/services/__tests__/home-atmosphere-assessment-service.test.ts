@@ -10,17 +10,11 @@ import { todayStr } from "@/lib/utils";
 import {
   ATMOSPHERE_DIMENSIONS,
   ATMOSPHERE_RATINGS,
-  ASSESSMENT_METHODS,
-  ACTIONS_REQUIRED,
   _testing,
 } from "../home-atmosphere-assessment-service";
 
 import type {
   HomeAtmosphereAssessmentRow,
-  AtmosphereDimension,
-  AtmosphereRating,
-  AssessmentMethod,
-  ActionRequired,
 } from "../home-atmosphere-assessment-service";
 
 const {

@@ -15,9 +15,14 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import type {
-  MedicationStorageAudit, StorageAuditCabinetType, StorageAuditVerdict,
-  CleanlinessRating, StorageAuditCheckItem, StorageAuditExpiringItem,
-  StorageAuditExpiredItem, StorageAuditFollowUp, FollowUpStatus,
+  MedicationStorageAudit,
+  StorageAuditCabinetType,
+  StorageAuditVerdict,
+  CleanlinessRating,
+  StorageAuditCheckItem,
+  StorageAuditExpiringItem,
+  StorageAuditExpiredItem,
+  StorageAuditFollowUp,
 } from "@/types/extended";
 import {
   STORAGE_AUDIT_CABINET_TYPE_LABEL, STORAGE_AUDIT_VERDICT_LABEL,

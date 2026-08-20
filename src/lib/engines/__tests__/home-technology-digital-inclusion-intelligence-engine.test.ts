@@ -14,7 +14,7 @@ import {
   type InternetSafetyRecordInput,
   type TechnologyLearningRecordInput,
 } from "../home-technology-digital-inclusion-intelligence-engine";
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

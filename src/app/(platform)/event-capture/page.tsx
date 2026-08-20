@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FilePlus2, Brain, Loader2, Info, CheckCircle2, XCircle, Copy, Route, Archive, AlertTriangle, Send, Sparkles, ArrowRight } from "lucide-react";
+import { FilePlus2, Loader2, Info, CheckCircle2, XCircle, Copy, Route, Archive, AlertTriangle, Send, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import type { EventCaptureResult } from "@/lib/event-capture/event-capture-engine";

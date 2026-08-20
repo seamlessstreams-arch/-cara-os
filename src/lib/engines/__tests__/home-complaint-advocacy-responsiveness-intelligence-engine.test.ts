@@ -2,15 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   computeComplaintAdvocacyResponsiveness,
   type ComplaintAdvocacyResponsivenessInput,
-  type ComplaintAdvocacyResponsivenessResult,
   type ComplaintOutcomeInput,
   type ComplaintTrendInput,
   type AdvocacyRecordInput,
   type ChildFeedbackLoopInput,
   type ParticipationEntryInput,
-  type ComplaintAdvocacyRating,
-  type ComplaintAdvocacyInsight,
-  type ComplaintAdvocacyRecommendation,
 } from "../home-complaint-advocacy-responsiveness-intelligence-engine";
 
 /* ── Helpers ────────────────────────────────────────────────────────────────── */

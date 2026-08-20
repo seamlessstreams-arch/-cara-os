@@ -9,10 +9,26 @@ import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import {
-  CalendarDays, Search, Plus, Filter, CheckCircle2, XCircle, Clock,
-  AlertTriangle, ChevronRight, Users, Calendar,
-  ClipboardCheck, Activity, Heart, Stethoscope,
-  SunMedium, RotateCcw, Ban, Info, Loader2, ArrowUpDown,
+  CalendarDays,
+  Search,
+  Plus,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
+  Users,
+  Calendar,
+  ClipboardCheck,
+  Activity,
+  Heart,
+  Stethoscope,
+  SunMedium,
+  RotateCcw,
+  Ban,
+  Info,
+  Loader2,
+  ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

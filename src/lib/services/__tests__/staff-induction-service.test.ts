@@ -17,8 +17,6 @@ import type {
   InductionTask,
   InductionCategory,
   InductionTaskStatus,
-  ProbationStatus,
-  ProbationMilestone,
 } from "../staff-induction-service";
 
 const { computeInductionMetrics, identifyInductionAlerts } = _testing;

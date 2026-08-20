@@ -9,7 +9,7 @@
 // skills for independence." "Preparation begins early."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({

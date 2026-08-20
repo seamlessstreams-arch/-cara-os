@@ -19,9 +19,21 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { cn } from "@/lib/utils";
 import {
-  GitBranch, Sparkles, CheckCircle2, Clock, AlertTriangle,
-  ChevronRight, ChevronDown, ChevronUp, User, Calendar,
-  Users, TrendingUp, Shield, BarChart3, Star, Target, Search,
+  GitBranch,
+  Sparkles,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Users,
+  TrendingUp,
+  Shield,
+  BarChart3,
+  Target,
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -60,7 +72,6 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import {
   PATHWAY_STAGE_LABELS,
-  type PathwayStage,
   type SuccessionPlan,
   type StaffCompetencyProfile,
 } from "@/types/extended";

@@ -10,9 +10,19 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, ChevronRight, Heart, Loader2,
-  Shield, TrendingDown, TrendingUp, Users, Minus,
-  AlertCircle, CheckCircle2, Activity, Flame,
+  AlertTriangle,
+  Brain,
+  ChevronRight,
+  Heart,
+  Loader2,
+  Shield,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Minus,
+  AlertCircle,
+  Activity,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

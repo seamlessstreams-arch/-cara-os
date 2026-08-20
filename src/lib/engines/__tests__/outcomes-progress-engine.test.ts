@@ -13,7 +13,6 @@ import {
   type ChildInput,
   type OutcomeTargetInput,
   type OutcomeReviewInput,
-  type OutcomesProgressInput,
   type OutcomeDomain,
   type OutcomeRating,
   type OutcomeDirection,

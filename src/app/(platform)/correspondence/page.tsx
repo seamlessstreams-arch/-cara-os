@@ -31,10 +31,25 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
-  Search, ArrowUpDown, X, Plus, Mail, Phone, FileText,
-  CheckCircle2, AlertTriangle, Clock, User, Calendar,
-  ChevronDown, ChevronUp, Shield, ArrowUpRight, ArrowDownLeft,
-  Send, Inbox, Reply,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Mail,
+  Phone,
+  FileText,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Send,
+  Inbox,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

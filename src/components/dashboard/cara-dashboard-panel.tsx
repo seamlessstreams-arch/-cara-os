@@ -20,15 +20,12 @@ import { ilFetch } from "@/lib/intelligence/il-fetch";
 import {
   Sparkles,
   ChevronRight,
-  AlertTriangle,
   Clock,
   CheckCircle2,
   XCircle,
   Eye,
-  Shield,
   ArrowRight,
   CircleDot,
-  Loader2,
 } from "lucide-react";
 
 // ── inlined intelligence layer hooks ──────────────────────────────────────────

@@ -16,9 +16,11 @@ import {
   ChevronDown, ChevronUp, Sparkles,
 } from "lucide-react";
 import {
-  ADMISSION_PHASES, PHASE_LABELS, PHASE_DESCRIPTIONS,
+  ADMISSION_PHASES,
+  PHASE_LABELS,
   DEFAULT_CHECKLIST_ITEMS,
-  type AdmissionPhase, type ChecklistCategory,
+  type AdmissionPhase,
+  type ChecklistCategory,
 } from "@/lib/services/yp-admission-service";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

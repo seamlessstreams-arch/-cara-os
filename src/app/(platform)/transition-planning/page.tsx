@@ -26,9 +26,24 @@ import {
   TRANSITION_PLANNING_GOAL_STATUS_LABEL,
 } from "@/types/extended";
 import {
-  ArrowRightLeft, ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  GraduationCap, Home, Briefcase, Heart, Shield, Wallet, Users,
-  AlertTriangle, CheckCircle2, Clock, Target, Calendar, Loader2,
+  ArrowRightLeft,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  GraduationCap,
+  Home,
+  Heart,
+  Shield,
+  Wallet,
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Target,
+  Calendar,
+  Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

@@ -18,8 +18,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, UtensilsCrossed, Thermometer, ShieldCheck,
+  Plus,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  UtensilsCrossed,
+  Thermometer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";

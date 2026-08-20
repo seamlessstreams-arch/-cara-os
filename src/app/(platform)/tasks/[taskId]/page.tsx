@@ -54,7 +54,7 @@ import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { cn, todayStr, formatRelative, isOverdue, isDueToday, formatDate } from "@/lib/utils";
+import { cn, formatRelative, isOverdue, isDueToday, formatDate } from "@/lib/utils";
 import { TASK_CATEGORY_LABELS, TASK_PRIORITIES, TASK_CATEGORIES, TASK_STATUSES } from "@/lib/constants";
 import type { Task, StaffMember } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn, todayStr } from "@/lib/utils";
-import { getStaffName, STAFF } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,

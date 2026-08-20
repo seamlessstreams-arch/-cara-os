@@ -4,7 +4,6 @@ import {
   type ChildEducationIntelligenceInput,
   type EducationRecordInput,
   type EduAttendanceInput,
-  type EhcpInput,
   type HomeworkSessionInput,
   type TutoringInput,
   type SchoolEngagementInput,

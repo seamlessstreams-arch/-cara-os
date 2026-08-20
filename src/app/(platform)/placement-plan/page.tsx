@@ -29,9 +29,21 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PlacementObjective, ObjectiveArea, PlacementObjectiveStatus } from "@/types/extended";
 import {
-  Search, ArrowUpDown, X, Plus, Target, CheckCircle2,
-  AlertTriangle, Clock, User, Calendar, ChevronDown,
-  ChevronUp, Shield, TrendingUp, ListChecks, FileText,
+  Search,
+  ArrowUpDown,
+  X,
+  Plus,
+  Target,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  TrendingUp,
+  ListChecks,
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

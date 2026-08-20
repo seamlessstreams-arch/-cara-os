@@ -19,7 +19,6 @@ import {
 import type {
   NotifiableEvent,
   NotificationEntry,
-  NotifiableEventCategory,
 } from "../notifiable-events-engine";
 
 // ── Test Fixtures ──────────────────────────────────────────────────────────

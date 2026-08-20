@@ -8,10 +8,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  Receipt, Plus, CheckCircle2, XCircle, Clock, AlertTriangle,
-  Download, TrendingUp, Coins, ShoppingCart, Car,
-  Shirt, Wrench, GraduationCap, Coffee,
-  PieChart, FileText, Camera, X, Search, ArrowUpDown,
+  Receipt,
+  Plus,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  Coins,
+  ShoppingCart,
+  Car,
+  Shirt,
+  Wrench,
+  GraduationCap,
+  Coffee,
+  PieChart,
+  FileText,
+  Camera,
+  X,
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getStaffName } from "@/lib/seed-data";

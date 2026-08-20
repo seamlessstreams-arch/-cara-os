@@ -20,9 +20,17 @@ import { getStaffName } from "@/lib/seed-data";
 import type { AdmissionReferral, AdmissionReferralStatus } from "@/types/extended";
 import { ADMISSION_REFERRAL_STATUS_LABEL, ADMISSION_REFERRAL_SOURCE_LABEL } from "@/types/extended";
 import {
-  ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  UserPlus, Clock, AlertTriangle, CheckCircle2,
-  XCircle, Shield, Loader2,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  UserPlus,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Shield,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

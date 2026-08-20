@@ -8,10 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Car, AlertTriangle, CheckCircle2, Clock, XCircle,
-  Plus, Search, Shield, Fuel, Wrench, Eye,
-  Calendar, FileText, ChevronRight, AlertCircle,
-  Users, MapPin, Gauge,
+  Car,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Plus,
+  Search,
+  Shield,
+  Wrench,
+  Calendar,
+  FileText,
+  AlertCircle,
+  Users,
+  Gauge,
 } from "lucide-react";
 import { cn, formatDate, todayStr, londonDayDiff } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

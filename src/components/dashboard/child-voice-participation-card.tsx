@@ -10,9 +10,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, Loader2, MessageCircle, AlertCircle,
-  Sparkles, Users, FileText, Mic, Quote, ThumbsUp, ThumbsDown,
-  Megaphone, UserCheck, Target, Shield,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  MessageCircle,
+  AlertCircle,
+  Sparkles,
+  Users,
+  FileText,
+  Mic,
+  Megaphone,
+  UserCheck,
+  Target,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

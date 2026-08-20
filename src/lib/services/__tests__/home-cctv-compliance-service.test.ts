@@ -16,8 +16,6 @@ import {
 
 import type {
   HomeCctvComplianceRow,
-  CameraPurpose,
-  ComplianceStatus,
 } from "../home-cctv-compliance-service";
 
 const {

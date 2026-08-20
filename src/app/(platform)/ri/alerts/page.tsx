@@ -16,9 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -29,10 +26,28 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import Link from "next/link";
 import {
-  AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Shield, Brain,
-  Search, Filter, ArrowUpDown, Clock, TrendingUp, TrendingDown, Minus,
-  ShieldAlert, Eye, UserX, FileWarning, Timer, Flame, GraduationCap,
-  MessageSquare, BarChart3, Activity, X, Zap,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Brain,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Clock,
+  TrendingUp,
+  ShieldAlert,
+  Eye,
+  FileWarning,
+  Timer,
+  Flame,
+  GraduationCap,
+  MessageSquare,
+  BarChart3,
+  Activity,
+  X,
+  Zap,
 } from "lucide-react";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };

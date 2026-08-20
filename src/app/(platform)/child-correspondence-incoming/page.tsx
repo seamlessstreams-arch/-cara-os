@@ -26,13 +26,12 @@ import {
 import type {
   IncomingCorrespondence,
   CorrespondenceSenderType,
-  CorrespondenceItemType,
 } from "@/types/extended";
 import {
   CORRESPONDENCE_SENDER_TYPE_LABEL,
   CORRESPONDENCE_ITEM_TYPE_LABEL,
 } from "@/types/extended";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import {
   CookingBakingRecord,
-  CookingCategory,
   CookingCompetency,
   CookingOutcome,
   COOKING_CATEGORY_LABEL,

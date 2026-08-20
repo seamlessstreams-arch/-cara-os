@@ -1,26 +1,40 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraCompose } from "@/components/cara/cara-compose";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { CaraIncidentAnalytics } from "@/components/cara/cara-incident-analytics";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
-  AlertTriangle, Shield, ShieldAlert, Eye, Clock, CheckCircle2, FileText,
-  Users, MapPin, Calendar, Plus, Search, Sparkles, Phone,
-  UserCheck, X, ChevronRight, Bell, ClipboardList, Loader2,
-  TrendingUp, ArrowUpRight, Brain, Link as LinkIcon, ArrowUpDown,
+  AlertTriangle,
+  Shield,
+  ShieldAlert,
+  Eye,
+  Clock,
+  CheckCircle2,
+  FileText,
+  Users,
+  MapPin,
+  Calendar,
+  Plus,
+  Search,
+  Sparkles,
+  X,
+  Bell,
+  ClipboardList,
+  Loader2,
+  ArrowUpRight,
+  Brain,
+  Link as LinkIcon,
+  ArrowUpDown,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -63,8 +77,8 @@ import { ApprovalBanner } from "@/components/ui/approval-banner";
 import { EvidenceLink } from "@/components/ui/evidence-link";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS, INCIDENT_TYPES, INCIDENT_SEVERITIES } from "@/lib/constants";
-import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
-import type { Incident, IncidentNotification, YoungPerson, StaffMember } from "@/types";
+import { cn, formatDate, todayStr } from "@/lib/utils";
+import type { Incident, YoungPerson, StaffMember } from "@/types";
 import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 

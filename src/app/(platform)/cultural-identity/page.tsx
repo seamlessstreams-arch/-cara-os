@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Globe, Search, ChevronDown, ChevronUp,
-  CheckCircle2, AlertTriangle, Heart, Star,
-  BookOpen, Users, Music,
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  Heart,
+  Star,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import type { CulturalIdentityPlan, CulturalIdentityArea, CulturalIdentityAreaStatus } from "@/types/extended";
-import { CULTURAL_IDENTITY_AREA_STATUS_LABEL } from "@/types/extended";
+import type { CulturalIdentityPlan, CulturalIdentityArea } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

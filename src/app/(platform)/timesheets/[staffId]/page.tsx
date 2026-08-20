@@ -10,9 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  ChevronLeft, Clock, Timer, Coffee, CheckCircle2,
-  Play, Square, AlertTriangle, Coins, Calendar,
-  Sparkles, TrendingUp, ArrowRight,
+  ChevronLeft,
+  Clock,
+  Timer,
+  Coffee,
+  Play,
+  Square,
+  AlertTriangle,
+  Coins,
+  Calendar,
+  Sparkles,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
 

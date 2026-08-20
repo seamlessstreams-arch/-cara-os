@@ -19,8 +19,11 @@ import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatRelative, todayStr, daysFromNow } from "@/lib/utils";
 import {
-  FileText, FileCheck, AlertTriangle, CheckCircle2,
-  Loader2, ChevronRight, Clock, Pen, Shield,
+  FileText,
+  FileCheck,
+  CheckCircle2,
+  Loader2,
+  Pen,
 } from "lucide-react";
 import type { Document, DocumentReadReceipt } from "@/types";
 

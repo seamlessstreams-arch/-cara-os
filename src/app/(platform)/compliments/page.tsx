@@ -2,9 +2,17 @@
 
 import { useState, useMemo } from "react";
 import {
-  Award, Plus, Search, ArrowUpDown, Filter,
-  Heart, Star, Users, ChevronDown, ChevronUp,
-  MessageSquare, Loader2,
+  Award,
+  Plus,
+  Search,
+  ArrowUpDown,
+  Filter,
+  Heart,
+  Star,
+  Users,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";

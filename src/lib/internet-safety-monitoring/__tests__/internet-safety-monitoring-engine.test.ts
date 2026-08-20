@@ -30,10 +30,6 @@ import type {
   OnlineSafetyIncident,
   InternetSafetyPolicy,
   StaffInternetTraining,
-  RiskCategory,
-  FilteringLevel,
-  IncidentSeverity,
-  Rating,
 } from "../internet-safety-monitoring-engine";
 
 // ── Factory Functions ────────────────────────────────────────────────────────

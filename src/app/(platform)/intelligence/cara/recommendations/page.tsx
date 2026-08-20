@@ -6,7 +6,6 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -37,7 +36,11 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate } from "@/lib/utils";
 import type { CaraRecommendation } from "@/types/extended";
 import {
-  Lightbulb, CheckCircle2, X, AlertTriangle, Loader2, ClipboardList,
+  Lightbulb,
+  CheckCircle2,
+  X,
+  Loader2,
+  ClipboardList,
 } from "lucide-react";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };

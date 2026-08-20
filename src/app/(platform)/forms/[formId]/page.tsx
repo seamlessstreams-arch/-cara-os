@@ -16,10 +16,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  ArrowLeft, FileText, CheckCircle2, Clock, XCircle,
-  AlertTriangle, Archive, Pencil, Save, X, Loader2,
-  AlertCircle, Heart, CalendarDays, User, Tag, ChevronRight,
-  Shield, UserCheck, Send,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertTriangle,
+  Archive,
+  Pencil,
+  Save,
+  X,
+  Loader2,
+  AlertCircle,
+  Heart,
+  Tag,
+  UserCheck,
+  Send,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { currentUserId } from "@/lib/auth/current-user";
@@ -81,7 +92,8 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import {
-  CARE_FORM_TYPE_LABELS, CARE_FORM_TYPES, CARE_FORM_STATUSES,
+  CARE_FORM_TYPE_LABELS,
+  CARE_FORM_TYPES,
 } from "@/lib/constants";
 import type { CareForm, YoungPerson, StaffMember } from "@/types";
 import { PrintButton } from "@/components/common/print-button";

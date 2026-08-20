@@ -11,7 +11,6 @@ import {
   type ChildInput,
   type MedicationInput,
   type AdministrationInput,
-  type MedicationIntelligenceInput,
 } from "../medication-intelligence-engine";
 
 // ── Factories ─────────────────────────────────────────────────────────────────

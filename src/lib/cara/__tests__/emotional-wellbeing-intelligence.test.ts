@@ -8,8 +8,6 @@ import {
   EmotionalWellbeingInput,
   SDQScore,
   TherapeuticInput,
-  SelfHarmIncident,
-  MoodRecord,
 } from "../emotional-wellbeing-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

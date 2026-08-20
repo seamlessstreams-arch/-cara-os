@@ -12,9 +12,22 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { UploadedDocument, DocumentRiskFlag } from "@/types/documents";
 import {
-  X, Upload, FileText, Loader2, CheckCircle2, AlertTriangle,
-  Shield, Sparkles, ChevronRight, TriangleAlert, Brain,
-  ClipboardList, Link, BookOpen, Info, ArrowRight, Download,
+  X,
+  Upload,
+  FileText,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  Shield,
+  Sparkles,
+  ChevronRight,
+  TriangleAlert,
+  Brain,
+  ClipboardList,
+  BookOpen,
+  Info,
+  ArrowRight,
+  Download,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DOCUMENT_BUCKET, STORAGE_SENTINEL, documentDownloadHref } from "@/lib/compliance/document-file";

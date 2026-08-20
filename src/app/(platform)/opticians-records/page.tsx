@@ -13,7 +13,6 @@ import {
   Eye,
   CheckCircle,
   Clock,
-  AlertTriangle,
   Glasses,
   Loader2,
 } from "lucide-react";
@@ -25,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { OpticiansRecord, OpticalStatus, OpticalRecallInterval } from "@/types/extended";
+import type { OpticiansRecord, OpticalStatus } from "@/types/extended";
 import { OPTICAL_STATUS_LABEL, OPTICAL_RECALL_INTERVAL_LABEL, GLASSES_TYPE_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

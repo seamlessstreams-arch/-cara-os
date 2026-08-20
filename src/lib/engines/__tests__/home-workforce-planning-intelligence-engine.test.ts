@@ -6,7 +6,6 @@ import {
   type SuccessionPlanInput,
   type VacancyInput,
   type InductionInput,
-  type SuccessionCandidateInput,
 } from "../home-workforce-planning-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

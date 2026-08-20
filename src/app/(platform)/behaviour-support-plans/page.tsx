@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,9 +26,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, Search, Filter, ArrowUpDown,
-  ChevronDown, ChevronUp, AlertTriangle,
-  CheckCircle2, Clock, Heart, Shield, Loader2, ArrowUpRight,
+  Plus,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Heart,
+  Shield,
+  Loader2,
+  ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn, todayStr } from "@/lib/utils";
@@ -39,7 +47,6 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeEscalationStage, BSPPositiveStrategy, BSPReward, BSPBoundary, BSPSafetyPlanItem, BSPProfessionalInput, BSPRestrictiveIntervention, BSPReviewHistoryEntry } from "@/types/extended";
 import { BspClinicalEditor } from "@/components/behaviour-support/bsp-clinical-editor";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import { EmptyState } from "@/components/ui/empty-state";

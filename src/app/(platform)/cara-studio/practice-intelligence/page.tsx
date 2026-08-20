@@ -13,10 +13,20 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Brain, Activity, AlertTriangle, Shield, Target,
-  Sparkles, Users, BookOpen, ClipboardCheck, TrendingUp,
-  RefreshCw, ChevronDown, ChevronRight, AlertOctagon,
-  CheckCircle2, Clock, Zap, Eye,
+  Brain,
+  AlertTriangle,
+  Target,
+  Sparkles,
+  Users,
+  BookOpen,
+  ClipboardCheck,
+  TrendingUp,
+  RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  AlertOctagon,
+  CheckCircle2,
+  Zap,
 } from "lucide-react";
 import { demoSeedOne } from "@/lib/demo/demo-seed";
 

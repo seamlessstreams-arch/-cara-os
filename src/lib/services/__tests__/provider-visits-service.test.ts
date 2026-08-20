@@ -4,7 +4,7 @@
 // constant validation, and CRUD fallback behaviour.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { todayStr } from "@/lib/utils";
 
 import {

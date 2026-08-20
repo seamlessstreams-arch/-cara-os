@@ -9,9 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  Search, Plus, Users, Clock, Shield, GraduationCap,
-  Mail, Phone, ChevronRight, AlertTriangle, CheckCircle2,
-  Loader2, Calendar, ArrowUpDown, Filter,
+  Search,
+  Plus,
+  Users,
+  Clock,
+  Shield,
+  GraduationCap,
+  Mail,
+  Phone,
+  ChevronRight,
+  AlertTriangle,
+  Loader2,
+  Calendar,
+  ArrowUpDown,
+  Filter,
 } from "lucide-react";
 
 type StatusFilter = "all" | "on_shift" | "on_leave" | "supervision_due" | "training_expired";

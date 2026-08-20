@@ -12,12 +12,6 @@ import {
   daysBetween,
   type AppraisalInput,
   type StaffRef,
-  type AppraisalIntelligenceInput,
-  type AppraisalRating,
-  type AppraisalStatus,
-  type AppraisalType,
-  type CompetencyDomain,
-  type CompetencyLevel,
 } from "../appraisal-intelligence-engine";
 
 // ── Constants ───────────────────────────────────────────────────────────────

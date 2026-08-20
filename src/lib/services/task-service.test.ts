@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   computeTaskRiskScore,
   generateTaskReference,
-  type TaskRiskAssessment,
 } from "./task-service";
 import type { CsTask } from "@/types/operations";
 

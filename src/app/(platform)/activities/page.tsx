@@ -29,10 +29,30 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { Activity, ActivityCategory, ActivityEngagement } from "@/types/extended";
 import {
-  Palette, Search, Filter, ArrowUpDown, Star, ChevronDown, ChevronUp,
-  Plus, Heart, Dumbbell, Music, BookOpen, MapPin, Users, Gamepad2,
-  Mountain, Bike, Camera, UtensilsCrossed, Trophy, Target, Calendar,
-  User, CheckCircle2, Clock, Loader2, Sparkles,
+  Palette,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Heart,
+  Dumbbell,
+  Music,
+  BookOpen,
+  MapPin,
+  Users,
+  Gamepad2,
+  Mountain,
+  Camera,
+  UtensilsCrossed,
+  Target,
+  Calendar,
+  User,
+  Clock,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

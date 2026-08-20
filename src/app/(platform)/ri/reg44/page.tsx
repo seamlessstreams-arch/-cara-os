@@ -28,9 +28,19 @@ import type {
   Reg44FindingSeverity,
 } from "@/types/extended";
 import {
-  Eye, CheckCircle2, Clock, AlertTriangle, Calendar, ChevronDown, ChevronUp,
-  Sparkles, FileText, MessageSquare, Flag, Gavel, Plus, X,
-  Search, ArrowUpDown, BarChart3, Star,
+  Eye,
+  CheckCircle2,
+  AlertTriangle,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  MessageSquare,
+  Flag,
+  Gavel,
+  Search,
+  BarChart3,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";

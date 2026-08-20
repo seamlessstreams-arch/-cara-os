@@ -8,7 +8,7 @@ import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -41,8 +41,18 @@ const CHALLENGE_EXPORT_COLS: ExportColumn<RiChallengeLog>[] = [
   { header: "Created", accessor: (c) => c.created_at },
 ];
 import {
-  Plus, Gavel, AlertTriangle, CheckCircle2, Clock, ChevronDown, ChevronUp, Sparkles,
-  MessageSquare, Flag, Brain, Search, ArrowUpDown,
+  Plus,
+  Gavel,
+  CheckCircle2,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  MessageSquare,
+  Flag,
+  Brain,
+  Search,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";

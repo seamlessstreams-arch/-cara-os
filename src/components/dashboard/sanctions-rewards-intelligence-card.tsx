@@ -17,8 +17,14 @@ import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Scale, AlertTriangle, CheckCircle2, TrendingDown,
-  TrendingUp, Minus, Star, XCircle, Award,
+  Scale,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  XCircle,
+  Award,
 } from "lucide-react";
 
 interface SRData {

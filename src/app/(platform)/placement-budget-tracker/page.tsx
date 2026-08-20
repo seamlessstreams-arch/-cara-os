@@ -20,7 +20,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { PlacementBudgetTracker, PlacementBudgetCategory } from "@/types/extended";
+import type { PlacementBudgetTracker } from "@/types/extended";
 import { PLACEMENT_BUDGET_CATEGORY_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";

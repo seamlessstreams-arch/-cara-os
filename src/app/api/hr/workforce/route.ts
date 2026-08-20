@@ -15,12 +15,9 @@ import {
   calculateWorkforceMetrics,
   identifyTrainingGaps,
   getMandatoryTraining,
-  formatTrainingName,
 } from "@/lib/hr-files";
 import type {
   StaffMember,
-  TrainingRecord,
-  SupervisionRecord,
   TrainingCategory,
 } from "@/lib/hr-files";
 

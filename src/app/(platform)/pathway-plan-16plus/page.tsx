@@ -37,7 +37,6 @@ function useHomeName(fallback = "This home"): string {
 }
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";

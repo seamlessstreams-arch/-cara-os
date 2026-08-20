@@ -20,9 +20,6 @@ import type {
   LearningEvent,
   LearningAction,
   LearningSource,
-  LearningPriority,
-  ActionStatus,
-  ImpactLevel,
 } from "../practice-learning-service";
 
 const { computeLearningMetrics, identifyLearningAlerts } = _testing;

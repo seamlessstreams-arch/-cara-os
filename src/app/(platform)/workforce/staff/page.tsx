@@ -8,9 +8,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Users, ChevronRight, ArrowUpRight, Search, Clock,
-  AlertTriangle, CheckCircle2, GraduationCap, Briefcase,
-  Shield, UserCheck, Calendar, ArrowUpDown,
+  Users,
+  ChevronRight,
+  ArrowUpRight,
+  Search,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  GraduationCap,
+  UserCheck,
+  Calendar,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";

@@ -7,11 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  Sparkles, Clock, ChevronDown, ChevronUp, Loader2,
-  AlertTriangle, BookOpen, CheckSquare, User,
+  Sparkles,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  AlertTriangle,
+  BookOpen,
+  User,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
-import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import type { StaffHandoverContext } from "@/app/api/v1/handover/staff-context/route";
 

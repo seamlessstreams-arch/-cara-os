@@ -18,7 +18,6 @@ import type {
   EvidenceLink,
   SessionAction,
   PlanUpdateSuggestion,
-  SESSION_TYPE_LABELS,
 } from "@/types/practice-intelligence";
 import { SESSION_TYPE_LABELS as LABELS } from "@/types/practice-intelligence";
 import { londonLongDate } from "@/lib/utils";

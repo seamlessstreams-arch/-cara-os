@@ -31,8 +31,7 @@ import {
 } from "lucide-react";
 import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import type { TripPlan, TripType, TripStatus, TripRiskLevel, TripStaffRole } from "@/types/extended";
-import { TRIP_TYPE_LABEL, TRIP_STATUS_LABEL, TRIP_RISK_LEVEL_LABEL, TRIP_STAFF_ROLE_LABEL } from "@/types/extended";
+import type { TripPlan, TripType, TripStatus, TripRiskLevel } from "@/types/extended";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

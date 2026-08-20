@@ -4,7 +4,6 @@ import {
   analyseTrainingCompliance,
   type StaffTrainingRecord,
   type TrainingEntry,
-  type QualificationEntry,
 } from "../training-compliance";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

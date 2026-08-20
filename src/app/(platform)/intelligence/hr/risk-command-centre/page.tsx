@@ -19,7 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
@@ -41,7 +40,6 @@ import {
   Activity,
   ChevronDown,
   ChevronUp,
-  ArrowRight,
   Sparkles,
   BarChart3,
   CircleDot,

@@ -7,8 +7,6 @@ import {
   analyseHealthAppointments,
   HealthInput,
   HealthAppointment,
-  HealthAssessment,
-  AppointmentType,
 } from "../health-appointments-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

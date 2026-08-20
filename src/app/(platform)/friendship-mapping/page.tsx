@@ -24,11 +24,8 @@ import {
 } from "@/components/ui/select";
 import type {
   FriendshipMap,
-  FriendEntry,
-  FriendAgeCategory,
   FriendContext as FriendContextType,
   FriendshipQuality,
-  FriendContactType,
   IsolationRisk,
 } from "@/types/extended";
 import {

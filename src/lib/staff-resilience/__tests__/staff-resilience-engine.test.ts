@@ -22,7 +22,6 @@ import type {
   SupervisionRecord,
   TeamHealthCheck,
   SecondaryTraumaScreen,
-  BurnoutIndicator,
 } from "../staff-resilience-engine";
 
 // ── Constants ─────────────────────────────────────────────────────────────

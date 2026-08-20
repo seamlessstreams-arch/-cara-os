@@ -61,12 +61,32 @@ import type { TrainingRecord, Supervision, Task, StaffMember } from "@/types";
 import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import {
-  ArrowLeft, BookOpen, ClipboardList, CheckSquare, Loader2,
-  AlertTriangle, CheckCircle2, Clock, ShieldCheck, Calendar,
-  Sparkles, Brain, Phone, Mail, TrendingUp, GraduationCap,
-  User, Award, AlertCircle, ChevronRight, FileText, Map,
-  FlaskConical, Flame, ShieldAlert, HeartPulse, Scale, Utensils,
-  Users, BookMarked, XCircle,
+  ArrowLeft,
+  ClipboardList,
+  CheckSquare,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  Calendar,
+  Sparkles,
+  Brain,
+  Phone,
+  Mail,
+  TrendingUp,
+  GraduationCap,
+  User,
+  AlertCircle,
+  ChevronRight,
+  FileText,
+  Map,
+  FlaskConical,
+  ShieldAlert,
+  HeartPulse,
+  Scale,
+  BookMarked,
+  XCircle,
 } from "lucide-react";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };

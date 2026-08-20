@@ -6,7 +6,6 @@ import type {
   TrainingComplianceResult,
   SupervisionComplianceResult,
   TrainingGap,
-  TrainingCategory,
 } from "@/lib/hr-files/workforce-engine";
 import { formatTrainingName } from "@/lib/hr-files/workforce-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";

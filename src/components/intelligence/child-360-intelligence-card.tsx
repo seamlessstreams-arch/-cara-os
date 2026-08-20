@@ -8,14 +8,27 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Activity, AlertTriangle, Brain, CalendarDays, CheckCircle2,
-  ChevronRight, GraduationCap, Heart, Loader2, MessageCircle,
-  Pill, Shield, Target, TrendingDown, TrendingUp, Minus,
-  User, XCircle,
+  Activity,
+  AlertTriangle,
+  Brain,
+  CalendarDays,
+  CheckCircle2,
+  GraduationCap,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Pill,
+  Shield,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  User,
+  XCircle,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import type { DomainRAG, DomainScore, OverallWellbeingLevel } from "@/lib/engines/child-360-intelligence-engine";
+import type { DomainRAG, OverallWellbeingLevel } from "@/lib/engines/child-360-intelligence-engine";
 import type { Child360Result } from "@/lib/engines/child-360-intelligence-engine";
 import type { Cpie360Spine } from "@/lib/cpie/child-360-spine";
 

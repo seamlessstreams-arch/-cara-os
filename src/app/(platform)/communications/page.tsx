@@ -1,18 +1,28 @@
 "use client";
 
 import React, { useState, useMemo, useId } from "react";
-import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, londonDisplay } from "@/lib/utils";
 import {
-  FileText, Send, CheckCircle2, Clock, Edit3,
-  Sparkles, AlertTriangle, ChevronRight, Plus,
-  Mail, Clipboard, Shield, Stethoscope,
-  GraduationCap, Users, BookOpen, Archive,
-  Eye, Copy, MessageSquare,
+  FileText,
+  Send,
+  CheckCircle2,
+  Clock,
+  Edit3,
+  Sparkles,
+  AlertTriangle,
+  ChevronRight,
+  Plus,
+  Mail,
+  Clipboard,
+  Shield,
+  Users,
+  BookOpen,
+  Eye,
+  Copy,
 } from "lucide-react";
 import {
   COMMUNICATION_TEMPLATES,

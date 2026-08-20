@@ -14,11 +14,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import type { Incident } from "@/types";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName } from "@/lib/seed-data";
 import { cn, formatRelative } from "@/lib/utils";
 import {
-  AlertTriangle, CheckCircle2, Loader2, Shield, Eye,
-  ChevronRight, Clock, ArrowUpRight, Flame,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  ChevronRight,
+  Flame,
 } from "lucide-react";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────

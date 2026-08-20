@@ -9,9 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  Calendar, ChevronLeft, ChevronRight, Plus, Clock, Users,
-  Sun, AlertTriangle, UserX, CheckCircle2, Loader2, X,
-  Search, BarChart3, Timer, ArrowLeftRight, ShieldAlert, Ban,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Clock,
+  Sun,
+  UserX,
+  CheckCircle2,
+  Loader2,
+  X,
+  Search,
+  BarChart3,
+  Timer,
+  ArrowLeftRight,
+  ShieldAlert,
+  Ban,
 } from "lucide-react";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -91,8 +103,6 @@ export interface AssignShiftInput {
 }
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-
 // Inlined from use-shift-swaps (single call site)
 function useShiftSwaps() {
   return useQuery({

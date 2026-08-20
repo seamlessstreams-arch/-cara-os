@@ -11,11 +11,9 @@
 import React, { useMemo } from "react";
 import {
   Heart,
-  Calendar,
   Shield,
   Target,
   Clock,
-  BookOpen,
   Users,
   GraduationCap,
   Stethoscope,
@@ -28,13 +26,11 @@ import {
   ArrowDownRight,
   Minus,
   Activity,
-  MessageCircle,
   Smile,
   Sun,
   Moon,
   UserCheck,
   Phone,
-  Mail,
   MapPin,
   Sparkles,
 } from "lucide-react";

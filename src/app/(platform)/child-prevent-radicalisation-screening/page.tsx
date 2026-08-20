@@ -19,7 +19,7 @@ import { cn, formatDate } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { PreventScreeningRecord, PreventScreeningOutcome } from "@/types/extended";
+import type { PreventScreeningRecord } from "@/types/extended";
 import { PREVENT_SCREENING_OUTCOME_LABEL, PREVENT_CHANNEL_STATUS_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";

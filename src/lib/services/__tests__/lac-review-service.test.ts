@@ -17,10 +17,6 @@ import {
 
 import type {
   LacReview,
-  ReviewType,
-  ReviewOutcome,
-  ChildParticipation,
-  ReviewStatus,
 } from "../lac-review-service";
 
 const { computeReviewMetrics, identifyReviewAlerts } = _testing;

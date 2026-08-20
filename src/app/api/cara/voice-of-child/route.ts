@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   let summary: VoiceSummary;
   try {
     summary = await summariseVoice(input);
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json(
       { error: "Engine error" },
       { status: 500 },

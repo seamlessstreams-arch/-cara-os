@@ -11,9 +11,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
-  Loader2, AlertCircle, AlertTriangle,
-  Sparkles, Brain, Megaphone,
-  Users, CheckCircle2, MessageSquare, Timer,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+  Sparkles,
+  Brain,
+  Megaphone,
+  Users,
+  CheckCircle2,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MeetingRating } from "@/lib/engines/home-meeting-governance-intelligence-engine";

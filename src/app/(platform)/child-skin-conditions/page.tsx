@@ -11,7 +11,7 @@
 // Regulations 2015 Quality Standard 8 (Care Planning) and UNCRC Article 24.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";

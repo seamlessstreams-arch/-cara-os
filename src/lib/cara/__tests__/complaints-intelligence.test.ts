@@ -7,7 +7,6 @@ import {
   analyseComplaints,
   ComplaintsInput,
   Complaint,
-  ComplaintCategory,
 } from "../complaints-intelligence";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

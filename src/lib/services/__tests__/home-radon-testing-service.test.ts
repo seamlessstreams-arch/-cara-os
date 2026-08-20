@@ -15,8 +15,6 @@ import {
 
 import type {
   HomeRadonTestingRow,
-  MitigationType,
-  ComplianceStatus,
 } from "../home-radon-testing-service";
 
 const {

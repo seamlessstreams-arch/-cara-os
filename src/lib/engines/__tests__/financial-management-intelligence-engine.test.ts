@@ -11,10 +11,7 @@ import {
   daysBetween,
   average,
   type ExpenseInput,
-  type ExpenseCategory,
-  type ExpenseStatus,
   type StaffRef,
-  type FinancialManagementIntelligenceInput,
 } from "../financial-management-intelligence-engine";
 
 // ── Constants ───────────────────────────────────────────────────────────────

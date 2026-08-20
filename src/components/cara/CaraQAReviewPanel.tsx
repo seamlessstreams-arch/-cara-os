@@ -90,7 +90,7 @@ export function CaraQAReviewPanel({
         setResult(data.result);
         onReviewComplete?.(data.result);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Network error — could not reach QA service");
     } finally {
       setIsReviewing(false);

@@ -3,7 +3,6 @@ import {
   computeSubstanceMisuseScreening,
   type SubstanceMisuseScreeningInput,
   type SubstanceScreeningRecordInput,
-  type SubstanceMisuseResult,
 } from "../home-substance-misuse-screening-intelligence-engine";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

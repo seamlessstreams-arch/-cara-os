@@ -12,7 +12,7 @@ import React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Sparkles, ChevronRight, AlertTriangle, Shield } from "lucide-react";
+import { Sparkles, ChevronRight, AlertTriangle } from "lucide-react";
 
 // ─── Inlined from the former use-cara-pending hook ───────────────────────────
 // Fetches Cara outputs awaiting human review. Powers the approval queue.

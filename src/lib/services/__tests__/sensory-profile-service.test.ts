@@ -9,7 +9,7 @@
 // needs of each child." "Staff understand children's sensory needs."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -33,7 +33,6 @@ import type {
   SensoryDomain,
   SensitivityLevel,
   AdaptationType,
-  ProfileStatus,
 } from "../sensory-profile-service";
 
 const { computeSensoryMetrics, identifySensoryAlerts } = _testing;

@@ -12,7 +12,6 @@ import {
   ArrowUpDown,
   Users,
   CheckCircle,
-  Clock,
   FileText,
   Star,
   AlertTriangle,
@@ -26,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PlacementMeeting, PlacementMeetingType, PlacementMeetingActionStatus } from "@/types/extended";
+import type { PlacementMeeting, PlacementMeetingType } from "@/types/extended";
 import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";

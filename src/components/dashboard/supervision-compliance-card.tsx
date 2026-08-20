@@ -43,13 +43,17 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { getStaffName } from "@/lib/seed-data";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { currentUserId } from "@/lib/auth/current-user";
 import type { Supervision, StaffMember } from "@/types";
 import {
-  MessageSquare, Loader2, AlertTriangle, CheckCircle2,
-  Clock, Users, Heart, Calendar,
+  MessageSquare,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Users,
+  Heart,
 } from "lucide-react";
 
 // ── Inlined from use-supervision ────────────────────────────────────────────────

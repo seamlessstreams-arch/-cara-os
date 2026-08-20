@@ -2,19 +2,20 @@
 
 import { useState, useMemo } from "react";
 import {
-  KeyRound, Search, ArrowUpDown, Filter,
-  AlertTriangle, CheckCircle2, Clock,
-  ChevronDown, ChevronUp, XCircle, HelpCircle, Loader2,
+  KeyRound,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
+  HelpCircle,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { cn, todayStr } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";

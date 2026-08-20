@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import type { KitchenHygieneCheck, HygieneShiftType, HygieneVerdict, FridgeOrganisation } from "@/types/extended";
+import type { KitchenHygieneCheck, HygieneVerdict, FridgeOrganisation } from "@/types/extended";
 import { HYGIENE_SHIFT_TYPE_LABEL, HYGIENE_VERDICT_LABEL, FRIDGE_ORGANISATION_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

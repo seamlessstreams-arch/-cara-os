@@ -10,7 +10,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { PACEAnalysisResult, PACEContext } from "@/lib/cara-intelligence/pace";

@@ -10,7 +10,7 @@
 // to emergency situations." "Emergency placements are safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -34,7 +34,6 @@ import type {
   EmergencyReason,
   PlacementDecision,
   RiskAssessmentStatus,
-  PostAdmissionReview,
   EmergencyStatus,
 } from "../emergency-placement-service";
 

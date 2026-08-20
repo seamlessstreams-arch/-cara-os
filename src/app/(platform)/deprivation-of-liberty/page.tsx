@@ -17,15 +17,28 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
-  Clock, Search, Lock, Shield, Scale, Loader2,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  AlertTriangle,
+  Clock,
+  Search,
+  Lock,
+  Shield,
+  Scale,
+  Loader2,
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import {
-  DoLRecord, DoLRestrictionType, DoLLegalBasis, DoLReviewStatus,
-  DoLReviewHistoryEntry,
-  DOL_RESTRICTION_TYPE_LABEL, DOL_LEGAL_BASIS_LABEL, DOL_REVIEW_STATUS_LABEL,
+  DoLRecord,
+  DoLRestrictionType,
+  DoLLegalBasis,
+  DoLReviewStatus,
+  DOL_RESTRICTION_TYPE_LABEL,
+  DOL_LEGAL_BASIS_LABEL,
+  DOL_REVIEW_STATUS_LABEL,
 } from "@/types/extended";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

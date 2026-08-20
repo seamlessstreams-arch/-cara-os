@@ -5,17 +5,14 @@ import {
   ChevronDown,
   ChevronUp,
   Target,
-  TrendingUp,
   Calendar,
   AlertTriangle,
-  CheckCircle2,
   Shield,
   ArrowUpDown,
   Search,
   Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
@@ -23,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependencePathway, IndependencePathwayStatus } from "@/types/extended";
 import { INDEPENDENCE_PATHWAY_STATUS_LABEL } from "@/types/extended";

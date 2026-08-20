@@ -17,8 +17,16 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
-  Clock, Search, UserMinus, Calendar, Loader2,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  AlertTriangle,
+  Clock,
+  Search,
+  UserMinus,
+  Calendar,
+  Loader2,
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";

@@ -10,17 +10,11 @@ import { todayStr } from "@/lib/utils";
 import {
   CONFLICT_TYPES,
   RISK_LEVELS,
-  MITIGATION_STATUSES,
-  DECLARATION_STATUSES,
   _testing,
 } from "../staff-conflict-of-interest-service";
 
 import type {
   StaffConflictOfInterestRow,
-  ConflictType,
-  RiskLevel,
-  MitigationStatus,
-  DeclarationStatus,
 } from "../staff-conflict-of-interest-service";
 
 const {

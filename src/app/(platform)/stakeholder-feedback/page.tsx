@@ -28,7 +28,6 @@ import type {
   StakeholderFeedbackSource,
   StakeholderFeedbackSentiment,
   StakeholderFeedbackMethod,
-  StakeholderFeedbackTheme,
 } from "@/types/extended";
 import {
   STAKEHOLDER_FEEDBACK_SOURCE_LABEL,

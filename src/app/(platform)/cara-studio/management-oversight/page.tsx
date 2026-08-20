@@ -13,8 +13,12 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  ClipboardCheck, Eye, CheckCircle2, AlertTriangle,
-  Shield, Clock, Target, Sparkles, Search, FileText,
+  ClipboardCheck,
+  Eye,
+  AlertTriangle,
+  Shield,
+  Target,
+  FileText,
 } from "lucide-react";
 import { demoSeed } from "@/lib/demo/demo-seed";
 

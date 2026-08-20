@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -18,11 +18,19 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, GraduationCap, BookOpen, UserX,
+  Plus,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  Clock,
+  GraduationCap,
+  UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {

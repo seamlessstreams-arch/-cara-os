@@ -11,14 +11,13 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery } from "@tanstack/react-query";
-import type { PolicyReviewRecord, PolicyReviewCycle, PolicyReviewStatus } from "@/types/extended";
+import type { PolicyReviewRecord, PolicyReviewStatus } from "@/types/extended";
 
 // ── Inlined from use-policy-review-records ───────────────────────────────────
 
@@ -32,12 +31,24 @@ function usePolicyReviewRecords() {
     },
   });
 }
-import { POLICY_REVIEW_CYCLE_LABEL, POLICY_REVIEW_STATUS_LABEL } from "@/types/extended";
+import { POLICY_REVIEW_CYCLE_LABEL } from "@/types/extended";
 import {
-  Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, AlertOctagon, Shield, ShieldCheck,
-  CheckCircle2, Clock, Calendar, FileText, BookOpen,
-  User, Users, PenLine, History, Loader2,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  AlertOctagon,
+  Shield,
+  CheckCircle2,
+  Calendar,
+  BookOpen,
+  User,
+  Users,
+  PenLine,
+  History,
+  Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

@@ -6,7 +6,6 @@ import { describe, it, expect } from "vitest";
 import {
   requestBreakGlass,
   isBreakGlassActive,
-  expireBreakGlass,
   reviewBreakGlass,
   logBreakGlassAction,
   getBreakGlassReasonLabel,

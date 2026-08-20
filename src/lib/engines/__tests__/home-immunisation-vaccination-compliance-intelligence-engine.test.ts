@@ -14,7 +14,7 @@ import {
   type GpLiaisonRecordInput,
   type ChildUnderstandingRecordInput,
 } from "../home-immunisation-vaccination-compliance-intelligence-engine";
-import { above, below, meets } from "@/lib/metrics/rate";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Factories ──────────────────────────────────────────────────────────────
 

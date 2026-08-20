@@ -31,7 +31,6 @@ import type {
   MatchingAssessment,
   MatchingScore,
   IntroductionPlan,
-  IntroductionPhaseRecord,
   AdmissionOutcome,
 } from "../admissions-matching-engine";
 

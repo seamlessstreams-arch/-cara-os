@@ -19,7 +19,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -53,10 +53,30 @@ function useCreateVoiceRecord() {
 }
 import type { VoiceRecord, VoiceTheme } from "@/types/extended";
 import {
-  MessageSquare, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  Plus, Heart, Star, CheckCircle2, Clock, AlertTriangle,
-  User, Calendar, Quote, Sparkles, Loader2, Eye, Mic,
-  BookOpen, Shield, Target, Lightbulb, Puzzle, Brain,
+  MessageSquare,
+  Search,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Heart,
+  Star,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  User,
+  Calendar,
+  Quote,
+  Sparkles,
+  Loader2,
+  Mic,
+  BookOpen,
+  Shield,
+  Target,
+  Lightbulb,
+  Puzzle,
+  Brain,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

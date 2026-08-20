@@ -29,8 +29,6 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   DeafHearingSupportRecord,
   HearingStatus,
-  HearingPreferredLanguage,
-  BSLLevel,
 } from "@/types/extended";
 import {
   HEARING_STATUS_LABEL,

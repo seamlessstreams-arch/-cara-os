@@ -10,9 +10,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle, Brain, ChevronRight, Loader2, Shield,
-  ShieldAlert, Users, AlertCircle, Sparkles, MapPin,
-  Siren, Eye, UserX, Activity, Flame,
+  AlertTriangle,
+  Brain,
+  Loader2,
+  Shield,
+  ShieldAlert,
+  Users,
+  AlertCircle,
+  Sparkles,
+  MapPin,
+  Siren,
+  Eye,
+  UserX,
+  Activity,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

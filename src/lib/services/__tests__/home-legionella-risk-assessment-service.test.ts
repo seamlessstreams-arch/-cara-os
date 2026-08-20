@@ -18,9 +18,6 @@ import {
 import type {
   HomeLegionellaRiskAssessmentRow,
   WaterSystemType,
-  RiskLevel,
-  LegionellaTestResult,
-  ComplianceStatus,
 } from "../home-legionella-risk-assessment-service";
 
 const {

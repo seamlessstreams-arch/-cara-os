@@ -25,16 +25,12 @@ import type {
   Action,
   Sensitivity,
   ApprovalLevel,
-  Role,
-  PermissionRule,
 } from "./types";
 
 import {
   PERMISSION_RULES,
   BLOCKED_STATUSES,
   RESTRICTED_STATUSES,
-  ROLE_HIERARCHY,
-  isAtLeast,
   MAX_APPROVAL_LEVEL,
   SELF_APPROVAL_BLOCKED_ROLES,
 } from "./role-rules";

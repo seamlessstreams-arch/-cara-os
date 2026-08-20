@@ -56,7 +56,6 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import {
   PATHWAY_STAGE_LABELS,
-  COMPETENCY_DOMAIN_LABELS,
   type PathwayStage,
   type StaffCompetencyProfile,
   type AppraisalRecord,

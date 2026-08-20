@@ -2,9 +2,18 @@
 
 import { useState, useMemo } from "react";
 import {
-  AlertTriangle, Phone, Clock, ChevronDown, ChevronUp,
-  CheckCircle2, XCircle, HelpCircle, Shield, PhoneCall,
-  Mail, Search, ArrowUpDown, Timer, Loader2,
+  Phone,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  Shield,
+  PhoneCall,
+  Mail,
+  Search,
+  ArrowUpDown,
+  Timer,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -18,7 +27,6 @@ import { getStaffName } from "@/lib/seed-data";
 import type {
   EmergencyReferral,
   EmergencyPlacementStatus,
-  EmergencyPlacementContactMethod,
   EmergencyPlacementUrgency,
 } from "@/types/extended";
 import {

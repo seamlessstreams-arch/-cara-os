@@ -8,7 +8,7 @@
 // "Impact on existing children is considered."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -28,7 +28,6 @@ import type {
   Referral,
   ReferralStatus,
   DeclineReason,
-  MatchingCriteria as MatchingCriteriaType,
   ImpactLevel,
 } from "../matching-referral-service";
 

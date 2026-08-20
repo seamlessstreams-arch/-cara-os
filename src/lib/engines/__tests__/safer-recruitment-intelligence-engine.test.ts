@@ -16,10 +16,6 @@ import {
   type ReferenceInput,
   type ConditionalOfferInput,
   type SaferRecruitmentIntelligenceInput,
-  type CandidateStage,
-  type CheckType,
-  type CheckStatus,
-  type ReferenceStatus,
 } from "../safer-recruitment-intelligence-engine";
 
 const TODAY = "2026-05-25";

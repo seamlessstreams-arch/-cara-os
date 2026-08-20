@@ -10,8 +10,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Moon, ChevronRight, AlertTriangle, Brain,
-  Users, Shield, Lock, Loader2,
+  Moon,
+  ChevronRight,
+  AlertTriangle,
+  Brain,
+  Users,
+  Lock,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";

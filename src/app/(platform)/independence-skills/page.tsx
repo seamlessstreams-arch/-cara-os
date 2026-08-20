@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceSkillsRecord, IndependenceSkillProficiency, IndependenceSkillCategory } from "@/types/extended";
-import { INDEPENDENCE_SKILL_PROFICIENCY_LABEL, INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
+import { INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

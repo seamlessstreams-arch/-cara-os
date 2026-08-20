@@ -17,8 +17,13 @@ import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  Stethoscope, AlertTriangle, CheckCircle2, XCircle,
-  Clock, Calendar, TrendingDown, TrendingUp, Minus,
+  Stethoscope,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Calendar,
+  Minus,
 } from "lucide-react";
 
 interface StatutoryCheck {

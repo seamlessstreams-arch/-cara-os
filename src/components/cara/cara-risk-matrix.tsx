@@ -11,9 +11,18 @@
 
 import React, { useState } from "react";
 import {
-  Sparkles, AlertTriangle, TrendingUp, TrendingDown, Minus,
-  ChevronDown, ChevronUp, Shield, Heart, BookOpen,
-  Home, Users, Brain, Activity,
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Shield,
+  Heart,
+  BookOpen,
+  Home,
+  Users,
+  Brain,
+  Activity,
 } from "lucide-react";
 
 import { seedDay } from "@/lib/seed-date";

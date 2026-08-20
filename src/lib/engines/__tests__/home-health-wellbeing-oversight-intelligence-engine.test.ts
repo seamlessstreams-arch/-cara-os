@@ -7,7 +7,6 @@ import {
   type HealthMonitoringInput,
   type HealthPassportInput,
   type HealthRecordEntryInput,
-  type HealthWellbeingOversightResult,
 } from "../home-health-wellbeing-oversight-intelligence-engine";
 
 /* ── Helpers ────────────────────────────────────────────────────────────────── */
