@@ -54,7 +54,7 @@ export default function IndependenceSkillsPage() {
     queryFn: () =>
       api.get<{ data: IndependenceSkillsRecord[] }>("/api/v1/independence-skills-records"),
   });
-  const data: IndependenceSkillsRecord[] = res?.data ?? [];
+  const data: IndependenceSkillsRecord[] = useMemo(() => res?.data ?? [], [res]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");

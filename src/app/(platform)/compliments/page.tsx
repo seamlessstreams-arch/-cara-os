@@ -79,7 +79,7 @@ export default function ComplimentsPage() {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
-  const entries = cmpData?.data ?? [];
+  const entries = useMemo(() => cmpData?.data ?? [], [cmpData]);
   const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

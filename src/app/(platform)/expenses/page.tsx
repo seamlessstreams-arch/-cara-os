@@ -181,7 +181,7 @@ export default function ExpensesPage() {
     queryKey: ["expenses", {}],
     queryFn: () => apiFetch<ExpensesResponse>("/expenses"),
   });
-  const expenses: Expense[] = expensesQuery.data?.data ?? [];
+  const expenses: Expense[] = useMemo(() => expensesQuery.data?.data ?? [], [expensesQuery.data]);
   const createExpense = useMutation({
     mutationFn: (data: Partial<Expense>) => apiFetch<{ data: Expense }>("/expenses", { method: "POST", body: JSON.stringify(data) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses"] }),

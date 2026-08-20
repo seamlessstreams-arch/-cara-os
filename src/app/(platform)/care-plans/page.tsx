@@ -578,7 +578,7 @@ export default function CarePlansPage() {
   const plansQuery  = useCarePlans({ homeId: "home_oak" });
   const updatePlan  = useUpdateCarePlan();
 
-  const plans  = plansQuery.data?.data ?? [];
+  const plans = useMemo(() => plansQuery.data?.data ?? [], [plansQuery.data]);
   const meta   = plansQuery.data?.meta;
 
   const [caraBusy, setCaraBusy]   = useState<string | null>(null);

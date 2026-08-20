@@ -75,7 +75,7 @@ const STATUS_BORDER: Record<LessonStatus, string> = {
 
 export default function LessonsLearnedRegisterPage() {
   const { data: res, isLoading } = useLessonsLearned();
-  const data: LessonLearned[] = res?.data ?? [];
+  const data: LessonLearned[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

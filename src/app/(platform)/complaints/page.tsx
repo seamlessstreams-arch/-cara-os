@@ -533,7 +533,7 @@ export default function ComplaintsPage() {
     },
   });
 
-  const complaints = complaintsQuery.data?.data ?? [];
+  const complaints = useMemo(() => complaintsQuery.data?.data ?? [], [complaintsQuery.data]);
   const meta       = complaintsQuery.data?.meta;
 
   const [showNew, setShowNew]     = useState(false);

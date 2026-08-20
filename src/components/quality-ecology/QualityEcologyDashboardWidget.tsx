@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatRate, meets } from "@/lib/metrics/rate";
 
@@ -61,11 +61,7 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/quality-ecology?homeId=${homeId}`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -76,7 +72,11 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

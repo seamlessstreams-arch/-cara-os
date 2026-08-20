@@ -64,7 +64,7 @@ export default function ChildImmigrationUascSupportPage() {
     queryKey: ["immigration-uasc-records"],
     queryFn: () => api.get<{ data: ImmigrationUascRecord[] }>("/api/v1/immigration-uasc-records"),
   });
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("status");

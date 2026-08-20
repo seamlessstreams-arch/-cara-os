@@ -51,7 +51,7 @@ export default function InfectionControlPage() {
       api.post("/api/v1/infection-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
-  const data: InfectionRecord[] = res?.data ?? [];
+  const data: InfectionRecord[] = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("all");

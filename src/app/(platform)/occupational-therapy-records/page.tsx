@@ -130,7 +130,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function OccupationalTherapyRecordsPage() {
   const { data: res, isLoading, isError, refetch } = useOccupationalTherapyRecords();
-  const data: OccupationalTherapyRecord[] = res?.data ?? [];
+  const data: OccupationalTherapyRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

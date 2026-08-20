@@ -583,7 +583,7 @@ export default function WelfareChecksPage() {
     refetchInterval: 60_000,
   });
 
-  const rounds = data?.data ?? [];
+  const rounds = useMemo(() => data?.data ?? [], [data]);
   const meta = data?.meta;
 
   // Filter rounds by search

@@ -108,7 +108,7 @@ const EXPORT_COLS: ExportColumn<LACReview>[] = [
 export default function LACReviewsPage() {
   const { data: lacData, isLoading, isError, refetch } = useLACReviews();
   const createReview = useCreateLACReview();
-  const reviews = lacData?.data ?? [];
+  const reviews = useMemo(() => lacData?.data ?? [], [lacData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");

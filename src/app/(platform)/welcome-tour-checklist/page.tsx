@@ -54,7 +54,7 @@ const exportCols: ExportColumn<WelcomeTour>[] = [
 
 export default function WelcomeTourChecklistPage() {
   const { data: result, isLoading } = useWelcomeTours(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterPace, setFilterPace] = useState("all");
   const [sortBy, setSortBy] = useState("date");

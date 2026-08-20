@@ -120,7 +120,7 @@ const SKILL_CLR: Record<PathwaySkillLevel, string> = {
 export default function PathwayPlan16PlusPage() {
   const homeName = useHomeName();
   const { data: res, isLoading, isError, refetch } = usePathwayPlans();
-  const plans: PathwayPlan[] = res?.data ?? [];
+  const plans: PathwayPlan[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

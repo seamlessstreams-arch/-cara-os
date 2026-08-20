@@ -64,7 +64,7 @@ const STATUS_CONFIG: Record<DentalRegistrationStatus, { colour: string }> = {
 
 export default function DentalRecordsPage() {
   const { data: raw, isLoading } = useDentalRecords();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

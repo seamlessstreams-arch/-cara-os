@@ -43,7 +43,7 @@ export default function ChildAsthmaActionPlanPage() {
     queryKey: [ASTHMA_PLANS_KEY],
     queryFn: () => api.get<{ data: AsthmaPlan[] }>(ASTHMA_PLANS_API),
   });
-  const data = resp?.data ?? [];
+  const data = useMemo(() => resp?.data ?? [], [resp]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterDiagnosis, setFilterDiagnosis] = useState("all");

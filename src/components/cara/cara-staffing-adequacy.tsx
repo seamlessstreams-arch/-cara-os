@@ -8,7 +8,7 @@
 // and regulatory compliance for the RM.
 // ════════════════════════════════════════════════��═════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Loader2, Users, AlertTriangle, CheckCircle2, Clock,
   ChevronDown, ChevronUp, RefreshCw, Shield, XCircle,
@@ -95,7 +95,7 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -108,9 +108,9 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId, days]);
 
-  useEffect(() => { fetchData(); }, [homeId, days]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
     return (

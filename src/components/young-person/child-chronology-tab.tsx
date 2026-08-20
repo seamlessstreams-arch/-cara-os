@@ -135,7 +135,7 @@ function monthKey(date: string): string {
 export function ChildChronologyTab({ childId, childName }: { childId: string; childName: string }) {
   const { data, isLoading } = useChildChronology({ childId, limit: 80 });
   const [importOpen, setImportOpen] = useState(false);
-  const items = data?.data ?? [];
+  const items = useMemo(() => data?.data ?? [], [data]);
   const stats = data?.stats;
 
   const groups = useMemo(() => {

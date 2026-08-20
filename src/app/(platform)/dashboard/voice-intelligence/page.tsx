@@ -158,11 +158,7 @@ function VoiceIntelligenceContent() {
   const [historyLoading, setHistoryLoading] = useState(true);
 
   // ── Load history on mount ────────────────────────────────────────────────
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  async function loadHistory() {
+  const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
       const res = await fetch(
@@ -177,7 +173,11 @@ function VoiceIntelligenceContent() {
     } finally {
       setHistoryLoading(false);
     }
-  }
+  }, [sessionHomeId, sessionUserId]);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   // ── Transcription ────────────────────────────────────────────────────────
   async function submitForTranscription() {
@@ -288,7 +288,7 @@ function VoiceIntelligenceContent() {
         setSaving(false);
       }
     },
-    [caraResponse, inputType],
+    [caraResponse, inputType, loadHistory, sessionHomeId, sessionUserId],
   );
 
   // ── Reset everything ─────────────────────────────────────────────────────

@@ -316,10 +316,12 @@ export default function CaraHubPage() {
   const urgentRecs = useMemo(() => pendingRecs.filter((r) => r.priority === "urgent"), [pendingRecs]);
 
   // Sunday-start week, pinned to the London calendar.
-  const weekStart = new Date(daysFromNow(-londonWeekday()) + "T00:00:00Z");
+  // A primitive date-string dep: new strings compare equal across renders, so
+  // the memo re-runs only when the London week actually rolls over.
+  const weekStartStr = daysFromNow(-londonWeekday());
   const kwThisWeek = useMemo(
-    () => (kwData?.data ?? []).filter((s) => new Date(s.created_at) >= weekStart),
-    [kwData]
+    () => (kwData?.data ?? []).filter((s) => new Date(s.created_at) >= new Date(weekStartStr + "T00:00:00Z")),
+    [kwData, weekStartStr]
   );
 
   const hasCriticalFlags = openFlags.some((f) => f.severity === "critical");

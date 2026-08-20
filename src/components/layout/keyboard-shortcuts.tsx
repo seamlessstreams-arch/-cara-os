@@ -7,7 +7,7 @@
 // need to move quickly between pages during a busy shift.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Keyboard, X } from "lucide-react";
@@ -21,7 +21,7 @@ export function KeyboardShortcuts() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const groups: ShortcutGroup[] = [
+  const groups: ShortcutGroup[] = useMemo(() => [
     {
       label: "Navigation",
       shortcuts: [
@@ -57,7 +57,7 @@ export function KeyboardShortcuts() {
         { keys: ["Esc"], description: "Close modal / deselect" },
       ],
     },
-  ];
+  ], [router]);
 
   // ── "G then X" two-key sequence tracking ──────────────────────────────
   const [gPending, setGPending] = useState(false);
@@ -107,7 +107,7 @@ export function KeyboardShortcuts() {
       // Let the page handle this via its own listener
       return;
     }
-  }, [open, gPending, groups, router]);
+  }, [open, gPending, groups]);
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);

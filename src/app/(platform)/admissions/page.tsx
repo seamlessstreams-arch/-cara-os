@@ -77,7 +77,7 @@ export default function AdmissionsPage() {
     },
   });
 
-  const records = response?.data ?? [];
+  const records = useMemo(() => response?.data ?? [], [response]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

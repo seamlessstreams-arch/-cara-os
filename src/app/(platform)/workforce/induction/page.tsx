@@ -432,7 +432,7 @@ export default function InductionTrackerPage() {
     });
 
     return list;
-  }, [records, filter, search, staff, sortBy, getStaffName]);
+  }, [records, filter, search, sortBy, getStaffName]);
 
   const isLoading = inductionQuery.isPending || staffQuery.isPending;
 

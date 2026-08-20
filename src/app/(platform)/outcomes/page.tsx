@@ -957,7 +957,7 @@ export default function OutcomesPage() {
   const [sortKey, setSortKey] = useState<SortKey>("child");
   const [showNewTarget, setShowNewTarget] = useState(false);
 
-  const targets    = data?.data ?? [];
+  const targets = useMemo(() => data?.data ?? [], [data]);
   const reviews    = data?.reviews ?? [];
   const meta       = data?.meta;
   const perChild   = data?.per_child ?? [];

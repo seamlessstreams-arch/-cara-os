@@ -100,7 +100,7 @@ export default function ChildAllergiesEpipenPlanPage() {
     queryKey: [ALLERGY_PLANS_KEY],
     queryFn: () => api.get<{ data: AllergyPlan[] }>(ALLERGY_PLANS_API),
   });
-  const records = resp?.data ?? [];
+  const records = useMemo(() => resp?.data ?? [], [resp]);
 
   // ── Stats ───────────────────────────────────────────────────────────────────
 

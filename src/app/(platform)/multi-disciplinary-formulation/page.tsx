@@ -51,7 +51,7 @@ const renderParticipant = (p: string) => p.startsWith("staff_") ? getStaffName(p
 
 export default function MultiDisciplinaryFormulationPage() {
   const { data: res, isLoading } = useMultiDisciplinaryFormulations();
-  const data: MultiDisciplinaryFormulation[] = res?.data ?? [];
+  const data: MultiDisciplinaryFormulation[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

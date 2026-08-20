@@ -116,7 +116,7 @@ export default function BereavementLossSupportPage() {
     queryKey: ["bereavement-records"],
     queryFn: () => api.get<{ data: BereavementRecord[] }>("/api/v1/bereavement-records"),
   });
-  const data = brData?.data ?? [];
+  const data = useMemo(() => brData?.data ?? [], [brData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterLoss, setFilterLoss] = useState<string>("all");

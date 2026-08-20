@@ -377,7 +377,7 @@ export function RecordOnceProvider({
 
   // Fetch risk assessments for this child
   const riskQuery = useRiskAssessments(childId ? { childId } : undefined);
-  const riskData = riskQuery.data?.data ?? [];
+  const riskData = useMemo(() => riskQuery.data?.data ?? [], [riskQuery.data]);
 
   // Fetch specific staff member if requested (e.g. for staff-related forms)
   const staffQuery = useStaffMember(staffIdFromProps);

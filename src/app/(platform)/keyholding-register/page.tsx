@@ -69,7 +69,7 @@ const KS_TEXT: Record<KeyholdingStatus, string> = {
 
 export default function KeyholdingRegisterPage() {
   const { data: res, isLoading } = useKeyRecords();
-  const data: KeyRecord[] = res?.data ?? [];
+  const data: KeyRecord[] = useMemo(() => res?.data ?? [], [res]);
   const createItem = useCreateKeyRecord();
   const [krForm, setKrForm] = useState({ key_name: "", key_number: "", total_copies: "1", key_type: "master" as KeyType, location: "", notes: "" });
   const setKR = (k: string, v: unknown) => setKrForm((p) => ({ ...p, [k]: v }));

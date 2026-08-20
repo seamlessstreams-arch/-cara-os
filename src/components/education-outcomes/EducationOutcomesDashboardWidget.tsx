@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
 function pct(value: number | null | undefined): string {
@@ -218,11 +218,7 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -236,7 +232,11 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   function toggleSection(section: string) {
     setExpandedSections(prev => {

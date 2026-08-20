@@ -46,7 +46,7 @@ const consentColour: Record<ChildConsentResponse, string> = {
 
 export default function MediaPublicityConsentPage() {
   const { data: res, isLoading } = useMediaPublicityConsents();
-  const data: MediaPublicityConsent[] = res?.data ?? [];
+  const data: MediaPublicityConsent[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

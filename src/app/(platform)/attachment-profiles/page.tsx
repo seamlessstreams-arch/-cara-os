@@ -108,7 +108,7 @@ export default function AttachmentProfilesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: [ATTACHMENT_PROFILES_KEY] }),
   });
 
-  const data = apData?.data ?? [];
+  const data = useMemo(() => apData?.data ?? [], [apData]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

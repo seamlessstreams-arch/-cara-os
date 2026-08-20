@@ -77,7 +77,7 @@ const exportCols: ExportColumn<TimelineEvent>[] = [
 // ── component ───────────────────────────────────────────────────────────────
 export default function TraumaInformedTimelinePage() {
   const { data: result, isLoading, isError, refetch } = useTimelineEvents(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

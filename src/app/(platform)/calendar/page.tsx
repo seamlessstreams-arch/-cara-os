@@ -77,7 +77,7 @@ export default function CalendarPage() {
     setEditorOpen(true);
   }
 
-  const items = feed.data?.items ?? [];
+  const items = useMemo(() => feed.data?.items ?? [], [feed.data]);
   const itemsByDay = useMemo(() => {
     const m = new Map<string, CalendarItem[]>();
     for (const it of items) {

@@ -204,7 +204,7 @@ function MaintenanceCard({
 export default function MaintenancePage() {
   const uid = useId();
   const maintenanceQuery = useMaintenance();
-  const items: MaintenanceItem[] = maintenanceQuery.data?.data ?? [];
+  const items: MaintenanceItem[] = useMemo(() => maintenanceQuery.data?.data ?? [], [maintenanceQuery.data]);
   const createItem = useCreateMaintenanceItem();
   const updateItem = useUpdateMaintenanceItem();
 

@@ -61,7 +61,7 @@ const STAFF_IDS = ["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "
 
 export default function MedicationTrainingPage() {
   const { data: res, isLoading } = useMedTrainingRecords();
-  const data: MedTrainingRecord[] = res?.data ?? [];
+  const data: MedTrainingRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

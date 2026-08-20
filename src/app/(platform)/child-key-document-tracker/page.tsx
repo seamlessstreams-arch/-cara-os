@@ -81,7 +81,7 @@ function daysUntil(iso: string): number {
 
 export default function ChildKeyDocumentTrackerPage() {
   const { data: queryData, isLoading } = useChildKeyDocuments();
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState<string>("all");

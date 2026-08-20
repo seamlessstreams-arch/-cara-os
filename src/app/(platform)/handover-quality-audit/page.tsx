@@ -96,7 +96,7 @@ type SortKey =
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function HandoverQualityAuditPage() {
   const { data: res, isLoading, isError, refetch } = useHandoverAudits();
-  const audits = res?.data ?? [];
+  const audits = useMemo(() => res?.data ?? [], [res]);
 
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [filterRag, setFilterRag] = useState<string>("all");

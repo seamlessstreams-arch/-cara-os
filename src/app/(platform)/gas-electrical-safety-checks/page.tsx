@@ -99,7 +99,7 @@ const exportCols: ExportColumn<SafetyCheckRecord>[] = [
 
 export default function GasElectricalSafetyChecksPage() {
   const { data: res, isLoading } = useSafetyCheckRecords();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");

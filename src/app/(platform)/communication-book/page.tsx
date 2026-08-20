@@ -57,7 +57,7 @@ export default function CommunicationBookPage() {
     queryKey: ["communication-book-entries"],
     queryFn: () => api.get<{ data: CommunicationBookEntry[] }>("/api/v1/communication-book-entries"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
   const createMut = useMutation({
     mutationFn: (data: Partial<CommunicationBookEntry>) =>
       api.post("/api/v1/communication-book-entries", data),

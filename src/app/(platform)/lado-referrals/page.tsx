@@ -76,7 +76,7 @@ const STAFF_ACTION_TEXT: Record<LadoStaffAction, string> = { suspended: "text-[-
 
 export default function LADOReferralsPage() {
   const { data: res, isLoading } = useLadoReferrals();
-  const data: LadoReferral[] = res?.data ?? [];
+  const data: LadoReferral[] = useMemo(() => res?.data ?? [], [res]);
   const createMut = useCreateLadoReferral();
 
   const [search, setSearch] = useState("");

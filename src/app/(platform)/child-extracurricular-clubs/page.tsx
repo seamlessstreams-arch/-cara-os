@@ -93,7 +93,7 @@ export default function ChildExtracurricularClubsPage() {
     queryKey: ["extracurricular-club-records"],
     queryFn: () => api.get<{ data: ExtracurricularClubRecord[] }>("/api/v1/extracurricular-club-records"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");

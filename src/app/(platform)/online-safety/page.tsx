@@ -100,7 +100,7 @@ export default function OnlineSafetyPage() {
   const { data: incRes, isLoading: incLoading } = useOnlineSafetyIncidents();
   const createIncident = useCreateOnlineSafetyIncident();
   const { data: agRes, isLoading: agLoading } = useOnlineSafetyAgreements();
-  const data: OnlineSafetyIncident[] = incRes?.data ?? [];
+  const data: OnlineSafetyIncident[] = useMemo(() => incRes?.data ?? [], [incRes]);
   const agreements: OnlineSafetyAgreement[] = agRes?.data ?? [];
   const isLoading = incLoading || agLoading;
 

@@ -69,7 +69,7 @@ const AS_CLR: Record<DevicePolicyAgreementStatus, string> = { active: "bg-green-
 
 export default function DevicePolicyPage() {
   const { data: raw, isLoading } = useDevicePolicyRecords();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

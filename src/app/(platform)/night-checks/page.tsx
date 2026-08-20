@@ -112,7 +112,7 @@ function CheckRow({ check }: { check: NightCheck }) {
 
 export default function NightChecksPage() {
   const { data: res, isLoading } = useNightChecks();
-  const checks: NightCheck[] = res?.data ?? [];
+  const checks: NightCheck[] = useMemo(() => res?.data ?? [], [res]);
 
   const [showNew, setShowNew] = useState(false);
 

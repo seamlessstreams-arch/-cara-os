@@ -71,7 +71,7 @@ export default function FuneralAttendanceRecordsPage() {
     queryKey: ["funeral-records"],
     queryFn: () => api.get<{ data: FuneralRecord[] }>("/api/v1/funeral-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [decisionFilter, setDecisionFilter] = useState<string>("all");

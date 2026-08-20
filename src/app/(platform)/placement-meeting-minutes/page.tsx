@@ -69,7 +69,7 @@ const exportCols: ExportColumn<PlacementMeeting>[] = [
 
 export default function PlacementMeetingMinutesPage() {
   const { data: res, isLoading } = usePlacementMeetings();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

@@ -78,7 +78,7 @@ const PROGRESS_META: Record<PepProgress, { label: string; color: string; icon: R
 
 export default function PepTrackerPage() {
   const { data: res, isLoading } = usePepRecords();
-  const peps: PepRecord[] = res?.data ?? [];
+  const peps: PepRecord[] = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createPep = useCreatePepRecord();

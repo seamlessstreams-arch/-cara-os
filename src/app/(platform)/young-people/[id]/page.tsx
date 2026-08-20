@@ -437,7 +437,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
 
   const keyWorkQuery  = useKeyWorkSessions({ childId: id });
   const createSession = useCreateKeyWorkSession();
-  const keyWorkSessions: KeyWorkSession[] = keyWorkQuery.data?.data ?? [];
+  const keyWorkSessions: KeyWorkSession[] = useMemo(() => keyWorkQuery.data?.data ?? [], [keyWorkQuery.data]);
 
   const contactArrangementsQuery = useQuery({
     queryKey: ["contact-arrangements", id],
@@ -452,7 +452,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
     enabled: !!id,
   });
   const arrangements: ContactArrangement[] = contactArrangementsQuery.data?.data ?? [];
-  const contactLogs: ContactLog[]          = contactLogsQuery.data?.data ?? [];
+  const contactLogs: ContactLog[] = useMemo(() => contactLogsQuery.data?.data ?? [], [contactLogsQuery.data]);
 
   const missingQuery   = useMissingEpisodes({ childId: id });
   const missingEpisodes: MissingEpisode[] = missingQuery.data?.data ?? [];

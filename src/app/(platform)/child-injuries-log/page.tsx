@@ -67,7 +67,7 @@ const TYPE_CLR: Record<ChildInjuryType, string> = {
 
 export default function ChildInjuriesLogPage() {
   const { data: queryData, isLoading } = useChildInjuryRecords();
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");

@@ -451,7 +451,7 @@ const STATUS_LABELS: Record<NotifiableStatus, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function NotifiableEventsPage() {
   const { data: neData, isLoading, isError, refetch } = useNotifiableEvents();
-  const events = neData?.data ?? [];
+  const events = useMemo(() => neData?.data ?? [], [neData]);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

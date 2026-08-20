@@ -98,12 +98,12 @@ export default function PracticeObservationsPage() {
   const obsQuery   = usePracticeObservations();
   const staffQuery = useStaff();
 
-  const allObs = obsQuery.data?.data ?? [];
+  const allObs = useMemo(() => obsQuery.data?.data ?? [], [obsQuery.data]);
   const staff  = staffQuery.data?.data ?? [];
 
   const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
 
-  const staffObserved = [...new Set(allObs.map((o) => o.staff_id))];
+  const staffObserved = useMemo(() => [...new Set(allObs.map((o) => o.staff_id))], [allObs]);
 
   // Outcome counts
   const outcomeCounts = useMemo(() => {

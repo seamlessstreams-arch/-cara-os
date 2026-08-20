@@ -49,7 +49,7 @@ const RISK_COLORS: Record<StabilityRiskLevel, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PlacementStabilityPage() {
   const { data: res, isLoading } = usePlacementStabilityRecords();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("risk");
   const [expanded, setExpanded] = useState<string | null>(null);

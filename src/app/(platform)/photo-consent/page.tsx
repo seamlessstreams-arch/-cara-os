@@ -65,7 +65,7 @@ const STATUS_CLR: Record<PhotoConsentStatus, string> = {
 
 export default function PhotoConsentPage() {
   const { data: res, isLoading } = usePhotoConsentRecords();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterChild, setFilterChild] = useState("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

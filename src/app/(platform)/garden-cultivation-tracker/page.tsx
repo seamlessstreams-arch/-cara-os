@@ -72,7 +72,7 @@ export default function GardenCultivationTrackerPage() {
     queryKey: ["garden-plot-records"],
     queryFn: () => api.get<{ data: GardenPlotRecord[] }>("/api/v1/garden-plot-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState("all");

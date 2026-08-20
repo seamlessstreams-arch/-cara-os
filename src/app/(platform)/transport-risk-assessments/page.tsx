@@ -94,7 +94,7 @@ const recurringTypes: JourneyType[] = ["Routine recurring", "School run", "Famil
 
 export default function TransportRiskAssessmentsPage() {
   const { data: result, isLoading } = useTransportRAs(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

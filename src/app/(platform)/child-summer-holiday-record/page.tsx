@@ -50,7 +50,7 @@ export default function ChildSummerHolidayRecordPage() {
     queryKey: ["holiday-records"],
     queryFn: () => api.get<{ data: HolidayRecord[] }>("/api/v1/holiday-records"),
   });
-  const data: HolidayRecord[] = res?.data ?? [];
+  const data: HolidayRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [periodFilter, setPeriodFilter] = useState<string>("all");

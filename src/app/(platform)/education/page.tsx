@@ -98,7 +98,7 @@ export default function EducationPage() {
   const { data: response, isLoading } = useEducationRecords();
   const createRecord = useCreateEducationRecord();
 
-  const records = response?.data ?? [];
+  const records = useMemo(() => response?.data ?? [], [response]);
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

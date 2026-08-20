@@ -114,7 +114,7 @@ const PERSONS_OPTIONS = ["Manager", "GP", "Parent", "Social Worker", "Pharmacist
 
 export default function MedicationErrorsPage() {
   const { data: result, isLoading, isError, refetch } = useMedicationErrors();
-  const errors = result?.data ?? [];
+  const errors = useMemo(() => result?.data ?? [], [result]);
   const createMutation = useCreateMedicationError();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

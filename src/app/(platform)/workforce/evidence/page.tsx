@@ -114,8 +114,8 @@ export default function EvidencePortfolioPage() {
   const docsQuery  = useDocumentIntelligence();
   const staffQuery = useStaff();
 
-  const allDocs = docsQuery.data?.data ?? [];
-  const staff   = staffQuery.data?.data ?? [];
+  const allDocs = useMemo(() => docsQuery.data?.data ?? [], [docsQuery.data]);
+  const staff = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
   const getStaffName = (id: string | undefined | null) => {
     if (!id) return null;

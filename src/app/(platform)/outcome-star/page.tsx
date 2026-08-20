@@ -48,7 +48,7 @@ function scoreColor(score: number): string {
 
 export default function OutcomeStarPage() {
   const { data: res, isLoading } = useOutcomeStarAssessments();
-  const entries: OutcomeStarAssessment[] = res?.data ?? [];
+  const entries: OutcomeStarAssessment[] = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const exportData = useMemo(() => {

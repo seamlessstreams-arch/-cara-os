@@ -113,7 +113,7 @@ const exportCols: ExportColumn<ParentPartnershipRecord>[] = [
 
 export default function ParentPartnershipPage() {
   const { data: res, isLoading, isError, refetch } = useParentPartnershipRecords();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

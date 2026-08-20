@@ -432,7 +432,7 @@ export default function Reg44VisitorReportsPage() {
     onError: () => toastError("Update failed", "Could not update recommendation status."),
   });
 
-  const data: Reg44VisitReport[] = queryData?.data ?? [];
+  const data: Reg44VisitReport[] = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);

@@ -60,7 +60,7 @@ export default function InventoryPage() {
     queryKey: [KEY],
     queryFn: () => api.get<{ data: InventoryItem[] }>("/api/v1/inventory-items"),
   });
-  const items: InventoryItem[] = res?.data ?? [];
+  const items: InventoryItem[] = useMemo(() => res?.data ?? [], [res]);
 
   const createItem = useMutation({
     mutationFn: (data: Partial<InventoryItem>) =>

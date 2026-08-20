@@ -66,7 +66,7 @@ const STATUS_BORDER: Record<DoLReviewStatus, string> = { current: "border-l-ambe
 export default function DeprivationOfLibertyPage() {
   const { data: raw, isLoading } = useDoLRecords();
   const createRestriction = useCreateDoLRecord();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

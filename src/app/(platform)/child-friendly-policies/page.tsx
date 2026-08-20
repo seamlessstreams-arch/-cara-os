@@ -87,7 +87,7 @@ const exportCols: ExportColumn<ChildFriendlyPolicy>[] = [
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildFriendlyPoliciesPage() {
   const { data: res, isLoading, isError, refetch } = useChildFriendlyPolicies();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [filterArea, setFilterArea] = useState("all");
   const [filterFormat, setFilterFormat] = useState("all");

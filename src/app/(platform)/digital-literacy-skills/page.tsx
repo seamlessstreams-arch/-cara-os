@@ -100,7 +100,7 @@ const DOMAIN_COLOUR: Record<DigitalLiteracyDomain, string> = {
 
 export default function DigitalLiteracySkillsPage() {
   const { data: raw, isLoading, isError, refetch } = useDigitalLiteracySkillRecords();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

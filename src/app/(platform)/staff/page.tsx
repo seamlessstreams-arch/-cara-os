@@ -81,7 +81,7 @@ export default function StaffPage() {
   const today = todayStr();
 
   const { data, isLoading, isError } = useStaff();
-  const staffList: StaffEnriched[] = data?.data ?? [];
+  const staffList: StaffEnriched[] = useMemo(() => data?.data ?? [], [data]);
   const meta = data?.meta;
 
   const roles = useMemo(() => [...new Set(staffList.map((s) => s.role))], [staffList]);

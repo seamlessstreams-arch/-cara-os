@@ -42,7 +42,7 @@ export default function AnnualHealthAssessmentPage() {
     queryKey: [AHA_KEY],
     queryFn: () => api.get<{ data: AnnualHealthAssessment[] }>(AHA_API),
   });
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterDeadline, setFilterDeadline] = useState("all");

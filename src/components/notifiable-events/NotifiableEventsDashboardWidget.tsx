@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface EventMetrics {
   homeId: string;
@@ -54,11 +54,7 @@ export function NotifiableEventsDashboardWidget({ homeId = "home-oak" }: Props) 
   const [data, setData] = useState<EventMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/notifiable-events?homeId=${homeId}&view=overview`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -69,7 +65,11 @@ export function NotifiableEventsDashboardWidget({ homeId = "home-oak" }: Props) 
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

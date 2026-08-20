@@ -73,7 +73,7 @@ export default function ChildAspirationsTrackerPage() {
     queryKey: [ASPIRATION_RECORDS_KEY],
     queryFn: () => api.get<{ data: AspirationRecord[] }>(ASPIRATION_RECORDS_API),
   });
-  const data = resp?.data ?? [];
+  const data = useMemo(() => resp?.data ?? [], [resp]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterDomain, setFilterDomain] = useState<string>("all");

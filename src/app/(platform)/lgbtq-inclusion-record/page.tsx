@@ -63,7 +63,7 @@ const outChip = (status: OutStatus) => {
 
 export default function LGBTQInclusionRecordPage() {
   const { data: res, isLoading } = useLgbtqInclusionRecords();
-  const data: LgbtqInclusionRecord[] = res?.data ?? [];
+  const data: LgbtqInclusionRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");

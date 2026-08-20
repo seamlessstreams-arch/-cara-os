@@ -458,7 +458,7 @@ function NewReportDialog({
 export default function GovernanceReportsPage() {
   const { currentUser } = useAuthContext();
   const { data: reportsResult } = useRiGovernanceReports("home_oak");
-  const reports = (reportsResult?.data ?? []) as LocalReport[];
+  const reports = useMemo(() => (reportsResult?.data ?? []) as LocalReport[], [reportsResult]);
   const createMutation = useCreateRiGovernanceReport();
   const updateMutation = useUpdateRiGovernanceReport();
   const [showNew, setShowNew] = useState(false);

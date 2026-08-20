@@ -458,7 +458,7 @@ export default function OfstedEvidenceRoomPage() {
       byArea,
       uncategorised,
     };
-  }, [showPack, packItems, evidenceItems]);
+  }, [showPack, packItems, evidenceItems, homeName]);
 
   /* ── derived data ──────────────────────────────────────────────────────── */
 

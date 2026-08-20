@@ -75,7 +75,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 export default function MedicationNearMissLogPage() {
   const { data: res, isLoading, isError, refetch } = useMedicationNearMisses();
-  const records: MedicationNearMiss[] = res?.data ?? [];
+  const records: MedicationNearMiss[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

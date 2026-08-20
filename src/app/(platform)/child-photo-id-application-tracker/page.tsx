@@ -72,7 +72,7 @@ const daysUntil = (iso?: string) => {
 
 export default function ChildPhotoIdApplicationTrackerPage() {
   const { data: raw, isLoading } = usePhotoIdRecords();
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");

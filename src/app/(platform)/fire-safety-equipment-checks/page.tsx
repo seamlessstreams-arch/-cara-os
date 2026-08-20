@@ -65,7 +65,7 @@ export default function FireSafetyEquipmentChecksPage() {
     queryKey: ["fire-equipment-checks"],
     queryFn: () => api.get<{ data: FireEquipmentCheck[] }>("/api/v1/fire-equipment-checks"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

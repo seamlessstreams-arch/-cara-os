@@ -84,7 +84,7 @@ export default function HouseMeetingsPage() {
     setHmForm({ date: todayStr(), meeting_type: "regular", chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
     setShowNew(false);
   };
-  const meetings = hmData?.data ?? [];
+  const meetings = useMemo(() => hmData?.data ?? [], [hmData]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");

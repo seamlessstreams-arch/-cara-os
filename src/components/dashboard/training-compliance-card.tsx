@@ -124,7 +124,7 @@ function TrainingRow({ staff }: { staff: StaffEnriched }) {
 
 export function TrainingComplianceCard() {
   const { data, isLoading } = useStaff({ status: "active" });
-  const staff = data?.data ?? [];
+  const staff = useMemo(() => data?.data ?? [], [data]);
 
   // Filter to staff who should have training (exclude RI)
   const trainable = useMemo(

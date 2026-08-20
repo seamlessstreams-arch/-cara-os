@@ -127,7 +127,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function EqualityDiversityPage() {
   const { data: initRes, isLoading: initLoading } = useEqualityInitiatives();
   const { data: trainRes, isLoading: trainLoading } = useEqualityTraining();
-  const initiatives: EqualityInitiative[] = initRes?.data ?? [];
+  const initiatives: EqualityInitiative[] = useMemo(() => initRes?.data ?? [], [initRes]);
   const training: EqualityTrainingRecord[] = trainRes?.data ?? [];
   const monitoring = MONITORING;
 

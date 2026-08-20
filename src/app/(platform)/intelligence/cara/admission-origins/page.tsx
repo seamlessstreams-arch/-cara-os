@@ -250,11 +250,11 @@ export default function AdmissionOriginsPage() {
   });
   const [search, setSearch] = useState("");
 
-  const boards = emergency.data?.data.boards ?? [];
+  const boards = useMemo(() => emergency.data?.data.boards ?? [], [emergency.data]);
   const totalOverdue = emergency.data?.data.total_overdue ?? 0;
   const emergencyCount = emergency.data?.data.emergency_admissions ?? 0;
 
-  const stories = origins.data?.data.stories ?? [];
+  const stories = useMemo(() => origins.data?.data.stories ?? [], [origins.data]);
   const linked = origins.data?.data.linked ?? 0;
   const ypTotal = origins.data?.data.young_people_total ?? 0;
 

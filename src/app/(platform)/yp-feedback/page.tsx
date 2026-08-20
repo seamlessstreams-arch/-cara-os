@@ -134,7 +134,7 @@ export default function YPFeedbackPage() {
     setDialogOpen(false);
   };
 
-  const data = fbData?.data ?? [];
+  const data = useMemo(() => fbData?.data ?? [], [fbData]);
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 

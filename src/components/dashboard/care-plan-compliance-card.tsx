@@ -58,7 +58,7 @@ function overallRAG(plan: CarePlan): "green" | "amber" | "red" {
 
 export function CarePlanComplianceCard() {
   const plansQuery = useCarePlans({ homeId: "home_oak" });
-  const plans = plansQuery.data?.data ?? [];
+  const plans = useMemo(() => plansQuery.data?.data ?? [], [plansQuery.data]);
 
   const {
     total, redCount, amberCount, greenCount,

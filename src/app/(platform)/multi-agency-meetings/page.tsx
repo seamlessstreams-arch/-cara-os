@@ -76,7 +76,7 @@ const ACTION_CLR: Record<MeetingActionStatus, string> = {
 
 export default function MultiAgencyMeetingsPage() {
   const { data: res, isLoading } = useMultiAgencyMeetings();
-  const data: MultiAgencyMeeting[] = res?.data ?? [];
+  const data: MultiAgencyMeeting[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

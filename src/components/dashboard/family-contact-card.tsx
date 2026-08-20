@@ -37,8 +37,8 @@ export function FamilyContactCard() {
     enabled: true,
   });
 
-  const arrangements = arrangementsQuery.data?.data ?? [];
-  const logs = logsQuery.data?.data ?? [];
+  const arrangements = useMemo(() => arrangementsQuery.data?.data ?? [], [arrangementsQuery.data]);
+  const logs = useMemo(() => logsQuery.data?.data ?? [], [logsQuery.data]);
   const logMeta = logsQuery.data?.meta;
   const isPending = arrangementsQuery.isPending || logsQuery.isPending;
 

@@ -165,7 +165,7 @@ export function HomeLanding() {
     const map = new Map<string, (typeof store.staff)[0]>();
     store.staff.forEach((s) => map.set(s.id, s));
     return map;
-  }, [store.staff]);
+  }, [store]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 

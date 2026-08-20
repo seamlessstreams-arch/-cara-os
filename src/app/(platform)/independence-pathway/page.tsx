@@ -48,7 +48,7 @@ export default function IndependencePathwayPage() {
       api.get<{ data: IndependencePathway[] }>("/api/v1/independence-pathways"),
   });
   const { data: res, isLoading } = pathwaysQuery;
-  const data: IndependencePathway[] = res?.data ?? [];
+  const data: IndependencePathway[] = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState<"readiness" | "name" | "review">("readiness");

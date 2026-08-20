@@ -379,12 +379,8 @@ function SafeguardingConcernsTab() {
   const query = useIncidents({ status: "open" });
   const ypQuery = useYoungPeople();
   const allYP = ypQuery.data?.data ?? [];
-  const allOpen: Incident[] = query.data?.data ?? [];
+  const allOpen: Incident[] = useMemo(() => query.data?.data ?? [], [query.data]);
 
-  const SAFEGUARDING_TYPES = [
-    "safeguarding_concern", "exploitation_concern", "self_harm",
-    "missing_from_care", "contextual_safeguarding", "allegation",
-  ];
 
   const concerns = useMemo(() => {
     let list = allOpen.filter((i) => SAFEGUARDING_TYPES.includes(i.type));
@@ -1120,7 +1116,7 @@ function ChronologyTab() {
       api.get<{ data: ChronologyEntry[] }>(`/chronology-entries${qs ? `?${qs}` : ""}`),
     staleTime: 30_000,
   });
-  const CHRONOLOGY_ENTRIES = chronResult?.data ?? [];
+  const CHRONOLOGY_ENTRIES = useMemo(() => chronResult?.data ?? [], [chronResult]);
 
   const entries = useMemo(() => {
     let list = CHRONOLOGY_ENTRIES.filter((e) => e.child_id === selectedChild);
@@ -1130,7 +1126,7 @@ function ChronologyTab() {
       const db_ = new Date(`${b.date}T${b.time || "00:00"}`);
       return db_.getTime() - da.getTime();
     });
-  }, [selectedChild, filterCategory]);
+  }, [CHRONOLOGY_ENTRIES, selectedChild, filterCategory]);
 
   const yp = getYPById(selectedChild);
 
@@ -1588,6 +1584,11 @@ const SAFEGUARDING_EXPORT_COLS: ExportColumn<Incident>[] = [
   { header: "Reported By", accessor: (i) => getStaffName(i.reported_by) },
   { header: "Status", accessor: (i) => i.status },
   { header: "Oversight", accessor: (i) => i.oversight_by ? `${getStaffName(i.oversight_by)}` : "Pending" },
+];
+
+const SAFEGUARDING_TYPES = [
+  "safeguarding_concern", "exploitation_concern", "self_harm",
+  "missing_from_care", "contextual_safeguarding", "allegation",
 ];
 
 export default function SafeguardingPage() {

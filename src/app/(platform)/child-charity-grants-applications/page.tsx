@@ -88,7 +88,7 @@ const gbp = (n: number) =>
 
 export default function ChildCharityGrantsApplicationsPage() {
   const { data: res, isLoading, isError, refetch } = useCharityGrantRecords();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

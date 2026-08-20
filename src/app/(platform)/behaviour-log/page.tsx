@@ -66,7 +66,7 @@ export default function BehaviourLogPage() {
     queryKey: ["behaviour-log"],
     queryFn: () => api.get<{ data: BehaviourEntry[] }>("/api/v1/behaviour-log"),
   });
-  const entries = result?.data ?? [];
+  const entries = useMemo(() => result?.data ?? [], [result]);
   const createEntry = useMutation({
     mutationFn: (data: Partial<BehaviourEntry>) =>
       api.post("/api/v1/behaviour-log", data),

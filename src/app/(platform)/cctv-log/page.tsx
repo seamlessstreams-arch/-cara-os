@@ -73,7 +73,7 @@ const CAMERA_LABELS: Record<CCTVCamera, string> = {
 
 export default function CCTVLogPage() {
   const { data: ccData, isLoading } = useCCTVAccesses();
-  const data = ccData?.data ?? [];
+  const data = useMemo(() => ccData?.data ?? [], [ccData]);
   const createAccess = useCreateCCTVAccess();
 
   const [expanded, setExpanded] = useState<string | null>(null);

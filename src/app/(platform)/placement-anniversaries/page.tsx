@@ -65,7 +65,7 @@ const exportCols: ExportColumn<PlacementAnniversaryEntry>[] = [
 
 export default function PlacementAnniversariesPage() {
   const { data: res, isLoading } = usePlacementAnniversaryEntries();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterSignificance, setFilterSignificance] = useState("all");

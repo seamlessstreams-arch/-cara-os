@@ -103,9 +103,8 @@ const EXPORT_COLS: ExportColumn<RestraintRecord>[] = [
 
 export default function RestraintLogPage() {
   const { data: rstData, isLoading, isError, refetch } = useRestraints();
-  const records = rstData?.data ?? [];
+  const records = useMemo(() => rstData?.data ?? [], [rstData]);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
@@ -150,7 +149,7 @@ export default function RestraintLogPage() {
     }
     list.sort((a, b) => b.date.localeCompare(a.date));
     return list;
-  }, [records, search, sortBy]);
+  }, [records, search]);
 
   const stats = useMemo(() => {
     const total = records.length;

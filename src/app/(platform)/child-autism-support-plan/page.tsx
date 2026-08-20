@@ -120,7 +120,7 @@ export default function ChildAutismSupportPlanPage() {
     queryKey: ["autism-plans"],
     queryFn: () => api.get<{ data: AutismPlan[] }>("/api/v1/autism-plans"),
   });
-  const data = resp?.data ?? [];
+  const data = useMemo(() => resp?.data ?? [], [resp]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

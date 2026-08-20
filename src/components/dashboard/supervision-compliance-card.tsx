@@ -94,7 +94,7 @@ function useSupervisions(params?: Record<string, string>) {
 export function SupervisionComplianceCard() {
   const supQuery = useSupervisions();
   const staffQuery = useStaff();
-  const supervisions = supQuery.data?.data ?? [];
+  const supervisions = useMemo(() => supQuery.data?.data ?? [], [supQuery.data]);
   const meta = supQuery.data?.meta;
   const allStaff = (staffQuery.data?.data ?? []).filter((s) => s.is_active);
 

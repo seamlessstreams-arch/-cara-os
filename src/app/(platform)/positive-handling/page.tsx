@@ -56,7 +56,7 @@ function useCreatePositiveHandlingPlan() {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PositiveHandlingPage() {
   const { data: result, isLoading } = usePositiveHandling();
-  const plans = result?.data ?? [];
+  const plans = useMemo(() => result?.data ?? [], [result]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createPlan = useCreatePositiveHandlingPlan();

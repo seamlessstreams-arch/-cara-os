@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ── Local interfaces (mirror engine output shape) ─────────────────────────
 
@@ -115,11 +115,7 @@ export function MentalHealthWellbeingDashboardWidget({ homeId = "home-oak" }: Pr
   const [data, setData] = useState<IntelligenceData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/mental-health-wellbeing?homeId=${homeId}`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -130,7 +126,11 @@ export function MentalHealthWellbeingDashboardWidget({ homeId = "home-oak" }: Pr
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

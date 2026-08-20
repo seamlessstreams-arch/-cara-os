@@ -109,7 +109,7 @@ export default function LeadershipReadinessPage() {
   const staffQuery    = useStaff();
 
   const profiles = profilesQuery.data?.data ?? [];
-  const plans    = plansQuery.data?.data ?? [];
+  const plans = useMemo(() => plansQuery.data?.data ?? [], [plansQuery.data]);
   const staff    = staffQuery.data?.data ?? [];
 
   const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;

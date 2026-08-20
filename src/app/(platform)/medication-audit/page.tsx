@@ -77,7 +77,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 export default function MedicationAuditPage() {
   const { data: res, isLoading } = useMedicationAudits();
   const createAudit = useCreateMedicationAudit();
-  const data: MedicationAuditRecord[] = res?.data ?? [];
+  const data: MedicationAuditRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [maForm, setMaForm] = useState({
     date: todayStr(),

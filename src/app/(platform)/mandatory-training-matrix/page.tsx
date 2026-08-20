@@ -78,7 +78,7 @@ const CATEGORY_CLR: Record<TrainingCourseCategory, string> = {
 export default function MandatoryTrainingMatrixPage() {
   const [refresherFor, setRefresherFor] = useState<{ staffId: string; staffName: string; courses: string[] } | null>(null);
   const { data: res, isLoading } = useTrainingMatrixRows();
-  const data: TrainingMatrixRow[] = res?.data ?? [];
+  const data: TrainingMatrixRow[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterCompliance, setFilterCompliance] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"name" | "compliance" | "expiry">("compliance");

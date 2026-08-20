@@ -81,7 +81,7 @@ const EXPORT_COLS: ExportColumn<PettyCashEntry>[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 export default function PettyCashPage() {
   const { data: res, isLoading, isError, refetch } = usePettyCashEntries();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");

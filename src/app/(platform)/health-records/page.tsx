@@ -88,7 +88,7 @@ export default function HealthRecordsPage() {
     },
   });
 
-  const records = response?.data ?? [];
+  const records = useMemo(() => response?.data ?? [], [response]);
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

@@ -141,7 +141,7 @@ export default function BehaviourSupportPlansPage() {
       api.patch<{ data: BehaviourSupportPlan }>("/behaviour-support-plans", { id, ...updates }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-support-plans"] }),
   });
-  const plans = bspData?.data ?? [];
+  const plans = useMemo(() => bspData?.data ?? [], [bspData]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

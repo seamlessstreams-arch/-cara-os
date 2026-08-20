@@ -267,7 +267,7 @@ export default function FormsPage() {
       return res.json();
     },
   });
-  const forms: CareForm[] = formsQuery.data?.data ?? [];
+  const forms: CareForm[] = useMemo(() => formsQuery.data?.data ?? [], [formsQuery.data]);
   const meta = formsQuery.data?.meta;
 
   const filtered = useMemo(() => {

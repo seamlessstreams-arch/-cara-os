@@ -97,7 +97,7 @@ export default function FriendshipMappingPage() {
     queryKey: ["friendship-maps"],
     queryFn: () => api.get<{ data: FriendshipMap[] }>("/api/v1/friendship-maps"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");

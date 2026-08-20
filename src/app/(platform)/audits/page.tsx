@@ -132,7 +132,7 @@ export default function AuditsPage() {
       return api.get<AuditsResponse>(`/audits?${query}`);
     },
   });
-  const audits: Audit[] = auditsQuery.data?.data ?? [];
+  const audits: Audit[] = useMemo(() => auditsQuery.data?.data ?? [], [auditsQuery.data]);
 
   // Inlined: useCreateAudit
   const createAudit = useMutation({

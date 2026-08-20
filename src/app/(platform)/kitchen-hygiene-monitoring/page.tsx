@@ -57,7 +57,7 @@ const cleanColour: Record<FridgeOrganisation, string> = {
 
 export default function KitchenHygieneMonitoringPage() {
   const { data: res, isLoading } = useKitchenHygieneChecks();
-  const data: KitchenHygieneCheck[] = res?.data ?? [];
+  const data: KitchenHygieneCheck[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterShift, setFilterShift] = useState("all");
   const [filterVerdict, setFilterVerdict] = useState("all");

@@ -54,7 +54,7 @@ export default function GiftsRegisterPage() {
       api.post("/api/v1/gift-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gift-records"] }),
   });
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [search, setSearch] = useState("");
   const [filterDirection, setFilterDirection] = useState("all");

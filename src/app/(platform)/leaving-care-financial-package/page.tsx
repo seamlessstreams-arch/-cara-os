@@ -78,7 +78,7 @@ const STAGE_ORDER: Record<TransitionStage, number> = {
 
 export default function LeavingCareFinancialPackagePage() {
   const { data: res, isLoading } = useLeavingCarePackages();
-  const data: LeavingCarePackage[] = res?.data ?? [];
+  const data: LeavingCarePackage[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

@@ -104,7 +104,7 @@ const EXPORT_COLS: ExportColumn<SignificantEvent>[] = [
 export default function SignificantEventsPage() {
   const { data: seData, isLoading, isError, refetch } = useSignificantEvents();
   const createEvent = useCreateSignificantEvent();
-  const events = seData?.data ?? [];
+  const events = useMemo(() => seData?.data ?? [], [seData]);
   const threeDaysOut = daysFromNow(3);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
@@ -163,7 +163,7 @@ export default function SignificantEventsPage() {
     const pendingFollowUp = events.filter((e) => e.follow_up_required && e.follow_up_date && e.follow_up_date <= threeDaysOut).length;
     const pendingNotifications = events.flatMap((e) => e.notifications).filter((n) => n.status === "pending").length;
     return { total, positive, serious, pendingFollowUp, pendingNotifications };
-  }, [events]);
+  }, [events, threeDaysOut]);
 
   if (isLoading) {
     return (

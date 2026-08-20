@@ -76,7 +76,7 @@ export default function ChildMobilePhoneManagementPage() {
     queryKey: [KEY],
     queryFn: () => api.get<{ data: ChildPhoneRecord[] }>(API),
   });
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [contractFilter, setContractFilter] = useState<"all" | PhoneContractType>("all");

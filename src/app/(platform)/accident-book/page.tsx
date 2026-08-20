@@ -60,7 +60,7 @@ export default function AccidentBookPage() {
       api.post("/api/v1/accident-book", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["accident-book"] }),
   });
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [search, setSearch] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("all");

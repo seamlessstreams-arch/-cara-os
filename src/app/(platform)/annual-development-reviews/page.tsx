@@ -60,7 +60,7 @@ export default function AnnualDevelopmentReviewsPage() {
     queryKey: [ADR_KEY],
     queryFn: () => api.get<{ data: AnnualDevelopmentReview[] }>(ADR_API),
   });
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
   const createMutation = useMutation({
     mutationFn: (data: Partial<AnnualDevelopmentReview>) =>
       api.post(ADR_API, data),

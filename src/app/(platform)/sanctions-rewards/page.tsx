@@ -89,7 +89,7 @@ export default function SanctionsRewardsPage() {
   const { currentUser } = useAuthContext();
   const { data: srData, isLoading } = useSanctionRewards();
   const createSR = useCreateSanctionReward();
-  const entries = srData?.data ?? [];
+  const entries = useMemo(() => srData?.data ?? [], [srData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [dirFilter, setDirFilter] = useState("all");

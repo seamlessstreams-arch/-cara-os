@@ -67,7 +67,7 @@ export default function FireRiskAssessmentPage() {
     queryKey: ["fire-risk-items"],
     queryFn: () => api.get<{ data: FireRiskItem[] }>("/api/v1/fire-risk-items"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [riskFilter, setRiskFilter] = useState<string>("all");

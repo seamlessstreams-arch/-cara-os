@@ -53,7 +53,7 @@ const TREND_ICON: Record<KpiTrend, React.ReactNode> = {
 
 export default function KPIDashboardPage() {
   const { data: res, isLoading } = useKpiEntries();
-  const kpis: KpiEntry[] = res?.data ?? [];
+  const kpis: KpiEntry[] = useMemo(() => res?.data ?? [], [res]);
 
   const summary = useMemo(() => {
     const green = kpis.filter((k) => k.rag === "green").length;

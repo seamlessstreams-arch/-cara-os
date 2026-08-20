@@ -59,7 +59,7 @@ const exportCols: ExportColumn<ChildLedMeetingRecord>[] = [
 
 export default function ChildLedMeetingRecordPage() {
   const { data: queryData, isLoading } = useChildLedMeetings();
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [filterChair, setFilterChair] = useState("all");
   const [sortBy, setSortBy] = useState("date");

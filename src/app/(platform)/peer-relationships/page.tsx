@@ -126,7 +126,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function PeerRelationshipsPage() {
   const { data: pairRes, isLoading: pairLoading } = usePeerDynamics();
   const { data: groupRes, isLoading: groupLoading } = usePeerGroupDynamics();
-  const pairs: PeerDynamic[] = pairRes?.data ?? [];
+  const pairs: PeerDynamic[] = useMemo(() => pairRes?.data ?? [], [pairRes]);
   const groupDynamic: PeerGroupDynamic | undefined = (groupRes?.data ?? [])[0];
   const isLoading = pairLoading || groupLoading;
 

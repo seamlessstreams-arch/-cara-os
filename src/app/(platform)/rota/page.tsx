@@ -230,7 +230,7 @@ export default function RotaPage() {
 
   const [staffSearch, setStaffSearch] = useState("");
 
-  const shifts = rotaQuery.data?.shifts ?? [];
+  const shifts = useMemo(() => rotaQuery.data?.shifts ?? [], [rotaQuery.data]);
   const leave = rotaQuery.data?.leave ?? [];
   const meta = rotaQuery.data?.meta;
   const activeStaff = (staffQuery.data?.data ?? []).filter((s) => s.role !== "responsible_individual");

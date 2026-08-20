@@ -125,7 +125,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function DataProtectionPage() {
   const { data: raw, isLoading } = useDataProtectionRecords();
   const createRecord = useCreateDataProtectionRecord();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [retention] = useState<RetentionCategory[]>(RETENTION);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

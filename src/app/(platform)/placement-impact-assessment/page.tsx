@@ -62,7 +62,7 @@ const exportCols: ExportColumn<PlacementImpactAssessment>[] = [
 /* ─── component ─── */
 export default function PlacementImpactAssessmentPage() {
   const { data: res, isLoading } = usePlacementImpactAssessments();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");

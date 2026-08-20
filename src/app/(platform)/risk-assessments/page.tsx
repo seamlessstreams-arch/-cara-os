@@ -110,7 +110,7 @@ const EXPORT_COLS: ExportColumn<RiskAssessment>[] = [
 export default function RiskAssessmentsPage() {
   const { data: raData, isLoading, isError, refetch } = useRiskAssessments();
   const createRA = useCreateRiskAssessment();
-  const assessments = raData?.data ?? [];
+  const assessments = useMemo(() => raData?.data ?? [], [raData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");

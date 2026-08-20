@@ -63,7 +63,7 @@ export default function WakeUpRoutinesPage() {
     queryKey: ["wake-up-routines", undefined, "home_oak"],
     queryFn: () => api.get<{ data: WakeUpRoutine[] }>("/api/v1/wake-up-routines?home_id=home_oak"),
   });
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

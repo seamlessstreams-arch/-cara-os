@@ -62,7 +62,7 @@ export default function MuseumCulturalVisitsTrackerPage() {
       return res.json();
     },
   });
-  const data: CulturalVisit[] = res?.data ?? [];
+  const data: CulturalVisit[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

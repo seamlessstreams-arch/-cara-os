@@ -78,7 +78,7 @@ export default function ChildCookingBakingSkillsPage() {
     queryKey: ["cooking-baking-records"],
     queryFn: () => api.get<{ data: CookingBakingRecord[] }>("/api/v1/cooking-baking-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");

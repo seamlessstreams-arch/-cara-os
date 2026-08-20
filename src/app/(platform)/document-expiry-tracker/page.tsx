@@ -86,7 +86,7 @@ function daysUntil(iso: string): number {
 
 export default function DocumentExpiryTrackerPage() {
   const { data: queryData, isLoading } = useTrackedDocuments();
-  const documents = queryData?.data ?? [];
+  const documents = useMemo(() => queryData?.data ?? [], [queryData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<DocExpiryCategory | "all">("all");
   const [filterStatus, setFilterStatus] = useState<DocExpiryStatus | "all">("all");

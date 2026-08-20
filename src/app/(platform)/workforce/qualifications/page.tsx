@@ -523,7 +523,7 @@ export default function QualificationsPage() {
   const qualsQuery = useQualifications();
   const staffQuery = useStaff();
 
-  const allQuals = qualsQuery.data?.data ?? [];
+  const allQuals = useMemo(() => qualsQuery.data?.data ?? [], [qualsQuery.data]);
   const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
   const isLoading = qualsQuery.isLoading || staffQuery.isLoading;
 
@@ -559,7 +559,7 @@ export default function QualificationsPage() {
     });
 
     return list;
-  }, [allQuals, filter, search, staff, sortBy, getStaffName]);
+  }, [allQuals, filter, search, sortBy, getStaffName]);
 
   // Stats
   const mandatory = allQuals.filter((q) => q.mandatory);

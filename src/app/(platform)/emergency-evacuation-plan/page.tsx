@@ -57,7 +57,7 @@ const exportCols: ExportColumn<EvacuationPlan>[] = [
 
 export default function EmergencyEvacuationPlanPage() {
   const { data: queryData, isLoading } = useEvacuationPlans();
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("type");

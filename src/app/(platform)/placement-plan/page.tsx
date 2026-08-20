@@ -94,7 +94,7 @@ export default function PlacementPlanPage() {
 
   const { data: res, isLoading } = usePlacementObjectives();
   const createMut = useCreatePlacementObjective();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

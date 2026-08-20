@@ -76,7 +76,7 @@ const EXPORT_COLS: ExportColumn<OperationalMeeting>[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 export default function OperationalMeetingsPage() {
   const { data: res, isLoading, isError, refetch } = useOperationalMeetings();
-  const meetings: OperationalMeeting[] = res?.data ?? [];
+  const meetings: OperationalMeeting[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");

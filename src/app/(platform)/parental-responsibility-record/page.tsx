@@ -88,7 +88,7 @@ const exportCols: ExportColumn<ParentalResponsibilityRecord>[] = [
 
 export default function ParentalResponsibilityRecordPage() {
   const { data: res, isLoading } = useParentalResponsibilityRecords();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

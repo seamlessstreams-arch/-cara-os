@@ -104,7 +104,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 
 export default function ChildPreventRadicalisationScreeningPage() {
   const { data: res, isLoading, isError, refetch } = usePreventScreenings();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

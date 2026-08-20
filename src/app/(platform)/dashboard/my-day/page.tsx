@@ -215,10 +215,10 @@ export default function MyDayPage() {
 
   const isLoading = tasksQuery.isPending || incidentsQuery.isPending || staffQuery.isPending || leaveQuery.isPending || rotaQuery.isPending;
 
-  const allTasks = tasksQuery.data?.data ?? [];
+  const allTasks = useMemo(() => tasksQuery.data?.data ?? [], [tasksQuery.data]);
   const allStaff = staffQuery.data?.data ?? [];
-  const allIncidents = incidentsQuery.data?.data ?? [];
-  const allLeave = leaveQuery.data?.data ?? [];
+  const allIncidents = useMemo(() => incidentsQuery.data?.data ?? [], [incidentsQuery.data]);
+  const allLeave = useMemo(() => leaveQuery.data?.data ?? [], [leaveQuery.data]);
   const allShifts = rotaQuery.data?.shifts ?? [];
 
   const staff = allStaff.find((s) => s.id === ME);

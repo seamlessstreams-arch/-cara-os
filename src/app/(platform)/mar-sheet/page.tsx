@@ -79,7 +79,7 @@ function getStatus(e: MarEntry): EntryStatus {
 
 export default function MarSheetPage() {
   const { data: res, isLoading, isError, refetch } = useMarEntries();
-  const entries: MarEntry[] = res?.data ?? [];
+  const entries: MarEntry[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [ypFilter, setYpFilter] = useState<string>("all");

@@ -932,7 +932,7 @@ export default function MissingFromCarePage() {
   const [rhiEp, setRhiEp] = useState<MissingEpisode | null>(null);
 
   const { data, isLoading, isError, refetch } = useMissingEpisodes({ homeId, status: statusFilter });
-  const episodes: MissingEpisode[] = data?.data ?? [];
+  const episodes: MissingEpisode[] = useMemo(() => data?.data ?? [], [data]);
   const meta = data?.meta;
   const patterns: PatternAnalysis[] = data?.pattern_analysis ?? [];
 

@@ -73,7 +73,7 @@ export default function FireDrillsPage() {
       api.post("/api/v1/fire-drills", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["fire-drills"] }),
   });
-  const entries = fdData?.data ?? [];
+  const entries = useMemo(() => fdData?.data ?? [], [fdData]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [resultFilter, setResultFilter] = useState("all");

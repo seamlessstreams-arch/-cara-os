@@ -77,7 +77,7 @@ export default function AfterCarePage() {
       api.post(AFTER_CARE_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [AFTER_CARE_KEY] }),
   });
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const [search, setSearch] = useState("");
   const [ragFilter, setRagFilter] = useState("all");

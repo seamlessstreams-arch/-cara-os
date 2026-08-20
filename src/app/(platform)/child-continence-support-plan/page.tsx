@@ -29,7 +29,7 @@ export default function ChildContinenceSupportPlanPage() {
     queryKey: ["continence-plans"],
     queryFn: () => api.get<{ data: ContinencePlan[] }>("/api/v1/continence-plans"),
   });
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterPresentation, setFilterPresentation] = useState("all");

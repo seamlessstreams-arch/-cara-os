@@ -45,7 +45,7 @@ function useSmokingVapingRecords(childId?: string) {
 
 export default function ChildSmokingVapingTrackerPage() {
   const { data: res, isLoading } = useSmokingVapingRecords();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

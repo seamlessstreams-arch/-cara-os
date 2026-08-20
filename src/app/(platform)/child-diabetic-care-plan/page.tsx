@@ -60,7 +60,7 @@ const isOnTarget = (r: DiabeticCarePlan): boolean => {
 
 export default function ChildDiabeticCarePlanPage() {
   const { data: response, isLoading } = useDiabeticCarePlans();
-  const data = response?.data ?? [];
+  const data = useMemo(() => response?.data ?? [], [response]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

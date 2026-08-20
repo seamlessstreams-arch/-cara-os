@@ -70,7 +70,7 @@ const fmtGBP = (n: number) => new Intl.NumberFormat("en-GB", { style: "currency"
 
 export default function DrivingLessonsTrackerPage() {
   const { data: queryData, isLoading } = useDrivingRecords();
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState("name");

@@ -99,7 +99,7 @@ const exportCols: ExportColumn<PlacementStabilityMeeting>[] = [
 export default function PlacementStabilityMeetingsPage() {
   const homeName = useHomeName();
   const { data: res, isLoading } = usePlacementStabilityMeetings();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");

@@ -125,7 +125,7 @@ export default function BullyingIncidentLogPage() {
     queryKey: ["bullying-incidents"],
     queryFn: () => api.get<{ data: BullyingIncident[] }>("/api/v1/bullying-incidents"),
   });
-  const data = biData?.data ?? [];
+  const data = useMemo(() => biData?.data ?? [], [biData]);
 
   const [search, setSearch] = useState("");
   const [filterContext, setFilterContext] = useState("all");

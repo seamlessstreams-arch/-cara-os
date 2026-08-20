@@ -69,7 +69,7 @@ const RISK_ORDER: SubstanceRiskLevel[] = [
 
 export default function DrugAndAlcoholScreeningPage() {
   const { data: queryData, isLoading } = useSubstanceScreenings();
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");
   const [filterChild, setFilterChild] = useState("all");

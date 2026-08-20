@@ -852,7 +852,7 @@ export default function TrainingNeedsPage() {
   const [sortBy, setSortBy] = useState<"priority" | "date" | "type" | "status">("priority");
 
   const { data, isLoading } = useTrainingNeeds({ homeId: homeId });
-  const needs = data?.data ?? [];
+  const needs = useMemo(() => data?.data ?? [], [data]);
 
   const filtered = useMemo(() => {
     let list = needs;

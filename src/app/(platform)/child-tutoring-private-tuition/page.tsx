@@ -98,7 +98,7 @@ export default function ChildTutoringPrivateTuitionPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: res, isLoading } = useTutoringRecords();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const subjects = useMemo(
     () => Array.from(new Set(items.map((r) => r.subject))).sort(),

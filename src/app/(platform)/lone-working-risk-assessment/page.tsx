@@ -40,7 +40,7 @@ const riskColour: Record<LWRAOverallRisk, string> = {
 
 export default function LoneWorkingRiskAssessmentPage() {
   const { data: res, isLoading } = useLoneWorkingRiskAssessments();
-  const data: LoneWorkingRiskAssessment[] = res?.data ?? [];
+  const data: LoneWorkingRiskAssessment[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterStaff, setFilterStaff] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
