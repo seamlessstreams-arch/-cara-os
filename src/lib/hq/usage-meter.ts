@@ -42,9 +42,16 @@ export interface AiUsageInput {
   model: string | null;
   tokensInput: number;
   tokensOutput: number;
+  /** How the call was authenticated. "subscription" = the owner's Claude Max
+   *  login: £0 API spend by definition, but still metered in tokens so a
+   *  model call is never hidden. Defaults to "api_key" for existing callers. */
+  authSource?: "api_key" | "subscription";
 }
 
 export function estimateCostGbp(input: AiUsageInput): number {
+  // Subscription calls consume Max usage limits, not API credits — the honest
+  // GBP figure is zero. Tokens still land on the row below.
+  if (input.authSource === "subscription") return 0;
   const rate = rateFor(input.model);
   const cost =
     (input.tokensInput / 1_000_000) * rate.input +
@@ -65,6 +72,7 @@ export function recordAiUsage(input: AiUsageInput): HqAiUsageRow {
     tokens_output: Math.max(0, Math.round(input.tokensOutput)),
     cost_gbp: estimateCostGbp(input),
     estimated: true,
+    auth_source: input.authSource ?? "api_key",
   };
   store.hqAiUsage.push(row);
   void persistHqAiUsage(row);

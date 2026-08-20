@@ -42,6 +42,8 @@ export interface CaraStreamHandlers {
 export interface CaraStreamResult {
   llmUsed: boolean;
   providerId: "anthropic" | "none";
+  /** How the model call was authenticated (absent when no model ran). */
+  authSource?: "api_key" | "subscription";
   modelId: string;
   tokensInput: number;
   tokensOutput: number;

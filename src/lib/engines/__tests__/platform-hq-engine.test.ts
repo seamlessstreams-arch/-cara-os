@@ -50,6 +50,7 @@ function aiRow(over: Partial<HqAiUsageRow> = {}): HqAiUsageRow {
     tokens_output: 500,
     cost_gbp: 0.0084,
     estimated: true,
+  auth_source: "api_key",
     ...over,
   };
 }

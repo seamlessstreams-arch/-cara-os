@@ -18,6 +18,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
+import { CARA_DEFAULT_MODEL } from "./cara-provider";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
 
@@ -276,7 +277,7 @@ export async function checkCaraHealth(
 
   const anthropicConfigured = isKeyConfigured("ANTHROPIC_API_KEY");
 
-  const anthropicModel = (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "claude-sonnet-4-20250514";
+  const anthropicModel = process.env.CARA_MODEL ?? process.env.CARA_TEXT_MODEL ?? CARA_DEFAULT_MODEL;
 
   let anthropicTestStatus: ProviderTestStatus = "skipped";
   let anthropicLatency: number | undefined;

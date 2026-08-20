@@ -15,6 +15,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { buildChildProfile } from "./profile-builder";
+import { CARA_DEFAULT_MODEL } from "@/lib/cara/cara-provider";
 import { buildPrompt } from "./prompt-builder";
 import { preGenerationCheck, postGenerationCheck } from "./safety";
 import type {
@@ -29,7 +30,7 @@ import type {
 
 // Claude (Anthropic) is the only AI provider, platform-wide. The AI call now
 // goes through the AI Gateway (see callLLM); only the model label is read here.
-const LLM_MODEL = (process.env.CARA_STUDIO_MODEL ?? process.env.CARA_STUDIO_MODEL) ?? (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514";
+const LLM_MODEL = process.env.CARA_STUDIO_MODEL ?? process.env.CARA_MODEL ?? CARA_DEFAULT_MODEL;
 
 // ── Result Type ──────────────────────────────────────────────────────────────
 

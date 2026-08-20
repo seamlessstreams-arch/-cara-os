@@ -156,6 +156,7 @@ export async function persistHqAiUsage(r: HqAiUsageRow): Promise<void> {
       feature: r.feature,
       model: r.model,
       tokens_input: r.tokens_input,
+      auth_source: r.auth_source,
       tokens_output: r.tokens_output,
       cost_gbp: r.cost_gbp,
       estimated: r.estimated,

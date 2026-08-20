@@ -52,7 +52,7 @@ import { isCacheableCommand, lookupLearnedAnswer, learnAnswer } from "../resolut
 import { classifyInputSensitivity, redactSensitiveData, detectChildIdentifiers, detectNames, detectStaffIdentifiers, validateProviderAllowedForSensitivity } from "../safety/data-protection";
 import { guardUntrustedText, type PromptGuardResult } from "../safety/prompt-injection-guard";
 import { scanAiResponse, type ResponseSafetyResult } from "../safety/response-safety-scanner";
-import { getCaraProviderConfig, type CaraTextGenerationResult } from "../cara-provider";
+import { getCaraProviderConfig, type CaraTextGenerationResult, type CaraAuthSource } from "../cara-provider";
 import { type CaraStreamInput, type CaraStreamHandlers, type CaraStreamResult } from "../cara-provider-stream";
 import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localBypassesExternalRiskRegister } from "./generate-via-provider";
 import { DEFAULT_COST_LIMITS } from "../core/constants";
@@ -107,6 +107,9 @@ export interface AiGatewayResult {
   identifiableDataSent: boolean;
   sensitivity: CaraDataSensitivity;
   model?: string;
+  /** How the model call was authenticated ("subscription" = owner's Max login,
+   *  £0 API spend; tokens still metered). Absent when no model ran. */
+  authSource?: CaraAuthSource;
   costGbp?: number;
   tokensInput?: number;
   tokensOutput?: number;
@@ -143,6 +146,7 @@ export interface AiGatewayAuditEntry {
   sensitivity: CaraDataSensitivity;
   identifiableDataSent: boolean;
   model?: string;
+  authSource?: CaraAuthSource;
   costGbp?: number;
   redactionCount: number;
   refusedReason?: string;
@@ -236,6 +240,7 @@ export async function invokeAiGateway(
       sensitivity: result.sensitivity,
       identifiableDataSent: result.identifiableDataSent,
       model: result.model,
+      authSource: result.authSource,
       costGbp: result.costGbp,
       redactionCount: result.redactionCount ?? 0,
       refusedReason: result.refusedReason,
@@ -321,8 +326,14 @@ export async function invokeAiGateway(
   }
 
   // 7. Cost limits — estimate on the text actually sent (post-guard).
-  const model = getCaraProviderConfig().textModel;
-  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
+  const providerCfg = getCaraProviderConfig();
+  const model = providerCfg.textModel;
+  // Subscription auth consumes the owner's Max limits, not API credits — the
+  // GBP caps exist to protect API spend, so the honest estimate here is £0.
+  // Tokens are still metered on the usage row, and the call is still audited.
+  const estGbp = providerCfg.authSource === "subscription"
+    ? 0
+    : deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
   if (estGbp > deps.costLimits.perRequestMax) {
     return refuse(`Estimated cost £${estGbp.toFixed(4)} exceeds the per-request limit £${deps.costLimits.perRequestMax}.`);
   }
@@ -368,6 +379,7 @@ export async function invokeAiGateway(
     llmUsed: gen.llmUsed,
     identifiableDataSent: gen.llmUsed ? identifiableDataSent : false,
     model: gen.modelId,
+    authSource: gen.llmUsed ? gen.authSource : undefined,
     costGbp: gen.llmUsed ? estGbp : 0,
     tokensInput: gen.tokensInput,
     tokensOutput: gen.tokensOutput,
@@ -420,6 +432,7 @@ export async function invokeAiGatewayStream(
       sensitivity: result.sensitivity,
       identifiableDataSent: result.identifiableDataSent,
       model: result.model,
+      authSource: result.authSource,
       costGbp: result.costGbp,
       redactionCount: result.redactionCount ?? 0,
       refusedReason: result.refusedReason,
@@ -501,8 +514,14 @@ export async function invokeAiGatewayStream(
   }
 
   // 7. Cost limits.
-  const model = getCaraProviderConfig().textModel;
-  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
+  const providerCfg = getCaraProviderConfig();
+  const model = providerCfg.textModel;
+  // Subscription auth consumes the owner's Max limits, not API credits — the
+  // GBP caps exist to protect API spend, so the honest estimate here is £0.
+  // Tokens are still metered on the usage row, and the call is still audited.
+  const estGbp = providerCfg.authSource === "subscription"
+    ? 0
+    : deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
   if (estGbp > deps.costLimits.perRequestMax) {
     return refuse(`Estimated cost £${estGbp.toFixed(4)} exceeds the per-request limit £${deps.costLimits.perRequestMax}.`);
   }
@@ -576,6 +595,7 @@ export async function invokeAiGatewayStream(
     llmUsed: gen.llmUsed,
     identifiableDataSent: gen.llmUsed ? identifiableDataSent : false,
     model: gen.modelId,
+    authSource: gen.llmUsed ? gen.authSource : undefined,
     costGbp: gen.llmUsed ? estGbp : 0,
     tokensInput: gen.tokensInput,
     tokensOutput: gen.tokensOutput,

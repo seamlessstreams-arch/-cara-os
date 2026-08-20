@@ -40,6 +40,9 @@ export const CRITICAL_RISK_TASKS: CaraTaskType[] = [
 
 export const PROVIDER_MAX_SENSITIVITY: Record<CaraProviderName, CaraDataSensitivity[]> = {
   anthropic: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive", "health_sensitive"],
+  // Same recipient as "anthropic" (the auth route differs, not the destination),
+  // so the subscription entry carries the identical sensitivity ceiling.
+  claude_subscription: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive", "health_sensitive"],
   bedrock: ["public", "internal", "confidential", "child_sensitive", "safeguarding_sensitive", "legal_sensitive", "staff_sensitive", "health_sensitive"],
   vertex_ai: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive"],
   mistral: ["public", "internal", "confidential", "staff_sensitive"],
