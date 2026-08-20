@@ -388,6 +388,18 @@ describe("mod8: conditions documented", () => {
     const auth = makeAuthority({ items });
     const r = computeHomeDelegatedAuthority(baseInput({ delegated_authorities: [auth] }));
     // 100% with conditions → +4
+    const neutralAuth = makeAuthority({
+      items: [
+        makeItem({ conditions: "Some condition" }),
+        makeItem({ conditions: "Another condition" }),
+        makeItem({ conditions: "" }),
+        makeItem({ conditions: "" }),
+        makeItem({ conditions: "" }),
+      ],
+    });
+    const rNeutral = computeHomeDelegatedAuthority(baseInput({ delegated_authorities: [neutralAuth] }));
+    // neutral: 2/5 = 40% with conditions → +0. Only mod8 differs → diff = 4
+    expect(r.authority_score! - rNeutral.authority_score!).toBe(4);
   });
 
   it("penalises -3 for < 40% with conditions", () => {

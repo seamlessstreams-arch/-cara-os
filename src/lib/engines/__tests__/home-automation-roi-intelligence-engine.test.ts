@@ -1063,6 +1063,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // All retry_count 0 → 0% retry → +5
+      // 52 + 6(success 100%) + 5(coverage 100%) + 5(error 0%) - 4(min/staff 1) + 0(diversity 1) + 5(retry) = 69
+      expect(r.automation_score).toBe(69);
     });
 
     it("gives +2 for 5-14% retry rate", () => {
@@ -1073,6 +1075,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 5% retry → +2
+      // 52 + 6(success 100%) + 5(coverage 100%) + 5(error 0%) - 4(min/staff 1) + 0(diversity 1) + 2(retry) = 66
+      expect(r.automation_score).toBe(66);
     });
 
     it("gives -4 for >30% retry rate", () => {
@@ -1083,6 +1087,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 40% retry → -4
+      // 52 + 6(success 100%) + 5(coverage 100%) + 5(error 0%) - 4(min/staff 1) + 0(diversity 1) - 4(retry) = 60
+      expect(r.automation_score).toBe(60);
     });
 
     it("gives 0 modifier for 15-30% retry rate", () => {
@@ -1093,6 +1099,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 20% retry → 0
+      // 52 + 6(success 100%) + 5(coverage 100%) + 5(error 0%) - 4(min/staff 1) + 0(diversity 1) + 0(retry) = 64
+      expect(r.automation_score).toBe(64);
     });
 
     it("retry rate at exactly 5% gives +2 not +5", () => {
@@ -1103,6 +1111,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 5% is NOT <5, so it falls to <15 → +2
+      // 52 + 6 + 5 + 5 - 4 + 0 + 2(retry) = 66 (would be 69 if +5 applied)
+      expect(r.automation_score).toBe(66);
     });
 
     it("retry rate at exactly 15% gives 0 modifier", () => {
@@ -1113,6 +1123,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 15% is NOT <15, and NOT >30 → 0
+      // 52 + 6 + 5 + 5 - 4 + 0 + 0(retry) = 64 (would be 66 if +2 applied)
+      expect(r.automation_score).toBe(64);
     });
 
     it("retry rate at exactly 30% gives 0 modifier (not -4)", () => {
@@ -1123,6 +1135,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       const r = computeAutomationROI(baseInput({ routes, events: [makeEvent()], metrics: [makeMetric()] }));
       // 30% is NOT >30 → 0
+      // 52 + 6 + 5 + 5 - 4 + 0 + 0(retry) = 64 (would be 60 if -4 applied)
+      expect(r.automation_score).toBe(64);
     });
 
     it("does not give +5 for <5% retry when routes is empty", () => {
@@ -1134,6 +1148,8 @@ describe("Home Automation ROI Intelligence Engine", () => {
       }));
       // 0 routes → retryRate = 0 (pct(0,0)=0), but routes.length === 0 so condition fails for +5
       // Falls through: <15% → +2
+      // 52 - 8(success 0%<50) + 5(coverage 100%) - 1(no routes) - 4(min/staff 1) - 4(diversity 0) + 2(retry) = 42 (would be 45 if +5 applied)
+      expect(r.automation_score).toBe(42);
     });
   });
 

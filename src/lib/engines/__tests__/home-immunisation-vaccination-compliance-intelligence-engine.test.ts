@@ -781,6 +781,9 @@ describe("scoring bonuses", () => {
   it("vaccinationCoverageRate >= 90 yields +3 bonus", () => {
     const r = compute(baseInput());
     // 3 unique children vaccinated out of 3 total = 100%
+    // isolate the bonus: same input with total_children=5 => coverage 60% => no bonus
+    const r2 = compute(baseInput({ total_children: 5 }));
+    expect(r.immunisation_score - r2.immunisation_score).toBe(3);
   });
 });
 
@@ -2515,6 +2518,8 @@ describe("edge cases", () => {
     }));
     // adverseScreeningRate, batchRecordingRate, siteRecordingRate, healthRecordDocRate, redBookUpdateRate all depend on administered
     // They should be 0 since pct(0, 0) = 0
+    // Observable via documentation composite: (health 0 + red book 0 + batch 0 + consent 100) / 4 = 25
+    expect(r.documentation_rate).toBe(25);
   });
 
   it("total_children=1 with full data is valid", () => {
@@ -2558,6 +2563,8 @@ describe("edge cases", () => {
     }));
     // 1 unique child out of 2 => 50%
     // vaccinationCoverageRate = 50
+    // 50% < 70 => no coverage bonus: 52 + 25 (all other bonuses) = 77; counting 3 would give 150% => 80
+    expect(r.immunisation_score).toBe(77);
   });
 
   it("vaccine_type variation does not affect computation", () => {
@@ -2727,6 +2734,8 @@ describe("bonus tier boundaries", () => {
       ],
     }));
     // 3 unique vaccinated out of 4 total => 75%
+    // 52 + 25 (other bonuses) + 1 (coverage 70-89) = 78, not 80
+    expect(r.immunisation_score).toBe(78);
   });
 });
 

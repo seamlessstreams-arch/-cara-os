@@ -770,6 +770,8 @@ describe("computeHomeFacilitiesCompliance", () => {
       const r = computeHomeFacilitiesCompliance(baseInput({ fire_checks: fireChecks }));
       // fire defects: 10, addressed: 7 (70%)
       // mod8 should be +1
+      // 52 + 0(mod1 70% pass) + 3(mod2) - 2(mod3) + 2(mod4) + 1(mod5) + 0(mod6) + 1(mod7) + 1(mod8) = 58
+      expect(r.facilities_score).toBe(58);
     });
 
     it("gives -3 for < 50% defects addressed", () => {
@@ -783,6 +785,8 @@ describe("computeHomeFacilitiesCompliance", () => {
       const r = computeHomeFacilitiesCompliance(baseInput({ fire_checks: fireChecks }));
       // fire defects: 10, addressed: 4 (40%)
       // mod8 should be -3
+      // 52 - 5(mod1 40% pass) + 3(mod2) - 2(mod3) + 2(mod4) + 1(mod5) + 0(mod6) + 1(mod7) - 3(mod8) = 49
+      expect(r.facilities_score).toBe(49);
     });
 
     it("counts window fail/urgent_action as unaddressed defects", () => {
@@ -794,6 +798,8 @@ describe("computeHomeFacilitiesCompliance", () => {
       );
       const r = computeHomeFacilitiesCompliance(baseInput({ window_checks: windowChecks }));
       // 3 window defects, 0 addressed → total defects = 3, addressed = 0 → 0%
+      // 52 - 3(mod1) - 2(mod2) - 2(mod3) + 2(mod4) + 4(mod5) + 3(mod6) + 1(mod7) - 3(mod8) = 52
+      expect(r.facilities_score).toBe(52);
     });
   });
 

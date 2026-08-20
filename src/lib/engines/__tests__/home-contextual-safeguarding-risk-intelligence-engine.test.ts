@@ -2128,6 +2128,8 @@ describe("Additional modifier interactions", () => {
     );
     const r = computeContextualSafeguarding(baseInput({ risks }));
     // 100% resolved, 0 escalated → +5
+    // 52 + 6(mod1) + 5(mod2) + 5(mod3) + 2(mod4) + 2(mod5 no high) + 5(mod6) = 77
+    expect(r.safeguarding_score).toBe(77);
   });
 });
 

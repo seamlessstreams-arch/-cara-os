@@ -348,6 +348,8 @@ describe("computeOutcomeStarAssessment", () => {
         baseInput({ total_children: 5, assessments }),
       );
       // withPrevious.length === 0 => score -1 for modifier 3
+      // 52 +6(coverage 100%) -5(repeat 0%) -1(no prior) +5(action) +4(voice) +5(domain/staff) = 66
+      expect(result.star_score).toBe(66);
     });
 
     it("applies -1 when total === 0 (improvement penalty)", () => {
@@ -556,6 +558,8 @@ describe("computeOutcomeStarAssessment", () => {
         baseInput({ total_children: 5, assessments }),
       );
       // fullDomainRate = 100%, staffViewRate = 100%
+      // 52 +6 +5 +5 +5 +4 +5(domain/staff) = 82
+      expect(result.star_score).toBe(82);
     });
 
     it("adds +2 when fullDomainRate >= 50 but staffViewRate < 70", () => {
@@ -571,6 +575,8 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments }),
       );
+      // 52 +6 +5 +5 +5 +4 +2(fullDomain 60% >= 50) = 79
+      expect(result.star_score).toBe(79);
     });
 
     it("adds +2 when staffViewRate >= 50 but fullDomainRate < 50", () => {
@@ -586,6 +592,8 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments }),
       );
+      // 52 +6 +5 +5 +5 +4 +2(staffView 60% >= 50) = 79
+      expect(result.star_score).toBe(79);
     });
 
     it("applies -3 when both fullDomainRate < 25 AND staffViewRate < 25", () => {
@@ -601,6 +609,8 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments }),
       );
+      // 52 +6 +5 +5 +5 +4 -3(both 20% < 25) = 74
+      expect(result.star_score).toBe(74);
     });
 
     it("applies -2 when total === 0 (domain penalty)", () => {
@@ -623,6 +633,8 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments }),
       );
+      // 52 +6 +5 +5 +5 +4 +0(both 40%: no branch) = 77
+      expect(result.star_score).toBe(77);
     });
 
     it("fullDomainAssessments requires domain_count >= 10", () => {
@@ -634,6 +646,8 @@ describe("computeOutcomeStarAssessment", () => {
         baseInput({ total_children: 5, assessments }),
       );
       // fullDomainRate = 0%
+      // 52 -5(coverage 20%) +5 +5 +5 +4 +2(staffView 100% only) = 68 (71 if 9 counted as full)
+      expect(result.star_score).toBe(68);
     });
 
     it("fullDomainAssessments counts domain_count === 10 as full", () => {
@@ -644,6 +658,8 @@ describe("computeOutcomeStarAssessment", () => {
         baseInput({ total_children: 5, assessments }),
       );
       // fullDomainRate = 100%
+      // 52 -5(coverage 20%) +5 +5 +5 +4 +5(full 100% AND staff 100%) = 71
+      expect(result.star_score).toBe(71);
     });
 
     it("fullDomainAssessments counts domain_count > 10 as full", () => {
@@ -654,6 +670,8 @@ describe("computeOutcomeStarAssessment", () => {
         baseInput({ total_children: 5, assessments }),
       );
       // fullDomainRate = 100%
+      // 52 -5(coverage 20%) +5 +5 +5 +4 +5(full 100% AND staff 100%) = 71
+      expect(result.star_score).toBe(71);
     });
   });
 
@@ -923,6 +941,8 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments }),
       );
+      expect(result.star_score).toBe(44);
+      expect(result.star_rating).toBe("inadequate");
       // coverage = 1 unique / 5 = 20% => -5
       // repeat = 0/2 = 0% < 20 => -5
       // withPrevious.length = 0 => -1
@@ -942,6 +962,10 @@ describe("computeOutcomeStarAssessment", () => {
       const result2 = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: assessments2 }),
       );
+      // Actual: coverage 1/5=20% => -5; repeat 1/4=25% => 0; improving 0 (3=3) => -4;
+      // action 1/4=25% => 0; voice 1/4=25% => 0; domain/staff 0% both <25 => -3
+      // 52 - 5 + 0 - 4 + 0 + 0 - 3 = 40
+      expect(result2.star_score).toBe(40);
       // Make repeat rate = 40-69% for +2: all 5 have previous = 100% => +5
       // That changes things. Need repeat = 40-69%
       // Actually all have has_previous_scores=true => 100% => +5
@@ -997,6 +1021,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result4 = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: assessments4 }),
       );
+      expect(result4.star_score).toBe(43);
       // unique children = 1/5 = 20% < 30 => -5
       // repeat = 1/3 = 33% => between 20-39 => no mod
       // withPrevious=1, improving=0 => 0% < 20 => -4
@@ -1040,6 +1065,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result5 = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: assessments5 }),
       );
+      expect(result5.star_score).toBe(48);
       // coverage = 1/5 = 20% => -5
       // repeat = 1/3 = 33% => no mod
       // withPrevious=1, improving=0 => 0% < 20 => -4
@@ -1101,6 +1127,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result6 = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: assessments6 }),
       );
+      expect(result6.star_score).toBe(40);
       // coverage = 1/5 = 20% => -5
       // repeat = 0/4 = 0% < 20 => -5
       // withPrevious.length = 0 => -1

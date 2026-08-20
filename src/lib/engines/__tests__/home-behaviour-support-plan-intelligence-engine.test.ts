@@ -694,6 +694,7 @@ describe("modifier 6 — safety planning and staff guidance", () => {
       baseInput({ total_children: 2, plans }),
     );
     // safetyRate=50 → "either >=50" → +2
+    expect(r.bsp_score).toBe(79); // 52 + 6 + 5 + 5 + 5 + 4 + 2
   });
 
   it("adds +2 when guidanceRate >= 50 but safetyRate < 50", () => {
@@ -715,6 +716,7 @@ describe("modifier 6 — safety planning and staff guidance", () => {
       baseInput({ total_children: 2, plans }),
     );
     // guidanceRate=50 → "either >=50" → +2
+    expect(r.bsp_score).toBe(79); // 52 + 6 + 5 + 5 + 5 + 4 + 2
   });
 
   it("subtracts -3 when both safetyRate < 25 AND guidanceRate < 25", () => {
@@ -730,6 +732,7 @@ describe("modifier 6 — safety planning and staff guidance", () => {
       baseInput({ total_children: 5, plans }),
     );
     // safetyRate=0, guidanceRate=0 → -3
+    expect(r.bsp_score).toBe(74); // 52 + 6 + 5 + 5 + 5 + 4 - 3
   });
 
   it("applies -2 penalty when total plans is 0", () => {
@@ -766,6 +769,7 @@ describe("modifier 6 — safety planning and staff guidance", () => {
       baseInput({ total_children: 3, plans }),
     );
     // safetyRate=33, guidanceRate=33 → neither >=50 → not +2; neither <25 → not -3; no change
+    expect(r.bsp_score).toBe(77); // 52 + 6 + 5 + 5 + 5 + 4 + 0
   });
 
   it("adds +2 when both safetyRate and guidanceRate are exactly 50", () => {
@@ -787,6 +791,7 @@ describe("modifier 6 — safety planning and staff guidance", () => {
       baseInput({ total_children: 2, plans }),
     );
     // Both 50% — the "either >= 50" check fires even though both >= 75 fails
+    expect(r.bsp_score).toBe(79); // 52 + 6 + 5 + 5 + 5 + 4 + 2
   });
 });
 
@@ -1953,6 +1958,7 @@ describe("composite scenarios", () => {
     );
     // total strategies = 10, total effective = 4 → 40%
     // posRate = 100% >=80, but eff 40% < 60 → M4 gets +2 (falls to posRate>=50)
+    expect(r.bsp_score).toBe(79); // 52 + 6 + 5 + 5 + 2 + 4 + 5
   });
 
   it("worsening behaviours aggregate across plans", () => {

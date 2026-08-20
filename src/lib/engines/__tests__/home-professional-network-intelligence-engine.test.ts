@@ -1346,6 +1346,8 @@ describe("Home Professional Network Intelligence Engine", () => {
       const meetings = [makeMeeting()];
       const r = computeProfessionalNetwork(baseInput({ contacts, meetings, total_children: 4 }));
       // < 1.5/child → -3
+      // 52 + 6 + 5 + 5 + 5 - 4(one role) - 3(mod6) = 66
+      expect(r.network_score).toBe(66);
     });
 
     it("decision rate is based on completed meetings only", () => {
@@ -1359,6 +1361,8 @@ describe("Home Professional Network Intelligence Engine", () => {
       ];
       const r = computeProfessionalNetwork(baseInput({ contacts, meetings, total_children: 4 }));
       // Only 1 completed meeting with decisions → 100% decision rate → highQuality
+      // 52 + 6 - 5(completion 50%) + 5 + 5 - 4(one role) + 5(mod6 highQuality) = 64
+      expect(r.network_score).toBe(64);
     });
   });
 

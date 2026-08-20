@@ -461,6 +461,8 @@ describe("Home Communication & Contact Intelligence Engine", () => {
         communication_profiles: [],
       }));
       // 0 applicable
+      // mod5 +0; base 52 +5(mod1) -4(mod2 no plans) -4(mod4 no profiles) +3(mod6) +3(mod7) = 55
+      expect(result.communication_score).toBe(55);
     });
   });
 
@@ -529,6 +531,8 @@ describe("Home Communication & Contact Intelligence Engine", () => {
         total_staff: 0,
       });
       // total_staff=0, total_children=0 → +0
+      // mod7 +0; only mod1 fires (+5, 1 action completed) → 52 + 5 = 57
+      expect(result.communication_score).toBe(57);
     });
   });
 
@@ -538,6 +542,8 @@ describe("Home Communication & Contact Intelligence Engine", () => {
     it("+3 when specialist needs met with strategies", () => {
       const result = computeHomeCommunicationContact(baseInput());
       // c1 has interpreter + strategies/aac, c2 has SALT + strategies/aac
+      // supportRate 2/2 = 100% → mod8 +3; full outstanding total = 80
+      expect(result.communication_score).toBe(80);
     });
 
     it("-3 when specialist needs not supported", () => {
@@ -551,6 +557,8 @@ describe("Home Communication & Contact Intelligence Engine", () => {
         ],
       }));
       // 2 specialist needs, 0 with support → 0% → -3
+      // base 80 has mod8 +3; here mod8 -3 → 74
+      expect(result.communication_score).toBe(74);
     });
 
     it("+1 when no specialist needs", () => {
@@ -564,12 +572,16 @@ describe("Home Communication & Contact Intelligence Engine", () => {
         ],
       }));
       // No specialist needs → +1
+      // base 80 has mod8 +3; here mod8 +1 → 78
+      expect(result.communication_score).toBe(78);
     });
 
     it("+0 when no profiles", () => {
       const result = computeHomeCommunicationContact(baseInput({
         communication_profiles: [],
       }));
+      // mod8 +0; vs base 80: mod4 +4 → -4, mod8 +3 → 0 → 80 - 8 - 3 = 69
+      expect(result.communication_score).toBe(69);
     });
   });
 
@@ -893,6 +905,8 @@ describe("Home Communication & Contact Intelligence Engine", () => {
         total_children: 5,
       }));
       // total_staff=0 but total_children=5 → max(0,1)*4 = 4 expected
+      // 40 entries vs 4 expected = 1000% ≥ 80 → mod7 +3 → full base score 80
+      expect(result.communication_score).toBe(80);
     });
   });
 

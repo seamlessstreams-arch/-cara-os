@@ -1968,6 +1968,7 @@ describe("rate calculations", () => {
       // With total_children=0, savingsEngagement = 0 etc.
       // But we need to override ALL arrays to empty for insufficient_data.
       // Let me not test this edge case here — it's covered in insufficient_data.
+      expect(r.savings_engagement_rate).toBe(0);
     });
 
     it("0 when no savings records exist", () => {

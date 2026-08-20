@@ -1648,6 +1648,8 @@ describe("Insights", () => {
     });
     // epc=55, insulation=0, draught=0, controls=50 => (55+0+0+50)/4 = 26
     // Actually 26 < 40, won't trigger. Let's fix
+    expect(r.energy_efficiency_rate).toBe(26);
+    expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Energy efficiency"))).toBe(false);
     const r2 = run({
       energy_records: [
         makeEnergyRecord({ record_type: "epc", epc_rating: "D", heating_controls_optimised: true }),
@@ -1656,6 +1658,8 @@ describe("Insights", () => {
     });
     // epc=55, insulation=100, draught=0, controls=100 => (55+100+0+100)/4 = 64
     // 64 >= 60 — not in [40,60) range. Adjust:
+    expect(r2.energy_efficiency_rate).toBe(64);
+    expect(r2.insights.some((i) => i.severity === "warning" && i.text.includes("Energy efficiency"))).toBe(false);
     const r3 = run({
       energy_records: [
         makeEnergyRecord({ record_type: "epc", epc_rating: "E", heating_controls_optimised: true }),

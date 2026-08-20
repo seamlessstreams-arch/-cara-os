@@ -1818,6 +1818,13 @@ describe("strengths", () => {
       baseInput({ total_children: 2, sleep_routine_records: records2 }),
     );
     expect(r.strengths.some((s) => s.includes("Average sleep quality rating of 3.7/5"))).toBe(true);
+    expect(r.strengths.some((s) => s.includes("children generally experience reasonable quality sleep"))).toBe(true);
+    // avg exactly 4.0 falls in the >= 4.0 branch, not the mid-tier one
+    const rTop = computeSleepQualityRestManagement(
+      baseInput({ total_children: 2, sleep_routine_records: records }),
+    );
+    expect(rTop.strengths.some((s) => s.includes("children generally experience reasonable quality sleep"))).toBe(false);
+    expect(rTop.strengths.some((s) => s.includes("Average sleep quality rating of 4/5"))).toBe(true);
   });
 
   it("includes professional input strength when >= 80%", () => {

@@ -904,6 +904,8 @@ describe("Home Care Event Quality Intelligence Engine", () => {
       }));
       const r = computeHomeCareEventQuality(baseInput({ events, total_children: 4 }));
       // 1/child → poor → -3
+      // 52 + 6 + 5 + 5 + 5 + 4 - 3 = 74
+      expect(r.event_score).toBe(74);
     });
 
     it("counts unique categories for diversity", () => {
@@ -940,6 +942,8 @@ describe("Home Care Event Quality Intelligence Engine", () => {
       }));
       const r = computeHomeCareEventQuality(baseInput({ events, total_children: 4 }));
       // 3/child → ok not good, diverse → still only +2 because not good+diverse
+      // 52 + 6 + 5 + 5 + 5 + 4 + 2 = 79
+      expect(r.event_score).toBe(79);
     });
   });
 
