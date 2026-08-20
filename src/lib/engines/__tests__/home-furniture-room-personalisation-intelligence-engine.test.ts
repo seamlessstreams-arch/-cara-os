@@ -1544,12 +1544,6 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
     });
 
     it("adds comfort strength when >= 80% but < 95%", () => {
-      const c = makeComfort({
-        temperature_comfortable: true, noise_level_acceptable: true,
-        privacy_adequate: true, natural_light_adequate: true,
-        ventilation_adequate: true, mattress_comfortable: true,
-        room_clean: true, room_tidy: false, feels_safe_in_room: false,
-      }); // 7/9 = 78% ... need 80%
       const c80 = makeComfort({
         temperature_comfortable: true, noise_level_acceptable: true,
         privacy_adequate: true, natural_light_adequate: true,

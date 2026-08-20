@@ -45,14 +45,6 @@ function makeExpense(overrides: Partial<ExpenseInput> = {}): ExpenseInput {
   };
 }
 
-function makeStaff(overrides: Partial<StaffRef> = {}): StaffRef {
-  return {
-    id: "staff_1",
-    name: "Test Staff",
-    ...overrides,
-  };
-}
-
 const STAFF: StaffRef[] = [
   { id: "staff_ryan", name: "Ryan Clarke" },
   { id: "staff_sarah", name: "Sarah Thompson" },

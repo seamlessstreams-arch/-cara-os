@@ -11,7 +11,6 @@ import {
   weekStart,
   weekEnd,
   type ShiftInput,
-  type AbsenceInput,
   type StaffRef,
 } from "../rota-intelligence-engine";
 
@@ -44,18 +43,6 @@ function makeShift(overrides: Partial<ShiftInput> = {}): ShiftInput {
     status: "completed",
     is_open_shift: false,
     notes: null,
-    ...overrides,
-  };
-}
-
-function makeAbsence(overrides: Partial<AbsenceInput> = {}): AbsenceInput {
-  return {
-    id: "abs_1",
-    staff_id: "staff_darren",
-    start_date: TODAY,
-    end_date: TODAY,
-    type: "sick",
-    return_to_work_completed: false,
     ...overrides,
   };
 }
@@ -447,10 +434,6 @@ describe("computeRotaIntelligence — insights", () => {
   });
 
   it("generates warning insight for Working Time breach", () => {
-    const shifts = [
-      makeShift({ staff_id: "staff_darren", date: "2026-05-25", start_time: "00:00", end_time: "00:00", break_minutes: 0 }), // 24h
-      makeShift({ staff_id: "staff_darren", date: "2026-05-26", start_time: "00:00", end_time: "00:00", break_minutes: 0 }), // 24h — but 0 to 0 = 0... use 06:00-06:00 next day approach
-    ];
     // Actually let's use concrete times for >48h
     const shifts2 = [
       makeShift({ staff_id: "staff_darren", date: "2026-05-25", start_time: "06:00", end_time: "22:00", break_minutes: 0 }), // 16h

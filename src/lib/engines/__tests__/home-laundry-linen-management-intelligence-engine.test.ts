@@ -2331,20 +2331,6 @@ describe("computeLaundryLinenManagement", () => {
     });
 
     it("includes warning insight for independence 30-49%", () => {
-      const r = computeLaundryLinenManagement(
-        baseInput({
-          child_satisfaction_records: [
-            makeChildSatisfaction({ id: "cs_1", allowed_to_do_own_laundry: true }),
-            makeChildSatisfaction({ id: "cs_2", allowed_to_do_own_laundry: false }),
-            makeChildSatisfaction({ id: "cs_3", allowed_to_do_own_laundry: false }),
-          ],
-          clothing_care_records: [
-            makeClothingCare({ id: "cc_1", child_involved_in_care: false }),
-            makeClothingCare({ id: "cc_2", child_involved_in_care: false }),
-            makeClothingCare({ id: "cc_3", child_involved_in_care: false }),
-          ],
-        }),
-      );
       // independenceRate = pct(1+0, 3+3) = pct(1,6) = 17 => <30 so no warning...
       // Need 30-49: e.g. pct(2,5)=40
       // 2 satisfaction(1 allowed), 3 clothing(1 involved) => pct(1+1,2+3) = pct(2,5) = 40

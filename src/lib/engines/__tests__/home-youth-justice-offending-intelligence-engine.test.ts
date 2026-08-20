@@ -893,17 +893,6 @@ describe("Bonus 7: noReoffendingRate", () => {
   });
 
   it("+1 when noReoffendingRate >= 70 but < 90", () => {
-    // 10 programmes: 7 not reoffending, 3 reoffending
-    const noReoff = Array.from({ length: 7 }, (_, i) =>
-      makePreventionProgramme({ id: `pp_${i}`, reoffending_since_start: false })
-    );
-    const reoff = Array.from({ length: 3 }, (_, i) =>
-      makePreventionProgramme({ id: `pp_r${i}`, reoffending_since_start: true, child_engaged: false, child_progress_positive: false, sessions_attended: 0, sessions_planned: 10 })
-    );
-    const r = computeYouthJusticeOffending(emptyArraysInput({
-      total_children: 3,
-      prevention_programme_records: [...noReoff, ...reoff],
-    }));
     // noReoffending = 7/10 = 70% → +1
     const noReoffRate = Math.round((7 / 10) * 100);
     expect(noReoffRate).toBe(70);

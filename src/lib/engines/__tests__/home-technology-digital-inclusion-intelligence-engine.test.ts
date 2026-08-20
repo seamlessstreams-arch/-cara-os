@@ -829,7 +829,7 @@ describe("bonus 1: deviceAccessRate", () => {
 
   it(">=90% adds +4", () => {
     // 10/10 accessible, filters off => filterRate=0 no filter bonus
-    const devices = Array.from({ length: 10 }, (_, i) => ({
+    const devices = Array.from({ length: 10 }, (_) => ({
       accessible_when_needed: true, age_appropriate_filters: false, condition: "fair" as const, private_use_available: false, child_satisfaction: 1, internet_enabled: false,
     }));
     const r = computeTechnologyDigitalInclusion(isolatedInput(devices));
@@ -1659,11 +1659,6 @@ describe("strengths", () => {
   });
 
   it("digitalSkillsRate 60-79 strength mentions good progress", () => {
-    const r = computeTechnologyDigitalInclusion(baseInput({
-      digital_skills_records: [
-        makeSkills({ plan_in_place: true, sessions_planned: 10, sessions_completed: 5, progress_evidenced: true }),
-      ],
-    }));
     // plan=100%, sessions=50%, progress=100% => (100+50+100)/3=83% actually >=80
     // Try: plan=100%, sessions=3/10=30%, progress=100% => (100+30+100)/3=77
     const r2 = computeTechnologyDigitalInclusion(baseInput({
@@ -2480,11 +2475,6 @@ describe("insights", () => {
   });
 
   it("warning insight: digitalSkillsRate 50-79", () => {
-    const r = computeTechnologyDigitalInclusion(baseInput({
-      digital_skills_records: [
-        makeSkills({ plan_in_place: true, sessions_planned: 10, sessions_completed: 5, progress_evidenced: true }),
-      ],
-    }));
     // (100+50+100)/3 = 83 => >=80, not in 50-79. Let's adjust.
     // plan=100%, sessions=3/10=30%, progress=100% => (100+30+100)/3=77 => >=50 <80
     const r2 = computeTechnologyDigitalInclusion(baseInput({

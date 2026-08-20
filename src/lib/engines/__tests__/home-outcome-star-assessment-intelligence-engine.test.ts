@@ -841,42 +841,6 @@ describe("computeOutcomeStarAssessment", () => {
     });
 
     it("score exactly 65 is good", () => {
-      // Need score 65: delta = +13
-      // coverage 50%(+2), repeat 40%(+2), improve 40%(+2), action 50%(+2), child 50%(+1), domain/staff OR(+2) = +11 => 63
-      // coverage 80%(+6), repeat 40%(+2), improve -1(no prev), action 50%(+2), child 50%(+1), domain/staff OR(+2) = +12 => 64
-      // coverage 80%(+6), repeat 40%(+2), improve 40%(+2), action 50%(+2), child 50%(+1), domain/staff 0 = +13 => 65
-      const assessments = [
-        makeAssessment({ id: "a-1", child_id: "child-1", has_previous_scores: true, domains_improved_count: 5, domains_declined_count: 2, action_plan_count: 2, has_child_views: true, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-2", child_id: "child-2", has_previous_scores: true, domains_improved_count: 0, domains_declined_count: 5, action_plan_count: 2, has_child_views: true, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-3", child_id: "child-3", has_previous_scores: false, action_plan_count: 0, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-4", child_id: "child-4", has_previous_scores: false, action_plan_count: 0, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-5", child_id: "child-5", has_previous_scores: false, action_plan_count: 0, has_child_views: true, has_staff_views: false, domain_count: 5 }),
-      ];
-      const result = computeOutcomeStarAssessment(
-        baseInput({ total_children: 5, assessments }),
-      );
-      // coverage = 5/5 = 100% => +6
-      // repeat = 2/5 = 40% => +2
-      // withPrevious=2, improving=1 => 50% => +2
-      // action plan = 2/5 = 40% => no mod (between 25-49)
-      // child voice = 3/5 = 60% => +1
-      // fullDomain = 0/5 = 0% < 25, staff = 0/5 = 0% < 25 => -3
-      // 52 + 6 + 2 + 2 + 0 + 1 - 3 = 60 => nope
-      // Adjust: need +13
-      // Let's try: coverage=100%(+6), repeat=70%(+5), improve has no prev(-1), action=80%(+5), child=30%(0), domain/staff=both<25(-3) = 52+6+5-1+5+0-3=64
-      // Close. Try: action=25-49(0), but improvement +2, domain +2
-      // Actually let me just compute exactly:
-      // 52 + 6 + 2 + 2 + 0 + 1 - 3 = 60 for above. Not 65.
-      // Let me re-approach with action plan at 50%:
-      const assessments2 = [
-        makeAssessment({ id: "a-1", child_id: "child-1", has_previous_scores: true, domains_improved_count: 5, domains_declined_count: 2, action_plan_count: 2, has_child_views: true, has_staff_views: true, domain_count: 10 }),
-        makeAssessment({ id: "a-2", child_id: "child-2", has_previous_scores: true, domains_improved_count: 0, domains_declined_count: 5, action_plan_count: 2, has_child_views: true, has_staff_views: true, domain_count: 10 }),
-        makeAssessment({ id: "a-3", child_id: "child-3", has_previous_scores: false, action_plan_count: 2, has_child_views: true, has_staff_views: true, domain_count: 10 }),
-        makeAssessment({ id: "a-4", child_id: "child-4", has_previous_scores: false, action_plan_count: 0, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-      ];
-      const result2 = computeOutcomeStarAssessment(
-        baseInput({ total_children: 5, assessments: assessments2 }),
-      );
       // coverage = 4/5 = 80% => +6
       // repeat = 2/4 = 50% => +2
       // withPrevious = 2, improving = 1 => 50% => +2
@@ -1158,20 +1122,6 @@ describe("computeOutcomeStarAssessment", () => {
     });
 
     it("score 64 is adequate, not good", () => {
-      // Need score 64
-      // coverage(+6), repeat(+2), improve(+2), action(+2), child(+1), domain(-1??) can't
-      // coverage(+6), repeat(+2), improve(+2), action(+2), child(0), domain(0) = +12 => 64
-      // repeat=40-69 => +2; improve=40-69 => +2; action=50-79 => +2; child=20-49 => 0; domain: neither >=50, neither both<25 => 0
-      const assessments = [
-        makeAssessment({ id: "a-1", child_id: "child-1", has_previous_scores: true, domains_improved_count: 5, domains_declined_count: 2, action_plan_count: 2, has_child_views: true, has_staff_views: true, domain_count: 10 }),
-        makeAssessment({ id: "a-2", child_id: "child-2", has_previous_scores: true, domains_improved_count: 0, domains_declined_count: 5, action_plan_count: 2, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-3", child_id: "child-3", has_previous_scores: false, action_plan_count: 2, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-4", child_id: "child-4", has_previous_scores: false, action_plan_count: 0, has_child_views: true, has_staff_views: false, domain_count: 5 }),
-        makeAssessment({ id: "a-5", child_id: "child-5", has_previous_scores: false, action_plan_count: 0, has_child_views: false, has_staff_views: false, domain_count: 5 }),
-      ];
-      const result = computeOutcomeStarAssessment(
-        baseInput({ total_children: 5, assessments }),
-      );
       // coverage = 5/5 = 100% => +6
       // repeat = 2/5 = 40% => +2
       // withPrevious=2, improving=1 => 50% => +2
@@ -1253,23 +1203,6 @@ describe("computeOutcomeStarAssessment", () => {
     });
 
     it("minimum achievable score with assessments is 27", () => {
-      // -5 -5 -4 -4 -4 -3 = -25 => 52 - 25 = 27
-      const assessments = [
-        makeAssessment({
-          id: "a-1",
-          child_id: "child-1",
-          has_previous_scores: true,
-          domains_improved_count: 0,
-          domains_declined_count: 10,
-          action_plan_count: 0,
-          has_child_views: false,
-          has_staff_views: false,
-          domain_count: 3,
-        }),
-      ];
-      const result = computeOutcomeStarAssessment(
-        baseInput({ total_children: 5, assessments }),
-      );
       // coverage = 1/5 = 20% < 30 => -5
       // repeat = 1/1 = 100% >= 70 => +5
       // Hmm, repeat is 100% because the one assessment has previous scores.

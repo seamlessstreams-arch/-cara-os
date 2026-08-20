@@ -294,41 +294,6 @@ describe("computeStaffSupervisionReflectivePractice", () => {
       // For "79 → good": I'll test that toRating(79) = good by producing score 78 and checking good.
       // Actually the boundary is: >=80 outstanding, >=65 good. So 79 IS good. Let me just use any combination that gives between 65-79.
       const staffIds = Array.from({ length: 10 }, (_, i) => `s-${i}`);
-      const r = computeStaffSupervisionReflectivePractice(
-        baseInput({
-          total_staff: 10,
-          supervisions: staffIds.map((sid) =>
-            makeSupervision({
-              staff_id: sid,
-              quality_rating: 5,
-              actions_identified: 10,
-              actions_completed: 10,
-              wellbeing_discussed: true,
-              professional_development_discussed: true,
-              child_focused_topics_discussed: true,
-            }),
-          ),
-          staff_reflections: staffIds.map((sid) =>
-            makeReflection({ staff_id: sid }),
-          ),
-          safeguarding_supervisions: staffIds.map((sid) =>
-            makeSafeguardingSupervision({ staff_id: sid }),
-          ),
-          supervision_themes: [
-            makeTheme({ theme: "safeguarding" }),
-            makeTheme({ theme: "behaviour_management" }),
-            makeTheme({ theme: "therapeutic_care" }),
-            makeTheme({ theme: "health_wellbeing" }),
-            makeTheme({ theme: "education" }),
-            makeTheme({ theme: "diversity" }),
-            makeTheme({ theme: "practice_standards" }),
-            makeTheme({ theme: "professional_development" }),
-          ],
-          supervision_matrix: staffIds.map((sid) =>
-            makeMatrix({ staff_id: sid, overdue: false }),
-          ),
-        }),
-      );
       // timeliness: 100 → +4, quality: 5.0 → +3, sg: 100 → +3, reflective: 100 → +3,
       // themes: 8 → +3, actions: 100 → +3, wellbeing: 100 → +3, PD: 100 → +3
       // matrix: 100 → +3. Total = 52+28 = 80. But this is outstanding.
@@ -387,37 +352,6 @@ describe("computeStaffSupervisionReflectivePractice", () => {
       const reflectiveStaffIds = staffIds.slice(0, 6);
       // safeguarding: 80% = 8/10 staff
       const sgStaffIds = staffIds.slice(0, 8);
-      const r = computeStaffSupervisionReflectivePractice(
-        baseInput({
-          total_staff: 10,
-          supervisions: staffIds.map((sid) =>
-            makeSupervision({
-              staff_id: sid,
-              quality_rating: 4,
-              actions_identified: 10,
-              actions_completed: 9,
-              wellbeing_discussed: false,
-              professional_development_discussed: false,
-              child_focused_topics_discussed: false,
-            }),
-          ),
-          staff_reflections: reflectiveStaffIds.map((sid) =>
-            makeReflection({ staff_id: sid }),
-          ),
-          safeguarding_supervisions: sgStaffIds.map((sid) =>
-            makeSafeguardingSupervision({ staff_id: sid }),
-          ),
-          supervision_themes: [
-            makeTheme({ theme: "safeguarding" }),
-            makeTheme({ theme: "behaviour_management" }),
-            makeTheme({ theme: "therapeutic_care" }),
-            makeTheme({ theme: "health_wellbeing" }),
-          ],
-          supervision_matrix: staffIds.map((sid) =>
-            makeMatrix({ staff_id: sid, overdue: false }),
-          ),
-        }),
-      );
       // timeliness: 10/10 = 100% → +4
       // quality: 4.0 → +3
       // sg: 80% → +1

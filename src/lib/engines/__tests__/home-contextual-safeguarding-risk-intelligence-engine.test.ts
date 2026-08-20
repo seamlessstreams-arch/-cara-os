@@ -1679,27 +1679,6 @@ describe("Combined modifier scenarios", () => {
   });
 
   it("score 64 is adequate not good", () => {
-    // Same as above but with one less point somewhere
-    // 52 + 2 + 2 + 5 + 2 + 2 - 3 = 62 → adequate. Need 64.
-    // 52 + 6 + 2 + 2 + 2 + 2 - 2... but -2 not possible for m6
-    // 52 + 6 + 2 + 2 + 2 + 2 + 0 = 66 no
-    // 52 + 2 + 5 + 5 + 2 + 2 - 2 need another path
-    // 52 + 6 + 2 + 5 + 2 + 0 - 3 = 64
-    // m1: +6 (>=85%), m2: +2 (45-74%), m3: +5 (>=80%), m4: +2, m5: 0 (50-74% high risk protected), m6: -3
-    const risks = Array.from({ length: 10 }, (_, i) =>
-      makeRisk({
-        id: `r-${i}`,
-        context_type: ["location", "peer_group"][i % 2],
-        risk_level: i < 4 ? "high" : "low",
-        protective_action_count: i < 9 ? 2 : 0, // 9/10 = 90% → m1: +6
-        multi_agency_action_count: i < 5 ? 1 : 0, // 5/10 = 50% → m2: +2
-        has_community_mapping: i < 4, // 4/10 = 40%
-        has_review_date: true,
-        review_date: i < 9 ? "2025-12-01" : "2024-01-01", // 9/10 = 90% → m3: +5
-        status: "active", // 0% resolved, total > 3 → m6: -3
-      }),
-    );
-    const r = computeContextualSafeguarding(baseInput({ risks, today: "2025-06-15" }));
     // m4: 2 types && 40% mapping → types>=2 || mapping>=40 → +2
     // m5: 4 high risks, 3 with protective actions = 75% → +1
     // Wait: i<4 are high, i<9 have protective. So high risks at i=0,1,2,3 all have protective (since i<9). That's 100% → +4

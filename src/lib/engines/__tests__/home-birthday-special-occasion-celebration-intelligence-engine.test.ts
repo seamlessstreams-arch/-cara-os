@@ -769,9 +769,6 @@ describe("bonuses in isolation", () => {
 
   describe("Bonus 4: memoryMakingRate", () => {
     it("+3 when memoryMakingRate >= 90", () => {
-      const r = run({
-        memory_making_records: makeN(10, makeMemory),
-      });
       // lifeStoryRate = 100% => +2 bonus 9 as well
       // Need to isolate: set added_to_life_story false
       const memories = makeN(10, makeMemory, { added_to_life_story: false });
@@ -827,19 +824,6 @@ describe("bonuses in isolation", () => {
 
   describe("Bonus 6: childChoiceRate", () => {
     it("+3 when childChoiceRate >= 80", () => {
-      // All 4 choices true on all plans => 100%
-      const plans = makeN(10, makeBirthdayPlan);
-      // birthdayPlanningRate=100% => +4 bonus 1 too. Need to set plan_created=false to avoid.
-      // Wait, plan_created is what drives birthdayPlanningRate, if false planningRate drops.
-      // We need plan_created=false but choices=true? No, choices are independent fields.
-      // Ah but birthdayPlanningRate counts plan_created. So set plan_created=false => planningRate=0%.
-      // penalty guard: birthdayPlanningRate < 50 && totalBirthdayPlans > 0 => -5 penalty
-      // So to truly isolate we must avoid plans (but then childChoiceRate=0).
-      // Alternative: set plan_created to exactly 50% to avoid penalty and avoid bonus 1
-      const plans2 = [
-        ...makeN(6, makeBirthdayPlan, { plan_created: false }),
-        ...makeN(4, makeBirthdayPlan, { plan_created: false }),
-      ];
       // All 10 plans have choices=true => choiceRate = 40/40 = 100% => +3
       // birthdayPlanningRate = 0/10 = 0% => penalty -5
       // score = 52 + 3 - 5 = 50
@@ -855,14 +839,6 @@ describe("bonuses in isolation", () => {
     });
 
     it("+1 when childChoiceRate >= 60 and < 80", () => {
-      // 7/10 plans have all 4 choices, 3/10 have none => 28/40 = 70%
-      // But 70% >= 60 and < 80? No 70% >= 60 => +1. Wait 70 < 80 => yes, +1.
-      // Actually need >= 60 and < 80. 70% works.
-      const plans = [
-        ...makeN(6, makeBirthdayPlan, { plan_created: false }),
-        ...makeN(1, makeBirthdayPlan, { plan_created: false }),
-        ...makeN(3, makeBirthdayPlan, { plan_created: false, child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
-      ];
       // 7 have all choices, 3 have none => 28/40 = 70% >= 60 => +1
       // birthdayPlanningRate = 0/10 => penalty -5
       // score = 52 + 1 - 5 = 48
@@ -892,7 +868,6 @@ describe("bonuses in isolation", () => {
 
   describe("Bonus 7: personalisationRate", () => {
     it("+3 when personalisationRate >= 90", () => {
-      const celebs = makeN(10, makeCelebration, { celebration_held: false });
       // celebrationExecutionRate=0% => penalty -5 (totalCelebrations > 0)
       // personalisationRate = 10/10 = 100% => +3
       // score = 52 + 3 - 5 = 50
@@ -908,11 +883,6 @@ describe("bonuses in isolation", () => {
     });
 
     it("+1 when personalisationRate >= 70 and < 90", () => {
-      const celebs = [
-        ...makeN(6, makeCelebration),
-        ...makeN(2, makeCelebration, { personalised_to_child: false }),
-        ...makeN(2, makeCelebration, { celebration_held: false, personalised_to_child: false }),
-      ];
       // celebrationExecutionRate = 6/10 = 60% => no bonus, no penalty
       // personalisationRate = 6/10 = 60%? No: first 6 have personalised=true, next 4 have false => 6/10=60%. That's < 70.
       // Need 7/10 => 70%
@@ -941,7 +911,6 @@ describe("bonuses in isolation", () => {
 
   describe("Bonus 8: feltSpecialRate", () => {
     it("+2 when feltSpecialRate >= 90", () => {
-      const sats = makeN(10, makeSatisfaction, { overall_satisfaction: 3 });
       // childSatisfactionRate = 0/10 = 0% => penalty -4 (< 30 && count>0)
       // feltSpecialRate = 100% => +2
       // score = 52 + 2 - 4 = 50
@@ -1186,15 +1155,6 @@ describe("rating thresholds", () => {
   });
 
   it("score=79 => good (just below outstanding)", () => {
-    // 52 + 28 - need to lose 1 point
-    // Drop one bonus: e.g. lifeStoryRate < 50 => lose 2 from bonus 9
-    // That gives 52 + 26 = 78. Need 79.
-    // Drop feltSpecialRate from +2 to +1 (>=70, <90) => 52 + 27 = 79
-    // Need feltSpecialRate between 70-89%: 8/10 = 80%
-    const sats = [
-      ...makeN(9, makeSatisfaction),
-      makeSatisfaction({ felt_special: false }),
-    ];
     // feltSpecialRate = 9/10 = 90% => still +2. Need < 90.
     const sats2 = [
       ...makeN(8, makeSatisfaction),
@@ -1256,17 +1216,6 @@ describe("rating thresholds", () => {
   });
 
   it("score=64 => adequate (just below good)", () => {
-    // 52 + 12 = 64
-    // Same as above but drop satisfaction bonus: satisfaction at 60% (no bonus)
-    const r = run({
-      birthday_plan_records: makeN(10, makeBirthdayPlan, { child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
-      celebration_execution_records: makeN(10, makeCelebration, { personalised_to_child: false }),
-      gift_provision_records: makeN(10, makeGift),
-      child_satisfaction_records: [
-        ...makeN(6, makeSatisfaction, { overall_satisfaction: 4, felt_special: false }),
-        ...makeN(4, makeSatisfaction, { overall_satisfaction: 2, felt_special: false }),
-      ],
-    });
     // satisfaction: 6/10=60% => no bonus, no penalty (>=30)
     // 52 + 4+4+3 = 63? Wait let me recalculate:
     // birthday: +4, celeb: +4, gift: +3 = +11 => 52+11=63
@@ -1331,12 +1280,6 @@ describe("rating thresholds", () => {
   });
 
   it("score=44 => inadequate (just below adequate)", () => {
-    // 52 + 2 - 5 - 4 - 1 = 44
-    // Use same as above but lose the birthday bonus: 70% instead of 80%
-    const plans = [
-      ...makeN(7, makeBirthdayPlan, { child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
-      ...makeN(3, makeBirthdayPlan, { plan_created: false, child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
-    ];
     const celebs = [
       ...makeN(4, makeCelebration, { personalised_to_child: false }),
       ...makeN(6, makeCelebration, { celebration_held: false, personalised_to_child: false }),
@@ -1345,11 +1288,6 @@ describe("rating thresholds", () => {
       ...makeN(4, makeGift),
       ...makeN(6, makeGift, { gift_provided: false }),
     ];
-    const r = run({
-      birthday_plan_records: plans,
-      celebration_execution_records: celebs,
-      gift_provision_records: gifts,
-    });
     // birthday: 70% => +2
     // celeb: 40% => -5
     // gift: 40% => -4
@@ -1358,22 +1296,6 @@ describe("rating thresholds", () => {
     const plans2 = [
       ...makeN(6, makeBirthdayPlan, { child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
       ...makeN(4, makeBirthdayPlan, { plan_created: false, child_chose_theme: false, child_chose_guests: false, child_chose_food: false, child_chose_activity: false }),
-    ];
-    const r2 = run({
-      birthday_plan_records: plans2,
-      celebration_execution_records: celebs,
-      gift_provision_records: gifts,
-    });
-    // birthday: 60% => +0, no penalty (>= 50)
-    // celeb: 40% => -5
-    // gift: 40% => -4
-    // 52 + 0 - 5 - 4 = 43. That's 43, not 44.
-    // For 44: 52 - 5 - 4 + 1 = 44
-    // Need +1 somewhere. giftProv at 70%: but that's >= 50 so no penalty. Contradiction: we need giftProv<50 for penalty.
-    // Let's use: celeb penalty -5, gift penalty -4, + some small bonus = +1 => 44
-    // childChoice at >=60 gives +1
-    const plans3 = [
-      ...makeN(10, makeBirthdayPlan, { plan_created: false }),
     ];
     // birthdayPlanning = 0% => -5 penalty too. Let's avoid.
     // Use birthday 60% (no penalty, no bonus) + celeb 40% (-5) + gift 40% (-4) + lifeStory 50% (+1)

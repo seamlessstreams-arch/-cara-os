@@ -734,32 +734,6 @@ describe("Home Night Care Quality Intelligence Engine", () => {
     });
 
     it("score 65 → good", () => {
-      // 52 + 13 = 65. Need bonuses summing to 13.
-      // nightCheckCompliance 100% +4, nightLog 100% +3, handover 100% +3, handoverQuality 3.0 +1, sleep 50%(no bonus) = 4+3+3+1 = 11
-      // Plus timeliness 80% +1, incident 0 (no incidents), wellbeing 0 = 11+1 = 12. Close.
-      // Add anxietySupport 80% +1 = 13. That's it.
-      // But we need to avoid penalties too. sleepAssessmentCoverage < 50 with total_children>0 → -3.
-      // Let's have sleep at 50%: 1 child of 2 → no penalty. No sleep bonus.
-      const checks = [
-        makeNightCheck("nc1", { child_id: "c1", within_schedule: true, child_settled: false, notes: "" }),
-        makeNightCheck("nc2", { child_id: "c2", within_schedule: false, child_settled: false, notes: "" }),
-      ];
-      const anxietySupport = [
-        makeNightAnxietySupport("nas1", { support_provided: true }),
-        makeNightAnxietySupport("nas2", { support_provided: true }),
-        makeNightAnxietySupport("nas3", { support_provided: true }),
-        makeNightAnxietySupport("nas4", { support_provided: true }),
-        makeNightAnxietySupport("nas5", { support_provided: false }),
-      ];
-      const r = computeNightCareQuality({
-        today: "2025-06-01",
-        total_children: 2,
-        night_checks: checks,
-        night_logs: [makeNightLog("nl1", { completed: true })],
-        night_staff_handovers: [makeNightStaffHandover("h1", { completed: true, quality_rating: 3 })],
-        sleep_assessments: [makeSleepAssessment("sa1", { child_id: "c1" })],
-        night_anxiety_support: anxietySupport,
-      });
       // compliance: pct(2, 2*1) = 100% → +4
       // nightLogCompletion: 100% → +3
       // handoverCompletion: 100% → +3
@@ -775,27 +749,6 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         makeNightCheck("nc1", { child_id: "c1", within_schedule: true, child_settled: false, notes: "" }),
         makeNightCheck("nc2", { child_id: "c2", within_schedule: true, child_settled: false, notes: "" }),
       ];
-      const r2 = computeNightCareQuality({
-        today: "2025-06-01",
-        total_children: 2,
-        night_checks: checks2,
-        night_logs: [makeNightLog("nl1", { completed: true })],
-        night_staff_handovers: [makeNightStaffHandover("h1", { completed: true, quality_rating: 3 })],
-        sleep_assessments: [makeSleepAssessment("sa1", { child_id: "c1" })],
-        night_anxiety_support: anxietySupport,
-      });
-      // timeliness: pct(2,2) = 100% → +3
-      // Total: 52 + 4 + 3 + 3 + 1 + 1 + 3 = 67. Too high.
-      // Let's drop handoverQuality. quality_rating=2 → avg 2.0, no bonus.
-      const r3 = computeNightCareQuality({
-        today: "2025-06-01",
-        total_children: 2,
-        night_checks: checks2,
-        night_logs: [makeNightLog("nl1", { completed: true })],
-        night_staff_handovers: [makeNightStaffHandover("h1", { completed: true, quality_rating: 2 })],
-        sleep_assessments: [makeSleepAssessment("sa1", { child_id: "c1" })],
-        night_anxiety_support: anxietySupport,
-      });
       // 52 + 4 + 3 + 3 + 0 + 1 + 3 = 66. Still too high. Drop anxiety.
       const r4 = computeNightCareQuality({
         today: "2025-06-01",
@@ -824,15 +777,6 @@ describe("Home Night Care Quality Intelligence Engine", () => {
           notes: "",
         }));
       }
-      const r = computeNightCareQuality({
-        today: "2025-06-01",
-        total_children: 1,
-        night_checks: checks,
-        night_logs: [makeNightLog("nl1", { completed: true })],
-        night_staff_handovers: [makeNightStaffHandover("h1", { completed: true, quality_rating: 2 })],
-        sleep_assessments: [makeSleepAssessment("sa1", { child_id: "c1" })],
-        night_anxiety_support: [],
-      });
       // compliance: pct(10, 1*1) = 1000% → +4
       // nightLog: 100% → +3
       // handover: 100% → +3

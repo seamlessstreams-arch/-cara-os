@@ -588,16 +588,6 @@ describe("outstanding — perfect data", () => {
 
 describe("scoring bonuses", () => {
   it("base score is 52 with no bonuses and no penalties", () => {
-    // All rates at 0 but records exist -> no bonuses, but may get penalties
-    // Use records that produce 0% rates without triggering penalties
-    // Actually, just verify by giving mid-range data
-    const inp = baseInput({
-      cleanliness_audit_records: [
-        makeCleanlinessAudit({ id: "c1", overall_score: 3 }),
-        makeCleanlinessAudit({ id: "c2", overall_score: 3 }),
-        makeCleanlinessAudit({ id: "c3", overall_score: 4 }),
-      ],
-    });
     // cleanlinessRate = 33% -> penalty -5, no bonus
     // showerAvailabilityRate = 100% -> bonus +5
     // hotWaterSafetyRate = 100% -> bonus +5
@@ -630,13 +620,6 @@ describe("scoring bonuses", () => {
   });
 
   it("cleanlinessRate >= 70 gives +3 bonus", () => {
-    const r = computeBathroomShowerFacilities(baseInput({
-      cleanliness_audit_records: [
-        makeCleanlinessAudit({ id: "c1", overall_score: 5 }),
-        makeCleanlinessAudit({ id: "c2", overall_score: 5 }),
-        makeCleanlinessAudit({ id: "c3", overall_score: 3 }),
-      ],
-    }));
     // 2/3 = 67% → this is actually < 70, so no bonus from cleanliness
     // Need 70%+ → 3/4 = 75%
     const r2 = computeBathroomShowerFacilities(baseInput({
@@ -678,14 +661,6 @@ describe("scoring bonuses", () => {
   });
 
   it("hotWaterSafetyRate >= 80 but < 95 gives +3 bonus", () => {
-    const r = computeBathroomShowerFacilities(baseInput({
-      hot_water_records: [
-        makeHotWater({ id: "h1" }),
-        makeHotWater({ id: "h2" }),
-        makeHotWater({ id: "h3" }),
-        makeHotWater({ id: "h4", within_safe_range: false }),
-      ],
-    }));
     // 3/4 = 75% - that's < 80, so no bonus. Need 4/5 = 80%
     const r2 = computeBathroomShowerFacilities(baseInput({
       hot_water_records: [
@@ -2059,19 +2034,6 @@ describe("warning insights", () => {
   });
 
   it("warning for childSatisfactionRate 50-69", () => {
-    const r = computeBathroomShowerFacilities(baseInput({
-      cleanliness_audit_records: [
-        makeCleanlinessAudit({ id: "c1", child_feedback_collected: true, child_feedback_positive: true }),
-        makeCleanlinessAudit({ id: "c2", child_feedback_collected: true, child_feedback_positive: false }),
-      ],
-      privacy_records: [
-        makePrivacy({ id: "p1", child_consulted_on_privacy: true, child_satisfied_with_privacy: false }),
-      ],
-      accessibility_records: [
-        makeAccessibility({ id: "a1", child_can_use_independently: true }),
-        makeAccessibility({ id: "a2", child_can_use_independently: false }),
-      ],
-    }));
     // Cleanliness 1/2, Privacy 0/1, Accessibility 1/2 → 2/5 = 40%
     // That's < 50. Let me adjust for 50-69.
     const r2 = computeBathroomShowerFacilities(baseInput({

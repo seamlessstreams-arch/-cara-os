@@ -1093,19 +1093,6 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
     });
 
     it("score 64 => adequate (just below good)", () => {
-      // base=52 + need exactly 12 bonus, 0 penalties
-      // bonus1(+4) + bonus3(+3) + bonus5(+3) + bonus8(+0) = only 10; need 12
-      // Try: bonus1(+4) + bonus2(+3) + bonus5(+3) + bonus9(+3) = 13 minus adjustments
-      // Actually let me construct precisely: bonus1=+2(80%), bonus3=+3(90%), bonus5=+3(100%), bonus9=+3(90%) = 11
-      // + bonus6 = depends on child voice
-      // Simpler approach: construct to get score 64 by going just under good
-      // base=52, need +12. bonus1=+4 + bonus5=+3 + bonus3=+3 + bonus8=+1 = 11. bonus9=+1 => 12. 52+12=64.
-      const contacts = many(20, () =>
-        makeContact({ occurred: true, child_voice_captured: false, notes_recorded: false, social_worker_informed: false }),
-      );
-      const engagements = many(10, () =>
-        makeEngagement({ parent_participated: true, parent_invited: false, parent_views_recorded: false, parent_views_incorporated: false }),
-      );
       // views incorporation: all participated but none incorporated => 0% => no bonus8. So get bonus8 differently.
       // Actually I need to be very precise. Let me simplify:
       // Just verify that a known score of 64 gives "adequate"

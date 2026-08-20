@@ -2000,26 +2000,6 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
     });
 
     it("achieves good with targeted bonuses (score 65-79)", () => {
-      const r = computeClothingPersonalPossessions(
-        baseInput({
-          clothing_allowance_records: [
-            makeAllowance({
-              allowance_amount_gbp: 100,
-              amount_spent_gbp: 85,
-              quality_rating: 4,
-            }),
-          ],
-          wardrobe_review_records: [
-            makeWardrobeReview({ overall_adequate: true }),
-          ],
-          personal_inventory_records: [
-            makeInventory({
-              total_items_recorded: 100,
-              items_accounted_for: 96,
-            }),
-          ],
-        }),
-      );
       // allowance >=80 => +4, wardrobe >=90 => +4, inventory >= 95 => +3
       // quality >= 4.0 => +2
       // childChoice: denom=1+1+1=3, num=0 => 0% < 30 => -3

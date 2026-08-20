@@ -1218,35 +1218,6 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
     });
 
     it("inadequate at score 44 (just below adequate)", () => {
-      // 52 - 5 (penalty1) - 5 (penalty2) + 1 (bonus9: passRate 70%) + 1 (bonus8: staffReview 70%)
-      // = 52 - 10 + 2 = 44
-      const training = Array.from({ length: 10 }, (_, i) =>
-        makeTraining({
-          id: `tr_${i}`,
-          child_id: `child_${i}`,
-          completed: i < 4,
-          passed: i < 7,
-          child_engaged: false,
-          child_understood: false,
-        }),
-      );
-      const logs = Array.from({ length: 10 }, (_, i) =>
-        makeUsageLog({
-          id: `log_${i}`,
-          child_id: `child_${i}`,
-          monitoring_active: true,
-          reviewed_by_staff: i < 7,
-          parental_controls_enabled: false,
-          age_appropriate_filters: false,
-        }),
-      );
-      const r = computeDigitalSafetyOnlineProtection(
-        baseInput({
-          total_children: 10,
-          esafety_training_records: training,
-          internet_usage_logs: logs,
-        }),
-      );
       // bonus2: monitoringRate 100% → +3, bonus8: staffReview 70% → +1, bonus9: passRate 70% → +1
       // penalty1: compliance 40% → -5, penalty2: access 0% → -5
       // 52 + 3 + 1 + 1 - 5 - 5 = 47... not 44

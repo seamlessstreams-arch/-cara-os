@@ -813,13 +813,6 @@ describe("scoring — base and bonuses", () => {
   });
 
   it("54: timeliness 70-89 adds +1", () => {
-    // 2 out of 3 items timely = 67%... need to get exactly 70-89
-    // 7 out of 10 = 70%
-    const corrective = makeAudits(3, { corrective_actions_needed: true, corrective_actions_completed: true });
-    const notCorrective = makeAudits(3, { corrective_actions_needed: true, corrective_actions_completed: false });
-    const timelyDisc = makeDiscrepancies(2, { resolution_status: "resolved", days_to_resolve: 5 });
-    const lateDisc = makeDiscrepancies(1, { resolution_status: "resolved", days_to_resolve: 20 });
-    const reviewed = makeReconciliations(1, { supervisor_reviewed: true });
 
     // numerator: 3 + 2 + 1 = 6, denominator: 6 + 3 + 1 = 10 => 60%... not enough
     // Let's adjust. Need 70%. 7/10:
@@ -1354,15 +1347,6 @@ describe("concerns", () => {
   });
 
   it("110: transparency 40-69 generates concern", () => {
-    const r = run({
-      transparency_records: [
-        makeTransparency({
-          child_involved_in_budget_decisions: false,
-          spending_choices_respected: false,
-          financial_records_accessible: false,
-        }),
-      ],
-    });
     // 7/10 = 70% => no concern (70 is NOT < 70)
     // Need 40-69. Let's use 6/10 = 60%
     const r2 = run({

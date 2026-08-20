@@ -1404,19 +1404,6 @@ describe("Home Garden & Outdoor Space Maintenance Intelligence Engine", () => {
     });
 
     it("strength for childEnjoymentRate >= 70 and < 90", () => {
-      const r = computeGardenOutdoorSpaceMaintenance(
-        baseInput({
-          space_utilisation_records: [
-            makeSpaceUtilisation({ enjoyment_observed: true }),
-            makeSpaceUtilisation({ enjoyment_observed: true }),
-            makeSpaceUtilisation({ enjoyment_observed: false }),
-          ],
-          child_involvement_records: [
-            makeChildInvolvement({ enjoyment_level: 4, child_chose_activity: true }),
-            makeChildInvolvement({ enjoyment_level: 2, child_chose_activity: false }),
-          ],
-        }),
-      );
       // (2+1+1)/(3+2+2) = 4/7 ≈ 57% — not in range, let me adjust
       // Actually let's make sure it is in 70-89 range
       // We need 70-89% enjoyment:

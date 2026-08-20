@@ -1539,14 +1539,6 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
     });
 
     it("concern for condition monitoring 40-59%", () => {
-      const r = computeClothingLabellingStorage(baseInput({
-        condition_records: [makeCondition({
-          total_items_checked: 20,
-          items_good_condition: 10,
-          items_needing_replacement: 10,
-          items_replaced: 0,
-        })],
-      }));
       // good_rate=50%, replacement=0%, avg=25% -> actually <40 concern fires
       // Need avg 40-59: good_rate=80%, replacement=0%, avg=40%
       const r2 = computeClothingLabellingStorage(baseInput({

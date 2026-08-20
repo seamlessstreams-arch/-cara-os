@@ -754,21 +754,6 @@ describe("modifier 6 — overall pattern + significant events", () => {
 
 describe("rating boundaries", () => {
   it("returns outstanding when score >= 80", () => {
-    // Need score exactly 80. Base perfect log = 79. Need +1 more.
-    // Use 2 logs to change dynamics slightly.
-    // With 2 perfect quiet logs:
-    // mod1: 100% → +6, mod2: both 100% → +5, mod3: no disturbances → +2,
-    // mod4: 100% → +5, mod5: 100% → +4, mod6: sig=0 & comp>=90 → +5
-    // 52+6+5+2+5+4+5 = 79. Still 79 with multiple perfect logs.
-    // Need a scenario that gives us 80 or more. The max is 52+6+5+5+5+4+5=82 (with disturbances responded to at 95%+)
-    // mod3 = +5 requires disturbances with 95%+ response rate
-    const logs = manyRecords(20, {
-      disturbance_count: 1,
-      disturbance_level: "minor",
-      total_disturbance_duration_minutes: 5,
-      all_disturbances_have_action: true,
-    });
-    const r = computeSleepNightCare(baseInput({ logs }));
     // quiet_night_rate = 0% (all minor disturbances) → mod5: <20 → -4
     // That would give: 52+6+5+5+5-4+2 = 71. Not enough.
     // Let's mix: 15 quiet, 5 with disturbances all responded to.
@@ -871,7 +856,6 @@ describe("rating boundaries", () => {
         }),
       );
     }
-    const r = computeSleepNightCare(baseInput({ logs }));
     // comp = 20/50 = 40% → mod1=-5 (comp<50)
     // security = 80%, alarm = 80% → neither >=98(both), security not >=90, alarm not >=90,
     // security not <70, alarm not <70 → else → -1
@@ -914,36 +898,6 @@ describe("rating boundaries", () => {
   });
 
   it("returns inadequate when score is exactly 44", () => {
-    // Build a scenario that produces score 44
-    // Try: mod1=-5, mod2=-5, mod3=+2, mod4=+2, mod5=-1, mod6=-2
-    // 52-5-5+2+2-1-2 = 43. Close. Adjust to get 44:
-    // mod1=-5, mod2=-5, mod3=+2, mod4=+2, mod5=-1, mod6=-1? No, mod6 options are +5,+2,-2,-3
-    // mod1=-5, mod2=-5, mod3=+2, mod4=+5, mod5=-1, mod6=-2 = 52-5-5+2+5-1-2=46. adequate.
-    // mod1=-5, mod2=-5, mod3=-4, mod4=+5, mod5=+4, mod6=-3 = 52-5-5-4+5+4-3=44
-    // mod3=-4: disturbance response < 50%
-    // mod6=-3: sig>3 or comp<60. comp=0%<60 → -3
-    const logs = [
-      baseRecord({
-        checks_completed_count: 0,
-        expected_checks_count: 5,
-        building_secure: false,
-        alarms_set: false,
-        disturbance_count: 1,
-        disturbance_level: "significant",
-        all_disturbances_have_action: false,
-      }),
-      baseRecord({
-        id: "sl_2",
-        checks_completed_count: 0,
-        expected_checks_count: 5,
-        building_secure: false,
-        alarms_set: false,
-        disturbance_count: 1,
-        disturbance_level: "none",
-        all_disturbances_have_action: false,
-      }),
-    ];
-    const r = computeSleepNightCare(baseInput({ logs }));
     // comp = 0/10 = 0% → mod1=-5
     // security = 0/2 = 0% → <70 → mod2=-5
     // disturbances: 2 logs have dist>0, 0 have action → 0% → mod3=-4
@@ -970,7 +924,6 @@ describe("rating boundaries", () => {
         }),
       );
     }
-    const r2 = computeSleepNightCare(baseInput({ logs: logs2 }));
     // comp = 0/30 = 0% → mod1=-5
     // security = 0/6 = 0% → mod2=-5
     // disturbances: 4 logs with dist>0, 0 with action → 0% → mod3=-4

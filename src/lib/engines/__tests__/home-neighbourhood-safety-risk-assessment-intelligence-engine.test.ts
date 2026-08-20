@@ -2869,27 +2869,6 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
     });
 
     it("childAwarenessRate between 50-59 triggers specific concern text", () => {
-      // Need exactly 50-59% => 5/10 or 6/10
-      const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
-        risk_assessment_records: [
-          makeRiskAssessment("ra1", { child_consulted: true }),
-          makeRiskAssessment("ra2", { child_consulted: false }),
-          makeRiskAssessment("ra3", { child_consulted: false }),
-        ],
-        safety_mapping_records: [
-          makeSafetyMapping("sm1", { child_involvement: true }),
-          makeSafetyMapping("sm2", { child_involvement: false }),
-        ],
-        hazard_records: [
-          makeHazard("h1", { children_informed: true }),
-          makeHazard("h2", { children_informed: false }),
-        ],
-        route_safety_records: [
-          makeRoute("r1", { child_walked_route: true }),
-          makeRoute("r2", { child_walked_route: false }),
-          makeRoute("r3", { child_walked_route: false }),
-        ],
-      }));
       // 1+1+1+1 = 4 out of 3+2+2+3 = 10 => 40% -- not quite right, let me adjust
       // Need 50-59%: 5 or 6 out of 10
       // child_consulted: 2 true, 1 false (2)

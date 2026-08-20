@@ -170,9 +170,6 @@ function run(overrides: Partial<EyeHealthInput> = {}) {
 }
 
 // ── Helper: pct(n, d) consistent with engine ─────────────────────────────
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 1. INSUFFICIENT DATA
@@ -777,13 +774,6 @@ describe("Bonus 6 — followUpRate", () => {
   });
 
   it("+2 when followUpRate >= 70 and < 90", () => {
-    const r = run({
-      prescription_records: [
-        makePrescription({ follow_up_required: true, follow_up_completed: true }),
-        makePrescription({ follow_up_required: true, follow_up_completed: true }),
-        makePrescription({ follow_up_required: true, follow_up_completed: false }),
-      ],
-    });
     // followUp: 2/3 = 67% — not quite 70
     // Need exactly 70%+ : 7/10 for example
     // Use 3 prescription follow-ups completed, 1 not + 3 referral follow-ups completed, 0 not

@@ -1504,17 +1504,6 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
     });
 
     it("good headline", () => {
-      const result = computeRegulatoryEvidenceCompleteness(
-        baseInput({
-          total_children: 100,
-          filing_items: [makeFilingItem({ id: "f-1", child_id: "child-1" })],
-          documents: [makeDocument({ id: "d-1" })],
-          risk_assessments: [makeRiskAssessment({ id: "ra-1", child_id: "child-1" })],
-          incidents: [
-            makeIncident({ id: "i-1", severity: "high", has_report: true, has_follow_up: true, has_notification: true, child_id: "child-1" }),
-          ],
-        }),
-      );
       // childCoverage 1/100=1% -> no bonus. Others all 100%.
       // 52+4+3+4+3+4+3+3+2+2+0 = 80. Actually that's outstanding.
       // Let me reduce: no high severity notification bonus (all low severity)

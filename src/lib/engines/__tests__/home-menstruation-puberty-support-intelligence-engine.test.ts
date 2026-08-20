@@ -168,20 +168,6 @@ function nRecords<T>(n: number, factory: (o?: Partial<T>) => T, overrides: Parti
   return Array.from({ length: n }, () => factory(overrides));
 }
 
-// Create a mix: `good` count with positive overrides, `bad` count with negative overrides
-function mixedRecords<T>(
-  good: number,
-  bad: number,
-  factory: (o?: Partial<T>) => T,
-  goodOverrides: Partial<T>,
-  badOverrides: Partial<T>,
-): T[] {
-  return [
-    ...nRecords(good, factory, goodOverrides),
-    ...nRecords(bad, factory, badOverrides),
-  ];
-}
-
 // ── All-perfect records for maximum score ──────────────────────────────────
 
 function allPerfectInput(): MenstruationPubertyInput {

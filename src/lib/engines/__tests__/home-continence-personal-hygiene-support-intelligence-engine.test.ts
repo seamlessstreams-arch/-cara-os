@@ -824,57 +824,6 @@ describe("bonus isolation", () => {
 
   // Bonus 6 lower: childIndependenceRate >= 70 -> +1
   it("bonus 6 low: childIndependenceRate >= 70 (but <90) -> +1", () => {
-    // 3 of 4 categories have perfect child involvement, but products don't
-    const r = computeContinencePersonalHygieneSupport(neutralInput({
-      hygiene_routine_records: [
-        makeHygieneRoutine({ id: "hr_1", child_independent: true }),
-        makeHygieneRoutine({ id: "hr_2", child_independent: true }),
-        makeHygieneRoutine({ id: "hr_3", child_independent: false }),
-        makeHygieneRoutine({ id: "hr_4", child_independent: false, routine_supported: false, routine_completed: false, dignity_maintained: false, privacy_respected: false, age_appropriate_approach: false }),
-      ],
-      continence_plan_records: [
-        makeContinencePlan({ id: "cp_1", child_involved_in_planning: true }),
-        makeContinencePlan({ id: "cp_2", child_involved_in_planning: true }),
-        makeContinencePlan({ id: "cp_3", child_involved_in_planning: false, plan_in_place: false, plan_personalised: false, plan_reviewed_on_time: false, goals_set: false, confidentiality_maintained: false }),
-      ],
-      age_guidance_records: [
-        makeAgeGuidance({ id: "ag_1", child_engaged: true }),
-        makeAgeGuidance({ id: "ag_2", child_engaged: true }),
-        makeAgeGuidance({ id: "ag_3", child_engaged: false, age_appropriate: false, development_appropriate: false, delivered_sensitively: false }),
-      ],
-      product_provision_records: [
-        makeProductProvision({ id: "pp_1", child_consulted_on_choice: true }),
-        makeProductProvision({ id: "pp_2", child_consulted_on_choice: true }),
-        makeProductProvision({ id: "pp_3", child_consulted_on_choice: false, product_available: false, product_suitable: false, sufficient_quantity: false, stored_discreetly: false, child_dignity_preserved: false }),
-      ],
-    }));
-    // (2+2+2+2) / (4+3+3+3) = 8/13 = 62% - not 70+
-    // Adjust: need ~70%
-    // Let's compute: need at least 70
-    // Use simpler approach: all hygiene independent, all continence involved
-    const r2 = computeContinencePersonalHygieneSupport(neutralInput({
-      hygiene_routine_records: [
-        makeHygieneRoutine({ id: "hr_1", child_independent: true }),
-        makeHygieneRoutine({ id: "hr_2", child_independent: true }),
-        makeHygieneRoutine({ id: "hr_3", child_independent: true }),
-        makeHygieneRoutine({ id: "hr_4", child_independent: false, routine_supported: false, routine_completed: false, dignity_maintained: false, privacy_respected: false, age_appropriate_approach: false }),
-      ],
-      continence_plan_records: [
-        makeContinencePlan({ id: "cp_1", child_involved_in_planning: true }),
-        makeContinencePlan({ id: "cp_2", child_involved_in_planning: true }),
-        makeContinencePlan({ id: "cp_3", child_involved_in_planning: false, plan_in_place: false, plan_personalised: false, plan_reviewed_on_time: false, goals_set: false, confidentiality_maintained: false }),
-      ],
-      age_guidance_records: [
-        makeAgeGuidance({ id: "ag_1", child_engaged: true }),
-        makeAgeGuidance({ id: "ag_2", child_engaged: true }),
-        makeAgeGuidance({ id: "ag_3", child_engaged: false, age_appropriate: false, development_appropriate: false, delivered_sensitively: false }),
-      ],
-      product_provision_records: [
-        makeProductProvision({ id: "pp_1", child_consulted_on_choice: true }),
-        makeProductProvision({ id: "pp_2", child_consulted_on_choice: true }),
-        makeProductProvision({ id: "pp_3", child_consulted_on_choice: false, product_available: false, product_suitable: false, sufficient_quantity: false, stored_discreetly: false, child_dignity_preserved: false }),
-      ],
-    }));
     // (3+2+2+2) / (4+3+3+3) = 9/13 = 69% -- still not 70
     // (3+2+2+2) = 9, denominator 13 -> pct(9,13) = round(69.23) = 69. Just short.
     // Try 10/13 = 77%

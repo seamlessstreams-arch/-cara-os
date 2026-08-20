@@ -640,18 +640,6 @@ describe("good scenario", () => {
   });
 
   it("scores 79 at the top of good range", () => {
-    // Need 79 = 52 + 27 bonuses.
-    // Drop receiptSigned from 95 to 80 -> +1 instead of +2 -> total 27 -> score 79
-    const r = computePocketMoneyFinancialLiteracy(
-      baseInput({
-        pocket_money_records: [
-          makePocketMoney("pm1", "child_1"),
-          makePocketMoney("pm2", "child_2"),
-          makePocketMoney("pm3", "child_3"),
-          makePocketMoney("pm4", "child_1", { receipt_signed: false }),
-        ],
-      }),
-    );
     // 4 records, 3 signed = 75%. That's >=80? No, 75 < 80 → no bonus. That gives 52+26=78.
     // Let me rethink. Need receiptSignedRate exactly in 80-94 range.
     // 4/5=80%. Use 5 records, 4 signed.
@@ -1168,12 +1156,6 @@ describe("individual bonuses", () => {
       for (let i = 1; i <= 7; i++) {
         records.push(makeSavings(`sp${i}`, `child_${i}`, { child_initiated: false }));
       }
-      const r = computePocketMoneyFinancialLiteracy(
-        zeroBonusInput({
-          total_children: 10,
-          savings_programme_records: records,
-        }),
-      );
       // savingsEngagement: 7/10=70% -> +1
       // financialEducation: 1/10=10% <30 -> -5 penalty!
       // budgetingCoverage: 1/10=10% -> no bonus

@@ -112,13 +112,13 @@ function baseInput(overrides: Partial<StaffDebriefingInput> = {}): StaffDebriefi
     debriefing_records: staffIds.map((sid, i) =>
       makeDebriefing({ id: `d_${i}`, staff_id: sid, incident_id: `inc_${i}` }),
     ),
-    critical_incident_records: staffIds.map((sid, i) =>
+    critical_incident_records: staffIds.map((_sid, i) =>
       makeCriticalIncident({ id: `ci_${i}` }),
     ),
     wellbeing_followup_records: staffIds.map((sid, i) =>
       makeWellbeingFollowup({ id: `wf_${i}`, staff_id: sid, related_incident_id: `inc_${i}` }),
     ),
-    learning_extraction_records: staffIds.map((sid, i) =>
+    learning_extraction_records: staffIds.map((_sid, i) =>
       makeLearningExtraction({ id: `le_${i}`, related_incident_id: `inc_${i}` }),
     ),
     support_access_records: staffIds.map((sid, i) =>
@@ -2287,7 +2287,6 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
     });
 
     it("no recommendations when everything is perfect", () => {
-      const r = run(baseInput());
       // With many debrief types already (all same type in base → uniqueDebriefTypes=1)
       // Actually base uses "formal_structured" for all → uniqueDebriefTypes < 3 → planned rec
       // Let's override with diverse types

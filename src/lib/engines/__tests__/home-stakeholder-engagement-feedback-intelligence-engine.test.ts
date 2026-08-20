@@ -249,7 +249,6 @@ describe("computeStakeholderEngagementFeedback", () => {
     });
 
     it("+0 when no stakeholder feedback", () => {
-      const withFb = computeStakeholderEngagementFeedback(baseInput());
       const withoutFb = computeStakeholderEngagementFeedback(baseInput({ stakeholder_feedback: [] }));
       // Without feedback, mod2 contributes +0 rather than +6; other mods also shift
       expect(withoutFb.positive_sentiment_rate).toBe(0);
@@ -292,9 +291,6 @@ describe("computeStakeholderEngagementFeedback", () => {
     });
 
     it("-1 when no partnerships exist", () => {
-      const withPP = computeStakeholderEngagementFeedback(baseInput({
-        parent_partnerships: [makePartnership({ id: "pp1", engagement_quality: "limited" })],
-      }));
       const withoutPP = computeStakeholderEngagementFeedback(baseInput({ parent_partnerships: [] }));
       // Without partnerships: mod4 = -1, mod5 = +0 vs with limited: mod4 depends on rate
       expect(withoutPP.parent_engagement_rate).toBe(0);

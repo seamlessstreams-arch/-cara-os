@@ -2035,12 +2035,6 @@ describe("Headlines", () => {
     const cleaning = Array.from({ length: 20 }, () => makeCleaning({ completed: true, quality_rating: 4 }));
     const maintenance = Array.from({ length: 10 }, () => makeMaintenance({ status: "completed" }));
     const kitchen = Array.from({ length: 5 }, () => makeKitchenCheck({ overall_pass: true }));
-    const bedrooms = Array.from({ length: 3 }, (_, i) =>
-      makeBedroom({ personalised: true, condition: "good", privacy_lock: true, child_id: `c${i}` }),
-    );
-    const rooms = Array.from({ length: 3 }, (_, i) =>
-      makeRoomAllocation({ suitable_for_needs: true, risk_assessed: true, child_consulted: true, child_id: `c${i}` }),
-    );
     // This gives max score 80 (outstanding). We need to lower it to good range.
     // Use bedroom condition "fair" to reduce bed_cond to 0% (no bonus = -3).
     // And make personalisation 80% (= +1 instead of +3 = -2). Total reduction = 5 -> 75.

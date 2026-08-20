@@ -323,12 +323,6 @@ describe("computeStaffLoneWorkingSafety", () => {
 
     it("awards +2 for riskAssessmentRate >= 85 but < 100", () => {
       const staffIds = Array.from({ length: 6 }, (_, i) => `staff_${i}`);
-      const r = computeStaffLoneWorkingSafety({
-        ...baseInput,
-        risk_assessment_records: staffIds.slice(0, 5).map((id, i) =>
-          makeRiskAssessment({ id: `ra_${i}`, staff_id: id, status: "current", approved: false, emergency_procedure_documented: false }),
-        ),
-      });
       // 5/6 = 83% -- just under 85
       // Let's use exact scenario: need >= 85%, so use different total_staff
       const r2 = computeStaffLoneWorkingSafety({
@@ -990,13 +984,6 @@ describe("computeStaffLoneWorkingSafety", () => {
 
     it("strength for riskAssessmentRate >= 85 but < 100", () => {
       const staffIds = Array.from({ length: 6 }, (_, i) => `staff_${i}`);
-      const r = computeStaffLoneWorkingSafety({
-        ...baseInput,
-        total_staff: 6,
-        risk_assessment_records: staffIds.slice(0, 6).map((id, i) =>
-          makeRiskAssessment({ id: `ra_${i}`, staff_id: id }),
-        ),
-      });
       // 100% triggers the >= 100 branch, not the >= 85 branch; need < 100
       // Use 7 total staff with 6 covered
       const r2 = computeStaffLoneWorkingSafety({

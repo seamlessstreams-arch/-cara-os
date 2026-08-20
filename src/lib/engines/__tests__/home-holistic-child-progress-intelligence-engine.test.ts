@@ -238,22 +238,6 @@ describe("computeHolisticChildProgress", () => {
 
   describe("base score and scoring flow", () => {
     it("base score is 52 when metrics fall in no-bonus no-penalty ranges", () => {
-      // Outcome improvement 0% (but no outcome_reviews so no -3 penalty)
-      // education engagement = 0 (no records -> pct = 0, but no edRecords so penalty from <50 doesn't apply since pct(0,0)=0)
-      // We need records that produce metrics in the dead zones
-      // key_work: 1 completed out of 2 = 50% (no bonus >= 75, no penalty < 50)
-      // education: 1 engaged out of 2 = 50% (no bonus >= 75, no penalty < 50)
-      // attendance: avg 80 (no bonus >= 85, no penalty < 70)
-      // outcome: 1/2 improved = 50% (bonus +2 territory)
-      // Actually let's carefully construct for exactly 52.
-      // Need: all metrics in dead zones. Let's use only key_work with 60% completion + 50% goals + no other records.
-      const sessions = Array.from({ length: 5 }, (_, i) => makeKeyWorkSession({
-        id: `bs-kw-${i}`,
-        completed: i < 3, // 60% completion - no bonus (needs >=75), no penalty (needs <50)
-        has_child_voice: i < 2, // 40% voice
-        goals_progressed: 1,
-        goals_total: 2, // 5/10 = 50% goals - no bonus (needs >=60)
-      }));
       // With only key_work_sessions:
       // child voice composite = pct of key_work has_child_voice = 40% -> no bonus
       // All other metrics = 0 from pct(0,0)

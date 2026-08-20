@@ -949,11 +949,6 @@ describe("strengths -- catch-up", () => {
   });
 
   it("strength for >= 60 but < 80 catch-up rate uses 'good progress'", () => {
-    const r = compute(baseInput({
-      catch_up_programme_records: [
-        makeCatchUp({ programme_completed: true, on_track: true, vaccines_required: 5, vaccines_administered: 2 }),
-      ],
-    }));
     // completionRate=100, onTrack=100, vaccineProgress=40 => avg=80 => actually >= 80
     // Let's adjust: 1 completed, 1 not
     const r2 = compute(baseInput({
@@ -1009,13 +1004,6 @@ describe("strengths -- consent management", () => {
   });
 
   it("strength for consent management >= 70 but < 90 uses 'good practice'", () => {
-    const r = compute(baseInput({
-      consent_management_records: [
-        makeConsent({ consent_obtained: true, consent_documented: true }),
-        makeConsent({ id: "cm_2", consent_obtained: true, consent_documented: false }),
-        makeConsent({ id: "cm_3", consent_obtained: false, consent_documented: true }),
-      ],
-    }));
     // obtained=67%, documented=67% => rate=67
     // Actually 2/3=67 and 2/3=67 => 67. That's < 70. Adjust.
     const r2 = compute(baseInput({
@@ -1327,20 +1315,6 @@ describe("concerns -- catch-up", () => {
   });
 
   it("moderate concern when catch-up rate 50-59", () => {
-    const r = compute(baseInput({
-      catch_up_programme_records: [
-        makeCatchUp({ programme_completed: true, on_track: true, vaccines_required: 6, vaccines_administered: 1 }),
-        makeCatchUp({ id: "cu_2", programme_completed: false, on_track: false, vaccines_required: 6, vaccines_administered: 0 }),
-      ],
-    }));
-    // completion=50, onTrack=50, progress=1/12=8 => avg=36. Not 50-59. Adjust.
-    // Make it closer: 1 complete+ontrack, 1 not, progress near 100
-    const r2 = compute(baseInput({
-      catch_up_programme_records: [
-        makeCatchUp({ programme_completed: true, on_track: true, vaccines_required: 3, vaccines_administered: 3 }),
-        makeCatchUp({ id: "cu_2", programme_completed: false, on_track: false, vaccines_required: 3, vaccines_administered: 2 }),
-      ],
-    }));
     // completion=50, onTrack=50, progress=5/6=83 => avg=61. Close but 61 not in 50-59.
     // Force: 50+50+50 = 50
     const r3 = compute(baseInput({
@@ -2669,13 +2643,6 @@ describe("no false positives on perfect data", () => {
 
 describe("bonus tier boundaries", () => {
   it("catchUp rate 60-79 gives +1 not +3", () => {
-    // Ensure the lower tier bonus is applied
-    const r = compute(baseInput({
-      catch_up_programme_records: [
-        makeCatchUp({ programme_completed: true, on_track: true, vaccines_required: 3, vaccines_administered: 3 }),
-        makeCatchUp({ id: "cu_2", programme_completed: false, on_track: false, vaccines_required: 3, vaccines_administered: 1 }),
-      ],
-    }));
     // completion=50, onTrack=50, progress=4/6=67 => avg=56. Not in range.
     // Try: c=1 of 1, ontrack=1, progress = 2/3=67 => (100+100+67)/3 = 89 => +3
     // Need 60-79: c=50,ot=50,p=100 => 67

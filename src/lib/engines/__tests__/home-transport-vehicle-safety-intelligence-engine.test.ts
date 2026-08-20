@@ -852,8 +852,6 @@ describe("computeTransportVehicleSafety", () => {
     });
 
     it("does NOT fire when totalVehicleChecks === 0", () => {
-      // pct(0,0)=0, but guard totalVehicleChecks > 0 prevents penalty
-      const r = run({ total_children: 1 });
       // This triggers the "allEmpty + children > 0" case since total_children>0 and all empty
       // Need at least one non-vehicle-check record to avoid special case
       const r2 = run({

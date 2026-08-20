@@ -1326,13 +1326,6 @@ describe("Insights generation", () => {
   });
 
   it("no insights when no conditions are met", () => {
-    // 2 records, not zero. independence between 15-59. voice between 30-79. hygiene between 1-49.
-    // cats not enough for exemplary.
-    const recs = [
-      makeRecord({ id: "r1", child_id: "c1", competency_level: "did_independently", has_child_voice: true, hygiene_certificate: true, category: "knife_skills" }),
-      makeRecord({ id: "r2", child_id: "c2", competency_level: "assisted", has_child_voice: false, hygiene_certificate: false, category: "hob_cooking" }),
-    ];
-    const result = computeCookingLifeSkills(baseInput({ records: recs }));
     // independence: pct(1,2)=50 => not <15 and not >=60 with >=90 engaged and >=6 cats
     // zero records: no. voice: pct(1,2)=50 => not >=80. hygiene: pct(1,2)=50 => >=50 => fires!
     // Actually hygiene fires. Let's adjust:

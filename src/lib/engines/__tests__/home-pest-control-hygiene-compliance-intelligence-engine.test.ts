@@ -976,13 +976,6 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
     });
 
     it("generates strength for treatment effectiveness >= 70% but < 90%", () => {
-      const r = computePestControlHygieneCompliance(baseInput({
-        treatment_records: [
-          makeTreatment("t1", { treatment_effective: true }),
-          makeTreatment("t2", { treatment_effective: true }),
-          makeTreatment("t3", { treatment_effective: false }),
-        ],
-      }));
       // 67% < 70 so no strength. Need 3/4 = 75%
       const r2 = computePestControlHygieneCompliance(baseInput({
         treatment_records: [
@@ -1095,13 +1088,6 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
     });
 
     it("generates strength for product safety >= 70% but < 90%", () => {
-      const r = computePestControlHygieneCompliance(baseInput({
-        product_safety_records: [
-          makeProduct("p1", { child_safe_certified: true }),
-          makeProduct("p2", { child_safe_certified: true }),
-          makeProduct("p3", { child_safe_certified: false }),
-        ],
-      }));
       // 67% < 70 -> need 3/4 = 75%
       const r2 = computePestControlHygieneCompliance(baseInput({
         product_safety_records: [

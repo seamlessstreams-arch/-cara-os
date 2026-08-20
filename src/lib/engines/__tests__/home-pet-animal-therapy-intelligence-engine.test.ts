@@ -2733,20 +2733,6 @@ describe("computePetAnimalTherapy", () => {
       });
 
       it("empathy + social skills positive insight", () => {
-        const r = computePetAnimalTherapy(baseInput({
-          total_children: 2,
-          therapy_session_records: [makeSession()],
-          pet_care_records: [makeCare()],
-          animal_interaction_records: [makeInteraction()],
-          animal_welfare_records: [makeWelfare()],
-          child_engagement_records: [
-            makeEngagement({ empathy_demonstrated: true, social_skills_improved: true }),
-            makeEngagement({ empathy_demonstrated: true, social_skills_improved: true }),
-            makeEngagement({ empathy_demonstrated: true, social_skills_improved: true }),
-            makeEngagement({ empathy_demonstrated: true, social_skills_improved: false }),
-            makeEngagement({ empathy_demonstrated: false, social_skills_improved: false }),
-          ],
-        }));
         // empathyRate = pct(4,5) = 80, socialSkillsRate = pct(3,5) = 60 -> not enough for social
         // Need 70% social. Let's adjust.
         const r2 = computePetAnimalTherapy(baseInput({

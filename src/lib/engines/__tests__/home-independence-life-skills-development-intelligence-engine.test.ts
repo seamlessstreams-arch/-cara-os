@@ -143,9 +143,6 @@ function baseInput(
 }
 
 /** pct helper matching the engine */
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 

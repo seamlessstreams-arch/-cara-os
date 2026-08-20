@@ -1572,7 +1572,7 @@ describe("strengths", () => {
   });
 
   it("staffPromptResponseRate >= 90 strength", () => {
-    const quietHours = repeat(10, (i) =>
+    const quietHours = repeat(10, () =>
       makeQuietHours({
         compliant: false,
         disruptions_count: 1,

@@ -1086,10 +1086,6 @@ describe("computePepEducationQuality", () => {
     });
 
     it("excludes exemplary insight when current rate < 80", () => {
-      const peps = [
-        ...pepArray(8, { attendance: 96 }),
-        ...Array.from({ length: 2 }, (_, i) => makePep({ child_id: `d${i}`, status: "draft", attendance: 96 })),
-      ];
       // 8/10 current = 80%. Hmm, that is >=80. Let's make it below.
       const mixedPeps = [
         ...Array.from({ length: 7 }, (_, i) => makePep({ child_id: `c${i}`, status: "current", attendance: 96 })),
@@ -1473,20 +1469,6 @@ describe("computePepEducationQuality", () => {
     });
 
     it("all modifiers at mid tier (no adjustment) produce base score 52", () => {
-      // coverage 40-59% → 0
-      // current 30-49% → 0
-      // attendance 75-84 → 0
-      // target 30-49% → 0
-      // actions 30-49% → 0
-      // voice 30-49% → 0
-      // All must hit "no adjustment" band
-      const peps = [
-        makePep({ child_id: "c1", status: "current", attendance: 80, target_count: 10, targets_on_track_count: 4, targets_exceeded_count: 0, actions_total: 10, actions_completed: 4, has_child_views: true }),
-        makePep({ child_id: "c2", status: "draft", attendance: 80, target_count: 10, targets_on_track_count: 4, targets_exceeded_count: 0, actions_total: 10, actions_completed: 4, has_child_views: true }),
-        makePep({ child_id: "c3", status: "draft", attendance: 80, target_count: 10, targets_on_track_count: 4, targets_exceeded_count: 0, actions_total: 10, actions_completed: 4, has_child_views: false }),
-        makePep({ child_id: "c4", status: "overdue", attendance: 80, target_count: 10, targets_on_track_count: 4, targets_exceeded_count: 0, actions_total: 10, actions_completed: 4, has_child_views: false }),
-        makePep({ child_id: "c5", status: "overdue", attendance: 80, target_count: 10, targets_on_track_count: 4, targets_exceeded_count: 0, actions_total: 10, actions_completed: 4, has_child_views: false }),
-      ];
       // 5/10 = 50% coverage → not >=60, not <40 → 0
       // 1/5 current = 20% → <30 → -5 (not the "no adj" band!)
       // Need current at 30-49%: 2/5 = 40% → +0? No, >=50→+2, <30→-5. 40% is 30-49 → 0.

@@ -793,16 +793,6 @@ describe("computeCulturalEventsCelebrations", () => {
           child_satisfaction_rating: 2,
         }),
       );
-      const input = zeroBonusInput({
-        cultural_event_records: Array.from({ length: 10 }, (_, i) =>
-          makeCulturalEvent(`e${i + 1}`, {
-            participated: i < 6,
-            child_feedback_positive: true,
-            engagement_level: "willing",
-          }),
-        ),
-        child_led_activity_records: activities,
-      });
       // childLedRate = 60% => +4
       // satisfaction: 10 positive events + 0 heritage + 0 child-led(rating>=4) = 10/(10+10+6)=10/26=38% => penalty -4!
       // Adjust: more heritage positive feedback
@@ -846,16 +836,6 @@ describe("computeCulturalEventsCelebrations", () => {
           child_satisfaction_rating: 2,
         }),
       );
-      const input = zeroBonusInput({
-        cultural_event_records: Array.from({ length: 10 }, (_, i) =>
-          makeCulturalEvent(`e${i + 1}`, {
-            participated: i < 6,
-            child_feedback_positive: i < 9,
-            engagement_level: "willing",
-          }),
-        ),
-        child_led_activity_records: activities,
-      });
       // denom = 10 + 10 + 3 = 23. satisfaction = pct(9, 23) = 39%! Penalty!
       // Adjust: need ceil(23*0.4)=10 => need 10 positive.
       const input2 = zeroBonusInput({
@@ -2868,50 +2848,6 @@ describe("computeCulturalEventsCelebrations", () => {
     });
 
     it("boundary: score 44 is inadequate", () => {
-      // From the case above, just remove the diversityCelebrationRate bonus:
-      const r = computeCulturalEventsCelebrations({
-        today: "2025-06-01",
-        total_children: 10,
-        cultural_event_records: Array.from({ length: 10 }, (_, i) =>
-          makeCulturalEvent(`e${i + 1}`, {
-            participated: i < 4,
-            child_feedback_positive: false,
-            engagement_level: "willing",
-          }),
-        ),
-        diversity_celebration_records: [
-          makeDiversityCelebration("dc1", {
-            quality_rating: 2,
-            children_participated: ["c1", "c2", "c3", "c4", "c5", "c6"],
-            child_feedback_collected: true,
-            children_involved_in_planning: true,
-            educational_component: false,
-          }),
-        ],
-        heritage_day_records: Array.from({ length: 10 }, (_, i) =>
-          makeHeritageDay(`h${i + 1}`, {
-            child_id: `c${i + 1}`,
-            acknowledged: i < 6,
-            child_feedback_positive: false,
-            child_involved_in_planning: true,
-            family_connection_facilitated: true,
-          }),
-        ),
-        festival_inclusion_records: [
-          makeFestivalInclusion("f1", {
-            faith_or_tradition: "christian",
-            children_participated: ["c1", "c2", "c3", "c4", "c5"],
-            religious_sensitivity_observed: true,
-            child_feedback_collected: true,
-            educational_element: false,
-          }),
-        ],
-        child_led_activity_records: [
-          makeChildLedActivity("cla1", { child_id: "c1", child_satisfaction_rating: 1, child_confidence_improved: false }),
-          makeChildLedActivity("cla2", { child_id: "c2", child_satisfaction_rating: 1, child_confidence_improved: false }),
-          makeChildLedActivity("cla3", { child_id: "c3", child_satisfaction_rating: 1, child_confidence_improved: false }),
-        ],
-      });
       // eventParticipation = 40% => -5
       // diversityCelebrationRate = 60% => no bonus
       // heritageAcknowledgement = 60% => no bonus, no penalty
