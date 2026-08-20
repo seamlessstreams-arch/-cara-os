@@ -69,7 +69,7 @@ const expertDisplay = (id: string) => {
 
 export default function ChildrenAsExpertsPage() {
   const { data: res, isLoading } = useChildExpertEntries();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterExpertise, setFilterExpertise] = useState("all");

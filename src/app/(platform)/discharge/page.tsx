@@ -106,7 +106,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function DischargePage() {
   const { data: raw, isLoading } = useDischargeRecords();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

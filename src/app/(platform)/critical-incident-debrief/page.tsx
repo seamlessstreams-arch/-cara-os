@@ -49,7 +49,7 @@ export default function CriticalIncidentDebriefPage() {
     queryKey: [KEY],
     queryFn: () => api.get<{ data: CriticalIncidentDebriefRecord[] }>(API),
   });
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
   const createRecord = useMutation({
     mutationFn: (data: Partial<CriticalIncidentDebriefRecord>) =>
       api.post(API, data),

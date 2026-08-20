@@ -59,7 +59,7 @@ const RISK_COLORS: Record<LocalityRiskLevel, string> = {
 export default function LocalityRiskPage() {
   const { data: res, isLoading } = useLocalityRisks();
   const updateMut = useUpdateLocalityRisk();
-  const data: LocalityRisk[] = res?.data ?? [];
+  const data: LocalityRisk[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("risk");

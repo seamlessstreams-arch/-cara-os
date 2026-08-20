@@ -62,7 +62,7 @@ const categoryColours: Record<PhotoCategory, string> = {
 
 export default function ChildPhotographyPortfolioPage() {
   const { data: raw, isLoading } = useChildPhotoEntries();
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

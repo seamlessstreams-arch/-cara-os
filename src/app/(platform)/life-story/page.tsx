@@ -76,7 +76,7 @@ const STATUS_CONFIG: Record<LifeStoryEntryStatus, { label: string; colour: strin
 
 export default function LifeStoryPage() {
   const { data: res, isLoading } = useLifeStoryEntries();
-  const entries: LifeStoryEntry[] = res?.data ?? [];
+  const entries: LifeStoryEntry[] = useMemo(() => res?.data ?? [], [res]);
   const createMut = useCreateLifeStoryEntry();
 
   const [search, setSearch] = useState("");

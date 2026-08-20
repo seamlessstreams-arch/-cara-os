@@ -49,7 +49,7 @@ const typeColour: Record<WalkroundType, string> = {
 
 export default function ManagementWalkroundPage() {
   const { data: res, isLoading } = useManagementWalkrounds();
-  const data: ManagementWalkround[] = res?.data ?? [];
+  const data: ManagementWalkround[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");

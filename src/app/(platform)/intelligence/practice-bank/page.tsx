@@ -110,7 +110,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
   const createEntry = useCreatePracticeBankEntry();
 
   const { data, isLoading } = usePracticeBank(yp.id, true);
-  const entries: PracticeBankEntry[] = data?.data ?? [];
+  const entries: PracticeBankEntry[] = useMemo(() => data?.data ?? [], [data]);
 
   async function addToBank(suggestion: string, index: number) {
     setSaving(index);
@@ -369,7 +369,7 @@ function HomeSummaryStrip({ youngPeople }: { youngPeople: YPEnriched[] }) {
 
 export default function PracticeBankPage() {
   const { data: ypData, isLoading: ypLoading, isError: ypError } = useYoungPeople("current");
-  const youngPeople: YPEnriched[] = ypData?.data ?? [];
+  const youngPeople: YPEnriched[] = useMemo(() => ypData?.data ?? [], [ypData]);
   const [search, setSearch] = useState("");
 
   const filteredYP = useMemo(() => {

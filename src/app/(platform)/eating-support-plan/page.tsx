@@ -75,7 +75,7 @@ const presentationColour: Record<EatingPresentation, string> = {
 
 export default function EatingSupportPlanPage() {
   const { data: queryData, isLoading } = useEatingSupportPlans();
-  const records = queryData?.data ?? [];
+  const records = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [search, setSearch] = useState("");
   const [presentationFilter, setPresentationFilter] = useState<string>("all");

@@ -43,7 +43,7 @@ const occasionColour: Record<MemorialOccasionType, string> = {
 
 export default function MemorialOccasionRecordsPage() {
   const { data: res, isLoading } = useMemorialOccasionRecords();
-  const data: MemorialOccasionRecord[] = res?.data ?? [];
+  const data: MemorialOccasionRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterOccasion, setFilterOccasion] = useState("all");
   const [sortBy, setSortBy] = useState("date");

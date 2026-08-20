@@ -494,7 +494,7 @@ export default function DocumentIntelligencePage() {
   const [showUpload, setShowUpload] = useState(false);
 
   const query = useDocumentIntelligence();
-  const allDocs: UploadedDocument[] = query.data?.data ?? [];
+  const allDocs: UploadedDocument[] = useMemo(() => query.data?.data ?? [], [query.data]);
   const meta = query.data?.meta;
 
   const filtered = useMemo(() => {

@@ -94,7 +94,7 @@ const nightmareChip = (f: NightmareFrequency) => {
 // ── page ────────────────────────────────────────────────────────────────────
 export default function NightTimeAnxietySupportPage() {
   const { data: res, isLoading, isError, refetch } = useNightAnxietySupport();
-  const records: NightAnxietySupportRecord[] = res?.data ?? [];
+  const records: NightAnxietySupportRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");

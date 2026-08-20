@@ -896,7 +896,7 @@ export default function HandoverPage() {
   });
 
   const latest = data?.data.latest ?? null;
-  const history = data?.data.history ?? [];
+  const history = useMemo(() => data?.data.history ?? [], [data]);
   const todayShifts = data?.data.today_shifts ?? [];
   const pendingTasks = data?.data.pending_tasks ?? [];
   const openIncidents = data?.data.open_incidents ?? [];

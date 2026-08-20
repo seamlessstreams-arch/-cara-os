@@ -85,7 +85,7 @@ export default function Reg45ReportPage() {
     },
   });
 
-  const reports = query.data?.data ?? [];
+  const reports = useMemo(() => query.data?.data ?? [], [query.data]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const current = useMemo(
     () => reports.find((r) => r.id === selectedId) ?? reports[0] ?? null,

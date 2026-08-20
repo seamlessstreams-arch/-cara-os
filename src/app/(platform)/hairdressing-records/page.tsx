@@ -63,7 +63,7 @@ const exportCols: ExportColumn<HairAppointment>[] = [
 
 export default function HairdressingRecordsPage() {
   const { data: res, isLoading } = useHairAppointments();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

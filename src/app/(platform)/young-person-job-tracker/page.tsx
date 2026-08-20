@@ -45,7 +45,7 @@ const exportCols: ExportColumn<YpJob>[] = [
 
 export default function YoungPersonJobTrackerPage() {
   const { data: result, isLoading } = useYpJobs(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");

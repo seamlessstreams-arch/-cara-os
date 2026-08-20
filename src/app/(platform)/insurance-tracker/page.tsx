@@ -50,7 +50,7 @@ export default function InsuranceTrackerPage() {
     queryKey: ["insurance-policies"],
     queryFn: () => api.get<{ data: InsurancePolicy[] }>("/api/v1/insurance-policies"),
   });
-  const data: InsurancePolicy[] = res?.data ?? [];
+  const data: InsurancePolicy[] = useMemo(() => res?.data ?? [], [res]);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("renewal");

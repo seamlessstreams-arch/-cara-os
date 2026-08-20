@@ -64,7 +64,7 @@ export default function ChildFeedbackOnStaffPage() {
     queryKey: [KEY],
     queryFn: () => api.get<{ data: ChildStaffFeedback[] }>(API),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [filterSentiment, setFilterSentiment] = useState("all");
   const [filterChild, setFilterChild] = useState("all");

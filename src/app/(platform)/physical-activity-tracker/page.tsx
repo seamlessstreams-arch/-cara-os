@@ -82,7 +82,7 @@ const exportCols: ExportColumn<PhysicalActivityEntry>[] = [
 
 export default function PhysicalActivityTrackerPage() {
   const { data: res, isLoading } = usePhysicalActivityEntries();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

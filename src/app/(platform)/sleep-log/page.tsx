@@ -73,7 +73,7 @@ const DISTURBANCE_COLORS: Record<SleepDisturbanceLevel, string> = {
 export default function SleepLogPage() {
   const { data: slData, isLoading, isError, refetch } = useSleepLog();
   const createEntry = useCreateSleepLogEntry();
-  const entries = slData?.data ?? [];
+  const entries = useMemo(() => slData?.data ?? [], [slData]);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");

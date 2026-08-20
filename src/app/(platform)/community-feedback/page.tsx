@@ -59,7 +59,7 @@ export default function CommunityFeedbackPage() {
     queryKey: ["community-feedback-records"],
     queryFn: () => api.get<{ data: CommunityFeedbackRecord[] }>("/api/v1/community-feedback-records"),
   });
-  const records = data?.data ?? [];
+  const records = useMemo(() => data?.data ?? [], [data]);
 
   const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");

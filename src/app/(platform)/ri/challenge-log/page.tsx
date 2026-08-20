@@ -459,7 +459,7 @@ export default function ChallengeLogPage() {
   const [sortBy, setSortBy] = useState<"date" | "escalation" | "area" | "status">("date");
 
   const { data, isLoading } = useRiChallengeLogs({ homeId: homeId });
-  const logs = data?.data ?? [];
+  const logs = useMemo(() => data?.data ?? [], [data]);
 
   const filtered = useMemo(() => {
     let list = logs;

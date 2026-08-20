@@ -45,7 +45,7 @@ export default function FoodBudgetTrackerPage() {
     queryKey: ["food-budget-week-records"],
     queryFn: () => api.get<{ data: FoodBudgetWeekRecord[] }>("/api/v1/food-budget-week-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

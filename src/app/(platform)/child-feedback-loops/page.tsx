@@ -73,7 +73,7 @@ const exportCols: ExportColumn<ChildFeedbackLoop>[] = [
 
 export default function ChildFeedbackLoopsPage() {
   const { data: res, isLoading } = useChildFeedbackLoops();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterDecision, setFilterDecision] = useState("all");

@@ -77,7 +77,7 @@ const EXPORT_COLS: ExportColumn<DebriefRecord>[] = [
 
 export default function DebriefsPage() {
   const { data: raw, isLoading, isError, refetch } = useDebriefRecords();
-  const debriefs = raw?.data ?? [];
+  const debriefs = useMemo(() => raw?.data ?? [], [raw]);
   const createDebrief = useCreateDebriefRecord();
   const [debForm, setDebForm] = useState({ date: todayStr(), type: "post_incident" as ReflectiveDebriefType, what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
   const setDeb = (k: string, v: unknown) => setDebForm((p) => ({ ...p, [k]: v }));
@@ -92,7 +92,6 @@ export default function DebriefsPage() {
   };
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
@@ -107,7 +106,7 @@ export default function DebriefsPage() {
     if (typeFilter !== "all") list = list.filter((db) => db.type === typeFilter);
     list.sort((a, b) => b.date.localeCompare(a.date));
     return list;
-  }, [debriefs, search, typeFilter, sortBy]);
+  }, [debriefs, search, typeFilter]);
 
   const stats = useMemo(() => {
     const total = debriefs.length;

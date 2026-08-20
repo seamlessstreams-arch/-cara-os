@@ -76,7 +76,7 @@ export default function ChildVisionCarePage() {
     queryKey: ["vision-care-records"],
     queryFn: () => api.get<{ data: VisionCareRecord[] }>("/api/v1/vision-care-records"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

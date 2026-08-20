@@ -87,7 +87,7 @@ function isThisYTD(iso: string): boolean {
 
 export default function ChildPoliceContactRecordsPage() {
   const { data: res, isLoading } = usePoliceContactRecords();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

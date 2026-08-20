@@ -81,7 +81,7 @@ const exportCols: ExportColumn<PlacementEndSummary>[] = [
 // ── component ───────────────────────────────────────────────────────────────
 export default function PlacementEndSummaryPage() {
   const { data: res, isLoading, isError, refetch } = usePlacementEndSummaries();
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [filterReason, setFilterReason] = useState("all");
   const [sortBy, setSortBy] = useState("date");

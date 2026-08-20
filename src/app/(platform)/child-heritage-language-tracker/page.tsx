@@ -139,7 +139,7 @@ export default function ChildHeritageLanguageTrackerPage() {
     queryKey: ["heritage-language-records"],
     queryFn: () => api.get<{ data: HeritageLanguageRecord[] }>("/api/v1/heritage-language-records"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterImportance, setFilterImportance] = useState("all");

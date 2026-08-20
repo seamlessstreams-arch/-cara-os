@@ -258,7 +258,7 @@ function useChildStoryData(childId: string): ChildStoryData {
       tasks,
       medications,
     };
-  }, [store, childId, today]);
+  }, [store, childId]);
 }
 
 // ── Trend arrow helper ───────────────────────────────────────────────────────
@@ -351,7 +351,7 @@ export function YoungPersonStoryView({ childId }: YoungPersonStoryViewProps) {
     const map = new Map<string, (typeof store.staff)[0]>();
     store.staff.forEach((s) => map.set(s.id, s));
     return map;
-  }, [store.staff]);
+  }, [store]);
 
   if (!data.child) {
     return (

@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ── Local types mirroring engine output ──────────────────────────────────
 
@@ -146,11 +146,7 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -163,7 +159,11 @@ export function KeyWorkerDashboardWidget({ homeId = "home-oak" }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   function toggleSection(key: string) {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));

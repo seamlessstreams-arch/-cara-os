@@ -59,7 +59,7 @@ const BORDER_RISK: Record<LoneWorkingRiskLevel, string> = { low: "border-l-green
 
 export default function LoneWorkingPage() {
   const { data: res, isLoading } = useLoneWorkingRecords();
-  const data: LoneWorkingRecord[] = res?.data ?? [];
+  const data: LoneWorkingRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");

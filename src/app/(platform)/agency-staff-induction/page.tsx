@@ -57,7 +57,7 @@ export default function AgencyStaffInductionPage() {
     queryKey: [AGENCY_INDUCTIONS_KEY],
     queryFn: () => api.get<{ data: AgencyInduction[] }>(AGENCY_INDUCTIONS_API),
   });
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

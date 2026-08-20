@@ -90,7 +90,7 @@ const exportCols: ExportColumn<DeafHearingSupportRecord>[] = [
 
 export default function ChildDeafHearingSupportPage() {
   const { data: response, isLoading } = useDeafHearingSupportRecords();
-  const records = response?.data ?? [];
+  const records = useMemo(() => response?.data ?? [], [response]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

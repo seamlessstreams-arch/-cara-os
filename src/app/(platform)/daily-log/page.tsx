@@ -591,7 +591,7 @@ export default function DailyLogPage() {
     queryFn: () => api.get<{ data: DailyLogEntry[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?${query}`),
   });
 
-  const allEntries = data?.data ?? [];
+  const allEntries = useMemo(() => data?.data ?? [], [data]);
   const typeCounts = data?.meta.by_type ?? {};
 
   // Search + sort filter

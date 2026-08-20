@@ -113,7 +113,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function DataBreachLogPage() {
   const { data: raw, isLoading } = useDataBreachRecords();
-  const records = raw?.data ?? [];
+  const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

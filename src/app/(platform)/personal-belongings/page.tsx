@@ -92,7 +92,7 @@ export default function PersonalBelongingsPage() {
       api.post("/api/v1/belongings-records", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["belongings-records"] }),
   });
-  const records: BelongingsRecord[] = res?.data ?? [];
+  const records: BelongingsRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

@@ -73,7 +73,7 @@ export default function ChildCorrespondenceIncomingPage() {
     queryFn: () => api.get<{ data: IncomingCorrespondence[] }>("/api/v1/incoming-correspondence"),
   });
   const { data: res, isLoading } = correspondenceQuery;
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterSender, setFilterSender] = useState("all");

@@ -141,7 +141,7 @@ export default function TasksPage() {
 
   const tasksQuery = useTasks();
   const staffQuery = useStaff();
-  const allTasks: Task[] = tasksQuery.data?.data ?? [];
+  const allTasks: Task[] = useMemo(() => tasksQuery.data?.data ?? [], [tasksQuery.data]);
 
   // ── Stats ──────────────────────────────────────────────────────────────
   const stats = useMemo(() => {

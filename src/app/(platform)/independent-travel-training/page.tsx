@@ -86,7 +86,7 @@ export default function IndependentTravelTrainingPage() {
     queryFn: () =>
       api.get<{ data: IndependentTravelRecord[] }>("/api/v1/independent-travel-records"),
   });
-  const records: IndependentTravelRecord[] = res?.data ?? [];
+  const records: IndependentTravelRecord[] = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"stage" | "name" | "review">("stage");

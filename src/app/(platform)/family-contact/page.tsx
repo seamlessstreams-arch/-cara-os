@@ -870,8 +870,8 @@ export default function FamilyContactPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<"yp" | "status" | "type" | "newest">("yp");
 
-  const arrangements = (arrangementsQuery.data?.data ?? []) as EnrichedArrangement[];
-  const logs         = (logsQuery.data?.data ?? []) as EnrichedLog[];
+  const arrangements = useMemo(() => (arrangementsQuery.data?.data ?? []) as EnrichedArrangement[], [arrangementsQuery.data]);
+  const logs         = useMemo(() => (logsQuery.data?.data ?? []) as EnrichedLog[], [logsQuery.data]);
 
   // Unique YPs
   const yps = useMemo(() =>

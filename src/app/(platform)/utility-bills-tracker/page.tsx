@@ -86,7 +86,7 @@ const exportCols: ExportColumn<UtilityBill>[] = [
 
 export default function UtilityBillsTrackerPage() {
   const { data: result, isLoading } = useUtilityBills("home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

@@ -64,7 +64,7 @@ export default function AnnualOutcomesReportPage() {
     queryKey: ["annual-outcomes"],
     queryFn: () => api.get<{ data: AnnualOutcome[] }>("/api/v1/annual-outcomes"),
   });
-  const data = aoData?.data ?? [];
+  const data = useMemo(() => aoData?.data ?? [], [aoData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [filterDomain, setFilterDomain] = useState("all");

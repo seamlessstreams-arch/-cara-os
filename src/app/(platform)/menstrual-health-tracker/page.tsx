@@ -71,7 +71,7 @@ const STAGES: MenstrualStage[] = [
 
 export default function MenstrualHealthTrackerPage() {
   const { data: res, isLoading } = useMenstrualHealthPlans();
-  const data: MenstrualHealthPlan[] = res?.data ?? [];
+  const data: MenstrualHealthPlan[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterStage, setFilterStage] = useState("all");

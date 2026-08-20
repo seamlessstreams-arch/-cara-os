@@ -80,7 +80,7 @@ const EXPORT_COLS: ExportColumn<EmergencyReferral>[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 export default function EmergencyPlacementsPage() {
   const { data: queryData, isLoading, isError, refetch } = useEmergencyReferrals();
-  const referrals = queryData?.data ?? [];
+  const referrals = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");

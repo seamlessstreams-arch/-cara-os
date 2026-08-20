@@ -7,7 +7,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -459,12 +459,14 @@ export default function PIDebriefsPage() {
     },
   });
 
-  const debriefs  = debriefsQuery.data?.data ?? [];
-  const incidents = incidentsQuery.data?.data ?? [];
+  const debriefs = useMemo(() => debriefsQuery.data?.data ?? [], [debriefsQuery.data]);
+  const incidents = useMemo(() => incidentsQuery.data?.data ?? [], [incidentsQuery.data]);
   const meta      = debriefsQuery.data?.meta;
 
-  const getIncident = (incidentId: string) =>
-    incidents.find((i: Incident) => i.id === incidentId);
+  const getIncident = useCallback(
+    (incidentId: string) => incidents.find((i: Incident) => i.id === incidentId),
+    [incidents],
+  );
 
   // Sign-off modal
   const [signingOff, setSigningOff] = useState<PIDebrief | null>(null);
@@ -587,7 +589,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
     });
 
     return list;
-  }, [debriefs, viewTab, search, sortBy]);
+  }, [debriefs, viewTab, search, sortBy, getIncident]);
 
   // Technique breakdown
   const techniqueCounts = useMemo(() => {

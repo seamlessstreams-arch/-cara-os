@@ -8,7 +8,7 @@
 // and regulatory compliance (Reg 12, Reg 40).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Loader2, Flame, AlertTriangle, CheckCircle2, TrendingUp,
   TrendingDown, ChevronDown, ChevronUp, RefreshCw, XCircle,
@@ -90,7 +90,7 @@ export default function CaraIncidentAnalysis({ homeId = "home_oak", days = 28 }:
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -103,9 +103,9 @@ export default function CaraIncidentAnalysis({ homeId = "home_oak", days = 28 }:
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId, days]);
 
-  useEffect(() => { fetchData(); }, [homeId, days]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
     return (

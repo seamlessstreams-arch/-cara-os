@@ -85,7 +85,7 @@ export default function ChildCulturalReligiousMentorPage() {
     queryKey: ["cultural-religious-mentors"],
     queryFn: () => api.get<{ data: CulturalReligiousMentor[] }>("/api/v1/cultural-religious-mentors"),
   });
-  const records = response?.data ?? [];
+  const records = useMemo(() => response?.data ?? [], [response]);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");

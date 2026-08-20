@@ -152,7 +152,7 @@ export default function VehiclePreUseCheckPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: result, isLoading, isError, refetch } = useVehiclePreUseChecks("home_oak");
-  const RECORDS = result?.data ?? [];
+  const RECORDS = useMemo(() => result?.data ?? [], [result]);
 
   const vehicleOptions = useMemo(() => {
     const set = new Set(RECORDS.map((r) => r.vehicle));

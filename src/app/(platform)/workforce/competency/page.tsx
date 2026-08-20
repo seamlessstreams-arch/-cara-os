@@ -124,7 +124,7 @@ export default function CompetencyFrameworkPage() {
   const profilesQuery = useCompetencyProfiles({ homeId: "home_oak" });
   const staffQuery    = useStaff();
 
-  const profiles = profilesQuery.data?.data ?? [];
+  const profiles = useMemo(() => profilesQuery.data?.data ?? [], [profilesQuery.data]);
   const staff    = staffQuery.data?.data ?? [];
 
   const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;

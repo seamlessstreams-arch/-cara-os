@@ -330,7 +330,7 @@ export default function PatternAlertsPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const patterns = res?.data ?? [];
+  const patterns = useMemo(() => res?.data ?? [], [res]);
 
   // Unique alert types from data
   const alertTypes = useMemo(() => {

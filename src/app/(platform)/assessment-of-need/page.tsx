@@ -114,7 +114,7 @@ const COMPLEXITIES: NeedsComplexity[] = ["low", "moderate", "complex", "highly_c
 
 export default function AssessmentOfNeedPage() {
   const { data: naData, isLoading } = useNeedsAssessments();
-  const data = naData?.data ?? [];
+  const data = useMemo(() => naData?.data ?? [], [naData]);
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [filterComplexity, setFilterComplexity] = useState("all");

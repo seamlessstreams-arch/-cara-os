@@ -44,7 +44,7 @@ export default function FoodHygienePage() {
     queryKey: ["food-hygiene-records"],
     queryFn: () => api.get<{ data: FoodHygieneRecord[] }>("/api/v1/food-hygiene-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
   const createMutation = useMutation({
     mutationFn: (data: Partial<FoodHygieneRecord>) =>
       api.post("/api/v1/food-hygiene-records", data),

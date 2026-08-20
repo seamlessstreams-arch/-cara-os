@@ -93,7 +93,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 
 export default function ChildCareAnniversaryPage() {
   const { data: resp, isLoading, isError, refetch } = useCareAnniversaryRecords();
-  const data = resp?.data ?? [];
+  const data = useMemo(() => resp?.data ?? [], [resp]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");

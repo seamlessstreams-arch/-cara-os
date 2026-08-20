@@ -65,7 +65,7 @@ const severityText: Record<MedInvSeverity, string> = {
 export default function MedicationErrorInvestigationPage() {
   const { data: res, isLoading } = useMedicationErrorInvestigations();
   const createInvestigation = useCreateMedicationErrorInvestigation();
-  const data: MedicationErrorInvestigation[] = res?.data ?? [];
+  const data: MedicationErrorInvestigation[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterSeverity, setFilterSeverity] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

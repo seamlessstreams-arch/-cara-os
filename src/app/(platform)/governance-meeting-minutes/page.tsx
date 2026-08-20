@@ -64,7 +64,7 @@ export default function GovernanceMeetingMinutesPage() {
     queryKey: ["governance-meetings"],
     queryFn: () => api.get<{ data: GovernanceMeeting[] }>("/api/v1/governance-meetings"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState("all");

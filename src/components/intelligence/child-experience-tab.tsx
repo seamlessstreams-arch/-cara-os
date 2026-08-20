@@ -686,7 +686,7 @@ function InterventionsPanel({ childId, childName }: { childId: string; childName
 
 function PracticeBankPanel({ childId, childName }: { childId: string; childName: string }) {
   const { data, isLoading, isError } = usePracticeBank(childId, false); // all entries, active + inactive
-  const entries: PracticeBankEntry[] = data?.data ?? [];
+  const entries: PracticeBankEntry[] = useMemo(() => data?.data ?? [], [data]);
   const updateEntry = useUpdatePracticeBankEntry();
   const [togglingId, setTogglingId] = useState<string | null>(null);
 

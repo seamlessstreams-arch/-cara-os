@@ -44,7 +44,7 @@ const exportCols: ExportColumn<YoungCarerRecord>[] = [
 
 export default function YoungCarerStatusPage() {
   const { data: result, isLoading } = useYoungCarerRecords(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("name");

@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Interfaces ────────────────────────────────────────────────────────
@@ -141,11 +141,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/regulatory-self-assessment?homeId=${homeId}`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -156,7 +152,11 @@ export function RegulatorySelfAssessmentDashboardWidget({
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

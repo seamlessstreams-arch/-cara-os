@@ -45,7 +45,7 @@ const RECIPIENTS = ["Ofsted", "Placing Authority", "LADO", "Police"] as const;
 /* ── component ───────────────────────────────────────────────────────── */
 export default function NotificationLogPage() {
   const { data: res, isLoading, isError, refetch } = useNotificationLog();
-  const records: NotificationLogEntry[] = res?.data ?? [];
+  const records: NotificationLogEntry[] = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [filterRecipient, setFilterRecipient] = useState("all");
   const [filterType, setFilterType] = useState("all");

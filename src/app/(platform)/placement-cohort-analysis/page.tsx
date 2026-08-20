@@ -67,7 +67,7 @@ export default function PlacementCohortAnalysisPage() {
     queryKey: ["cohort-analyses"],
     queryFn: () => api.get<{ data: CohortAnalysis[] }>("/api/v1/cohort-analyses"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

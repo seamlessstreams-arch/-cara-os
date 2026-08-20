@@ -88,7 +88,7 @@ export default function FamilyTimeSupervisionPage() {
     queryKey: ["family-time-sessions"],
     queryFn: () => api.get<{ data: FamilyTimeSession[] }>("/api/v1/family-time-sessions"),
   });
-  const records = queryData?.data ?? [];
+  const records = useMemo(() => queryData?.data ?? [], [queryData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterChild, setFilterChild] = useState("all");

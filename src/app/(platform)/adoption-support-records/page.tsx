@@ -107,7 +107,7 @@ export default function AdoptionSupportRecordsPage() {
     queryKey: [ADOPTION_RECORDS_KEY],
     queryFn: () => api.get<{ data: AdoptionRecord[] }>(ADOPTION_RECORDS_API),
   });
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

@@ -162,7 +162,7 @@ const ACTIVITY_FEED_QUERY = {
 
 export default function ActivityLogPage() {
   const { data: res, isLoading, refetch } = useQuery(ACTIVITY_FEED_QUERY);
-  const feed = res?.data ?? [];
+  const feed = useMemo(() => res?.data ?? [], [res]);
 
   // Filters
   const [search, setSearch] = useState("");

@@ -70,7 +70,7 @@ export default function PhotoAlbumTrackerPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: res, isLoading } = usePhotoAlbumRecords();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const filtered = useMemo(() => {
     let items = [...records];

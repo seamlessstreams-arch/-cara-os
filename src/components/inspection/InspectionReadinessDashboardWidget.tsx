@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface DomainScore {
   domain: string;
@@ -67,11 +67,7 @@ export function InspectionReadinessDashboardWidget({ homeId = "home-oak" }: Prop
   const [data, setData] = useState<ReadinessData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/inspection?homeId=${homeId}`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -82,7 +78,11 @@ export function InspectionReadinessDashboardWidget({ homeId = "home-oak" }: Prop
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

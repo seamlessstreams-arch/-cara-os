@@ -77,7 +77,7 @@ export default function CorrespondencePage() {
     queryKey: [KEY],
     queryFn: () => api.get<{ data: CorrespondenceEntry[] }>(API),
   });
-  const entries = raw?.data ?? [];
+  const entries = useMemo(() => raw?.data ?? [], [raw]);
   const createEntry = useMutation({
     mutationFn: (data: Partial<CorrespondenceEntry>) =>
       api.post(API, data),

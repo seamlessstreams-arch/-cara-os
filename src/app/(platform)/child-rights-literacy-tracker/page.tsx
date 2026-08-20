@@ -56,7 +56,7 @@ const LEVEL_META: Record<RightsKnowledgeLevel, { colour: string; weight: number 
 
 export default function ChildRightsLiteracyTrackerPage() {
   const { data: res, isLoading } = useRightsLiteracyRecords();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

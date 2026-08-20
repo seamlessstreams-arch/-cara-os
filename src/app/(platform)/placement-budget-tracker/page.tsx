@@ -47,7 +47,7 @@ const SAVINGS_GOAL_MONTHLY = 25;
 
 export default function PlacementBudgetTrackerPage() {
   const { data: res, isLoading } = usePlacementBudgetTrackers();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");

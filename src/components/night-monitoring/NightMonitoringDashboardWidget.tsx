@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface LastShift {
   date: string;
@@ -62,11 +62,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/night-monitoring?homeId=${homeId}&mode=dashboard`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -77,7 +73,11 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

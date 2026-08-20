@@ -94,7 +94,7 @@ const exportCols: ExportColumn<WelfareProtocol>[] = [
 // ── component ───────────────────────────────────────────────────────────────
 export default function WelfareCheckProtocolPerChildPage() {
   const { data: result, isLoading, isError, refetch } = useWelfareProtocols(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState<string>("all");

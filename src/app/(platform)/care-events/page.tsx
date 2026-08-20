@@ -938,7 +938,7 @@ export default function CareEventsPage() {
 
   const { data, isLoading, refetch } = useCareEvents({ days: 30 });
 
-  const events = data?.data ?? [];
+  const events = useMemo(() => data?.data ?? [], [data]);
   const meta = data?.meta;
 
   const filtered = useMemo(() => {

@@ -60,7 +60,7 @@ export default function OnlineGamingTrackerPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: res, isLoading } = useOnlineGamingRecords();
-  const data: OnlineGamingRecord[] = res?.data ?? [];
+  const data: OnlineGamingRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const exportCols: ExportColumn<OnlineGamingRecord>[] = [
     { header: "Young Person", accessor: (r: OnlineGamingRecord) => getYPName(r.child_id) },

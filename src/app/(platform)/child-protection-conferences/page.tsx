@@ -78,7 +78,7 @@ export default function ChildProtectionConferencesPage() {
     queryKey: ["cp-conferences"],
     queryFn: () => api.get<{ data: CpConferenceRecord[] }>("/api/v1/cp-conferences"),
   });
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

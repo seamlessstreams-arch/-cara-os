@@ -59,7 +59,7 @@ const exportCols: ExportColumn<OutdoorActivityRiskAssessment>[] = [
 export default function OutdoorActivityRiskAssessmentsPage() {
   const { data: res, isLoading } = useOutdoorActivityRiskAssessments();
   const createRA = useCreateOutdoorActivityRiskAssessment();
-  const data: OutdoorActivityRiskAssessment[] = res?.data ?? [];
+  const data: OutdoorActivityRiskAssessment[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");

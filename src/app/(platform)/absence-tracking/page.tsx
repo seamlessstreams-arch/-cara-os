@@ -68,7 +68,7 @@ export default function AbsenceTrackingPage() {
       api.post("/api/v1/absence-tracking", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["absence-tracking"] }),
   });
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");

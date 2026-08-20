@@ -87,7 +87,7 @@ export default function AppointmentsPage() {
     queryKey: [APPOINTMENTS_KEY],
     queryFn: () => api.get<{ data: Appointment[] }>(APPOINTMENTS_API),
   });
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const createAppointment = useMutation({
     mutationFn: (data: Partial<Appointment>) =>

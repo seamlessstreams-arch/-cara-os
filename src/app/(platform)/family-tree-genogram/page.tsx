@@ -64,7 +64,7 @@ export default function FamilyTreeGenogramPage() {
     queryKey: ["genogram-entries"],
     queryFn: () => api.get<{ data: GenogramEntry[] }>("/api/v1/genogram-entries"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

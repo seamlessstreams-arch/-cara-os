@@ -84,7 +84,7 @@ export default function ChildCreativeProjectsPage() {
     queryKey: ["creative-project-records"],
     queryFn: () => api.get<{ data: CreativeProjectRecord[] }>("/api/v1/creative-project-records"),
   });
-  const data = response?.data ?? [];
+  const data = useMemo(() => response?.data ?? [], [response]);
 
   const filtered = useMemo(() => {
     let items = [...data];

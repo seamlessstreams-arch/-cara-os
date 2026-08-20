@@ -956,7 +956,7 @@ export default function LiversPage() {
     childId: selectedChildId || undefined,
     homeId: selectedChildId ? undefined : homeId,
   });
-  const sessions = sessionsData?.data ?? [];
+  const sessions = useMemo(() => sessionsData?.data ?? [], [sessionsData]);
 
   const youngPersonName = useMemo(
     () => (selectedChildId ? getYPName(selectedChildId) : ""),

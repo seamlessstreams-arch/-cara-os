@@ -88,7 +88,7 @@ const STATUS_TEXT: Record<HealthAssessmentStatus, string> = {
 
 export default function HealthAssessmentsPage() {
   const { data: res, isLoading } = useHealthAssessments();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
   const createMutation = useCreateHealthAssessment();
 
   const [expanded, setExpanded] = useState<string | null>(null);

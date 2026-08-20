@@ -61,7 +61,7 @@ export default function PersonalPassportPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: res, isLoading } = usePersonalPassports();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const filtered = useMemo(() => {
     let items = [...records];

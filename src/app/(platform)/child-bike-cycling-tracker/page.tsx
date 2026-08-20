@@ -86,7 +86,7 @@ export default function ChildBikeCyclingTrackerPage() {
     queryKey: ["cycling-bike-records"],
     queryFn: () => api.get<{ data: CyclingBikeRecord[] }>("/api/v1/cycling-bike-records"),
   });
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");

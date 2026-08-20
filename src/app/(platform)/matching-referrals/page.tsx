@@ -73,7 +73,7 @@ const RISK_COLOUR: Record<string, string> = {
 
 export default function MatchingReferralsPage() {
   const { data: res, isLoading } = useMatchingReferrals();
-  const data: MatchingReferral[] = res?.data ?? [];
+  const data: MatchingReferral[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

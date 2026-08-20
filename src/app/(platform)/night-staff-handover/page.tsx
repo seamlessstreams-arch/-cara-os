@@ -94,7 +94,7 @@ type SortKey = "date_desc" | "date_asc" | "events" | "concerns";
 
 export default function NightStaffHandoverPage() {
   const { data: res, isLoading, isError, refetch } = useNightStaffHandovers();
-  const records: NightStaffHandover[] = res?.data ?? [];
+  const records: NightStaffHandover[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [staffFilter, setStaffFilter] = useState<string>("all");

@@ -73,7 +73,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 export default function MenuPlanningPage() {
   const { data: res, isLoading, isError, refetch } = useMealPlans();
-  const meals: MealPlan[] = res?.data ?? [];
+  const meals: MealPlan[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [mealFilter, setMealFilter] = useState("all");

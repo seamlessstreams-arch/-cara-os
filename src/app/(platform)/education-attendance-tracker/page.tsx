@@ -83,7 +83,7 @@ const UNAUTH_CODES: EduAttendanceCode[] = ["O", "U", "N"];
 
 export default function EducationAttendanceTrackerPage() {
   const { data: queryData, isLoading } = useEduAttendanceRecords();
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
   const [search, setSearch] = useState("");
   const [filterChild, setFilterChild] = useState("all");
   const [filterCode, setFilterCode] = useState("all");

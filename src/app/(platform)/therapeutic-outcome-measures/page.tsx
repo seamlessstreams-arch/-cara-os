@@ -76,7 +76,7 @@ const exportCols: ExportColumn<OutcomeMeasure>[] = [
 
 export default function TherapeuticOutcomeMeasuresPage() {
   const { data: result, isLoading } = useOutcomeMeasures(undefined, "home_oak");
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterMeasure, setFilterMeasure] = useState("all");

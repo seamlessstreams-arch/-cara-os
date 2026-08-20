@@ -73,7 +73,7 @@ const PRI_TEXT: Record<DutyLogPriority, string> = { routine: "", important: "tex
 
 export default function DutyLogPage() {
   const { data: queryData, isLoading, isError, refetch } = useDutyLogEntries();
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
   const createEntry = useCreateDutyLogEntry();
 
   const [search, setSearch] = useState("");

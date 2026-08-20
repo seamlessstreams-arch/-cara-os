@@ -70,7 +70,7 @@ export default function ExternalVisitorLogPage() {
     queryKey: ["external-visitors"],
     queryFn: () => api.get<{ data: ExternalVisitor[] }>("/api/v1/external-visitors"),
   });
-  const data = queryData?.data ?? [];
+  const data = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

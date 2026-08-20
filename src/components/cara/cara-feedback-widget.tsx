@@ -50,24 +50,11 @@ export function CaraFeedbackWidget({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleRating = useCallback(
-    async (newRating: Rating) => {
-      if (submitted) return;
-      setRating(newRating);
-      // If positive, auto-submit without note
-      if (newRating === "positive") {
-        await submitFeedback(newRating, "", []);
-      }
-      // If negative, show the note + tags UI for more detail
-    },
-    [submitted],
-  );
-
-  async function submitFeedback(
+  const submitFeedback = useCallback(async (
     finalRating: Rating,
     finalNote: string,
     tags: string[],
-  ) {
+  ) => {
     if (!finalRating || submitting) return;
     setSubmitting(true);
     try {
@@ -89,7 +76,20 @@ export function CaraFeedbackWidget({
     } finally {
       setSubmitting(false);
     }
-  }
+  }, [outputId, commandId, submitting]);
+
+  const handleRating = useCallback(
+    async (newRating: Rating) => {
+      if (submitted) return;
+      setRating(newRating);
+      // If positive, auto-submit without note
+      if (newRating === "positive") {
+        await submitFeedback(newRating, "", []);
+      }
+      // If negative, show the note + tags UI for more detail
+    },
+    [submitted, submitFeedback],
+  );
 
   function toggleTag(tagId: string) {
     setSelectedTags((prev) => {

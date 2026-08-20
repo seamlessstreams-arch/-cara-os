@@ -83,7 +83,7 @@ const ENERGY_COLORS: Record<CheckInEnergy, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ChildMentalHealthDailyCheckPage() {
   const { data: raw, isLoading, isError, refetch } = useMentalHealthCheckIns();
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");

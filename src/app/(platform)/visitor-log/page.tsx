@@ -269,7 +269,7 @@ export default function VisitorLogPage() {
       api.post("/api/v1/visitors", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["visitors"] }),
   });
-  const visitors = visData?.data ?? [];
+  const visitors = useMemo(() => visData?.data ?? [], [visData]);
   const [showNew, setShowNew] = useState(false);
 
   const [dateFilter, setDateFilter] = useState("all");

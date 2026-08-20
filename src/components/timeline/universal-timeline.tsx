@@ -290,7 +290,7 @@ export function UniversalTimeline({ childId, staffId, homeId, compact = false }:
 
   const { data, isLoading, error } = useTimeline(filter);
 
-  const events = data?.data ?? [];
+  const events = useMemo(() => data?.data ?? [], [data]);
   const total = data?.total ?? 0;
 
   // Group events by date

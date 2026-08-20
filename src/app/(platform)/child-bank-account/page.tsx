@@ -83,7 +83,7 @@ const TX_COLOUR: Record<ChildBankTransactionType, string> = {
 
 export default function ChildBankAccountPage() {
   const { data: resp, isLoading } = useChildBankAccounts();
-  const data = resp?.data ?? [];
+  const data = useMemo(() => resp?.data ?? [], [resp]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

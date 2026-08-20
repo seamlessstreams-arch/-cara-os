@@ -8,7 +8,7 @@
 // progress, and team coverage.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Loader2, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   ChevronDown, ChevronUp, RefreshCw, XCircle, Award, BookOpen,
@@ -100,7 +100,7 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -113,9 +113,9 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
 
-  useEffect(() => { fetchData(); }, [homeId]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
     return (

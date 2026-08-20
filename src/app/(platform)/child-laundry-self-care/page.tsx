@@ -94,7 +94,7 @@ export default function ChildLaundrySelfCarePage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: queryData, isLoading, isError, refetch } = useLaundrySelfCareRecords();
-  const items = queryData?.data ?? [];
+  const items = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const filtered = useMemo(() => {
     let list = [...items];

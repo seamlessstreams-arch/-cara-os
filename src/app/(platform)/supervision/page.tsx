@@ -742,7 +742,7 @@ export default function SupervisionPage() {
   const activeNonRI = allActiveStaff.filter((s) => s.role !== "responsible_individual");
 
   const supervisionsQuery = useSupervisions();
-  const supervisionRecords: Supervision[] = supervisionsQuery.data?.data ?? [];
+  const supervisionRecords: Supervision[] = useMemo(() => supervisionsQuery.data?.data ?? [], [supervisionsQuery.data]);
 
   const stats = useMemo(() => {
     const today = todayStr();

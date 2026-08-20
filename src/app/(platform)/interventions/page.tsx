@@ -574,7 +574,7 @@ export default function InterventionsPage() {
   const createIntervention = useCreateIntervention();
   const updateIntervention = useUpdateIntervention();
 
-  const interventions = interventionsQuery.data?.data ?? [];
+  const interventions = useMemo(() => interventionsQuery.data?.data ?? [], [interventionsQuery.data]);
   const isLoading = interventionsQuery.isPending;
 
   const [showNew, setShowNew] = useState(false);

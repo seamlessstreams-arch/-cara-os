@@ -68,7 +68,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 export default function MedicationStockCheckPage() {
   const { data: res, isLoading } = useMedicationStockChecks();
-  const data: MedicationStockCheck[] = res?.data ?? [];
+  const data: MedicationStockCheck[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");

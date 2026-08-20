@@ -45,7 +45,7 @@ export default function FirstAidersRosterPage() {
     queryKey: ["first-aider-records"],
     queryFn: () => api.get<{ data: FirstAiderRecord[] }>("/api/v1/first-aider-records"),
   });
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [filterCert, setFilterCert] = useState<string>("all");
   const [sortBy, setSortBy] = useState("name-asc");

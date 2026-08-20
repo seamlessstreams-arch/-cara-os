@@ -451,7 +451,7 @@ export default function ChildChronologyPage({
     to:      toDate   || undefined,
   });
 
-  const allItems: ChronologyItem[] = chronoQuery.data?.data ?? [];
+  const allItems: ChronologyItem[] = useMemo(() => chronoQuery.data?.data ?? [], [chronoQuery.data]);
   const stats = chronoQuery.data?.stats;
   const isLoading = ypQuery.isLoading || chronoQuery.isLoading;
 

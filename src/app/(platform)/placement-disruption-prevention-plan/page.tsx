@@ -51,7 +51,7 @@ const RISK_COLORS: Record<DisruptionRiskLevel, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PlacementDisruptionPreventionPlanPage() {
   const { data: res, isLoading } = useDisruptionPreventionPlans();
-  const records = res?.data ?? [];
+  const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<string>("all");

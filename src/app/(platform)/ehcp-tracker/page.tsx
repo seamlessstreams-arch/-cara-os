@@ -67,7 +67,7 @@ const STATUS_META: Record<EhcpPlanStatus, { label: string; color: string }> = {
 
 export default function EhcpTrackerPage() {
   const query = useEhcpRecords();
-  const data = query.data?.data ?? [];
+  const data = useMemo(() => query.data?.data ?? [], [query.data]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "status" | "review">("status");
   const [filterStatus, setFilterStatus] = useState<"all" | EhcpPlanStatus>("all");

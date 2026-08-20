@@ -54,7 +54,7 @@ export default function IroCorrespondencePage() {
     queryFn: () =>
       api.get<{ data: IroCorrespondence[] }>("/api/v1/iro-correspondences"),
   });
-  const records: IroCorrespondence[] = res?.data ?? [];
+  const records: IroCorrespondence[] = useMemo(() => res?.data ?? [], [res]);
   const [ypFilter, setYpFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [directionFilter, setDirectionFilter] = useState("all");

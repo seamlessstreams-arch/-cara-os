@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ── Local Interfaces ────────────────────────────────────────────────────────
 
@@ -117,11 +117,7 @@ export function OfstedReadinessDashboardWidget({
   const [data, setData] = useState<ReadinessData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/ofsted-readiness?homeId=${homeId}`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -132,7 +128,11 @@ export function OfstedReadinessDashboardWidget({
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

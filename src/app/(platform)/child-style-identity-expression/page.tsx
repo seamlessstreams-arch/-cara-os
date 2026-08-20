@@ -64,7 +64,7 @@ const confidenceStyle: Record<BodyConfidence, string> = {
 
 export default function ChildStyleIdentityExpressionPage() {
   const { data: res, isLoading } = useStyleIdentityRecords();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterConfidence, setFilterConfidence] = useState<string>("all");

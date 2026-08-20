@@ -136,7 +136,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function ChildDyslexiaSpLDPlanPage() {
   const { data: response, isLoading } = useSpldSupportPlans();
-  const data = response?.data ?? [];
+  const data = useMemo(() => response?.data ?? [], [response]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

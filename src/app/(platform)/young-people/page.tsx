@@ -797,7 +797,7 @@ export default function YoungPeoplePage() {
   const { data, isLoading, isError } = useYoungPeople(activeTab);
   const carePlansQuery = useCarePlans({ homeId });
 
-  const youngPeople = data?.data ?? [];
+  const youngPeople = useMemo(() => data?.data ?? [], [data]);
   const meta = data?.meta;
 
   // Map child_id → latest care plan so each card can access it without extra fetches

@@ -54,7 +54,7 @@ export default function BehaviourMappingPage() {
     queryKey: ["behaviour-map-entries"],
     queryFn: () => api.get<{ data: BehaviourMapEntry[] }>("/api/v1/behaviour-map-entries"),
   });
-  const data = bmeData?.data ?? [];
+  const data = useMemo(() => bmeData?.data ?? [], [bmeData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "intensity" | "child">("date");
   const [filterChild, setFilterChild] = useState<string>("all");

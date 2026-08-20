@@ -84,7 +84,7 @@ const CATEGORY_COLOUR: Record<ReadinessCategory, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function InspectionReadinessPackPage() {
   const { data: res, isLoading } = useReadinessItems();
-  const entries: ReadinessItem[] = res?.data ?? [];
+  const entries: ReadinessItem[] = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterArea, setFilterArea] = useState<string>("all");

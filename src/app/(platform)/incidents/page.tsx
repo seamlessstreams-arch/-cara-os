@@ -415,7 +415,7 @@ function AllIncidentsTab({ onLogNew }: { onLogNew: () => void }) {
   const ypQuery = useYoungPeople();
   const allYP = ypQuery.data?.data ?? [];
 
-  const incidents: Incident[] = query.data?.data ?? [];
+  const incidents: Incident[] = useMemo(() => query.data?.data ?? [], [query.data]);
 
   const stats = useMemo(() => ({
     total: incidents.length,

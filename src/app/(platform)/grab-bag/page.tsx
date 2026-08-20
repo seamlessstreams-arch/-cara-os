@@ -86,7 +86,7 @@ function useUpdateGrabBag() {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function GrabBagPage() {
   const { data: res, isLoading } = useGrabBags();
-  const bags = res?.data ?? [];
+  const bags = useMemo(() => res?.data ?? [], [res]);
 
   const updateMutation = useUpdateGrabBag();
 

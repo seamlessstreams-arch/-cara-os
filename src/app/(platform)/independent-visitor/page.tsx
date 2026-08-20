@@ -31,7 +31,7 @@ export default function IndependentVisitorPage() {
     queryKey: ["visitor-reports"],
     queryFn: () => api.get<{ data: VisitorReport[] }>("/api/v1/visitor-reports"),
   });
-  const reports: VisitorReport[] = res?.data ?? [];
+  const reports: VisitorReport[] = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);

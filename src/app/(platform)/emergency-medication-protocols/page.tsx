@@ -76,7 +76,7 @@ const TRIGGER_COLOURS: Record<EmergencyMedTrigger, string> = {
 
 export default function EmergencyMedicationProtocolsPage() {
   const { data: queryData, isLoading, isError, refetch } = useEmergencyMedicationProtocols();
-  const records = queryData?.data ?? [];
+  const records = useMemo(() => queryData?.data ?? [], [queryData]);
 
   const [search, setSearch] = useState("");
   const [triggerFilter, setTriggerFilter] = useState("all");

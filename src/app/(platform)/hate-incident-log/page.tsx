@@ -81,7 +81,7 @@ const STATUS_BORDER: Record<HateIncidentStatus, string> = {
 
 export default function HateIncidentLogPage() {
   const { data: res, isLoading } = useHateIncidents();
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

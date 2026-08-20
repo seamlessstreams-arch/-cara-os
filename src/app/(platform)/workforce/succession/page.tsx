@@ -205,7 +205,7 @@ export default function SuccessionBoardPage() {
   const profilesQuery   = useCompetencyProfiles({ homeId: "home_oak" });
   const staffQuery      = useStaff();
 
-  const plans    = successionQuery.data?.data ?? [];
+  const plans = useMemo(() => successionQuery.data?.data ?? [], [successionQuery.data]);
   const profiles = profilesQuery.data?.data ?? [];
   const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
@@ -249,7 +249,7 @@ export default function SuccessionBoardPage() {
       const hay = [p.role_title, p.urgency, candidateNames, p.cara_narrative || ""].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [plans, search, staff, getStaffName]);
+  }, [plans, search, getStaffName]);
 
   // Stats
   const totalCandidates = plans.reduce((s, p) => s + p.candidates.length, 0);

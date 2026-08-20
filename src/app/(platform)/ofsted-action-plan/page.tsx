@@ -131,7 +131,7 @@ const INSPECTION = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedActionPlanPage() {
   const { data: res, isLoading } = useOfstedActionPlan();
-  const entries: OfstedActionItem[] = res?.data ?? [];
+  const entries: OfstedActionItem[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

@@ -368,7 +368,7 @@ export default function CareerPathwayPage() {
   const profilesQuery = useCompetencyProfiles({ homeId: "home_oak" });
   const staffQuery    = useStaff();
 
-  const profiles = profilesQuery.data?.data ?? [];
+  const profiles = useMemo(() => profilesQuery.data?.data ?? [], [profilesQuery.data]);
   const staff    = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
   const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
@@ -387,7 +387,7 @@ export default function CareerPathwayPage() {
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [profiles, search, staff, getStaffName]);
+  }, [profiles, search, getStaffName]);
 
   const staffAtStage = (stage: PathwayStage) =>
     filteredProfiles.filter((p) => p.current_stage === stage);

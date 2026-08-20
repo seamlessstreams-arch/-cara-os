@@ -38,7 +38,7 @@ export default function ComplaintsTrendAnalysisPage() {
     queryKey: ["complaint-trends"],
     queryFn: () => api.get<{ data: ComplaintTrend[] }>("/api/v1/complaint-trends"),
   });
-  const data: ComplaintTrend[] = res?.data ?? [];
+  const data: ComplaintTrend[] = useMemo(() => res?.data ?? [], [res]);
 
   const [sortBy, setSortBy] = useState("period");
   const [expandedId, setExpandedId] = useState<string | null>(null);

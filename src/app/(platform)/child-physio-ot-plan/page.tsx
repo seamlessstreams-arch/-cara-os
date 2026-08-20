@@ -115,7 +115,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function ChildPhysioOtPlanPage() {
   const { data: raw, isLoading, isError, refetch } = usePhysioOtPlans();
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

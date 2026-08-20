@@ -112,7 +112,7 @@ export default function CommunicationsPage() {
 
   const { data, isLoading, isError, refetch } = useDrafts(homeId);
   const act = useDraftAction(homeId);
-  const drafts: DraftRow[] = data?.data ?? [];
+  const drafts: DraftRow[] = useMemo(() => data?.data ?? [], [data]);
 
   const filtered = useMemo(
     () => (filter === "all" ? drafts : drafts.filter((d) => d.status === filter)),

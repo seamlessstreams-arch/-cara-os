@@ -76,7 +76,7 @@ export default function IndependentLivingSkillsAssessmentPage() {
       api.get<{ data: IndependenceLivingAssessment[] }>("/api/v1/independence-living-assessments"),
   });
   const { data: res, isLoading } = assessmentsQuery;
-  const data: IndependenceLivingAssessment[] = res?.data ?? [];
+  const data: IndependenceLivingAssessment[] = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);

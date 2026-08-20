@@ -135,7 +135,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function TherapeuticCareModelPage() {
   const homeName = useHomeName();
   const { data: staffResult } = useTherapeuticStaffTraining("home_oak");
-  const staffData = staffResult?.data ?? [];
+  const staffData = useMemo(() => staffResult?.data ?? [], [staffResult]);
   const { data: impactResult } = useTherapeuticChildImpact(undefined, "home_oak");
   const impactData = impactResult?.data ?? [];
   const [expandedStaff, setExpandedStaff] = useState<string | null>(null);

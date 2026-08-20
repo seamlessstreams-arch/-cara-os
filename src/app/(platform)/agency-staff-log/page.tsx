@@ -61,7 +61,7 @@ export default function AgencyStaffLogPage() {
       api.post(AGENCY_STAFF_LOG_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [AGENCY_STAFF_LOG_KEY] }),
   });
-  const records = result?.data ?? [];
+  const records = useMemo(() => result?.data ?? [], [result]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

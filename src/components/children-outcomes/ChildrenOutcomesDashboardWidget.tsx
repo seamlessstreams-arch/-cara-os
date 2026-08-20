@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface DomainScore {
   domain: string;
@@ -65,11 +65,7 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
   const [data, setData] = useState<CohortData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/children-outcomes?homeId=${homeId}&view=overview`);
       if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -80,7 +76,11 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
     } finally {
       setLoading(false);
     }
-  }
+  }, [homeId]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (

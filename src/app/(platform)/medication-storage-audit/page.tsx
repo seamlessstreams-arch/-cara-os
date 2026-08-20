@@ -62,7 +62,7 @@ const cleanColour: Record<CleanlinessRating, string> = {
 
 export default function MedicationStorageAuditPage() {
   const { data: res, isLoading } = useMedicationStorageAudits();
-  const data: MedicationStorageAudit[] = res?.data ?? [];
+  const data: MedicationStorageAudit[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterCabinet, setFilterCabinet] = useState("all");
   const [filterVerdict, setFilterVerdict] = useState("all");

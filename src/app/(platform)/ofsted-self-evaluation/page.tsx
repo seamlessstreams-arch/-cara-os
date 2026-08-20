@@ -72,7 +72,7 @@ const GRADE_ICON_COLOUR: Record<SelfEvaluationGrade, string> = {
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedSelfEvaluationPage() {
   const { data: res, isLoading } = useSelfEvaluationAreas();
-  const entries: SelfEvaluationArea[] = res?.data ?? [];
+  const entries: SelfEvaluationArea[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("all");

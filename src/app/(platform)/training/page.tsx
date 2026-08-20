@@ -439,6 +439,8 @@ type SortKey = "name" | "status" | "expiry" | "category" | "staff";
 type CategoryFilter = "all" | TrainingCategory;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
+const STATUS_ORDER: Record<string, number> = { expired: 0, expiring_soon: 1, not_started: 2, compliant: 3 };
+
 export default function TrainingPage() {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
@@ -454,7 +456,7 @@ export default function TrainingPage() {
   const staffQuery = useStaff();
   const createNeed = useCreateTrainingNeed();
 
-  const allRecords = trainingQuery.data?.data ?? [];
+  const allRecords = useMemo(() => trainingQuery.data?.data ?? [], [trainingQuery.data]);
   const meta = trainingQuery.data?.meta;
   const activeStaff = (staffQuery.data?.data ?? []).filter((s) => s.role !== "responsible_individual");
   const courses = useMemo(() => [...new Set(allRecords.map((t) => t.course_name))], [allRecords]);
@@ -486,7 +488,6 @@ export default function TrainingPage() {
   }, [activeStaff, allRecords]);
 
   // Status order for sorting
-  const STATUS_ORDER: Record<string, number> = { expired: 0, expiring_soon: 1, not_started: 2, compliant: 3 };
 
   const filtered = useMemo(() => {
     let list = [...allRecords];

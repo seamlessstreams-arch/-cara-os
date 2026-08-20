@@ -46,7 +46,7 @@ const CHECK_STATUS_META: Record<string, { label: string; color: string }> = {
 
 export default function NightLogPage() {
   const { data: nlData, isLoading } = useNightLogs();
-  const data: NightLogEntry[] = nlData?.data ?? [];
+  const data: NightLogEntry[] = useMemo(() => nlData?.data ?? [], [nlData]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "incidents">("date");
 

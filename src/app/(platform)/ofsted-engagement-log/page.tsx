@@ -54,7 +54,7 @@ const ENGAGEMENT_STATUSES = Object.entries(OFSTED_ENGAGEMENT_STATUS_LABEL) as [O
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedEngagementLogPage() {
   const { data: res, isLoading, isError, refetch } = useOfstedEngagementLog();
-  const records: OfstedEngagementRecord[] = res?.data ?? [];
+  const records: OfstedEngagementRecord[] = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");

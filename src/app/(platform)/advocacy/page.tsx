@@ -75,7 +75,7 @@ export default function AdvocacyPage() {
       api.post(ADVOCACY_API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ADVOCACY_KEY] }),
   });
-  const data = result?.data ?? [];
+  const data = useMemo(() => result?.data ?? [], [result]);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

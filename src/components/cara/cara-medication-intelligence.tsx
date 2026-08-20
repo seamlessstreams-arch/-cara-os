@@ -8,7 +8,7 @@
 // controlled drug audit status, and regulatory compliance.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Loader2, Pill, AlertTriangle, CheckCircle2, Clock,
   ChevronDown, ChevronUp, RefreshCw, Shield, TrendingUp,
@@ -102,7 +102,7 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -115,9 +115,9 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId, days]);
 
-  useEffect(() => { fetchData(); }, [homeId, days]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
     return (

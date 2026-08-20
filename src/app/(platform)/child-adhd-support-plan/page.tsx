@@ -103,7 +103,7 @@ export default function ChildADHDSupportPlanPage() {
     queryKey: ["adhd-plans"],
     queryFn: () => api.get<{ data: ADHDPlan[] }>("/api/v1/adhd-plans"),
   });
-  const data = apData?.data ?? [];
+  const data = useMemo(() => apData?.data ?? [], [apData]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

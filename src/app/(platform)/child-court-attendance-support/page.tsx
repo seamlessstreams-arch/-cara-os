@@ -69,7 +69,7 @@ export default function ChildCourtAttendanceSupportPage() {
     queryKey: ["court-attendance-records"],
     queryFn: () => api.get<{ data: CourtAttendanceRecord[] }>("/api/v1/court-attendance-records"),
   });
-  const data = response?.data ?? [];
+  const data = useMemo(() => response?.data ?? [], [response]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCourt, setFilterCourt] = useState("all");

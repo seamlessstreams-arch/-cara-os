@@ -41,7 +41,7 @@ export default function CommissioningFeedbackPage() {
     queryKey: ["commissioning-feedback-records"],
     queryFn: () => api.get<{ data: CommissioningFeedbackRecord[] }>("/api/v1/commissioning-feedback-records"),
   });
-  const entries = res?.data ?? [];
+  const entries = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");

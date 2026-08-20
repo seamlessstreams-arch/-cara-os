@@ -59,7 +59,7 @@ const STATUS_TEXT: Record<ReturnInterviewStatus, string> = {
 
 export default function MissingReturnInterviewsPage() {
   const { data: res, isLoading } = useReturnInterviews();
-  const interviews: ReturnInterview[] = res?.data ?? [];
+  const interviews: ReturnInterview[] = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");

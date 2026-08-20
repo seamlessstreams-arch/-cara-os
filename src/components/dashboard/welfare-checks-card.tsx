@@ -43,8 +43,8 @@ export function WelfareChecksCard() {
     refetchInterval: 60_000,
   });
   const meta = data?.meta;
-  const rounds = data?.data ?? [];
-  const checks = data?.checks ?? [];
+  const rounds = useMemo(() => data?.data ?? [], [data]);
+  const checks = useMemo(() => data?.checks ?? [], [data]);
 
   const {
     todayRounds, totalChecks, concernsFlagged, streak,

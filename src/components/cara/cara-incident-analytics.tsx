@@ -207,7 +207,7 @@ export function CaraIncidentAnalytics() {
     queryKey: ["incidents", { status: undefined, child_id: undefined, needs_oversight: undefined }],
     queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
   });
-  const allIncidents = incQuery.data?.data ?? [];
+  const allIncidents = useMemo(() => incQuery.data?.data ?? [], [incQuery.data]);
   const today = useMemo(() => todayStr(), []);
   const data   = useMemo(() => computeIncidentAnalytics(allIncidents, today), [allIncidents, today]);
 

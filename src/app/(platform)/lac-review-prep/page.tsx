@@ -58,7 +58,7 @@ const prepStatusText: Record<LacPrepStatus, string> = {
 
 export default function LacReviewPrepPage() {
   const { data: res, isLoading } = useLacReviewPreps();
-  const data: LacReviewPrep[] = res?.data ?? [];
+  const data: LacReviewPrep[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");

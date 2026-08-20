@@ -69,7 +69,7 @@ const exportCols: ExportColumn<EpilepsySeizurePlan>[] = [
 /* ─── component ─── */
 export default function ChildEpilepsySeizurePlanPage() {
   const { data: res, isLoading } = useEpilepsySeizurePlans();
-  const items = res?.data ?? [];
+  const items = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

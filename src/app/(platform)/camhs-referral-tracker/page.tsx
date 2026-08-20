@@ -104,7 +104,7 @@ export default function CamhsReferralTrackerPage() {
     queryKey: ["camhs-referrals"],
     queryFn: () => api.get<{ data: CamhsReferral[] }>("/api/v1/camhs-referrals"),
   });
-  const data = crData?.data ?? [];
+  const data = useMemo(() => crData?.data ?? [], [crData]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

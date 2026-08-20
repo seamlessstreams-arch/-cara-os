@@ -42,7 +42,7 @@ export function ComplaintsSummaryCard() {
     queryKey: ["complaints", "home_oak", false],
     queryFn:  () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=home_oak`),
   });
-  const complaints = data?.data ?? [];
+  const complaints = useMemo(() => data?.data ?? [], [data]);
 
   const {
     total, open, overdue, escalated, withSafeguarding,

@@ -115,7 +115,7 @@ export default function BodyMapPage() {
       api.post(API, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["body-map"] }),
   });
-  const entries = result?.data ?? [];
+  const entries = useMemo(() => result?.data ?? [], [result]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");

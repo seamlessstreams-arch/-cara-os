@@ -57,7 +57,7 @@ export default function ChildClothingShoppingTripsPage() {
     queryKey: ["clothing-shopping-trips"],
     queryFn: () => api.get<{ data: ClothingShoppingTrip[] }>("/api/v1/clothing-shopping-trips"),
   });
-  const data = res?.data ?? [];
+  const data = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");

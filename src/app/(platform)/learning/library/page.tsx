@@ -195,7 +195,7 @@ export default function ResourceLibraryPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
   const { data, isLoading } = useResourceLibrary({ homeId: homeId });
-  const entries = data?.data ?? [];
+  const entries = useMemo(() => data?.data ?? [], [data]);
 
   // Compute stats
   const stats = useMemo(() => {

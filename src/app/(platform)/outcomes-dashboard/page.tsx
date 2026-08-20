@@ -86,7 +86,7 @@ const trendIcon = (t: OutcomeTrend) => {
 
 export default function OutcomesDashboardPage() {
   const { data: res, isLoading, isError, refetch } = useOutcomeMetrics();
-  const metrics: OutcomeMetric[] = res?.data ?? [];
+  const metrics: OutcomeMetric[] = useMemo(() => res?.data ?? [], [res]);
 
   const [filterArea, setFilterArea] = useState<string>("all");
   const [filterDomain, setFilterDomain] = useState<string>("all");

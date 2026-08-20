@@ -89,7 +89,7 @@ const exportCols: ExportColumn<MobilityDisabilityPlan>[] = [
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildMobilityPhysicalDisabilityPlanPage() {
   const { data: raw, isLoading, isError, refetch } = useMobilityDisabilityPlans();
-  const items = raw?.data ?? [];
+  const items = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
