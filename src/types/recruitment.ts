@@ -166,6 +166,10 @@ export interface CandidateCheck {
   certificate_number: string | null; // for DBS
   document_type: string | null; // for RTW
   document_expiry: string | null;
+  // Optional: seeded/legacy checks predate these two, so they read as absent
+  // rather than empty. The API has always accepted and echoed both.
+  risk_mitigation?: string | null;
+  notes?: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -192,6 +196,10 @@ export interface CandidateReference {
     performance_rating: "excellent" | "good" | "satisfactory" | "poor" | null;
     disciplinary_concerns: boolean | null;
     safeguarding_concerns: boolean | null;
+    /** The narrative behind a safeguarding_concerns flag — a boolean alone
+     *  cannot carry what the referee actually said. Optional: references
+     *  recorded before this field existed have none. */
+    safeguarding_detail?: string | null;
     would_re_employ: boolean | null;
     additional_comments: string | null;
   } | null;

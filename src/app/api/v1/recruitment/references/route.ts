@@ -115,6 +115,8 @@ export async function PATCH(req: NextRequest) {
       ?? existing.structured_response?.performance_rating ?? null,
     safeguarding_concerns: safeguarding_concerns
       ?? existing.structured_response?.safeguarding_concerns ?? null,
+    safeguarding_detail: safeguarding_detail
+      ?? existing.structured_response?.safeguarding_detail ?? null,
     would_re_employ: would_re_employ
       ?? existing.structured_response?.would_re_employ ?? null,
     additional_comments: would_re_employ_reason
@@ -176,7 +178,7 @@ function serializeRef(r: CandidateReference, home_id: string) {
     role_confirmed: r.structured_response?.role_confirmed ?? null,
     performance_rating: r.structured_response?.performance_rating ?? null,
     safeguarding_concerns: r.structured_response?.safeguarding_concerns ?? null,
-    safeguarding_detail: null,
+    safeguarding_detail: r.structured_response?.safeguarding_detail ?? null,
     would_re_employ: r.structured_response?.would_re_employ ?? null,
     would_re_employ_reason: r.structured_response?.additional_comments ?? null,
     discrepancy_flag: r.discrepancy_flag,

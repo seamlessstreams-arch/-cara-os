@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
     override_reason: c.override_reason ?? null,
     override_by: c.overridden_by ?? null,
     override_at: c.overridden_at ?? null,
-    risk_mitigation: null,
-    notes: null,
+    risk_mitigation: c.risk_mitigation ?? null,
+    notes: c.notes ?? null,
     home_id,
     created_at: c.created_at,
     updated_at: c.updated_at,
@@ -78,6 +78,8 @@ export async function PATCH(req: NextRequest) {
     ...(concern_flag !== undefined && { concern_flag }),
     ...(concern_notes !== undefined && { concern_summary: concern_notes }),
     ...(override_reason !== undefined && { override_reason }),
+    ...(risk_mitigation !== undefined && { risk_mitigation }),
+    ...(notes !== undefined && { notes }),
   });
 
   if (!updated) {
@@ -122,8 +124,8 @@ export async function PATCH(req: NextRequest) {
     override_reason: updated.override_reason ?? null,
     override_by: updated.overridden_by ?? null,
     override_at: updated.overridden_at ?? null,
-    risk_mitigation: null,
-    notes: null,
+    risk_mitigation: updated.risk_mitigation ?? null,
+    notes: updated.notes ?? null,
     home_id: "home_oak",
     created_at: updated.created_at,
     updated_at: now,
