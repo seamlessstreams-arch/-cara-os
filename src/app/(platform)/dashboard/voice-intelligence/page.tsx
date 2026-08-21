@@ -161,9 +161,8 @@ function VoiceIntelligenceContent() {
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
-      const res = await fetch(
-        `/api/cara/voice-history?homeId=${sessionHomeId}&userId=${sessionUserId}`,
-      );
+      // No identity in the query string — the route reads it from the session.
+      const res = await fetch("/api/cara/voice-history");
       if (res.ok) {
         const data = await res.json();
         setHistory(data.data ?? []);
@@ -173,7 +172,7 @@ function VoiceIntelligenceContent() {
     } finally {
       setHistoryLoading(false);
     }
-  }, [sessionHomeId, sessionUserId]);
+  }, []);
 
   useEffect(() => {
     void loadHistory();

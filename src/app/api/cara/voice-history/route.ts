@@ -1,13 +1,17 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/cara/voice-history
 //
-// GET endpoint that fetches recent cara_sessions where task_type = 'voice_reflection'
-// for the current user's home. Returns last 20 sessions with their structured
-// outputs. Gracefully degrades with demo data if Supabase is not configured.
+// GET endpoint that fetches recent cara_sessions where task_type =
+// 'voice_reflection' FOR THE CALLER THEMSELVES. Identity is taken from the
+// validated session, never from query parameters: these are personal
+// reflective journals, and the route previously scoped by a client-supplied
+// homeId while ignoring userId entirely. Returns the last 20 sessions with
+// their structured outputs. Degrades to demo data when Supabase is off.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { getRequestIdentity } from "@/lib/auth-guard";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -66,28 +70,33 @@ const DEMO_HISTORY: VoiceHistoryEntry[] = [
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = req.nextUrl;
-    const homeId = searchParams.get("homeId");
-    const userId = searchParams.get("userId");
-    const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 50);
+    // Who is asking comes from the validated session, never from the query
+    // string. These are personal reflective journals: the caller's own home and
+    // own id are the only ones they may read with.
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
 
-    if (!homeId) {
-      return NextResponse.json(
-        { error: "homeId query parameter is required." },
-        { status: 400 },
-      );
-    }
+    const limit = Math.min(
+      parseInt(req.nextUrl.searchParams.get("limit") ?? "20", 10),
+      50,
+    );
 
     // ── Try Supabase first ─────────────────────────────────────────────────
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
         try {
-          // Fetch sessions with task_type = voice_reflection
-          const { data: sessions, error } = await (sb.from("cara_sessions") as SB)
+          // Fetch sessions with task_type = voice_reflection.
+          // user_id is the privacy guarantee — a reflective journal belongs to
+          // the person who recorded it, not to everyone rostered at the home.
+          // home_id is defence in depth on top of it.
+          let query = (sb.from("cara_sessions") as SB)
             .select("id, created_at, status, risk_level, task_type, page_context")
-            .eq("home_id", homeId)
-            .eq("task_type", "voice_reflection")
+            .eq("user_id", identity.userId)
+            .eq("task_type", "voice_reflection");
+          if (identity.homeId) query = query.eq("home_id", identity.homeId);
+
+          const { data: sessions, error } = await query
             .order("created_at", { ascending: false })
             .limit(limit);
 
