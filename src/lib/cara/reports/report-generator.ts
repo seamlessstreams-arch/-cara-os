@@ -628,6 +628,7 @@ export async function getReport(
 
 export async function updateReportSection(
   sectionId: string,
+  reportId: string,
   content: string,
   updatedBy: string,
 ): Promise<ChildReportSection | null> {
@@ -637,7 +638,7 @@ export async function updateReportSection(
   if (!sb) {
     return {
       id: sectionId,
-      report_id: "demo-report",
+      report_id: reportId,
       section_key: "unknown",
       title: "Updated Section",
       order: 1,
@@ -665,6 +666,9 @@ export async function updateReportSection(
       last_edited_at: now,
     })
     .eq("id", sectionId)
+    // Scope by the report too: a section id alone would let one report's URL
+    // edit another report's section. rewriteSection below already pairs them.
+    .eq("report_id", reportId)
     .select("*")
     .single();
 
