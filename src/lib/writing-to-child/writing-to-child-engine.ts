@@ -47,7 +47,7 @@ function childVoiceCheck(text: string, input: WritingToChildInput): DimensionChe
   const feedback: string[] = [];
   let score = 30;
   if (quotes.length > 0) { score += 35; feedback.push("The child's own words are included — this keeps them visible in their own record."); }
-  else if (hasAny(hay, ["said", "told", "stated", "shared"])) { score += 20; feedback.push("Some of what the child said is recorded; their exact words would strengthen it further."); }
+  else if (hasAny(hay, CHILD_VOICE_CUES)) { score += 20; feedback.push("Some of what the child said is recorded; their exact words would strengthen it further."); }
   else feedback.push("The child's voice is hard to find. What did the child say — and if they did not speak, how did they communicate (silence, body language, avoidance)?");
   if (hasAny(hay, ["showed", "body language", "seemed", "appeared"])) { score += 20; feedback.push("How the child presented is recorded — good."); }
   else feedback.push("Record what the child showed through behaviour or presentation, not only words.");
