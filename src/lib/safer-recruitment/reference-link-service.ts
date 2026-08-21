@@ -140,6 +140,9 @@ export function applySubmission(
       performance_rating: null,
       disciplinary_concerns: submission.disciplinary_concerns,
       safeguarding_concerns: submission.safeguarding_concerns,
+      // Also kept in its own field, not only folded into the comment string —
+      // a safeguarding narrative should be readable without parsing prose.
+      safeguarding_detail: submission.safeguarding_details?.trim() || null,
       would_re_employ: submission.would_re_employ,
       additional_comments: commentParts.join(" · ") || null,
     },
