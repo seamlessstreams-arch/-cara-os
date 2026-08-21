@@ -299,22 +299,66 @@ function EmptyTabState({ icon: Icon, label, description, action }: {
 
 // ── Cara tools (previously "Intelligence") ────────────────────────────────────
 
+interface ChildVoiceEntryView {
+  quote: string;
+  sourceType: string;
+  sourceTitle: string | null;
+  sourceDate: string | null;
+  sentiment: string;
+  theme: string | null;
+}
+interface ChildVoiceSummaryView {
+  totalEntries: number;
+  recentEntries: ChildVoiceEntryView[];
+  themes: { theme: string; count: number }[];
+  lastCaptured: string | null;
+  gapDays: number | null;
+}
+
+const VOICE_SENTIMENT_STYLE: Record<string, string> = {
+  positive: "bg-emerald-100 text-emerald-800",
+  negative: "bg-orange-100 text-orange-800",
+  distressed: "bg-red-100 text-red-800",
+  neutral: "bg-slate-100 text-slate-700",
+  unknown: "bg-slate-100 text-slate-700",
+};
+
+/**
+ * What this child has actually said, drawn from their own records.
+ *
+ * This used to ask the AI for a "voice summary" and hand it nothing but the
+ * child's NAME — no records and no child id — while the mode's own prompt says
+ * to summarise "the provided records". An LLM given a name and told to extract
+ * a child's voice can only invent one, which is the single thing Cara's own
+ * deterministic fallback says it must never do: putting words in a child's
+ * mouth misrepresents them. (The sibling section below does supply real
+ * incidents, chronology and logs — this one was the outlier.)
+ *
+ * It now reads the deterministic child-voice engine, which extracts VERBATIM
+ * quotes from that child's sources and reports where and when each was said.
+ * Nothing is paraphrased and nothing is generated.
+ */
 function ChildVoiceSummarySection({ childId, childName }: { childId: string; childName: string }) {
   const [generating, setGenerating] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [summary, setSummary] = useState<ChildVoiceSummaryView | null>(null);
+  const [failed, setFailed] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   async function generate() {
     setGenerating(true);
+    setFailed(false);
     try {
-      const res = await api.post<{ data: { response?: string; parsed?: { summary?: string }; text?: string } }>(
-        "/cara",
-        { mode: "voice_summary", source_content: `Child profile: ${childName}. Generate voice summary from care records.` }
+      const res = await api.get<ChildVoiceSummaryView>(
+        `/api/cara-studio/child-voice?childId=${encodeURIComponent(childId)}&mode=summary`,
       );
-      const text = res.data?.response || res.data?.parsed?.summary || res.data?.text;
-      if (text) { setSummary(text); setShowModal(true); }
-    } catch { /* silent */ }
-    finally { setGenerating(false); }
+      setSummary(res);
+      setShowModal(true);
+    } catch {
+      // A failed read is not an empty record — say which one happened.
+      setFailed(true);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -323,12 +367,18 @@ function ChildVoiceSummarySection({ childId, childName }: { childId: string; chi
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-emerald-900">Child Voice Summary</div>
-            <div className="text-xs text-emerald-700 mt-0.5">Cara synthesis of what {childName} has said, felt, and expressed</div>
+            <div className="text-xs text-emerald-700 mt-0.5">What {childName} has said, in their own words, gathered from their records</div>
           </div>
           <Button onClick={generate} disabled={generating} className="bg-emerald-600 hover:bg-emerald-700 shrink-0 gap-1.5" size="sm">
-            {generating ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Generating…</> : <><Sparkles className="h-3.5 w-3.5" />Generate</>}
+            {generating ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Gathering…</> : <><BookOpen className="h-3.5 w-3.5" />Show recorded voice</>}
           </Button>
         </div>
+        {failed && (
+          <p className="mt-3 text-xs text-red-700">
+            Could not read {childName}&apos;s records just now — this is a failed read, not an
+            empty one. Try again, or review the records directly.
+          </p>
+        )}
       </div>
       {showModal && summary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}>
@@ -337,8 +387,72 @@ function ChildVoiceSummarySection({ childId, childName }: { childId: string; chi
               <div className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-emerald-600" /><span className="text-lg font-bold text-slate-900">Child Voice Summary</span></div>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
             </div>
-            <div className="max-h-[60vh] overflow-y-auto p-6">
-              <div className="prose prose-sm max-w-none text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{summary}</div>
+            <div className="max-h-[60vh] overflow-y-auto p-6 space-y-5">
+              {summary.totalEntries === 0 ? (
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-sm font-medium text-slate-800">
+                    Nothing {childName} has said has been captured in their records yet.
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                    Cara will not write a summary of a child&apos;s voice where none was
+                    recorded. Capture their words directly — daily logs, key work notes,
+                    wishes-and-feelings work, complaints and advocacy records all count.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-900">
+                      {summary.totalEntries} recorded {summary.totalEntries === 1 ? "entry" : "entries"}
+                    </span>
+                    {summary.lastCaptured && (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+                        Last captured {formatDate(summary.lastCaptured)}
+                        {summary.gapDays !== null && summary.gapDays > 0 && ` · ${summary.gapDays}d ago`}
+                      </span>
+                    )}
+                  </div>
+
+                  {summary.themes.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                        Themes
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {summary.themes.map((t) => (
+                          <span key={t.theme} className="rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-700">
+                            {t.theme} <span className="text-slate-400">×{t.count}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                      In their own words
+                    </div>
+                    <div className="space-y-3">
+                      {summary.recentEntries.map((e, i) => (
+                        <blockquote key={i} className="border-l-2 border-emerald-300 pl-3">
+                          <p className="text-sm text-slate-800 leading-relaxed">&ldquo;{e.quote}&rdquo;</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                            <span>{e.sourceTitle || e.sourceType.replace(/_/g, " ")}</span>
+                            {e.sourceDate && <span>· {formatDate(e.sourceDate)}</span>}
+                            <span className={cn("rounded-full px-1.5 py-0.5", VOICE_SENTIMENT_STYLE[e.sentiment] ?? VOICE_SENTIMENT_STYLE.unknown)}>
+                              {e.sentiment}
+                            </span>
+                          </div>
+                        </blockquote>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-[11px] text-slate-500">
+                      Quoted verbatim from {childName}&apos;s records. Nothing here is
+                      paraphrased or generated.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
             <div className="px-6 py-4 border-t">
               <Button onClick={() => setShowModal(false)} className="w-full">Close</Button>
