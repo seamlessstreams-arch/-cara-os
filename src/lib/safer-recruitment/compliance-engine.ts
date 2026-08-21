@@ -476,7 +476,7 @@ function isActiveStage(stage: RecruitmentStage): boolean {
   return !["withdrawn", "rejected", "appointed"].includes(stage);
 }
 
-function canStartWork(checklist: CandidateChecklist, requiredChecks: CheckType[]): boolean {
+function canStartWork(checklist: CandidateChecklist, _requiredChecks: CheckType[]): boolean {
   for (const checkType of PRE_START_MANDATORY) {
     const check = checklist.checks.find(c => c.type === checkType);
     if (!check || !["satisfactory", "received", "waived"].includes(check.status)) {
@@ -488,7 +488,7 @@ function canStartWork(checklist: CandidateChecklist, requiredChecks: CheckType[]
 
 function buildIssue(
   checkType: CheckType,
-  status: string,
+  _status: string,
   stage: RecruitmentStage,
 ): ComplianceIssue | null {
   const severity: ComplianceSeverity = isAdvancedStage(stage) && isPreStartMandatory(checkType)

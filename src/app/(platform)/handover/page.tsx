@@ -122,12 +122,6 @@ interface CreateHandoverPayload {
   linked_incident_ids?: string[];
 }
 
-interface SignOffPayload {
-  handover_id: string;
-  staff_id: string;
-  notes?: string;
-}
-
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
   { header: "Shift From", accessor: (h) => h.shift_from },

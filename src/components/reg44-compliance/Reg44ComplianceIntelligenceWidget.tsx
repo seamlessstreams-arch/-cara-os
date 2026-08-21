@@ -1,22 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 
-function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
-  const pct = Math.min(100, Math.round((value / max) * 100));
-  const colour = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
-  return (
-    <div className="mb-2">
-      <div className="flex justify-between text-sm mb-1">
-        <span>{label}</span>
-        <span className="font-medium">{value}/{max}</span>
-      </div>
-      <div className="w-full h-2 bg-gray-200 rounded">
-        <div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
-
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="bg-gray-50 rounded p-3 text-center">

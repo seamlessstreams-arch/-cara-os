@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 import { cn, londonDayDiff } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import type { VehiclePreUseCheck, VehiclePreUseCheckItem, VehicleCheckFuelLevel, VehicleCheckOutcome } from "@/types/extended";
+import type { VehiclePreUseCheck, VehicleCheckFuelLevel, VehicleCheckOutcome } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -69,32 +69,7 @@ const d = (n: number): string => {
   return date.toISOString().slice(0, 10);
 };
 
-
 // ── Standard checks template ─────────────────────────────────────────────────
-const STANDARD_CHECKS = (
-  overrides: Partial<Record<string, { pass: boolean; notes: string }>> = {},
-): VehiclePreUseCheckItem[] => {
-  const base: string[] = [
-    "Tyres — tread depth, sidewall, visible damage",
-    "Lights — headlights, brake lights, fog lights",
-    "Indicators — front, side and rear",
-    "Brakes — parking brake holds, foot brake firm",
-    "Oil, coolant, water and screenwash levels",
-    "Seatbelts — all positions function and retract",
-    "Child seats fitted correctly for expected passengers",
-    "Mirrors clean, adjusted and undamaged",
-    "Mileage recorded at start of journey",
-    "Fuel level sufficient for planned journey",
-    "Dashboard warning lights — none illuminated",
-    "First aid kit present and in date",
-    "Grab bag present (ID, contact info, emergency cash)",
-  ];
-  return base.map((item) => ({
-    item,
-    pass: overrides[item]?.pass ?? true,
-    notes: overrides[item]?.notes ?? "",
-  }));
-};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const outcomeColour = (o: VehicleCheckOutcome): string => {
@@ -151,7 +126,7 @@ export default function VehiclePreUseCheckPage() {
   const [filterOutcome, setFilterOutcome] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: result, isLoading, isError, refetch } = useVehiclePreUseChecks("home_oak");
+  const { data: result, isError, refetch } = useVehiclePreUseChecks("home_oak");
   const RECORDS = useMemo(() => result?.data ?? [], [result]);
 
   const vehicleOptions = useMemo(() => {

@@ -235,9 +235,6 @@ function scoreRiskReduction(input: ChildImpactInput): ChildImpactDomain {
     };
   }
 
-  // Sort by date descending
-  const sorted = [...ra].sort((a, b) => daysBetween(a.date, b.date));
-  const latest = sorted[sorted.length - 1];
   const hasRecentReview = ra.some((r) => r.review_date && recent(input.today, r.review_date, 90));
 
   // Score components
@@ -387,9 +384,6 @@ function scoreBehaviourWellbeing(input: ChildImpactInput): ChildImpactDomain {
     (i) => recent(input.today, i.date, 90) && !recent(input.today, i.date, 30),
   );
   const recentBehaviour = behaviour.filter((b) => recent(input.today, b.date, 30));
-  const olderBehaviour = behaviour.filter(
-    (b) => recent(input.today, b.date, 90) && !recent(input.today, b.date, 30),
-  );
 
   // Incidents trending
   const incTrend = computeTrend(recentIncidents.length, olderIncidents.length / 2);

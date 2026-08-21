@@ -183,7 +183,7 @@ export function isBreakGlassActive(
 
 export function expireBreakGlass(
   event: BreakGlassEvent,
-  now?: string,
+  _now?: string,
 ): BreakGlassEvent {
   return {
     ...event,

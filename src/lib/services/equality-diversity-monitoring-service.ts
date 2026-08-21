@@ -413,7 +413,6 @@ export function computeAlerts(
       r.status === "Under Investigation"
     ) {
       const recordDate = new Date(r.record_date);
-      const now = new Date();
       const daysSince = -londonDayDiff(recordDate);
       if (daysSince > 28) {
         alerts.push({

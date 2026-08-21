@@ -625,7 +625,6 @@ function OverviewTab({
   overview,
   snapshots,
   alerts,
-  loading,
 }: {
   overview: OrganisationOverview;
   snapshots: CrossHomeSnapshot[];

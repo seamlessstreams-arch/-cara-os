@@ -212,7 +212,6 @@ export function computeRecordKeepingDocumentationQuality(
   input: RecordKeepingInput,
 ): RecordKeepingResult {
   const {
-    today,
     total_children,
     daily_log_records,
     care_plan_records,

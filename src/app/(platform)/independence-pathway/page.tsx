@@ -190,7 +190,6 @@ export default function IndependencePathwayPage() {
         {/* ── per-child readiness overview ──────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.map((a) => {
-            const avgDomain = Math.round(((a.domains ?? []).reduce((s, dm) => s + dm.score, 0) / (a.domains?.length ?? 0)) * 20);
             return (
               <div key={a.id} className="rounded-lg border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">

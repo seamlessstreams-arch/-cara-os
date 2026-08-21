@@ -331,7 +331,7 @@ export function evaluateAttachmentAssessments(
 
 export function evaluateRelationshipQuality(
   relationships: RelationshipRecord[],
-  childIds: string[],
+  _childIds: string[],
 ): RelationshipQualityResult {
   if (relationships.length === 0) {
     return {
@@ -392,7 +392,7 @@ export function evaluateRelationshipQuality(
 
 export function evaluateInteractionQuality(
   interactions: RelationshipInteraction[],
-  childIds: string[],
+  _childIds: string[],
   periodStart: string,
   periodEnd: string,
 ): InteractionQualityResult {
@@ -445,7 +445,7 @@ export function evaluateInteractionQuality(
 
 export function evaluateStability(
   indicators: StabilityIndicator[],
-  childIds: string[],
+  _childIds: string[],
 ): StabilityResult {
   if (indicators.length === 0) {
     return {

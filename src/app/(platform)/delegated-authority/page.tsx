@@ -65,13 +65,11 @@ const CAT_LABELS: Record<DelegatedAuthCategory, string> = {
 export default function DelegatedAuthorityPage() {
   const { data: daData, isLoading } = useDelegatedAuthority();
   const records = useMemo(() => daData?.data ?? [], [daData]);
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [] = useState("");
+  const [] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const today = todayStr();
-
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
 
   /* per-child stats */
   const ypStats = records.map((r) => {

@@ -547,7 +547,6 @@ export default function ComplaintsPage() {
   });
 
   const complaints = useMemo(() => complaintsQuery.data?.data ?? [], [complaintsQuery.data]);
-  const meta       = complaintsQuery.data?.meta;
 
   const [showNew, setShowNew]     = useState(false);
   const [caraBusy, setCaraBusy]   = useState<string | null>(null);

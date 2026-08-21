@@ -67,7 +67,6 @@ export interface SopInput {
 }
 
 const byChild = <T extends { child_id: string }>(rows: T[], id: string): T[] => rows.filter((r) => r.child_id === id);
-const present = (v: unknown): boolean => typeof v === "string" && v.trim().length > 0;
 
 function strengthOf(evidence: EvidenceItem[], gaps: SopGap[]): EvidenceStrength {
   const highGaps = gaps.filter((g) => g.severity === "high").length;

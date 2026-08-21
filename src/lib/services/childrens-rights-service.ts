@@ -232,7 +232,7 @@ export function identifyRightsAlerts(
   audits: RightsAudit[],
   profiles: ChildRightsProfile[],
   totalChildren: number,
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

@@ -190,32 +190,6 @@ export interface HomeMatchingImpactIntelligence {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const ALL_IMPACT_AREAS: ImpactArea[] = [
-  "behaviour",
-  "emotional_wellbeing",
-  "peer_dynamics",
-  "routines",
-  "education",
-  "safety",
-  "staffing",
-  "space",
-];
-
-const ALL_ADMISSION_TYPES: AdmissionType[] = [
-  "planned",
-  "emergency",
-  "respite",
-  "step_down",
-  "step_up",
-];
-
-const ALL_MATCHING_DECISIONS: MatchingDecision[] = [
-  "proceed",
-  "proceed_with_conditions",
-  "defer",
-  "decline",
-];
-
 // ── Core Function 1: Evaluate Matching Quality ────────────────────────────
 
 export function evaluateMatchingQuality(

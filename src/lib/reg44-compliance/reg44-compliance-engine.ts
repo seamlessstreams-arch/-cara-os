@@ -496,9 +496,6 @@ export function evaluateRecommendations(
   );
   let averageCompletionDays = 0;
   if (completedRecs.length > 0) {
-    const totalDays = completedRecs.reduce((sum, r) => {
-      return sum + daysBetween(r.targetDate, r.completedDate!);
-    }, 0);
     // Use absolute days from target to completion (negative means early)
     const totalAbsDays = completedRecs.reduce((sum, r) => {
       const days = daysBetween(r.targetDate, r.completedDate!);

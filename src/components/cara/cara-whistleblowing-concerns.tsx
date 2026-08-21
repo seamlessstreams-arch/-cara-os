@@ -33,13 +33,6 @@ const RATING_CONFIG: Record<Rating, { label: string; colour: string; bg: string 
   inadequate:           { label: "Inadequate",           colour: "text-red-700",     bg: "bg-red-50 border-red-200" },
 };
 
-const SEVERITY_COLOUR: Record<string, string> = {
-  critical: "bg-red-100 text-red-700",
-  high:     "bg-orange-100 text-orange-700",
-  medium:   "bg-amber-100 text-amber-700",
-  low:      "bg-slate-100 text-slate-600",
-};
-
 // ── Demo data loader ────────────────────────────────────────────────────────
 
 function loadIntelligence(): WhistleblowingConcernsIntelligenceResult {
@@ -247,7 +240,6 @@ function MetricPill({
 }
 
 function ExpandableSection({
-  id,
   title,
   items,
   icon,

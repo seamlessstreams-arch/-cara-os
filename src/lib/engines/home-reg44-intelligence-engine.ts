@@ -147,7 +147,7 @@ function pct(n: number, d: number): number {
 export function computeHomeReg44(
   input: HomeReg44Input,
 ): HomeReg44Result {
-  const { today, total_children, visits, action_records } = input;
+  const { today, visits, action_records } = input;
 
   // Insufficient data
   if (visits.length === 0) {

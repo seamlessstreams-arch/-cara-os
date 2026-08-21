@@ -61,7 +61,6 @@ export async function GET() {
   const today = todayStr();
 
   const currentChildren = youngPeopleList.filter((yp) => yp.status === "current");
-  const childMap = new Map(currentChildren.map((yp) => [yp.id, yp.preferred_name ?? yp.first_name]));
 
   const pathways = independencePathwaysList ?? [];
   const pathwaysByChild = new Map<string, typeof pathways[0]>();

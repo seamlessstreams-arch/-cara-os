@@ -5,7 +5,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
-import { todayStr } from "@/lib/utils";
 
 import {
   VISITOR_TYPES,
@@ -26,8 +25,6 @@ import type {
 const { computeVisitorMetrics, identifyVisitorAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-const now = new Date(todayStr());
 
 function makeRecord(
   overrides?: Partial<VisitorRecord>,

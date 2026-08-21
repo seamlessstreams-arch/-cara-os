@@ -68,13 +68,6 @@ function useCreatePreventRecord() {
 }
 
 /* ── label / colour maps ───────────────────────────────────────────── */
-const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
-  prevent_referral: "bg-red-100 text-red-800",
-  channel_referral: "bg-orange-100 text-orange-800",
-  community_concern: "bg-amber-100 text-amber-800",
-  online_concern: "bg-purple-100 text-purple-800",
-  training_record: "bg-blue-100 text-blue-800",
-};
 
 const RISK_ROW: Record<PreventRiskLevel, RowSeverity> = {
   low: "neutral",

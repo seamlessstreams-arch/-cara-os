@@ -106,7 +106,7 @@ function toRating(score: number): MissingEpisodesRating {
 export function computeHomeMissingEpisodes(
   input: HomeMissingEpisodesInput,
 ): HomeMissingEpisodesResult {
-  const { today, total_children, child_ids, missing_episodes } = input;
+  const { today, total_children, missing_episodes } = input;
 
   // Safety engines: fewer episodes = better. Start high if no data.
   if (missing_episodes.length === 0) {

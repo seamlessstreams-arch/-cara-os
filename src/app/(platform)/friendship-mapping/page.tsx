@@ -52,11 +52,6 @@ const QUALITY_COLOURS: Record<FriendshipQuality, string> = {
   significant_concerns: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
-const RISK_COLOURS: Record<IsolationRisk, string> = {
-  low: "bg-[--cs-success-bg] text-[--cs-success]",
-  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  high: "bg-[--cs-risk-bg] text-[--cs-risk]",
-};
 const RISK_ROW: Record<IsolationRisk, RowSeverity> = { low: "success", medium: "warning", high: "risk" };
 const RISK_TEXT: Record<IsolationRisk, string> = { low: "text-[--cs-success]", medium: "text-[--cs-warning]", high: "text-[--cs-risk]" };
 

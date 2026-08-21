@@ -194,7 +194,7 @@ export async function updateTask(
 
 export async function startTask(
   taskId: string,
-  userId: string,
+  _userId: string,
 ): Promise<ServiceResult<CsTask>> {
   return updateTask(taskId, {
     status: "in_progress",

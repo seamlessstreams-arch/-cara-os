@@ -395,7 +395,7 @@ function buildRiskManagement(
 
 function buildSafeguardingActions(
   input: EvidencePackInput,
-  children: any[],
+  _children: any[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -554,7 +554,7 @@ function buildDirectWorkSummary(
 
 function buildIncidentsAndResponses(
   input: EvidencePackInput,
-  children: any[],
+  _children: any[],
 ): EvidenceSection {
   const periodIncidents = input.incidents.filter((i: any) =>
     isInPeriod(
@@ -867,7 +867,7 @@ function buildFamilyContact(
 
 function buildProfessionalContact(
   input: EvidencePackInput,
-  children: any[],
+  _children: any[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -1167,7 +1167,7 @@ function buildOutstandingActions(
 
 function buildEvidenceOfProgress(
   input: EvidencePackInput,
-  children: any[],
+  _children: any[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 

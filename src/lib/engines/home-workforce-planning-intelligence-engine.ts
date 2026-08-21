@@ -150,12 +150,6 @@ function pct(n: number, d: number): number {
   return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
-  );
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeWorkforcePlanning(

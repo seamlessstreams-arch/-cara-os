@@ -91,7 +91,7 @@ function toRating(score: number): PostIncidentDebriefRating {
 export function computePostIncidentDebrief(
   input: PostIncidentDebriefInput,
 ): PostIncidentDebriefResult {
-  const { debriefs, total_children, today } = input;
+  const { debriefs, total_children } = input;
 
   // Insufficient data guard
   if (total_children === 0) {

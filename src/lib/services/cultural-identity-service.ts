@@ -293,8 +293,6 @@ export function identifyIdentityAlerts(
     actions.filter((a) => a.action_type === "language_support").map((a) => a.child_id),
   );
 
-  // Collect all known child IDs from actions that may not have profiles
-  const childIdsFromActions = new Set(actions.map((a) => a.child_id));
   const childIdsFromProfiles = new Set(profiles.map((p) => p.child_id));
 
   // Alert: child in actions but no profile

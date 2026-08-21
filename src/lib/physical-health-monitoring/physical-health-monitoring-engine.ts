@@ -440,7 +440,7 @@ export function evaluateHealthPromotion(
 
 export function evaluateImmunisations(
   records: ImmunisationRecord[],
-  childIds: string[],
+  _childIds: string[],
 ): ImmunisationResult {
   if (records.length === 0) {
     return {

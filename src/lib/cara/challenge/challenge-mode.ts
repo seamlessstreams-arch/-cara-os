@@ -809,7 +809,7 @@ export async function generateSuggestedActions(
 async function generateAIActions(
   report: ChildReport,
   sections: ChildReportSection[],
-  evidence: ChildReportEvidence[],
+  _evidence: ChildReportEvidence[],
 ): Promise<ChildReportAction[]> {
   const sectionContext = sections
     .map((s) => `[${s.section_key}] ${s.title}: evidence=${s.evidence_status}, confidence=${s.confidence_score ?? 0}%`)

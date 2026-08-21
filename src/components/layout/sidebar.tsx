@@ -413,7 +413,6 @@ export function Sidebar() {
             return null;
           }
 
-          const isActive  = group.id === activeGroup;
           const isOpen    = group.id === openGroup && !collapsed;
 
           // Any child active?

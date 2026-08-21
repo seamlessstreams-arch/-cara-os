@@ -108,7 +108,6 @@ function useCreateResourceLibraryEntry() {
 }
 import { useAuthContext } from "@/contexts/auth-context";
 
-
 type GuidanceResult = {
   title: string;
   pathway: string;
@@ -148,7 +147,6 @@ const TOPICS = [
 
 function GuidanceCard({ resource }: { resource: { id: string; title: string; status: string; created_at: string; pathway?: string | null; resource_type: string; home_id: string; topic?: string | null; tags?: string[] | null } }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
   const [expanded, setExpanded] = useState(false);
   const updateMutation = useUpdateGeneratedResource();
   const addToLibrary = useCreateResourceLibraryEntry();
@@ -227,7 +225,6 @@ export default function GuidanceNotesPage() {
 
   const { data: resourcesData } = useGeneratedResources({ homeId: homeId });
   const createMutation = useCreateGeneratedResource();
-  const addToLibrary = useCreateResourceLibraryEntry();
 
   const guidanceResources = (resourcesData?.data ?? []).filter(
     (r) => r.resource_type === "guidance_note"

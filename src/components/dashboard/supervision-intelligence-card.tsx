@@ -93,7 +93,6 @@ export function SupervisionIntelligenceCard() {
 
   const o = intel.overview;
   const onTrack = intel.staff_profiles.filter((p) => p.compliance_status === "on_track").length;
-  const dueSoon = intel.staff_profiles.filter((p) => p.compliance_status === "due_soon").length;
 
   return (
     <Card className="overflow-hidden">

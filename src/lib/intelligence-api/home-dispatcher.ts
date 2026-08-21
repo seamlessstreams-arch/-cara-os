@@ -5471,7 +5471,6 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // Rights literacy records
     const rawRights = (store.rightsLiteracyRecords as any[] ?? []);
     const rights_literacy: RightsLiteracyInput[] = rawRights.map((r: any) => {
-      const rightsKnowledge = (r.rights_knowledge ?? []) as any[];
       return {
         id: r.id ?? "",
         child_id: r.child_id ?? "",
@@ -13157,7 +13156,6 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const staff = store.staff ?? [];
     const today = todayStr();
-    const todayMs = new Date(today).getTime();
   
     // LADO referrals → LadoReferralInput[]
     const rawReferrals = (store.ladoReferrals as any[] ?? []);
@@ -28152,7 +28150,6 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const store = getStore();
     const staff = store.staff ?? [];
-    const youngPeople = store.youngPeople ?? [];
   
     const staff_snapshots: StaffResilienceSnapshot[] = staff.map((s: any) => {
       const staffId = s.id;

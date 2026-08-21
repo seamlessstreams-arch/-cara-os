@@ -174,10 +174,6 @@ function toMs(iso: string): number {
   return new Date(iso).getTime();
 }
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
-
 function resolveName(id: string, byId: Map<string, SubjectRef>): string {
   const s = byId.get(id);
   if (!s) return id;

@@ -95,7 +95,6 @@ export function HomeRiskLandscapeIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.risk_rating] ?? RATING_STYLES.insufficient_data;
   const hasIncreasing = d.trend_profile.increasing_count > 0;
-  const hasHighRisk = d.distribution_profile.high_or_very_high_count > 0;
   const isAlert = hasIncreasing || d.risk_rating === "inadequate";
 
   return (

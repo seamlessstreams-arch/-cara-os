@@ -57,7 +57,7 @@ export function StaffPerformanceDipCard() {
     );
   }
 
-  const { training, supervision, profile, sickness } = intel;
+  const { training, supervision, profile } = intel;
   const expiredTraining = training.reduce((s, t) => s + t.expired, 0);
   const supervisionRate = supervision.total_staff_requiring > 0
     ? Math.round((supervision.up_to_date / supervision.total_staff_requiring) * 100)

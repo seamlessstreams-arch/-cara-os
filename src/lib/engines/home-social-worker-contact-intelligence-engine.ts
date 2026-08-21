@@ -90,7 +90,7 @@ function toRating(score: number): SocialWorkerContactRating {
 export function computeSocialWorkerContact(
   input: SocialWorkerContactInput,
 ): SocialWorkerContactResult {
-  const { contacts, total_children, today } = input;
+  const { contacts, total_children } = input;
 
   // Insufficient data guard
   if (total_children === 0) {

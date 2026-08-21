@@ -417,7 +417,6 @@ export default function Reg44Page() {
   const [sortKey, setSortKey] = useState<SortKey>("newest");
 
   const visits = useMemo(() => visitsQuery.data?.data ?? [], [visitsQuery.data]);
-  const meta   = visitsQuery.data?.meta;
 
   const nextScheduled = visits.find((v) => v.status === "scheduled");
   const allCompletedVisits = useMemo(

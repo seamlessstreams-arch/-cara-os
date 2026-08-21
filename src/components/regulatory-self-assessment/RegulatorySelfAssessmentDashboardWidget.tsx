@@ -174,9 +174,6 @@ export function RegulatorySelfAssessmentDashboardWidget({
   if (!data) return null;
 
   const { analysis, criticalActions, overdueActions, unaddressedFeedback } = data;
-  const assessed = analysis.areaBreakdown.filter(
-    (a) => a.complianceLevel !== "not_assessed",
-  );
   const nonCompliant = analysis.areaBreakdown.filter(
     (a) => a.complianceLevel === "non_compliant",
   );

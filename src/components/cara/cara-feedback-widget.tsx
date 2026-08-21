@@ -40,7 +40,6 @@ const NEGATIVE_TAGS = [
 export function CaraFeedbackWidget({
   outputId,
   commandId,
-  compact = true,
   className,
 }: CaraFeedbackWidgetProps) {
   const [rating, setRating] = useState<Rating>(null);

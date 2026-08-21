@@ -123,32 +123,6 @@ function makeAchievement(overrides: Partial<AchievementRecord> = {}): Achievemen
   };
 }
 
-// Helper: generate multiple attendance days
-function generateAttendanceDays(
-  childId: string,
-  childName: string,
-  startDate: string,
-  count: number,
-  statuses: AttendanceStatus[],
-): AttendanceRecord[] {
-  const records: AttendanceRecord[] = [];
-  const start = new Date(startDate);
-  let statusIdx = 0;
-  for (let i = 0; i < count; i++) {
-    const d = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
-    // Skip weekends
-    if (d.getDay() === 0 || d.getDay() === 6) continue;
-    records.push(makeAttendance({
-      childId,
-      childName,
-      date: d.toISOString().slice(0, 10),
-      status: statuses[statusIdx % statuses.length],
-    }));
-    statusIdx++;
-  }
-  return records;
-}
-
 // ── Build Demo Data ────────────────────────────────────────────────────────
 
 // Alex: good attendance (present ~92%), 1 fixed-term exclusion challenged by home, SEMH support

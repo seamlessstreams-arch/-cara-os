@@ -77,12 +77,6 @@ function rewardSanction(
   };
 }
 
-/** Return a date string N days before a reference date. */
-function daysAgo(n: number, from: Date = new Date("2026-05-13T12:00:00Z")): string {
-  const d = new Date(from.getTime() - n * 24 * 60 * 60 * 1000);
-  return d.toISOString().split("T")[0];
-}
-
 // ── computeBehaviourSummary ─────────────────────────────────────────────
 
 describe("computeBehaviourSummary", () => {

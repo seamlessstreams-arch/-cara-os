@@ -191,17 +191,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const ALL_CATEGORIES: PrivacyCategory[] = [
-  "personal_space",
-  "confidentiality",
-  "dignity_care",
-  "data_protection",
-  "communication_privacy",
-  "medical_privacy",
-  "family_contact_privacy",
-  "digital_privacy",
-];
-
 // ── Evaluator 1: Privacy Quality (0-25) ──────────────────────────────────
 
 export function evaluatePrivacyQuality(records: PrivacyRecord[]): PrivacyQualityResult {

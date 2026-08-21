@@ -272,7 +272,7 @@ export function computeAttendanceMetrics(
 
 export function identifyAttendanceAlerts(
   records: AttendanceRecord[],
-  totalStaff: number,
+  _totalStaff: number,
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

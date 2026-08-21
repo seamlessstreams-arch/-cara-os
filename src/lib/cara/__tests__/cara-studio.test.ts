@@ -215,7 +215,7 @@ describe("Cara Studio — quality checks", () => {
 
   it("quality check score is between 0 and 100", () => {
     const art = seedArtifact(makeArtifact({ status: "approved" }));
-    const result = runQualityCheck(art);
+    runQualityCheck(art);
     const updated = db.caraArtifacts.findById(art.id);
     expect(updated!.quality_score).toBeGreaterThanOrEqual(0);
     expect(updated!.quality_score).toBeLessThanOrEqual(100);

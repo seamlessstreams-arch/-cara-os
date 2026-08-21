@@ -658,7 +658,7 @@ export function deriveManagementResponseStatus(input: OversightInput, scores: Ov
 export function deriveOutcome(
   input: OversightInput,
   scores: OversightScores,
-  risk: RiskLevel,
+  _risk: RiskLevel,
   escalation: { escalationRequired: boolean },
   findings: RuleFindings,
 ): OversightOutcome {

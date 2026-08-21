@@ -627,7 +627,7 @@ export function generateRecreationalLeisureAccessIntelligence(
 function aggregateStrengths(
   engagement: ActivityEngagementResult,
   diversity: ActivityDiversityResult,
-  activities: LeisureActivity[],
+  _activities: LeisureActivity[],
   overallScore: number,
 ): string[] {
   const strengths: string[] = [];
@@ -670,7 +670,7 @@ function aggregateStrengths(
 function aggregateAreasForImprovement(
   engagement: ActivityEngagementResult,
   diversity: ActivityDiversityResult,
-  activities: LeisureActivity[],
+  _activities: LeisureActivity[],
 ): string[] {
   const areas: string[] = [];
 

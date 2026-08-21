@@ -25,8 +25,7 @@ function signal(score: number | null): SignalColour {
 }
 
 export async function GET() {
-  const [dailyLogList, debriefRecordsList, incidentsList, keyWorkingSessionsList, reflectiveSupervisionsList, reg44VisitReportsList, riskAssessmentsList, staffList, trainingRecordsList, youngPeopleList] = await Promise.all([
-      dal.dailyLog.findAll(),
+  const [debriefRecordsList, incidentsList, keyWorkingSessionsList, reflectiveSupervisionsList, reg44VisitReportsList, riskAssessmentsList, staffList, trainingRecordsList, youngPeopleList] = await Promise.all([
       dal.debriefRecords.findAll(),
       dal.incidents.findAll(),
       dal.keyWorkingSessions.findAll(),
@@ -48,7 +47,6 @@ export async function GET() {
 
   const incidents = (incidentsList as any[]) ?? [];
   const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
-  const dailyLog = (dailyLogList as any[]) ?? [];
   const reflectiveSupervisions = (reflectiveSupervisionsList as any[]) ?? [];
   const reg44 = (reg44VisitReportsList as any[]) ?? [];
   const riskAssessments = (riskAssessmentsList as any[]) ?? [];

@@ -37,8 +37,6 @@ const { computeIndependenceMetrics, identifyIndependenceAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const now = new Date(todayStr());
-
 /** Date string N days ago from now. */
 function daysAgo(n: number): string {
   const d = new Date(todayStr());

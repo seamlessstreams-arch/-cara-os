@@ -105,11 +105,6 @@ export interface ChildReviewPackResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function ragFor(rag: string): PackRag {
-  const r = (rag || "").toLowerCase().trim();
-  return r === "green" || r === "amber" || r === "red" ? (r as PackRag) : "no_data";
-}
-
 function pct(n: number | null | undefined): string {
   return typeof n === "number" ? `${Math.round(n)}%` : "—";
 }

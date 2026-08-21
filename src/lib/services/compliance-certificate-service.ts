@@ -20,8 +20,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 
-type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;
-
 export type ServiceResult<T> = { ok: boolean; data?: T; error?: string };
 
 // ── Enums (const arrays + types) ─────────────────────────────────────────

@@ -221,21 +221,6 @@ function useRetryCareEventRouting() {
   });
 }
 
-function useUpdateCareEventPrompts() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, evidence_answers }: { id: string; evidence_answers: Record<string, string> }) =>
-      api.patch<{ data: CareEvent }>(`/care-events/${id}`, {
-        action: "update_prompts",
-        evidence_answers,
-      }),
-    onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ["care-event", variables.id] });
-    },
-    onError: () => careToast.actionFailed("Save evidence responses"),
-  });
-}
-
 // ── Status colours ─────────────────────────────────────────────────────────
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string }> = {

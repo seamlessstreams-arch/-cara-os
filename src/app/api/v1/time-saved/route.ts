@@ -4,16 +4,6 @@ import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
 import type { TimeSavedSummary } from "@/types/extended";
 
-const BASELINE_MINUTES: Record<string, number> = {
-  auto_fill: 5,
-  linked_record: 4,
-  cara_draft: 15,
-  auto_task: 5,
-  auto_handover: 10,
-  one_click_summary: 8,
-  avoided_duplicate: 6,
-};
-
 // Simulated accumulated savings for demo purposes
 const DEMO_SAVINGS = [
   { category: "Auto-linked records", minutes: 48, count: 12 },

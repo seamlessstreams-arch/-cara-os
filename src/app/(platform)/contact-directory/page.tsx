@@ -20,7 +20,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, londonDayDiff } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getYPName } from "@/lib/seed-data";
@@ -58,7 +57,6 @@ const CATEGORY_CONFIG: Record<ContactCategory, { label: string; colour: string }
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ContactDirectoryPage() {
-  const { currentUser } = useAuthContext();
 
   const { data, isLoading } = useQuery<{ data: ContactDirectoryEntry[] }>({
     queryKey: ["contact-directory-entries"],

@@ -15,7 +15,6 @@
 
 import React, { useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -261,7 +260,6 @@ export default function CaraSuggestionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
   const { data: apiData } = useCaraSuggestion(id);
   const updateMutation = useUpdateCaraSuggestion();
   // Live tenant: no demo fallback — a real home with no such suggestion sees a

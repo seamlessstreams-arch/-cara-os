@@ -131,7 +131,7 @@ function typeLabel(type: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeNotifiableEventsIntelligence(input: EngineInput): NotifiableEventsIntelligenceResult {
-  const { events, children, staff, today = todayStr() } = input;
+  const { events, children, today = todayStr() } = input;
 
   if (events.length === 0) {
     return {

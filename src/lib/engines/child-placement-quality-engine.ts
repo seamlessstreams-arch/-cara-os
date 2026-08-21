@@ -173,7 +173,7 @@ function avg(values: number[]): number {
 export function computeChildPlacementQuality(
   input: ChildPlacementQualityInput,
 ): ChildPlacementQualityResult {
-  const { today, child_id, child_name, child_age, placement_start, key_worker_name, daily_logs, key_work_sessions, welfare_checks, activities, placement_moves } = input;
+  const { today, child_id, child_name, placement_start, key_worker_name, daily_logs, key_work_sessions, welfare_checks, activities, placement_moves } = input;
 
   // ── Placement Stability ──────────────────────────────────────────────
   const daysInPlacement = Math.max(0, daysAgo(today, placement_start));

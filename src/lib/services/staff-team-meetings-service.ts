@@ -122,7 +122,7 @@ export const ACTION_PRIORITIES: { priority: ActionPriority; label: string }[] = 
 
 export function computeMeetingMetrics(
   meetings: TeamMeeting[],
-  totalStaff: number,
+  _totalStaff: number,
 ): {
   total_meetings: number;
   completed_count: number;
@@ -222,7 +222,7 @@ export function computeMeetingMetrics(
 
 export function identifyMeetingAlerts(
   meetings: TeamMeeting[],
-  totalStaff: number,
+  _totalStaff: number,
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

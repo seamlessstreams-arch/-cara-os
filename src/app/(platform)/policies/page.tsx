@@ -287,7 +287,6 @@ export default function PoliciesPage() {
   const currentCount = enrichedPolicies.filter((p) => p.status === "current").length;
   const dueReviewCount = enrichedPolicies.filter((p) => p.status === "due_review").length;
   const overdueCount = enrichedPolicies.filter((p) => p.status === "overdue").length;
-  const draftCount = enrichedPolicies.filter((p) => p.status === "draft").length;
 
   // Overall read compliance
   const overallReadPct = useMemo(() => {

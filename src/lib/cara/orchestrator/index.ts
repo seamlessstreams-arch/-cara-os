@@ -37,7 +37,6 @@ type SB = any;
 // ── Main Orchestration Entry Point ────────────────────────────────────────
 
 export async function orchestrate(request: CaraRequest): Promise<CaraResponse> {
-  const startTime = Date.now();
 
   // ──────────────────────────────────────────────────────────────────────────
   // STEP 1: Authentication & Permission Check
@@ -308,7 +307,7 @@ function extractTextFromResponse(result: unknown): string {
 
 function buildPermissionDeniedResponse(
   reason: string,
-  request: CaraRequest,
+  _request: CaraRequest,
 ): CaraResponse {
   return {
     answer: reason,

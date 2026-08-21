@@ -456,7 +456,6 @@ import type {
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 import { seedDay } from "@/lib/seed-date";
 
-
 import type { WritingAssistantSettings, WritingAuditEvent } from "@/lib/writing-assistant/types";
 import { DEFAULT_WA_SETTINGS } from "@/lib/writing-assistant/types";
 import type {
@@ -5499,8 +5498,6 @@ store.qualifications = [
   { id: "qual_012", staff_id: "staff_alex", home_id: "home_oak", qualification_name: "Level 3 Diploma in Residential Childcare", awarding_body: "CACHE", level: "Level 3", mandatory: true, status: "not_started", created_at: NOW, updated_at: NOW },
 ];
 
-// Seed welfare check rounds (last 3 nights)
-const welfareToday = todayStr();
 const welfareYesterday = daysFromNow(-1);
 const welfareTwoDaysAgo = daysFromNow(-2);
 

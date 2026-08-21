@@ -1157,23 +1157,6 @@ describe("generatePlacementStabilityIntelligence", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("rating thresholds", () => {
-  function makeIntelligenceWithScore(targetScore: number) {
-    // Create data that produces a predictable score
-    // We'll use the empty-data path then check rating logic indirectly
-    // Actually, let's directly test by creating scenarios
-    const result = generatePlacementStabilityIntelligence(
-      [],
-      [],
-      [],
-      [],
-      [],
-      "test-home",
-      PERIOD_START,
-      PERIOD_END,
-      REFERENCE_DATE,
-    );
-    return result;
-  }
 
   it("empty data rates as inadequate with 25 disruption points", () => {
     const result = generatePlacementStabilityIntelligence(

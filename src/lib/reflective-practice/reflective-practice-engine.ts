@@ -460,7 +460,7 @@ export function buildStaffDevelopmentProfiles(
   staff: StaffProfile[],
   periodStart: string,
   periodEnd: string,
-  referenceDate: string,
+  _referenceDate: string,
 ): StaffDevelopmentProfile[] {
   return staff.map((s) => {
     const staffActivities = activities.filter(

@@ -37,21 +37,6 @@ interface ChildProfile {
 
 // ── Evidence type → table mapping ──────────────────────────────────────────
 
-const EVIDENCE_TYPE_MAP: Record<string, string> = {
-  daily_log: "daily_log_entries",
-  incident: "incidents",
-  missing_episode: "missing_episodes",
-  generic_record: "generic_records",
-  handover: "handovers",
-  task: "tasks",
-  care_form: "care_forms",
-  chronology: "chronology_entries",
-  medication: "medications",
-  medication_administration: "medication_administrations",
-  supervision: "supervisions",
-  document: "documents",
-};
-
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN RETRIEVAL
 // ══════════════════════════════════════════════════════════════════════════════

@@ -68,7 +68,6 @@ export function ParentalContactArrangementCard() {
   }
 
   const ft = intel.family_time;
-  const c = intel.compliance;
 
   return (
     <Card className="overflow-hidden border-slate-200">

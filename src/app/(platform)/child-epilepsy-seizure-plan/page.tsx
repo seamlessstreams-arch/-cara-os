@@ -118,7 +118,6 @@ export default function ChildEpilepsySeizurePlanPage() {
     const active = items.length;
     const rescue = items.filter((p) => p.rescue_medication).length;
     const trained = items.reduce((s, p) => s + p.staff_trained_to_admin.length, 0);
-    const today = new Date();
     const recent30 = items.reduce(
       (s, p) =>
         s +

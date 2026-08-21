@@ -124,7 +124,7 @@ export const INVESTIGATION_OUTCOMES: { outcome: InvestigationOutcome; label: str
  */
 export function computeCandourMetrics(
   records: CandourRecord[],
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   total_records: number;
   open_cases: number;

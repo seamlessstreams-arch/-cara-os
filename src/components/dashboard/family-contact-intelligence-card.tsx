@@ -16,8 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   Heart, AlertTriangle, CheckCircle2, TrendingDown,
-  TrendingUp, Minus, Users, Phone, Video, Mail,
-  Shield, XCircle, Clock,
+  TrendingUp, Minus, XCircle, Clock,
 } from "lucide-react";
 
 interface MemberAnalysis {
@@ -84,15 +83,6 @@ const TREND_ICONS = {
   stable: Minus,
   declining: TrendingDown,
   insufficient_data: Clock,
-};
-
-const CONTACT_TYPE_ICONS: Record<string, React.ElementType> = {
-  face_to_face: Users,
-  phone: Phone,
-  video: Video,
-  letter: Mail,
-  supervised: Shield,
-  unsupervised: Users,
 };
 
 export function FamilyContactIntelligenceCard({ childId }: FamilyContactIntelligenceCardProps) {

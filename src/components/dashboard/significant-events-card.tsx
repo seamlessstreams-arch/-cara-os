@@ -33,12 +33,6 @@ function useChronologyIntelligence() {
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
-const SIGNIFICANCE_BADGES: Record<string, string> = {
-  critical: "bg-[--cs-risk-bg] text-[--cs-risk]",
-  significant: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  routine: "bg-[--cs-bg] text-[--cs-text-secondary]",
-};
-
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
   high: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

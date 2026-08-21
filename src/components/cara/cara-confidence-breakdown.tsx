@@ -83,7 +83,6 @@ export function CaraConfidenceBreakdown({
 
   if (!stats) return null;
 
-  const total = stats.totalOutputs || 1; // prevent divide by 0
   const avgConf = stats.avgConfidence as keyof typeof CONFIDENCE_CONFIG;
   const avgConfig = CONFIDENCE_CONFIG[avgConf] ?? CONFIDENCE_CONFIG.medium;
   const AvgIcon = avgConfig.icon;

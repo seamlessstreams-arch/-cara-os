@@ -36,29 +36,6 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Quality bar helper ──────────────────────────────────────────────────────
 
-function QualityBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-24 truncate">{label}</span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={cn(
-            "h-full rounded-full",
-            value >= 90 ? "bg-green-400" : value >= 75 ? "bg-amber-400" : "bg-red-400",
-          )}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <span className={cn(
-        "w-8 text-right tabular-nums font-medium",
-        value >= 90 ? "text-[--cs-success]" : value >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]",
-      )}>
-        {value}%
-      </span>
-    </div>
-  );
-}
-
 /* ── inline hook ───────────────────────────────────────────────────── */
 function useHandoverContinuityIntelligence() {
   return useQuery({

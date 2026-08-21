@@ -685,7 +685,7 @@ function computeExceptionalStartCompliance(
 
 function buildHeadline(
   rating: RecruitmentAuditRating,
-  score: number,
+  _score: number,
   totalEntries: number,
   uniqueCandidates: number,
   completenessRate: number,

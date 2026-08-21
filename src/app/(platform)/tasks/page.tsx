@@ -51,7 +51,7 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { cn, todayStr, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
+import { cn, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
 import { TASK_CATEGORY_LABELS, TASK_PRIORITIES } from "@/lib/constants";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { Task, StaffMember } from "@/types";
@@ -137,7 +137,6 @@ export default function TasksPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [showCompleted, setShowCompleted] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("priority");
-  const today = todayStr();
 
   const tasksQuery = useTasks();
   const staffQuery = useStaff();

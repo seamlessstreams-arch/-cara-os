@@ -181,10 +181,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function round1(v: number): number {
-  return Math.round(v * 10) / 10;
-}
-
 function toRating(score: number): RegulatoryComplianceRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -222,19 +218,6 @@ export function computeHomeRegulatoryCompliance(
   // ── Reg 44 Profile ──────────────────────────────────────────────────────
   const sorted44 = [...reg44_visits].sort((a, b) => a.visit_date.localeCompare(b.visit_date));
   const visits12m = sorted44.filter(v => daysBetween(v.visit_date, today) <= 365 && daysBetween(v.visit_date, today) >= 0);
-
-  // Monthly compliance: check each of the last 12 calendar months has ≥1 visit
-  let monthsWithoutVisit = 0;
-  {
-    const todayDate = new Date(today);
-    for (let i = 0; i < 12; i++) {
-      const checkMonth = new Date(todayDate.getFullYear(), todayDate.getMonth() - i, 1);
-      const ym = `${checkMonth.getFullYear()}-${String(checkMonth.getMonth() + 1).padStart(2, "0")}`;
-      const hasVisit = visits12m.some(v => v.visit_date.startsWith(ym));
-      if (!hasVisit) monthsWithoutVisit++;
-      else if (i === 0) continue; // current month may not have happened yet
-    }
-  }
 
   // Consecutive months from today going backward with no visit
   let consecutiveMonthsWithout = 0;

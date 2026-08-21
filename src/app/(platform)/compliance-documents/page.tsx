@@ -83,13 +83,6 @@ export default function ComplianceDocumentsPage() {
     staleTime: 30_000,
   });
 
-  // Inlined: useComplianceDocuments
-  const docs = useQuery({
-    queryKey: ["compliance-documents"],
-    queryFn: () => api.get<{ data: { documents: ComplianceDocRow[] } }>("/compliance-documents"),
-    staleTime: 30_000,
-  });
-
   // Helper: invalidate both queries
   const invalidateCompliance = () => {
     qc.invalidateQueries({ queryKey: ["compliance-documents"] });

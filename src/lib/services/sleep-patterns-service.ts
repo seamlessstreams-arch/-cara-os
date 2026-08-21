@@ -154,7 +154,7 @@ export const CONCERN_SEVERITIES: { severity: SleepConcernSeverity; label: string
 export function computeSleepMetrics(
   checks: NightCheck[],
   records: SleepRecord[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   total_night_checks: number;
   checks_this_week: number;
@@ -283,7 +283,7 @@ export function computeSleepMetrics(
 export function identifySleepAlerts(
   checks: NightCheck[],
   records: SleepRecord[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

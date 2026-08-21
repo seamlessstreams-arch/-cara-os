@@ -41,7 +41,6 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { useAuthContext } from "@/contexts/auth-context";
 import { CalmStatusBadge, type CalmStatus } from "@/components/ui/calm-status-badge";
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
@@ -159,7 +158,6 @@ function useRoleDashboardData(): {
   isLoading: boolean;
 } {
   const { data: dashboardResult, isLoading } = useDashboard();
-  const { currentUser } = useAuthContext();
 
   const data = useMemo(() => {
     const d = dashboardResult?.data;
@@ -168,7 +166,6 @@ function useRoleDashboardData(): {
     const today = todayStr();
     const currentChildren = d.young_people?.current ?? [];
     const allTasks = d.tasks.priority_queue ?? [];
-    const userId = currentUser?.id ?? "";
 
     // Top 5 tasks by urgency
     const overdueTasks = allTasks.filter(
@@ -328,7 +325,7 @@ function useRoleDashboardData(): {
       complianceScore,
       pendingLeaveRequests: d.staffing.pending_leave_requests,
     };
-  }, [dashboardResult, currentUser]);
+  }, [dashboardResult]);
 
   return { data, isLoading };
 }

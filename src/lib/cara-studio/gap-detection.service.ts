@@ -6,10 +6,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import type { CaraStudioGap, CaraStudioGapType } from "@/types/cara-studio";
 
-function homeId(): string {
-  return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
-}
-
 export async function detectGaps(
   hid: string,
   childId?: string,

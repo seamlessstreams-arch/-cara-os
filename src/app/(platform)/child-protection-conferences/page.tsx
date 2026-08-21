@@ -42,13 +42,6 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { api } from "@/hooks/use-api";
 import { EmptyState } from "@/components/ui/empty-state";
 // ── config ──────────────────────────────────────────────────────────────────
-const outcomeColour: Record<string, string> = {
-  subject_to_cp_plan: "bg-[--cs-risk-bg] text-[--cs-risk]",
-  plan_continued: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  plan_stepped_down: "bg-[--cs-info-bg] text-[--cs-info]",
-  no_cp_plan_required: "bg-[--cs-success-bg] text-[--cs-success]",
-  strategy_decision_made: "bg-purple-100 text-purple-800",
-};
 
 const outcomeRow: Record<string, RowSeverity> = {
   subject_to_cp_plan: "risk", plan_continued: "warning", plan_stepped_down: "info",

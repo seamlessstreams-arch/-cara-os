@@ -266,12 +266,6 @@ const RATING_VALUE: Record<OfstedRating, number> = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function daysBetween(d1: string, d2: string): number {
-  const date1 = new Date(d1);
-  const date2 = new Date(d2);
-  return Math.abs(date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24);
-}
-
 function isDateInRange(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }

@@ -180,7 +180,7 @@ export const ENGAGEMENT_TRENDS: { trend: EngagementTrend; label: string }[] = [
 export function computeEngagementMetrics(
   contacts: FamilyContact[],
   relationships: FamilyRelationship[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   total_contacts: number;
@@ -309,7 +309,7 @@ export function computeEngagementMetrics(
 export function identifyEngagementAlerts(
   contacts: FamilyContact[],
   relationships: FamilyRelationship[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

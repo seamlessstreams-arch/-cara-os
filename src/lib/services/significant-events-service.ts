@@ -243,7 +243,7 @@ export function computeEventMetrics(
 export function identifyEventAlerts(
   events: SignificantEvent[],
   totalChildren: number,
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

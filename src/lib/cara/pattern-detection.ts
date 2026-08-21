@@ -680,7 +680,6 @@ function detectImprovements(events: TimelineEvent[], childId: string, _windowDay
 function computeRiskIndicators(events: TimelineEvent[], windowDays: number): RiskIndicator[] {
   const indicators: RiskIndicator[] = [];
   const halfWindow = Math.floor(windowDays / 2);
-  const today = todayStr();
   const midDate = new Date(Date.now() - halfWindow * 86400000).toISOString().slice(0, 10);
 
   const categories = [...new Set(events.map((e) => e.category))];

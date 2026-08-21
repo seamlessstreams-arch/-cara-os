@@ -137,7 +137,6 @@ export function computeRegulatoryEvidenceCompleteness(
   input: RegulatoryEvidenceCompletenessInput,
 ): RegulatoryEvidenceCompletenessResult {
   const {
-    today,
     total_children,
     total_staff,
     filing_items,

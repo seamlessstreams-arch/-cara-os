@@ -98,7 +98,7 @@ function staffSignal(
 
 function buildSupervisionNote(
   name: string,
-  signal: StaffShiftSignal,
+  _signal: StaffShiftSignal,
   longShiftCount: number,
   totalOvertimeMinutes: number,
   sleepInCount: number,

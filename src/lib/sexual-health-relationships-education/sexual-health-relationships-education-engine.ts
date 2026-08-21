@@ -489,7 +489,7 @@ function generateStrengths(
   sessions: RSESession[],
   referrals: SexualHealthReferral[],
   policies: RSEPolicy[],
-  training: StaffRSETraining[],
+  _training: StaffRSETraining[],
 ): string[] {
   const strengths: string[] = [];
 
@@ -670,10 +670,10 @@ function generateAreasForImprovement(
 }
 
 function generateActions(
-  rseDeliveryScore: number,
-  sexualHealthAccessScore: number,
-  rsePolicyQualityScore: number,
-  staffReadinessScore: number,
+  _rseDeliveryScore: number,
+  _sexualHealthAccessScore: number,
+  _rsePolicyQualityScore: number,
+  _staffReadinessScore: number,
   sessions: RSESession[],
   referrals: SexualHealthReferral[],
   policies: RSEPolicy[],

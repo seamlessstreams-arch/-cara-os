@@ -3,7 +3,6 @@ import {
   computeTransitionMetrics,
   identifyTransitionAlerts,
   type TransitionPlan,
-  type TransitionReview,
 } from "./transition-planning-service";
 
 // ── Factories ────────────────────────────────────────────────────────────
@@ -43,27 +42,6 @@ function makePlan(overrides: Partial<TransitionPlan> = {}): TransitionPlan {
     notes: null,
     created_at: "2025-04-01",
     updated_at: "2025-04-01",
-    ...overrides,
-  };
-}
-
-function makeReview(overrides: Partial<TransitionReview> = {}): TransitionReview {
-  return {
-    id: "rev1",
-    home_id: "h1",
-    plan_id: "p1",
-    child_id: "c1",
-    child_name: "Alex",
-    review_date: "2025-05-01",
-    reviewer: "Manager A",
-    progress_summary: "On track",
-    goals_reviewed: 3,
-    goals_on_track: 2,
-    child_views: null,
-    concerns: null,
-    next_steps: null,
-    next_review_date: null,
-    created_at: "2025-05-01",
     ...overrides,
   };
 }

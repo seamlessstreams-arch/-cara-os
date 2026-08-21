@@ -98,7 +98,7 @@ function buildSupervisionPrompt(
   openDoC: boolean,
   pendingActions: PendingAction[],
   mostCommon: string | null,
-  hasModeratePlus: boolean,
+  _hasModeratePlus: boolean,
 ): string {
   if (signal === "alert") {
     return `${name} has had a moderate or severe medication error that remains open or under investigation${openDoC ? ", with duty of candour not yet completed" : ""}. This requires immediate management focus. In supervision: what is the current status of the investigation? Has duty of candour been offered to the child and family? Are all relevant staff receiving support?`;

@@ -147,7 +147,6 @@ export function evaluateRules(
   triggerData: Record<string, any>,
   rules?: AutomationRule[],
 ): AutomationRun[] {
-  const startTime = performance.now();
   const applicableRules = rules
     ? rules.filter((r) => r.enabled && r.trigger === trigger)
     : getApplicableRules(trigger);

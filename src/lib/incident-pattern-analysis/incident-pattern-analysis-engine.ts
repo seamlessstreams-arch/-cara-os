@@ -550,7 +550,6 @@ export function evaluatePostIncident(
   }
 
   const total = incidents.length;
-  const allActions = incidents.flatMap((i) => i.postIncidentActions);
 
   const debriefCount = incidents.filter((i) =>
     i.postIncidentActions.includes("debrief_completed"),

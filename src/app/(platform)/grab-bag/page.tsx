@@ -92,8 +92,8 @@ export default function GrabBagPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("nextCheck");
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [showChecklist, setShowChecklist] = useState(false);
-  const [checkBag, setCheckBag] = useState<GrabBag | null>(null);
+  const [] = useState(false);
+  const [] = useState<GrabBag | null>(null);
   const [showNew, setShowNew] = useState(false);
   const createBag = useCreateGrabBag();
   const [bagForm, setBagForm] = useState({ child_id: "", location: "", notes: "" });

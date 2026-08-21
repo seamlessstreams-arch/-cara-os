@@ -26,15 +26,6 @@ const STAGE_LABELS: Record<string, string> = {
   ombudsman: "Ombudsman",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  received: "Received",
-  acknowledged: "Acknowledged",
-  under_investigation: "Investigating",
-  response_sent: "Response Sent",
-  escalated: "Escalated",
-  closed: "Closed",
-};
-
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function ComplaintsSummaryCard() {
@@ -44,8 +35,7 @@ export function ComplaintsSummaryCard() {
   });
   const complaints = useMemo(() => data?.data ?? [], [data]);
 
-  const {
-    total, open, overdue, escalated, withSafeguarding,
+  const { open, overdue, escalated, withSafeguarding,
     urgentItems, hasAlert,
   } = useMemo(() => {
     const now = new Date();

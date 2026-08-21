@@ -68,7 +68,7 @@ export interface BelongingPropertyResult {
 function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 
 export function computeBelongingPersonalProperty(input: BelongingPropertyInput): BelongingPropertyResult {
-  const { today, total_children, belongings, clothing_trips, hair_appointments, gifts } = input;
+  const { total_children, belongings, clothing_trips, hair_appointments, gifts } = input;
 
   if (total_children === 0) {
     return {

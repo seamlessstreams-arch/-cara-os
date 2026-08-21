@@ -7,7 +7,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, todayStr } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { BedtimeRoutine } from "@/types/extended";
 import {
   AGE_BAND_LABEL,
@@ -102,7 +102,6 @@ export default function BedtimeRoutinesPage() {
   const totalPlans = data.length;
   const allChildAgreed = data.every((r) => r.child_agreed);
   const avgRating = (data.reduce((sum, r) => sum + r.effectiveness_rating, 0) / Math.max(1, data.length)).toFixed(1);
-  const today = todayStr();
   const thirtyDaysAgo = (() => { const dt = new Date(); dt.setDate(dt.getDate() - 30); return dt.toISOString().slice(0, 10); })();
   const reviewedRecently = data.filter((r) => r.reviewed_date >= thirtyDaysAgo).length;
 

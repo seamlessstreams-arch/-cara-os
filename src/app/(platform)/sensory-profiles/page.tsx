@@ -193,8 +193,6 @@ export default function SensoryProfilesPage() {
   /* intensity bar colour */
   const intensityColour = (n: number) => n >= 4 ? "bg-red-500" : n >= 3 ? "bg-amber-500" : "bg-green-500";
 
-  const childIds = useMemo(() => Array.from(new Set(records.map((r) => r.child_id))), [records]);
-
   if (isLoading) {
     return (
       <PageShell title="Sensory Profiles" subtitle="Individual sensory assessments, triggers, calming strategies and environmental adaptations">

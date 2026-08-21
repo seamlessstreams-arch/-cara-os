@@ -309,7 +309,7 @@ function inPeriod(date: string, start: string, end: string): boolean {
 export function evaluateIdentitySupport(
   children: CultureChild[],
   assessments: IdentityNeedsAssessment[],
-  currentDate: string,
+  _currentDate: string,
 ): IdentitySupportResult {
   const placed = children.filter((c) => c.currentPlacement);
   const totalChildren = placed.length;

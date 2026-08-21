@@ -17,13 +17,6 @@ const ratingLabels: Record<string, string> = {
   inadequate: "Inadequate",
 };
 
-const severityColors: Record<string, string> = {
-  minor: "bg-gray-100 text-gray-700",
-  moderate: "bg-amber-100 text-amber-700",
-  significant: "bg-orange-100 text-orange-700",
-  severe: "bg-red-100 text-red-700",
-};
-
 function ScoreBar({ score, label, maxScore = 25 }: { score: number; label: string; maxScore?: number }) {
   const pctVal = (score / maxScore) * 100;
   const color = pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-blue-500" : pctVal >= 40 ? "bg-amber-500" : "bg-red-500";

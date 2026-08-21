@@ -387,7 +387,7 @@ function analyseVariation(counts: number[]): "consistent" | "moderate_variation"
 function identifyConcerns(
   input: SanctionsRewardsInput,
   sanctions: SanctionRecord[],
-  rewards: RewardRecord[],
+  _rewards: RewardRecord[],
   ratio: number,
   prohibited: number,
   staffConsistency: StaffConsistency,

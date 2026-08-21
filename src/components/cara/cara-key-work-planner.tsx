@@ -186,7 +186,6 @@ export function CaraKeyWorkPlanner() {
   const plan = getDemoKeyWorkPlan();
 
   const totalTime = plan.suggestedTopics.reduce((sum, t) => sum + t.timeEstimate, 0);
-  const essentialCount = plan.suggestedTopics.filter((t) => t.priority === "essential").length;
 
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">

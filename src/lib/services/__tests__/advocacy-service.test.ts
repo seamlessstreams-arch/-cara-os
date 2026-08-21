@@ -42,13 +42,6 @@ function daysAgo(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** Date string N days in the future from now. */
-function daysFromNow(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
 /** ISO datetime string N days ago. */
 function daysAgoISO(n: number): string {
   const d = new Date();

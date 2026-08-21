@@ -16,9 +16,7 @@ function daysAgo(n: number): string {
   return new Date(Date.parse(NOW) - n * 86_400_000).toISOString().slice(0, 10);
 }
 
-let idc = 0;
 function log(over: Partial<SilentStruggleLogEntry>): SilentStruggleLogEntry {
-  idc += 1;
   return {
     child_id: "yp_test", date: daysAgo(5), entry_type: "general",
     content: "Had a settled day.", mood_score: 7, ...over,

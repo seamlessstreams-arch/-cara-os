@@ -242,7 +242,6 @@ export function analyzeCohort(
   homeId: string,
   now?: string,
 ): CohortAnalysis {
-  const currentDate = now ? new Date(now) : new Date();
 
   const progressResults = profiles.map(p => evaluateChildProgress(p, now));
 

@@ -513,7 +513,7 @@ function identifyStrengths(
 function assessRegulatory(
   input: EmotionalWellbeingInput,
   selfHarmRisk: string,
-  activeTherapy: boolean,
+  _activeTherapy: boolean,
 ): RegulatoryFlag[] {
   const flags: RegulatoryFlag[] = [];
 

@@ -119,7 +119,7 @@ function clamp(v: number, lo: number, hi: number): number {
 export function computeHomeExpenseGovernance(
   input: HomeExpenseGovernanceInput,
 ): HomeExpenseGovernanceResult {
-  const { today, expenses, total_staff } = input;
+  const { expenses, total_staff } = input;
 
   // ── Insufficient data ─────────────────────────────────────────────────
   if (total_staff === 0 || expenses.length === 0) {

@@ -66,14 +66,6 @@ const DOMAINS: DigitalLiteracyDomain[] = [
   "browsing_safely",
 ];
 
-const COMPETENCIES: DigitalLiteracyCompetency[] = [
-  "not_yet_introduced",
-  "aware",
-  "did_with_help",
-  "did_independently",
-  "confident",
-];
-
 const COMP_META: Record<DigitalLiteracyCompetency, { colour: string; order: number }> = {
   not_yet_introduced: { colour: "bg-gray-100 text-gray-700",     order: 0 },
   aware:              { colour: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]", order: 1 },

@@ -144,7 +144,7 @@ const PRN_ESCALATION_THRESHOLD = 1.5; // 50% increase = escalation
 
 export function analyseMedications(
   records: MedicationRecord[],
-  profiles: MedicationProfile[],
+  _profiles: MedicationProfile[],
   homeId: string = "home_oak",
   windowDays: number = 7,
 ): MedicationIntelligence {
@@ -258,7 +258,7 @@ export function analyseMedications(
   }
 
   const prnAnalysis: PRNInsight[] = [];
-  for (const [key, recs] of prnByMedChild) {
+  for (const [, recs] of prnByMedChild) {
     const sorted = recs.sort((a, b) => a.administeredDate.localeCompare(b.administeredDate));
     let avgHours = 0;
     if (sorted.length >= 2) {

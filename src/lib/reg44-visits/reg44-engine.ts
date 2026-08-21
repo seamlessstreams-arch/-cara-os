@@ -155,7 +155,6 @@ export interface HomeReg44Metrics {
 // ── Configuration ──────────────────────────────────────────────────────────
 
 const MAX_DAYS_BETWEEN_VISITS = 28;
-const REPORT_DEADLINE_DAYS = 5;            // 5 working days after visit
 const ALL_VISIT_AREAS: VisitArea[] = [
   "welfare_of_children",
   "safety",
@@ -173,7 +172,7 @@ const ALL_VISIT_AREAS: VisitArea[] = [
 
 export function evaluateVisitCompliance(
   visit: Reg44Visit,
-  now?: string,
+  _now?: string,
 ): VisitComplianceResult {
   const issues: string[] = [];
   const warnings: string[] = [];

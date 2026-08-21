@@ -257,12 +257,6 @@ export interface MedicationManagementIntelligenceResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function daysBetween(dateA: string, dateB: string): number {
-  const a = new Date(dateA).getTime();
-  const b = new Date(dateB).getTime();
-  return Math.abs(b - a) / (1000 * 60 * 60 * 24);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }

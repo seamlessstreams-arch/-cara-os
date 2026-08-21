@@ -47,24 +47,10 @@ function useDataBreachRecords() {
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const SEVERITY_COLOURS: Record<DataBreachSeverity, string> = {
-  low: "bg-[--cs-success-bg] text-[--cs-success]",
-  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  high: "bg-orange-100 text-orange-800",
-  critical: "bg-[--cs-risk-bg] text-[--cs-risk]",
-};
-
 const RISK_COLOURS: Record<DataBreachRiskLevel, string> = {
   low: "bg-[--cs-success-bg] text-[--cs-success]",
   medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
   high: "bg-[--cs-risk-bg] text-[--cs-risk]",
-};
-
-const STATUS_COLOURS: Record<DataBreachStatus, string> = {
-  investigating: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  closed_resolved: "bg-[--cs-success-bg] text-[--cs-success]",
-  reported_awaiting_ico: "bg-[--cs-info-bg] text-[--cs-info]",
-  monitoring: "bg-purple-100 text-purple-800",
 };
 
 const SEVERITY_ROW: Record<DataBreachSeverity, RowSeverity> = {

@@ -57,7 +57,6 @@ export function NightSummary() {
   });
 
   const rounds = data?.data ?? [];
-  const meta = data?.meta;
 
   if (isLoading) {
     return (

@@ -175,7 +175,7 @@ export async function listScans(hId?: string, limit: number = 10): Promise<Pract
 
 function analyseHomeDynamics(
   incidents: Array<Record<string, unknown>>,
-  dailyLogs: Array<Record<string, unknown>>,
+  _dailyLogs: Array<Record<string, unknown>>,
   gaps: Array<Record<string, unknown>>,
   safeguarding: Array<Record<string, unknown>>,
 ): HomeDynamicsSummary {

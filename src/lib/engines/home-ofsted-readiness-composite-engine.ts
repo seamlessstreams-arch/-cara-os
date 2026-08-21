@@ -108,7 +108,7 @@ function formatEngineName(name: string): string {
 }
 
 export function computeHomeOfstedReadiness(input: HomeOfstedReadinessInput): HomeOfstedReadinessResult {
-  const { engine_scores, total_children, total_staff } = input;
+  const { engine_scores } = input;
 
   const scorable = engine_scores.filter(e => e.rating !== "insufficient_data");
 

@@ -177,12 +177,6 @@ function pct(n: number, d: number): number {
   return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
-  );
-}
-
 const PLANNED_END_REASONS = new Set([
   "planned_move_home", "planned_step_down", "planned_move_on_16_plus",
   "adoption", "family_reunification", "age_out", "long_term_foster",

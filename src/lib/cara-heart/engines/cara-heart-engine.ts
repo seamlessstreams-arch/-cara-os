@@ -329,12 +329,6 @@ export function runCaraHeartEngine(
   }
 
   // ── Dignity ───────────────────────────────────────────────────────────────
-  const dignityMentioned =
-    lower.includes("dignity") ||
-    lower.includes("respectful") ||
-    lower.includes("private") ||
-    lower.includes("calm") ||
-    lower.includes("comforting");
   // Dignity is considered protected if nothing in the record explicitly conflicts
   const dignityProtected = !hasBlameLang;
 

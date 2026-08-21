@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -263,7 +263,6 @@ function ApprovePanel({
 
 export default function FormDetailPage() {
   const { formId } = useParams<{ formId: string }>();
-  const router = useRouter();
   const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
   const qc = useQueryClient();

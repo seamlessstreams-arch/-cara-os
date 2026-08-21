@@ -332,7 +332,6 @@ export function identifyTransitionAlerts(
     id: string;
   }[] = [];
 
-  const fourteenDaysMs = 14 * 86400000;
   const thirtyDaysMs = 30 * 86400000;
 
   // Build map: plan_id -> reviews

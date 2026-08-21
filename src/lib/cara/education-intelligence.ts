@@ -608,7 +608,7 @@ function assessRegulatory(
 
 function buildRecommendations(
   input: EducationInput,
-  attendancePct: number,
+  _attendancePct: number,
   band: AttendanceBand,
   exclusionCount: number,
   latestPEP: PEPRecord | undefined,

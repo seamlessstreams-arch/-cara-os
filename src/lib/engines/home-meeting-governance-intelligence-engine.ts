@@ -129,7 +129,7 @@ function daysBetween(a: string, b: string): number {
 export function computeHomeMeetingGovernance(
   input: HomeMeetingGovernanceInput,
 ): HomeMeetingGovernanceResult {
-  const { today, total_children, lookback_days = 90 } = input;
+  const { today, lookback_days = 90 } = input;
 
   const cutoff = new Date(today);
   cutoff.setDate(cutoff.getDate() - lookback_days);

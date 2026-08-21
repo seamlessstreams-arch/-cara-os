@@ -130,7 +130,7 @@ const STATUS_CONFIG: Record<InductionCheckStatus, { label: string; colour: strin
 
 // ── Phase timeline component ────────────────────────────────────────────────
 
-function PhaseTimeline({ items, startDate }: {
+function PhaseTimeline({ items }: {
   items: Array<{ id: string; title: string; required_by_day: number; status: InductionCheckStatus; completed_at?: string }>;
   startDate: string;
 }) {

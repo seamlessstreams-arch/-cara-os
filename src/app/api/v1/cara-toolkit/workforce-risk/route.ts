@@ -34,8 +34,7 @@ function daysBetween(a: string, b: string): number {
 }
 
 export async function GET() {
-  const [absenceTrackingList, leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
-      dal.absenceTracking.findAll(),
+  const [leaveRequestsList, reflectiveSupervisionsList, shiftsList, staffList, trainingRecordsList] = await Promise.all([
       dal.leaveRequests.findAll(),
       dal.reflectiveSupervisions.findAll(),
       dal.shifts.findAll(),
@@ -49,7 +48,6 @@ export async function GET() {
   const training       = (trainingRecordsList as any[]) ?? [];
   const shifts         = (shiftsList as any[]) ?? [];
   const leaveRequests  = (leaveRequestsList as any[]) ?? [];
-  const absences       = (absenceTrackingList as any[]) ?? [];
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 

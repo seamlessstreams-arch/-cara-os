@@ -54,15 +54,6 @@ function useCreateHealthAssessment() {
   });
 }
 
-function useUpdateHealthAssessment() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<HealthAssessment> & { id: string }) =>
-      api.post(HEALTH_ASSESSMENTS_API, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [HEALTH_ASSESSMENTS_KEY] }),
-  });
-}
-
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const STATUS_META: Record<HealthAssessmentStatus, { label: string; colour: string }> = {

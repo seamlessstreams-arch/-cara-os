@@ -20,7 +20,6 @@ interface Props {
 }
 
 export function CaraHumanApprovalBanner({
-  approvalId,
   taskType,
   riskLevel,
   status,

@@ -69,7 +69,6 @@ export function RiAlertsSummary() {
   }
 
   const alerts   = data?.data ?? [];
-  const meta     = data?.meta as Record<string, unknown> | undefined;
   const active   = alerts.filter((a: RiAlert) => !a.is_resolved);
   const critical = active.filter((a: RiAlert) => a.severity === "critical");
   const high     = active.filter((a: RiAlert) => a.severity === "high");

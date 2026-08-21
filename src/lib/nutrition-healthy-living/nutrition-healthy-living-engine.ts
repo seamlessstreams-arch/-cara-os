@@ -343,7 +343,7 @@ export function getRating(score: number): Rating {
  */
 export function evaluateMealQuality(
   meals: MealRecord[],
-  profiles: ChildDietaryProfile[],
+  _profiles: ChildDietaryProfile[],
 ): MealQualityResult {
   const mealTypeBreakdown = {} as Record<MealType, number>;
   for (const m of meals) {

@@ -52,29 +52,6 @@ export interface LearningPathwaySummary {
   pathways: StaffLearningPathway[];
 }
 
-// ── Competency areas ────────────────────────────────────────────────────────
-
-const COMPETENCY_AREAS = [
-  "safeguarding",
-  "therapeutic_care",
-  "behaviour_management",
-  "recording_practice",
-  "medication_management",
-  "key_working",
-  "risk_assessment",
-  "professional_boundaries",
-  "equality_diversity",
-  "mental_health_awareness",
-  "attachment_theory",
-  "trauma_informed_practice",
-  "child_development",
-  "de_escalation",
-  "first_aid",
-  "fire_safety",
-] as const;
-
-export type CompetencyArea = (typeof COMPETENCY_AREAS)[number];
-
 // ── Generate learning pathway for a staff member ────────────────────────────
 
 export async function generateStaffPathway(staffId: string): Promise<StaffLearningPathway> {

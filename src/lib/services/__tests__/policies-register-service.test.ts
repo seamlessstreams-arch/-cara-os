@@ -28,7 +28,6 @@ import {
 import type {
   Policy,
   PolicyAcknowledgement,
-  PolicyReviewHistory,
 } from "../policies-register-service";
 
 const { computePolicyMetrics, identifyPolicyAlerts } = _testing;
@@ -98,26 +97,6 @@ function makeAcknowledgement(
     acknowledged: true,
     notes: null,
     created_at: daysAgoISO(5),
-    ...overrides,
-  };
-}
-
-/** Build a minimal PolicyReviewHistory with sensible defaults. */
-function makeReviewHistory(
-  overrides: Partial<PolicyReviewHistory> = {},
-): PolicyReviewHistory {
-  return {
-    id: "rev-1",
-    home_id: "home-1",
-    policy_id: "pol-1",
-    review_date: daysAgo(30),
-    reviewed_by: "staff-1",
-    previous_version: null,
-    new_version: null,
-    changes_summary: "No changes needed",
-    outcome: "no_changes",
-    next_review_date: null,
-    created_at: daysAgoISO(30),
     ...overrides,
   };
 }

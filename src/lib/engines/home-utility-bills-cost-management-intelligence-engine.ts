@@ -296,11 +296,9 @@ export function computeUtilityBillsCostManagement(
     (r) => r.previous_period_amount_gbp !== null && r.previous_period_amount_gbp! > 0,
   );
   let costIncreaseCount = 0;
-  let costDecreaseCount = 0;
   for (const bill of billsWithPrevious) {
     const prev = bill.previous_period_amount_gbp!;
     if (bill.amount_gbp > prev * 1.1) costIncreaseCount++;
-    if (bill.amount_gbp < prev * 0.9) costDecreaseCount++;
   }
   const significantIncreaseRate = pct(costIncreaseCount, billsWithPrevious.length);
 

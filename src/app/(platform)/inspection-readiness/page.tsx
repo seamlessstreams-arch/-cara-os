@@ -34,12 +34,6 @@ interface Reg45Item {
   suggested_theme: string;
 }
 
-interface AnnexAItem {
-  id: string;
-  manager_decision: string;
-  annex_section: string;
-}
-
 interface ManagementOversightItem {
   id: string;
   status: string;
@@ -242,9 +236,6 @@ export default function InspectionReadinessPage() {
   const annexAContributing = events30.filter((e) => e.contributes_to_annex_a).length;
 
   const readinessScore = annexAData?.readiness_score ?? 0;
-  const overallColour =
-    readinessScore >= 80 ? "green" :
-    readinessScore >= 60 ? "yellow" : "red";
 
   const isLoading =
     annexA.isLoading ||

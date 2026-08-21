@@ -186,7 +186,7 @@ describe("processCareEvent — idempotency", () => {
       (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
     ).length;
 
-    const result2 = processCareEvent(event);
+    processCareEvent(event);
     const incidentsAfterSecond = db.incidents.findAll().filter(
       (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
     ).length;

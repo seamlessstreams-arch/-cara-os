@@ -213,7 +213,6 @@ export function computeKeyholdingAccessControl(
 ): KeyholdingAccessControlResult {
   const {
     total_children,
-    total_staff,
     key_register_records,
     access_control_records,
     key_tracking_records,

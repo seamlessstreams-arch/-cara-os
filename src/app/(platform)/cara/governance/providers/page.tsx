@@ -104,7 +104,7 @@ export default function CaraProvidersPage() {
 
               <div className="mt-2 flex flex-wrap gap-1">
                 {Object.entries(provider.capabilities)
-                  .filter(([key, val]) => typeof val === "boolean" && val)
+                  .filter(([, val]) => typeof val === "boolean" && val)
                   .map(([key]) => (
                     <span key={key} className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                       {key.replace(/([A-Z])/g, " $1").trim()}

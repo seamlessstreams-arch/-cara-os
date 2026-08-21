@@ -73,12 +73,6 @@ const SEV_BADGE: Record<GapSeverity, string> = {
   current:  "bg-emerald-100 text-emerald-800",
 };
 
-const SEV_LABEL: Record<GapSeverity, string> = {
-  critical: "Critical gap",
-  warning:  "Warning",
-  current:  "Current",
-};
-
 const SEV_BORDER: Record<GapSeverity, string> = {
   critical: "border-red-200 bg-red-50/40",
   warning:  "border-amber-200 bg-amber-50/40",

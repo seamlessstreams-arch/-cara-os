@@ -460,7 +460,7 @@ function assessRegulatory(input: EducationInput, attendance: number): EducationR
 // ── Recommendations ─────────────────────────────────────────────────────────
 
 function generateRecommendations(
-  concerns: EducationConcern[],
+  _concerns: EducationConcern[],
   input: EducationInput,
   attendance: number,
   exclusionRisk: string,

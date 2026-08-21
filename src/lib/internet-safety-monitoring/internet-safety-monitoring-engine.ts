@@ -536,9 +536,9 @@ export function generateStrengths(
 }
 
 export function generateAreasForImprovement(
-  incidentManagementScore: number,
-  filteringSafeguardsScore: number,
-  internetPolicyScore: number,
+  _incidentManagementScore: number,
+  _filteringSafeguardsScore: number,
+  _internetPolicyScore: number,
   staffReadinessScore: number,
   incidents: OnlineSafetyIncident[],
   policy: InternetSafetyPolicy | null,

@@ -878,7 +878,7 @@ export function generateAntiBullyingEffectivenessIntelligence(
     incidentManagement, preventionCulture, interventionQuality, staffReadiness, childProfiles, periodIncidents,
   );
   const regulatoryLinks = generateRegulatoryLinks(
-    incidentManagement, preventionCulture, interventionQuality, staffReadiness,
+    incidentManagement, preventionCulture, interventionQuality,
   );
 
   return {
@@ -965,7 +965,7 @@ function aggregateAreasForImprovement(
 function generateActions(
   incident: IncidentManagementResult,
   prevention: PreventionCultureResult,
-  intervention: InterventionQualityResult,
+  _intervention: InterventionQualityResult,
   staff: StaffReadinessResult,
   childProfiles: ChildBullyingProfile[],
   incidents: BullyingIncident[],
@@ -1032,10 +1032,9 @@ function generateActions(
 // ── Regulatory Links ──────────────────────────────────────────────────────
 
 function generateRegulatoryLinks(
-  incident: IncidentManagementResult,
-  prevention: PreventionCultureResult,
-  intervention: InterventionQualityResult,
-  staff: StaffReadinessResult,
+  _incident: IncidentManagementResult,
+  _prevention: PreventionCultureResult,
+  _intervention: InterventionQualityResult,
 ): string[] {
   const links: string[] = [
     "CHR 2015, Reg 12 — Safeguarding: protecting children from bullying",

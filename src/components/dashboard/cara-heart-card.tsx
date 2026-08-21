@@ -96,7 +96,7 @@ export function CaraHeartCard({ output, isLoading }: CaraHeartCardProps) {
     );
   }
 
-  const { heartCard, heartCheck, safeguardingOverride, socialPedagogyReflection, staffSupportSignals, repairPlan, childVoiceRightsReview, recordingQualityReview, auditTrail } = output;
+  const { heartCard, heartCheck, safeguardingOverride, socialPedagogyReflection, staffSupportSignals, repairPlan, auditTrail } = output;
 
   const toneConfig = TONE_CONFIG[heartCard.tone];
   const urgentAuditCount = auditTrail.filter((a) => a.severity === "urgent" && a.triggered).length;

@@ -197,13 +197,6 @@ export interface BehaviourEngineInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b + "T00:00:00Z").getTime() - new Date(a + "T00:00:00Z").getTime()) / 86_400_000
-  );
-}
-
 /** Classify a behaviour entry into categories */
 export function classifyBehaviourCategory(entry: BehaviourEntryInput): BehaviourCategory {
   if (entry.direction === "positive") return "positive";

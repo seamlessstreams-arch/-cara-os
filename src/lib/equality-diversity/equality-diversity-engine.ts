@@ -836,7 +836,7 @@ function generateAreasForDevelopment(
 }
 
 function generateImmediateActions(
-  support: IndividualSupportResult,
+  _support: IndividualSupportResult,
   competency: StaffCompetencyResult,
   incidents: IncidentResponseResult,
   accessibility: AccessibilityInclusionResult,

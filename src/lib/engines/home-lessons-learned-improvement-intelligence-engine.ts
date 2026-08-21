@@ -79,7 +79,7 @@ function pct(n: number, d: number): number {
 export function computeLessonsLearnedImprovement(
   input: LessonsLearnedInput,
 ): LessonsLearnedResult {
-  const { today, total_staff, lessons, objectives, audits } = input;
+  const { total_staff, lessons, objectives, audits } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
   if (total_staff === 0) {

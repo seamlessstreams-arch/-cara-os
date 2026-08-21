@@ -100,15 +100,6 @@ export const DOFE_GOLD_SECTIONS: Section[] = [
   "Residential",
 ];
 
-// Engagement level numeric mapping for analysis
-const ENGAGEMENT_NUMERIC: Record<string, number> = {
-  Refused: 1,
-  Reluctant: 2,
-  Participated: 3,
-  Engaged: 4,
-  Enthusiastic: 5,
-};
-
 // -- Label maps ---------------------------------------------------------------
 
 export const AWARD_SCHEME_LABELS: { scheme: AwardScheme; label: string }[] = [

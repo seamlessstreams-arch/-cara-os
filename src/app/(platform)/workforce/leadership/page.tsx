@@ -271,7 +271,6 @@ export default function LeadershipReadinessPage() {
               <div className="p-4 space-y-3">
                 {/* Current holders */}
                 {current.map((profile) => {
-                  const plan = getActivePlan(profile.staff_id);
                   return (
                     <div key={profile.id} className="rounded-xl border border-emerald-200 bg-emerald-50/30 p-3">
                       <div className="flex items-start justify-between gap-3">

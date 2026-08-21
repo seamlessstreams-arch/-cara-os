@@ -47,7 +47,6 @@ const TYPE_META: Record<HouseMeetingType, { label: string; color: string }> = {
   feedback:  { label: "Feedback",    color: "bg-amber-100 text-amber-800" },
 };
 
-
 // ── Export ────────────────────────────────────────────────────────────────────
 const EXPORT_COLS: ExportColumn<HouseMeeting>[] = [
   { header: "ID",              accessor: (r: HouseMeeting) => r.id },
@@ -130,7 +129,6 @@ export default function HouseMeetingsPage() {
   // ── Stats ──────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const total = meetings.length;
-    const allActions = meetings.flatMap((m) => m.new_actions);
     const totalAgendaItems = meetings.reduce((a, m) => a + m.agenda.length, 0);
     const totalFeedback = meetings.reduce((a, m) => a + m.child_feedback.length, 0);
     const nextMeeting = meetings.map((m) => m.next_meeting_date).filter((d) => d >= todayStr()).sort()[0] || "—";

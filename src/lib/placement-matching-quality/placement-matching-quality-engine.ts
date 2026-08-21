@@ -188,19 +188,6 @@ export interface PlacementMatchingQualityIntelligence {
 
 // -- Constants ----------------------------------------------------------------
 
-const ALL_MATCHING_CRITERIA: MatchingCriteria[] = [
-  "age_appropriateness",
-  "gender_compatibility",
-  "needs_compatibility",
-  "risk_compatibility",
-  "education_needs",
-  "cultural_needs",
-  "therapeutic_needs",
-  "location_suitability",
-  "sibling_placement",
-  "peer_dynamics",
-];
-
 // -- Core Function 1: Evaluate Matching Process -------------------------------
 
 export function evaluateMatchingProcess(

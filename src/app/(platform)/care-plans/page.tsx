@@ -596,7 +596,6 @@ export default function CarePlansPage() {
   const updatePlan  = useUpdateCarePlan();
 
   const plans = useMemo(() => plansQuery.data?.data ?? [], [plansQuery.data]);
-  const meta   = plansQuery.data?.meta;
 
   const [caraBusy, setCaraBusy]   = useState<string | null>(null);
   const [caraError, setCaraError] = useState<string | null>(null);

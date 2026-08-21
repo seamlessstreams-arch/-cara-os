@@ -183,7 +183,7 @@ export const REFERRAL_STATUSES: { status: ReferralStatus; label: string }[] = [
 export function computeTherapyMetrics(
   referrals: TherapyReferral[],
   sessions: TherapySession[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   active_referrals: number;
   children_in_therapy: number;
@@ -316,8 +316,8 @@ export function computeTherapyMetrics(
 export function identifyTherapyAlerts(
   referrals: TherapyReferral[],
   sessions: TherapySession[],
-  totalChildren: number,
-  now: Date = new Date(),
+  _totalChildren: number,
+  _now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

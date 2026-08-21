@@ -99,7 +99,6 @@ interface ChildStoryData {
 
 function useChildStoryData(childId: string): ChildStoryData {
   const store = getStore();
-  const today = todayStr();
 
   return useMemo(() => {
     const child = store.youngPeople.find((yp) => yp.id === childId);

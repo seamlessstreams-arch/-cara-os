@@ -363,7 +363,7 @@ export default function FormBuilderPage() {
 
             {/* Canvas */}
             <div className="flex-1 space-y-2">
-              {fields.map((field, idx) => {
+              {fields.map((field) => {
                 const config = FIELD_TYPES.find((ft) => ft.type === field.type);
                 const Icon = config?.icon ?? FileText;
                 const isSelected = field.id === selectedFieldId;

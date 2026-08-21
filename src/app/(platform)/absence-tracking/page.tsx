@@ -49,7 +49,6 @@ const ABSENCE_COLORS: Record<AbsenceType, string> = {
   internal_truancy: "bg-red-100 text-red-800",
 };
 
-const SETTINGS: AbsenceSetting[] = ["school", "college", "pru", "tuition", "activity", "appointment"];
 const SETTING_LABELS: Record<AbsenceSetting, string> = {
   school: "School", college: "College", pru: "PRU",
   tuition: "Home Tuition", activity: "Activity", appointment: "Appointment",

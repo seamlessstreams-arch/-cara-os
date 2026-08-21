@@ -121,7 +121,7 @@ function formatType(t: string): string {
 export function computeSanctionsRewardsIntelligence(
   input: SanctionsRewardsIntelligenceInput,
 ): SanctionsRewardsIntelligenceResult {
-  const { entries, children, staff } = input;
+  const { entries, children } = input;
 
   const childMap = new Map(children.map((c) => [c.id, c.name]));
 

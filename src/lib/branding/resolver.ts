@@ -15,40 +15,6 @@ import type { ResolvedBranding } from "@/types/branding";
 
 // ── Default Cara system branding ───────────────────────────────────────
 
-const CORNERSTONE_DEFAULTS: Omit<
-  ResolvedBranding,
-  | "logo_url"
-  | "document_logo_url"
-  | "email_logo_url"
-  | "company_name"
-  | "trading_name"
-  | "registered_provider_name"
-  | "ofsted_provider_reference"
-  | "address"
-  | "phone"
-  | "email"
-  | "website"
-  | "responsible_individual_name"
-  | "home_name"
-  | "home_address"
-  | "ofsted_urn"
-  | "registered_manager_name"
-  | "emergency_contact"
-  | "safeguarding_contact"
-  | "lado_contact"
-  | "local_authority_contact"
-  | "police_contact"
-  | "confidentiality_notice"
-> = {
-  primary_colour: "#1e3a5f",
-  secondary_colour: "#2dd4bf",
-  accent_colour: "#3b82f6",
-  footer_text: "Generated securely through Cara",
-  powered_by_mark: "Generated securely through Cara · cara.care",
-  resolved_at: "",
-  source: "system",
-};
-
 export interface BrandingResolverInput {
   organisation_id?: string;
   home_id?: string;

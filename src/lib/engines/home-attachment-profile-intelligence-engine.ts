@@ -94,7 +94,7 @@ function toRating(score: number): AttachmentProfileRating {
 export function computeAttachmentProfile(
   input: AttachmentProfileInput,
 ): AttachmentProfileResult {
-  const { profiles, total_children, today } = input;
+  const { profiles, total_children } = input;
 
   // Insufficient data guard
   if (total_children === 0) {

@@ -517,11 +517,6 @@ export function computeNutritionDietaryManagement(
     isOverdue(f.next_inspection_due, today),
   ).length;
 
-  // Most recent food hygiene score
-  const sortedHygieneRecords = [...food_hygiene_records].sort(
-    (a, b) => b.inspection_date.localeCompare(a.inspection_date),
-  );
-
   // ─── Special Diet Metrics ─────────────────────────────────────────────
 
   const totalSpecialDiets = special_diet_records.length;

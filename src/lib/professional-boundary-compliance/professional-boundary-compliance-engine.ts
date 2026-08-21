@@ -594,8 +594,8 @@ export function generateProfessionalBoundaryComplianceIntelligence(
 
 function aggregateStrengths(
   compliance: BoundaryComplianceResult,
-  safeguarding: ChildSafeguardingResult,
-  audits: BoundaryAudit[],
+  _safeguarding: ChildSafeguardingResult,
+  _audits: BoundaryAudit[],
 ): string[] {
   const strengths: string[] = [];
 
@@ -640,8 +640,8 @@ function generateActions(
   audits: BoundaryAudit[],
   policy: BoundaryPolicy | null,
   training: StaffBoundaryTraining[],
-  compliance: BoundaryComplianceResult,
-  safeguarding: ChildSafeguardingResult,
+  _compliance: BoundaryComplianceResult,
+  _safeguarding: ChildSafeguardingResult,
 ): string[] {
   const actions: string[] = [];
 

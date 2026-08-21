@@ -71,17 +71,6 @@ const STATUS_CONFIG: Record<DocExpiryStatus, { label: string; colour: string }> 
 
 // ── Status Logic ──────────────────────────────────────────────────────────────
 
-function computeStatus(expiryDate: string): DocExpiryStatus {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const expiry = new Date(expiryDate);
-  expiry.setHours(0, 0, 0, 0);
-  const diffDays = londonDayDiff(expiry, today);
-  if (diffDays < 0) return "overdue";
-  if (diffDays <= 30) return "expiring_soon";
-  return "current";
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function daysUntil(iso: string): number {

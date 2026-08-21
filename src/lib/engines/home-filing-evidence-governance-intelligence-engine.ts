@@ -97,7 +97,7 @@ function toRating(score: number): FilingEvidenceRating {
 export function computeFilingEvidenceGovernance(
   input: FilingEvidenceGovernanceInput,
 ): FilingEvidenceGovernanceResult {
-  const { today, total_children, filing_items, care_events } = input;
+  const { total_children, filing_items, care_events } = input;
 
   // ── Special case: no filing items AND no care events AND no children ────
   if (filing_items.length === 0 && care_events.length === 0 && total_children === 0) {

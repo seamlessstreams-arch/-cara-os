@@ -254,7 +254,7 @@ export function computeNightMonitoringMetrics(
 export function identifyNightMonitoringAlerts(
   checks: NightCheck[],
   logs: NightLog[],
-  childrenCount: number,
+  _childrenCount: number,
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

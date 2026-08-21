@@ -15,7 +15,7 @@ import React, {
   useCallback,
 } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
 import {
@@ -347,7 +347,6 @@ export function QuickCreateFab() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
-  const router = useRouter();
   const { canAccess } = usePermissions();
 
   // -- Context from URL -------------------------------------------------------

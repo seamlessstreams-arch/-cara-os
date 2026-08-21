@@ -113,7 +113,7 @@ export function computeWhistleblowingIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): WhistleblowingIntelligenceResult {
-  const { reports, staff, today = todayStr() } = input;
+  const { reports, today = todayStr() } = input;
 
   if (reports.length === 0) {
     return {

@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import type {
   FamilyTimeSession,
-  FamilyTimeLocation,
   FamilyTimeSupervisionLevel,
   FamilyTimePresentation,
 } from "@/types/extended";
@@ -56,7 +55,6 @@ const PRESENTATION_COLOURS: Record<FamilyTimePresentation, string> = {
   resistant:  "bg-red-100 text-red-800",
 };
 
-const LOCATION_OPTIONS: FamilyTimeLocation[] = ["oak_house", "family_home", "contact_centre", "public_venue"];
 const LEVEL_OPTIONS: FamilyTimeSupervisionLevel[] = ["supervised", "supported", "unsupervised"];
 
 /* ── export columns ───────────────────────────────────────────────────── */

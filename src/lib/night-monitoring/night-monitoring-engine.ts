@@ -209,8 +209,6 @@ export function evaluateNightShiftCompliance(
   const totalChecksRecorded = shift.checks.length;
   const checkCompletionRate = rate(totalChecksRecorded, totalChecksExpected);
 
-  // Check which children were actually checked
-  const childIds = checkPlans.map(p => p.childId);
   const checkedChildIds = [...new Set(shift.checks.map(c => c.childId))];
   const childrenNotChecked = checkPlans
     .filter(p => !checkedChildIds.includes(p.childId))

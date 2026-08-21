@@ -38,9 +38,6 @@ function daysAgoISO(n: number): string {
   return d.toISOString();
 }
 
-/** Normalised "today" at midnight for overdue comparisons. */
-const now = new Date(todayStr());
-
 /** Build a minimal HealthAppointmentRecord with sensible defaults. */
 function makeRecord(
   overrides?: Partial<HealthAppointmentRecord>,

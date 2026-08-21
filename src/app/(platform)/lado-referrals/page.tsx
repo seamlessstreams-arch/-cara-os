@@ -74,8 +74,6 @@ const ALLG_CLR: Record<LadoAllegationType, string> = {
   boundary_violation: "bg-blue-100 text-blue-800", other: "bg-slate-100 text-[var(--cs-navy)]",
 };
 
-const OUTCOME_CLR: Record<LadoOutcome, string> = { substantiated: "bg-[--cs-risk-bg] text-[--cs-risk]", unsubstantiated: "bg-[--cs-warning-bg] text-[--cs-warning]", unfounded: "bg-[--cs-success-bg] text-[--cs-success]", malicious: "bg-purple-100 text-purple-800", pending: "bg-[--cs-info-bg] text-[--cs-info]" };
-
 const OUTCOME_ROW: Record<LadoOutcome, RowSeverity> = { substantiated: "risk", unsubstantiated: "warning", unfounded: "success", malicious: "neutral", pending: "info" };
 const OUTCOME_TEXT: Record<LadoOutcome, string> = { substantiated: "text-[--cs-risk]", unsubstantiated: "text-[--cs-warning]", unfounded: "text-[--cs-success]", malicious: "text-purple-700", pending: "text-[--cs-info]" };
 // Staff outcome is the safeguarding-critical readout: suspension/dismissal is the alarm.

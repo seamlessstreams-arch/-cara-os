@@ -142,7 +142,7 @@ export const INCIDENT_OUTCOMES: { outcome: IncidentOutcome; label: string }[] = 
  */
 export function computeBullyingMetrics(
   incidents: BullyingIncident[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   total_incidents: number;
@@ -248,7 +248,7 @@ export function computeBullyingMetrics(
  */
 export function identifyBullyingAlerts(
   incidents: BullyingIncident[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

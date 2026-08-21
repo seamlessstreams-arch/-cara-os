@@ -313,7 +313,7 @@ export function identifyDevelopmentAlerts(
   cpdRecords: CpdRecord[],
   qualifications: QualificationRecord[],
   goals: DevelopmentGoal[],
-  totalStaff: number,
+  _totalStaff: number,
   now: Date = new Date(),
 ): {
   type: string;

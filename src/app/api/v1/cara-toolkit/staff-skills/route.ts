@@ -10,13 +10,6 @@ import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function daysBetween(a: string, b: string): number {
-  const d1 = new Date(a).getTime();
-  const d2 = new Date(b).getTime();
-  if (isNaN(d1) || isNaN(d2)) return 0;
-  return Math.round(Math.abs(d1 - d2) / 86_400_000);
-}
-
 export async function GET() {
   const [reflectiveSupervisionsList, staffList, trainingRecordsList] = await Promise.all([
       dal.reflectiveSupervisions.findAll(),

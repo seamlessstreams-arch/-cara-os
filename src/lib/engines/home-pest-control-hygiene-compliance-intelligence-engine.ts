@@ -223,7 +223,6 @@ export function computePestControlHygieneCompliance(
   input: PestControlInput,
 ): PestControlResult {
   const {
-    today,
     total_children,
     pest_inspection_records,
     treatment_records,

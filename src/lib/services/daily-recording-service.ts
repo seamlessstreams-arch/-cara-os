@@ -161,7 +161,7 @@ export function assessRecordQuality(record: {
 export function computeRecordingCompliance(
   records: DailyRecord[],
   expectedRecords: { date: string; shift: ShiftType }[],
-  now: Date,
+  _now: Date,
 ): {
   total_expected: number;
   total_submitted: number;

@@ -192,7 +192,7 @@ export function computeFinancialMetrics(
   profiles: ChildFinancialProfile[],
   transactions: FinancialTransaction[],
   audits: FinancialAudit[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   children_with_profiles: number;
   total_pocket_money_balance: number;

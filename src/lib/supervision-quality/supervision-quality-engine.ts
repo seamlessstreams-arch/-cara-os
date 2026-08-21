@@ -421,8 +421,6 @@ export function evaluateScheduleCompliance(
     0,
   );
 
-  // Average days between sessions
-  const now = new Date();
   let totalDays = 0;
   let validCount = 0;
   for (const sch of schedules) {

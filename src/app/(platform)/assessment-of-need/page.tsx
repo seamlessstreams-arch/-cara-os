@@ -47,12 +47,6 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { api } from "@/hooks/use-api";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
 /* ── label maps ───────────────────────────────────────────────────────────── */
 
 const NEEDS_DOMAIN_LABEL: Record<NeedsDomain, string> = {

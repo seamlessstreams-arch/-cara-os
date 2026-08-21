@@ -154,7 +154,7 @@ export const DEBRIEF_TRIGGERS: { trigger: DebriefTrigger; label: string }[] = [
 export function computeWellbeingMetrics(
   checks: WellbeingCheck[],
   debriefs: DebriefRecord[],
-  totalStaff: number,
+  _totalStaff: number,
   now: Date = new Date(),
 ): {
   staff_checked: number;

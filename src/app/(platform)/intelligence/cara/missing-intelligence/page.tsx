@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type {
-  RecentEpisode,
   CaraInsight,
   PushPullFactor,
   MissingIntelligenceResult,
@@ -40,33 +39,6 @@ const INSIGHT_BORDER: Record<string, string> = {
   warning:  "border-amber-300 bg-amber-50 text-amber-800",
   positive: "border-green-300 bg-green-50 text-green-800",
 };
-
-function EpisodeRow({ e }: { e: RecentEpisode }) {
-  const riskCls = RISK_STYLES[e.risk_level] ?? "bg-slate-100 text-slate-600 border-slate-200";
-  const rhiCls  = RHI_STYLES[e.return_interview] ?? "text-slate-500";
-  return (
-    <tr className="border-b border-slate-100 last:border-0">
-      <td className="py-2.5 pr-3 text-sm font-medium text-slate-800">{e.child_name}</td>
-      <td className="py-2.5 pr-3">
-        <span className={`rounded border px-1.5 py-0.5 text-xs font-medium ${riskCls}`}>
-          {e.risk_level}
-        </span>
-      </td>
-      <td className="py-2.5 pr-3 text-xs text-slate-500">{e.date}</td>
-      <td className="py-2.5 pr-3 text-xs text-slate-500">{e.duration}</td>
-      <td className={`py-2.5 pr-3 text-xs font-medium capitalize ${rhiCls}`}>
-        {e.return_interview}
-      </td>
-      <td className="py-2.5 text-xs text-slate-500">
-        {e.contextual_safeguarding && (
-          <span className="rounded bg-purple-100 border border-purple-300 px-1.5 py-0.5 text-xs text-purple-700">
-            Contextual
-          </span>
-        )}
-      </td>
-    </tr>
-  );
-}
 
 function FactorList({ factors, label, color }: { factors: PushPullFactor[]; label: string; color: string }) {
   if (factors.length === 0) return null;

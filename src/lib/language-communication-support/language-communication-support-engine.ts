@@ -342,7 +342,6 @@ export function evaluateSupportProvision(
   const qualityGoodPlusRate = pct(qualityGoodPlus, sessions.length);
   const childEngagedRate = pct(childEngaged, sessions.length);
   const progressNotedRate = pct(progressNoted, sessions.length);
-  const childrenWithSessions = new Set(sessions.map((s) => s.childId)).size;
   const averageSessionsPerChild = profileCount > 0
     ? Math.round((sessions.length / profileCount) * 10) / 10
     : null;

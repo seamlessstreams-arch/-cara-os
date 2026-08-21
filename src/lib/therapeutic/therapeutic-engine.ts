@@ -297,7 +297,6 @@ export function evaluateTherapeuticCompliance(
 
   // 6. Crisis management
   const childrenInCrisis: string[] = [];
-  let totalCrisisEvents = 0;
   let followUpCompleted = 0;
   let totalFollowUps = 0;
   profiles.forEach((p) => {
@@ -305,7 +304,6 @@ export function evaluateTherapeuticCompliance(
       childrenInCrisis.push(p.childName);
     }
     const recentCrises = p.crisisEvents.filter((c) => daysBetween(c.date, now) <= 30);
-    totalCrisisEvents += recentCrises.length;
     recentCrises.forEach((c) => {
       totalFollowUps++;
       if (c.followUpCompleted) followUpCompleted++;

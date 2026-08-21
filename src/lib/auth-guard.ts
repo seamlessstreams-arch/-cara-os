@@ -246,7 +246,7 @@ export function assertChildHomeAccess(
  *  enforced flat decision. Never blocks, never throws — the route is unaffected. */
 function runChildRecordAbacShadow(
   identity: RequestIdentity,
-  childId: string,
+  _childId: string,
   childHomeId: string | undefined,
   action: "view" | "edit" | "create",
 ): void {

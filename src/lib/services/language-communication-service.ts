@@ -278,7 +278,7 @@ export function computeLanguageMetrics(
 
 export function identifyLanguageAlerts(
   records: LanguageRecord[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

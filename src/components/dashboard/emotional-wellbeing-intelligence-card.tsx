@@ -66,14 +66,6 @@ const SDQ_BAND_STYLES: Record<string, { bg: string; text: string }> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function moodLabel(score: number): string {
-  if (score >= 8) return "Excellent";
-  if (score >= 6) return "Good";
-  if (score >= 4) return "Fair";
-  if (score >= 2) return "Low";
-  return "Very Low";
-}
-
 function moodColor(score: number): string {
   if (score >= 8) return "text-[--cs-success]";
   if (score >= 6) return "text-blue-600";

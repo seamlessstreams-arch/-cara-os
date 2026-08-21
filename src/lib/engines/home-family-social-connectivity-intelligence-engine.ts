@@ -138,7 +138,6 @@ export function computeFamilySocialConnectivity(
   const {
     today,
     total_children,
-    total_staff,
     family_time_sessions,
     contact_plans,
     parent_partnership_records,

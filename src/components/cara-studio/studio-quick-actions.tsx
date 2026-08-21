@@ -112,7 +112,6 @@ export function StudioQuickActions({
   childId,
   childName,
   sourceType,
-  sourceId,
   defaultOpen = false,
   className,
 }: StudioQuickActionsProps) {

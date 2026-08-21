@@ -100,12 +100,12 @@ async function persistSessionData(
 ) {
   try {
     // Insert user message
-    const { data: userMsg } = await (sb.from("cara_messages") as SB).insert({
+    await (sb.from("cara_messages") as SB).insert({
       session_id: sessionId,
       role: "user",
       content: body.query as string,
       risk_level: "low",
-    }).select("id").single();
+    });
 
     // Insert assistant message
     const { data: assistantMsg } = await (sb.from("cara_messages") as SB).insert({

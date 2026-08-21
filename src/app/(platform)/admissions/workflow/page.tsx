@@ -422,7 +422,6 @@ function WorkflowDetail({
               const PhIcon = PHASE_ICONS[phase];
               const isCurrent = phase === workflow.current_phase;
               const isPast = idx < phaseIdx || workflow.current_phase === "completed";
-              const isFuture = idx > phaseIdx && workflow.current_phase !== "completed";
 
               return (
                 <React.Fragment key={phase}>

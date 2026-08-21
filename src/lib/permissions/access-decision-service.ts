@@ -310,7 +310,7 @@ function allow(
 }
 
 function deny(
-  code: string,
+  _code: string,
   reason: string,
   userExplanation: string,
   managerExplanation: string,

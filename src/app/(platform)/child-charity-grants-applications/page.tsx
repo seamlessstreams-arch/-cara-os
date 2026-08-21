@@ -63,8 +63,6 @@ const STATUS_META: Record<CharityGrantStatus, { label: string; colour: string }>
   withdrawn: { label: "Withdrawn", colour: "bg-stone-100 text-stone-700" },
 };
 
-const CATEGORIES = Object.keys(CHARITY_GRANT_CATEGORY_LABEL) as CharityGrantCategory[];
-
 const CATEGORY_COLOUR: Record<CharityGrantCategory, string> = {
   education: "bg-blue-100 text-blue-700",
   recreation_hobbies: "bg-amber-100 text-amber-800",

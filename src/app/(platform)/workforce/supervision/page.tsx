@@ -328,7 +328,6 @@ export default function WorkforceSupervisionPage() {
             const statusKey = getSupervisionStatus(member.next_supervision_due);
             const statusCfg = STATUS_CONFIG[statusKey];
             const StatusIcon = statusCfg.icon;
-            const diffDays = getDiffDays(member.next_supervision_due);
 
             return (
               <div key={member.id} className={cn(

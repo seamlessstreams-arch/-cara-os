@@ -9,7 +9,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from "vitest";
-import { todayStr } from "@/lib/utils";
 
 vi.mock("@/lib/supabase/server", () => ({
   isSupabaseEnabled: () => false,
@@ -40,8 +39,6 @@ import {
 const { computeReferralMetrics, identifyReferralAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-const now = new Date(todayStr());
 
 /** Build a minimal Referral with sensible defaults. */
 function makeReferral(overrides: Partial<Referral> = {}): Referral {

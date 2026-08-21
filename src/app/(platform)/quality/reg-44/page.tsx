@@ -193,11 +193,6 @@ const fmt = (iso: string) => {
   return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 };
 
-const monthLabel = (iso: string) => {
-  const dt = new Date(iso + "T00:00:00");
-  return dt.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
-};
-
 function daysOverdue(dueDate: string): number {
   const today = new Date(d(0));
   const due = new Date(dueDate);

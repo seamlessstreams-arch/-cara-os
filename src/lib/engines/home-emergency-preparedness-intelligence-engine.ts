@@ -132,7 +132,7 @@ function pct(n: number, d: number): number {
 export function computeHomeEmergencyPreparedness(
   input: HomeEmergencyInput,
 ): HomeEmergencyResult {
-  const { today, total_staff, policies, drills, emergency_plans } = input;
+  const { today, policies, drills, emergency_plans } = input;
 
   // Insufficient data: no policies AND no drills AND no emergency plans
   if (policies.length === 0 && drills.length === 0 && emergency_plans.length === 0) {

@@ -109,7 +109,7 @@ export function computeAdvocacyIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): AdvocacyIntelligenceResult {
-  const { referrals, children, staff, today = todayStr() } = input;
+  const { referrals, children, today = todayStr() } = input;
 
   if (referrals.length === 0) {
     return {

@@ -286,7 +286,7 @@ export function computeReviewMetrics(
  */
 export function identifyReviewAlerts(
   reviews: LacReview[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

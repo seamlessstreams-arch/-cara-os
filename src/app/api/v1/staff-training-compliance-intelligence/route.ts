@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { formatRate, meets, rate } from "@/lib/metrics/rate";
-import { todayStr } from "@/lib/utils";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
@@ -131,7 +130,6 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const today = todayStr();
 
   const staffMembers = (await safeList(dal.staff.findAll())) as Array<{
     id: string;

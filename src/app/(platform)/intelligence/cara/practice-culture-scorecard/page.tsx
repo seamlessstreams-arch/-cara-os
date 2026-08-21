@@ -192,7 +192,6 @@ export default function PracticeCultureScorecardPage() {
       {data && (() => {
         const { overallScore, overallStatus, dimensions, summary } = data.data;
 
-        const priorityDim = dimensions.find((d) => d.id === summary.priorityDimension);
         const strongestDim = dimensions.find((d) => d.id === summary.strongestDimension);
 
         return (
