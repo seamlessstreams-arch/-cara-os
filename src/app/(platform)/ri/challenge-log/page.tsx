@@ -407,7 +407,6 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
 // ── Response dialog ───────────────────────────────────────────────────────────
 function ResponseDialog({ log, onClose }: { log: RiChallengeLog; onClose: () => void }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
   const [response, setResponse] = useState("");
   const [action, setAction] = useState("");
   const updateMutation = useUpdateRiChallengeLog();

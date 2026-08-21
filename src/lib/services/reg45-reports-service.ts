@@ -308,7 +308,6 @@ export function identifyReg45Alerts(
   }[] = [];
 
   const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-  const twentyEightDaysMs = 28 * 24 * 60 * 60 * 1000;
 
   // Sort reports by period end desc
   const sortedReports = [...reports].sort(

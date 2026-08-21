@@ -663,7 +663,7 @@ describe("SHIFT_TIMES", () => {
   });
 
   it("each entry has start, end, and label", () => {
-    for (const [key, value] of Object.entries(SHIFT_TIMES)) {
+    for (const [, value] of Object.entries(SHIFT_TIMES)) {
       expect(value).toHaveProperty("start");
       expect(value).toHaveProperty("end");
       expect(value).toHaveProperty("label");

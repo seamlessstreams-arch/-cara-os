@@ -95,12 +95,6 @@ const DEMO_EDGES: GraphEdge[] = [
 
 // ── Children ────────────────────────────────────────────────────────────────
 
-const DEMO_CHILDREN = [
-  { id: "child_1", name: "Jayden" },
-  { id: "child_2", name: "Amara" },
-  { id: "child_3", name: "Reuben" },
-];
-
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function CareGraphPage() {

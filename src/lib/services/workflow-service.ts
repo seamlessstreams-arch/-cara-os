@@ -335,7 +335,7 @@ export async function skipWorkflowStep(
  */
 export async function cancelWorkflow(
   workflowId: string,
-  userId: string,
+  _userId: string,
 ): Promise<ServiceResult<CsWorkflow>> {
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };

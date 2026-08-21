@@ -95,8 +95,6 @@ const AUDIT_CATEGORY_NEED: Record<string, string> = {
   general: "professional_practice",
 };
 
-type AuditStatus = "completed" | "scheduled" | "in_progress";
-
 const AUDIT_CATEGORIES = [
   { value: "medication",     label: "Medication",       icon: "💊" },
   { value: "health_safety",  label: "Health & Safety",  icon: "🛡" },
@@ -246,7 +244,6 @@ export default function AuditsPage() {
     ? Math.round(completedAudits.reduce((a, au) => a + au.score, 0) / completedAudits.length)
     : 0;
   const totalFindings = audits.reduce((a, au) => a + au.findings, 0);
-  const totalActions = audits.reduce((a, au) => a + au.actions, 0);
 
   // Category compliance summary
   const categoryStats = useMemo(() => {

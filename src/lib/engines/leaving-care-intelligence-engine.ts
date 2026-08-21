@@ -189,7 +189,7 @@ export function computeLeavingCareIntelligence(
   input: LeavingCareIntelligenceInput
 ): LeavingCareIntelligenceResult {
   const today = input.today || todayStr();
-  const { pathwayPlans, independenceSkills, children, staff } = input;
+  const { pathwayPlans, independenceSkills, children } = input;
 
   // ── Build child age map ─────────────────────────────────────────────────
   const childAgeMap = new Map<string, number>();

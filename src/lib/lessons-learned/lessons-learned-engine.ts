@@ -618,7 +618,7 @@ function generateLearningActions(
   rc: ReviewComplianceResult,
   impl: LessonImplementationResult,
   patterns: LessonPattern[],
-  currentDate: string,
+  _currentDate: string,
 ): string[] {
   const actions: string[] = [];
 

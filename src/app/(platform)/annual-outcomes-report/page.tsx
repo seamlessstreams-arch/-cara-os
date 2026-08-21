@@ -26,8 +26,6 @@ import { api } from "@/hooks/use-api";
 import { EmptyState } from "@/components/ui/empty-state";
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
 const DOMAIN_LABEL: Record<AnnualOutcomeDomain, string> = {
   health: "Health",
   education: "Education",

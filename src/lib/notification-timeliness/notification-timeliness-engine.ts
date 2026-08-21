@@ -291,12 +291,6 @@ export function getRatingLabel(rating: Rating): string {
   return labels[rating];
 }
 
-function hoursBetween(isoA: string, isoB: string): number {
-  const msA = new Date(isoA).getTime();
-  const msB = new Date(isoB).getTime();
-  return (msB - msA) / (1000 * 60 * 60);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -653,7 +647,7 @@ export function generateStrengths(
 
 export function generateAreasForImprovement(
   metrics: TimelinessMetrics,
-  score: TimelinessScoreBreakdown,
+  _score: TimelinessScoreBreakdown,
   policy: NotificationPolicy | null,
   audits: NotificationAudit[],
   eventResults: EventTimelinessResult[],
@@ -739,7 +733,7 @@ export function generateAreasForImprovement(
 
 export function generateActions(
   metrics: TimelinessMetrics,
-  score: TimelinessScoreBreakdown,
+  _score: TimelinessScoreBreakdown,
   policy: NotificationPolicy | null,
   audits: NotificationAudit[],
   eventResults: EventTimelinessResult[],

@@ -56,20 +56,6 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-function SeverityBadge({ severity }: { severity: string }) {
-  const colors: Record<string, string> = {
-    low: "bg-gray-100 text-gray-700",
-    medium: "bg-amber-100 text-amber-700",
-    high: "bg-orange-100 text-orange-700",
-    critical: "bg-red-100 text-red-700",
-  };
-  return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${colors[severity] || "bg-gray-100 text-gray-700"}`}>
-      {severity}
-    </span>
-  );
-}
-
 export function CriticalIncidentReviewDashboardWidget() {
   const [data, setData] = useState<CriticalIncidentReviewIntelligence | null>(null);
   const [loading, setLoading] = useState(true);

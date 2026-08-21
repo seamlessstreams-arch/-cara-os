@@ -16,7 +16,7 @@ import {
   KB_ENTRIES,
   allTags,
 } from "@/lib/cara/knowledge-base";
-import type { KBEntryType, KBStatus } from "@/lib/cara/knowledge-base";
+import type { KBEntryType } from "@/lib/cara/knowledge-base";
 
 const VALID_TYPES: KBEntryType[] = [
   "model",
@@ -25,8 +25,6 @@ const VALID_TYPES: KBEntryType[] = [
   "regulation",
   "source",
 ];
-
-const VALID_STATUSES: KBStatus[] = ["approved", "pending_review", "rejected"];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

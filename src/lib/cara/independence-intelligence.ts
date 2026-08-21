@@ -337,7 +337,7 @@ function describeAccommodation(ap: AccommodationPlan): string {
 function identifyConcerns(
   input: IndependenceInput,
   avgLevel: number,
-  belowTarget: number,
+  _belowTarget: number,
   age: number,
 ): IndependenceConcern[] {
   const concerns: IndependenceConcern[] = [];

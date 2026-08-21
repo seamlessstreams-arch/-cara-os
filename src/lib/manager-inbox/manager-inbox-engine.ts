@@ -17,7 +17,7 @@
 // leaders have an accurate, prioritised operating picture and act on it.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { CornerstoneEvent, CornerstoneRiskLevel, CornerstoneApprovalLevel } from "@/types/cornerstone-event";
+import type { CornerstoneEvent, CornerstoneApprovalLevel } from "@/types/cornerstone-event";
 import { todayStr } from "@/lib/utils";
 
 // ── Output ────────────────────────────────────────────────────────────────────
@@ -73,7 +73,6 @@ export interface ManagerInboxInput {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 const PRIORITY_RANK: Record<InboxPriority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-const RISK_RANK: Record<CornerstoneRiskLevel, number> = { low: 0, medium: 1, high: 2, critical: 3 };
 
 function addDays(date: string, days: number): string {
   const d = new Date(date.slice(0, 10));

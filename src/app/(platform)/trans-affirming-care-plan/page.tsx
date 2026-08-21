@@ -81,7 +81,7 @@ export default function TransAffirmingCarePlanPage() {
   const [sortBy, setSortBy] = useState<"date" | "name" | "stage" | "review">("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: result, isLoading } = useTransAffirmingPlans(undefined, "home_oak");
+  const { data: result } = useTransAffirmingPlans(undefined, "home_oak");
   const records = useMemo(() => result?.data ?? [], [result]);
 
   const filtered = useMemo(() => {

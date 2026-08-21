@@ -546,7 +546,6 @@ export function computeAlerts(
   const rejectedYP = rows
     .filter((r) => r.application_status === "Rejected")
     .map((r) => r.young_person_name.toLowerCase().trim());
-  const allYPNames = rows.map((r) => r.young_person_name.toLowerCase().trim());
   for (const name of new Set(rejectedYP)) {
     const records = rows.filter((r) => r.young_person_name.toLowerCase().trim() === name);
     const hasFollowUp = records.some(

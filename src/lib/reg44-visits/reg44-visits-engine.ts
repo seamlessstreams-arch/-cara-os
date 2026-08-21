@@ -194,17 +194,6 @@ export function getRatingLabel(r: Rating): string {
 
 // -- Constants ----------------------------------------------------------------
 
-const ALL_CATEGORIES: Reg44VisitCategory[] = [
-  "scheduled_visit",
-  "unannounced_visit",
-  "follow_up_visit",
-  "child_interview",
-  "staff_interview",
-  "records_review",
-  "premises_inspection",
-  "action_review",
-];
-
 // -- Evaluator 1: Visit Quality (0-25) ---------------------------------------
 
 export function evaluateReg44VisitQuality(records: Reg44VisitRecord[]): Reg44VisitQualityResult {

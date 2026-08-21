@@ -286,30 +286,6 @@ function isExpiringSoon(dateStr: string | null, today: string, days: number): bo
   return diffDays <= days;
 }
 
-/**
- * Count how many days between two date strings. Returns 0 if either is null.
- */
-function daysBetween(start: string | null, end: string | null): number {
-  if (!start || !end) return 0;
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  if (isNaN(s) || isNaN(e)) return 0;
-  return Math.max(0, Math.round((e - s) / (1000 * 60 * 60 * 24)));
-}
-
-/**
- * Check if a date is within the last N months of today.
- */
-function isWithinMonths(dateStr: string | null, today: string, months: number): boolean {
-  if (!dateStr) return false;
-  const todayDate = new Date(today);
-  const checkDate = new Date(dateStr);
-  if (isNaN(todayDate.getTime()) || isNaN(checkDate.getTime())) return false;
-  const cutoff = new Date(todayDate);
-  cutoff.setMonth(cutoff.getMonth() - months);
-  return checkDate >= cutoff && checkDate <= todayDate;
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeStaffTrainingCpdCompliance(
@@ -529,14 +505,6 @@ export function computeStaffTrainingCpdCompliance(
   }
   const cpdActivityTypeCount = cpdActivityTypes.size;
 
-  // Unique staff with CPD
-  const staffWithCpd = uniqueStaffCount(cpd_records);
-
-  // Recent CPD (last 6 months)
-  const recentCpd = cpd_records.filter(r =>
-    r.status === "completed" && isWithinMonths(r.activity_date, today, 6)
-  ).length;
-
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 3: TRAINING NEEDS COVERAGE RATE
   // ══════════════════════════════════════════════════════════════════════
@@ -568,9 +536,6 @@ export function computeStaffTrainingCpdCompliance(
       const ratio = r.needs_identified > 0 ? r.needs_addressed / r.needs_identified : 0;
       return sum + (ratio >= 0.8 ? 1 : 0);
     }, 0);
-
-  // Unique staff with TNA
-  const staffWithTna = uniqueStaffCount(training_needs_records);
 
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 4: QUALIFICATION CURRENCY RATE
@@ -606,9 +571,6 @@ export function computeStaffTrainingCpdCompliance(
     r.status === "achieved" && isExpiringSoon(r.expiry_date, today, 90)
   ).length;
 
-  // Unique staff with qualifications
-  const staffWithQualifications = uniqueStaffCount(qualification_records);
-
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 5: DEVELOPMENT PLAN COVERAGE RATE
   // ══════════════════════════════════════════════════════════════════════
@@ -640,9 +602,6 @@ export function computeStaffTrainingCpdCompliance(
 
   // Stale plans (plan exists but not current)
   const stalePlans = development_plan_records.filter(r => r.plan_exists && !r.is_current).length;
-
-  // Unique staff with dev plans
-  const staffWithDevPlans = uniqueStaffCount(development_plan_records);
 
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 6: TRAINING EFFECTIVENESS RATE (composite)

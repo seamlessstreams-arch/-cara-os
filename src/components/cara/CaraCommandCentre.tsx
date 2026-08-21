@@ -35,7 +35,6 @@ const quickPrompts = [
 export function CaraCommandCentre({
   homeId,
   childId,
-  userId,
   defaultRoleMode = "registered_manager",
 }: Props) {
   const uid = useId();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -32,24 +32,6 @@ function useHateIncidents() {
   return useQuery<{ data: HateIncident[] }>({
     queryKey: [HATE_INCIDENTS_KEY],
     queryFn: () => api.get<{ data: HateIncident[] }>(HATE_INCIDENTS_API),
-  });
-}
-
-function useCreateHateIncident() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<HateIncident>) =>
-      api.post(HATE_INCIDENTS_API, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
-  });
-}
-
-function useUpdateHateIncident() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<HateIncident> & { id: string }) =>
-      api.post(HATE_INCIDENTS_API, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
   });
 }
 

@@ -319,7 +319,7 @@ export interface CaraTranscriptionProviderResult {
 }
 
 export async function transcribeAudio(
-  input: CaraTranscriptionProviderInput,
+  _input: CaraTranscriptionProviderInput,
 ): Promise<CaraTranscriptionProviderResult> {
   const config = getCaraProviderConfig();
   if (!config.configured) {

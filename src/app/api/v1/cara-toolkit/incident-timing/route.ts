@@ -57,14 +57,6 @@ function parseHour(timeStr: string | null | undefined): number | null {
   return h >= 0 && h <= 23 ? h : null;
 }
 
-function toSignalColour(count: number, max: number) {
-  if (max === 0) return "grey";
-  const pct = count / max;
-  if (pct >= 0.5) return "red";
-  if (pct >= 0.25) return "amber";
-  return "green";
-}
-
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,8 +107,6 @@ export async function GET() {
     periodData[p].sev[sev] = (periodData[p].sev[sev] ?? 0) + 1;
   }
 
-  const maxPeriod = Math.max(...Object.values(periodData).map((v) => v.count), 1);
-
   const periodCounts: PeriodCount[] = (
     ["night", "morning", "afternoon", "evening"] as TimePeriod[]
   ).map((p) => ({
@@ -164,7 +154,6 @@ export async function GET() {
   const eveningCount  = periodData.evening.count;
   const morningCount  = periodData.morning.count;
   const nightCount    = periodData.night.count;
-  const afternoonCount = periodData.afternoon.count;
 
   if (total === 0) {
     insights.push("No incidents with recorded times found. Ensure all incident records include a time field to enable pattern analysis.");

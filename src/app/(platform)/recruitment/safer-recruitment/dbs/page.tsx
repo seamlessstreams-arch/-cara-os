@@ -349,7 +349,7 @@ export default function DBSTrackerPage() {
   const [search, setSearch] = useState("");
   const { data, isLoading, isError, error } = useRecruitment();
 
-  const { candidatesWithDBS, stats } = useMemo(() => {
+  const { stats } = useMemo(() => {
     const candidates = data?.candidates ?? [];
     const withDBS = candidates
       .map((c: CandidateDetail) => ({

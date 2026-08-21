@@ -98,7 +98,7 @@ function assessLlmNeed(
 // ── Heart Card builder ────────────────────────────────────────────────────────
 
 function buildHeartCard(
-  record: CaraPracticeRecord,
+  _record: CaraPracticeRecord,
   allPrompts: string[],
   allMissingInfo: string[],
   allSuggestedActions: string[],

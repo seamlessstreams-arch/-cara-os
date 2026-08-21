@@ -262,7 +262,6 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
   });
 
   // ── Medication: doses given as scheduled ───────────────────────────────────
-  const medications = store.medications ?? [];
   const medAdmin = store.medicationAdministrations ?? [];
   const recentAdmin = medAdmin.filter((a: any) => {
     const d = daysSince(a.scheduled_time);

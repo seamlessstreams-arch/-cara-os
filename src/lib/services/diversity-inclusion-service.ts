@@ -239,7 +239,7 @@ export function computeDiversityMetrics(
 
 export function identifyDiversityAlerts(
   records: DiversityRecord[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

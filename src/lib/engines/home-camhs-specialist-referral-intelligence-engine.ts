@@ -65,7 +65,7 @@ export interface CamhsSpecialistResult {
 function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 
 export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): CamhsSpecialistResult {
-  const { today, total_children, camhs_referrals, emergency_referrals, specialist_contacts } = input;
+  const { total_children, camhs_referrals, emergency_referrals, specialist_contacts } = input;
 
   if (total_children === 0) {
     return {

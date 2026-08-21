@@ -74,7 +74,7 @@ export function CommsCentre() {
     },
   });
   const mark = useMutation({
-    mutationFn: ({ messageId, channelId, acknowledge }: { messageId: string; channelId: string; acknowledge?: boolean }) =>
+    mutationFn: ({ messageId, acknowledge }: { messageId: string; channelId: string; acknowledge?: boolean }) =>
       api.post(`/comms/messages/${messageId}/receipt`, { acknowledge: !!acknowledge }),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] });

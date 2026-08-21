@@ -85,16 +85,6 @@ const TONE_ISSUES = [
   { pattern: /\b(punishment|punish|consequence for bad|sanction)\b/gi, issue: "Punitive language", fix: "Use 'natural consequence' or 'restorative approach' — CHR 2015 prohibits punishment" },
 ];
 
-const QUALITY_RUBRIC = {
-  min_length: 50,
-  has_time: /\d{1,2}[:.]\d{2}/,
-  has_date: /\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\b(?:today|yesterday|this\s+morning|this\s+afternoon|this\s+evening|tonight)\b/i,
-  has_child_reference: /(?:child|young\s+person|[A-Z][a-z]+)\s+(?:was|is|had|said|felt|appeared|seemed|looked|became)/i,
-  has_staff_action: /(?:staff|we|I|carer|worker)\s+(?:did|spoke|offered|provided|supported|contacted|recorded|completed|observed|noticed|responded)/i,
-  first_person_appropriate: /\b(?:I|we|staff)\b/i,
-  avoids_jargon: true,
-};
-
 // ─── Rule Handlers ───────────────────────────────────────────────────────────
 
 /** Extract action items from any text */
@@ -517,7 +507,7 @@ const RULE_HANDLERS: Record<string, RuleHandler> = {
   write_to_child: rewriteHandler("write_to_child"),
 
   // Extraction commands
-  extract_actions: (input, ctx) => extractActions(input),
+  extract_actions: (input) => extractActions(input),
   create_task_list: (input, ctx) => createTaskList(input, ctx),
   create_task_from_text: (input, ctx) => createTaskList(input, ctx),
 
@@ -534,8 +524,8 @@ const RULE_HANDLERS: Record<string, RuleHandler> = {
   check_factuality: (input) => checkFactuality(input),
 
   // Risk identification
-  identify_document_risks: (input, ctx) => identifyRisks(input),
-  incident_risk_analysis: (input, ctx) => identifyRisks(input),
+  identify_document_risks: (input) => identifyRisks(input),
+  incident_risk_analysis: (input) => identifyRisks(input),
 
   // Suggestions
   suggest_due_date: (input, ctx) => suggestDueDate(input, ctx),
@@ -560,7 +550,7 @@ const RULE_HANDLERS: Record<string, RuleHandler> = {
   },
 
   // Follow-up suggestions
-  suggest_incident_follow_up_tasks: (input, ctx) => {
+  suggest_incident_follow_up_tasks: (input) => {
     const tasks: string[] = [];
     const lower = input.toLowerCase();
 
@@ -1010,7 +1000,7 @@ ${standingItems.map((item, i) => `${i + 1}. ${item}`).join("\n")}
     return { output, confidence: "high", method: "rules", metadata: { task_count: tasks.length } };
   },
 
-  create_task_from_audit: (input, ctx) => {
+  create_task_from_audit: (input) => {
     const tasks: string[] = [];
     const lower = input.toLowerCase();
 
@@ -1053,7 +1043,7 @@ ${standingItems.map((item, i) => `${i + 1}. ${item}`).join("\n")}
     return { output, confidence: "high", method: "rules", metadata: { task_count: tasks.length } };
   },
 
-  create_task_from_oversight: (input, ctx) => {
+  create_task_from_oversight: (input) => {
     const tasks: string[] = [];
     const lower = input.toLowerCase();
 
@@ -1842,9 +1832,9 @@ If this task relates to a child's safety, welfare, or a regulatory requirement, 
 
   // ─── Additional extraction/analysis commands ────────────────────────────
 
-  extract_document_actions: (input, ctx) => extractActions(input),
+  extract_document_actions: (input) => extractActions(input),
 
-  identify_management_actions: (input, ctx) => {
+  identify_management_actions: (input) => {
     // Reuse extractActions but with management-specific framing
     const base = extractActions(input);
     const output = base.output
@@ -1854,7 +1844,7 @@ If this task relates to a child's safety, welfare, or a regulatory requirement, 
     return { ...base, output };
   },
 
-  create_management_action_plan: (input, ctx) => {
+  create_management_action_plan: (input) => {
     const actionResult = extractActions(input);
     const riskResult = identifyRisks(input);
 
@@ -1900,7 +1890,7 @@ If this task relates to a child's safety, welfare, or a regulatory requirement, 
     return handler ? handler(input, ctx) : null;
   },
 
-  create_delegated_audit_tasks: (input, ctx) => {
+  create_delegated_audit_tasks: (input) => {
     const tasks: string[] = [];
     const lower = input.toLowerCase();
 
@@ -2840,7 +2830,7 @@ ${hasContent ? input : "[Record the child's response]"}
     return { output, confidence: "high", method: "template", metadata: { sections_filled: sectionsFilled } };
   },
 
-  equality_diversity_calendar_prompt: (input, ctx) => {
+  equality_diversity_calendar_prompt: (_input) => {
     const now = new Date();
     const months: string[] = [];
     for (let i = 0; i < 3; i++) {
@@ -3563,7 +3553,7 @@ ${hasContent ? input : "[What themes are emerging across all homes?]"}
     return { output, confidence: "high", method: "template", metadata: { sections_filled: sectionsFilled } };
   },
 
-  prepare_ofsted_readiness_summary: (input, ctx) => {
+  prepare_ofsted_readiness_summary: (input) => {
     const sccifSections: { section: string; pattern: RegExp }[] = [
       { section: "Overall experiences and progress of children", pattern: /experience|progress|outcome|voice|wish|feeling|aspiration|achievement/gi },
       { section: "How well children are helped and protected", pattern: /safeguard|protect|risk|safe|harm|missing|exploit|restrain|incident|medication/gi },

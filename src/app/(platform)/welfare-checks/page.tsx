@@ -238,7 +238,6 @@ function NewCheckForm({
         {children.map((child) => {
           const data = checkData[child.id];
           if (!data) return null;
-          const statusCfg = STATUS_CONFIG[data.status];
 
           return (
             <div key={child.id} className="rounded-xl border border-[var(--cs-border)] bg-white p-4">

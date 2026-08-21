@@ -223,7 +223,6 @@ export function computePolicyReviewCycleCompliance(
   input: PolicyReviewCycleComplianceInput,
 ): PolicyReviewCycleComplianceResult {
   const {
-    today,
     total_staff,
     total_policies,
     review_schedule_records,

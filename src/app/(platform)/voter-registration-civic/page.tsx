@@ -37,7 +37,6 @@ const d = (n: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
-
 const exportCols: ExportColumn<CivicRecord>[] = [
   { header: "Young Person", accessor: (r: CivicRecord) => getYPName(r.child_id) },
   { header: "Age", accessor: (r: CivicRecord) => `${r.ageAtRecord}` },
@@ -74,7 +73,7 @@ export default function VoterRegistrationCivicPage() {
   const childId = undefined;
   const homeId = "home_oak";
   const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
-  const { data: result, isLoading } = useQuery<{ data: CivicRecord[] }>({
+  const { data: result } = useQuery<{ data: CivicRecord[] }>({
     queryKey: ["civic-records", childId, homeId],
     queryFn: () => api.get<{ data: CivicRecord[] }>(`/api/v1/civic-records${qs}`),
   });

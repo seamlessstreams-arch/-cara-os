@@ -1021,7 +1021,6 @@ export default function CaraReportDetailPage({
 // ── Rewrite dropdown ────────────────────────────────────────────────────────
 
 function RewriteDropdown({
-  sectionId,
   isRewriting,
   onRewrite,
 }: {

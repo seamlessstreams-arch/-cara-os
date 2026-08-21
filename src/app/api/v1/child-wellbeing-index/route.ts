@@ -15,7 +15,6 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
     const today = new Date();
-    const todayDate = today.toISOString().split("T")[0];
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyStr = thirtyDaysAgo.toISOString().split("T")[0];

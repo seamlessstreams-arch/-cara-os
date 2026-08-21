@@ -105,7 +105,6 @@ export default function ChildAllergiesEpipenPlanPage() {
   // ── Stats ───────────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const today = todayStr();
     const in60 = (() => {
       const dt = new Date();
       dt.setDate(dt.getDate() + 60);

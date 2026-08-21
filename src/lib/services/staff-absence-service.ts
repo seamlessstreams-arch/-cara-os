@@ -144,7 +144,7 @@ export const RETURN_TO_WORK_STATUSES: { status: ReturnToWorkStatus; label: strin
 export function computeAbsenceMetrics(
   absences: StaffAbsence[],
   totalStaff: number,
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   total_absences: number;
   current_absences: number;
@@ -245,7 +245,7 @@ export function computeAbsenceMetrics(
 export function identifyAbsenceAlerts(
   absences: StaffAbsence[],
   totalStaff: number,
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

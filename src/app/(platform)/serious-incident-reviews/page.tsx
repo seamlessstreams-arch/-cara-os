@@ -60,9 +60,7 @@ function useCreateSeriousIncidentReviewRecord() {
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const RT_CLR: Record<SeriousIncidentReviewType, string> = { serious_incident: "bg-red-100 text-red-800", near_miss: "bg-amber-100 text-amber-800", safeguarding_practice: "bg-purple-100 text-purple-800", complaint_learning: "bg-orange-100 text-orange-800", external_review: "bg-blue-100 text-blue-800", thematic: "bg-indigo-100 text-indigo-800" };
 const RS_CLR: Record<SeriousIncidentReviewStatus, string> = { initiated: "bg-blue-100 text-blue-800", under_review: "bg-amber-100 text-amber-800", draft_report: "bg-purple-100 text-purple-800", final_report: "bg-indigo-100 text-indigo-800", actions_in_progress: "bg-orange-100 text-orange-800", closed: "bg-green-100 text-green-800", monitoring: "bg-teal-100 text-teal-800" };
-const CONF_CLR: Record<string, string> = { standard: "bg-gray-100 text-gray-800", restricted: "bg-amber-100 text-amber-800", highly_restricted: "bg-red-900 text-white" };
 
 /* ── component ────────────────────────────────────────────────────────────── */
 

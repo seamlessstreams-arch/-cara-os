@@ -33,9 +33,6 @@ export function preGenerationCheck(params: {
   const blockers: string[] = [];
   const recommendations: string[] = [];
 
-  // Check brief for problematic content
-  const briefLower = params.brief.toLowerCase();
-
   // PII extraction attempts
   const piiPatterns = [
     /national insurance/i,
@@ -169,8 +166,6 @@ export function postGenerationCheck(
     ...output.sections.map((s) => s.content),
     ...output.sections.flatMap((s) => s.items ?? []),
   ].join(" ");
-
-  const contentLower = allContent.toLowerCase();
 
   // Check for clinical/diagnostic language
   const clinicalPatterns = [

@@ -145,7 +145,6 @@ const CONTACT_EXPORT_COLS: ExportColumn<EnrichedArrangement>[] = [
 function ContactLogCard({
   log,
   onUpdate,
-  currentUserId,
 }: {
   log: EnrichedLog;
   onUpdate: (id: string, data: Partial<ContactLog>) => void;
@@ -429,7 +428,6 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
 function ArrangementCard({
   arrangement,
   logs,
-  onUpdateArrangement,
   onUpdateLog,
   onCreateLog,
   currentUserId,
@@ -503,7 +501,6 @@ function ArrangementCard({
     setLogMoodAfter("");
   }
 
-  const lastLog        = logs[0] ?? null;
   const concernCount   = logs.filter((l) => l.concerns_identified).length;
   const distressCount  = logs.filter((l) => l.yp_mood_after === "distressed").length;
 

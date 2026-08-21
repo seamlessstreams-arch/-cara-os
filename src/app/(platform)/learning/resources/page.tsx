@@ -80,7 +80,6 @@ import {
   Save,
 } from "lucide-react";
 
-
 const RESOURCE_TYPES: { value: GeneratedResourceType; label: string }[] = [
   { value: "workshop", label: "Workshop Plan" },
   { value: "flashcard_set", label: "Flashcard Set" },
@@ -121,7 +120,7 @@ function caraMode(type: GeneratedResourceType): string {
   }
 }
 
-function caraStyle(pathway: LearningPathway, tone: string): string {
+function caraStyle(_pathway: LearningPathway, tone: string): string {
   if (tone === "child_friendly") return "child_friendly";
   if (tone === "warm") return "warm_professional";
   return "professional_formal";
@@ -159,7 +158,6 @@ function ResultSection({ label, value }: { label: string; value: unknown }) {
 // ── Resource card ──────────────────────────────────────────────────────────────
 function ResourceCard({ resource }: { resource: GeneratedResource }) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
   const updateMutation = useUpdateGeneratedResource();
   const addToLibrary = useCreateResourceLibraryEntry();
 

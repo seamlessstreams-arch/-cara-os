@@ -283,7 +283,7 @@ describe("AUDIT_ENTITY_TYPES", () => {
   });
 
   it("has all values as non-empty strings", () => {
-    for (const [key, value] of Object.entries(AUDIT_ENTITY_TYPES)) {
+    for (const [, value] of Object.entries(AUDIT_ENTITY_TYPES)) {
       expect(typeof value).toBe("string");
       expect(value.length).toBeGreaterThan(0);
     }

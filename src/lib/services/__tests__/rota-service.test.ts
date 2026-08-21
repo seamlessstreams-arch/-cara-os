@@ -13,7 +13,6 @@ import {
 } from "../rota-service";
 
 import type { RotaEntry, AbsenceRecord } from "../rota-service";
-import { todayStr } from "@/lib/utils";
 
 const {
   computeRotaSummary,
@@ -437,7 +436,6 @@ describe("computeAbsenceProfile", () => {
   });
 
   it("counts current absences (approved and spanning today)", () => {
-    const today = todayStr();
     const absences = [
       makeAbsenceRecord({
         status: "approved",

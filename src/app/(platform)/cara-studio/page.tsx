@@ -32,18 +32,6 @@ interface StaffEnriched extends StaffMember {
   notifications_unread: number;
 }
 
-function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
-  const query = new URLSearchParams();
-  if (params?.role) query.set("role", params.role);
-  if (params?.status) query.set("status", params.status);
-  if (params?.employment_type) query.set("employment_type", params.employment_type);
-
-  return useQuery({
-    queryKey: ["staff", params],
-    queryFn: () =>
-      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
-  });
-}
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { YoungPerson, StaffMember } from "@/types";
@@ -210,8 +198,6 @@ export default function CaraStudioPage() {
 
 function CaraStudioContent() {
   const { currentUser, currentRole } = useAuthContext();
-  const staffQuery = useStaff();
-  const allStaff = staffQuery.data?.data ?? [];
   const searchParams = useSearchParams();
 
   // ── State ──────────────────────────────────────────────────────────────────

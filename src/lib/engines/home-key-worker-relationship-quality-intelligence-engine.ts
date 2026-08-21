@@ -172,12 +172,6 @@ function avg(values: number[]): number {
   return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 100) / 100;
 }
 
-function daysBetween(a: string, b: string): number {
-  const da = new Date(a);
-  const db = new Date(b);
-  return Math.floor(Math.abs(db.getTime() - da.getTime()) / (1000 * 60 * 60 * 24));
-}
-
 // ── Empty Result Factory ────────────────────────────────────────────────────
 
 function emptyResult(

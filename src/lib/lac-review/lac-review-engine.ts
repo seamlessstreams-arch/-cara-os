@@ -476,7 +476,7 @@ export function evaluateRecommendationTracking(
   recommendations: ReviewRecommendation[],
   periodStart: string,
   periodEnd: string,
-  referenceDate: string,
+  _referenceDate: string,
 ): RecommendationTrackingResult {
   // Recommendations from reviews in the period
   const periodRecs = recommendations.filter((r) => isInPeriod(r.dueDate, periodStart, periodEnd) || r.status === "overdue");

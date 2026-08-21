@@ -195,12 +195,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const ALL_SESSION_TYPES: SessionType[] = [
-  "life_story_book", "memory_box", "photograph_session", "family_tree",
-  "timeline_work", "identity_discussion", "cultural_activity",
-  "letter_writing", "creative_expression", "other",
-];
-
 // ── Evaluator 1: Session Quality (0-25) ────────────────────────────────────
 
 export function evaluateSessionQuality(records: LifeStoryRecord[]): SessionQualityResult {

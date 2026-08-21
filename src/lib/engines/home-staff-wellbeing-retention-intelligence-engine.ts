@@ -174,12 +174,6 @@ function avg(nums: number[]): number {
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
 }
 
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
-  );
-}
-
 // ── Empty Result Factory ────────────────────────────────────────────────────
 
 function emptyResult(
@@ -215,7 +209,6 @@ export function computeStaffWellbeingRetention(
   input: StaffWellbeingRetentionInput,
 ): StaffWellbeingRetentionResult {
   const {
-    today,
     total_staff,
     staff_sickness_records,
     staff_wellbeing_survey_records,

@@ -79,7 +79,7 @@ const pct = (n: number, d: number) => d === 0 ? 0 : Math.round((n / d) * 100);
 export function computeSleepNightCare(
   input: SleepNightCareInput,
 ): SleepNightCareResult {
-  const { today, total_children, logs } = input;
+  const { total_children, logs } = input;
 
   // ── Insufficient data guard ───────────────────────────────────────────
   if (total_children === 0 || logs.length === 0) {

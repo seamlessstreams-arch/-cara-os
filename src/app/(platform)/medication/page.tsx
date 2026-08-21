@@ -235,7 +235,6 @@ interface AdminFormProps {
 
 function AdminForm({ admin, medication, onClose }: AdminFormProps) {
   const { currentUser } = useAuthContext();
-  const homeId = currentUser?.home_id ?? "home_oak";
   const { mutate: administer, isPending } = useAdminister();
   const adminStaffQuery = useStaff();
   const adminActiveStaff = (adminStaffQuery.data?.data ?? []).filter((s) => s.employment_status === "active");
@@ -442,8 +441,6 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
     return <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 mx-auto" />;
   }
 
-  const cfg = (STATUS_CONFIG as unknown as Record<string, typeof STATUS_CONFIG.given>)[admin.status] ?? STATUS_CONFIG.missed;
-
   return (
     <div
       className="relative flex items-center justify-center cursor-pointer"
@@ -508,7 +505,6 @@ function TodayScheduleTab({
   exceptions,
   stockAlerts,
   meta,
-  mar,
 }: {
   medications: Medication[];
   todaySchedule: MedicationAdministration[];
@@ -947,7 +943,6 @@ function MARChartTab({
                         const dayAdmins = administrations.filter((a) => a.scheduled_time.startsWith(d));
                         const admin = dayAdmins[0];
                         const isScheduledToday = d >= today && !admin;
-                        const isFutureDay = d > today;
 
                         return (
                           <td key={d} className={cn("px-2 py-3 text-center", d === today && "bg-blue-50/30")}>
@@ -1201,7 +1196,6 @@ function PRNLogTab({
 
 function StockOversightTab({
   medications,
-  exceptions,
   mar,
 }: {
   medications: Medication[];

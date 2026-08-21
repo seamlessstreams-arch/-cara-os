@@ -269,7 +269,7 @@ function liversQuestions(): CaraQuestion[] {
 // ── Threshold consultation ────────────────────────────────────────────────────
 
 function buildThreshold(
-  text: string,
+  _text: string,
   immediate: boolean,
   ladoRelevant: boolean,
 ): ThresholdConsultationResult {

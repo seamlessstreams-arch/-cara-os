@@ -20,9 +20,7 @@ import { ilFetch } from "@/lib/intelligence/il-fetch";
 import {
   Sparkles,
   ChevronRight,
-  Clock,
   CheckCircle2,
-  XCircle,
   Eye,
   ArrowRight,
   CircleDot,
@@ -55,7 +53,6 @@ interface CaraSuggestionSummary {
 
 // ─── Demo data ──────────────────────────────────────────────────────────────
 
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const RISK_CONFIG: Record<string, { label: string; colour: string; bg: string; dot: string }> = {
@@ -63,16 +60,6 @@ const RISK_CONFIG: Record<string, { label: string; colour: string; bg: string; d
   high:    { label: "High",    colour: "text-orange-700", bg: "bg-orange-100", dot: "bg-orange-500" },
   medium:  { label: "Medium",  colour: "text-amber-700",  bg: "bg-amber-100",  dot: "bg-amber-500"  },
   low:     { label: "Low",     colour: "text-[var(--cs-text-secondary)]",  bg: "bg-[var(--cs-surface)]",  dot: "bg-[var(--cs-text-muted)]"  },
-};
-
-const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; colour: string }> = {
-  awaiting_review:     { label: "Awaiting review",   icon: Clock,        colour: "text-[--cs-warning]" },
-  approved:            { label: "Approved",           icon: CheckCircle2, colour: "text-emerald-600" },
-  amended_and_approved:{ label: "Amended & approved", icon: CheckCircle2, colour: "text-emerald-600" },
-  rejected:            { label: "Rejected",           icon: XCircle,      colour: "text-[--cs-risk]" },
-  no_action_required:  { label: "No action required", icon: Eye,          colour: "text-[var(--cs-text-muted)]" },
-  committed:           { label: "Committed",          icon: CheckCircle2, colour: "text-blue-600" },
-  draft:               { label: "Draft",              icon: Clock,        colour: "text-[var(--cs-text-muted)]" },
 };
 
 function typeLabel(type: string): string {

@@ -9,7 +9,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Pill, AlertTriangle, Brain, Loader2, TrendingUp, TrendingDown, Minus,
+  Pill, AlertTriangle, Brain, Loader2,
   Repeat, GraduationCap, Info, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -57,11 +57,6 @@ const DIMENSION_LABEL: Record<string, string> = {
   child: "Child",
   error_type: "Error type",
   time_of_day: "Time of day",
-};
-const TREND_META: Record<string, { icon: React.ReactNode; cls: string }> = {
-  rising: { icon: <TrendingUp className="h-4 w-4" />, cls: "text-red-600" },
-  falling: { icon: <TrendingDown className="h-4 w-4" />, cls: "text-green-600" },
-  stable: { icon: <Minus className="h-4 w-4" />, cls: "text-gray-500" },
 };
 
 export default function MedicationErrorTrendsPage() {

@@ -68,7 +68,6 @@ const BORDER_ST: Record<SupervisionTrackerComplianceStatus, string> = {
 };
 
 function getStatus(nextDue: string): SupervisionTrackerComplianceStatus {
-  const today = new Date();
   const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
   const todayDate = d(0);
   const sevenDays = d(7);

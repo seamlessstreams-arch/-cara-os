@@ -194,12 +194,6 @@ function toRating(score: number): NeighbourhoodSafetyRating {
   return "inadequate";
 }
 
-function daysBetween(a: string, b: string): number {
-  const da = new Date(a);
-  const db = new Date(b);
-  return Math.floor((db.getTime() - da.getTime()) / 86_400_000);
-}
-
 // -- Empty Result Factory -----------------------------------------------------
 
 function emptyResult(
@@ -230,7 +224,6 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   input: NeighbourhoodSafetyRiskAssessmentInput,
 ): NeighbourhoodSafetyRiskAssessmentResult {
   const {
-    today,
     total_children,
     risk_assessment_records,
     safety_mapping_records,

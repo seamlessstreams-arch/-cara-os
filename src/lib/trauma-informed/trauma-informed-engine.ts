@@ -638,15 +638,6 @@ export function evaluateConsultation(
   }
   const consultationFrequencyPerMonth = round2(consultations.length / months);
 
-  // Actions
-  const totalActionsAgreed = consultations.reduce(
-    (sum, c) => sum + c.actionsAgreed.length,
-    0
-  );
-  const totalActionsCompleted = consultations.filter(
-    (c) => c.actionsCompleted
-  ).length * (totalActionsAgreed > 0 ? totalActionsAgreed / consultations.length : 0);
-
   // More accurate: count completed consultations' actions
   let completedActions = 0;
   let totalActions = 0;

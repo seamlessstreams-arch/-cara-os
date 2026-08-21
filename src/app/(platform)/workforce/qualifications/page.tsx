@@ -528,7 +528,6 @@ export default function QualificationsPage() {
   const isLoading = qualsQuery.isLoading || staffQuery.isLoading;
 
   const getStaffName = useCallback((id: string) => staff.find((s) => s.id === id)?.full_name ?? id, [staff]);
-  const getStaffRole = (id: string) => staff.find((s) => s.id === id)?.job_title ?? "";
 
   const filtered = useMemo(() => {
     let list = allQuals;

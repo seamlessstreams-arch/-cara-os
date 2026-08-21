@@ -147,7 +147,6 @@ export function computeLivingEnvironmentStandards(
   input: LivingEnvironmentStandardsInput,
 ): LivingEnvironmentStandardsResult {
   const {
-    today,
     total_children,
     cleaning_entries,
     maintenance_items,

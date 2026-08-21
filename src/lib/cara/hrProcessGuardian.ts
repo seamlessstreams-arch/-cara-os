@@ -608,7 +608,7 @@ function checkConsistency(input: GuardianInput): GuardianFlag[] {
 // ─── Suggested actions ───────────────────────────────────────────────────────
 
 function buildSuggestedActions(
-  input: GuardianInput,
+  _input: GuardianInput,
   flags: GuardianFlag[],
   judgement: FairnessJudgement,
 ): SuggestedAction[] {

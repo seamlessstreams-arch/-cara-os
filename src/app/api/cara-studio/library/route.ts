@@ -7,7 +7,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { libraryQuerySchema } from "@/lib/cara-studio/schemas";
-import { getUserIdFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { GenerationStatus } from "@/lib/cara-studio/types";
 
@@ -16,9 +15,7 @@ type SB = any;
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = getUserIdFromRequest(req);
     const homeId = process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
-    const organisationId = process.env.SUPABASE_ORG_ID ?? "org_default";
 
     // ── Parse query params ───────────────────────────────────────────────────
     const url = new URL(req.url);

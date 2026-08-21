@@ -17,7 +17,7 @@ import {
   _testing,
 } from "@/lib/permissions-engine";
 
-const { ROLE_HIERARCHY, ROLE_PERMISSIONS, CARE_WORKER_PERMS, ALL_PERMS } = _testing;
+const { ROLE_HIERARCHY, ROLE_PERMISSIONS, ALL_PERMS } = _testing;
 
 describe("Permissions Engine", () => {
   // ── Role hierarchy ──────────────────────────────────────────────────────
@@ -246,7 +246,7 @@ describe("Permissions Engine", () => {
     });
 
     it("all roles have at least some permissions", () => {
-      for (const [role, perms] of Object.entries(ROLE_PERMISSIONS)) {
+      for (const [, perms] of Object.entries(ROLE_PERMISSIONS)) {
         expect(perms.length).toBeGreaterThan(0);
       }
     });

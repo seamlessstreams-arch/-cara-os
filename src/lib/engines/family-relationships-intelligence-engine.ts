@@ -196,7 +196,7 @@ export function computeFamilyRelationships(input: FamilyRelationshipsInput): Fam
   const score = computeScore(contact, family, professional, compliance, placement);
   const health = scoreToHealth(score);
 
-  const strengths = identifyStrengths(contact, family, professional, compliance, placement);
+  const strengths = identifyStrengths(contact, family, professional, compliance);
   const concerns = identifyConcerns(contact, family, professional, compliance, placement, input);
   const recommendations = buildRecommendations(contact, family, professional, compliance, placement, health, input);
   const insights = generateInsights(contact, family, professional, compliance, placement, health, input);
@@ -431,8 +431,7 @@ function identifyStrengths(
   contact: ContactAnalysis,
   family: FamilyNetworkSummary,
   professional: ProfessionalEngagement,
-  compliance: ContactComplianceSummary,
-  placement: PlacementImpactSummary,
+  _compliance: ContactComplianceSummary,
 ): string[] {
   const strengths: string[] = [];
 
@@ -518,7 +517,7 @@ function buildRecommendations(
   professional: ProfessionalEngagement,
   compliance: ContactComplianceSummary,
   placement: PlacementImpactSummary,
-  health: RelationshipHealth,
+  _health: RelationshipHealth,
   input: FamilyRelationshipsInput,
 ): RelationshipRecommendation[] {
   const recs: RelationshipRecommendation[] = [];
@@ -623,7 +622,7 @@ function generateInsights(
   contact: ContactAnalysis,
   family: FamilyNetworkSummary,
   professional: ProfessionalEngagement,
-  compliance: ContactComplianceSummary,
+  _compliance: ContactComplianceSummary,
   placement: PlacementImpactSummary,
   health: RelationshipHealth,
   input: FamilyRelationshipsInput,
@@ -694,7 +693,7 @@ function generateInsights(
 function buildHeadline(
   name: string,
   health: RelationshipHealth,
-  score: number,
+  _score: number,
   contact: ContactAnalysis,
 ): string {
   if (health === "critical") {

@@ -698,7 +698,7 @@ function identifyConcerns(
   therapy: TherapyEngagement,
   mood: MoodTrajectory,
   behaviour: BehaviourTrajectory,
-  keywork: KeyworkEffectiveness,
+  _keywork: KeyworkEffectiveness,
   outcomes: OutcomeProgressSummary,
   camhs: CamhsStatusSummary,
   input: TherapeuticProgressInput,

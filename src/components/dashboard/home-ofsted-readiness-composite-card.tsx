@@ -56,7 +56,6 @@ export function HomeOfstedReadinessCompositeCard() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {d.judgement_areas.map((area, i) => {
-                const aStyle = GRADE_STYLES[area.grade] ?? GRADE_STYLES.insufficient_data;
                 const shortName = area.name.includes("experiences") ? "Experiences" : area.name.includes("protected") ? "Protection" : area.name.includes("leaders") ? "Leadership" : "Workforce";
                 return (
                   <div key={i} className="text-center rounded-lg bg-slate-50 p-2">

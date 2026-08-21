@@ -184,11 +184,6 @@ function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
-function daysBetween(earlier: string, later: string): number {
-  const diff = new Date(later).getTime() - new Date(earlier).getTime();
-  return Math.round(diff / (1000 * 60 * 60 * 24));
-}
-
 // ── Label Maps ─────────────────────────────────────────────────────────────
 
 const ROOM_TYPE_LABELS: Record<RoomType, string> = {

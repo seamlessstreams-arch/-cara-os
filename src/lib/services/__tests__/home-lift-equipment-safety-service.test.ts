@@ -5,7 +5,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
-import { todayStr } from "@/lib/utils";
 
 import {
   EQUIPMENT_TYPES,
@@ -57,20 +56,6 @@ function makeRecord(
     created_at: "created_at" in (overrides ?? {}) ? overrides!.created_at! : "2026-05-01T08:00:00Z",
     updated_at: "updated_at" in (overrides ?? {}) ? overrides!.updated_at! : "2026-05-01T08:00:00Z",
   };
-}
-
-/** Return an ISO date string for N days ago from now */
-function daysAgo(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
-}
-
-/** Return an ISO date string for N days in the future from now */
-function daysFromNow(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

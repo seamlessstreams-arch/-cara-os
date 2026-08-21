@@ -74,13 +74,6 @@ const TASK_CREATING_COMMANDS = new Set<string>([
 
 // ── Command metadata for the UI ────────────────────────────────────────────
 
-interface CommandUIEntry {
-  id: CaraCommandId;
-  label: string;
-  group: string;
-  modules: string[];
-}
-
 // Import the command registry from the service. Since this is a client
 // component, we only need the labels and module filters — the heavy lifting
 // happens server-side. We define a lightweight lookup here.

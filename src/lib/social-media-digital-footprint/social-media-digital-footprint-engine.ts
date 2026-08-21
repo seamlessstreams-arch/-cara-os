@@ -951,7 +951,7 @@ function generateActions(
   policy: DigitalPolicyResult,
   staff: StaffDigitalReadinessResult,
   childProfiles: ChildDigitalProfile[],
-  incidents: DigitalSafetyIncident[],
+  _incidents: DigitalSafetyIncident[],
 ): string[] {
   const actions: string[] = [];
 

@@ -99,7 +99,6 @@ export function computeMedicationAdministration(
   input: MedicationAdministrationInput,
 ): MedicationAdministrationResult {
   const {
-    today,
     total_children,
     children_on_medication,
     total_active_medications,

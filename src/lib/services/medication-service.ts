@@ -280,8 +280,6 @@ export function computeControlledDrugAudit(
     }
   }
 
-  // Overdue stock checks (> 7 days since last check or never checked)
-  const now = new Date();
   const overdueStockChecks: {
     prescription_id: string;
     medication_name: string;
@@ -485,8 +483,6 @@ export function identifyMedicationAlerts(
     }
   }
 
-  // review_due: prescription active > 84 days (12 weeks) without end_date
-  const now = new Date();
   for (const p of prescriptions) {
     if (p.is_active && !p.end_date) {
       const startDate = new Date(p.start_date);

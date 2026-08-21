@@ -680,12 +680,12 @@ const MANAGEMENT_SUGGESTIONS: Array<{
     priority: "medium",
   },
   {
-    condition: (f, childCount, totalItems) => childCount === 1 && totalItems >= 4,
+    condition: (_f, childCount, totalItems) => childCount === 1 && totalItems >= 4,
     text: "Child-specific action plan review — significant pattern of concerns concentrated on one child.",
     priority: "high",
   },
   {
-    condition: (f, _c, _t, recentItems) => recentItems >= 4,
+    condition: (_f, _c, _t, recentItems) => recentItems >= 4,
     text: "Cluster of concerns in the last 14 days — consider management review or unannounced check.",
     priority: "medium",
   },

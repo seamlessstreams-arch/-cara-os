@@ -219,11 +219,9 @@ export default function ReportsPage() {
   const allIncidents = useMemo(() => incidentsQuery.data?.data ?? [], [incidentsQuery.data]);
   const openIncidents = useMemo(() => allIncidents.filter((i) => i.status === "open"), [allIncidents]);
   const closedIncidents = useMemo(() => allIncidents.filter((i) => i.status === "closed"), [allIncidents]);
-  const criticalIncidents = useMemo(() => allIncidents.filter((i) => i.severity === "critical"), [allIncidents]);
 
   // Training derived stats
   const trainingMeta = trainingQuery.data?.meta;
-  const allTraining = trainingQuery.data?.data ?? [];
   const trainingCompliancePct = trainingMeta?.rate ?? 0;
 
   // Staff derived stats
@@ -235,7 +233,6 @@ export default function ReportsPage() {
 
   // Leave derived stats
   const leaveMeta = leaveQuery.data?.meta;
-  const allLeave = leaveQuery.data?.data ?? [];
 
   const tabs: { id: ReportView; label: string; icon: React.ElementType }[] = [
     { id: "overview", label: "Overview", icon: BarChart3 },

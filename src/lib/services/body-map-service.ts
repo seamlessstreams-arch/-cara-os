@@ -171,7 +171,7 @@ export const ACTIONS_TAKEN: { action: ActionTaken; label: string }[] = [
  */
 export function computeBodyMapMetrics(
   records: BodyMapRecord[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   total_records: number;

@@ -105,7 +105,7 @@ function daysBetween(a: string, b: string): number {
 export function computeHomeRestrictivePractice(
   input: HomeRestrictivePracticeInput,
 ): HomeRestrictivePracticeResult {
-  const { today, child_ids, restraints } = input;
+  const { today, restraints } = input;
 
   const r90d = restraints.filter(r => daysBetween(r.date, today) <= 90);
 

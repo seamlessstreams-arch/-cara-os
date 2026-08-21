@@ -109,7 +109,6 @@ export function HomeStaffDevelopmentIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.staff_development_rating] ?? RATING_STYLES.insufficient_data;
   const hasExpired = d.training.expired_count > 0;
-  const hasOverdueSup = d.supervision.overdue_count > 0;
   const isAlert = hasExpired || d.staff_development_rating === "inadequate";
 
   const SupTrendIcon = TREND_ICON[d.supervision.trend];

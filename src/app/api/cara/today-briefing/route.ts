@@ -333,7 +333,7 @@ async function generateLiveBriefing(homeId: string): Promise<TodayBriefing> {
 
   // 5. Daily log gaps (MEDIUM)
   const yesterday = new Date(todayDate.getTime() - 86400000).toISOString().slice(0, 10);
-  const { data: yesterdayLogs, count: logCount } = await (sb.from("cs_daily_logs") as SB)
+  const { count: logCount } = await (sb.from("cs_daily_logs") as SB)
     .select("id", { count: "exact" })
     .eq("home_id", homeId)
     .eq("date", yesterday);

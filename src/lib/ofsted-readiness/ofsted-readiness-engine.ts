@@ -468,7 +468,7 @@ export function evaluateEvidencePortfolio(
 
 export function evaluateActionPlanProgress(
   actionItems: ActionPlanItem[],
-  inspectionHistory: InspectionHistory[],
+  _inspectionHistory: InspectionHistory[],
 ): number {
   if (actionItems.length === 0) return 0;
 
@@ -790,7 +790,7 @@ function buildStrengths(
 
 function buildAreasForImprovement(
   areaScores: AreaScore[],
-  evidenceItems: SCCIFEvidenceItem[],
+  _evidenceItems: SCCIFEvidenceItem[],
   actionItems: ActionPlanItem[],
   gapAnalysis: GapAnalysisItem[],
 ): string[] {

@@ -269,7 +269,7 @@ export function computeBspMetrics(
 
 export function identifyBspAlerts(
   plans: BehaviourSupportPlan[],
-  totalChildren: number,
+  _totalChildren: number,
   now: Date = new Date(),
 ): {
   type: string;

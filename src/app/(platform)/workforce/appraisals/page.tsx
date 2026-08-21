@@ -253,7 +253,6 @@ function RatingDistribution({ ratingCounts }: { ratingCounts: Record<string, num
 // ── Staff Timeline View ──────────────────────────────────────────────────────
 
 function StaffAppraisalPanel({
-  staffId,
   staffName,
   appraisals,
   perStaffMeta,

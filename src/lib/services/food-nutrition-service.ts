@@ -189,7 +189,7 @@ export function computeNutritionMetrics(
   profiles: DietaryProfile[],
   meals: MealRecord[],
   hygieneChecks: HygieneCheck[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   profiles_complete: number;
   children_with_allergies: number;

@@ -416,7 +416,6 @@ function ComplianceFlags({
 function RoutingTab({
   routes,
   careEventId,
-  status,
 }: {
   routes: CareEventRoute[];
   careEventId: string;

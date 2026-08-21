@@ -240,7 +240,6 @@ export function computePocketMoneyAuditReconciliation(
   input: PocketMoneyAuditInput,
 ): PocketMoneyAuditResult {
   const {
-    today,
     total_children,
     audit_records,
     reconciliation_records,

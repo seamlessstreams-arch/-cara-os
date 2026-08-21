@@ -179,7 +179,7 @@ function computePossessionSummary(
  */
 function identifyPossessionAlerts(
   possessions: PossessionRecord[],
-  moneyRecords: MoneyRecord[],
+  _moneyRecords: MoneyRecord[],
   totalChildren: number,
 ): { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [];

@@ -539,8 +539,6 @@ const METRIC_GROUPS: MetricGroup[] = [
 
 const ALL_METRICS = METRIC_GROUPS.flatMap((g) => g.metrics);
 
-function clamp(v: number, min: number, max: number) { return Math.min(max, Math.max(min, Math.round(v))); }
-
 export default function ScorecardPage() {
   const homeName = useHomeName();
   const { currentUser } = useAuthContext();

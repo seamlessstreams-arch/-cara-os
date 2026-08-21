@@ -112,7 +112,7 @@ function statusLabel(s: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsIntelligenceResult {
-  const { pathways, children, staff, today = todayStr() } = input;
+  const { pathways, children, today = todayStr() } = input;
 
   if (pathways.length === 0) {
     return {

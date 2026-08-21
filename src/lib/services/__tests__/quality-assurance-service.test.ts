@@ -86,20 +86,6 @@ function makeRecommendation(
   };
 }
 
-/** Build a minimal ImprovementAction for testing. */
-function makeImprovementAction(
-  overrides: Record<string, unknown> = {},
-): { description: string; responsible: string; target_date: string; status: string; evidence?: string; completion_date?: string } {
-  return {
-    description: "description" in overrides ? (overrides.description as string) : "Train staff on new policy",
-    responsible: "responsible" in overrides ? (overrides.responsible as string) : "Manager B",
-    target_date: "target_date" in overrides ? (overrides.target_date as string) : "2026-04-15",
-    status: "status" in overrides ? (overrides.status as string) : "not_started",
-    evidence: "evidence" in overrides ? (overrides.evidence as string | undefined) : undefined,
-    completion_date: "completion_date" in overrides ? (overrides.completion_date as string | undefined) : undefined,
-  };
-}
-
 // ── AUDIT_TYPES constant ──────────────────────────────────────────────────
 
 describe("AUDIT_TYPES", () => {

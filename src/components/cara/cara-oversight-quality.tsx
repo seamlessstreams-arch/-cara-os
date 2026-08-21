@@ -331,7 +331,6 @@ function getBarColour(score: number): string {
 
 export function CaraOversightQuality({
   oversightText,
-  recordType = "general",
   recordReference,
   onRequestImprovement,
   className,

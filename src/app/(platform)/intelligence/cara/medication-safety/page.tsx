@@ -60,15 +60,6 @@ const SIGNAL_STYLES: Record<Signal, { bg: string; border: string; text: string; 
   grey:  { bg: "bg-slate-50",  border: "border-slate-200",  text: "text-slate-500",  dot: "bg-slate-300"  },
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  given:           "bg-green-100 text-green-700",
-  self_administered:"bg-green-100 text-green-700",
-  late:            "bg-amber-100 text-amber-700",
-  refused:         "bg-red-100 text-red-700",
-  missed:          "bg-red-100 text-red-700",
-  withheld:        "bg-slate-100 text-slate-600",
-};
-
 function ChildMedCard({ profile }: { profile: MedicationChildProfile }) {
   const style = SIGNAL_STYLES[profile.signal];
   return (

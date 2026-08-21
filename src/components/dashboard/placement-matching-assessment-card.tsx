@@ -57,7 +57,7 @@ export function PlacementMatchingAssessmentCard() {
     );
   }
 
-  const { home_metrics, children, disruption_indicators } = intel;
+  const { home_metrics, disruption_indicators } = intel;
   const highDisruption = disruption_indicators.filter((d) => d.severity === "high").length;
 
   return (

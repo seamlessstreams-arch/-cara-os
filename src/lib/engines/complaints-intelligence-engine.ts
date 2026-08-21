@@ -142,7 +142,7 @@ export function computeComplaintsIntelligence(input: {
   staff: StaffRef[];
   today?: string;
 }): ComplaintsIntelligenceResult {
-  const { complaints, children, staff, today = todayStr() } = input;
+  const { complaints, today = todayStr() } = input;
 
   if (complaints.length === 0) {
     return {

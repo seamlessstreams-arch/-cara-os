@@ -23,7 +23,7 @@ describe("CaraContextLinker", () => {
     });
 
     it("each config has label, icon, colour, and href function", () => {
-      for (const [key, config] of Object.entries(TABLE_CONFIG)) {
+      for (const [, config] of Object.entries(TABLE_CONFIG)) {
         expect(config.label).toBeTruthy();
         expect(config.icon).toBeTruthy();
         expect(config.colour).toBeTruthy();

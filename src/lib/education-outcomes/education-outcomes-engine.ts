@@ -449,7 +449,7 @@ export function evaluateExclusions(
 export function evaluatePEPQuality(
   peps: PEPRecord[],
   childIds: string[],
-  referenceDate: string,
+  _referenceDate: string,
 ): PEPQualityEvaluation {
   // Get most recent PEP per child
   const latestPEPs = new Map<string, PEPRecord>();
@@ -538,7 +538,7 @@ export function evaluatePEPQuality(
 
 export function evaluateSENDSupport(
   supports: SENDSupportRecord[],
-  childIds: string[],
+  _childIds: string[],
 ): SENDSupportEvaluation {
   const childrenWithSEND = new Set(supports.filter(s => s.sendCategory !== "none").map(s => s.childId)).size;
 

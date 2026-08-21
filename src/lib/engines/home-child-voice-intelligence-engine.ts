@@ -120,7 +120,7 @@ function toRating(score: number): ChildVoiceRating {
 export function computeHomeChildVoice(
   input: HomeChildVoiceInput,
 ): HomeChildVoiceResult {
-  const { today, total_children, house_meetings, visitors } = input;
+  const { today, house_meetings, visitors } = input;
 
   const totalData = house_meetings.length + visitors.length;
 

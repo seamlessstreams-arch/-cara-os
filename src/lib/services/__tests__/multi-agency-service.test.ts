@@ -1003,9 +1003,6 @@ describe("identifyMultiAgencyAlerts", () => {
     });
 
     it("uses Unknown when child name is not available", () => {
-      const reviews = [
-        makeReview({ id: "r1", child_id: "child-orphan", child_name: "" }),
-      ];
       // child_name empty string - contact lookup returns undefined, review returns ""
       // The code checks contactForChild?.child_name ?? reviewForChild?.child_name
       // "" is falsy but not null, so it will be "". Let's use a scenario where name is truly absent.

@@ -915,7 +915,7 @@ function generateAreasForDevelopment(
 function generateImmediateActions(
   planning: TransitionPlanningResult,
   goals: GoalProgressResult,
-  stability: PlacementStabilityResult,
+  _stability: PlacementStabilityResult,
   profiles: ChildTransitionProfile[],
 ): string[] {
   const actions: string[] = [];

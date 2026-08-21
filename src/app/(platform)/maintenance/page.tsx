@@ -66,7 +66,6 @@ function useUpdateMaintenanceItem() {
   });
 }
 
-type MaintenanceStatus = "open" | "scheduled" | "completed";
 type MaintenancePriority = "urgent" | "high" | "medium" | "low";
 type MaintenanceCategory = "hvac" | "fire_safety" | "plumbing" | "security" | "electrical" | "cleaning" | "general";
 

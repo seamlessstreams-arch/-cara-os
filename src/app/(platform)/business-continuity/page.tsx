@@ -60,11 +60,6 @@ const BORDER_SEV: Record<string, string> = {
   medium: "border-l-blue-400",
 };
 
-const todayDate = () => {
-  const dt = new Date();
-  return dt.toISOString().slice(0, 10);
-};
-
 const offsetDate = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);

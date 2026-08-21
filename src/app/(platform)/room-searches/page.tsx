@@ -81,13 +81,6 @@ const TYPE_COLOUR: Record<RoomSearchType, string> = {
   requested:       "bg-blue-100 text-blue-700",
 };
 
-const STATUS_META: Record<RoomSearchStatus, { colour: string }> = {
-  completed:          { colour: "bg-[--cs-success-bg] text-[--cs-success]" },
-  follow_up_required: { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
-  escalated:          { colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
-  closed:             { colour: "bg-gray-100 text-gray-700" },
-};
-
 const STATUS_ROW: Record<RoomSearchStatus, RowSeverity> = {
   completed: "success", follow_up_required: "warning", escalated: "risk", closed: "neutral",
 };

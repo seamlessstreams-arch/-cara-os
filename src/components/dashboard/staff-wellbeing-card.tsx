@@ -57,7 +57,7 @@ export function StaffWellbeingCard() {
     );
   }
 
-  const { sickness, supervision, staffing, profile } = intel;
+  const { sickness, supervision, profile } = intel;
   const supervisionRate = supervision.total_staff_requiring > 0
     ? Math.round((supervision.up_to_date / supervision.total_staff_requiring) * 100)
     : 100;

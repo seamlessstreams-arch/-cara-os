@@ -142,16 +142,6 @@ const MOTIVATION_NUMERIC: Record<string, number> = {
   "Relapsed": 0,
 };
 
-// Usage frequency severity mapping
-const USAGE_SEVERITY: Record<string, number> = {
-  "Non-User": 0,
-  "Experimenter": 1,
-  "Occasional": 2,
-  "Daily — Light": 3,
-  "Daily — Heavy": 4,
-  "Former User": 0,
-};
-
 // -- Label maps ---------------------------------------------------------------
 
 export const RECORD_TYPE_LABELS: { type: RecordType; label: string }[] = [

@@ -239,10 +239,6 @@ export function computeCarePlanMetrics(
       ? Math.round((childrenWithPlans / totalChildren) * 1000) / 10
       : null;
 
-  // Objectives
-  const activeObjectives = objectives.filter(
-    (o) => o.status !== "completed" && o.status !== "not_achieved",
-  );
   const completedObjectives = objectives.filter((o) => o.status === "completed").length;
   const atRiskObjectives = objectives.filter((o) => o.status === "at_risk").length;
   const objectiveCompletionRate =

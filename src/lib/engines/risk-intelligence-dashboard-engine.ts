@@ -235,12 +235,6 @@ export interface RiskIntelligenceDashboardResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    Math.abs(new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
-  );
-}
-
 function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,

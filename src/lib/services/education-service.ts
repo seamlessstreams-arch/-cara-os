@@ -151,7 +151,7 @@ export function computeAttendanceStats(entries: AttendanceEntry[]): {
 
 export function computeEducationProfile(
   records: EducationRecord[],
-  attendance: AttendanceEntry[],
+  _attendance: AttendanceEntry[],
   activities: ActivityRecord[],
 ): {
   total_children: number;
@@ -286,7 +286,7 @@ export function computeActivityEngagement(activities: ActivityRecord[]): {
 
 export function identifyEducationAlerts(
   records: EducationRecord[],
-  attendance: AttendanceEntry[],
+  _attendance: AttendanceEntry[],
 ): { type: string; severity: "critical" | "high" | "medium" | "low"; message: string; child_id: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string; child_id: string }[] = [];
 

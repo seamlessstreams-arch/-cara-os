@@ -1002,7 +1002,7 @@ const EMPTY_FORM = {
   body_map_required: false,
 };
 
-function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
+function LogIncidentTab() {
   const { currentUser, currentRole } = useAuthContext();
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [notifRole, setNotifRole] = useState("");
@@ -1497,7 +1497,7 @@ export default function IncidentsPage() {
         {/* Tab content */}
         {activeTab === "all" && <AllIncidentsTab onLogNew={() => setActiveTab("log")} />}
         {activeTab === "oversight" && <OversightQueueTab />}
-        {activeTab === "log" && <LogIncidentTab onSuccess={() => setActiveTab("all")} />}
+        {activeTab === "log" && <LogIncidentTab />}
 
         {/* Care Events pipeline — behaviour, safeguarding events routed here */}
         <CareEventsPanel

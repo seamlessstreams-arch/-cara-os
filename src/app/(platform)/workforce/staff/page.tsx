@@ -135,9 +135,6 @@ export default function StaffProfilesPage() {
   const profiles = useMemo(() => profilesQuery.data?.data ?? [], [profilesQuery.data]);
   const staff = useMemo(() => staffQuery.data?.data ?? [], [staffQuery.data]);
 
-  const getStaffName = (id: string) => staff.find((s) => s.id === id)?.full_name ?? id;
-  const getStaffJob  = (id: string) => staff.find((s) => s.id === id)?.job_title ?? "";
-
   const profileMap = useMemo(() => {
     const map = new Map<string, typeof profiles[0]>();
     for (const p of profiles) map.set(p.staff_id, p);

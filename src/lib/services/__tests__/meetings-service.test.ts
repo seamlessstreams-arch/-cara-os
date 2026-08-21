@@ -100,23 +100,6 @@ function makeConsultation(
   };
 }
 
-/** Build a minimal AgendaItem. */
-function makeAgendaItem(
-  overrides: Partial<{
-    topic: string;
-    raised_by: string;
-    discussion_summary: string;
-    outcome: string;
-  }> = {},
-): AgendaItem {
-  return {
-    topic: "topic" in overrides ? overrides.topic! : "Weekly menu",
-    raised_by: "raised_by" in overrides ? overrides.raised_by! : "child-1",
-    discussion_summary: "discussion_summary" in overrides ? overrides.discussion_summary! : "Discussed options",
-    outcome: "outcome" in overrides ? overrides.outcome! : "New menu agreed",
-  };
-}
-
 /** Build a minimal MeetingAction. */
 function makeMeetingAction(
   overrides: Partial<{

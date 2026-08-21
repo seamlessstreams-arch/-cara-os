@@ -141,7 +141,7 @@ export const DISRUPTION_OUTCOMES: { outcome: DisruptionOutcome; label: string }[
  */
 export function computeStabilityMetrics(
   moves: PlacementMove[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   total_moves: number;
   children_with_moves: number;

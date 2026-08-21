@@ -44,12 +44,6 @@ function daysAgo(n: number, from: Date = new Date()): string {
   return d.toISOString().split("T")[0];
 }
 
-/** Date string N days in the future from a reference date. */
-function daysFromNow(n: number, from: Date = new Date()): string {
-  const d = new Date(from.getTime() + n * 86400000);
-  return d.toISOString().split("T")[0];
-}
-
 /** ISO datetime string N days ago. */
 function daysAgoISO(n: number): string {
   const d = new Date();

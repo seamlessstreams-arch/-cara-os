@@ -124,7 +124,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function HistoryPage() {
-  const [artifacts, setArtifacts] = useState<CaraStudioArtifact[]>(demoSeed(DEMO_ARTIFACTS));
+  const [artifacts] = useState<CaraStudioArtifact[]>(demoSeed(DEMO_ARTIFACTS));
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);

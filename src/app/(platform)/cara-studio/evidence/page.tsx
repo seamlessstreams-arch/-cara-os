@@ -87,7 +87,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function EvidencePage() {
-  const [sources, setSources] = useState<EvidenceSource[]>(demoSeed(DEMO_SOURCES));
+  const [sources] = useState<EvidenceSource[]>(demoSeed(DEMO_SOURCES));
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [childFilter, setChildFilter] = useState<string | null>(null);

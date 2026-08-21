@@ -89,8 +89,7 @@ export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): R
     subject_access_requests_completed_on_time, dpia_completed,
     qa_audits_completed, qa_audits_due, qa_actions_total, qa_actions_resolved,
     notifiable_events_total, notifiable_events_timely,
-    documents_total, documents_version_controlled, read_receipts_required, read_receipts_obtained,
-    inspection_history_count, last_inspection_rating,
+    documents_total, documents_version_controlled, read_receipts_required, read_receipts_obtained, last_inspection_rating,
   } = input;
 
   // ── Domain: Reg 44 Compliance (0–20) ────────────────────────────────────

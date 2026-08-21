@@ -33,15 +33,6 @@ function useReturnInterviews(childId?: string) {
   return useQuery({ queryKey: ["return-interviews", childId], queryFn: () => fetchAll(childId) });
 }
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const STATUS_CLR: Record<ReturnInterviewStatus, string> = {
-  completed: "bg-[--cs-success-bg] text-[--cs-success]",
-  offered_declined: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  pending: "bg-[--cs-info-bg] text-[--cs-info]",
-  not_yet_due: "bg-gray-100 text-gray-800",
-};
-
 const ACTION_CLR: Record<ReturnInterviewActionStatus, string> = {
   completed: "bg-[--cs-success-bg] text-[--cs-success]",
   in_progress: "bg-[--cs-info-bg] text-[--cs-info]",

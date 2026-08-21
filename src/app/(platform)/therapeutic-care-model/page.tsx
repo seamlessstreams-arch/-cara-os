@@ -86,8 +86,6 @@ function useTherapeuticChildImpact(childId?: string, homeId?: string) {
 // StaffTraining interface removed — using TherapeuticStaffTraining from @/types/extended
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
 const COMPETENCY_LABELS: Record<TherapeuticCompetencyLevel, string> = {
   foundation: "Foundation", practitioner: "Practitioner", advanced: "Advanced",
 };
@@ -102,9 +100,7 @@ const COMPETENCY_SCORE: Record<TherapeuticCompetencyLevel, number> = {
 
 /* ── seed data: staff training ─────────────────────────────────────────── */
 
-
 /* ── seed data: child impact ───────────────────────────────────────────── */
-
 
 /* ── export types ──────────────────────────────────────────────────────── */
 

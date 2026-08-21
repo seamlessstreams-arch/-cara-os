@@ -592,8 +592,8 @@ function generateVoiceDevelopment(
 
 function generateVoiceActions(
   childResults: ChildVoiceResult[],
-  advocacyRate: number | null,
-  totalChildren: number,
+  _advocacyRate: number | null,
+  _totalChildren: number,
   weakestDomains: VoiceDomain[],
 ): string[] {
   const actions: string[] = [];

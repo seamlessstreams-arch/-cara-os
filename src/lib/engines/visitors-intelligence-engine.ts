@@ -126,7 +126,7 @@ function categoryLabel(cat: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelligenceResult {
-  const { visitors, children, staff, today = todayStr() } = input;
+  const { visitors, children, today = todayStr() } = input;
 
   if (visitors.length === 0) {
     return {

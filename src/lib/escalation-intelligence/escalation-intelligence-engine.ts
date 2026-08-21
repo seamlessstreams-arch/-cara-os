@@ -690,7 +690,7 @@ function generateEscalationConcerns(
 
 function generateEscalationActions(
   assessments: ThresholdAssessment[],
-  currentDate: string,
+  _currentDate: string,
 ): string[] {
   const actions: string[] = [];
 

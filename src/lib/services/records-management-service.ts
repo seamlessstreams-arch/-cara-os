@@ -185,7 +185,7 @@ export const DATA_QUALITY_RATINGS: { rating: DataQualityRating; label: string }[
 export function computeRecordsMetrics(
   audits: RecordAudit[],
   accessRequests: AccessRequest[],
-  totalChildren: number,
+  _totalChildren: number,
 ): {
   children_audited: number;
   avg_completeness_rate: number | null;

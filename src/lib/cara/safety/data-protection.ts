@@ -70,7 +70,6 @@ export interface RedactionResult {
 export function redactSensitiveData(text: string): RedactionResult {
   const entries: CaraRedactionEntry[] = [];
   let redacted = text;
-  let offset = 0;
 
   // Track counters per category
   const counters: Record<string, number> = {};
@@ -101,7 +100,6 @@ export function redactSensitiveData(text: string): RedactionResult {
 
       // Reset regex lastIndex due to modified string
       regex.lastIndex = match.index + placeholder.length;
-      offset += placeholder.length - originalLength;
     }
   }
 

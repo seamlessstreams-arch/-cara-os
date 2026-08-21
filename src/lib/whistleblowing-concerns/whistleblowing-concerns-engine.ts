@@ -193,7 +193,7 @@ export interface WhistleblowingConcernsIntelligenceResult {
 // ── Sub-score 1: Reporting Culture (0-25) ──────────────────────────────────
 
 export function evaluateReportingCulture(
-  concerns: WhistleblowingConcern[],
+  _concerns: WhistleblowingConcern[],
   policy: WhistleblowingPolicy | null,
   culture: ConcernCulture | null,
 ): ReportingCultureResult {

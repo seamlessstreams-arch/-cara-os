@@ -443,7 +443,7 @@ export function identifyIVAlerts(
 
   // ── Child not attending visits (medium) ─────────────────────────────
   // Check for children with 3+ consecutive non-attended visits
-  for (const [childId, childVisits] of visitsByChild) {
+  for (const [, childVisits] of visitsByChild) {
     const sorted = [...childVisits].sort(
       (a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime(),
     );

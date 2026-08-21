@@ -212,7 +212,7 @@ function compareTrend(
 export function computeChildSafeguarding(
   input: ChildSafeguardingInput,
 ): ChildSafeguardingResult {
-  const { today, child_id, child_name, child_age, risk_assessments, incidents, missing_episodes, restraints, contextual_markers } = input;
+  const { today, child_id, child_name, risk_assessments, incidents, missing_episodes, restraints, contextual_markers } = input;
 
   // ── Risk Domain Profiles ─────────────────────────────────────────────
   const currentAssessments = risk_assessments.filter((r) => r.status === "current" || r.status === "under_review");

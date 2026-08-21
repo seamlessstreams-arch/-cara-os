@@ -118,7 +118,6 @@ export function HomeRegulatoryComplianceIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.regulatory_compliance_rating] ?? RATING_STYLES.insufficient_data;
   const hasPending = d.notifiable_events.pending_count > 0;
-  const hasOverduePolicies = d.policies.overdue_count > 0;
   const isAlert = hasPending || d.regulatory_compliance_rating === "inadequate";
 
   const Reg44TrendIcon = TREND_ICON[d.reg44.trend];

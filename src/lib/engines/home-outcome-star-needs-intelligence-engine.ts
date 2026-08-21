@@ -88,7 +88,7 @@ function toRating(score: number): OutcomeStarRating {
 export function computeOutcomeStarNeeds(
   input: OutcomeStarNeedsInput,
 ): OutcomeStarResult {
-  const { today, total_children, outcome_stars, needs_assessments, kpis } = input;
+  const { total_children, outcome_stars, needs_assessments, kpis } = input;
 
   // ── Insufficient data guard ────────────────────────────────────────
   if (total_children === 0) {

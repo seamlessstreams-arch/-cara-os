@@ -58,7 +58,7 @@ export function ChildSubstanceMisuseScreeningCard() {
     );
   }
 
-  const { compliance, child_profiles, wellbeing_trends } = intel;
+  const { compliance, child_profiles } = intel;
   const declining = child_profiles.filter((c) => c.wellbeing_trend === "declining").length;
 
   return (

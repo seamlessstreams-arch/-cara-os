@@ -641,7 +641,7 @@ export function generatePeerDynamicsIntelligence(
 function calculatePeerDynamicsScore(
   totalInteractions: number,
   positiveInteractions: number,
-  negativeInteractions: number,
+  _negativeInteractions: number,
   matching: MatchingComplianceResult,
   bullyingPatterns: BullyingPattern[],
   dyadAnalyses: DyadAnalysis[],

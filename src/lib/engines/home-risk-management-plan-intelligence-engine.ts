@@ -93,7 +93,7 @@ function toRating(score: number): RiskManagementPlanRating {
 export function computeRiskManagementPlan(
   input: RiskManagementPlanInput,
 ): RiskManagementPlanResult {
-  const { plans, total_children, today } = input;
+  const { plans, total_children } = input;
 
   // Insufficient data guard
   if (total_children === 0) {

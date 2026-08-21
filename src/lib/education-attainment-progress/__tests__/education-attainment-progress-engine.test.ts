@@ -635,7 +635,7 @@ describe("buildChildEducationProfiles", () => {
   });
 
   it("frequency score: 1 for >= 5 records", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ childId: "c1", childName: "C1", educationArea: "attendance" }),
     );
     const result = buildChildEducationProfiles(records);
@@ -644,7 +644,7 @@ describe("buildChildEducationProfiles", () => {
   });
 
   it("frequency score: 2 for >= 10 records", () => {
-    const records = Array.from({ length: 10 }, (_, i) =>
+    const records = Array.from({ length: 10 }, (_) =>
       makeRecord({ childId: "c1", childName: "C1", educationArea: "attendance" }),
     );
     const result = buildChildEducationProfiles(records);
@@ -841,7 +841,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
 
   // Strengths
   it("generates strength for high progressRate", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ recordDate: "2026-03-01", progressLevel: "exceeding" }),
     );
     const result = generateEducationAttainmentProgressIntelligence(
@@ -851,7 +851,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
   });
 
   it("generates strength for high pepUpdatedRate", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ recordDate: "2026-03-01", pepUpdated: true }),
     );
     const result = generateEducationAttainmentProgressIntelligence(
@@ -861,7 +861,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
   });
 
   it("generates strength for high attendanceRate", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ recordDate: "2026-03-01", schoolAttendanceGood: true }),
     );
     const result = generateEducationAttainmentProgressIntelligence(
@@ -871,7 +871,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
   });
 
   it("generates strength for high documentedRate", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ recordDate: "2026-03-01", documentedInPlan: true }),
     );
     const result = generateEducationAttainmentProgressIntelligence(
@@ -929,7 +929,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
   });
 
   it("generates no-action message when all is well", () => {
-    const records = Array.from({ length: 3 }, (_, i) =>
+    const records = Array.from({ length: 3 }, (_) =>
       makeRecord({ recordDate: "2026-03-01" }),
     );
     const result = generateEducationAttainmentProgressIntelligence(
@@ -940,7 +940,7 @@ describe("generateEducationAttainmentProgressIntelligence", () => {
 
   // Rating thresholds
   it("rating is outstanding for score >= 80", () => {
-    const records = Array.from({ length: 5 }, (_, i) =>
+    const records = Array.from({ length: 5 }, (_) =>
       makeRecord({ recordDate: "2026-03-01" }),
     );
     const result = generateEducationAttainmentProgressIntelligence(

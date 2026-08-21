@@ -134,7 +134,7 @@ const DEMO_AUDIT: AuditEntry[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function AuditTrailPage() {
-  const [entries, setEntries] = useState<AuditEntry[]>(demoSeed(DEMO_AUDIT));
+  const [entries] = useState<AuditEntry[]>(demoSeed(DEMO_AUDIT));
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState<string | null>(null);
 

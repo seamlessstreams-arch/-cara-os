@@ -456,7 +456,6 @@ export function generateContextualAssessment(
 
   // Peer analysis
   const highRiskPeers = peerAssociations.filter((p) => p.peerType === "high_risk").length;
-  const monitoredPeers = peerAssociations.filter((p) => p.isMonitored).length;
   const concerningOrHighRiskPeers = peerAssociations.filter(
     (p) => p.peerType === "high_risk" || p.peerType === "concerning",
   );
@@ -677,7 +676,7 @@ function generateConcerns(
 
 function generateActions(
   profiles: ChildContextualProfile[],
-  gaps: string[],
+  _gaps: string[],
   peers: PeerAssociation[],
   onlineRisks: OnlineRisk[],
 ): string[] {

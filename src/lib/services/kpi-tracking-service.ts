@@ -238,7 +238,7 @@ export function computeKpiMetrics(
 export function identifyKpiAlerts(
   definitions: KpiDefinition[],
   measurements: KpiMeasurement[],
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";

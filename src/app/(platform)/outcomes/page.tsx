@@ -625,8 +625,6 @@ function TargetCard({
 
   const domainCfg = DOMAIN_COLOURS[target.domain];
   const DomainIcon = DOMAIN_ICONS[target.domain];
-  const dirCfg = DIRECTION_CFG[target.direction];
-  const DirIcon = dirCfg.icon;
   const targetReviews = reviews.filter((r) => r.target_id === target.id)
     .sort((a, b) => b.review_date.localeCompare(a.review_date));
 
@@ -838,7 +836,6 @@ function TargetCard({
 function ChildSummaryCard({
   childId,
   targets,
-  reviews,
 }: {
   childId: string;
   targets: OutcomeTarget[];
@@ -964,7 +961,6 @@ function DomainRadar({
 type SortKey = "child" | "domain" | "rating_asc" | "rating_desc" | "direction";
 
 export default function OutcomesPage() {
-  const { currentUser } = useAuthContext();
   const { data, isLoading } = useOutcomes();
   const [filterChild, setFilterChild] = useState<string>("all");
   const [filterDomain, setFilterDomain] = useState<string>("all");
@@ -977,7 +973,6 @@ export default function OutcomesPage() {
   const targets = useMemo(() => data?.data ?? [], [data]);
   const reviews    = data?.reviews ?? [];
   const meta       = data?.meta;
-  const perChild   = data?.per_child ?? [];
   const perDomain  = data?.per_domain ?? [];
 
   // Filter targets

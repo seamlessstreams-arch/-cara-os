@@ -89,7 +89,7 @@ export const TRIGGER_RULES: TriggerRule[] = [
   // Missing episode triggers
   {
     events: ["missing_episode_created"],
-    generate: (ctx) => [
+    generate: () => [
       {
         type: "oversight",
         title: "Missing from Care Oversight",

@@ -836,21 +836,6 @@ describe("generateAdvocacyRepresentationIntelligence", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("rating thresholds", () => {
-  const buildWithScore = (targetAccessScore: number) => {
-    // Manipulate referrals to influence the overall score
-    // Use full policy to get max 20 points from policy
-    const policy: AdvocacyPolicy = {
-      lastReviewed: "2025-01-01",
-      advocacyProvider: "NYAS",
-      contractInPlace: true,
-      complaintsProcess: true,
-    };
-    return generateAdvocacyRepresentationIntelligence(
-      demoReferrals, demoVisitors, demoAwareness, policy,
-      demoParentalContact, CHILD_IDS, CHILD_NAMES,
-      "oak-house", "2025-01-01", "2025-06-30", "2025-05-18",
-    );
-  };
 
   it("assigns outstanding for scores >= 80", () => {
     // Create perfect data for all children

@@ -305,7 +305,6 @@ export function evaluatePraiseRecognition(
   else if (linkedToValuesRate > 0) score += 1;
 
   const uniqueTypes = new Set(records.map((r) => r.praiseType)).size;
-  const praiseTypeVariety = uniqueTypes;
   if (uniqueTypes >= 5) score += 6;
   else if (uniqueTypes >= 4) score += 4;
   else if (uniqueTypes >= 3) score += 3;

@@ -502,7 +502,7 @@ function generatePlanningDevelopment(
   docCurrencyRate: number | null,
   childParticipation: number | null,
   typeBreakdown: ReviewTypeBreakdown[],
-  profiles: ChildPlanningProfile[],
+  _profiles: ChildPlanningProfile[],
 ): string[] {
   const areas: string[] = [];
 
@@ -576,7 +576,7 @@ function generatePlanningActions(
 
 function generatePlanningRegulatoryLinks(
   review: ReviewComplianceResult,
-  profiles: ChildPlanningProfile[],
+  _profiles: ChildPlanningProfile[],
   children: CareChild[],
 ): string[] {
   const links = new Set<string>();

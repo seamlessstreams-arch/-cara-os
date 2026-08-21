@@ -27,13 +27,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { FilingCabinetItem } from "@/types/care-events";
 
-interface FilingParams {
-  category?: string;
-  child_id?: string;
-  verified?: boolean;
-  search?: string;
-}
-
 interface FilingCabinetItemEnriched extends FilingCabinetItem {
   care_event: {
     id: string;

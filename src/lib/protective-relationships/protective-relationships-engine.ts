@@ -32,7 +32,6 @@ export interface ChildRelationshipAnalysis {
 }
 
 const TRUSTED_CATEGORIES: RelationshipCategory[] = ["safe_adult", "trusted_professional", "goto_when_upset", "family_support"];
-const RISK_CATEGORIES: RelationshipCategory[] = ["unsafe_adult", "risk_peer", "exploitation_risk", "linked_to_missing"];
 
 function daysSince(dateIso: string | undefined, now: string): number {
   if (!dateIso) return Number.POSITIVE_INFINITY;

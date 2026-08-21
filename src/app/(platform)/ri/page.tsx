@@ -48,7 +48,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { TrainingRecord } from "@/types";
-import type { RiChallengeLog, RiAlert, RiReg45Evidence, RiGovernanceReport, TrainingNeed } from "@/types/extended";
+import type { RiChallengeLog, RiAlert, RiReg45Evidence, TrainingNeed } from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 
@@ -78,16 +78,6 @@ function useRiReg45Evidence(params: { homeId: string }) {
     queryFn: () =>
       api.get<ListResponse<RiReg45Evidence>>(
         `/ri/reg45?home_id=${params.homeId}`
-      ),
-  });
-}
-
-function useRiGovernanceReports(params: { homeId: string }) {
-  return useQuery({
-    queryKey: ["ri", "governance-reports", params.homeId],
-    queryFn: () =>
-      api.get<ListResponse<RiGovernanceReport>>(
-        `/ri/governance-reports?home_id=${params.homeId}`
       ),
   });
 }
@@ -266,7 +256,6 @@ export default function RiHubPage() {
   const { data: challengeData } = useRiChallengeLogs({ homeId: homeId });
   const { data: alertData } = useRiAlerts({ homeId: homeId });
   const { data: reg45Data } = useRiReg45Evidence({ homeId: homeId });
-  const { data: reportsData } = useRiGovernanceReports({ homeId: homeId });
   const { data: trainingData } = useTrainingNeeds({ homeId: homeId });
   // Inlined useIncidents
   const queryStr = new URLSearchParams();

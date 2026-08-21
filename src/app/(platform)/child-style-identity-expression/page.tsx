@@ -130,7 +130,6 @@ export default function ChildStyleIdentityExpressionPage() {
   const totalProfiles = items.length;
   const genderAffirmingCount = items.filter((r) => r.gender_expression_notes && r.gender_expression_notes.length > 0).length;
   const buildingConfidenceCount = items.filter((r) => r.body_confidence === "building").length;
-  const today = todayStr();
   const thirtyDaysFromNow = daysFromNow(30);
   const reviewsDue = items.filter((r) => r.review_date <= thirtyDaysFromNow).length;
 

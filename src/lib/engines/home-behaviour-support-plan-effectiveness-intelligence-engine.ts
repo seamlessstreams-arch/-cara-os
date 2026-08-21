@@ -164,13 +164,6 @@ function toRating(score: number): BehaviourSupportRating {
   return "inadequate";
 }
 
-function daysBetween(a: string, b: string): number {
-  const msA = new Date(a).getTime();
-  const msB = new Date(b).getTime();
-  if (isNaN(msA) || isNaN(msB)) return 0;
-  return Math.floor(Math.abs(msB - msA) / 86_400_000);
-}
-
 // -- Empty Result Factory ----------------------------------------------------
 
 function emptyResult(
@@ -278,10 +271,6 @@ export function computeBehaviourSupportPlanEffectiveness(
   const activeBSPsWithReviewDue = activeBSPs.filter(
     (b) => b.review_due_date !== null,
   );
-  const bspsReviewedOnTime = activeBSPsWithReviewDue.filter((b) => {
-    if (!b.last_reviewed_date || !b.review_due_date) return false;
-    return b.last_reviewed_date >= b.review_due_date || daysBetween(b.last_reviewed_date, today) <= 90;
-  }).length;
   const bspsOverdue = activeBSPsWithReviewDue.filter(
     (b) => b.review_due_date !== null && b.review_due_date <= today && (!b.last_reviewed_date || b.last_reviewed_date < b.review_due_date),
   ).length;

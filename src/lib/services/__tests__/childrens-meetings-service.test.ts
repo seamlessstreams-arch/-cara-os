@@ -90,9 +90,6 @@ function makeRecord(
   };
 }
 
-/** Normalised "today" matching the service's `new Date()` comparison. */
-const now = new Date(todayStr());
-
 /** Math.round(value * 1000) / 10 — same rounding the service uses. */
 function rate(num: number, den: number): number {
   return den > 0 ? Math.round((num / den) * 1000) / 10 : 0;

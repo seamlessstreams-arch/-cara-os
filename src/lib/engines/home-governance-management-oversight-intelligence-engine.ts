@@ -118,7 +118,6 @@ export function computeGovernanceManagementOversight(
   input: GovernanceOversightInput,
 ): GovernanceOversightResult {
   const {
-    today,
     total_children,
     walkrounds,
     governance_meetings,

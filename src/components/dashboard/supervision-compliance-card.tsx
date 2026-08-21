@@ -103,7 +103,7 @@ export function SupervisionComplianceCard() {
   const allStaff = (staffQuery.data?.data ?? []).filter((s) => s.is_active);
 
   const {
-    overdue, dueSoon, completedCount, scheduledCount,
+    overdue, dueSoon, completedCount,
     compliancePct, overdueStaff, avgWellbeing, hasAlert,
   } = useMemo(() => {
     const overdue = meta?.overdue ?? 0;

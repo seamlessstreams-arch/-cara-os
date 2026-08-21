@@ -66,7 +66,7 @@ export function TransitionPlanningReadinessCard() {
     );
   }
 
-  const { overview, child_readiness, skills_summary } = intel;
+  const { overview, skills_summary } = intel;
 
   return (
     <Card className="overflow-hidden">

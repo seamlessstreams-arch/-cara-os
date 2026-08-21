@@ -334,7 +334,6 @@ export function identifyAdvocacyAlerts(
 
   // Alert: complaint referrals without advocacy
   const complaintReferrals = referrals.filter((r) => r.referral_reason === "complaint");
-  const childrenWithComplaintAdvocacy = new Set(complaintReferrals.map((r) => r.child_id));
 
   // Check for children making complaints who have no advocacy referral
   // We detect this from referrals with reason "complaint" — if a child has a complaint

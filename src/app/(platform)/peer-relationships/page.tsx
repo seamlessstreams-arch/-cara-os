@@ -85,10 +85,6 @@ const QUALITY_CLR: Record<PeerRelationshipQuality, string> = {
   neutral: "bg-gray-100 text-gray-700",
 };
 
-const RISK_CLR: Record<PeerRiskLevel, string> = {
-  none: "bg-[--cs-success-bg] text-[--cs-success]", low: "bg-[--cs-info-bg] text-[--cs-info]",
-  medium: "bg-[--cs-warning-bg] text-[--cs-warning]", high: "bg-[--cs-risk-bg] text-[--cs-risk]",
-};
 const RISK_ROW: Record<PeerRiskLevel, RowSeverity> = { none: "success", low: "info", medium: "warning", high: "risk" };
 const RISK_TEXT: Record<PeerRiskLevel, string> = { none: "text-[--cs-success]", low: "text-[--cs-info]", medium: "text-[--cs-warning]", high: "text-[--cs-risk]" };
 

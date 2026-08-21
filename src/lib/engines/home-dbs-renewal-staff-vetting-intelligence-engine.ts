@@ -314,17 +314,6 @@ function isWithinMonths(dateStr: string | null, today: string, months: number): 
   return checkDate >= cutoff && checkDate <= todayDate;
 }
 
-/**
- * Count days between two date strings. Returns 0 if either is null.
- */
-function daysBetween(start: string | null, end: string | null): number {
-  if (!start || !end) return 0;
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  if (isNaN(s) || isNaN(e)) return 0;
-  return Math.max(0, Math.round((e - s) / (1000 * 60 * 60 * 24)));
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeDbsRenewalStaffVetting(
@@ -546,9 +535,6 @@ export function computeDbsRenewalStaffVetting(
   // Staff coverage — unique staff with ANY DBS record
   const staffWithDbs = uniqueStaffCount(dbs_check_records);
 
-  // Staff with valid DBS
-  const staffWithValidDbs = uniqueStaffCount(dbsValid);
-
   // Risk assessment completion rate for those with disclosures
   const disclosureRiskAssessmentRate = pct(dbsRiskAssessmentsCompleted, dbsWithDisclosuresCount);
 
@@ -612,10 +598,6 @@ export function computeDbsRenewalStaffVetting(
   );
   const enhancedExpiringSoonCount = enhancedExpiringSoon.length;
 
-  // Unique staff with enhanced DBS
-  const staffWithEnhancedDbs = uniqueStaffCount(enhanced_dbs_records);
-  const staffWithValidEnhancedDbs = uniqueStaffCount(enhancedValid);
-
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 3: OVERSEAS CHECK RATE
   // Overseas police checks for staff who have lived/worked abroad.
@@ -666,9 +648,6 @@ export function computeDbsRenewalStaffVetting(
   // Overseas check rate — completed or appropriately handled / total
   const overseasHandled = overseasCompletedCount + letterOfGoodStandingCount + overseasWaivedCount;
   const overseasCheckRate = pct(overseasHandled, totalOverseas);
-
-  // Unique staff with overseas checks
-  const staffWithOverseasChecks = uniqueStaffCount(overseas_check_records);
 
   // Countries covered
   const countriesCovered = new Set<string>();
@@ -740,9 +719,6 @@ export function computeDbsRenewalStaffVetting(
 
   // Barred list rate = completed & clear & current / total
   const barredListRate = pct(barredCurrentCount, totalBarred);
-
-  // Unique staff with barred list checks
-  const staffWithBarredListChecks = uniqueStaffCount(barred_list_records);
 
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 5: REFERENCE VERIFICATION RATE
@@ -834,9 +810,6 @@ export function computeDbsRenewalStaffVetting(
 
   // Concern follow-up rate
   const concernFollowUpRate = pct(refsConcernsFollowedUpCount, refsWithConcernsCount);
-
-  // Unique staff with references
-  const staffWithReferences = uniqueStaffCount(reference_verification_records);
 
   // Reference type diversity
   const refTypes = new Set<string>();

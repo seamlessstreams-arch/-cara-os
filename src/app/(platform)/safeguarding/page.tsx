@@ -152,7 +152,6 @@ function useAddOversight() {
 
 // ── Static seed data (display only) ──────────────────────────────────────────
 
-
 // ── Design helpers ────────────────────────────────────────────────────────────
 
 const RISK_CONFIG = {
@@ -395,7 +394,6 @@ function SafeguardingConcernsTab() {
   const ypQuery = useYoungPeople();
   const allYP = ypQuery.data?.data ?? [];
   const allOpen: Incident[] = useMemo(() => query.data?.data ?? [], [query.data]);
-
 
   const concerns = useMemo(() => {
     let list = allOpen.filter((i) => SAFEGUARDING_TYPES.includes(i.type));
@@ -1225,7 +1223,7 @@ function ChronologyTab() {
       <div className="relative">
         <div className="absolute left-5 top-0 bottom-0 w-px bg-slate-200" />
         <div className="space-y-4">
-          {entries.map((entry, i) => {
+          {entries.map((entry) => {
             const cat = CHRONO_CATEGORY_CONFIG[entry.category] ?? CHRONO_CATEGORY_CONFIG.other;
             const sig = SIGNIFICANCE_CONFIG[entry.significance];
 

@@ -81,7 +81,7 @@ describe("SOURCE_TABLES coverage", () => {
   });
 
   it("every source config has required fields", () => {
-    for (const [module, configs] of Object.entries(SOURCE_TABLES)) {
+    for (const [, configs] of Object.entries(SOURCE_TABLES)) {
       for (const config of configs) {
         expect(config.table).toBeTruthy();
         expect(config.dateColumn).toBeTruthy();
@@ -99,7 +99,7 @@ describe("SOURCE_TABLES coverage", () => {
   });
 
   it("module aliases map to existing modules", () => {
-    for (const [alias, target] of Object.entries(MODULE_ALIASES)) {
+    for (const [, target] of Object.entries(MODULE_ALIASES)) {
       expect(SOURCE_TABLES[target]).toBeDefined();
     }
   });

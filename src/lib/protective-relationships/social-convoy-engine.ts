@@ -88,7 +88,6 @@ const ADULT_CATEGORIES: RelationshipCategory[] = [
   "family_support",
   "goto_when_upset",
 ];
-const PEER_CATEGORIES: RelationshipCategory[] = ["positive_peer", "risk_peer"];
 
 const DAY = 86_400_000;
 

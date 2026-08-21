@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
-import { todayStr } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -9,7 +8,6 @@ export async function GET() {
       dal.welfareChecks.findAll(),
       dal.youngPeople.findAll(),
     ]);
-    const today = todayStr();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenStr = sevenDaysAgo.toISOString().split("T")[0];

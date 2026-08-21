@@ -95,7 +95,6 @@ const SANCTION_LABELS: Record<SRSanctionType, string> = {
   other_sanction: "Other",
 };
 
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function SanctionsRewardsPage() {
@@ -105,7 +104,7 @@ export default function SanctionsRewardsPage() {
   const entries = useMemo(() => srData?.data ?? [], [srData]);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
-  const [dirFilter, setDirFilter] = useState("all");
+  const [dirFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);

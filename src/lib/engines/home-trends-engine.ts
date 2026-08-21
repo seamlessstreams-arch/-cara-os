@@ -136,7 +136,7 @@ function pctChange(prior: number, recent: number): number {
 function metricHeadline(
   label: string,
   unit: string,
-  polarity: TrendPolarity,
+  _polarity: TrendPolarity,
   direction: TrendDirection,
   prior: number,
   recent: number,

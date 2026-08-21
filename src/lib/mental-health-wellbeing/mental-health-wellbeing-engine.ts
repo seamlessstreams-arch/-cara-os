@@ -275,7 +275,6 @@ export interface MentalHealthWellbeingIntelligence {
 // ── Configuration ──────────────────────────────────────────────────────────
 
 const ASSESSMENT_CURRENCY_MONTHS = 6;
-const SAFETY_PLAN_REVIEW_MONTHS = 3;
 const RESPONSE_TIME_TARGET_MINS = 15;
 const MAX_ACCEPTABLE_WAITING_DAYS = 56; // 8 weeks (NICE recommendation)
 
@@ -308,7 +307,6 @@ export function evaluateWellbeingAssessments(
   childIds: string[],
   referenceDate: string,
 ): WellbeingAssessmentResult {
-  const refTime = new Date(referenceDate).getTime();
 
   if (assessments.length === 0) {
     const overdueAssessments = childIds.map(id => ({

@@ -313,7 +313,7 @@ function daysBetween(earlier: string, later: string): number {
 export function evaluateMandatoryCompliance(
   staff: StaffMember[],
   records: TrainingRecord[],
-  periodStart: string,
+  _periodStart: string,
   periodEnd: string,
 ): MandatoryComplianceResult {
   const activeStaff = staff.filter((s) => s.isPlaced);

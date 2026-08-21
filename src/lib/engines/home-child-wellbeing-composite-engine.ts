@@ -174,7 +174,7 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
 }
 
 export function computeHomeChildWellbeingComposite(input: HomeChildWellbeingCompositeInput): HomeChildWellbeingCompositeResult {
-  const { child_snapshots, total_children } = input;
+  const { child_snapshots } = input;
 
   if (child_snapshots.length === 0) {
     return {

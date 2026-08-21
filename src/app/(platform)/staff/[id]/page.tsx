@@ -992,7 +992,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                           {staff.supervision_overdue ? "Overdue" : "On track"}
                         </span>
                       </div>
-                      {completedSupervisionsList.slice(0, 6).map((s, i) => (
+                      {completedSupervisionsList.slice(0, 6).map((s) => (
                         <div key={s.id} className="flex items-center gap-2">
                           <div className={`h-2 w-2 rounded-full shrink-0 ${s.status === "completed" ? "bg-emerald-500" : "bg-slate-300"}`} />
                           <div className="text-[10px] text-[var(--cs-text-muted)] flex-1">{formatDate(s.scheduled_date)}</div>

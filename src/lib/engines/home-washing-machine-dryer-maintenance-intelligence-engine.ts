@@ -183,13 +183,6 @@ function toRating(score: number): WashingMachineDryerRating {
   return "inadequate";
 }
 
-function daysBetween(a: string, b: string): number {
-  const msA = Date.parse(a);
-  const msB = Date.parse(b);
-  if (isNaN(msA) || isNaN(msB)) return 0;
-  return Math.abs(Math.round((msB - msA) / 86_400_000));
-}
-
 function hoursBetween(a: string, b: string): number {
   const msA = Date.parse(a);
   const msB = Date.parse(b);
@@ -230,7 +223,6 @@ export function computeWashingMachineDryerMaintenance(
   input: WashingMachineDryerMaintenanceInput,
 ): WashingMachineDryerMaintenanceResult {
   const {
-    today,
     total_children,
     servicing_records,
     breakdown_records,

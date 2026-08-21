@@ -17,13 +17,6 @@ const ratingLabels: Record<string, string> = {
   inadequate: "Inadequate",
 };
 
-const priorityColors: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700",
-  high: "bg-orange-100 text-orange-700",
-  medium: "bg-amber-100 text-amber-700",
-  low: "bg-gray-100 text-gray-700",
-};
-
 function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
   const pct = (score / maxScore) * 100;
   const color = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
@@ -55,32 +48,6 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
       {ok ? "✓" : "✗"} {label}
-    </span>
-  );
-}
-
-function ParticipationBadge({ method }: { method: string }) {
-  const colors: Record<string, string> = {
-    attended_in_person: "bg-green-100 text-green-700",
-    attended_virtually: "bg-blue-100 text-blue-700",
-    written_views: "bg-indigo-100 text-indigo-700",
-    advocate_attended: "bg-purple-100 text-purple-700",
-    views_conveyed_by_worker: "bg-amber-100 text-amber-700",
-    refused_to_participate: "bg-red-100 text-red-700",
-    not_invited: "bg-red-200 text-red-800",
-  };
-  const labels: Record<string, string> = {
-    attended_in_person: "In Person",
-    attended_virtually: "Virtual",
-    written_views: "Written",
-    advocate_attended: "Advocate",
-    views_conveyed_by_worker: "Via Worker",
-    refused_to_participate: "Refused",
-    not_invited: "Not Invited",
-  };
-  return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${colors[method] || "bg-gray-100 text-gray-700"}`}>
-      {labels[method] || method}
     </span>
   );
 }

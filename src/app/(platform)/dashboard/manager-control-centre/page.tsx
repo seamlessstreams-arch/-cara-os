@@ -1717,19 +1717,12 @@ const HomeEmergencyLightingCardLazy = dynamic(
   { loading: () => <CardSkeleton />, ssr: false }
 );
 
-
 /* ══════════════════════════════════════════════════════════════════════════════
    CARA — MANAGER CONTROL CENTRE
    Registered Manager's single-pane-of-glass for oversight and compliance.
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
 
 const formatDate = (iso: string) => {
   const dt = new Date(iso);
@@ -1908,7 +1901,6 @@ function attentionHref(item: AttentionItem): string | null {
 
 /* ── demo data ─────────────────────────────────────────────────────────────── */
 
-
 /* ── stat card type ────────────────────────────────────────────────────────── */
 
 interface StatCard {
@@ -2083,7 +2075,6 @@ export default function ManagerControlCentrePage() {
       .map((i) => (statusOverrides[i.id] ? { ...i, status: statusOverrides[i.id] } : i)),
     [serverItems, caraItems, statusOverrides],
   );
-
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 

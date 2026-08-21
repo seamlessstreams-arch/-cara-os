@@ -50,7 +50,6 @@ import {
   ChevronDown,
   Gift,
   Heart,
-  Home,
   CheckCircle2,
   Package,
   Star,
@@ -61,14 +60,8 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
 
 /* ─── types ─── */
-
 
 /* ─── seed data ─── */
 
@@ -91,7 +84,7 @@ export default function WarmWelcomePacksPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
 
-  const { data: result, isLoading } = useQuery<{ data: WarmWelcomePack[] }>({
+  const { data: result } = useQuery<{ data: WarmWelcomePack[] }>({
     queryKey: ["warm-welcome-packs", undefined, "home_oak"],
     queryFn: () => api.get<{ data: WarmWelcomePack[] }>("/api/v1/warm-welcome-packs?home_id=home_oak"),
   });
@@ -137,16 +130,6 @@ export default function WarmWelcomePacksPage() {
         return <Badge variant="outline">Template</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const categoryIcon = (cat: string) => {
-    switch (cat) {
-      case "bedroom": return <Home className="h-3 w-3" />;
-      case "comfort": return <Heart className="h-3 w-3" />;
-      case "personal": return <Star className="h-3 w-3" />;
-      case "food": return <Gift className="h-3 w-3" />;
-      default: return <Package className="h-3 w-3" />;
     }
   };
 

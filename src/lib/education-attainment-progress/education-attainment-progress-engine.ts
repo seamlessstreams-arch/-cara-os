@@ -622,8 +622,8 @@ function buildStrengths(
 function buildAreasForImprovement(
   quality: EducationQualityResult,
   compliance: EducationComplianceResult,
-  policy: EducationPolicyResult,
-  staffReadiness: StaffEducationReadinessResult,
+  _policy: EducationPolicyResult,
+  _staffReadiness: StaffEducationReadinessResult,
   overallScore: number,
 ): string[] {
   const areas: string[] = [];

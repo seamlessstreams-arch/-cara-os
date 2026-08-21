@@ -57,7 +57,7 @@ describe("OVERSIGHT_REGULATION_REFS", () => {
   });
 
   it("each value is a non-empty array of strings", () => {
-    for (const [key, refs] of Object.entries(OVERSIGHT_REGULATION_REFS)) {
+    for (const [, refs] of Object.entries(OVERSIGHT_REGULATION_REFS)) {
       expect(Array.isArray(refs)).toBe(true);
       expect(refs.length).toBeGreaterThan(0);
       for (const ref of refs) {

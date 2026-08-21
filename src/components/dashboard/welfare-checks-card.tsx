@@ -44,19 +44,15 @@ export function WelfareChecksCard() {
   });
   const meta = data?.meta;
   const rounds = useMemo(() => data?.data ?? [], [data]);
-  const checks = useMemo(() => data?.checks ?? [], [data]);
 
   const {
-    todayRounds, totalChecks, concernsFlagged, streak,
+    todayRounds, concernsFlagged, streak,
     hasAlert, latestRoundTime, completionPct,
   } = useMemo(() => {
     const todayRounds = meta?.today_rounds ?? 0;
     const totalChecks = meta?.total_checks ?? 0;
     const concernsFlagged = meta?.concerns_flagged ?? 0;
     const streak = meta?.consecutive_days ?? 0;
-
-    // Today's checks with concerns
-    const todayConcerns = checks.filter((c) => c.concern_details);
 
     // Latest round time
     const todayRoundsList = rounds.filter((r) => {
@@ -80,7 +76,7 @@ export function WelfareChecksCard() {
       latestRoundTime,
       completionPct,
     };
-  }, [meta, rounds, checks]);
+  }, [meta, rounds]);
 
   if (isPending) {
     return (

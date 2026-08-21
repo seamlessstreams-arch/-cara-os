@@ -538,7 +538,7 @@ export function evaluatePreventionStrategy(
   incidents: DamageIncident[],
   periodStart: string,
   periodEnd: string,
-  referenceDate: string,
+  _referenceDate: string,
 ): PreventionStrategyResult {
   const periodMeasures = measures.filter((m) =>
     isInPeriod(m.implementedDate, periodStart, periodEnd) || m.active,

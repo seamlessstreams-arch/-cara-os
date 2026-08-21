@@ -88,10 +88,6 @@ const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colour: string }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AppointmentsPage() {
@@ -385,7 +381,6 @@ export default function AppointmentsPage() {
           const tc = TYPE_CONFIG[apt.type];
           const sc = STATUS_CONFIG[apt.status];
           const Icon = tc.icon;
-          const isPast = apt.date < today;
           const isToday = apt.date === today;
 
           return (

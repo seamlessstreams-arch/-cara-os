@@ -126,7 +126,7 @@ function childName(childId: string, children: ChildRef[]): string {
 
 export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIntelligenceResult {
   const today = input.today ?? todayStr();
-  const { transactions, clothing_allowances, children, staff } = input;
+  const { transactions, clothing_allowances, children } = input;
 
   const periodTransactions = transactions.filter((t) => isInPeriod(t.date, today));
   const spendingTransactions = periodTransactions.filter((t) => t.type === "spending");

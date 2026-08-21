@@ -175,7 +175,6 @@ export function computeStaffSupervisionReflectivePractice(
   input: StaffSupervisionReflectivePracticeInput,
 ): StaffSupervisionReflectivePracticeResult {
   const {
-    today,
     total_staff,
     supervisions,
     staff_reflections,

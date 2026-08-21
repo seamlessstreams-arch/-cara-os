@@ -93,11 +93,6 @@ function pct(n: number, d: number): number {
   return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
-function daysBetween(a: string, b: string): number {
-  const diff = new Date(b).getTime() - new Date(a).getTime();
-  return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
-}
-
 function toRating(score: number): AutomationROIRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";

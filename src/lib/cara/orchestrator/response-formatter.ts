@@ -200,7 +200,7 @@ export function formatBlockedResponse(input: {
   auditId: string;
   cost?: CostEntry;
 }): CaraResponse {
-  const { blockReason, blockedAnswer, request, routeDecision, safetyReview, evidence, auditId, cost } = input;
+  const { blockReason, blockedAnswer, routeDecision, safetyReview, evidence, auditId, cost } = input;
 
   return {
     answer: blockedAnswer,

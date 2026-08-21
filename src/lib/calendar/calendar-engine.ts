@@ -143,16 +143,6 @@ function inRange(date: string, range?: { from: string; to: string }): boolean {
   return date >= range.from && date <= range.to;
 }
 
-function addMinutesIso(start: string, minutes: number): string {
-  // Naive arithmetic on the HH:MM portion; keeps the same day for shift ends.
-  const m = start.match(/T(\d{2}):(\d{2})/);
-  if (!m) return start;
-  const total = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + minutes;
-  const hh = String(Math.floor((total % 1440) / 60)).padStart(2, "0");
-  const mm = String(total % 60).padStart(2, "0");
-  return start.replace(/T\d{2}:\d{2}/, `T${hh}:${mm}`);
-}
-
 function endFromTimes(date: string, endTime: string | null): string | null {
   if (!endTime || !TIME_RE.test(endTime)) return null;
   return `${date.slice(0, 10)}T${endTime.slice(0, 5)}:00`;

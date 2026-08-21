@@ -144,7 +144,6 @@ const RISK_LEVEL_PRIORITY: Record<string, number> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-
 export function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b + "T00:00:00Z").getTime() - new Date(a + "T00:00:00Z").getTime()) / 86_400_000
@@ -202,7 +201,7 @@ export function computeContextualSafeguardingIntelligence(
 
 function computeScreeningCoverage(
   screenings: ExploitationScreeningInput[],
-  children: ChildRef[],
+  _children: ChildRef[],
   today: string
 ): ScreeningTypeCoverage[] {
   return SCREENING_TYPES.map((type) => {
@@ -425,7 +424,7 @@ function computeAlerts(
 function computeInsights(
   overview: ContextualSafeguardingOverview,
   screenings: ExploitationScreeningInput[],
-  localityRisks: LocalityRiskInput[],
+  _localityRisks: LocalityRiskInput[],
   childRiskProfiles: ChildRiskProfile[]
 ): CaraContextualInsight[] {
   const insights: CaraContextualInsight[] = [];

@@ -182,13 +182,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function daysBetween(a: string, b: string): number {
-  const msA = new Date(a).getTime();
-  const msB = new Date(b).getTime();
-  if (isNaN(msA) || isNaN(msB)) return 9999;
-  return Math.floor(Math.abs(msB - msA) / 86_400_000);
-}
-
 function toRating(score: number): SlipsTripsFallsRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -226,7 +219,6 @@ export function computeSlipsTripsFallsPrevention(
   input: SlipsTripsFallsPreventionInput,
 ): SlipsTripsFallsPreventionResult {
   const {
-    today,
     total_children,
     risk_assessment_records,
     flooring_condition_records,

@@ -138,7 +138,7 @@ export interface EmergencyMarkers {
 }
 
 export function isEmergencyAdmission(
-  childName: string,
+  _childName: string,
   normalisedMatch: (referralName: string) => boolean,
   markers: EmergencyMarkers,
 ): string | null {

@@ -89,7 +89,6 @@ export function HomeHealthMonitoringIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.health_monitoring_rating] ?? RATING_STYLES.insufficient_data;
-  const hasGaps = d.assessment.children_assessed < (d.assessment.recent_365d > 0 ? d.assessment.children_assessed + 1 : 1);
   const hasOverdueDental = d.dental.overdue_checkups > 0;
   const hasMissedImmun = d.immunisation.missed_total > 0;
   const isAlert = hasOverdueDental || hasMissedImmun || d.health_monitoring_rating === "inadequate";

@@ -79,7 +79,7 @@ const URGENCY_CONFIG = {
 
 function buildActionItems(
   dashboardData: { data: DashboardData } | undefined,
-  userId: string,
+  _userId: string,
 ): ActionItem[] {
   const items: ActionItem[] = [];
   const d = dashboardData?.data;

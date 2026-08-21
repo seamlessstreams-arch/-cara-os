@@ -266,9 +266,6 @@ export default function SuccessionBoardPage() {
   const totalCandidates = plans.reduce((s, p) => s + p.candidates.length, 0);
   const readyNowCount   = plans.reduce((s, p) => s + p.candidates.filter((c) => c.ready_now).length, 0);
   const rolesAtRisk     = plans.filter((p) => !p.candidates.some((c) => c.ready_now) && !p.candidates.some((c) => c.readiness_score >= 70)).length;
-  const avgReadiness    = totalCandidates > 0
-    ? Math.round(plans.flatMap((p) => p.candidates).reduce((s, c) => s + c.readiness_score, 0) / totalCandidates)
-    : null;
 
   return (
     <PageShell

@@ -728,7 +728,7 @@ function CaraAutoDetect({
   };
 
   const visible = detected.filter((_, i) => !dismissed.has(i));
-  const allHandled = detected.length > 0 && visible.every((_, i) => added.has(detected.indexOf(_)));
+  const allHandled = detected.length > 0 && visible.every((_) => added.has(detected.indexOf(_)));
 
   return (
     <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/60 p-4 space-y-3">

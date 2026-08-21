@@ -293,8 +293,6 @@ export function identifySupervisionSessionAlerts(
     });
   }
 
-  // High cancellation rate
-  const completed = sessions.filter((s) => s.session_status === "completed").length;
   const cancelled = sessions.filter(
     (s) => s.session_status === "cancelled_by_supervisor" || s.session_status === "cancelled_by_supervisee",
   ).length;

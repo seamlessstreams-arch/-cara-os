@@ -97,7 +97,7 @@ function daysBetween(a: string, b: string): number {
 export function computeHomeNotifiableEvents(
   input: HomeNotifiableEventsInput,
 ): HomeNotifiableEventsResult {
-  const { today, child_ids, events } = input;
+  const { today, events } = input;
 
   // Filter to 90-day window
   const events90d = events.filter(e => daysBetween(e.date, today) <= 90);

@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn, todayStr, daysFromNow } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -30,7 +30,6 @@ import { useQuery } from "@tanstack/react-query";
 import type {
   ParentalResponsibilityRecord,
   PrDelegatedTo,
-  PrLegalStatus,
 } from "@/types/extended";
 
 const PARENTAL_RR_KEY = "parental-responsibility-records";
@@ -55,16 +54,6 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-
-const STATUS_COLOUR: Record<PrLegalStatus, string> = {
-  section_20_voluntary: "bg-yellow-100 text-yellow-800",
-  section_31_care_order: "bg-blue-100 text-blue-800",
-  section_38_interim_care_order: "bg-orange-100 text-orange-800",
-  section_17_child_in_need: "bg-green-100 text-green-800",
-  police_protection_s46: "bg-red-100 text-red-800",
-  emergency_protection_order: "bg-red-100 text-red-800",
-  special_guardianship: "bg-purple-100 text-purple-800",
-};
 
 const DELEGATED_COLOUR: Record<PrDelegatedTo, string> = {
   home: "bg-green-100 text-green-800",
@@ -108,7 +97,6 @@ export default function ParentalResponsibilityRecordPage() {
     return items;
   }, [data, filterYP, sortBy]);
 
-  const today = todayStr();
   const ninetyDaysAgo = daysFromNow(-90);
 
   const total = data.length;

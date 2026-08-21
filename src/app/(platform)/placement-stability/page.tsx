@@ -176,7 +176,6 @@ export default function PlacementStabilityPage() {
         <div className="space-y-3">
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;
-            const concerns = rec.factors.filter((f: StabilityFactor) => f.status !== "positive").length;
 
             return (
               <div key={rec.id} className="rounded-xl border bg-white overflow-hidden">

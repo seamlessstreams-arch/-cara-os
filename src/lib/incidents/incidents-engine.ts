@@ -200,17 +200,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── All 8 categories constant ─────────────────────────────────────────────
 
-const ALL_CATEGORIES: IncidentCategory[] = [
-  "physical_incident",
-  "verbal_incident",
-  "self_harm",
-  "absconding",
-  "substance_misuse",
-  "criminal_behaviour",
-  "bullying",
-  "property_damage",
-];
-
 // ── Evaluator 1: Quality (0-25) ──────────────────────────────────────────
 // deEscalationAttemptedRate(7) + childViewRecordedRate(6) + debriefConductedRate(6) + lessonsIdentifiedRate(6) = 25
 

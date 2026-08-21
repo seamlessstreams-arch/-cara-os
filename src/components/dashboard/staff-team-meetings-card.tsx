@@ -64,7 +64,7 @@ export function StaffTeamMeetingsCard() {
     );
   }
 
-  const { overview, wellbeing, training_compliance } = intel;
+  const { overview, training_compliance } = intel;
 
   return (
     <Card className="overflow-hidden">

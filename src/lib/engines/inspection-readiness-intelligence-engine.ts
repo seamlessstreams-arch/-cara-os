@@ -239,7 +239,7 @@ export function computeInspectionReadiness(input: InspectionReadinessInput): Ins
   const evidenceStrength = assessEvidenceStrength(input);
   const complianceMatrix = buildComplianceMatrix(input);
   const keyRisks = identifyKeyRisks(input);
-  const actionPriorities = buildActionPriorities(input, regulatoryGaps, keyRisks);
+  const actionPriorities = buildActionPriorities(input, regulatoryGaps);
   const insights = generateInsights(input, judgmentAreas, regulatoryGaps);
 
   // Measured areas only. An area with no records contributes nothing rather
@@ -746,7 +746,6 @@ function identifyKeyRisks(input: InspectionReadinessInput): KeyRisk[] {
 function buildActionPriorities(
   input: InspectionReadinessInput,
   gaps: RegulatoryGap[],
-  risks: KeyRisk[],
 ): ReadinessAction[] {
   const actions: ReadinessAction[] = [];
   let rank = 0;

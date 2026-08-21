@@ -834,7 +834,7 @@ function aggregateAreasForImprovement(
 // ── Generate Actions ──────────────────────────────────────────────────────
 
 function generateActions(
-  conditions: RoomConditionsResult,
+  _conditions: RoomConditionsResult,
   personalisation: PersonalisationResult,
   inspections: InspectionComplianceResult,
   staff: StaffRoomReadinessResult,

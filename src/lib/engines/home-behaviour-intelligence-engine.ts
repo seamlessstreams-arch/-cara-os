@@ -141,7 +141,7 @@ function pct(n: number, d: number): number {
 export function computeHomeBehaviour(
   input: HomeBehaviourInput,
 ): HomeBehaviourResult {
-  const { today, child_ids, behaviour_logs, sanctions_rewards, consequences } = input;
+  const { today, behaviour_logs, sanctions_rewards, consequences } = input;
 
   const logs90d = behaviour_logs.filter(l => daysBetween(l.date, today) <= 90);
   const sr90d = sanctions_rewards.filter(s => daysBetween(s.date, today) <= 90);

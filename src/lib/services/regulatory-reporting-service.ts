@@ -177,9 +177,6 @@ export function computeReportingSchedule(
   const overdue: OverdueEntry[] = [];
   const lastSubmitted: Record<string, string | null> = {};
 
-  const nowMs = now.getTime();
-  const msPerDay = 1000 * 60 * 60 * 24;
-
   // Build last_submitted map
   for (const r of reports) {
     if (r.submitted_date) {

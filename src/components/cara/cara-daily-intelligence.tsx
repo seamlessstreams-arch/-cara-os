@@ -255,7 +255,6 @@ function MoodDot({ score }: { score: number | null }) {
 
 export function CaraDailyIntelligence({
   date,
-  homeId,
   className,
 }: DailyIntelligenceProps) {
   const today = date ?? todayStr();

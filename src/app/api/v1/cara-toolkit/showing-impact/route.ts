@@ -15,9 +15,7 @@ function initials(yp: any): string {
 }
 
 export async function GET() {
-  const [behaviourLogList, dailyLogList, incidentsList, keyWorkingSessionsList, riskAssessmentsList, youngPeopleList] = await Promise.all([
-      dal.behaviourLog.findAll(),
-      dal.dailyLog.findAll(),
+  const [incidentsList, keyWorkingSessionsList, riskAssessmentsList, youngPeopleList] = await Promise.all([
       dal.incidents.findAll(),
       dal.keyWorkingSessions.findAll(),
       dal.riskAssessments.findAll(),
@@ -26,9 +24,7 @@ export async function GET() {
   const youngPeople = (youngPeopleList as any[]) ?? [];
   const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
   const incidents = (incidentsList as any[]) ?? [];
-  const dailyLog = (dailyLogList as any[]) ?? [];
   const riskAssessments = (riskAssessmentsList as any[]) ?? [];
-  const behaviourLog = (behaviourLogList as any[]) ?? [];
 
   const sixMonthsAgo = new Date(
     new Date().getTime() - 180 * 86_400_000

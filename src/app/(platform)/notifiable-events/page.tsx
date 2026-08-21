@@ -27,7 +27,7 @@ import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, NotifiableEvent } from "@/types/extended";
+import type { NotifiableEventType, NotifiableStatus, NotifiableEvent } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toast } from "sonner";
 
@@ -55,13 +55,6 @@ function useCreateNotifiableEvent() {
 }
 
 /* ── create form ─────────────────────────────────────────────────────── */
-
-const EMPTY_NOTIFICATION: NotifiableNotification = {
-  body: "",
-  notified_date: null,
-  method: "",
-  reference: null,
-};
 
 function CreateNotifiableEventDialog({
   open,

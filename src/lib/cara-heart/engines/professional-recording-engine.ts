@@ -128,7 +128,6 @@ export function runProfessionalRecordingEngine(
   const severity = record.severity ?? 1;
   const isSignificant = SIGNIFICANT_TYPES.has(record.type) || severity >= 3;
   const childVoicePresent = !!record.childVoice && record.childVoice.trim().length > 5;
-  const repairNeeded = SIGNIFICANT_TYPES.has(record.type);
 
   // ── Blame language scan ───────────────────────────────────────────────────
   const flaggedLanguage = scanForBlameLanguage(combinedText);

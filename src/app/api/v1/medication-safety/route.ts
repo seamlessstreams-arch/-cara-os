@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { todayStr } from "@/lib/utils";
 
-const NON_COMPLIANT = new Set(["refused", "withheld", "missed"]);
 const CONCERN_STATUSES = new Set(["refused", "missed", "withheld", "late"]);
 
 // Read a dal collection defensively: a transient query failure degrades to an
@@ -19,7 +17,6 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 
 export async function GET() {
   try {
-    const today = todayStr();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyStr = thirtyDaysAgo.toISOString().split("T")[0];

@@ -59,7 +59,7 @@ describe("STATUS_LABELS", () => {
   });
 
   it("each status has a label and color", () => {
-    for (const [key, value] of Object.entries(STATUS_LABELS)) {
+    for (const [, value] of Object.entries(STATUS_LABELS)) {
       expect(value).toHaveProperty("label");
       expect(value).toHaveProperty("color");
       expect(typeof value.label).toBe("string");

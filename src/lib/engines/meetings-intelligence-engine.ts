@@ -119,7 +119,7 @@ function typeLabel(type: string): string {
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelligenceResult {
-  const { meetings, children, staff, today = todayStr() } = input;
+  const { meetings, children, today = todayStr() } = input;
 
   if (meetings.length === 0) {
     return {
