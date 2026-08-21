@@ -195,22 +195,46 @@ export function calculateShiftDurationHours(start: string, end: string): number 
 
 // ── Helper: Calculate rest gap between shifts ──────────────────────────────
 
-export function calculateRestGapHours(
-  shift1End: string,
-  shift1Date: string,
-  shift2Start: string,
-  shift2Date: string,
-): number {
-  const date1 = new Date(`${shift1Date}T${shift1End}:00`);
+/** An ISO `YYYY-MM-DD` date shifted by whole days. UTC arithmetic on a
+ *  date-only value, so it cannot be shifted by a DST boundary. */
+function addCalendarDays(date: string, days: number): string {
+  return new Date(new Date(`${date}T00:00:00Z`).getTime() + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+}
+
+/**
+ * Hours of rest between the end of one shift and the start of the next.
+ *
+ * Takes an object rather than five positional strings: every argument here is a
+ * string, so a positional mix-up would type-check cleanly and silently report
+ * the wrong rest gap.
+ *
+ * `shift1Start` is required because an overnight shift's END falls on the NEXT
+ * calendar day — a 20:00→06:00 shift dated the 12th really ends at 06:00 on the
+ * 13th. Without it the gap is measured from a timestamp ~24hrs too early, which
+ * OVERSTATES rest and hides genuine Working Time breaches.
+ */
+export function calculateRestGapHours({
+  shift1Start,
+  shift1End,
+  shift1Date,
+  shift2Start,
+  shift2Date,
+}: {
+  shift1Start: string;
+  shift1End: string;
+  shift1Date: string;
+  shift2Start: string;
+  shift2Date: string;
+}): number {
+  // Same rule calculateShiftDurationHours uses: an end at or before the start
+  // means the shift crossed midnight.
+  const endsNextDay = timeToMinutes(shift1End) <= timeToMinutes(shift1Start);
+  const endDate = endsNextDay ? addCalendarDays(shift1Date, 1) : shift1Date;
+
+  const date1 = new Date(`${endDate}T${shift1End}:00`);
   const date2 = new Date(`${shift2Date}T${shift2Start}:00`);
-
-  // If shift1 ends after midnight (overnight), add a day
-  const endMins = timeToMinutes(shift1End);
-  const startMins = timeToMinutes(shift2Start);
-
-  if (endMins < timeToMinutes("06:00") && shift1Date === shift2Date) {
-    // Shift 1 ended early morning same day shift 2 starts — they're consecutive
-  }
 
   const diffMs = date2.getTime() - date1.getTime();
   return diffMs / (1000 * 60 * 60);
@@ -227,9 +251,17 @@ export function evaluateFatigueRisk(
     .filter((s) => s.staffId === staff.id && !s.cancelled)
     .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
-  // Calculate total hours this week
+  // Total hours for the WEEK beginning weekStartDate — not for every shift
+  // handed in. Callers pass a whole analysis period, and the thresholds below
+  // are weekly ones (48hr Working Time limit), so summing the period would
+  // report a month of ordinary weeks as a critical breach.
+  const weekEndExclusive = addCalendarDays(weekStartDate, 7);
+  const weekShifts = staffShifts.filter(
+    (s) => s.date >= weekStartDate && s.date < weekEndExclusive,
+  );
+
   let totalHours = 0;
-  for (const shift of staffShifts) {
+  for (const shift of weekShifts) {
     totalHours += calculateShiftDurationHours(shift.startTime, shift.endTime);
   }
 
@@ -255,12 +287,13 @@ export function evaluateFatigueRisk(
   // Calculate shortest rest gap between consecutive shifts
   let shortestRestGap = Infinity;
   for (let i = 1; i < staffShifts.length; i++) {
-    const gap = calculateRestGapHours(
-      staffShifts[i - 1].endTime,
-      staffShifts[i - 1].date,
-      staffShifts[i].startTime,
-      staffShifts[i].date,
-    );
+    const gap = calculateRestGapHours({
+      shift1Start: staffShifts[i - 1].startTime,
+      shift1End: staffShifts[i - 1].endTime,
+      shift1Date: staffShifts[i - 1].date,
+      shift2Start: staffShifts[i].startTime,
+      shift2Date: staffShifts[i].date,
+    });
     if (gap > 0 && gap < shortestRestGap) {
       shortestRestGap = gap;
     }

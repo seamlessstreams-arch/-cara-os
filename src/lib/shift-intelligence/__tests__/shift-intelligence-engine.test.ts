@@ -94,17 +94,26 @@ describe("calculateShiftDurationHours", () => {
 
 describe("calculateRestGapHours", () => {
   it("calculates rest gap between consecutive day shifts", () => {
-    const gap = calculateRestGapHours("15:00", "2026-05-12", "07:00", "2026-05-13");
+    const gap = calculateRestGapHours({
+      shift1Start: "07:00", shift1End: "15:00", shift1Date: "2026-05-12",
+      shift2Start: "07:00", shift2Date: "2026-05-13",
+    });
     expect(gap).toBe(16);
   });
 
   it("identifies insufficient rest gap (evening to early morning)", () => {
-    const gap = calculateRestGapHours("22:00", "2026-05-12", "07:00", "2026-05-13");
+    const gap = calculateRestGapHours({
+      shift1Start: "14:00", shift1End: "22:00", shift1Date: "2026-05-12",
+      shift2Start: "07:00", shift2Date: "2026-05-13",
+    });
     expect(gap).toBe(9);
   });
 
   it("calculates a full 24hr gap", () => {
-    const gap = calculateRestGapHours("15:00", "2026-05-12", "15:00", "2026-05-13");
+    const gap = calculateRestGapHours({
+      shift1Start: "07:00", shift1End: "15:00", shift1Date: "2026-05-12",
+      shift2Start: "15:00", shift2Date: "2026-05-13",
+    });
     expect(gap).toBe(24);
   });
 });
