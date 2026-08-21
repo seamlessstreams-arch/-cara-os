@@ -240,7 +240,7 @@ export default function GuidanceNotesPage() {
         {
           mode: "learning_guidance_note",
           style: "professional_formal",
-          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || "Standard residential children's home context. ${homeName}."}`,
+          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || `Standard residential children's home context. ${homeName}.`}`,
           page_context: "Guidance Notes Generator",
           record_type: "guidance_note",
           user_role: "registered_manager",
