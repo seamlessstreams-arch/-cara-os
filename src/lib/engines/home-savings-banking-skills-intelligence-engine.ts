@@ -1106,7 +1106,7 @@ export function computeSavingsBankingSkills(
     recommendations.push({
       rank: ++rank,
       recommendation:
-        "Extend savings account coverage beyond ${savingsAccountCoverage}% — identify children without accounts and provide tailored support to help them access appropriate savings products.",
+        `Extend savings account coverage beyond ${savingsAccountCoverage}% — identify children without accounts and provide tailored support to help them access appropriate savings products.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 5 — Engaging with the wider community",
     });
