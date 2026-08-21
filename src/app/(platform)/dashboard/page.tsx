@@ -855,7 +855,7 @@ function OversightRow({
   onAddOversight,
 }: {
   incident: Incident;
-  onAddOversight: (id: string) => void;
+  onAddOversight: (incident: Incident) => void;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl px-3 py-3 hover:bg-[var(--cs-surface)] transition-colors group">
@@ -886,7 +886,7 @@ function OversightRow({
         </div>
       </Link>
       <button
-        onClick={() => onAddOversight(incident.id)}
+        onClick={() => onAddOversight(incident)}
         className="shrink-0 flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold bg-purple-50 text-[var(--cs-oversight)] border border-purple-200 hover:bg-[var(--cs-oversight)] hover:text-white hover:border-[var(--cs-oversight)] transition-all"
       >
         <Eye className="h-3 w-3" />
@@ -1369,7 +1369,8 @@ export default function DashboardPage() {
   });
   const completeTask = useCompleteTask();
 
-  const [oversightTarget, setOversightTarget] = useState<string | null>(null);
+  const [oversightTarget, setOversightTarget] = useState<Incident | null>(null);
+  const [oversightNote, setOversightNote] = useState("");
   const [showDetailed, setShowDetailed] = useState(false);
 
   const d  = dashboard.data?.data;
@@ -1398,9 +1399,17 @@ export default function DashboardPage() {
   const handleCompleteTask = (id: string) =>
     completeTask.mutate({ id, by: currentUser?.id ?? "staff_darren" });
 
-  const handleAddOversight = (id: string) => {
-    setOversightTarget(id);
-    document.getElementById("cara-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  const handleAddOversight = (incident: Incident) => {
+    setOversightTarget(incident);
+    setOversightNote("");
+  };
+
+  const handleSubmitOversight = () => {
+    if (!oversightTarget || !oversightNote.trim()) return;
+    addOversight.mutate(
+      { id: oversightTarget.id, note: oversightNote.trim(), by: currentUser?.id ?? "staff_darren" },
+      { onSuccess: () => { setOversightTarget(null); setOversightNote(""); } },
+    );
   };
 
   // For care workers: filter task list to current user only
@@ -2499,8 +2508,6 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* Cara anchor for oversight scroll target */}
-        <div id="cara-anchor" />
           </div>
         )}
 
@@ -2508,6 +2515,74 @@ export default function DashboardPage() {
 
       {/* Quick Actions Speed Dial — floating bottom-right */}
       {!config.showReadOnlyBanner && <QuickActionsDial />}
+
+      {/* Management oversight composer. The Oversee button used to scroll to an
+          empty anchor, so the note could never actually be submitted. */}
+      {oversightTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+          onClick={() => setOversightTarget(null)}
+        >
+          <div
+            className="w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-2xl bg-white shadow-[var(--cs-shadow-elevated)] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="shrink-0 border-b px-6 py-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-[var(--cs-oversight)]" />
+                  <span className="text-sm font-bold text-[var(--cs-navy)]">Add Management Oversight</span>
+                </div>
+                <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
+                  {oversightTarget.reference} · {TYPE_LABELS[oversightTarget.type] || oversightTarget.type}
+                  {oversightTarget.child_id && ` · ${getYPName(oversightTarget.child_id)}`}
+                </div>
+              </div>
+              <Badge className={cn("text-[10px] rounded-full border shrink-0", SEV_COLORS[oversightTarget.severity])}>
+                {oversightTarget.severity}
+              </Badge>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {oversightTarget.description && (
+                <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed rounded-xl bg-slate-50 p-3">
+                  {oversightTarget.description}
+                </p>
+              )}
+
+              <div>
+                <label
+                  htmlFor="dashboard-oversight-note"
+                  className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-2"
+                >
+                  Oversight note <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="dashboard-oversight-note"
+                  value={oversightNote}
+                  onChange={(e) => setOversightNote(e.target.value)}
+                  rows={5}
+                  placeholder="What you have considered, any actions agreed, lessons identified…"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleSubmitOversight}
+                  disabled={!oversightNote.trim() || addOversight.isPending}
+                  className="flex-1"
+                >
+                  {addOversight.isPending ? "Saving…" : "Record Oversight"}
+                </Button>
+                <Button variant="outline" onClick={() => setOversightTarget(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <CareEventsPanel
         title="Recent Care Events"
         category="general"
