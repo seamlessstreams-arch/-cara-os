@@ -44,11 +44,14 @@ function useBreadcrumb(): { label: string; href: string }[] {
 interface HeaderProps {
   title:    string;
   subtitle?: string;
+  /** Decorative mark shown beside the title. Rendered exactly as the caller
+   *  wrote it — pages choose their own size and colour. */
+  icon?:     React.ReactNode;
   actions?:  React.ReactNode;
   caraContext?: CaraDrawerContext;
 }
 
-export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
+export function Header({ title, subtitle, icon, actions, caraContext }: HeaderProps) {
   const breadcrumb = useBreadcrumb();
 
   const [caraOpen, setCaraOpen] = useState(false);
@@ -86,9 +89,14 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
                 from the current time (greeting, live date). Statically prerendered
                 HTML can straddle a time boundary, so the client text legitimately
                 differs — accept the client value instead of a hydration error. */}
-            <h1 suppressHydrationWarning className="text-[17px] font-extrabold text-[var(--cs-navy)] leading-tight truncate tracking-tight">
-              {title}
-            </h1>
+            <div className="flex items-center gap-2 min-w-0">
+              {/* aria-hidden: decoration beside a text title, not a second
+                  announcement of the same thing. */}
+              {icon && <span aria-hidden className="shrink-0 flex items-center">{icon}</span>}
+              <h1 suppressHydrationWarning className="text-[17px] font-extrabold text-[var(--cs-navy)] leading-tight truncate tracking-tight">
+                {title}
+              </h1>
+            </div>
           </div>
 
           {/* ── Right: controls ── */}
