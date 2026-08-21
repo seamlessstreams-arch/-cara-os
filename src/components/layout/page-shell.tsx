@@ -77,6 +77,7 @@ export function PageShell({
       <Header
         title={title}
         subtitle={subtitle ?? description}
+        icon={icon}
         actions={headerActions}
         caraContext={caraContext}
       />
