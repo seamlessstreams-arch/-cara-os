@@ -77,10 +77,10 @@ export async function PUT(
         );
       }
 
-      const updated = await updateReportSection(sectionId, content, updatedBy);
+      const updated = await updateReportSection(sectionId, reportId, content, updatedBy);
       if (!updated) {
         return NextResponse.json(
-          { ok: false, error: "Failed to update section" },
+          { ok: false, error: "Section not found on this report" },
           { status: 404 },
         );
       }
