@@ -334,6 +334,31 @@ function buildStaffProfile(staff: StaffMemberInput, input: StaffWellbeingInput):
   if (!supOverdue) protectiveFactors.push("Supervision up to date");
   if (tenure > 24) protectiveFactors.push("Established team member");
 
+  // ── Leave ─────────────────────────────────────────────────────────────────
+  // leave_requests was mapped in by the route and destructured here, and then
+  // nothing read it — so the one signal that says whether someone actually
+  // stops was missing from a burnout assessment. Rest is protective; going a
+  // long stretch without any is a recognised risk, not a neutral fact.
+  const approvedLeave = leave_requests.filter(
+    (l) => l.staff_id === staff.id && l.status === "approved",
+  );
+  const leaveDays180 = approvedLeave
+    .filter((l) => l.end_date <= today && withinDays(l.end_date, today, 180))
+    .reduce((sum, l) => sum + l.total_days, 0);
+  const upcomingLeave = approvedLeave.filter((l) => l.start_date > today);
+
+  // Only claim "none in six months" for someone who has been here that long —
+  // a new starter with no leave yet is not a burnout signal.
+  if (tenure >= 6 && leaveDays180 === 0) {
+    riskFactors.push("No leave taken in 6 months");
+  }
+  if (leaveDays180 > 0) {
+    protectiveFactors.push(`${leaveDays180} day(s) leave taken in 6 months`);
+  }
+  if (upcomingLeave.length > 0) {
+    protectiveFactors.push("Leave booked ahead");
+  }
+
   return {
     staff_id: staff.id,
     staff_name: staff.name,

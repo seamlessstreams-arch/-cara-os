@@ -299,6 +299,9 @@ export function computeRiskIntelligenceDashboard(
   const incidents30d = incidents.filter((i) => isWithin(today, i.date, 30));
   const incidents60d = incidents.filter((i) => isWithin(today, i.date, 60) && !isWithin(today, i.date, 30));
   const restraints90d = restraints.filter((r) => isWithin(today, r.date, 90));
+  // significant_events is mapped in by the route and the header promises these
+  // are unified into the risk landscape; nothing read them until now.
+  const significantEvents90d = significant_events.filter((e) => isWithin(today, e.date, 90));
   const restraints30d = restraints.filter((r) => isWithin(today, r.date, 30));
   const restraints60d = restraints.filter((r) => isWithin(today, r.date, 60) && !isWithin(today, r.date, 30));
 
@@ -498,6 +501,7 @@ export function computeRiskIntelligenceDashboard(
     const childScreenings = activeScreenings.filter((s) => s.child_id === child.id);
     const childMissing90d = missing90d.filter((m) => m.child_id === child.id);
     const childIncidents90d = incidents90d.filter((i) => i.child_id === child.id);
+    const childEvents90d = significantEvents90d.filter((e) => e.child_id === child.id);
     const childRestraints90d = restraints90d.filter((r) => r.child_id === child.id);
 
     // Per-child risk score
@@ -564,6 +568,8 @@ export function computeRiskIntelligenceDashboard(
     if (childMissing90d.some((m) => m.contextual_safeguarding_risk)) flags.push("cs_risk");
     if (childRestraints90d.length >= 3) flags.push("frequent_restraint");
     if (childIncidents90d.some((i) => i.severity === "critical")) flags.push("critical_incident");
+    if (childEvents90d.some((e) => e.significance === "critical")) flags.push("critical_significant_event");
+    if (childEvents90d.filter((e) => e.significance !== "routine").length >= 3) flags.push("repeat_significant_events");
 
     return {
       child_id: child.id,
