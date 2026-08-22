@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -104,27 +104,38 @@ export default function IndependenceSkillsPage() {
     };
   }, [data]);
 
-  /* ── filtered skills across all YP ───────────────────────────────────── */
-  const filtered = useMemo(() => {
-    let list = data.flatMap((r) => r.skills.map((s) => ({ ...s, child_id: r.child_id, review_date: r.review_date })));
-    if (filterYP !== "all") list = list.filter((s) => s.child_id === filterYP);
-    if (filterProf !== "all") list = list.filter((s) => s.proficiency === filterProf);
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter((s) => s.name.toLowerCase().includes(q) || s.evidence.toLowerCase().includes(q) || INDEPENDENCE_SKILL_CATEGORY_LABEL[s.category].toLowerCase().includes(q));
-    }
-    list.sort((a, b) => {
-      switch (sortBy) {
-        case "proficiency": return PROF_META[a.proficiency].order - PROF_META[b.proficiency].order;
-        case "category":    return INDEPENDENCE_SKILL_CATEGORY_LABEL[a.category].localeCompare(INDEPENDENCE_SKILL_CATEGORY_LABEL[b.category]);
-        case "target":      return a.target_date.localeCompare(b.target_date);
-        default:            return a.name.localeCompare(b.name);
+  /**
+   * The search box, the proficiency select and the sort control used to feed a
+   * flat list that was never rendered — the cards below mapped rec.skills raw,
+   * so three of the four controls did nothing. They filter the rows where the
+   * rows actually are.
+   */
+  type Skill = IndependenceSkillsRecord["skills"][number];
+  const visibleSkills = useCallback(
+    (skills: Skill[]): Skill[] => {
+      let list = skills;
+      if (filterProf !== "all") list = list.filter((s) => s.proficiency === filterProf);
+      if (search) {
+        const q = search.toLowerCase();
+        list = list.filter(
+          (s) =>
+            s.name.toLowerCase().includes(q) ||
+            s.evidence.toLowerCase().includes(q) ||
+            INDEPENDENCE_SKILL_CATEGORY_LABEL[s.category].toLowerCase().includes(q),
+        );
       }
-    });
-    return list;
-  }, [data, filterYP, filterProf, search, sortBy]);
+      return [...list].sort((a, b) => {
+        switch (sortBy) {
+          case "proficiency": return PROF_META[a.proficiency].order - PROF_META[b.proficiency].order;
+          case "category":    return INDEPENDENCE_SKILL_CATEGORY_LABEL[a.category].localeCompare(INDEPENDENCE_SKILL_CATEGORY_LABEL[b.category]);
+          case "target":      return a.target_date.localeCompare(b.target_date);
+          default:            return a.name.localeCompare(b.name);
+        }
+      });
+    },
+    [filterProf, search, sortBy],
+  );
 
-  /* ── export ──────────────────────────────────────────────────────────── */
   const exportData = useMemo(() => data.flatMap((r) => r.skills.map((s) => ({
     youngPerson: getYPName(r.child_id),
     skill: s.name,
@@ -291,7 +302,7 @@ export default function IndependenceSkillsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rec.skills.map((sk) => (
+                      {visibleSkills(rec.skills).map((sk) => (
                         <tr key={sk.id} className="border-b last:border-0">
                           <td className="py-2 pr-3 font-medium">{sk.name}</td>
                           <td className="py-2 pr-3">{INDEPENDENCE_SKILL_CATEGORY_LABEL[sk.category]}</td>

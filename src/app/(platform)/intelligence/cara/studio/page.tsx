@@ -461,6 +461,26 @@ function CaraStudioPageInner() {
             <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
+        {/* typeFilter was already plumbed into the artifacts query; only its
+            control was missing, so type filtering could never be used. */}
+        <Select
+          value={typeFilter || "all"}
+          onValueChange={(v) => setTypeFilter(v === "all" ? "" : v)}
+        >
+          <SelectTrigger className="w-48 h-9">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            {ARTIFACT_TYPE_GROUPS.flatMap((group) =>
+              group.types.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {CARA_ARTIFACT_TYPE_LABELS[t] ?? t}
+                </SelectItem>
+              )),
+            )}
+          </SelectContent>
+        </Select>
         <Select value={childFilter} onValueChange={setChildFilter}>
           <SelectTrigger className="w-44 h-9">
             <SelectValue placeholder="All children" />

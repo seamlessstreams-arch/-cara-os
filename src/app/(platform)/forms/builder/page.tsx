@@ -6,8 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { cn, todayStr } from "@/lib/utils";
-import type { FormFieldDefinition, FormFieldType } from "@/types/operations";
+import type { FormCategory, FormFieldDefinition, FormFieldType } from "@/types/operations";
 import {
   Plus,
   Trash2,
@@ -198,12 +201,30 @@ const DEMO_FIELDS: FormFieldDefinition[] = [
 
 type ViewMode = "build" | "preview";
 
+/** The platform's own form vocabulary — the builder used to export
+ *  "incident_reporting", which is not one of these, so a template named a
+ *  category nothing else in the product recognises. */
+const FORM_CATEGORIES: { value: FormCategory; label: string }[] = [
+  { value: "daily_recording", label: "Daily recording" },
+  { value: "incident", label: "Incident" },
+  { value: "safeguarding", label: "Safeguarding" },
+  { value: "health", label: "Health" },
+  { value: "education", label: "Education" },
+  { value: "placement", label: "Placement" },
+  { value: "hr", label: "HR" },
+  { value: "compliance", label: "Compliance" },
+  { value: "review", label: "Review" },
+  { value: "contact", label: "Contact" },
+  { value: "risk_assessment", label: "Risk assessment" },
+  { value: "custom", label: "Custom" },
+];
+
 export default function FormBuilderPage() {
   const [fields, setFields] = useState<FormFieldDefinition[]>(demoSeed(DEMO_FIELDS));
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("build");
   const [formTitle, setFormTitle] = useState("Incident Report Form");
-  const [formCategory, setFormCategory] = useState("incident_reporting");
+  const [formCategory, setFormCategory] = useState<FormCategory>("incident");
   const [paletteCategory, setPaletteCategory] = useState("basic");
 
   // Save Template → download the template as portable JSON. No form_templates
@@ -290,9 +311,16 @@ export default function FormBuilderPage() {
             onChange={(e) => setFormTitle(e.target.value)}
             className="text-lg font-semibold w-80"
           />
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 capitalize">
-            {formCategory.replace(/_/g, " ")}
-          </Badge>
+          <Select value={formCategory} onValueChange={(v) => setFormCategory(v as FormCategory)}>
+            <SelectTrigger className="w-[190px]" aria-label="Form category">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {FORM_CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Badge variant="outline" className="bg-gray-50 text-gray-600">
             {fields.length} fields
           </Badge>
