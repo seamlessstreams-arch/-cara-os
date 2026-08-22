@@ -25,6 +25,7 @@ import {
   Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { RECRUITMENT_STAGES_V2 } from "@/types/recruitment";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -441,6 +442,36 @@ export default function ChecksPage() {
               <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{label}</div>
             </CardContent>
           </Card>
+        ))}
+      </div>
+
+      {/* Stage filter — stageFilter was already applied to the candidate list;
+          only its control was missing, so it sat on "all" permanently. */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <button
+          onClick={() => setStageFilter("all")}
+          className={cn(
+            "text-[10px] rounded-full px-2.5 py-1 font-semibold transition-colors",
+            stageFilter === "all"
+              ? "bg-slate-900 text-white"
+              : "bg-slate-100 text-[var(--cs-text-secondary)] hover:bg-slate-200",
+          )}
+        >
+          All stages
+        </button>
+        {RECRUITMENT_STAGES_V2.map((stage) => (
+          <button
+            key={stage}
+            onClick={() => setStageFilter(stage)}
+            className={cn(
+              "text-[10px] rounded-full px-2.5 py-1 font-semibold capitalize transition-colors",
+              stageFilter === stage
+                ? "bg-slate-900 text-white"
+                : "bg-slate-100 text-[var(--cs-text-secondary)] hover:bg-slate-200",
+            )}
+          >
+            {stage.replace(/_/g, " ")}
+          </button>
         ))}
       </div>
 

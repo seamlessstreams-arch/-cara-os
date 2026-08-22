@@ -82,23 +82,30 @@ export default function ClothingAllowancesPage() {
     };
   })();
 
-  const allPurchases = (() => {
-    let list = items.flatMap((r) => r.purchases.map((p) => ({ ...p, child_id: r.child_id })));
-    if (filterYP !== "all") list = list.filter((p) => p.child_id === filterYP);
+  /**
+   * The search box, the category select and the sort control used to feed a
+   * flat list that was never rendered — the tables below mapped rec.purchases
+   * raw, so three of the four controls did nothing. They filter the rows where
+   * the rows actually are.
+   */
+  type Purchase = ClothingAllowanceRecord["purchases"][number];
+  function visiblePurchases(purchases: Purchase[]): Purchase[] {
+    let list = purchases;
     if (filterCat !== "all") list = list.filter((p) => p.category === filterCat);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((p) => p.description.toLowerCase().includes(q) || p.store.toLowerCase().includes(q));
+      list = list.filter(
+        (p) => p.description.toLowerCase().includes(q) || p.store.toLowerCase().includes(q),
+      );
     }
-    list.sort((a, b) => {
+    return [...list].sort((a, b) => {
       switch (sortBy) {
-        case "amount": return b.amount - a.amount;
+        case "amount":   return b.amount - a.amount;
         case "category": return CLOTHING_PURCHASE_CATEGORY_LABEL[a.category].localeCompare(CLOTHING_PURCHASE_CATEGORY_LABEL[b.category]);
-        default:        return b.date.localeCompare(a.date);
+        default:         return b.date.localeCompare(a.date);
       }
     });
-    return list;
-  })();
+  }
 
   const exportData = items.flatMap((r) => r.purchases.map((p) => ({
     youngPerson: getYPName(r.child_id),
@@ -290,7 +297,7 @@ export default function ClothingAllowancesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rec.purchases.map((p) => (
+                      {visiblePurchases(rec.purchases).map((p) => (
                         <tr key={p.id} className="border-b last:border-0">
                           <td className="py-2 pr-3 whitespace-nowrap">{p.date}</td>
                           <td className="py-2 pr-3">{CLOTHING_PURCHASE_CATEGORY_LABEL[p.category]}</td>
