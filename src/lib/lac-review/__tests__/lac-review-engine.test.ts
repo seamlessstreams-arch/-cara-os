@@ -391,8 +391,11 @@ describe("evaluateChildParticipation", () => {
       PERIOD_START,
       PERIOD_END,
     );
-    // The advocacy bonus contributes to score
+    // The block is named for the bonus but only ever asserted the count, so
+    // the bonus itself — the thing under test — was never checked.
     expect(withAdvocate.advocateAttended).toBe(1);
+    expect(noAdvocate.advocateAttended).toBe(0);
+    expect(withAdvocate.overallScore).toBeGreaterThan(noAdvocate.overallScore);
   });
 });
 

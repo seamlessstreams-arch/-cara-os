@@ -121,8 +121,13 @@ describe("Router — routeRequest", () => {
   });
 
   it("routes 'self-harm' to safeguarding agent", () => {
+    // The spaced variant is the one worth pinning: "self-harm" is present as a
+    // substring, so routing must catch it even though the word is broken up.
+    // It was built and then never asserted.
     const result = routeRequest(makeRequest({ query: "The child has been self-harm ing in their room" }));
-    // "self-harm" is in the text
+    expect(result.taskType).toBe("safeguarding");
+    expect(result.requiredAgent).toBe("safeguarding_agent");
+
     const result2 = routeRequest(makeRequest({ query: "Concerns about self-harm indicators" }));
     expect(result2.taskType).toBe("safeguarding");
     expect(result2.requiredAgent).toBe("safeguarding_agent");
