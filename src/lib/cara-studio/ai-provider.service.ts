@@ -27,14 +27,14 @@ export function getStudioAIProvider(): StudioAIProviderConfig {
   const defaultProvider = process.env.ANTHROPIC_API_KEY ? "anthropic" : "stub";
   const provider = (process.env.AI_PROVIDER ?? defaultProvider).toLowerCase() as StudioAIProviderConfig["provider"];
   const model = process.env.AI_DEFAULT_MODEL ?? CARA_DEFAULT_MODEL;
-  const maxSourceTokens = parseInt((process.env.CARA_MAX_SOURCE_TOKENS ?? process.env.CARA_MAX_SOURCE_TOKENS) ?? "8000", 10);
+  const maxSourceTokens = parseInt(process.env.CARA_MAX_SOURCE_TOKENS ?? "8000", 10);
 
   if (provider === "anthropic") {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key || key.includes("placeholder")) {
       return { configured: false, provider: "stub", model: CARA_DEFAULT_MODEL, maxSourceTokens, reason: "ANTHROPIC_API_KEY not configured. Using demo mode." };
     }
-    return { configured: true, provider: "anthropic", model: process.env.AI_DEFAULT_MODEL ?? "claude-sonnet-4-20250514", maxSourceTokens };
+    return { configured: true, provider: "anthropic", model, maxSourceTokens };
   }
 
   if (provider === "gemini") {
