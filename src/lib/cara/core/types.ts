@@ -266,6 +266,10 @@ export interface CaraApprovalRecord {
   redactionApplied: boolean;
   status: CaraApprovalStatus;
   generatedAt: string;
+  /** Who put the draft up for review, and when — the sibling of reviewedBy
+   *  and finalisedBy, which were already recorded. */
+  submittedBy?: string;
+  submittedAt?: string;
   reviewedBy?: string;
   reviewedAt?: string;
   approvalNotes?: string;
