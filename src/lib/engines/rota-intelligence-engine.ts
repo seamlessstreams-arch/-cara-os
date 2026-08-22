@@ -324,6 +324,40 @@ export function computeRotaIntelligence(input: {
     });
   }
 
+  // ── Absence ───────────────────────────────────────────────────────────────
+  // The header names absence as one of this engine's dimensions and the route
+  // maps AbsenceInput[] in, but nothing read it. Two things about absence are
+  // the rota's own business:
+
+  // 1. Somebody rostered on a day their absence covers. A shift that looks
+  //    filled but cannot be worked is worse than an open one, because nobody
+  //    is looking for cover.
+  const staffName = (id: string) => staff.find((m) => m.id === id)?.name ?? id;
+  for (const shift of notCancelled) {
+    if (shift.date < today) continue;
+    for (const absence of absences) {
+      if (absence.staff_id !== shift.staff_id) continue;
+      if (shift.date < absence.start_date || shift.date > absence.end_date) continue;
+      alerts.push({
+        severity: shift.date === today ? "critical" : "high",
+        message: `${staffName(absence.staff_id)} is rostered for a ${shiftLabel(shift.shift_type)} shift on ${shift.date} but is recorded absent (${absence.type}) — the shift reads as covered and is not`,
+      });
+    }
+  }
+
+  // 2. Return-to-work not completed after an absence has ended (Reg 33 —
+  //    fitness to work). Counted, not listed, so one long-running gap does not
+  //    bury the coverage alerts above it.
+  const rtwOutstanding = absences.filter(
+    (a) => a.end_date < today && !a.return_to_work_completed,
+  ).length;
+  if (rtwOutstanding > 0) {
+    alerts.push({
+      severity: "medium",
+      message: `${rtwOutstanding} return-to-work discussion(s) outstanding after absence — complete before further shifts`,
+    });
+  }
+
   // ── Insights ──────────────────────────────────────────────────────────────
 
   const insights: CaraRotaInsight[] = [];
