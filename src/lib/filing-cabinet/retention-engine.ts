@@ -92,6 +92,10 @@ export interface FiledDocument {
   holdReason?: string;
   holdPlacedBy?: string;
   holdPlacedAt?: string;
+  /** Who lifted the hold, and when. A hold stops destruction, so who released
+   *  it is exactly what an inspector or a court asks about later. */
+  holdRemovedBy?: string;
+  holdRemovedAt?: string;
   transferredTo?: string;
   transferredAt?: string;
   lastAccessedBy?: string;
@@ -630,6 +634,8 @@ export function removeHold(
       holdReason: undefined,
       holdPlacedBy: undefined,
       holdPlacedAt: undefined,
+      holdRemovedBy: removedBy,
+      holdRemovedAt: new Date().toISOString(),
     },
   };
 }

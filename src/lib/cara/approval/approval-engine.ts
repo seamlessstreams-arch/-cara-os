@@ -63,6 +63,8 @@ export class CaraApprovalEngine {
     }
 
     record.status = "pending_review";
+    record.submittedBy = submittedBy;
+    record.submittedAt = new Date().toISOString();
     this.approvals.set(approvalId, record);
     return record;
   }

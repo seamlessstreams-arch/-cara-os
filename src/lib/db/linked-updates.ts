@@ -324,6 +324,13 @@ export function processBuildingCheckFail(
     entity_type: "building_check",
     entity_id: checkId,
   });
+
+  // 3. Credit the automation — every sibling handler records this, and without
+  //    it the home's time-saved figure under-reports its own automation.
+  trackTimeSaved(staffId, homeId, "auto_notification", "Building check failure auto-notified manager");
+  if (riskLevel === "high" || riskLevel === "critical") {
+    trackTimeSaved(staffId, homeId, "auto_task_creation", "Maintenance task auto-created from building check failure");
+  }
 }
 
 // ── Vehicle defect linked updates ─────────────────────────────────────────────
@@ -386,6 +393,10 @@ export function processVehicleDefect(
     entity_type: "vehicle",
     entity_id: vehicleId,
   });
+
+  // 4. Credit the automation, as the sibling handlers do.
+  trackTimeSaved(staffId, homeId, "auto_task_creation", "Vehicle defect task auto-created");
+  trackTimeSaved(staffId, homeId, "auto_notification", "Vehicle defect auto-notified manager");
 }
 
 // ── Time saved tracker ────────────────────────────────────────────────────────
