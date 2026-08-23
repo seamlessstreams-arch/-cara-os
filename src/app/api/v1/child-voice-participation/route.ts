@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
+import { feedbackTypeFromSentiment } from "@/lib/feedback/sentiment";
 import {
   computeChildVoiceParticipation,
   type ChildInfo,
@@ -90,16 +91,21 @@ export async function GET() {
   }));
 
   // ── YP Feedback ────────────────────────────────────────────────────────
-  const feedback_entries: FeedbackEntryInput[] = (ypFeedbackList ?? []).map((f: any) => ({
+  const feedback_entries: FeedbackEntryInput[] = (ypFeedbackList ?? []).map((f) => ({
     id: f.id,
     child_id: f.child_id,
     date: typeof f.date === "string" ? f.date.slice(0, 10) : f.date,
-    type: f.category === "food" || f.category === "activities" || f.category === "bedroom"
-      ? (f.sentiment === "positive" ? "compliment" : f.sentiment === "negative" ? "complaint" : "suggestion")
-      : f.type ?? (f.sentiment === "positive" ? "compliment" : f.sentiment === "negative" ? "complaint" : "suggestion"),
-    status: f.status ?? (f.response_given_to_child ? "resolved" : "open"),
-    response_given: f.response_given_to_child ?? f.response_given ?? false,
-    response_within_target: f.response_within_target ?? f.response_given_to_child ?? false,
+    // Both branches of the old ternary resolved to the same expression, and
+    // YPFeedbackEntry carries no `type` — so the category test decided nothing.
+    type: feedbackTypeFromSentiment(f.sentiment),
+    // Removing the `any` showed these three `??` chains leading with fields
+    // YPFeedbackEntry does not have, so the fallback was always what ran.
+    // Written as what it actually is. `response_within_target` still reads
+    // "was a response given at all" — the entry records `response_date` but no
+    // target window, and inventing one here would be a policy decision.
+    status: f.response_given_to_child ? "resolved" : "open",
+    response_given: f.response_given_to_child,
+    response_within_target: f.response_given_to_child,
   }));
 
   // ── Compute ────────────────────────────────────────────────────────────

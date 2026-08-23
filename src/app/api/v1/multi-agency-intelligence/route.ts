@@ -74,7 +74,7 @@ export async function GET() {
   const meetings: MultiAgencyMeetingInput[] = (multiAgencyMeetingsList ?? []).map((m: any) => {
     const actionItems = m.action_items ?? [];
     const actionsCount = actionItems.length;
-    const actionsCompleted = actionItems.filter((a: any) => a.status === "completed" || a.status === "done").length;
+    const actionsCompleted = actionItems.filter((a: { status?: string }) => a.status === "completed").length;
     return {
       id: m.id,
       meeting_type: m.meeting_type ?? "professionals_meeting",

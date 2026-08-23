@@ -33,7 +33,7 @@ export async function GET() {
 
   const notifiable = store.notifiableEvents ?? [];
   const overdueNotifications = notifiable.filter(
-    (n: any) => n.ofsted_status === "pending" || n.ofsted_status === "overdue",
+    (n) => n.ofsted_status === "pending",
   ).length;
   const quarterStart = `${today.slice(0, 4)}-${String(Math.floor((parseInt(today.slice(5, 7)) - 1) / 3) * 3 + 1).padStart(2, "0")}-01`;
   const notificationsThisQ = notifiable.filter((n: any) => n.date >= quarterStart).length;
@@ -80,9 +80,9 @@ export async function GET() {
 
   const training = store.trainingRecords ?? [];
   const mandatoryTraining = training.filter((t: any) => t.is_mandatory);
-  const completedTraining = mandatoryTraining.filter((t: any) => t.status === "completed" || t.status === "current").length;
+  const completedTraining = mandatoryTraining.filter((t) => t.status === "compliant").length;
   const trainingRate = rate(completedTraining, mandatoryTraining.length);
-  const trainingOverdue = mandatoryTraining.filter((t: any) => t.status === "expired" || t.status === "overdue").length;
+  const trainingOverdue = mandatoryTraining.filter((t) => t.status === "expired").length;
 
   const careForms = store.careForms ?? [];
   const currentPlans = children.filter((c) =>
@@ -108,7 +108,7 @@ export async function GET() {
     healthAssessments.some((h: any) => h.child_id === c.id),
   ).length;
 
-  const pepRecords = store.educationRecords?.filter((r: any) => r.record_type === "pep") ?? [];
+  const pepRecords = store.educationRecords?.filter((r) => r.record_type === "pep_meeting") ?? [];
   const pepCompletion = rateOf(
     children.filter((c) => pepRecords.some((p: any) => p.child_id === c.id)),
     children,
@@ -238,7 +238,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
     domain_label: "Behaviour Management",
     compliance_rate: rateOf(fullyRecorded, behaviourLog),
     critical_alerts: 0,
-    high_alerts: behaviourLog.filter((b: any) => b.intensity === "severe" || b.intensity === "critical").length,
+    high_alerts: behaviourLog.filter((b) => b.intensity === "high" || b.intensity === "critical").length,
     overdue_count: behaviourLog.length - fullyRecorded.length,
     evidence_count: behaviourLog.length,
     last_updated: behaviourLog.length > 0 ? behaviourLog[behaviourLog.length - 1].date?.slice(0, 10) : null,
@@ -248,7 +248,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
   const educationRecords = store.educationRecords ?? [];
   const currentChildren = store.youngPeople?.filter((yp: any) => yp.status === "current") ?? [];
   const childrenWithPep = currentChildren.filter((c: any) =>
-    educationRecords.some((r: any) => r.child_id === c.id && r.record_type === "pep"),
+    educationRecords.some((r) => r.child_id === c.id && r.record_type === "pep_meeting"),
   );
   metrics.push({
     domain: "education",
@@ -267,7 +267,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
     const d = daysSince(a.scheduled_time);
     return d >= 0 && d <= 7;
   });
-  const given = recentAdmin.filter((a: any) => a.status === "given" || a.status === "administered").length;
+  const given = recentAdmin.filter((a) => a.status === "given").length;
   const missed = recentAdmin.filter((a: any) => a.status === "missed");
   metrics.push({
     domain: "medication",
@@ -294,7 +294,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
       (sv: any) => sv.staff_id === s.id && sv.status === "completed" && daysSince(sv.actual_date ?? "") <= 42,
     ),
   );
-  const trainingCurrent = mandatory.filter((t: any) => t.status === "completed" || t.status === "current");
+  const trainingCurrent = mandatory.filter((t) => t.status === "compliant");
   const workforceRate = meanOf([
     rateOf(dbsOk, staff),
     rateOf(supervisedRecently, staff),
