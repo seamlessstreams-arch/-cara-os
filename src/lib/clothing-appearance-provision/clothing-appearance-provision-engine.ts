@@ -3,6 +3,8 @@
 
 // -- Type unions ---------------------------------------------------------------
 
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 export type ClothingCategory =
   | "everyday_wear"
   | "school_uniform"
@@ -111,47 +113,70 @@ export interface StaffClothingTraining {
 export interface QualityResult {
   overallScore: number;
   totalAssessments: number;
-  qualityRate: number;
-  childChoiceRate: number;
-  ageAppropriateRate: number;
-  culturalRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalRate: number | null;
 }
 
 export interface ComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffAssessedRate: number;
-  feedbackRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface PolicyResult {
   overallScore: number;
-  clothingProvisionStrategyRate: number;
-  clothingBudgetFrameworkRate: number;
-  seasonalReviewProcedureRate: number;
-  childChoiceGuidanceRate: number;
-  culturalAndReligiousAccommodationRate: number;
-  laundryAndMaintenancePlanRate: number;
-  regularReviewRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  clothingProvisionStrategyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  clothingBudgetFrameworkRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seasonalReviewProcedureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceGuidanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalAndReligiousAccommodationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  laundryAndMaintenancePlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularReviewRate: number | null;
 }
 
 export interface StaffReadinessResult {
   overallScore: number;
-  clothingAssessmentRate: number;
-  childChoiceFacilitationRate: number;
-  budgetManagementRate: number;
-  culturalAwarenessRate: number;
-  ageAppropriateGuidanceRate: number;
-  recordKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  clothingAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  budgetManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateGuidanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
 }
 
 export interface ChildProfile {
   childId: string;
   childName: string;
   totalAssessments: number;
-  qualityRate: number;
-  childChoiceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null;
   overallScore: number;
 }
 
@@ -174,9 +199,9 @@ export interface ClothingAppearanceProvisionIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
+// Was `if (den === 0) return 0;`: nothing recorded read as 0%.
+export function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 export function getRating(score: number): Rating {
@@ -217,31 +242,31 @@ export function evaluateQuality(
     (a) => a.provisionQuality === "excellent" || a.provisionQuality === "good",
   ).length;
   const qualityRate = pct(highQuality, assessments.length);
-  if (qualityRate >= 90) score += 7;
-  else if (qualityRate >= 70) score += 5;
-  else if (qualityRate >= 50) score += 3;
-  else if (qualityRate > 0) score += 1;
+  if (meets(qualityRate, 90)) score += 7;
+  else if (meets(qualityRate, 70)) score += 5;
+  else if (meets(qualityRate, 50)) score += 3;
+  else if (above(qualityRate, 0)) score += 1;
 
   const childChoice = assessments.filter((a) => a.childChoiceRespected).length;
   const childChoiceRate = pct(childChoice, assessments.length);
-  if (childChoiceRate >= 90) score += 6;
-  else if (childChoiceRate >= 70) score += 4;
-  else if (childChoiceRate >= 50) score += 3;
-  else if (childChoiceRate > 0) score += 1;
+  if (meets(childChoiceRate, 90)) score += 6;
+  else if (meets(childChoiceRate, 70)) score += 4;
+  else if (meets(childChoiceRate, 50)) score += 3;
+  else if (above(childChoiceRate, 0)) score += 1;
 
   const ageAppropriate = assessments.filter((a) => a.ageAppropriate).length;
   const ageAppropriateRate = pct(ageAppropriate, assessments.length);
-  if (ageAppropriateRate >= 90) score += 6;
-  else if (ageAppropriateRate >= 70) score += 4;
-  else if (ageAppropriateRate >= 50) score += 3;
-  else if (ageAppropriateRate > 0) score += 1;
+  if (meets(ageAppropriateRate, 90)) score += 6;
+  else if (meets(ageAppropriateRate, 70)) score += 4;
+  else if (meets(ageAppropriateRate, 50)) score += 3;
+  else if (above(ageAppropriateRate, 0)) score += 1;
 
   const cultural = assessments.filter((a) => a.culturalNeedsMet).length;
   const culturalRate = pct(cultural, assessments.length);
-  if (culturalRate >= 90) score += 6;
-  else if (culturalRate >= 70) score += 4;
-  else if (culturalRate >= 50) score += 3;
-  else if (culturalRate > 0) score += 1;
+  if (meets(culturalRate, 90)) score += 6;
+  else if (meets(culturalRate, 70)) score += 4;
+  else if (meets(culturalRate, 50)) score += 3;
+  else if (above(culturalRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -279,32 +304,32 @@ export function evaluateCompliance(
 
   const documented = assessments.filter((a) => a.documentedInPlan).length;
   const documentedRate = pct(documented, assessments.length);
-  if (documentedRate >= 90) score += 8;
-  else if (documentedRate >= 70) score += 6;
-  else if (documentedRate >= 50) score += 4;
-  else if (documentedRate > 0) score += 2;
+  if (meets(documentedRate, 90)) score += 8;
+  else if (meets(documentedRate, 70)) score += 6;
+  else if (meets(documentedRate, 50)) score += 4;
+  else if (above(documentedRate, 0)) score += 2;
 
   const staffAssessed = assessments.filter((a) => a.staffAssessed).length;
   const staffAssessedRate = pct(staffAssessed, assessments.length);
-  if (staffAssessedRate >= 90) score += 7;
-  else if (staffAssessedRate >= 70) score += 5;
-  else if (staffAssessedRate >= 50) score += 3;
-  else if (staffAssessedRate > 0) score += 1;
+  if (meets(staffAssessedRate, 90)) score += 7;
+  else if (meets(staffAssessedRate, 70)) score += 5;
+  else if (meets(staffAssessedRate, 50)) score += 3;
+  else if (above(staffAssessedRate, 0)) score += 1;
 
   const feedback = assessments.filter((a) => a.feedbackGiven).length;
   const feedbackRate = pct(feedback, assessments.length);
-  if (feedbackRate >= 90) score += 5;
-  else if (feedbackRate >= 70) score += 3;
-  else if (feedbackRate >= 50) score += 2;
-  else if (feedbackRate > 0) score += 1;
+  if (meets(feedbackRate, 90)) score += 5;
+  else if (meets(feedbackRate, 70)) score += 3;
+  else if (meets(feedbackRate, 50)) score += 2;
+  else if (above(feedbackRate, 0)) score += 1;
 
   const uniqueCategories = new Set(assessments.map((a) => a.clothingCategory)).size;
   const totalCategories = 8; // total ClothingCategory values
   const categoryDiversityRatio = pct(uniqueCategories, totalCategories);
-  if (categoryDiversityRatio >= 90) score += 5;
-  else if (categoryDiversityRatio >= 70) score += 3;
-  else if (categoryDiversityRatio >= 50) score += 2;
-  else if (categoryDiversityRatio > 0) score += 1;
+  if (meets(categoryDiversityRatio, 90)) score += 5;
+  else if (meets(categoryDiversityRatio, 70)) score += 3;
+  else if (meets(categoryDiversityRatio, 50)) score += 2;
+  else if (above(categoryDiversityRatio, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -347,49 +372,49 @@ export function evaluatePolicy(
 
   const strategy = policies.filter((p) => p.clothingProvisionStrategy).length;
   const clothingProvisionStrategyRate = pct(strategy, policies.length);
-  if (clothingProvisionStrategyRate >= 90) score += 4;
-  else if (clothingProvisionStrategyRate >= 70) score += 3;
-  else if (clothingProvisionStrategyRate >= 50) score += 2;
-  else if (clothingProvisionStrategyRate > 0) score += 1;
+  if (meets(clothingProvisionStrategyRate, 90)) score += 4;
+  else if (meets(clothingProvisionStrategyRate, 70)) score += 3;
+  else if (meets(clothingProvisionStrategyRate, 50)) score += 2;
+  else if (above(clothingProvisionStrategyRate, 0)) score += 1;
 
   const budget = policies.filter((p) => p.clothingBudgetFramework).length;
   const clothingBudgetFrameworkRate = pct(budget, policies.length);
-  if (clothingBudgetFrameworkRate >= 90) score += 4;
-  else if (clothingBudgetFrameworkRate >= 70) score += 3;
-  else if (clothingBudgetFrameworkRate >= 50) score += 2;
-  else if (clothingBudgetFrameworkRate > 0) score += 1;
+  if (meets(clothingBudgetFrameworkRate, 90)) score += 4;
+  else if (meets(clothingBudgetFrameworkRate, 70)) score += 3;
+  else if (meets(clothingBudgetFrameworkRate, 50)) score += 2;
+  else if (above(clothingBudgetFrameworkRate, 0)) score += 1;
 
   const seasonal = policies.filter((p) => p.seasonalReviewProcedure).length;
   const seasonalReviewProcedureRate = pct(seasonal, policies.length);
-  if (seasonalReviewProcedureRate >= 90) score += 4;
-  else if (seasonalReviewProcedureRate >= 70) score += 3;
-  else if (seasonalReviewProcedureRate >= 50) score += 2;
-  else if (seasonalReviewProcedureRate > 0) score += 1;
+  if (meets(seasonalReviewProcedureRate, 90)) score += 4;
+  else if (meets(seasonalReviewProcedureRate, 70)) score += 3;
+  else if (meets(seasonalReviewProcedureRate, 50)) score += 2;
+  else if (above(seasonalReviewProcedureRate, 0)) score += 1;
 
   const childChoice = policies.filter((p) => p.childChoiceGuidance).length;
   const childChoiceGuidanceRate = pct(childChoice, policies.length);
-  if (childChoiceGuidanceRate >= 90) score += 4;
-  else if (childChoiceGuidanceRate >= 70) score += 3;
-  else if (childChoiceGuidanceRate >= 50) score += 2;
-  else if (childChoiceGuidanceRate > 0) score += 1;
+  if (meets(childChoiceGuidanceRate, 90)) score += 4;
+  else if (meets(childChoiceGuidanceRate, 70)) score += 3;
+  else if (meets(childChoiceGuidanceRate, 50)) score += 2;
+  else if (above(childChoiceGuidanceRate, 0)) score += 1;
 
   const cultural = policies.filter((p) => p.culturalAndReligiousAccommodation).length;
   const culturalAndReligiousAccommodationRate = pct(cultural, policies.length);
-  if (culturalAndReligiousAccommodationRate >= 90) score += 3;
-  else if (culturalAndReligiousAccommodationRate >= 70) score += 2;
-  else if (culturalAndReligiousAccommodationRate >= 50) score += 1;
+  if (meets(culturalAndReligiousAccommodationRate, 90)) score += 3;
+  else if (meets(culturalAndReligiousAccommodationRate, 70)) score += 2;
+  else if (meets(culturalAndReligiousAccommodationRate, 50)) score += 1;
 
   const laundry = policies.filter((p) => p.laundryAndMaintenancePlan).length;
   const laundryAndMaintenancePlanRate = pct(laundry, policies.length);
-  if (laundryAndMaintenancePlanRate >= 90) score += 3;
-  else if (laundryAndMaintenancePlanRate >= 70) score += 2;
-  else if (laundryAndMaintenancePlanRate >= 50) score += 1;
+  if (meets(laundryAndMaintenancePlanRate, 90)) score += 3;
+  else if (meets(laundryAndMaintenancePlanRate, 70)) score += 2;
+  else if (meets(laundryAndMaintenancePlanRate, 50)) score += 1;
 
   const review = policies.filter((p) => p.regularReview).length;
   const regularReviewRate = pct(review, policies.length);
-  if (regularReviewRate >= 90) score += 3;
-  else if (regularReviewRate >= 70) score += 2;
-  else if (regularReviewRate >= 50) score += 1;
+  if (meets(regularReviewRate, 90)) score += 3;
+  else if (meets(regularReviewRate, 70)) score += 2;
+  else if (meets(regularReviewRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -433,42 +458,42 @@ export function evaluateStaffReadiness(
 
   const clothingAssessment = training.filter((t) => t.clothingAssessment).length;
   const clothingAssessmentRate = pct(clothingAssessment, training.length);
-  if (clothingAssessmentRate >= 90) score += 6;
-  else if (clothingAssessmentRate >= 70) score += 4;
-  else if (clothingAssessmentRate >= 50) score += 3;
-  else if (clothingAssessmentRate > 0) score += 1;
+  if (meets(clothingAssessmentRate, 90)) score += 6;
+  else if (meets(clothingAssessmentRate, 70)) score += 4;
+  else if (meets(clothingAssessmentRate, 50)) score += 3;
+  else if (above(clothingAssessmentRate, 0)) score += 1;
 
   const childChoice = training.filter((t) => t.childChoiceFacilitation).length;
   const childChoiceFacilitationRate = pct(childChoice, training.length);
-  if (childChoiceFacilitationRate >= 90) score += 5;
-  else if (childChoiceFacilitationRate >= 70) score += 3;
-  else if (childChoiceFacilitationRate >= 50) score += 2;
-  else if (childChoiceFacilitationRate > 0) score += 1;
+  if (meets(childChoiceFacilitationRate, 90)) score += 5;
+  else if (meets(childChoiceFacilitationRate, 70)) score += 3;
+  else if (meets(childChoiceFacilitationRate, 50)) score += 2;
+  else if (above(childChoiceFacilitationRate, 0)) score += 1;
 
   const budgetMgmt = training.filter((t) => t.budgetManagement).length;
   const budgetManagementRate = pct(budgetMgmt, training.length);
-  if (budgetManagementRate >= 90) score += 5;
-  else if (budgetManagementRate >= 70) score += 3;
-  else if (budgetManagementRate >= 50) score += 2;
-  else if (budgetManagementRate > 0) score += 1;
+  if (meets(budgetManagementRate, 90)) score += 5;
+  else if (meets(budgetManagementRate, 70)) score += 3;
+  else if (meets(budgetManagementRate, 50)) score += 2;
+  else if (above(budgetManagementRate, 0)) score += 1;
 
   const cultural = training.filter((t) => t.culturalAwareness).length;
   const culturalAwarenessRate = pct(cultural, training.length);
-  if (culturalAwarenessRate >= 90) score += 4;
-  else if (culturalAwarenessRate >= 70) score += 3;
-  else if (culturalAwarenessRate >= 50) score += 2;
-  else if (culturalAwarenessRate > 0) score += 1;
+  if (meets(culturalAwarenessRate, 90)) score += 4;
+  else if (meets(culturalAwarenessRate, 70)) score += 3;
+  else if (meets(culturalAwarenessRate, 50)) score += 2;
+  else if (above(culturalAwarenessRate, 0)) score += 1;
 
   const ageApp = training.filter((t) => t.ageAppropriateGuidance).length;
   const ageAppropriateGuidanceRate = pct(ageApp, training.length);
-  if (ageAppropriateGuidanceRate >= 90) score += 3;
-  else if (ageAppropriateGuidanceRate >= 70) score += 2;
-  else if (ageAppropriateGuidanceRate >= 50) score += 1;
+  if (meets(ageAppropriateGuidanceRate, 90)) score += 3;
+  else if (meets(ageAppropriateGuidanceRate, 70)) score += 2;
+  else if (meets(ageAppropriateGuidanceRate, 50)) score += 1;
 
   const recordKeeping = training.filter((t) => t.recordKeeping).length;
   const recordKeepingRate = pct(recordKeeping, training.length);
-  if (recordKeepingRate >= 90) score += 2;
-  else if (recordKeepingRate >= 70) score += 1;
+  if (meets(recordKeepingRate, 90)) score += 2;
+  else if (meets(recordKeepingRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -512,11 +537,11 @@ export function buildChildProfiles(
     // Quality (0-4)
     if (childAssessments.length === 0) {
       score += 0;
-    } else if (qualityRate >= 80) {
+    } else if (meets(qualityRate, 80)) {
       score += 4;
-    } else if (qualityRate >= 60) {
+    } else if (meets(qualityRate, 60)) {
       score += 3;
-    } else if (qualityRate >= 40) {
+    } else if (meets(qualityRate, 40)) {
       score += 2;
     } else {
       score += 1;
@@ -525,11 +550,11 @@ export function buildChildProfiles(
     // Child choice (0-3)
     if (childAssessments.length === 0) {
       score += 0;
-    } else if (childChoiceRate >= 80) {
+    } else if (meets(childChoiceRate, 80)) {
       score += 3;
-    } else if (childChoiceRate >= 60) {
+    } else if (meets(childChoiceRate, 60)) {
       score += 2;
-    } else if (childChoiceRate > 0) {
+    } else if (above(childChoiceRate, 0)) {
       score += 1;
     }
 
@@ -538,10 +563,10 @@ export function buildChildProfiles(
     const culturalRate = pct(culturalMet, childAssessments.length);
     const ageApp = childAssessments.filter((a) => a.ageAppropriate).length;
     const ageRate = pct(ageApp, childAssessments.length);
-    const combinedRate = Math.round((culturalRate + ageRate) / 2);
-    if (combinedRate >= 80) score += 3;
-    else if (combinedRate >= 60) score += 2;
-    else if (combinedRate > 0) score += 1;
+    const combinedRate = meanOf([culturalRate, ageRate]);
+    if (meets(combinedRate, 80)) score += 3;
+    else if (meets(combinedRate, 60)) score += 2;
+    else if (above(combinedRate, 0)) score += 1;
 
     return {
       childId,
@@ -582,39 +607,39 @@ export function generateClothingAppearanceProvisionIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (quality.qualityRate >= 80) {
+  if (meets(quality.qualityRate, 80)) {
     strengths.push(
       "Clothing provision consistently rated excellent or good across assessments",
     );
   }
-  if (quality.childChoiceRate >= 80) {
+  if (meets(quality.childChoiceRate, 80)) {
     strengths.push(
       "Children actively involved in choosing their own clothing — strong child voice",
     );
   }
-  if (quality.culturalRate >= 90) {
+  if (meets(quality.culturalRate, 90)) {
     strengths.push(
       "Cultural and religious clothing needs consistently recognised and met",
     );
   }
-  if (compliance.documentedRate >= 90 && assessments.length > 0) {
+  if (meets(compliance.documentedRate, 90) && assessments.length > 0) {
     strengths.push(
       "Clothing provision thoroughly documented in care plans",
     );
   }
-  if (compliance.staffAssessedRate >= 90 && assessments.length > 0) {
+  if (meets(compliance.staffAssessedRate, 90) && assessments.length > 0) {
     strengths.push(
       "Staff consistently completing clothing assessments",
     );
   }
-  if (policy.clothingProvisionStrategyRate >= 90 && policies.length > 0) {
+  if (meets(policy.clothingProvisionStrategyRate, 90) && policies.length > 0) {
     strengths.push(
       "Comprehensive clothing provision strategy in place",
     );
   }
   if (
-    staffReadiness.clothingAssessmentRate >= 90 &&
-    staffReadiness.childChoiceFacilitationRate >= 90
+    meets(staffReadiness.clothingAssessmentRate, 90) &&
+    meets(staffReadiness.childChoiceFacilitationRate, 90)
   ) {
     strengths.push(
       "Staff team well-trained in clothing assessment and supporting child choice",
@@ -624,32 +649,32 @@ export function generateClothingAppearanceProvisionIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (quality.childChoiceRate < 70 && assessments.length > 0) {
+  if (below(quality.childChoiceRate, 70) && assessments.length > 0) {
     areasForImprovement.push(
       "Children's choice in clothing selection needs strengthening — ensure every child is offered meaningful choices",
     );
   }
-  if (quality.culturalRate < 70 && assessments.length > 0) {
+  if (below(quality.culturalRate, 70) && assessments.length > 0) {
     areasForImprovement.push(
       "Cultural and religious clothing needs require greater attention",
     );
   }
-  if (compliance.documentedRate < 70 && assessments.length > 0) {
+  if (below(compliance.documentedRate, 70) && assessments.length > 0) {
     areasForImprovement.push(
       "Clothing provision documentation in care plans needs improvement",
     );
   }
-  if (compliance.feedbackRate < 70 && assessments.length > 0) {
+  if (below(compliance.feedbackRate, 70) && assessments.length > 0) {
     areasForImprovement.push(
       "Feedback to children about clothing provision is inconsistent — strengthen feedback loops",
     );
   }
-  if (policy.seasonalReviewProcedureRate < 70 && policies.length > 0) {
+  if (below(policy.seasonalReviewProcedureRate, 70) && policies.length > 0) {
     areasForImprovement.push(
       "Seasonal clothing reviews not consistently scheduled — implement quarterly wardrobe assessments",
     );
   }
-  if (staffReadiness.culturalAwarenessRate < 70 && training.length > 0) {
+  if (below(staffReadiness.culturalAwarenessRate, 70) && training.length > 0) {
     areasForImprovement.push(
       "Staff cultural awareness training for clothing needs requires improvement",
     );
@@ -673,22 +698,22 @@ export function generateClothingAppearanceProvisionIntelligence(
       "URGENT: No staff clothing training records — deliver training on clothing standards and child choice",
     );
   }
-  if (quality.qualityRate < 50 && assessments.length > 0) {
+  if (below(quality.qualityRate, 50) && assessments.length > 0) {
     actions.push(
       "URGENT: Less than half of clothing assessments rated good or above — conduct immediate wardrobe review for all children",
     );
   }
-  if (compliance.staffAssessedRate < 50 && assessments.length > 0) {
+  if (below(compliance.staffAssessedRate, 50) && assessments.length > 0) {
     actions.push(
       "Review staff assessment completion — less than half of provisions have staff assessment recorded",
     );
   }
-  if (policy.laundryAndMaintenancePlanRate < 50 && policies.length > 0) {
+  if (below(policy.laundryAndMaintenancePlanRate, 50) && policies.length > 0) {
     actions.push(
       "Review laundry and maintenance arrangements — ensure children have access to clean clothing daily",
     );
   }
-  if (compliance.categoryDiversityRatio < 50 && assessments.length > 0) {
+  if (below(compliance.categoryDiversityRatio, 50) && assessments.length > 0) {
     actions.push(
       "Broaden clothing category coverage — assessments only cover a narrow range of clothing types",
     );

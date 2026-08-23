@@ -15,6 +15,8 @@
 
 // -- Type unions ---------------------------------------------------------------
 
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 export type CulturalArea =
   | "heritage_exploration"
   | "language_support"
@@ -123,11 +125,16 @@ export interface StaffCulturalTraining {
 export interface CulturalEngagementResult {
   overallScore: number;
   totalActivities: number;
-  engagementRate: number;
-  childLedChoiceRate: number;
-  identityAffirmedRate: number;
-  documentedInPlanRate: number;
-  reflectionCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedChoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityAffirmedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedInPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectionCompletedRate: number | null;
 }
 
 export interface CulturalDiversityResult {
@@ -135,8 +142,10 @@ export interface CulturalDiversityResult {
   totalActivities: number;
   uniqueCulturalAreas: number;
   culturalAreaRatio: number;
-  staffFacilitatedRate: number;
-  communityInvolvedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffFacilitatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityInvolvedRate: number | null;
 }
 
 export interface CulturalPolicyResult {
@@ -153,20 +162,28 @@ export interface CulturalPolicyResult {
 export interface StaffCulturalReadinessResult {
   overallScore: number;
   totalStaff: number;
-  culturalCompetenceRate: number;
-  diversityAwarenessRate: number;
-  religiousLiteracyRate: number;
-  antiRacismPracticeRate: number;
-  identitySupportRate: number;
-  communityEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalCompetenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  diversityAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  religiousLiteracyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  antiRacismPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identitySupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityEngagementRate: number | null;
 }
 
 export interface ChildCulturalProfile {
   childId: string;
   childName: string;
   totalActivities: number;
-  engagementRate: number;
-  identityAffirmedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityAffirmedRate: number | null;
   uniqueCulturalAreas: number;
   overallScore: number;
 }
@@ -190,9 +207,9 @@ export interface CulturalIdentityCelebrationIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
+// Was `if (den === 0) return 0;`: nothing recorded read as 0%.
+export function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 export function getRating(score: number): Rating {
@@ -234,34 +251,34 @@ export function evaluateCulturalEngagement(
     (a) => a.engagementLevel === "enthusiastic" || a.engagementLevel === "willing",
   ).length;
   const engagementRate = pct(engaged, activities.length);
-  if (engagementRate >= 90) score += 7;
-  else if (engagementRate >= 70) score += 5;
-  else if (engagementRate >= 50) score += 3;
-  else if (engagementRate > 0) score += 1;
+  if (meets(engagementRate, 90)) score += 7;
+  else if (meets(engagementRate, 70)) score += 5;
+  else if (meets(engagementRate, 50)) score += 3;
+  else if (above(engagementRate, 0)) score += 1;
 
   const childLed = activities.filter((a) => a.childLedChoice).length;
   const childLedChoiceRate = pct(childLed, activities.length);
-  if (childLedChoiceRate >= 90) score += 6;
-  else if (childLedChoiceRate >= 70) score += 4;
-  else if (childLedChoiceRate >= 50) score += 3;
-  else if (childLedChoiceRate > 0) score += 1;
+  if (meets(childLedChoiceRate, 90)) score += 6;
+  else if (meets(childLedChoiceRate, 70)) score += 4;
+  else if (meets(childLedChoiceRate, 50)) score += 3;
+  else if (above(childLedChoiceRate, 0)) score += 1;
 
   const affirmed = activities.filter((a) => a.identityAffirmed).length;
   const identityAffirmedRate = pct(affirmed, activities.length);
-  if (identityAffirmedRate >= 90) score += 6;
-  else if (identityAffirmedRate >= 70) score += 4;
-  else if (identityAffirmedRate >= 50) score += 3;
-  else if (identityAffirmedRate > 0) score += 1;
+  if (meets(identityAffirmedRate, 90)) score += 6;
+  else if (meets(identityAffirmedRate, 70)) score += 4;
+  else if (meets(identityAffirmedRate, 50)) score += 3;
+  else if (above(identityAffirmedRate, 0)) score += 1;
 
   const documented = activities.filter((a) => a.documentedInPlan).length;
   const documentedInPlanRate = pct(documented, activities.length);
   const reflected = activities.filter((a) => a.reflectionCompleted).length;
   const reflectionCompletedRate = pct(reflected, activities.length);
-  const combinedRate = Math.round((documentedInPlanRate + reflectionCompletedRate) / 2);
-  if (combinedRate >= 90) score += 6;
-  else if (combinedRate >= 70) score += 4;
-  else if (combinedRate >= 50) score += 3;
-  else if (combinedRate > 0) score += 1;
+  const combinedRate = meanOf([documentedInPlanRate, reflectionCompletedRate]);
+  if (meets(combinedRate, 90)) score += 6;
+  else if (meets(combinedRate, 70)) score += 4;
+  else if (meets(combinedRate, 50)) score += 3;
+  else if (above(combinedRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -309,17 +326,17 @@ export function evaluateCulturalDiversity(
 
   const staffFacilitated = activities.filter((a) => a.staffFacilitated).length;
   const staffFacilitatedRate = pct(staffFacilitated, activities.length);
-  if (staffFacilitatedRate >= 90) score += 9;
-  else if (staffFacilitatedRate >= 70) score += 7;
-  else if (staffFacilitatedRate >= 50) score += 5;
-  else if (staffFacilitatedRate > 0) score += 2;
+  if (meets(staffFacilitatedRate, 90)) score += 9;
+  else if (meets(staffFacilitatedRate, 70)) score += 7;
+  else if (meets(staffFacilitatedRate, 50)) score += 5;
+  else if (above(staffFacilitatedRate, 0)) score += 2;
 
   const communityInvolved = activities.filter((a) => a.communityInvolved).length;
   const communityInvolvedRate = pct(communityInvolved, activities.length);
-  if (communityInvolvedRate >= 90) score += 8;
-  else if (communityInvolvedRate >= 70) score += 6;
-  else if (communityInvolvedRate >= 50) score += 4;
-  else if (communityInvolvedRate > 0) score += 2;
+  if (meets(communityInvolvedRate, 90)) score += 8;
+  else if (meets(communityInvolvedRate, 70)) score += 6;
+  else if (meets(communityInvolvedRate, 50)) score += 4;
+  else if (above(communityInvolvedRate, 0)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -412,42 +429,42 @@ export function evaluateStaffCulturalReadiness(
 
   const culturalCompetence = training.filter((t) => t.culturalCompetence).length;
   const culturalCompetenceRate = pct(culturalCompetence, training.length);
-  if (culturalCompetenceRate >= 90) score += 6;
-  else if (culturalCompetenceRate >= 70) score += 4;
-  else if (culturalCompetenceRate >= 50) score += 3;
-  else if (culturalCompetenceRate > 0) score += 1;
+  if (meets(culturalCompetenceRate, 90)) score += 6;
+  else if (meets(culturalCompetenceRate, 70)) score += 4;
+  else if (meets(culturalCompetenceRate, 50)) score += 3;
+  else if (above(culturalCompetenceRate, 0)) score += 1;
 
   const diversityAwareness = training.filter((t) => t.diversityAwareness).length;
   const diversityAwarenessRate = pct(diversityAwareness, training.length);
-  if (diversityAwarenessRate >= 90) score += 5;
-  else if (diversityAwarenessRate >= 70) score += 3;
-  else if (diversityAwarenessRate >= 50) score += 2;
-  else if (diversityAwarenessRate > 0) score += 1;
+  if (meets(diversityAwarenessRate, 90)) score += 5;
+  else if (meets(diversityAwarenessRate, 70)) score += 3;
+  else if (meets(diversityAwarenessRate, 50)) score += 2;
+  else if (above(diversityAwarenessRate, 0)) score += 1;
 
   const religiousLiteracy = training.filter((t) => t.religiousLiteracy).length;
   const religiousLiteracyRate = pct(religiousLiteracy, training.length);
-  if (religiousLiteracyRate >= 90) score += 5;
-  else if (religiousLiteracyRate >= 70) score += 3;
-  else if (religiousLiteracyRate >= 50) score += 2;
-  else if (religiousLiteracyRate > 0) score += 1;
+  if (meets(religiousLiteracyRate, 90)) score += 5;
+  else if (meets(religiousLiteracyRate, 70)) score += 3;
+  else if (meets(religiousLiteracyRate, 50)) score += 2;
+  else if (above(religiousLiteracyRate, 0)) score += 1;
 
   const antiRacism = training.filter((t) => t.antiRacismPractice).length;
   const antiRacismPracticeRate = pct(antiRacism, training.length);
-  if (antiRacismPracticeRate >= 90) score += 4;
-  else if (antiRacismPracticeRate >= 70) score += 3;
-  else if (antiRacismPracticeRate >= 50) score += 2;
-  else if (antiRacismPracticeRate > 0) score += 1;
+  if (meets(antiRacismPracticeRate, 90)) score += 4;
+  else if (meets(antiRacismPracticeRate, 70)) score += 3;
+  else if (meets(antiRacismPracticeRate, 50)) score += 2;
+  else if (above(antiRacismPracticeRate, 0)) score += 1;
 
   const identitySupport = training.filter((t) => t.identitySupport).length;
   const identitySupportRate = pct(identitySupport, training.length);
-  if (identitySupportRate >= 90) score += 3;
-  else if (identitySupportRate >= 70) score += 2;
-  else if (identitySupportRate >= 50) score += 1;
+  if (meets(identitySupportRate, 90)) score += 3;
+  else if (meets(identitySupportRate, 70)) score += 2;
+  else if (meets(identitySupportRate, 50)) score += 1;
 
   const communityEngagement = training.filter((t) => t.communityEngagement).length;
   const communityEngagementRate = pct(communityEngagement, training.length);
-  if (communityEngagementRate >= 90) score += 2;
-  else if (communityEngagementRate >= 70) score += 1;
+  if (meets(communityEngagementRate, 90)) score += 2;
+  else if (meets(communityEngagementRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -497,14 +514,14 @@ export function buildChildCulturalProfiles(
     else if (childActivities.length >= 5) score += 1;
 
     // Engagement (0-3)
-    if (engagementRate >= 80) score += 3;
-    else if (engagementRate >= 60) score += 2;
-    else if (engagementRate > 0) score += 1;
+    if (meets(engagementRate, 80)) score += 3;
+    else if (meets(engagementRate, 60)) score += 2;
+    else if (above(engagementRate, 0)) score += 1;
 
     // Identity affirmed (0-3)
-    if (identityAffirmedRate >= 80) score += 3;
-    else if (identityAffirmedRate >= 60) score += 2;
-    else if (identityAffirmedRate > 0) score += 1;
+    if (meets(identityAffirmedRate, 80)) score += 3;
+    else if (meets(identityAffirmedRate, 60)) score += 2;
+    else if (above(identityAffirmedRate, 0)) score += 1;
 
     // Diversity (0-2): >=5 unique areas -> 2, >=3 -> 1
     if (uniqueCulturalAreas >= 5) score += 2;
@@ -550,27 +567,27 @@ export function generateCulturalIdentityCelebrationIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (culturalEngagement.engagementRate >= 80) {
+  if (meets(culturalEngagement.engagementRate, 80)) {
     strengths.push(
       "Strong cultural engagement — children consistently enthusiastic or willing participants",
     );
   }
-  if (culturalEngagement.childLedChoiceRate >= 80) {
+  if (meets(culturalEngagement.childLedChoiceRate, 80)) {
     strengths.push(
       "Excellent child-led identity work — children actively choosing their own cultural activities",
     );
   }
-  if (culturalEngagement.identityAffirmedRate >= 80) {
+  if (meets(culturalEngagement.identityAffirmedRate, 80)) {
     strengths.push(
       "Identity affirmation embedded in practice — children's cultural identity consistently celebrated",
     );
   }
-  if (culturalDiversity.staffFacilitatedRate >= 90) {
+  if (meets(culturalDiversity.staffFacilitatedRate, 90)) {
     strengths.push(
       "Staff team consistently facilitating and supporting cultural activities",
     );
   }
-  if (culturalDiversity.communityInvolvedRate >= 80) {
+  if (meets(culturalDiversity.communityInvolvedRate, 80)) {
     strengths.push(
       "Strong community partnerships enriching cultural experiences for children",
     );
@@ -589,17 +606,17 @@ export function generateCulturalIdentityCelebrationIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (culturalEngagement.engagementRate < 60 && activities.length > 0) {
+  if (below(culturalEngagement.engagementRate, 60) && activities.length > 0) {
     areasForImprovement.push(
       "Cultural engagement levels below expectations — review how activities are offered and whether they reflect children's interests",
     );
   }
-  if (culturalDiversity.communityInvolvedRate < 40 && activities.length > 0) {
+  if (below(culturalDiversity.communityInvolvedRate, 40) && activities.length > 0) {
     areasForImprovement.push(
       "Community involvement in cultural activities is low — develop partnerships with local cultural organisations and community groups",
     );
   }
-  if (culturalEngagement.childLedChoiceRate < 60 && activities.length > 0) {
+  if (below(culturalEngagement.childLedChoiceRate, 60) && activities.length > 0) {
     areasForImprovement.push(
       "Child-led cultural choice needs strengthening — ensure children have meaningful say in cultural activities",
     );
@@ -609,7 +626,7 @@ export function generateCulturalIdentityCelebrationIntelligence(
       "Limited range of cultural areas explored — broaden activities to cover heritage, language, food, religion, arts, and community",
     );
   }
-  if (staffCulturalReadiness.antiRacismPracticeRate < 60 && training.length > 0) {
+  if (below(staffCulturalReadiness.antiRacismPracticeRate, 60) && training.length > 0) {
     areasForImprovement.push(
       "Anti-racism practice training needs improvement across the staff team",
     );
@@ -633,12 +650,12 @@ export function generateCulturalIdentityCelebrationIntelligence(
       "URGENT: No staff cultural training records — deliver cultural competence, diversity awareness, and anti-racism training to all staff",
     );
   }
-  if (culturalEngagement.engagementRate < 60 && activities.length > 0) {
+  if (below(culturalEngagement.engagementRate, 60) && activities.length > 0) {
     actions.push(
       "Review cultural activity programme — engagement levels suggest activities may not reflect children's cultural backgrounds and interests",
     );
   }
-  if (culturalDiversity.communityInvolvedRate < 40 && activities.length > 0) {
+  if (below(culturalDiversity.communityInvolvedRate, 40) && activities.length > 0) {
     actions.push(
       "Develop community partnerships to support children's cultural identity — contact local cultural organisations, faith groups, and heritage centres",
     );

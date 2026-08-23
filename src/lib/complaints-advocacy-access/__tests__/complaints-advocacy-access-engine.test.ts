@@ -94,8 +94,9 @@ function makeTraining(overrides: Partial<StaffComplaintsTraining> = {}): StaffCo
 // -- pct() --------------------------------------------------------------------
 
 describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
+  it("returns null when denominator is 0 — nothing measured, not 0%", () => {
+    expect(pct(5, 0)).toBeNull();
+    expect(pct(5, 0)).not.toBe(0); // 0% is a claim about a population that does not exist
   });
   it("calculates percentage correctly", () => {
     expect(pct(3, 4)).toBe(75);
