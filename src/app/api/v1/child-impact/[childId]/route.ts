@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
+import { feedbackTypeFromSentiment } from "@/lib/feedback/sentiment";
 import {
   computeChildImpact,
   type RiskAssessmentInput,
@@ -223,7 +224,7 @@ export async function GET(
       id: f.id,
       child_id: f.child_id,
       date: typeof f.date === "string" ? f.date.slice(0, 10) : (f.created_at ?? today).slice(0, 10),
-      type: f.type ?? (f.sentiment === "positive" ? "compliment" : f.sentiment === "negative" ? "complaint" : "suggestion"),
+      type: feedbackTypeFromSentiment(f.sentiment),
       category: f.category ?? null,
       sentiment: f.sentiment ?? null,
       response_given_to_child: f.response_given_to_child ?? f.response_given ?? false,
