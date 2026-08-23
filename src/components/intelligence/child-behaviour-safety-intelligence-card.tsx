@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   AlertTriangle,
   Brain,
@@ -122,8 +123,8 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
         {/* Behaviour KPIs */}
         {bp.total_entries_30d > 0 && (
           <div className="grid grid-cols-4 gap-2">
-            <div className={cn("text-center rounded-lg p-2", bp.positive_ratio >= 70 ? "bg-green-50" : bp.positive_ratio >= 50 ? "bg-blue-50" : "bg-red-50")}>
-              <p className={cn("text-lg font-bold tabular-nums", bp.positive_ratio >= 70 ? "text-green-600" : bp.positive_ratio >= 50 ? "text-blue-600" : "text-red-600")}>{bp.positive_ratio}%</p>
+            <div className={cn("text-center rounded-lg p-2", bp.positive_ratio === null ? "text-slate-400" : meets(bp.positive_ratio, 70) ? "bg-green-50" : meets(bp.positive_ratio, 50) ? "bg-blue-50" : "bg-red-50")}>
+              <p className={cn("text-lg font-bold tabular-nums", bp.positive_ratio === null ? "text-slate-400" : meets(bp.positive_ratio, 70) ? "text-green-600" : meets(bp.positive_ratio, 50) ? "text-blue-600" : "text-red-600")}>{formatRate(bp.positive_ratio)}</p>
               <p className="text-[10px] text-muted-foreground">Positive</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
@@ -158,7 +159,7 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
               </p>
               {ip.total_90d > 0 && (
                 <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                  De-esc: {ip.de_escalation_rate}%
+                  De-esc: {formatRate(ip.de_escalation_rate)}
                   <IncTrendIcon className={cn("h-2.5 w-2.5 ml-1", ip.trend === "decreasing" ? "text-green-500" : ip.trend === "increasing" ? "text-red-500" : "text-slate-400")} />
                 </p>
               )}
@@ -174,7 +175,7 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
               </p>
               {rp.total_90d > 0 && (
                 <p className="text-[10px] text-muted-foreground">
-                  Debrief: {rp.debrief_rate}%
+                  Debrief: {formatRate(rp.debrief_rate)}
                   {rp.unreviewed_count > 0 && <span className="text-red-600"> · {rp.unreviewed_count} unreviewed</span>}
                 </p>
               )}
@@ -194,7 +195,7 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
                   {mp.repeat_missing && <span className="text-red-600"> · Repeat pattern</span>}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  RI Rate: {mp.return_interview_rate}%
+                  RI Rate: {formatRate(mp.return_interview_rate)}
                   {mp.high_risk_count > 0 && <span className="text-red-600"> · {mp.high_risk_count} high-risk</span>}
                 </p>
               </div>

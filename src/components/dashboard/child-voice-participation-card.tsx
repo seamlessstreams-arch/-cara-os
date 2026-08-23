@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   AlertTriangle,
   Brain,
@@ -115,12 +116,12 @@ export function ChildVoiceParticipationCard() {
         {/* KPI Row: Review Participation + Advocacy */}
         <div className="grid grid-cols-2 gap-1.5">
           <div className="rounded border p-2 flex items-center gap-2 text-xs">
-            <FileText className={cn("h-3.5 w-3.5 shrink-0", rp.participation_rate >= 80 ? "text-green-500" : rp.participation_rate >= 50 ? "text-amber-500" : "text-red-500")} />
+            <FileText className={cn("h-3.5 w-3.5 shrink-0", rp.participation_rate === null ? "text-slate-400" : meets(rp.participation_rate, 80) ? "text-green-500" : meets(rp.participation_rate, 50) ? "text-amber-500" : "text-red-500")} />
             <div className="min-w-0">
               <p className="font-medium text-slate-700">LAC Review Participation</p>
               <p className="text-[10px] text-muted-foreground">
-                <span className={rp.participation_rate >= 80 ? "text-[--cs-success]" : rp.participation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"}>
-                  {rp.participation_rate}%
+                <span className={rp.participation_rate === null ? "text-slate-400" : meets(rp.participation_rate, 80) ? "text-[--cs-success]" : meets(rp.participation_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"}>
+                  {formatRate(rp.participation_rate)}
                 </span>
                 {" "}({rp.total_reviews_90d} reviews in 90d)
               </p>
@@ -144,26 +145,26 @@ export function ChildVoiceParticipationCard() {
         {/* KPI Row: Key Work + Feedback */}
         <div className="grid grid-cols-2 gap-1.5">
           <div className="rounded border p-2 flex items-center gap-2 text-xs">
-            <Users className={cn("h-3.5 w-3.5 shrink-0", kw.engagement_rate >= 80 ? "text-green-500" : kw.engagement_rate >= 50 ? "text-amber-500" : "text-red-500")} />
+            <Users className={cn("h-3.5 w-3.5 shrink-0", kw.engagement_rate === null ? "text-slate-400" : meets(kw.engagement_rate, 80) ? "text-green-500" : meets(kw.engagement_rate, 50) ? "text-amber-500" : "text-red-500")} />
             <div className="min-w-0">
               <p className="font-medium text-slate-700">Key Work Engagement</p>
               <p className="text-[10px] text-muted-foreground">
-                <span className={kw.engagement_rate >= 80 ? "text-[--cs-success]" : kw.engagement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"}>
-                  {kw.engagement_rate}% engaged
+                <span className={kw.engagement_rate === null ? "text-slate-400" : meets(kw.engagement_rate, 80) ? "text-[--cs-success]" : meets(kw.engagement_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"}>
+                  {formatRate(kw.engagement_rate)} engaged
                 </span>
                 {" "}({kw.total_sessions_30d} sessions in 30d)
               </p>
             </div>
           </div>
           <div className="rounded border p-2 flex items-center gap-2 text-xs">
-            <MessageCircle className={cn("h-3.5 w-3.5 shrink-0", fb.response_rate >= 80 ? "text-green-500" : fb.response_rate >= 50 ? "text-amber-500" : fb.total_90d === 0 ? "text-slate-400" : "text-red-500")} />
+            <MessageCircle className={cn("h-3.5 w-3.5 shrink-0", fb.response_rate === null ? "text-slate-400" : meets(fb.response_rate, 80) ? "text-green-500" : meets(fb.response_rate, 50) ? "text-amber-500" : "text-red-500")} />
             <div className="min-w-0">
               <p className="font-medium text-slate-700">Feedback</p>
               <p className="text-[10px] text-muted-foreground">
                 {fb.total_90d > 0 ? (
                   <>
-                    <span className={fb.response_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"}>
-                      {fb.response_rate}% responded
+                    <span className={meets(fb.response_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]"}>
+                      {formatRate(fb.response_rate)} responded
                     </span>
                     {" "}({fb.total_90d} in 90d)
                     {fb.open_count > 0 && <span className="text-[--cs-risk]"> · {fb.open_count} open</span>}

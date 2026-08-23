@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface MedicationInput {
   id: string;
   name: string;
@@ -119,7 +121,9 @@ export interface MedicationCompliance {
   late_count_30d: number;
   witnessed_rate: number | null;      // 0-100
   prn_count_30d: number;
-  medications_summary: { name: string; type: string; compliance_rate: number }[];
+  /** compliance_rate is null for a medication with no administrations logged in
+   *  the window — nothing measured, not fully compliant. */
+  medications_summary: { name: string; type: string; compliance_rate: number | null }[];
 }
 
 export interface HealthComplianceStatus {
@@ -211,9 +215,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 function avg(arr: number[]): number | null {
   return arr.length > 0  ? Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10  : null;
@@ -244,18 +245,18 @@ export function computeChildHealthIntelligence(
     return {
       name: med.name,
       type: med.type,
-      compliance_rate: pct(medGiven, medAdmins.length),
+      compliance_rate: rate(medGiven, medAdmins.length),
     };
   });
 
   const medication_compliance: MedicationCompliance = {
     active_medications: activeMeds.length,
     total_administrations_30d: admins30d.length,
-    given_rate: pct(givenAdmins.length, admins30d.length),
+    given_rate: rate(givenAdmins.length, admins30d.length),
     refused_count_30d: refusedCount,
     missed_count_30d: missedCount,
     late_count_30d: lateCount,
-    witnessed_rate: pct(witnessedCount, admins30d.length),
+    witnessed_rate: rate(witnessedCount, admins30d.length),
     prn_count_30d: prnAdmins.length,
     medications_summary: medsSummary,
   };
@@ -301,7 +302,9 @@ export function computeChildHealthIntelligence(
   const camhsStatus: CamhsStatus = {
     engaged: camhs?.status === "active" || false,
     status: camhs?.status ?? null,
-    attendance_rate: camhs ? pct(camhs.sessions_attended, camhs.sessions_offered) : 0,
+    // No CAMHS involvement at all is unmeasured, not 0% session attendance —
+    // and with a referral but no sessions offered yet, rate() says the same.
+    attendance_rate: camhs ? rate(camhs.sessions_attended, camhs.sessions_offered) : null,
     engagement_level: camhs?.engagement_level ?? null,
     waiting: camhs?.status === "waiting",
     next_appointment: camhs?.next_appointment?.slice(0, 10) ?? null,
@@ -343,7 +346,7 @@ export function computeChildHealthIntelligence(
 
   const appointment_analysis: AppointmentAnalysis = {
     total_90d: appt90d.length,
-    attended_rate: pct(attendedAppts.length, appt90d.length),
+    attended_rate: rate(attendedAppts.length, appt90d.length),
     dna_count: dnaCount,
     rescheduled_count: rescheduledCount,
   };
@@ -351,13 +354,16 @@ export function computeChildHealthIntelligence(
   // ── Health Score (0-100) ──────────────────────────────────────────────
   let score = 50;
 
-  // Medication compliance. Only score when administrations were actually recorded
-  // in the window — pct() returns 100 for 0/0, so an active med with zero logged
-  // administrations would otherwise score as 100% compliant (false reassurance).
+  // Medication compliance. The guard on total_administrations_30d was here
+  // because the old pct(n,d) returned 100 for 0/0, so an active med with zero
+  // logged administrations scored as 100% compliant — false reassurance. rate()
+  // returns null now and meets()/below() are false for null, so the guard is
+  // belt-and-braces rather than load-bearing; it stays because it also states
+  // the intent.
   if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0) {
-    if ((medication_compliance.given_rate ?? 0) >= 95) score += 10;
-    else if ((medication_compliance.given_rate ?? 0) >= 80) score += 5;
-    else if ((medication_compliance.given_rate ?? 0) < 70) score -= 10;
+    if (meets(medication_compliance.given_rate, 95)) score += 10;
+    else if (meets(medication_compliance.given_rate, 80)) score += 5;
+    else if (below(medication_compliance.given_rate, 70)) score -= 10;
     else score -= 5;
 
     if (refusedCount >= 3) score -= 5;
@@ -380,8 +386,8 @@ export function computeChildHealthIntelligence(
 
   // CAMHS
   if (camhs) {
-    if (camhsStatus.engaged && (camhsStatus.attendance_rate ?? 0) >= 80) score += 5;
-    else if (camhsStatus.engaged && (camhsStatus.attendance_rate ?? 0) < 50) score -= 3;
+    if (camhsStatus.engaged && meets(camhsStatus.attendance_rate, 80)) score += 5;
+    else if (camhsStatus.engaged && below(camhsStatus.attendance_rate, 50)) score -= 3;
     if (camhsStatus.waiting) score -= 3;
   }
 
@@ -427,7 +433,7 @@ export function computeChildHealthIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0 && (medication_compliance.given_rate ?? 0) >= 95) {
+  if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0 && meets(medication_compliance.given_rate, 95)) {
     strengths.push(`Medication compliance at ${medication_compliance.given_rate}% — consistent administration supporting ${child_name}'s health needs.`);
   }
 
@@ -447,7 +453,7 @@ export function computeChildHealthIntelligence(
     strengths.push("Immunisations up to date — proactive health protection.");
   }
 
-  if (camhsStatus.engaged && (camhsStatus.attendance_rate ?? 0) >= 80) {
+  if (camhsStatus.engaged && meets(camhsStatus.attendance_rate, 80)) {
     strengths.push(`CAMHS engagement is strong (${camhsStatus.attendance_rate}% attendance) — therapeutic support is being accessed.`);
   }
 
@@ -462,7 +468,7 @@ export function computeChildHealthIntelligence(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (activeMeds.length > 0 && (medication_compliance.given_rate ?? 0) < 80) {
+  if (activeMeds.length > 0 && below(medication_compliance.given_rate, 80)) {
     concerns.push(`Medication compliance at ${medication_compliance.given_rate}% — below 80% threshold. Review barriers to administration and consider medication review (Reg 23).`);
   }
 
@@ -494,7 +500,7 @@ export function computeChildHealthIntelligence(
     concerns.push("Child is on CAMHS waiting list — monitor wellbeing and arrange interim therapeutic support if possible.");
   }
 
-  if (camhsStatus.engaged && (camhsStatus.attendance_rate ?? 0) < 50) {
+  if (camhsStatus.engaged && below(camhsStatus.attendance_rate, 50)) {
     concerns.push(`CAMHS attendance rate at ${camhsStatus.attendance_rate}% — low engagement risks losing the referral. Explore barriers with child.`);
   }
 
@@ -524,7 +530,7 @@ export function computeChildHealthIntelligence(
     });
   }
 
-  if (activeMeds.length > 0 && (medication_compliance.given_rate ?? 0) < 80) {
+  if (activeMeds.length > 0 && below(medication_compliance.given_rate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Convene medication review meeting with prescriber, key worker, and child. Explore barriers to compliance and consider alternative formulations or timing.",
@@ -614,7 +620,7 @@ export function computeChildHealthIntelligence(
     });
   }
 
-  if (activeMeds.length > 0 && (medication_compliance.given_rate ?? 0) < 70) {
+  if (activeMeds.length > 0 && below(medication_compliance.given_rate, 70)) {
     insights.push({
       severity: "critical",
       text: `Medication compliance below 70% represents a significant safeguarding concern. Poor compliance can directly impact ${child_name}'s physical or mental health. An immediate medication review with the prescriber is essential — document all actions taken.`,
@@ -649,14 +655,14 @@ export function computeChildHealthIntelligence(
     });
   }
 
-  if (activeMeds.length > 0 && (medication_compliance.given_rate ?? 0) >= 95 && medication_compliance.witnessed_rate === 100) {
+  if (activeMeds.length > 0 && meets(medication_compliance.given_rate, 95) && medication_compliance.witnessed_rate === 100) {
     insights.push({
       severity: "positive",
       text: `Outstanding medication management — ${medication_compliance.given_rate}% compliance with 100% witnessed administration. This level of pharmaceutical care demonstrates rigorous health practice.`,
     });
   }
 
-  if (camhsStatus.engaged && (camhsStatus.attendance_rate ?? 0) >= 80) {
+  if (camhsStatus.engaged && meets(camhsStatus.attendance_rate, 80)) {
     insights.push({
       severity: "positive",
       text: `Strong CAMHS engagement with ${camhsStatus.attendance_rate}% attendance. Consistent therapeutic access is a key protective factor for ${child_name}'s mental health and emotional development.`,

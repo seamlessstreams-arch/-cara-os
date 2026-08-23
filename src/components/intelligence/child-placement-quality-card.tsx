@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -183,23 +184,23 @@ export function ChildPlacementQualityCard({ childId }: { childId: string }) {
         {kw.sessions_30d > 0 && (
           <div className="grid grid-cols-2 gap-1.5">
             <div className="rounded border p-2 flex items-center gap-2 text-xs">
-              <Users className={cn("h-3.5 w-3.5 shrink-0", kw.engagement_rate >= 80 ? "text-green-500" : "text-amber-500")} />
+              <Users className={cn("h-3.5 w-3.5 shrink-0", meets(kw.engagement_rate, 80) ? "text-green-500" : "text-amber-500")} />
               <div className="min-w-0">
                 <p className="font-medium text-slate-700">KW Engagement</p>
                 <p className="text-[10px] text-muted-foreground">
-                  <span className={kw.engagement_rate >= 80 ? "text-green-600" : "text-amber-600"}>
-                    {kw.engagement_rate}% engaged
+                  <span className={meets(kw.engagement_rate, 80) ? "text-green-600" : "text-amber-600"}>
+                    {formatRate(kw.engagement_rate)} engaged
                   </span>
                 </p>
               </div>
             </div>
             <div className="rounded border p-2 flex items-center gap-2 text-xs">
-              <TrendingUp className={cn("h-3.5 w-3.5 shrink-0", kw.mood_improvement_rate >= 50 ? "text-green-500" : "text-amber-500")} />
+              <TrendingUp className={cn("h-3.5 w-3.5 shrink-0", meets(kw.mood_improvement_rate, 50) ? "text-green-500" : "text-amber-500")} />
               <div className="min-w-0">
                 <p className="font-medium text-slate-700">Mood Uplift</p>
                 <p className="text-[10px] text-muted-foreground">
-                  <span className={kw.mood_improvement_rate >= 50 ? "text-green-600" : "text-amber-600"}>
-                    {kw.mood_improvement_rate}% sessions
+                  <span className={meets(kw.mood_improvement_rate, 50) ? "text-green-600" : "text-amber-600"}>
+                    {formatRate(kw.mood_improvement_rate)} sessions
                   </span>
                 </p>
               </div>
