@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
 
   // ── Medications ────────────────────────────────────────────────────────
   const medications: MedicationInput[] = ((medicationsList ?? []) as any[])
-    .filter((m: any) => m.child_id === childId)
-    .map((m: any) => ({
+    .filter((m) => m.child_id === childId)
+    .map((m) => ({
       id: m.id,
       name: m.name ?? "Unknown",
       type: m.type ?? "regular",
@@ -64,8 +64,8 @@ export async function GET(request: NextRequest) {
 
   // ── Administrations ────────────────────────────────────────────────────
   const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[])
-    .filter((a: any) => a.child_id === childId)
-    .map((a: any) => ({
+    .filter((a) => a.child_id === childId)
+    .map((a) => ({
       id: a.id,
       medication_id: a.medication_id ?? "",
       scheduled_time: a.scheduled_time ?? "",
@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
 
   // ── Medication Errors ──────────────────────────────────────────────────
   const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[])
-    .filter((e: any) => e.child_id === childId)
-    .map((e: any) => ({
+    .filter((e) => e.child_id === childId)
+    .map((e) => ({
       id: e.id,
       date_occurred: (e.date_occurred ?? today).toString().slice(0, 10),
       error_type: e.error_type ?? "documentation_error",

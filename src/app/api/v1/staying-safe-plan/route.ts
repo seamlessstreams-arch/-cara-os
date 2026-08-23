@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 
 function toChildrenList(youngPeopleList: unknown[]) {
   return ((youngPeopleList ?? []) as any[])
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || yp.first_name || "Child",
     }));

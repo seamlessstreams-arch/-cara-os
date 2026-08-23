@@ -34,22 +34,22 @@ export async function GET() {
   ).toISOString().slice(0, 10);
 
   const activeChildren = youngPeople.filter(
-    (y: any) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status !== "moved_on" && y.status !== "discharged"
   );
 
-  const childSummaries: ChildImpactSummary[] = activeChildren.map((yp: any) => {
-    const childKW = keyWorkingSessions.filter((k: any) => k.child_id === yp.id);
-    const childIncidents = incidents.filter((i: any) => i.child_id === yp.id);
+  const childSummaries: ChildImpactSummary[] = activeChildren.map((yp) => {
+    const childKW = keyWorkingSessions.filter((k) => k.child_id === yp.id);
+    const childIncidents = incidents.filter((i) => i.child_id === yp.id);
     const recentIncidents = childIncidents.filter(
-      (i: any) => (i.date ?? "") >= threeMonthsAgo
+      (i) => (i.date ?? "") >= threeMonthsAgo
     ).length;
     const olderIncidents = childIncidents.filter(
-      (i: any) => (i.date ?? "") >= sixMonthsAgo && (i.date ?? "") < threeMonthsAgo
+      (i) => (i.date ?? "") >= sixMonthsAgo && (i.date ?? "") < threeMonthsAgo
     ).length;
 
     // Voice: key work sessions with child_voice field populated
     const voiceRecorded = childKW.some(
-      (k: any) => k.child_voice && String(k.child_voice).trim().length > 10
+      (k) => k.child_voice && String(k.child_voice).trim().length > 10
     );
 
     // Incident trend
@@ -62,15 +62,15 @@ export async function GET() {
 
     // Risk trend from risk assessments
     const childRAs = riskAssessments
-      .filter((r: any) => r.child_id === yp.id)
-      .sort((a: any, b: any) => (b.assessed_date ?? "").localeCompare(a.assessed_date ?? ""));
+      .filter((r) => r.child_id === yp.id)
+      .sort((a, b) => (b.assessed_date ?? "").localeCompare(a.assessed_date ?? ""));
     const latestRA = childRAs[0];
     const riskTrend = latestRA?.trend ?? null;
 
     // Recent outcomes from key work
     const recentOutcomes = childKW
-      .filter((k: any) => (k.date ?? "") >= threeMonthsAgo && k.worker_observations)
-      .map((k: any) => k.worker_observations as string)
+      .filter((k) => (k.date ?? "") >= threeMonthsAgo && k.worker_observations)
+      .map((k) => k.worker_observations as string)
       .slice(0, 3);
 
     // Signal

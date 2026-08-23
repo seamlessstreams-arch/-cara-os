@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
 
   const education_records = educationRecordsList
     .filter((r) => r.child_id === childId)
-    .map((r: any) => ({
+    .map((r) => ({
       record_type: r.record_type,
       date: r.date.slice(0, 10),
       school: r.school ?? "",

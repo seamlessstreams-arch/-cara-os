@@ -29,15 +29,15 @@ export async function GET() {
     ]);
 
   const children: BehaviourChildRef[] = ((youngPeopleList ?? []) as any[])
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
 
   const entries: BehaviourEntryInput[] = ((behaviourLogList ?? []) as any[])
-    .filter((b: any) => b.child_id)
-    .map((b: any) => ({
+    .filter((b) => b.child_id)
+    .map((b) => ({
       child_id: b.child_id,
       date: d(b.date ?? b.created_at),
       direction: b.direction ?? "concern",

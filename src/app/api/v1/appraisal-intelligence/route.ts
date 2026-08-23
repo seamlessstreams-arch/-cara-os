@@ -23,7 +23,7 @@ export async function GET() {
     ]);
 
   // ── Map appraisals ───────────────────────────────────────────────────
-  const appraisals: AppraisalInput[] = (appraisalsList ?? []).map((a: any) => ({
+  const appraisals: AppraisalInput[] = (appraisalsList ?? []).map((a) => ({
     id: a.id,
     staff_id: a.staff_id,
     appraisal_type: a.appraisal_type,
@@ -39,7 +39,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ─────────────────────────────────────────────────
-  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     is_active: s.is_active ?? true,

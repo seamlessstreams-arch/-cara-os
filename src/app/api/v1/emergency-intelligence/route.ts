@@ -21,7 +21,7 @@ export async function GET() {
   const [emergencyPlansList, protocolDrillsList, staffList] = await Promise.all([dal.emergencyPlans.findAll(), dal.protocolDrills.findAll(), dal.staff.findAll()]);
 
   // ── Map protocol drills ─────────────────────────────────────────────────
-  const drills: ProtocolDrillInput[] = (protocolDrillsList ?? []).map((d: any) => ({
+  const drills: ProtocolDrillInput[] = (protocolDrillsList ?? []).map((d) => ({
     id: d.id,
     date: d.date,
     scenario_type: d.scenario_type,
@@ -36,7 +36,7 @@ export async function GET() {
   }));
 
   // ── Map emergency plans ─────────────────────────────────────────────────
-  const plans: EmergencyPlanInput[] = (emergencyPlansList ?? []).map((p: any) => ({
+  const plans: EmergencyPlanInput[] = (emergencyPlansList ?? []).map((p) => ({
     id: p.id,
     title: p.title,
     plan_type: p.plan_type,
@@ -47,7 +47,7 @@ export async function GET() {
   }));
 
   // ── Map staff ───────────────────────────────────────────────────────────
-  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));

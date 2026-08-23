@@ -330,8 +330,8 @@ function deterministicStaffDevelopmentSummary(): string {
     return {
       id: i.id, staff_id: i.staff_id, start_date: i.start_date, target_completion_date: i.target_completion_date,
       overall_status: i.overall_status, total_items: items.length,
-      completed_items: items.filter((it: any) => it.status === "completed" || it.status === "signed_off").length,
-      overdue_items: items.filter((it: any) => it.status === "not_started" || it.status === "in_progress").length,
+      completed_items: items.filter((it) => it.status === "completed" || it.status === "signed_off").length,
+      overdue_items: items.filter((it) => it.status === "not_started" || it.status === "in_progress").length,
       probation_passed: Boolean(i.probation_passed),
     };
   });
@@ -339,7 +339,7 @@ function deterministicStaffDevelopmentSummary(): string {
     const actions: any[] = dp.actions ?? [];
     return {
       id: dp.id, staff_id: dp.staff_id, title: dp.title, from_stage: dp.from_stage ?? "", to_stage: dp.to_stage ?? "",
-      status: dp.status, total_actions: actions.length, completed_actions: actions.filter((a: any) => a.completed).length,
+      status: dp.status, total_actions: actions.length, completed_actions: actions.filter((a) => a.completed).length,
     };
   });
 

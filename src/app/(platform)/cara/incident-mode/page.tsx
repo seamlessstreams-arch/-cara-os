@@ -237,7 +237,7 @@ function StartView({ data, onOpen }: { data: NonNullable<ReturnType<typeof useCa
 
           <button
             disabled={!canStart}
-            onClick={() => start.mutate({ child_id: childId, incident_type: type, immediate_risk_level: risk }, { onSuccess: (s: any) => onOpen(s.id) })}
+            onClick={() => start.mutate({ child_id: childId, incident_type: type, immediate_risk_level: risk }, { onSuccess: (s) => onOpen(s.id) })}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--cs-navy)] px-6 py-4 text-base font-bold text-white transition-all hover:bg-[var(--cs-navy-soft)] disabled:opacity-40"
           >
             {start.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />} Start incident support

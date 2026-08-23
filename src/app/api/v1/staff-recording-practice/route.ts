@@ -30,7 +30,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 export async function GET() {
   const [dailyLog, incidents, keyWorkingSessions, youngPeople] = await Promise.all([dal.dailyLog.findAll(), dal.incidents.findAll(), dal.keyWorkingSessions.findAll(), dal.youngPeople.findAll()]);
   const quality = computeRecordingQuality({ records: mapStoreToRecords({ dailyLog, incidents, keyWorkingSessions, youngPeople }) });
-  const staff = ((await safeList(dal.staff.findAll())) as any[]).map((s: any) => ({
+  const staff = ((await safeList(dal.staff.findAll())) as any[]).map((s) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
   }));

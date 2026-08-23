@@ -32,8 +32,8 @@ export async function GET() {
     const day = (d: unknown) => String(d ?? now).slice(0, 10);
 
     const children = (youngPeopleList ?? [])
-      .filter((yp: any) => yp.status === "current")
-      .map((yp: any) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const records: FollowUpSourceRecord[] = [];
     const add = (r: FollowUpSourceRecord) => { if (r.source_id) records.push(r); };

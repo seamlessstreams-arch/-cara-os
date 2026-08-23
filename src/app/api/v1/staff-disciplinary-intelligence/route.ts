@@ -23,7 +23,7 @@ export async function GET() {
       dal.staffDisciplinaryRecords.findAll(),
     ]);
 
-  const cases: DisciplinaryInput[] = (staffDisciplinaryRecordsList ?? []).map((r: any) => ({
+  const cases: DisciplinaryInput[] = (staffDisciplinaryRecordsList ?? []).map((r) => ({
     id: r.id,
     staff_id: r.staff_member ?? "",
     date_raised: typeof r.date_raised === "string" ? r.date_raised.slice(0, 10) : r.date_raised,
@@ -42,8 +42,8 @@ export async function GET() {
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

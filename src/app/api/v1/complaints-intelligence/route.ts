@@ -23,7 +23,7 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const complaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c: any) => ({
+  const complaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c) => ({
     id: c.id,
     complaint_date: typeof c.complaint_date === "string" ? c.complaint_date.slice(0, 10) : c.complaint_date,
     complainant: c.complainant,
@@ -42,14 +42,14 @@ export async function GET() {
     ofsted_notified: c.ofsted_notified ?? false,
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

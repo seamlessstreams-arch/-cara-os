@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
 
   // ── Mood Entries (from daily log) ──────────────────────────────────────
   const mood_entries: MoodEntryInput[] = ((dailyLogList ?? []) as any[])
-    .filter((e: any) => e.child_id === childId)
-    .map((e: any) => ({
+    .filter((e) => e.child_id === childId)
+    .map((e) => ({
       id: e.id,
       date: (e.date ?? today).toString().slice(0, 10),
       mood_score: typeof e.mood_score === "number" ? e.mood_score : null,
@@ -62,8 +62,8 @@ export async function GET(request: NextRequest) {
 
   // ── Behaviour Entries ──────────────────────────────────────────────────
   const behaviour_entries: BehaviourEntryInput[] = ((behaviourLogList ?? []) as any[])
-    .filter((b: any) => b.child_id === childId)
-    .map((b: any) => ({
+    .filter((b) => b.child_id === childId)
+    .map((b) => ({
       id: b.id,
       date: (b.date ?? today).toString().slice(0, 10),
       direction: b.direction ?? "concerning",
@@ -74,8 +74,8 @@ export async function GET(request: NextRequest) {
 
   // ── Keywork Sessions ───────────────────────────────────────────────────
   const keywork_sessions: KeyworkSessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
-    .filter((k: any) => k.child_id === childId)
-    .map((k: any) => ({
+    .filter((k) => k.child_id === childId)
+    .map((k) => ({
       id: k.id,
       date: (k.date ?? today).toString().slice(0, 10),
       has_child_voice: !!(k.child_voice),
@@ -85,8 +85,8 @@ export async function GET(request: NextRequest) {
 
   // ── Therapy Sessions (from therapeuticInputRecords if available) ───────
   const therapy_sessions: TherapySessionInput[] = ((therapeuticInputRecordsList ?? []) as any[])
-    .filter((t: any) => t.child_id === childId)
-    .map((t: any) => ({
+    .filter((t) => t.child_id === childId)
+    .map((t) => ({
       id: t.id,
       date: (t.date ?? t.session_date ?? today).toString().slice(0, 10),
       attended: t.attended !== false,
@@ -95,8 +95,8 @@ export async function GET(request: NextRequest) {
 
   // ── Sanctions/Rewards ──────────────────────────────────────────────────
   const sanction_rewards: SanctionRewardInput[] = ((sanctionRewardsList ?? []) as any[])
-    .filter((sr: any) => sr.child_id === childId)
-    .map((sr: any) => ({
+    .filter((sr) => sr.child_id === childId)
+    .map((sr) => ({
       id: sr.id,
       date: (sr.date ?? today).toString().slice(0, 10),
       direction: sr.direction ?? "reward",

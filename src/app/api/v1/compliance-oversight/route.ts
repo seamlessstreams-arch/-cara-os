@@ -40,8 +40,8 @@ export async function GET() {
   }));
 
   const tasks: OversightTask[] = (tasksList ?? [])
-    .filter((t: any) => t.linked_document_id && docIds.has(t.linked_document_id))
-    .map((t: any) => ({ id: t.id, linked_document_id: t.linked_document_id, status: t.status, due_date: t.due_date ?? null }));
+    .filter((t) => t.linked_document_id && docIds.has(t.linked_document_id))
+    .map((t) => ({ id: t.id, linked_document_id: t.linked_document_id, status: t.status, due_date: t.due_date ?? null }));
 
   const result = analyseComplianceOversight({ today, documents, tasks });
   return NextResponse.json({ data: result });

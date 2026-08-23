@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
   ]);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = youngPeople.find((yp: any) => yp.id === childId) as any;
+  const child = youngPeople.find((yp) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
 
   // ── Missing Episodes ───────────────────────────────────────────────────
   const episodes: MissingEpisodeInput[] = missingEpisodes
-    .filter((ep: any) => ep.child_id === childId)
-    .map((ep: any) => ({
+    .filter((ep) => ep.child_id === childId)
+    .map((ep) => ({
       id: ep.id,
       date: typeof ep.date_missing === "string" ? ep.date_missing.slice(0, 10) : (ep.date ?? today).toString().slice(0, 10),
       time: ep.time_missing ?? "00:00",

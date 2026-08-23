@@ -19,7 +19,7 @@ const TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
 function staffNameMap(staffList: any[]): Map<string, string> {
   return new Map<string, string>(
-    (staffList ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (staffList ?? []).map((m) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
 }
 
@@ -31,7 +31,7 @@ function withName(p: ShiftPattern, names: Map<string, string>) {
 function buildPattern(body: any, staffList: any[], existing?: ShiftPattern): { pattern?: ShiftPattern; error?: string } {
   const staff_id = String(body.staff_id ?? existing?.staff_id ?? "");
   if (!staff_id) return { error: "A staff member is required." };
-  if (!(staffList ?? []).some((m: any) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
+  if (!(staffList ?? []).some((m) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
 
   const kind: ShiftPatternKind = body.kind === "rotating" ? "rotating" : body.kind === "weekly" ? "weekly" : (existing?.kind ?? "weekly");
 
@@ -83,8 +83,8 @@ export async function GET() {
   const names = staffNameMap(staffList);
   const patterns = (shiftPatternsList ?? []).map((p: ShiftPattern) => withName(p, names));
   const staff = (staffList ?? [])
-    .map((m: any) => ({ id: String(m.id), name: names.get(String(m.id)) ?? "Unknown", role: m.role ?? null }))
-    .sort((a: any, b: any) => a.name.localeCompare(b.name));
+    .map((m) => ({ id: String(m.id), name: names.get(String(m.id)) ?? "Unknown", role: m.role ?? null }))
+    .sort((a, b) => a.name.localeCompare(b.name));
   return NextResponse.json({ data: { patterns, staff } });
 }
 

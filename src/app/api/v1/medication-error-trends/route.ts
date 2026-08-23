@@ -36,7 +36,7 @@ export async function GET() {
     nameById.set(yp.id, yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id);
   }
 
-  const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[]).map((e: any) => ({
+  const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[]).map((e) => ({
     id: e.id,
     child_id: e.child_id ?? "",
     child_name: nameById.get(e.child_id) ?? e.child_id ?? "Unknown",
@@ -54,7 +54,7 @@ export async function GET() {
     status: e.status ?? "reported",
   }));
 
-  const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[]).map((a: any) => ({
+  const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[]).map((a) => ({
     date: d(a.scheduled_time ?? a.actual_time ?? a.created_at),
     status: a.status ?? "",
   }));

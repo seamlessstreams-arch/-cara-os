@@ -74,7 +74,7 @@ export async function GET() {
 
   // ── Parse incidents with a valid time ────────────────────────────────────
   const parsed = incidents
-    .map((inc: any) => {
+    .map((inc) => {
       const hour = parseHour(inc.time);
       return hour !== null ? { ...inc, hour } : null;
     })
@@ -171,7 +171,7 @@ export async function GET() {
     }
 
     const piCount = typeCounts["physical_intervention"] ?? 0;
-    const piEvening = parsed.filter((i: any) => i.type === "physical_intervention" && periodForHour(i.hour) === "evening").length;
+    const piEvening = parsed.filter((i) => i.type === "physical_intervention" && periodForHour(i.hour) === "evening").length;
     if (piCount >= 2) {
       insights.push(
         `${piCount} physical intervention${piCount > 1 ? "s" : ""} recorded. Review whether de-escalation strategies are being applied consistently at the early warning stage. Consider whether environmental or relational factors are contributing.`
@@ -223,7 +223,7 @@ export async function GET() {
   // Safeguarding override note
   let safeguardingNote: string | null = null;
   const openCritical = incidents.filter(
-    (i: any) => i.status === "open" && (i.severity === "critical" || i.type === "safeguarding_concern")
+    (i) => i.status === "open" && (i.severity === "critical" || i.type === "safeguarding_concern")
   );
   if (openCritical.length > 0) {
     safeguardingNote = `${openCritical.length} open critical or safeguarding incident${openCritical.length > 1 ? "s" : ""} require immediate manager review and completion of notifications and oversight.`;

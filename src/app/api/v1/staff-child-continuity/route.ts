@@ -31,23 +31,23 @@ export async function GET() {
     ]);
 
   const children: ContinuityChildInput[] = ((youngPeopleList ?? []) as any[])
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
       key_worker_id: yp.key_worker_id ?? null,
       secondary_worker_id: yp.secondary_worker_id ?? null,
     }));
 
-  const staff: ContinuityStaffInput[] = ((staffList ?? []) as any[]).map((s: any) => ({
+  const staff: ContinuityStaffInput[] = ((staffList ?? []) as any[]).map((s) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
     active: s.is_active ?? (s.employment_status ? s.employment_status === "active" : true),
   }));
 
   const sessions: ContinuitySessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
-    .filter((k: any) => k.child_id && k.staff_id)
-    .map((k: any) => ({
+    .filter((k) => k.child_id && k.staff_id)
+    .map((k) => ({
       child_id: k.child_id,
       staff_id: k.staff_id,
       date: d(k.date ?? k.created_at),

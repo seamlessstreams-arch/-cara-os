@@ -35,7 +35,7 @@ export async function GET() {
   ]);
 
   // ── Map documents ─────────────────────────────────────────────────────
-  const documents: DocumentInput[] = documentRecords.map((d: any) => ({
+  const documents: DocumentInput[] = documentRecords.map((d) => ({
     id: d.id,
     title: d.title,
     category: d.category,
@@ -50,7 +50,7 @@ export async function GET() {
   }));
 
   // ── Map read receipts ─────────────────────────────────────────────────
-  const read_receipts: ReadReceiptInput[] = (receipts ?? []).map((r: any) => ({
+  const read_receipts: ReadReceiptInput[] = (receipts ?? []).map((r) => ({
     id: r.id,
     document_id: r.document_id,
     staff_id: r.staff_id,
@@ -60,8 +60,8 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const active_staff: StaffRef[] = staffList
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
       is_active: true,

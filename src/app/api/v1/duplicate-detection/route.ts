@@ -39,7 +39,7 @@ export async function GET() {
   const stream = buildEventStream(mapStoreToEventInput(store));
 
   const youngPeople = await safeList(dal.youngPeople.findAll());
-  const children: ChildRef[] = youngPeople.map((yp: any) => ({
+  const children: ChildRef[] = youngPeople.map((yp) => ({
     id: yp.id,
     first_name: yp.first_name ?? "",
     last_name: yp.last_name ?? "",

@@ -22,19 +22,19 @@ export async function GET() {
   const today = todayStr();
 
   const activeStaff = staff.filter(
-    (s: any) => s.employment_status !== "left" && s.is_active !== false
+    (s) => s.employment_status !== "left" && s.is_active !== false
   );
 
-  const staffProfiles: StaffSkillProfile[] = activeStaff.map((s: any) => {
-    const staffTraining = trainingRecords.filter((t: any) => t.staff_id === s.id);
-    const mandatory = staffTraining.filter((t: any) => t.is_mandatory === true);
+  const staffProfiles: StaffSkillProfile[] = activeStaff.map((s) => {
+    const staffTraining = trainingRecords.filter((t) => t.staff_id === s.id);
+    const mandatory = staffTraining.filter((t) => t.is_mandatory === true);
     const compliant = mandatory.filter(
-      (t: any) =>
+      (t) =>
         t.status === "completed" &&
         (!t.expiry_date || t.expiry_date >= today)
     );
     const overdue = mandatory.filter(
-      (t: any) =>
+      (t) =>
         t.status !== "completed" ||
         (t.expiry_date && t.expiry_date < today)
     );
@@ -45,8 +45,8 @@ export async function GET() {
 
     // Most recent supervision
     const staffSups = supervisions
-      .filter((sup: any) => sup.staff_id === s.id)
-      .sort((a: any, b: any) => (b.date ?? "").localeCompare(a.date ?? ""));
+      .filter((sup) => sup.staff_id === s.id)
+      .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 
     const latestSup = staffSups[0] ?? null;
     const wellbeingScore: number | null =
@@ -85,7 +85,7 @@ export async function GET() {
       mandatoryCompliant: compliant.length,
       complianceRate,
       overdueTraining: overdue.map(
-        (t: any) => t.course_name ?? "Unknown course"
+        (t) => t.course_name ?? "Unknown course"
       ),
       supervisionScore: wellbeingScore,
       confidenceLevel,

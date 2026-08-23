@@ -22,7 +22,7 @@ describe("integration-hub integration (real store)", () => {
 
   // Defensive mapping — identical strategy to the API route. The store has no
   // integrations field today, so this resolves to the default scaffold registry.
-  const mapped: IntegrationAdapter[] = ((store.integrations ?? []) as any[]).map((x: any) => ({
+  const mapped: IntegrationAdapter[] = ((store.integrations ?? []) as any[]).map((x) => ({
     id: x.id,
     name: x.name ?? x.id,
     kind: (x.kind ?? "external_forms") as AdapterKind,

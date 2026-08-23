@@ -95,7 +95,7 @@ export async function GET() {
 
   // ── Child & staff maps ─────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s) => [
       s.id,
       {
         name: s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
@@ -105,7 +105,7 @@ export async function GET() {
   );
 
   const currentChildren = ((youngPeopleList as any[]) ?? []).filter(
-    (yp: any) => yp.status === "current"
+    (yp) => yp.status === "current"
   );
 
   // ── Index behaviourLog by child ────────────────────────────────────────────

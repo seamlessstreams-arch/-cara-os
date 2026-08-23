@@ -64,7 +64,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function UniversalChildEntry({ childId, staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalChildEntryProps) {
   const store = getStore();
-  const child = (store.youngPeople as any[] || []).find((yp: any) => yp.id === childId);
+  const child = (store.youngPeople as any[] || []).find((yp) => yp.id === childId);
   const childName = child ? `${child.first_name} ${child.last_name ?? ""}`.trim() : "Child";
 
   const [text, setText] = useState("");

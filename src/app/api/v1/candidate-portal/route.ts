@@ -106,10 +106,10 @@ export async function GET(req: Request) {
     dal.employerValuesProfiles.findAll(),
     dal.candidateValuesProfiles.findAll(),
   ]);
-  const vacancy = (vacanciesList ?? []).find((v: any) => v.id === (profile as any).vacancy_id);
+  const vacancy = (vacanciesList ?? []).find((v) => v.id === (profile as any).vacancy_id);
   const roleApplied = vacancy?.title ?? "Residential Care Worker";
 
-  const checksSummary = checks.map((c: any) => ({
+  const checksSummary = checks.map((c) => ({
     id: c.id,
     check_type: c.check_type as CheckType,
     label: CHECK_LABELS[c.check_type as CheckType] ?? c.check_type,
@@ -119,13 +119,13 @@ export async function GET(req: Request) {
     concern: c.concern_flag ?? false,
   }));
 
-  const refsReceived = references.filter((r: any) =>
+  const refsReceived = references.filter((r) =>
     ["received", "satisfactory", "unsatisfactory", "concerns_noted", "verbal_only"].includes(r.status)
   ).length;
 
   // Simplified values match (score + shared values only — no dimension detail)
   const employer = (employerValuesProfilesList ?? [])[0] ?? null;
-  const cvp = (candidateValuesProfilesList ?? []).find((v: any) => v.candidate_id === candidateId);
+  const cvp = (candidateValuesProfilesList ?? []).find((v) => v.candidate_id === candidateId);
   const matchSummary = employer && cvp ? (() => {
     const m = computeValuesMatch(employer, cvp);
     return {
@@ -154,7 +154,7 @@ export async function GET(req: Request) {
         progress_percent: progressPercent,
       },
       checks: checksSummary,
-      checks_complete: checksSummary.filter((c: any) => c.complete).length,
+      checks_complete: checksSummary.filter((c) => c.complete).length,
       checks_total: checksSummary.length,
       references_received: refsReceived,
       references_total: references.length,

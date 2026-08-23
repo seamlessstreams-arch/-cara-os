@@ -45,14 +45,14 @@ export async function GET() {
   const today = todayStr();
 
   const childPlans: ChildSafetyPlan[] = youngPeople
-    .filter((yp: any) => yp.status !== "moved_on" && yp.status !== "discharged")
-    .map((yp: any) => {
-      const childRAs = riskAssessments.filter((r: any) => r.child_id === yp.id);
+    .filter((yp) => yp.status !== "moved_on" && yp.status !== "discharged")
+    .map((yp) => {
+      const childRAs = riskAssessments.filter((r) => r.child_id === yp.id);
       const childKW = keyWorkingSessions
-        .filter((k: any) => k.child_id === yp.id)
-        .sort((a: any, b: any) => (b.date ?? "").localeCompare(a.date ?? ""));
+        .filter((k) => k.child_id === yp.id)
+        .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 
-      const riskDomains: ChildRiskDomain[] = childRAs.map((r: any) => {
+      const riskDomains: ChildRiskDomain[] = childRAs.map((r) => {
         const reviewDate = r.review_date ?? null;
         const overdueReview =
           reviewDate && daysBetween(today, reviewDate) > 0 && new Date(reviewDate) < new Date(today);
@@ -71,7 +71,7 @@ export async function GET() {
       const overdueReviewCount = riskDomains.filter((d) => d.overdueReview).length;
 
       const staffMember = (staffList as any[])?.find(
-        (s: any) => s.id === yp.key_worker_id
+        (s) => s.id === yp.key_worker_id
       );
       const keyWorker = staffMember
         ? staffMember.full_name ?? `${staffMember.first_name} ${staffMember.last_name}`
@@ -79,7 +79,7 @@ export async function GET() {
 
       const lastKeyWork = childKW[0]?.date ?? null;
       const lastRiskAssessment =
-        childRAs.sort((a: any, b: any) => (b.assessed_date ?? "").localeCompare(a.assessed_date ?? ""))[0]
+        childRAs.sort((a, b) => (b.assessed_date ?? "").localeCompare(a.assessed_date ?? ""))[0]
           ?.assessed_date ?? null;
 
       const risk = overallRisk(highRiskDomainCount, riskDomains);

@@ -37,7 +37,7 @@ export async function GET() {
     return NextResponse.json({ data: result });
   }
 
-  const adapters: IntegrationAdapter[] = integrations.map((x: any) => ({
+  const adapters: IntegrationAdapter[] = integrations.map((x) => ({
     id: x.id,
     name: x.name ?? x.id,
     kind: (x.kind ?? "external_forms") as AdapterKind,
@@ -48,7 +48,7 @@ export async function GET() {
       max_attempts: Number(x.retry?.max_attempts ?? 3),
       backoff_seconds: Number(x.retry?.backoff_seconds ?? 30),
     },
-    error_log: ((x.error_log ?? []) as any[]).map((e: any) => ({
+    error_log: ((x.error_log ?? []) as any[]).map((e) => ({
       at: d(e.at) ?? "",
       message: e.message ?? "",
     })),

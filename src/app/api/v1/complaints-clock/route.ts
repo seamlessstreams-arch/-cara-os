@@ -34,7 +34,7 @@ export async function GET() {
   const staff = (id?: string | null): string | undefined => (id ? getStaffName(id) : undefined);
   const iso = (v: any): string | undefined => (v ? String(v).slice(0, 10) : undefined);
 
-  const complaints: ComplaintInput[] = ((complaintsList ?? []) as any[]).map((c: any) => ({
+  const complaints: ComplaintInput[] = ((complaintsList ?? []) as any[]).map((c) => ({
     id: String(c.id ?? ""),
     reference: String(c.reference ?? c.id ?? ""),
     child_id: c.child_id ?? undefined,

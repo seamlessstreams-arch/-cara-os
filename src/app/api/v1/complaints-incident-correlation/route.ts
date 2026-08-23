@@ -31,14 +31,14 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const children: ChildRef[] = ((youngPeopleList ?? []) as any[]).map((yp: any) => ({
+  const children: ChildRef[] = ((youngPeopleList ?? []) as any[]).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
   }));
 
   const complaints: ComplaintCorrInput[] = ((complaintsList ?? []) as any[])
-    .filter((c: any) => c.child_id)
-    .map((c: any) => ({
+    .filter((c) => c.child_id)
+    .map((c) => ({
       child_id: c.child_id,
       date: d(c.date_received ?? c.created_at),
       category: c.category ?? "other",
@@ -47,8 +47,8 @@ export async function GET() {
     }));
 
   const incidents: IncidentCorrInput[] = ((incidentsList ?? []) as any[])
-    .filter((i: any) => i.child_id)
-    .map((i: any) => ({
+    .filter((i) => i.child_id)
+    .map((i) => ({
       child_id: i.child_id,
       date: d(i.date ?? i.created_at),
       type: i.type ?? "other",

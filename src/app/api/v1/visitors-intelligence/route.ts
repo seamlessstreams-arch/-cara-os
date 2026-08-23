@@ -24,7 +24,7 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const visitors: VisitorInput[] = (visitorsList ?? []).map((v: any) => ({
+  const visitors: VisitorInput[] = (visitorsList ?? []).map((v) => ({
     id: v.id,
     date: typeof v.date === "string" ? v.date.slice(0, 10) : v.date,
     visitor_name: v.visitor_name,
@@ -40,14 +40,14 @@ export async function GET() {
     children_seen: v.children_seen ?? [],
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

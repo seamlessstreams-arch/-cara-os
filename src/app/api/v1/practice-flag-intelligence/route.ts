@@ -97,14 +97,14 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   const [caraPracticeFlagsList, caraStaffWellbeingSignalsList, caraThresholdConsultationsList, staffList, youngPeopleList] = await Promise.all([dal.caraPracticeFlags.findAll(), dal.caraStaffWellbeingSignals.findAll(), dal.caraThresholdConsultations.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp) => [
       yp.id,
       `${yp.first_name} ${yp.last_name}`.trim() || "Unknown",
     ])
   );
 
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -112,9 +112,9 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
 
   // ── Practice flags ────────────────────────────────────────────────────────
   const rawFlags = (caraPracticeFlagsList as any[]) ?? [];
-  const unresolvedRaw = rawFlags.filter((f: any) => !f.resolved);
+  const unresolvedRaw = rawFlags.filter((f) => !f.resolved);
 
-  const allFlags: PracticeFlagEntry[] = unresolvedRaw.map((f: any): PracticeFlagEntry => ({
+  const allFlags: PracticeFlagEntry[] = unresolvedRaw.map((f): PracticeFlagEntry => ({
     id: f.id ?? "",
     childId: f.child_id ?? null,
     staffId: f.staff_id ?? null,
@@ -149,8 +149,8 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   // ── Threshold consultations ───────────────────────────────────────────────
   const rawConsultations = (caraThresholdConsultationsList as any[]) ?? [];
   const thresholdConsultations: ThresholdConsultationEntry[] = rawConsultations
-    .filter((c: any) => !c.manager_decision)
-    .map((c: any): ThresholdConsultationEntry => ({
+    .filter((c) => !c.manager_decision)
+    .map((c): ThresholdConsultationEntry => ({
       id: c.id ?? "",
       childId: c.child_id ?? null,
       childName: c.child_id ? (ypMap.get(c.child_id) ?? c.child_id) : null,
@@ -167,8 +167,8 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   // ── Staff wellbeing signals ───────────────────────────────────────────────
   const rawWellbeing = (caraStaffWellbeingSignalsList as any[]) ?? [];
   const staffWellbeingSignals: StaffWellbeingSignalEntry[] = rawWellbeing
-    .filter((s: any) => !s.resolved)
-    .map((s: any): StaffWellbeingSignalEntry => ({
+    .filter((s) => !s.resolved)
+    .map((s): StaffWellbeingSignalEntry => ({
       id: s.id ?? "",
       staffId: s.staff_id ?? "",
       staffName: staffMap.get(s.staff_id) ?? s.staff_id,

@@ -121,7 +121,7 @@ function clamp(value: number, min: number, max: number): number {
 
 function childNameFrom(youngPeople: any[], id: string | undefined): string {
   if (!id) return "Child";
-  const c = youngPeople.find((yp: any) => yp.id === id);
+  const c = youngPeople.find((yp) => yp.id === id);
   return c ? (c.name ?? c.first_name ?? "Child") : "Child";
 }
 
@@ -135,9 +135,9 @@ export function computeInspectionEvidencePack(
   input: EvidencePackInput,
 ): InspectionEvidencePack {
   const children = input.youngPeople.filter(
-    (yp: any) => yp.status === "current",
+    (yp) => yp.status === "current",
   );
-  const activeStaff = input.staff.filter((s: any) => s.is_active);
+  const activeStaff = input.staff.filter((s) => s.is_active);
 
   const sections: EvidenceSection[] = [
     buildChildOverview(input, children),
@@ -196,7 +196,7 @@ function buildChildOverview(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const items: EvidenceItem[] = children.map((c: any) => ({
+  const items: EvidenceItem[] = children.map((c) => ({
     id: `ev_child_${c.id}`,
     type: "child_profile",
     title: `Profile: ${c.name ?? c.first_name ?? "Child"} ${c.surname ?? c.last_name ?? ""}`.trim(),
@@ -234,7 +234,7 @@ function buildPlacementHistory(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const items: EvidenceItem[] = children.map((c: any) => {
+  const items: EvidenceItem[] = children.map((c) => {
     const placedDate = c.date_of_placement?.slice(0, 10) ?? "";
     const daysPlaced = placedDate
       ? daysBetween(placedDate, input.today)
@@ -285,11 +285,11 @@ function buildCarePlanProgress(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const periodForms = input.careForms.filter((f: any) =>
+  const periodForms = input.careForms.filter((f) =>
     isInPeriod(f.created_at ?? f.date, input.period_from, input.period_to),
   );
 
-  const items: EvidenceItem[] = periodForms.slice(0, 50).map((f: any) => ({
+  const items: EvidenceItem[] = periodForms.slice(0, 50).map((f) => ({
     id: `ev_careplan_${f.id}`,
     type: "care_plan",
     title: f.title ?? f.description ?? "Care Plan Entry",
@@ -301,9 +301,9 @@ function buildCarePlanProgress(
     tags: ["care_plan", f.form_type ?? "general"],
   }));
 
-  const childrenWithPlan = children.filter((c: any) =>
+  const childrenWithPlan = children.filter((c) =>
     input.careForms.some(
-      (f: any) =>
+      (f) =>
         (f.linked_child_id === c.id || f.child_id === c.id) &&
         (f.status === "active" || f.status === "approved"),
     ),
@@ -335,7 +335,7 @@ function buildRiskManagement(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const periodRAs = input.riskAssessments.filter((r: any) =>
+  const periodRAs = input.riskAssessments.filter((r) =>
     isInPeriod(
       r.created_at ?? r.date ?? r.assessment_date,
       input.period_from,
@@ -343,7 +343,7 @@ function buildRiskManagement(
     ),
   );
 
-  const items: EvidenceItem[] = periodRAs.slice(0, 50).map((r: any) => ({
+  const items: EvidenceItem[] = periodRAs.slice(0, 50).map((r) => ({
     id: `ev_risk_${r.id}`,
     type: "risk_assessment",
     title: r.title ?? r.risk_type ?? "Risk Assessment",
@@ -360,14 +360,14 @@ function buildRiskManagement(
     tags: ["risk", r.risk_level ?? "unspecified"],
   }));
 
-  const childrenWithRA = children.filter((c: any) =>
+  const childrenWithRA = children.filter((c) =>
     input.riskAssessments.some(
-      (r: any) => r.child_id === c.id && r.status === "current",
+      (r) => r.child_id === c.id && r.status === "current",
     ),
   ).length;
 
   const coverage = rate(childrenWithRA, children.length);
-  const overdueCount = input.riskAssessments.filter((r: any) => {
+  const overdueCount = input.riskAssessments.filter((r) => {
     const reviewDate = r.review_date ?? r.next_review;
     return reviewDate && reviewDate < input.today && r.status === "current";
   }).length;
@@ -400,10 +400,10 @@ function buildSafeguardingActions(
   const items: EvidenceItem[] = [];
 
   // Exploitation screenings
-  const periodScreenings = input.exploitationScreenings.filter((e: any) =>
+  const periodScreenings = input.exploitationScreenings.filter((e) =>
     isInPeriod(e.date ?? e.created_at, input.period_from, input.period_to),
   );
-  periodScreenings.forEach((e: any) => {
+  periodScreenings.forEach((e) => {
     items.push({
       id: `ev_safeguarding_es_${e.id}`,
       type: "exploitation_screening",
@@ -419,14 +419,14 @@ function buildSafeguardingActions(
   });
 
   // Missing episodes
-  const periodMissing = input.missingEpisodes.filter((m: any) =>
+  const periodMissing = input.missingEpisodes.filter((m) =>
     isInPeriod(
       m.date_missing ?? m.date ?? m.created_at,
       input.period_from,
       input.period_to,
     ),
   );
-  periodMissing.forEach((m: any) => {
+  periodMissing.forEach((m) => {
     items.push({
       id: `ev_safeguarding_missing_${m.id}`,
       type: "missing_episode",
@@ -446,10 +446,10 @@ function buildSafeguardingActions(
   });
 
   // Disclosures
-  const periodDisclosures = (input.disclosures ?? []).filter((d: any) =>
+  const periodDisclosures = (input.disclosures ?? []).filter((d) =>
     isInPeriod(d.date ?? d.created_at, input.period_from, input.period_to),
   );
-  periodDisclosures.forEach((d: any) => {
+  periodDisclosures.forEach((d) => {
     items.push({
       id: `ev_safeguarding_disc_${d.id}`,
       type: "disclosure",
@@ -465,10 +465,10 @@ function buildSafeguardingActions(
   });
 
   const highRiskScreenings = periodScreenings.filter(
-    (e: any) => e.risk_level === "high" || e.risk_level === "critical",
+    (e) => e.risk_level === "high" || e.risk_level === "critical",
   ).length;
   const returnInterviewsDone = periodMissing.filter(
-    (m: any) => m.return_interview_completed,
+    (m) => m.return_interview_completed,
   ).length;
   // No missing episodes means no return interviews were due — there is nothing to
   // rate, and an empty register must not present as full safeguarding assurance.
@@ -509,11 +509,11 @@ function buildDirectWorkSummary(
     ...input.keyWorkingSessions,
     ...input.keyworkerSessions,
   ];
-  const periodSessions = allSessions.filter((s: any) =>
+  const periodSessions = allSessions.filter((s) =>
     isInPeriod(s.date ?? s.created_at, input.period_from, input.period_to),
   );
 
-  const items: EvidenceItem[] = periodSessions.slice(0, 50).map((s: any) => ({
+  const items: EvidenceItem[] = periodSessions.slice(0, 50).map((s) => ({
     id: `ev_directwork_${s.id}`,
     type: "direct_work_session",
     title: s.title ?? s.focus ?? s.type ?? "Key Work Session",
@@ -527,7 +527,7 @@ function buildDirectWorkSummary(
   }));
 
   const childrenWithSessions = new Set(
-    periodSessions.map((s: any) => s.child_id),
+    periodSessions.map((s) => s.child_id),
   ).size;
   const coverage = rate(childrenWithSessions, children.length);
 
@@ -556,7 +556,7 @@ function buildIncidentsAndResponses(
   input: EvidencePackInput,
   _children: any[],
 ): EvidenceSection {
-  const periodIncidents = input.incidents.filter((i: any) =>
+  const periodIncidents = input.incidents.filter((i) =>
     isInPeriod(
       i.date ?? i.incident_date ?? i.created_at,
       input.period_from,
@@ -566,7 +566,7 @@ function buildIncidentsAndResponses(
 
   const items: EvidenceItem[] = periodIncidents
     .slice(0, 50)
-    .map((i: any) => ({
+    .map((i) => ({
       id: `ev_incident_${i.id}`,
       type: "incident",
       title: i.title ?? i.description?.slice(0, 60) ?? "Incident",
@@ -584,10 +584,10 @@ function buildIncidentsAndResponses(
     }));
 
   // Add restraint records
-  const periodRestraints = input.restraints.filter((r: any) =>
+  const periodRestraints = input.restraints.filter((r) =>
     isInPeriod(r.date ?? r.created_at, input.period_from, input.period_to),
   );
-  periodRestraints.forEach((r: any) => {
+  periodRestraints.forEach((r) => {
     items.push({
       id: `ev_restraint_${r.id}`,
       type: "restraint",
@@ -603,10 +603,10 @@ function buildIncidentsAndResponses(
   });
 
   const criticalCount = periodIncidents.filter(
-    (i: any) => i.severity === "critical",
+    (i) => i.severity === "critical",
   ).length;
   const closedCount = periodIncidents.filter(
-    (i: any) => i.status === "closed" || i.status === "resolved",
+    (i) => i.status === "closed" || i.status === "resolved",
   ).length;
   // No incidents recorded is an empty register, not a 100% closure record.
   const closureRate = rate(closedCount, periodIncidents.length);
@@ -638,11 +638,11 @@ function buildEducationNotes(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const periodEdu = input.educationRecords.filter((r: any) =>
+  const periodEdu = input.educationRecords.filter((r) =>
     isInPeriod(r.date ?? r.created_at, input.period_from, input.period_to),
   );
 
-  const items: EvidenceItem[] = periodEdu.slice(0, 50).map((r: any) => ({
+  const items: EvidenceItem[] = periodEdu.slice(0, 50).map((r) => ({
     id: `ev_education_${r.id}`,
     type: "education_record",
     title: r.title ?? r.record_type ?? "Education Record",
@@ -655,12 +655,12 @@ function buildEducationNotes(
   }));
 
   const childrenWithEdu = new Set(
-    input.educationRecords.map((r: any) => r.child_id),
+    input.educationRecords.map((r) => r.child_id),
   ).size;
   const pepRecords = input.educationRecords.filter(
-    (r: any) => r.record_type === "pep",
+    (r) => r.record_type === "pep",
   );
-  const childrenWithPEP = new Set(pepRecords.map((r: any) => r.child_id)).size;
+  const childrenWithPEP = new Set(pepRecords.map((r) => r.child_id)).size;
   const pepRate = rate(childrenWithPEP, children.length);
 
   const score =
@@ -694,10 +694,10 @@ function buildHealthNotes(
 
   // Health assessments
   input.healthAssessments
-    .filter((h: any) =>
+    .filter((h) =>
       isInPeriod(h.date ?? h.created_at, input.period_from, input.period_to),
     )
-    .forEach((h: any) => {
+    .forEach((h) => {
       items.push({
         id: `ev_health_ha_${h.id}`,
         type: "health_assessment",
@@ -713,10 +713,10 @@ function buildHealthNotes(
 
   // Dental records
   input.dentalRecords
-    .filter((d: any) =>
+    .filter((d) =>
       isInPeriod(d.date ?? d.created_at, input.period_from, input.period_to),
     )
-    .forEach((d: any) => {
+    .forEach((d) => {
       items.push({
         id: `ev_health_dental_${d.id}`,
         type: "dental_record",
@@ -732,10 +732,10 @@ function buildHealthNotes(
 
   // Mental health check-ins
   input.mentalHealthCheckIns
-    .filter((m: any) =>
+    .filter((m) =>
       isInPeriod(m.date ?? m.created_at, input.period_from, input.period_to),
     )
-    .forEach((m: any) => {
+    .forEach((m) => {
       items.push({
         id: `ev_health_mh_${m.id}`,
         type: "mental_health_check",
@@ -751,10 +751,10 @@ function buildHealthNotes(
 
   // Annual health assessments
   input.annualHealthAssessments
-    .filter((a: any) =>
+    .filter((a) =>
       isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
     )
-    .forEach((a: any) => {
+    .forEach((a) => {
       items.push({
         id: `ev_health_annual_${a.id}`,
         type: "annual_health_assessment",
@@ -769,7 +769,7 @@ function buildHealthNotes(
     });
 
   const childrenWithHealth = new Set(
-    input.healthAssessments.map((h: any) => h.child_id),
+    input.healthAssessments.map((h) => h.child_id),
   ).size;
   const coverage = rate(childrenWithHealth, children.length);
 
@@ -802,13 +802,13 @@ function buildFamilyContact(
   input: EvidencePackInput,
   children: any[],
 ): EvidenceSection {
-  const periodFamilyTime = input.familyTimeSessions.filter((f: any) =>
+  const periodFamilyTime = input.familyTimeSessions.filter((f) =>
     isInPeriod(f.date ?? f.created_at, input.period_from, input.period_to),
   );
 
   const items: EvidenceItem[] = periodFamilyTime
     .slice(0, 50)
-    .map((f: any) => ({
+    .map((f) => ({
       id: `ev_family_${f.id}`,
       type: "family_contact",
       title: f.title ?? `Family Time — ${f.contact_type ?? "visit"}`,
@@ -822,10 +822,10 @@ function buildFamilyContact(
 
   // Contact plans
   input.contactPlans
-    .filter((cp: any) =>
+    .filter((cp) =>
       isInPeriod(cp.created_at, input.period_from, input.period_to),
     )
-    .forEach((cp: any) => {
+    .forEach((cp) => {
       items.push({
         id: `ev_family_plan_${cp.id}`,
         type: "contact_plan",
@@ -840,7 +840,7 @@ function buildFamilyContact(
     });
 
   const childrenWithContact = new Set(
-    periodFamilyTime.map((f: any) => f.child_id),
+    periodFamilyTime.map((f) => f.child_id),
   ).size;
   const coverage = rate(childrenWithContact, children.length);
 
@@ -872,10 +872,10 @@ function buildProfessionalContact(
   const items: EvidenceItem[] = [];
 
   // Multi-agency meetings
-  const periodMAM = input.multiAgencyMeetings.filter((m: any) =>
+  const periodMAM = input.multiAgencyMeetings.filter((m) =>
     isInPeriod(m.date ?? m.created_at, input.period_from, input.period_to),
   );
-  periodMAM.forEach((m: any) => {
+  periodMAM.forEach((m) => {
     items.push({
       id: `ev_professional_mam_${m.id}`,
       type: "multi_agency_meeting",
@@ -890,14 +890,14 @@ function buildProfessionalContact(
   });
 
   // LAC reviews
-  const periodLAC = input.lacReviews.filter((r: any) =>
+  const periodLAC = input.lacReviews.filter((r) =>
     isInPeriod(
       r.review_date ?? r.date ?? r.created_at,
       input.period_from,
       input.period_to,
     ),
   );
-  periodLAC.forEach((r: any) => {
+  periodLAC.forEach((r) => {
     items.push({
       id: `ev_professional_lac_${r.id}`,
       type: "lac_review",
@@ -948,14 +948,14 @@ function buildManagementOversight(
   const items: EvidenceItem[] = [];
 
   // Supervisions
-  const periodSupervisions = input.supervisions.filter((s: any) =>
+  const periodSupervisions = input.supervisions.filter((s) =>
     isInPeriod(
       s.actual_date ?? s.scheduled_date ?? s.created_at,
       input.period_from,
       input.period_to,
     ),
   );
-  periodSupervisions.forEach((s: any) => {
+  periodSupervisions.forEach((s) => {
     items.push({
       id: `ev_oversight_sup_${s.id}`,
       type: "supervision",
@@ -974,10 +974,10 @@ function buildManagementOversight(
   });
 
   // QA Audits
-  const periodAudits = input.qaAuditRecords.filter((a: any) =>
+  const periodAudits = input.qaAuditRecords.filter((a) =>
     isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
   );
-  periodAudits.forEach((a: any) => {
+  periodAudits.forEach((a) => {
     items.push({
       id: `ev_oversight_qa_${a.id}`,
       type: "qa_audit",
@@ -991,10 +991,10 @@ function buildManagementOversight(
   });
 
   // Training records
-  const periodTraining = input.trainingRecords.filter((t: any) =>
+  const periodTraining = input.trainingRecords.filter((t) =>
     isInPeriod(t.date ?? t.created_at, input.period_from, input.period_to),
   );
-  periodTraining.slice(0, 20).forEach((t: any) => {
+  periodTraining.slice(0, 20).forEach((t) => {
     items.push({
       id: `ev_oversight_training_${t.id}`,
       type: "training",
@@ -1009,7 +1009,7 @@ function buildManagementOversight(
   });
 
   const supRate = rate(
-    new Set(periodSupervisions.map((s: any) => s.staff_id)).size,
+    new Set(periodSupervisions.map((s) => s.staff_id)).size,
     activeStaff.length,
   );
 
@@ -1043,10 +1043,10 @@ function buildAuditTrail(
   const items: EvidenceItem[] = [];
 
   // Case file audits
-  const periodCFA = input.caseFileAudits.filter((a: any) =>
+  const periodCFA = input.caseFileAudits.filter((a) =>
     isInPeriod(a.date ?? a.created_at, input.period_from, input.period_to),
   );
-  periodCFA.forEach((a: any) => {
+  periodCFA.forEach((a) => {
     items.push({
       id: `ev_audit_cfa_${a.id}`,
       type: "case_file_audit",
@@ -1061,12 +1061,12 @@ function buildAuditTrail(
   });
 
   // Daily log entries (sample for record keeping quality)
-  const periodLogs = input.dailyLog.filter((l: any) =>
+  const periodLogs = input.dailyLog.filter((l) =>
     isInPeriod(l.date ?? l.created_at, input.period_from, input.period_to),
   );
 
   // Chronology entries
-  const periodChronology = input.chronology.filter((c: any) =>
+  const periodChronology = input.chronology.filter((c) =>
     isInPeriod(c.date ?? c.created_at, input.period_from, input.period_to),
   );
 
@@ -1108,7 +1108,7 @@ function buildAuditTrail(
 function buildOutstandingActions(
   input: EvidencePackInput,
 ): EvidenceSection {
-  const overdueTasks = input.tasks.filter((t: any) => {
+  const overdueTasks = input.tasks.filter((t) => {
     const isOpen =
       t.status !== "completed" &&
       t.status !== "closed" &&
@@ -1117,7 +1117,7 @@ function buildOutstandingActions(
     return isOpen && isOverdue;
   });
 
-  const pendingTasks = input.tasks.filter((t: any) => {
+  const pendingTasks = input.tasks.filter((t) => {
     const isOpen =
       t.status !== "completed" &&
       t.status !== "closed" &&
@@ -1125,7 +1125,7 @@ function buildOutstandingActions(
     return isOpen;
   });
 
-  const items: EvidenceItem[] = overdueTasks.slice(0, 50).map((t: any) => ({
+  const items: EvidenceItem[] = overdueTasks.slice(0, 50).map((t) => ({
     id: `ev_outstanding_${t.id}`,
     type: "overdue_task",
     title: t.title ?? t.description?.slice(0, 60) ?? "Overdue Task",
@@ -1173,10 +1173,10 @@ function buildEvidenceOfProgress(
 
   // Outcome targets & reviews
   input.outcomeTargets
-    .filter((o: any) =>
+    .filter((o) =>
       isInPeriod(o.created_at ?? o.date, input.period_from, input.period_to),
     )
-    .forEach((o: any) => {
+    .forEach((o) => {
       items.push({
         id: `ev_progress_target_${o.id}`,
         type: "outcome_target",
@@ -1192,10 +1192,10 @@ function buildEvidenceOfProgress(
 
   // Therapeutic impact
   input.therapeuticChildImpact
-    .filter((t: any) =>
+    .filter((t) =>
       isInPeriod(t.date ?? t.created_at, input.period_from, input.period_to),
     )
-    .forEach((t: any) => {
+    .forEach((t) => {
       items.push({
         id: `ev_progress_therapeutic_${t.id}`,
         type: "therapeutic_impact",
@@ -1211,14 +1211,14 @@ function buildEvidenceOfProgress(
 
   // Independence skills
   input.independenceSkillsRecords
-    .filter((r: any) =>
+    .filter((r) =>
       isInPeriod(
         r.review_date ?? r.created_at,
         input.period_from,
         input.period_to,
       ),
     )
-    .forEach((r: any) => {
+    .forEach((r) => {
       items.push({
         id: `ev_progress_independence_${r.id}`,
         type: "independence_skills",
@@ -1237,10 +1237,10 @@ function buildEvidenceOfProgress(
 
   // YP Feedback
   input.ypFeedback
-    .filter((f: any) =>
+    .filter((f) =>
       isInPeriod(f.date ?? f.created_at, input.period_from, input.period_to),
     )
-    .forEach((f: any) => {
+    .forEach((f) => {
       items.push({
         id: `ev_progress_feedback_${f.id}`,
         type: "yp_feedback",
@@ -1256,10 +1256,10 @@ function buildEvidenceOfProgress(
 
   // Advocacy records
   input.advocacyRecords
-    .filter((a: any) =>
+    .filter((a) =>
       isInPeriod(a.created_at, input.period_from, input.period_to),
     )
-    .forEach((a: any) => {
+    .forEach((a) => {
       items.push({
         id: `ev_progress_advocacy_${a.id}`,
         type: "advocacy",
@@ -1274,7 +1274,7 @@ function buildEvidenceOfProgress(
     });
 
   const avgReadiness = meanOf(
-    input.independenceSkillsRecords.map((r: any) =>
+    input.independenceSkillsRecords.map((r) =>
       typeof r.overall_readiness === "number" ? r.overall_readiness : null,
     ),
   );
@@ -1324,11 +1324,11 @@ function buildRightsAndRestrictionEvidence(
   input: EvidencePackInput,
   _children: any[],
 ): EvidenceSection {
-  const reviews = (input.restrictionReviews ?? []).filter((r: any) =>
+  const reviews = (input.restrictionReviews ?? []).filter((r) =>
     isInPeriod(r.review_date ?? r.created_at, input.period_from, input.period_to),
   );
 
-  const items: EvidenceItem[] = reviews.slice(0, 50).map((r: any) => {
+  const items: EvidenceItem[] = reviews.slice(0, 50).map((r) => {
     const childVoice = hasText(r.child_wishes_feelings);
     const leastRestrictive = hasText(r.least_restrictive_alternatives);
     return {
@@ -1355,7 +1355,7 @@ function buildRightsAndRestrictionEvidence(
   let score: number | undefined;
   if (reviews.length > 0) {
     const quality =
-      reviews.reduce((sum: number, r: any) => {
+      reviews.reduce((sum: number, r) => {
         const parts = [
           hasText(r.child_wishes_feelings),
           hasText(r.least_restrictive_alternatives),
@@ -1367,7 +1367,7 @@ function buildRightsAndRestrictionEvidence(
     score = Math.round(quality * 100);
   }
 
-  const withVoice = reviews.filter((r: any) => hasText(r.child_wishes_feelings)).length;
+  const withVoice = reviews.filter((r) => hasText(r.child_wishes_feelings)).length;
 
   return {
     id: "rights_and_restriction",
@@ -1393,14 +1393,14 @@ function buildLearningFromIncidents(
   input: EvidencePackInput,
   _children: any[],
 ): EvidenceSection {
-  const reflections = (input.postIncidentReflections ?? []).filter((r: any) =>
+  const reflections = (input.postIncidentReflections ?? []).filter((r) =>
     isInPeriod(r.incident_date ?? r.created_at, input.period_from, input.period_to),
   );
 
   const stageDone = (s: any) =>
     s?.status === "completed" || s?.status === "signed_off";
 
-  const items: EvidenceItem[] = reflections.slice(0, 50).map((r: any) => {
+  const items: EvidenceItem[] = reflections.slice(0, 50).map((r) => {
     const stages = Array.isArray(r.stages) ? r.stages : [];
     const done = stages.filter(stageDone).length;
     const total = stages.length || 10;
@@ -1423,7 +1423,7 @@ function buildLearningFromIncidents(
   let score: number | undefined;
   if (reflections.length > 0) {
     const completion =
-      reflections.reduce((sum: number, r: any) => {
+      reflections.reduce((sum: number, r) => {
         if (r.status === "signed_off" || r.status === "completed") return sum + 1;
         const stages = Array.isArray(r.stages) ? r.stages : [];
         const total = stages.length || 10;
@@ -1447,7 +1447,7 @@ function buildLearningFromIncidents(
       reflections.length === 0
         ? "No post-incident reflections recorded in this period."
         : `${reflections.length} reflection(s) recorded; ${
-            reflections.filter((r: any) => r.status === "signed_off").length
+            reflections.filter((r) => r.status === "signed_off").length
           } signed off by a manager.`,
   };
 }
@@ -1460,7 +1460,7 @@ function buildChildSafetyPlanning(
 ): EvidenceSection {
   const plans = input.stayingSafePlans ?? [];
 
-  const items: EvidenceItem[] = plans.slice(0, 50).map((p: any) => ({
+  const items: EvidenceItem[] = plans.slice(0, 50).map((p) => ({
     id: `ev_safeplan_${p.id}`,
     type: "staying_safe_plan",
     title: `Staying Safe Plan — ${
@@ -1477,17 +1477,13 @@ function buildChildSafetyPlanning(
   }));
 
   const childIdsWithActivePlan = new Set(
-    plans.filter((p: any) => p.status === "active").map((p: any) => p.child_id),
+    plans.filter((p) => p.status === "active").map((p) => p.child_id),
   );
-  const coverage =
-    children.length > 0
-      ? Math.round(
-          (children.filter((c: any) => childIdsWithActivePlan.has(c.id)).length /
-            children.length) *
-            100,
-        )
-      : 0;
-  const score = children.length > 0 ? clamp(coverage, 0, 100) : undefined;
+  const coverage = rate(
+    children.filter((c) => childIdsWithActivePlan.has(c.id)).length,
+    children.length,
+  );
+  const score = coverage === null ? undefined : clamp(coverage, 0, 100);
 
   return {
     id: "child_safety_planning",
@@ -1501,7 +1497,7 @@ function buildChildSafetyPlanning(
     score,
     rating: score === undefined ? "not_assessed" : scoreToRating(score),
     summary: `${childIdsWithActivePlan.size}/${children.length} children have an active staying-safe plan; ${
-      plans.filter((p: any) => p.manager_approved).length
+      plans.filter((p) => p.manager_approved).length
     } of ${plans.length} plan(s) manager-approved.`,
   };
 }
@@ -1515,13 +1511,13 @@ function buildProtectiveRelationshipsEvidence(
   const entries = input.relationshipEntries ?? [];
 
   const items: EvidenceItem[] = children
-    .map((c: any): EvidenceItem | null => {
-      const childEntries = entries.filter((e: any) => e.child_id === c.id);
+    .map((c): EvidenceItem | null => {
+      const childEntries = entries.filter((e) => e.child_id === c.id);
       if (childEntries.length === 0) return null;
       const protectiveCount = childEntries.filter(
-        (e: any) => e.rating === "protective",
+        (e) => e.rating === "protective",
       ).length;
-      const riskCount = childEntries.filter((e: any) => e.rating === "risk").length;
+      const riskCount = childEntries.filter((e) => e.rating === "risk").length;
       return {
         id: `ev_relationships_${c.id}`,
         type: "protective_relationships",
@@ -1536,8 +1532,8 @@ function buildProtectiveRelationshipsEvidence(
     })
     .filter((x: EvidenceItem | null): x is EvidenceItem => x !== null);
 
-  const childrenWithProtective = children.filter((c: any) =>
-    entries.some((e: any) => e.child_id === c.id && e.rating === "protective"),
+  const childrenWithProtective = children.filter((c) =>
+    entries.some((e) => e.child_id === c.id && e.rating === "protective"),
   ).length;
   const score =
     children.length > 0
@@ -1766,7 +1762,7 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
 
   // Overdue tasks
   input.tasks
-    .filter((t: any) => {
+    .filter((t) => {
       const isOpen =
         t.status !== "completed" &&
         t.status !== "closed" &&
@@ -1775,7 +1771,7 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
       return isOpen && isOverdue;
     })
     .slice(0, 20)
-    .forEach((t: any) => {
+    .forEach((t) => {
       actions.push({
         id: `action_task_${t.id}`,
         type: "overdue_task",
@@ -1796,12 +1792,12 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
 
   // Overdue risk assessment reviews
   input.riskAssessments
-    .filter((r: any) => {
+    .filter((r) => {
       const reviewDate = r.review_date ?? r.next_review;
       return reviewDate && reviewDate < input.today && r.status === "current";
     })
     .slice(0, 10)
-    .forEach((r: any) => {
+    .forEach((r) => {
       actions.push({
         id: `action_ra_${r.id}`,
         type: "overdue_risk_review",
@@ -1819,13 +1815,13 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
   // Open incidents
   input.incidents
     .filter(
-      (i: any) =>
+      (i) =>
         i.status !== "closed" &&
         i.status !== "resolved" &&
         i.severity === "critical",
     )
     .slice(0, 10)
-    .forEach((i: any) => {
+    .forEach((i) => {
       actions.push({
         id: `action_incident_${i.id}`,
         type: "open_critical_incident",
@@ -1845,9 +1841,9 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
 
   // Overdue restriction reviews — least-restrictive practice depends on timely review
   (input.restrictionReviews ?? [])
-    .filter((r: any) => r.next_review_date && r.next_review_date < input.today)
+    .filter((r) => r.next_review_date && r.next_review_date < input.today)
     .slice(0, 10)
-    .forEach((r: any) => {
+    .forEach((r) => {
       actions.push({
         id: `action_restriction_${r.id}`,
         type: "overdue_restriction_review",
@@ -1864,9 +1860,9 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
 
   // Active staying-safe plans awaiting manager approval
   (input.stayingSafePlans ?? [])
-    .filter((p: any) => p.status === "active" && !p.manager_approved)
+    .filter((p) => p.status === "active" && !p.manager_approved)
     .slice(0, 10)
-    .forEach((p: any) => {
+    .forEach((p) => {
       actions.push({
         id: `action_safeplan_${p.id}`,
         type: "unapproved_safety_plan",

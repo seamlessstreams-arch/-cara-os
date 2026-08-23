@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
 
   // ── Restraints ─────────────────────────────────────────────────────────
   const restraints: RestraintInput[] = ((restraintsList ?? []) as any[])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       date: (r.date ?? today).toString().slice(0, 10),
       start_time: r.start_time ?? "12:00",

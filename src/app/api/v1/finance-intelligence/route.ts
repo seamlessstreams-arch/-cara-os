@@ -20,7 +20,7 @@ export async function GET() {
   const [clothingAllowanceRecordsList, pocketMoneyAccountsList, pocketMoneyTransactionsList, staffList, youngPeopleList] = await Promise.all([dal.clothingAllowanceRecords.findAll(), dal.pocketMoneyAccounts.findAll(), dal.pocketMoneyTransactions.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   const transactions: PocketMoneyTransactionInput[] = [
-    ...(pocketMoneyTransactionsList ?? []).map((t: any) => ({
+    ...(pocketMoneyTransactionsList ?? []).map((t) => ({
       id: t.id,
       child_id: t.child_id,
       date: typeof t.date === "string" ? t.date.slice(0, 10) : t.date,
@@ -31,7 +31,7 @@ export async function GET() {
       receipt_held: t.receipt_held ?? false,
       approved_by: t.approved_by ?? "",
     })),
-    ...(pocketMoneyAccountsList ?? []).map((a: any) => ({
+    ...(pocketMoneyAccountsList ?? []).map((a) => ({
       id: a.id,
       child_id: a.child_id,
       date: typeof a.date === "string" ? a.date.slice(0, 10) : a.date,
@@ -44,7 +44,7 @@ export async function GET() {
     })),
   ];
 
-  const clothing_allowances: ClothingAllowanceInput[] = (clothingAllowanceRecordsList ?? []).map((c: any) => ({
+  const clothing_allowances: ClothingAllowanceInput[] = (clothingAllowanceRecordsList ?? []).map((c) => ({
     id: c.id,
     child_id: c.child_id,
     financial_year: c.financial_year,
@@ -55,14 +55,14 @@ export async function GET() {
     ytd_spend: c.ytd_spend,
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

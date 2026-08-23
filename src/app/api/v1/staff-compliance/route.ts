@@ -30,7 +30,7 @@ export async function GET() {
 
   const result = computeStaffCompliance({
     today,
-    staff: staffList.map((s: any) => ({
+    staff: staffList.map((s) => ({
       id: String(s.id),
       full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       role: String(s.role ?? ""),
@@ -43,7 +43,7 @@ export async function GET() {
       next_supervision_due: s.next_supervision_due ?? null,
       next_appraisal_due: s.next_appraisal_due ?? null,
     })),
-    training: trainingRecords.map((t: any) => ({
+    training: trainingRecords.map((t) => ({
       staff_id: String(t.staff_id),
       course_name: String(t.course_name ?? "Training"),
       expiry_date: t.expiry_date ? String(t.expiry_date).slice(0, 10) : null,

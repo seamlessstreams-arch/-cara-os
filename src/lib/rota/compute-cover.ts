@@ -22,12 +22,9 @@ export function computeStaffingCoverFromStore(store: Pick<ReturnType<typeof getS
   const inRange = (d: string) => d >= from && d <= to;
 
   // ── Published shifts in range ──
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const realShifts = (store.shifts ?? []).filter((s: any) => inRange(String(s.date).slice(0, 10)) && s.status !== "cancelled");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const realKey = new Set(realShifts.map((s: any) => `${s.staff_id}|${String(s.date).slice(0, 10)}`));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const assignments: CoverAssignment[] = realShifts.map((s: any) => ({
+  const realShifts = (store.shifts ?? []).filter((s) => inRange(String(s.date).slice(0, 10)) && s.status !== "cancelled");
+  const realKey = new Set(realShifts.map((s) => `${s.staff_id}|${String(s.date).slice(0, 10)}`));
+  const assignments: CoverAssignment[] = realShifts.map((s) => ({
     date: String(s.date).slice(0, 10),
     period: shiftTypeToPeriod(String(s.shift_type)),
     staff_id: String(s.staff_id ?? ""),
@@ -58,8 +55,7 @@ export function computeStaffingCoverFromStore(store: Pick<ReturnType<typeof getS
     mark(String(sk.staff_id), sk.date_started ? String(sk.date_started).slice(0, 10) : "", sk.date_ended ? String(sk.date_ended).slice(0, 10) : to);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const coverNotes: CoverReasonNote[] = (store.shiftCoverNotes ?? []).map((n: any) => ({
+  const coverNotes: CoverReasonNote[] = (store.shiftCoverNotes ?? []).map((n) => ({
     date: String(n.date).slice(0, 10),
     period: n.period,
     reason: String(n.reason),
@@ -67,8 +63,7 @@ export function computeStaffingCoverFromStore(store: Pick<ReturnType<typeof getS
   }));
 
   const staffName = new Map<string, string>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (store.staff ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (store.staff ?? []).map((m) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
 
   const result = analyseStaffingCover({
