@@ -3,5 +3,5 @@
  "@next/next/no-location-assign-relative-destination": 1,
  "@typescript-eslint/no-explicit-any": 5032,
  "@typescript-eslint/no-unused-expressions": 9,
- "@typescript-eslint/no-unused-vars": 30
+ "@typescript-eslint/no-unused-vars": 25
 }
