@@ -35,7 +35,7 @@ export async function GET() {
   ]);
 
   // ── Map shifts ────────��──────────────────────��──────────────────────────
-  const shifts: ShiftInput[] = (allShifts).map((s: any) => ({
+  const shifts: ShiftInput[] = (allShifts).map((s) => ({
     id: s.id,
     staff_id: s.staff_id ?? "",
     date: typeof s.date === "string" ? s.date.slice(0, 10) : s.date,
@@ -51,8 +51,8 @@ export async function GET() {
 
   // ── Map absences (from leave requests where type is sick/compassionate) ─
   const absences: AbsenceInput[] = (allLeaveRequests)
-    .filter((l: any) => l.status === "approved")
-    .map((a: any) => ({
+    .filter((l) => l.status === "approved")
+    .map((a) => ({
       id: a.id,
       staff_id: a.staff_id ?? "",
       start_date: typeof a.start_date === "string" ? a.start_date.slice(0, 10) : a.start_date,
@@ -63,8 +63,8 @@ export async function GET() {
 
   // ── Map staff ──────────���──────────────────────────────��─────────────────
   const staff: StaffRef[] = (allStaff)
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

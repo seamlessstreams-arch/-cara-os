@@ -38,7 +38,7 @@ export async function GET() {
       let outcomesScore: number | null = null;
       if (activeTargets.length > 0) {
         const avgRating =
-          activeTargets.reduce((s: number, t: any) => s + ((t.current_rating as number) ?? 3), 0) / activeTargets.length;
+          activeTargets.reduce((s: number, t) => s + ((t.current_rating as number) ?? 3), 0) / activeTargets.length;
         outcomesScore = Math.round(((avgRating - 1) / 4) * 100);
       }
 
@@ -50,7 +50,7 @@ export async function GET() {
       if (recentKW.length > 0) {
         const moodEntries = recentKW.filter((s) => s.mood_after != null);
         if (moodEntries.length > 0) {
-          const avgMood = moodEntries.reduce((s: number, kw: any) => s + (kw.mood_after as number), 0) / moodEntries.length;
+          const avgMood = moodEntries.reduce((s: number, kw) => s + (kw.mood_after as number), 0) / moodEntries.length;
           wellbeingScore = Math.round(((avgMood - 1) / 4) * 100);
         }
       }
@@ -85,7 +85,7 @@ export async function GET() {
       // 5. Progress score — % of active outcome targets improving
       let progressScore: number | null = null;
       if (activeTargets.length > 0) {
-        const improving = activeTargets.filter((t: any) => t.direction === "improving").length;
+        const improving = activeTargets.filter((t) => t.direction === "improving").length;
         progressScore = Math.round((improving / activeTargets.length) * 100);
       }
 

@@ -40,7 +40,7 @@ export async function GET() {
     ]);
 
   // ── Map buildings ─────────────────────────────────────────────────────
-  const buildings: BuildingInput[] = buildingRecords.map((b: any) => ({
+  const buildings: BuildingInput[] = buildingRecords.map((b) => ({
     id: b.id,
     name: b.name,
     type: b.type,
@@ -54,7 +54,7 @@ export async function GET() {
   }));
 
   // ── Map building checks ───────────────────────────────────────────────
-  const building_checks: BuildingCheckInput[] = buildingCheckRecords.map((c: any) => ({
+  const building_checks: BuildingCheckInput[] = buildingCheckRecords.map((c) => ({
     id: c.id,
     building_id: c.building_id,
     area: c.area,
@@ -72,7 +72,7 @@ export async function GET() {
   }));
 
   // ── Map maintenance ───────────────────────────────────────────────────
-  const maintenance: MaintenanceInput[] = maintenanceRecords.map((m: any) => ({
+  const maintenance: MaintenanceInput[] = maintenanceRecords.map((m) => ({
     id: m.id,
     title: m.title,
     category: m.category,
@@ -84,7 +84,7 @@ export async function GET() {
   }));
 
   // ── Map vehicles ──────────────────────────────────────────────────────
-  const vehicles: VehicleInput[] = vehicleRecords.map((v: any) => ({
+  const vehicles: VehicleInput[] = vehicleRecords.map((v) => ({
     id: v.id,
     registration: v.registration,
     make: v.make,
@@ -98,7 +98,7 @@ export async function GET() {
   }));
 
   // ── Map vehicle checks ────────────────────────────────────────────────
-  const vehicle_checks: VehicleCheckInput[] = vehicleCheckRecords.map((vc: any) => ({
+  const vehicle_checks: VehicleCheckInput[] = vehicleCheckRecords.map((vc) => ({
     id: vc.id,
     vehicle_id: vc.vehicle_id,
     check_type: vc.check_type,

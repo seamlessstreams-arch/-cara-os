@@ -48,18 +48,18 @@ export async function GET(req: Request) {
     safeList(dal.missingEpisodes.findAll()),
   ]);
 
-  const yp = (allYoungPeople).filter((c: any) => c.status === "current");
+  const yp = (allYoungPeople).filter((c) => c.status === "current");
   const ypName = (id: any) => {
-    const c = yp.find((x: any) => String(x.id) === String(id));
+    const c = yp.find((x) => String(x.id) === String(id));
     return c ? c.preferred_name || c.first_name || "Unknown" : null;
   };
 
   // ── On shift (date + period) ──
   const isNightType = (t: string) => /night|waking|sleep/i.test(t || "");
   const onShift = (allShifts)
-    .filter((s: any) => String(s.date).slice(0, 10) === date && s.status !== "cancelled" && s.status !== "no_show")
-    .filter((s: any) => (period === "night" ? isNightType(s.shift_type) : !isNightType(s.shift_type)))
-    .map((s: any) => ({ staff_name: getStaffName(s.staff_id) || String(s.staff_id), role: s.shift_type ?? null, shift_type: s.shift_type ?? null }));
+    .filter((s) => String(s.date).slice(0, 10) === date && s.status !== "cancelled" && s.status !== "no_show")
+    .filter((s) => (period === "night" ? isNightType(s.shift_type) : !isNightType(s.shift_type)))
+    .map((s) => ({ staff_name: getStaffName(s.staff_id) || String(s.staff_id), role: s.shift_type ?? null, shift_type: s.shift_type ?? null }));
 
   // ── Staffing (deterministic read) ──
   const onCount = onShift.length;
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
   const shortfall = Math.max(0, minimum - onCount);
   const isUnderstaffed = shortfall > 0;
   const hasWaking = (allShifts).some(
-    (s: any) => String(s.date).slice(0, 10) === date && /waking/i.test(s.shift_type || "") && s.status !== "cancelled",
+    (s) => String(s.date).slice(0, 10) === date && /waking/i.test(s.shift_type || "") && s.status !== "cancelled",
   );
   const severity: "ok" | "high" | "critical" = onCount === 0 || shortfall >= 2 ? "critical" : shortfall > 0 ? "high" : "ok";
   const alerts: { type: string; severity: string; message: string }[] = [];
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
     .map((i) => ({ id: i.id, start: i.start, title: i.title, child_name: i.child_name, kind: i.source }));
 
   // ── Tasks ──
-  const tasks = (allTasks).map((t: any) => ({
+  const tasks = (allTasks).map((t) => ({
     id: String(t.id),
     title: t.title ?? "Task",
     priority: t.priority ?? "medium",
@@ -93,7 +93,7 @@ export async function GET(req: Request) {
 
   // ── Medications (active today) ──
   const medications = (allMedications)
-    .filter((m: any) => {
+    .filter((m) => {
       if (m.is_active === false) return false;
       const start = m.start_date ? String(m.start_date).slice(0, 10) : null;
       const end = m.end_date ? String(m.end_date).slice(0, 10) : null;
@@ -101,18 +101,18 @@ export async function GET(req: Request) {
       if (end && end < date) return false;
       return true;
     })
-    .map((m: any) => ({ child_name: ypName(m.child_id), name: m.name ?? "Medication", frequency: m.frequency ?? null, prn: String(m.type ?? "").toLowerCase() === "prn" }));
+    .map((m) => ({ child_name: ypName(m.child_id), name: m.name ?? "Medication", frequency: m.frequency ?? null, prn: String(m.type ?? "").toLowerCase() === "prn" }));
 
   // ── Per-child watch-points (recent incidents + active missing) ──
   const threeDaysAgo = new Date(Date.parse(`${date}T00:00:00Z`) - 3 * 864e5).toISOString().slice(0, 10);
-  const watch: ShiftPlanChildWatchInput[] = yp.map((c: any) => {
+  const watch: ShiftPlanChildWatchInput[] = yp.map((c) => {
     const flags: string[] = [];
     const recentIncidents = (allIncidents).filter(
-      (i: any) => String(i.child_id) === String(c.id) && String(i.date).slice(0, 10) >= threeDaysAgo && String(i.date).slice(0, 10) <= date,
+      (i) => String(i.child_id) === String(c.id) && String(i.date).slice(0, 10) >= threeDaysAgo && String(i.date).slice(0, 10) <= date,
     );
     for (const inc of recentIncidents.slice(0, 2)) flags.push(`Recent incident: ${String(inc.type).replace(/_/g, " ")}`);
     const activeMissing = (allMissingEpisodes).some(
-      (e: any) => String(e.child_id) === String(c.id) && !e.date_returned,
+      (e) => String(e.child_id) === String(c.id) && !e.date_returned,
     );
     if (activeMissing) flags.push("Currently missing — follow protocol");
     return { child_name: c.preferred_name || c.first_name || "Unknown", flags };

@@ -87,7 +87,7 @@ export async function GET() {
   const supervisions    = (reflectiveSupervisionsList as any[]) ?? [];
   const youngPeople     = (youngPeopleList as any[]) ?? [];
 
-  const ypMap = new Map(youngPeople.map((yp: any) => [yp.id, yp]));
+  const ypMap = new Map(youngPeople.map((yp) => [yp.id, yp]));
 
   const lessons: LessonRecord[] = [];
   let idxCounter = 1;

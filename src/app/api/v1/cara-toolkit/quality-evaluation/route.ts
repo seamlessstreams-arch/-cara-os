@@ -42,7 +42,7 @@ export async function GET() {
 
   const youngPeople = (youngPeopleList as any[]) ?? [];
   const activeChildren = youngPeople.filter(
-    (y: any) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status !== "moved_on" && y.status !== "discharged"
   );
 
   const incidents = (incidentsList as any[]) ?? [];
@@ -55,11 +55,11 @@ export async function GET() {
   const debriefs = (debriefRecordsList as any[]) ?? [];
 
   // ── Dimension 1: Quality of relationships ────────────────────────────────
-  const recentKeyWork = keyWorkingSessions.filter((k: any) => (k.date ?? "") >= thirtyAgo).length;
+  const recentKeyWork = keyWorkingSessions.filter((k) => (k.date ?? "") >= thirtyAgo).length;
   const childrenWithKeyWork = new Set(
     keyWorkingSessions
-      .filter((k: any) => (k.date ?? "") >= thirtyAgo)
-      .map((k: any) => k.child_id)
+      .filter((k) => (k.date ?? "") >= thirtyAgo)
+      .map((k) => k.child_id)
   ).size;
   const kwCoverage = rate(childrenWithKeyWork, activeChildren.length);
   const d1Score = kwCoverage === null ? null : Math.min(100, kwCoverage);
@@ -79,13 +79,13 @@ export async function GET() {
 
   // ── Dimension 2: Safety and risk management ───────────────────────────────
   const openHighRisk = riskAssessments.filter(
-    (r: any) => (r.current_level === "high" || r.current_level === "critical") && r.status !== "closed"
+    (r) => (r.current_level === "high" || r.current_level === "critical") && r.status !== "closed"
   ).length;
   const overdueRAs = riskAssessments.filter(
-    (r: any) => r.review_date && r.review_date < today && r.status !== "closed"
+    (r) => r.review_date && r.review_date < today && r.status !== "closed"
   ).length;
   const openCriticalIncidents = incidents.filter(
-    (i: any) => i.severity === "critical" && i.status !== "closed"
+    (i) => i.severity === "critical" && i.status !== "closed"
   ).length;
   // An empty risk register and an empty incident log mean nothing has been
   // recorded yet — not that risk is being managed well, so there is no score.
@@ -117,22 +117,22 @@ export async function GET() {
 
   // ── Dimension 3: Reflective practice and learning ─────────────────────────
   const recentSupervisions = reflectiveSupervisions.filter(
-    (s: any) => (s.date ?? "") >= ninetyAgo
+    (s) => (s.date ?? "") >= ninetyAgo
   ).length;
   const activeStaff = staff.filter(
-    (s: any) => s.employment_status !== "left" && s.is_active !== false
+    (s) => s.employment_status !== "left" && s.is_active !== false
   );
   const supCoverage = rate(
     new Set(
       reflectiveSupervisions
-        .filter((s: any) => (s.date ?? "") >= ninetyAgo)
-        .map((s: any) => s.staff_id)
+        .filter((s) => (s.date ?? "") >= ninetyAgo)
+        .map((s) => s.staff_id)
     ).size,
     activeStaff.length
   );
   // No incidents means no debriefs were due — an unmeasured rate, not a perfect one.
   const debriefRate = rate(
-    debriefs.filter((d: any) => d.linked_incident_id).length,
+    debriefs.filter((d) => d.linked_incident_id).length,
     incidents.length
   );
   const d3Score = weightedMeanOf([
@@ -157,14 +157,14 @@ export async function GET() {
   };
 
   // ── Dimension 4: Staff development and wellbeing ─────────────────────────
-  const mandatory = trainingRecords.filter((t: any) => t.is_mandatory === true);
+  const mandatory = trainingRecords.filter((t) => t.is_mandatory === true);
   const compliant = mandatory.filter(
-    (t: any) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
+    (t) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
   );
   const trainingRate = rate(compliant.length, mandatory.length);
   const wellbeingScores = reflectiveSupervisions
-    .filter((s: any) => s.wellbeing_score != null && (s.date ?? "") >= ninetyAgo)
-    .map((s: any) => Number(s.wellbeing_score));
+    .filter((s) => s.wellbeing_score != null && (s.date ?? "") >= ninetyAgo)
+    .map((s) => Number(s.wellbeing_score));
   const avgWellbeing =
     wellbeingScores.length > 0
       ? wellbeingScores.reduce((a: number, b: number) => a + b, 0) / wellbeingScores.length
@@ -191,7 +191,7 @@ export async function GET() {
   };
 
   // ── Dimension 5: Regulatory compliance and oversight ─────────────────────
-  const latestReg44 = reg44.sort((a: any, b: any) =>
+  const latestReg44 = reg44.sort((a, b) =>
     (b.visit_date ?? "").localeCompare(a.visit_date ?? "")
   )[0];
   const daysSinceReg44 = latestReg44?.visit_date

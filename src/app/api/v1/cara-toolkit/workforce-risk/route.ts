@@ -51,23 +51,23 @@ export async function GET() {
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 
-  const activeStaff = staff.filter((s: any) => s.status !== "inactive");
+  const activeStaff = staff.filter((s) => s.status !== "inactive");
   const agencyStaff = activeStaff.filter(
-    (s: any) => s.employment_type === "agency" || s.employment_type === "bank"
+    (s) => s.employment_type === "agency" || s.employment_type === "bank"
   );
   // With no active staff on record there is no workforce mix to report — 0%
   // would read as "minimal agency reliance", which is a finding we have not earned.
   const agencyPct = rateOf(agencyStaff, activeStaff);
 
   const recentSickLeave = leaveRequests.filter(
-    (l: any) => l.leave_type === "sick" && l.status === "approved"
+    (l) => l.leave_type === "sick" && l.status === "approved"
   );
 
-  const openShifts = shifts.filter((s: any) => s.is_open_shift === true);
+  const openShifts = shifts.filter((s) => s.is_open_shift === true);
   const overtimeShifts = shifts.filter(
-    (s: any) => typeof s.overtime_minutes === "number" && s.overtime_minutes > 0
+    (s) => typeof s.overtime_minutes === "number" && s.overtime_minutes > 0
   );
-  const lateArrivals = shifts.filter((s: any) => {
+  const lateArrivals = shifts.filter((s) => {
     if (!s.start_time || !s.actual_start) return false;
     const planned = new Date(`2000-01-01T${s.start_time}:00`).getTime();
     const actual = new Date(`2000-01-01T${s.actual_start}:00`).getTime();
@@ -116,7 +116,7 @@ export async function GET() {
 
   const recentSupervisions = supervisions
     .slice()
-    .sort((a: any, b: any) =>
+    .sort((a, b) =>
       String(b.date ?? "").localeCompare(String(a.date ?? ""))
     );
 
@@ -129,17 +129,17 @@ export async function GET() {
 
   const avgWellbeing = meanTo1dp(
     supervisions
-      .filter((r: any) => r.wellbeing_score != null)
-      .map((r: any) => Number(r.wellbeing_score))
+      .filter((r) => r.wellbeing_score != null)
+      .map((r) => Number(r.wellbeing_score))
   );
 
   const avgConfidence = meanTo1dp(
     supervisions
-      .filter((r: any) => r.confidence_level != null)
-      .map((r: any) => Number(r.confidence_level))
+      .filter((r) => r.confidence_level != null)
+      .map((r) => Number(r.confidence_level))
   );
 
-  const overdueFollowUps = supervisions.filter((r: any) => {
+  const overdueFollowUps = supervisions.filter((r) => {
     if (!r.follow_up_date) return false;
     return (
       r.wellbeing_score <= 3 &&
@@ -147,7 +147,7 @@ export async function GET() {
     );
   });
 
-  const overdueActions = supervisions.flatMap((r: any) =>
+  const overdueActions = supervisions.flatMap((r) =>
     (r.actions ?? []).filter((a: any) => !a.done && a.due && daysBetween(String(a.due).slice(0, 10), today) > 0)
   );
 
@@ -203,11 +203,11 @@ export async function GET() {
 
   // ── Training indicators ───────────────────────────────────────────────────
 
-  const mandatoryTraining = training.filter((t: any) => t.is_mandatory);
-  const expiredMandatory   = mandatoryTraining.filter((t: any) => t.status === "expired");
-  const expiringSoon       = mandatoryTraining.filter((t: any) => t.status === "expiring_soon");
-  const notStarted         = mandatoryTraining.filter((t: any) => t.status === "not_started");
-  const compliant          = mandatoryTraining.filter((t: any) => t.status === "compliant");
+  const mandatoryTraining = training.filter((t) => t.is_mandatory);
+  const expiredMandatory   = mandatoryTraining.filter((t) => t.status === "expired");
+  const expiringSoon       = mandatoryTraining.filter((t) => t.status === "expiring_soon");
+  const notStarted         = mandatoryTraining.filter((t) => t.status === "not_started");
+  const compliant          = mandatoryTraining.filter((t) => t.status === "compliant");
   // An empty mandatory training register is nothing recorded, not full compliance.
   const compliancePct = rateOf(compliant, mandatoryTraining);
 

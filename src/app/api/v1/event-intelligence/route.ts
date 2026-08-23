@@ -37,8 +37,8 @@ export async function GET() {
 
   const youngPeople = await safeList(dal.youngPeople.findAll());
   const children = youngPeople
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));

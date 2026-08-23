@@ -152,7 +152,7 @@ function makeActivity(overrides: Partial<WaterActivitySafetyRecordInput> = {}): 
 }
 
 /** Convenience: N copies of a record */
-function repeat<T>(factory: (o?: any) => T, n: number, overrides: any = {}): T[] {
+function repeat<T>(factory: (o?: any) => T, n: number, overrides = {}): T[] {
   return Array.from({ length: n }, () => factory(overrides));
 }
 

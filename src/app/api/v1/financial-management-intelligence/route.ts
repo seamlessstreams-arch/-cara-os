@@ -33,7 +33,7 @@ export async function GET() {
   ]);
 
   // ── Map expenses ──────────────────────────────────────────────────────
-  const expenses: ExpenseInput[] = expenseRecords.map((e: any) => ({
+  const expenses: ExpenseInput[] = expenseRecords.map((e) => ({
     id: e.id,
     submitted_by: e.submitted_by,
     category: e.category,
@@ -51,8 +51,8 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const staff: StaffRef[] = staffList
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

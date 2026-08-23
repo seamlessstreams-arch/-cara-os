@@ -129,7 +129,7 @@ export async function GET() {
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp) => [
       yp.id,
       `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown",
     ])
@@ -168,10 +168,10 @@ export async function GET() {
     // Sessions with safety concerns
     const concernedContactSessions: ConcernedContactSession[] = sessions
       .filter(
-        (s: any) =>
+        (s) =>
           s.was_it_safe === false || (s.concerns_raised ?? []).length > 0
       )
-      .map((s: any) => ({
+      .map((s) => ({
         id: s.id,
         date: toDate(s.date),
         familyMember:
@@ -181,7 +181,7 @@ export async function GET() {
       }));
 
     // Session dates for post-contact window
-    const sessionDates = sessions.map((s: any) => toDate(s.date));
+    const sessionDates = sessions.map((s) => toDate(s.date));
 
     // Directly triggered behaviours first
     const contactLinkedBehaviours: ContactLinkedBehaviour[] = [];
@@ -250,7 +250,7 @@ export async function GET() {
 
     // Days since last contact
     const sortedSessionDates = sessions
-      .map((s: any) => toDate(s.date))
+      .map((s) => toDate(s.date))
       .sort()
       .reverse();
     const daysSinceLastContact =

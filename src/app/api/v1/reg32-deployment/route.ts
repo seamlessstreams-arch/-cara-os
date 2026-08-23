@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   // Reuse the mature compliance engine — identical mapping to /staff-compliance.
   const compliance = computeStaffCompliance({
     today,
-    staff: (allStaff).map((s: any) => ({
+    staff: (allStaff).map((s) => ({
       id: String(s.id),
       full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       role: String(s.role ?? ""),
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
       next_supervision_due: s.next_supervision_due ?? null,
       next_appraisal_due: s.next_appraisal_due ?? null,
     })),
-    training: (allTraining).map((t: any) => ({
+    training: (allTraining).map((t) => ({
       staff_id: String(t.staff_id),
       course_name: String(t.course_name ?? "Training"),
       expiry_date: t.expiry_date ? String(t.expiry_date).slice(0, 10) : null,
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
     deployment_reasons: deploymentReasonsFromCompliance({ training: r.training, dbs: r.dbs }),
   }));
 
-  const staff: Reg32Staff[] = (allStaff).map((s: any) => ({
+  const staff: Reg32Staff[] = (allStaff).map((s) => ({
     id: String(s.id),
     full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
     role: String(s.role ?? ""),
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
     is_active: s.is_active,
   }));
 
-  let shifts: Reg32Shift[] = (allShifts).map((s: any) => ({
+  let shifts: Reg32Shift[] = (allShifts).map((s) => ({
     id: String(s.id),
     staff_id: String(s.staff_id ?? ""),
     date: String(s.date ?? "").slice(0, 10),

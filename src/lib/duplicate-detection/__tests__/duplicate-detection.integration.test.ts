@@ -7,7 +7,7 @@ import { computeDuplicateDetection, type ChildRef } from "../duplicate-detection
 
 function childrenFromStore(): ChildRef[] {
   const store = getStore() as any;
-  return ((store.youngPeople ?? []) as any[]).map((yp: any) => ({
+  return ((store.youngPeople ?? []) as any[]).map((yp) => ({
     id: yp.id,
     first_name: yp.first_name,
     last_name: yp.last_name,

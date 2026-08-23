@@ -75,14 +75,14 @@ export function mapStoreToConflictInput(store: any): ConflictMapperOutput {
     });
   }
 
-  const children: SubjectRef[] = ((store.youngPeople ?? []) as any[]).map((yp: any) => ({
+  const children: SubjectRef[] = ((store.youngPeople ?? []) as any[]).map((yp) => ({
     id: yp.id,
     first_name: yp.first_name ?? "",
     last_name: yp.last_name ?? "",
     preferred_name: yp.preferred_name ?? null,
   }));
 
-  const staff: SubjectRef[] = ((store.staff ?? []) as any[]).map((s: any) => ({
+  const staff: SubjectRef[] = ((store.staff ?? []) as any[]).map((s) => ({
     id: s.id,
     first_name: s.first_name ?? "",
     last_name: s.last_name ?? "",

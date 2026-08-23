@@ -28,7 +28,7 @@ export async function GET() {
 
   const board = computeInOutBoard({
     youngPeople: (youngPeopleList ?? []).map(
-      (y: any): WhereaboutsYoungPerson => ({
+      (y): WhereaboutsYoungPerson => ({
         id: String(y.id),
         first_name: String(y.first_name ?? ""),
         last_name: String(y.last_name ?? ""),
@@ -36,7 +36,7 @@ export async function GET() {
       }),
     ),
     appointments: (appointmentsList ?? []).map(
-      (a: any): WhereaboutsAppointment => ({
+      (a): WhereaboutsAppointment => ({
         child_id: String(a.child_id ?? ""),
         date: String(a.date ?? ""),
         time: String(a.time ?? ""),
@@ -46,7 +46,7 @@ export async function GET() {
       }),
     ),
     familyTime: (familyTimeSessionsList ?? []).map(
-      (f: any): WhereaboutsFamilyTime => ({
+      (f): WhereaboutsFamilyTime => ({
         child_id: String(f.child_id ?? ""),
         date: String(f.date ?? ""),
         time: String(f.time ?? ""),
@@ -55,7 +55,7 @@ export async function GET() {
       }),
     ),
     missing: (missingEpisodesList ?? []).map(
-      (m: any): WhereaboutsMissing => ({
+      (m): WhereaboutsMissing => ({
         child_id: String(m.child_id ?? ""),
         date_missing: String(m.date_missing ?? ""),
         time_missing: m.time_missing,

@@ -32,14 +32,14 @@ export async function GET() {
   // candidateChecks / candidateReferences expose only findByCandidate — pull per
   // candidate then flatten (same pattern as workforce-command).
   const [checksNested, refsNested] = await Promise.all([
-    Promise.all((candidateProfilesList ?? []).map((c: any) => dal.candidateChecks.findByCandidate(c.id))),
-    Promise.all((candidateProfilesList ?? []).map((c: any) => dal.candidateReferences.findByCandidate(c.id))),
+    Promise.all((candidateProfilesList ?? []).map((c) => dal.candidateChecks.findByCandidate(c.id))),
+    Promise.all((candidateProfilesList ?? []).map((c) => dal.candidateReferences.findByCandidate(c.id))),
   ]);
   const candidateChecksList = checksNested.flat().filter(Boolean);
   const candidateReferencesList = refsNested.flat().filter(Boolean);
 
   // ── Map vacancies ──────────────────────────────────────────────────────────
-  const vacancies: VacancyInput[] = (vacanciesList ?? []).map((v: any) => ({
+  const vacancies: VacancyInput[] = (vacanciesList ?? []).map((v) => ({
     id: v.id,
     title: v.title,
     status: v.status as VacancyInput["status"],
@@ -47,7 +47,7 @@ export async function GET() {
   }));
 
   // ── Map candidates ─────────────────────────────────────────────────────────
-  const candidates: CandidateInput[] = (candidateProfilesList ?? []).map((c: any) => ({
+  const candidates: CandidateInput[] = (candidateProfilesList ?? []).map((c) => ({
     id: c.id,
     name: `${c.first_name} ${c.last_name}`,
     vacancy_id: c.vacancy_id,
@@ -60,7 +60,7 @@ export async function GET() {
   }));
 
   // ── Map checks ─────────────────────────────────────────────────────────────
-  const checks: CheckInput[] = (candidateChecksList ?? []).map((c: any) => ({
+  const checks: CheckInput[] = (candidateChecksList ?? []).map((c) => ({
     id: c.id,
     candidate_id: c.candidate_id,
     check_type: c.check_type as CheckType,
@@ -75,7 +75,7 @@ export async function GET() {
   }));
 
   // ── Map references ─────────────────────────────────────────────────────────
-  const references: ReferenceInput[] = (candidateReferencesList ?? []).map((r: any) => ({
+  const references: ReferenceInput[] = (candidateReferencesList ?? []).map((r) => ({
     id: r.id,
     candidate_id: r.candidate_id,
     is_most_recent_employer: Boolean(r.is_most_recent_employer),
@@ -89,7 +89,7 @@ export async function GET() {
   }));
 
   // ── Map conditional offers ─────────────────────────────────────────────────
-  const offers: ConditionalOfferInput[] = (conditionalOffersList ?? []).map((o: any) => ({
+  const offers: ConditionalOfferInput[] = (conditionalOffersList ?? []).map((o) => ({
     id: o.id,
     candidate_id: o.candidate_id,
     status: o.status as ConditionalOfferInput["status"],

@@ -86,7 +86,7 @@ export async function GET() {
 
   const rawSupervisions = (reflectiveSupervisionsList as any[] ?? []);
 
-  const profiles: StaffWellbeingProfile[] = rawSupervisions.map((rec: any) => {
+  const profiles: StaffWellbeingProfile[] = rawSupervisions.map((rec) => {
     const sessionDate = typeof rec.date === "string" ? rec.date.slice(0, 10) : today;
     const daysSinceSession = daysBetween(sessionDate, today);
 
@@ -102,7 +102,7 @@ export async function GET() {
       daysBetween(followUpDate, today) > 0;
 
     const rawActions: any[] = rec.actions ?? [];
-    const actions: SupervisionAction[] = rawActions.map((a: any) => {
+    const actions: SupervisionAction[] = rawActions.map((a) => {
       const dueStr = typeof a.due === "string" ? a.due.slice(0, 10) : null;
       const overdue = !a.done && dueStr !== null && daysBetween(dueStr, today) > 0;
       return {

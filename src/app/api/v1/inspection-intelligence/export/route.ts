@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
     const scope: ExportScope = VALID_SCOPES.includes(scopeParam) ? scopeParam : "all";
 
     const children = (youngPeopleList ?? [])
-      .filter((yp: any) => yp.status === "current")
-      .map((yp: any) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const readiness = buildInspectionReadiness({
       now: new Date().toISOString(),

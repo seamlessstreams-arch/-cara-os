@@ -41,7 +41,7 @@ export async function GET() {
 
   // 1. Medication errors → remedial_actions[] (owner = staff_id) ──────────────
   for (const e of arr(medicationErrorsList)) {
-    arr(e.remedial_actions).forEach((a: any, i: number) => {
+    arr(e.remedial_actions).forEach((a, i: number) => {
       actions.push({
         id: `mederr-${e.id}-${i}`, text: String(a.action ?? "").trim(),
         source: "Medication error", source_key: "medication_error", source_href: "/medication-errors",
@@ -53,7 +53,7 @@ export async function GET() {
 
   // 2. QA audits → actions[] (owner = staff_id, due = `deadline`) ──────────────
   for (const q of arr(qaAuditRecordsList)) {
-    arr(q.actions).forEach((a: any, i: number) => {
+    arr(q.actions).forEach((a, i: number) => {
       actions.push({
         id: `qa-${q.id}-${i}`, text: String(a.action ?? "").trim(),
         source: "QA audit", source_key: "qa_audit", source_href: "/audits",
@@ -64,7 +64,7 @@ export async function GET() {
 
   // 3. Multi-agency meetings → action_items[] (owner = name/role string) ───────
   for (const m of arr(multiAgencyMeetingsList)) {
-    arr(m.action_items).forEach((a: any, i: number) => {
+    arr(m.action_items).forEach((a, i: number) => {
       actions.push({
         id: `mam-${m.id}-${i}`, text: String(a.action ?? "").trim(),
         source: "Multi-agency meeting", source_key: "multi_agency_meeting", source_href: "/multi-agency-meetings",
@@ -76,7 +76,7 @@ export async function GET() {
 
   // 4. LAC reviews → actions_agreed[] (owner = role string, done = completed bool)
   for (const r of arr(lacReviewsList)) {
-    arr(r.actions_agreed).forEach((a: any, i: number) => {
+    arr(r.actions_agreed).forEach((a, i: number) => {
       actions.push({
         id: `lac-${r.id}-${i}`, text: String(a.action ?? "").trim(),
         source: "LAC review", source_key: "lac_review", source_href: "/lac-reviews",
@@ -89,7 +89,7 @@ export async function GET() {
   // 5. Reg 44 visit reports → recommendations[] (owner = RM, due = completed_at)
   const rmName = getStaffName("staff_darren");
   for (const v of arr(reg44VisitReportsList)) {
-    arr(v.recommendations).forEach((a: any, i: number) => {
+    arr(v.recommendations).forEach((a, i: number) => {
       actions.push({
         id: `reg44-${v.id}-${a.id ?? i}`, text: String(a.recommendation ?? "").trim(),
         source: "Reg 44 visit", source_key: "reg44_visit", source_href: "/reg44-visitor-reports",
@@ -100,7 +100,7 @@ export async function GET() {
 
   // 6. Supervisions → actions_agreed[] (owner = staff_id) ─────────────────────
   for (const s of arr(supervisionsList)) {
-    arr(s.actions_agreed).forEach((a: any, i: number) => {
+    arr(s.actions_agreed).forEach((a, i: number) => {
       actions.push({
         id: `sup-${s.id}-${a.id ?? i}`, text: String(a.description ?? "").trim(),
         source: "Supervision", source_key: "supervision", source_href: "/supervisions",
@@ -111,14 +111,14 @@ export async function GET() {
 
   // 7. House meetings → new_actions[] (no done signal → false) + actions_from_previous[] (done = completed)
   for (const h of arr(houseMeetingsList)) {
-    arr(h.new_actions).forEach((a: any, i: number) => {
+    arr(h.new_actions).forEach((a, i: number) => {
       actions.push({
         id: `house-${h.id}-new-${i}`, text: String(a.action ?? "").trim(),
         source: "House meeting", source_key: "house_meeting", source_href: "/house-meetings",
         owner: ownerName(a.owner), due_date: iso(a.due_date), status_raw: "open", done: false,
       });
     });
-    arr(h.actions_from_previous).forEach((a: any, i: number) => {
+    arr(h.actions_from_previous).forEach((a, i: number) => {
       actions.push({
         id: `house-${h.id}-prev-${i}`, text: String(a.action ?? "").trim(),
         source: "House meeting", source_key: "house_meeting", source_href: "/house-meetings",

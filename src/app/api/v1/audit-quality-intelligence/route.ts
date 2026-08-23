@@ -30,7 +30,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 
 export async function GET() {
   // ── Map audits ────────────────────────────────────────────────────────
-  const audits: AuditInput[] = (await safeList(dal.qaAudits.findAll())).map((a: any) => ({
+  const audits: AuditInput[] = (await safeList(dal.qaAudits.findAll())).map((a) => ({
     id: a.id,
     title: a.title,
     category: a.category,
@@ -46,8 +46,8 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const staff: StaffRef[] = (await safeList(dal.staff.findAll()))
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

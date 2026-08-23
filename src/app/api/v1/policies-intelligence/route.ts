@@ -22,7 +22,7 @@ export async function GET() {
       dal.staff.findAll(),
     ]);
 
-  const policies: PolicyInput[] = (homePoliciesList ?? []).map((p: any) => ({
+  const policies: PolicyInput[] = (homePoliciesList ?? []).map((p) => ({
     id: p.id,
     title: p.title,
     category: p.category,
@@ -36,8 +36,8 @@ export async function GET() {
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

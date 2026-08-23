@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   const plan = planShiftGeneration({ patterns: shiftPatternsList ?? [], range: { from, to }, existingKeys, unavailable });
 
   const staffName = new Map<string, string>(
-    (staffList ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (staffList ?? []).map((m) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
   const withNames = plan.candidates.map((c) => ({ ...c, staff_name: staffName.get(c.staff_id) ?? c.staff_id }));
   const byStaff = plan.by_staff.map((s) => ({ ...s, staff_name: staffName.get(s.staff_id) ?? s.staff_id })).sort((a, b) => a.staff_name.localeCompare(b.staff_name));
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
         notes: "Generated from shift pattern",
         status: "scheduled",
         is_open_shift: false,
-        home_id: c.shift_type ? (shiftPatternsList?.find((p: any) => p.id === c.pattern_id)?.home_id ?? "home_oak") : "home_oak",
+        home_id: c.shift_type ? (shiftPatternsList?.find((p) => p.id === c.pattern_id)?.home_id ?? "home_oak") : "home_oak",
         created_by: actor,
         updated_by: actor,
       });

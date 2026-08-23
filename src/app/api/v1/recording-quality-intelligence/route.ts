@@ -35,7 +35,7 @@ export async function GET() {
   ]);
 
   // ── Map daily log entries ─────────────────────────────────────────────
-  const entries: DailyLogInput[] = dailyLog.map((e: any) => ({
+  const entries: DailyLogInput[] = dailyLog.map((e) => ({
     id: e.id,
     child_id: e.child_id,
     date: e.date,
@@ -49,14 +49,14 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const staff: StaffRef[] = staffList
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));
 
   // ── Map young people ──────────────────────────────────────────────────
-  const children: ChildRef[] = youngPeople.map((yp: any) => ({
+  const children: ChildRef[] = youngPeople.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));

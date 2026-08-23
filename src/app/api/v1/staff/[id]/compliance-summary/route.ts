@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: Params) {
     ]);
   const today = todayStr();
 
-  const s = (staffList ?? []).find((m: any) => String(m.id) === String(id));
+  const s = (staffList ?? []).find((m) => String(m.id) === String(id));
   if (!s) return NextResponse.json({ error: "Staff member not found" }, { status: 404 });
 
   const staffLite = [{
@@ -41,8 +41,8 @@ export async function GET(_req: Request, { params }: Params) {
     today,
     staff: staffLite,
     training: (trainingRecordsList ?? [])
-      .filter((t: any) => String(t.staff_id) === String(id))
-      .map((t: any) => ({
+      .filter((t) => String(t.staff_id) === String(id))
+      .map((t) => ({
         staff_id: String(t.staff_id),
         course_name: String(t.course_name ?? "Training"),
         expiry_date: t.expiry_date ? String(t.expiry_date).slice(0, 10) : null,
@@ -56,8 +56,8 @@ export async function GET(_req: Request, { params }: Params) {
     today,
     staff: staffLite.map((x) => ({ id: x.id, full_name: x.full_name })),
     records: (staffSicknessRecordsList ?? [])
-      .filter((r: any) => String(r.staff_id) === String(id))
-      .map((r: any) => ({
+      .filter((r) => String(r.staff_id) === String(id))
+      .map((r) => ({
         staff_id: String(r.staff_id),
         date_started: r.date_started ? String(r.date_started).slice(0, 10) : "",
         date_ended: r.date_ended ? String(r.date_ended).slice(0, 10) : null,

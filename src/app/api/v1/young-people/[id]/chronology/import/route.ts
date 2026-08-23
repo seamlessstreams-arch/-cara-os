@@ -31,7 +31,7 @@ async function importChronology(req: Request, { params }: { params: Promise<{ id
   if (!childId) return NextResponse.json({ error: "Child ID required" }, { status: 400 });
 
   const youngPeople = await safeList(dal.youngPeople.findAll());
-  if (!youngPeople.some((y: any) => String(y.id) === String(childId))) {
+  if (!youngPeople.some((y) => String(y.id) === String(childId))) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 

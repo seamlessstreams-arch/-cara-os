@@ -1966,8 +1966,7 @@ export const dal = {
     async removeByDatePeriod(date: string, period: string) {
       const s = getStore();
       s.shiftCoverNotes = (s.shiftCoverNotes ?? []).filter(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (n: any) => !(String(n.date).slice(0, 10) === date && n.period === period),
+        (n) => !(String(n.date).slice(0, 10) === date && n.period === period),
       );
     },
   },
@@ -2070,8 +2069,7 @@ export function genericTable<T extends { id: string }>(
       const c = sb();
       if (c && recordType) {
         const rows = await sq.getGenericRecords(c, homeId(), recordType, filters);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return rows.map((r: any) => ({ id: r.id, ...r.data, created_at: r.created_at, updated_at: r.updated_at }) as T);
+        return rows.map((r) => ({ id: r.id, ...r.data, created_at: r.created_at, updated_at: r.updated_at }) as T);
       }
       return memoryGetAll();
     },

@@ -122,7 +122,7 @@ export async function GET() {
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp: any) => [
+    ((youngPeopleList as any[]) ?? []).map((yp) => [
       yp.id,
       yp.preferred_name ??
         (`${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown"),
@@ -131,7 +131,7 @@ export async function GET() {
 
   // ── Staff name map ──────────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s: any) => [
+    ((staffList as any[]) ?? []).map((s) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -158,10 +158,10 @@ export async function GET() {
     const childName = ypMap.get(childId) ?? childId;
 
     const parsedAssessments: PracticeAssessment[] = rawList
-      .sort((a: any, b: any) =>
+      .sort((a, b) =>
         String(b.created_at ?? "").localeCompare(String(a.created_at ?? ""))
       )
-      .map((a: any) => {
+      .map((a) => {
         const domainScores: DomainScore[] = SCORE_DOMAINS.map((key) => ({
           domain: key,
           label: DOMAIN_LABELS[key] ?? key,

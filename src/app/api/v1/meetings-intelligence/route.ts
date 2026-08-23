@@ -24,7 +24,7 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const meetings: HouseMeetingInput[] = (houseMeetingsList ?? []).map((m: any) => ({
+  const meetings: HouseMeetingInput[] = (houseMeetingsList ?? []).map((m) => ({
     id: m.id,
     date: typeof m.date === "string" ? m.date.slice(0, 10) : m.date,
     meeting_type: m.meeting_type,
@@ -33,12 +33,12 @@ export async function GET() {
     children_absent: m.children_absent ?? [],
     staff_present: m.staff_present ?? [],
     child_feedback: m.child_feedback ?? [],
-    actions_from_previous: (m.actions_from_previous ?? []).map((a: any) => ({
+    actions_from_previous: (m.actions_from_previous ?? []).map((a) => ({
       action: a.action,
       owner: a.owner,
       completed: a.completed ?? false,
     })),
-    new_actions: (m.new_actions ?? []).map((a: any) => ({
+    new_actions: (m.new_actions ?? []).map((a) => ({
       action: a.action,
       owner: a.owner,
       due_date: typeof a.due_date === "string" ? a.due_date.slice(0, 10) : a.due_date,
@@ -46,14 +46,14 @@ export async function GET() {
     duration: m.duration ?? 0,
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

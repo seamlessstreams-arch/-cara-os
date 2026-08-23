@@ -37,7 +37,7 @@ export async function GET() {
   }
 
   const reflections: IncidentReflection[] = incidents
-    .map((inc: any) => {
+    .map((inc) => {
       const debrief = debriefByIncident.get(inc.id) ?? null;
       const incDate: string = inc.date ?? "";
       const debriefDate: string | null = debrief?.date ?? null;

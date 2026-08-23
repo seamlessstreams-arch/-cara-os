@@ -24,7 +24,7 @@ export function generateNotifications(_staffId: string): CornerstoneNotification
 
   // Overdue tasks
   const tasks = (store.tasks as any[] || []);
-  const overdue = tasks.filter((t: any) => t.status === "pending" && t.due_date && t.due_date < today);
+  const overdue = tasks.filter((t) => t.status === "pending" && t.due_date && t.due_date < today);
   for (const task of overdue.slice(0, 5)) {
     const id = `notif_task_${task.id}`;
     const state = notificationState.get(id) ?? { read: false, dismissed: false };
@@ -35,7 +35,7 @@ export function generateNotifications(_staffId: string): CornerstoneNotification
 
   // Incidents needing oversight
   const incidents = (store.incidents as any[] || []);
-  const needsOversight = incidents.filter((i: any) => i.requires_oversight && !i.oversight_by);
+  const needsOversight = incidents.filter((i) => i.requires_oversight && !i.oversight_by);
   for (const inc of needsOversight.slice(0, 3)) {
     const id = `notif_oversight_${inc.id}`;
     const state = notificationState.get(id) ?? { read: false, dismissed: false };
@@ -45,10 +45,10 @@ export function generateNotifications(_staffId: string): CornerstoneNotification
   }
 
   // Missing daily logs
-  const children = (store.youngPeople as any[] || []).filter((yp: any) => yp.status === "current");
-  const todayLogs = (store.dailyLog as any[] || []).filter((l: any) => l.date === today);
-  const loggedChildren = new Set(todayLogs.map((l: any) => l.child_id));
-  const missing = children.filter((c: any) => !loggedChildren.has(c.id));
+  const children = (store.youngPeople as any[] || []).filter((yp) => yp.status === "current");
+  const todayLogs = (store.dailyLog as any[] || []).filter((l) => l.date === today);
+  const loggedChildren = new Set(todayLogs.map((l) => l.child_id));
+  const missing = children.filter((c) => !loggedChildren.has(c.id));
   if (missing.length > 0) {
     const id = `notif_missing_logs_${today}`;
     const state = notificationState.get(id) ?? { read: false, dismissed: false };

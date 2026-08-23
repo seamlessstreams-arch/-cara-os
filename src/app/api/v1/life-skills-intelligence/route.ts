@@ -24,14 +24,14 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const pathways: IndependencePathwayInput[] = (independencePathwaysList ?? []).map((p: any) => ({
+  const pathways: IndependencePathwayInput[] = (independencePathwaysList ?? []).map((p) => ({
     id: p.id,
     child_id: p.child_id,
     assessed_by: p.assessed_by,
     assessment_date: typeof p.assessment_date === "string" ? p.assessment_date.slice(0, 10) : p.assessment_date,
     review_date: typeof p.review_date === "string" ? p.review_date.slice(0, 10) : p.review_date,
     overall_readiness: p.overall_readiness,
-    domains: (p.domains ?? []).map((d: any) => ({
+    domains: (p.domains ?? []).map((d) => ({
       name: d.name,
       score: d.score,
       max_score: d.max_score,
@@ -40,14 +40,14 @@ export async function GET() {
     pathway_plan_linked: p.pathway_plan_linked ?? false,
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

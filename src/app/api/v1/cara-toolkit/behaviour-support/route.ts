@@ -11,7 +11,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 function initials(youngPeople: any[], childId: string): string {
-  const yp = youngPeople.find((y: any) => y.id === childId);
+  const yp = youngPeople.find((y) => y.id === childId);
   if (!yp) return "?";
   const f = ((yp.first_name || yp.preferred_name || "?")[0] ?? "?").toUpperCase();
   const l = ((yp.last_name || "?")[0] ?? "?").toUpperCase();
@@ -66,15 +66,15 @@ export async function GET() {
   );
 
   // Per-child profiles
-  const childIds = Array.from(new Set(behaviourLog.map((e: any) => e.child_id).filter(Boolean)));
+  const childIds = Array.from(new Set(behaviourLog.map((e) => e.child_id).filter(Boolean)));
 
   const childProfiles: ChildBehaviourProfile[] = childIds.map((childId) => {
-    const childEntries = behaviourLog.filter((e: any) => e.child_id === childId);
+    const childEntries = behaviourLog.filter((e) => e.child_id === childId);
     const highIntensity = childEntries.filter(
-      (e: any) => e.intensity === "high" || e.intensity === "severe"
+      (e) => e.intensity === "high" || e.intensity === "severe"
     ).length;
     const linkedIncidents = incidents.filter(
-      (i: any) => i.child_id === childId
+      (i) => i.child_id === childId
     ).length;
 
     const childTriggers = new Map<string, number>();
@@ -93,7 +93,7 @@ export async function GET() {
     }
 
     const sorted = childEntries
-      .map((e: any) => e.date ?? "")
+      .map((e) => e.date ?? "")
       .filter(Boolean)
       .sort()
       .reverse();
@@ -133,7 +133,7 @@ export async function GET() {
   });
 
   const highIntensityTotal = behaviourLog.filter(
-    (e: any) => e.intensity === "high" || e.intensity === "severe"
+    (e) => e.intensity === "high" || e.intensity === "severe"
   ).length;
 
   const insights: string[] = [];

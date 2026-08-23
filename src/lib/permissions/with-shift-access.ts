@@ -30,8 +30,7 @@ type RouteHandler = (req: NextRequest, routeCtx?: any) => Promise<NextResponse> 
 const DEFAULT_USER_ID = "staff_darren";
 
 export function withShiftAccess(resourceType: ResourceType, action: Action, handler: RouteHandler): RouteHandler {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async (req: NextRequest, routeCtx?: any) => {
+  return async (req: NextRequest, routeCtx) => {
     const staffId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
     const user = buildShiftAwareUserContext(staffId);
     const decision = checkAccess({ user, resourceType, action });

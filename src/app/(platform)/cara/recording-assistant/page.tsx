@@ -62,7 +62,7 @@ export default function CaraRecordingAssistantPage() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accept: true, confirm: true, raw_text: raw, final_text: finalText, ai_suggested_text: result?.ai_draft ?? null, record_type: recordType, child_id: childId }),
     }).then(json),
-    onSuccess: (d: any) => {
+    onSuccess: (d) => {
       setSavedReview(d); setResult(null); setRaw(""); setFinalText(""); setConfirmed(false);
       qc.invalidateQueries({ queryKey: ["cara-recording-assistant"] });
     },
@@ -169,7 +169,7 @@ export default function CaraRecordingAssistantPage() {
                 <CardContent className="py-4">
                   <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Recent AI-assisted records</p>
                   <div className="space-y-1.5">
-                    {data.recent.map((r: any) => (
+                    {data.recent.map((r) => (
                       <div key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-[var(--cs-border)]/60 bg-white px-3 py-2 text-sm">
                         <span className="min-w-0 flex-1 font-semibold text-[var(--cs-navy)]">{r.child_name} <span className="font-normal text-[var(--cs-text-muted)]">· {String(r.record_type).replace(/_/g, " ")} · {String(r.created_at).slice(0, 10)} · {r.staff_name}</span></span>
                         <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",

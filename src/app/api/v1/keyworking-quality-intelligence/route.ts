@@ -113,7 +113,7 @@ export async function GET() {
 
   // Group sessions by child
   const sessionsByChild = new Map<string, any[]>();
-  rawSessions.forEach((s: any) => {
+  rawSessions.forEach((s) => {
     const arr = sessionsByChild.get(s.child_id) ?? [];
     arr.push(s);
     sessionsByChild.set(s.child_id, arr);
@@ -129,7 +129,7 @@ export async function GET() {
       return bDate.localeCompare(aDate);
     });
 
-    const sessionSummaries: SessionSummary[] = sessions.map((s: any) => {
+    const sessionSummaries: SessionSummary[] = sessions.map((s) => {
       const sessionDate = (s.date ?? s.session_date ?? "").slice(0, 10);
       const daysAgo = sessionDate ? daysBetween(sessionDate, today) : 0;
       const moodBefore = typeof s.mood_before === "number" ? s.mood_before : parseInt(s.mood_before ?? "0") || 0;
@@ -225,7 +225,7 @@ export async function GET() {
         ) / 10
       : null;
 
-  const sessionsWithVoice = rawSessions.filter((s: any) => (s.child_voice ?? "").length > 0).length;
+  const sessionsWithVoice = rawSessions.filter((s) => (s.child_voice ?? "").length > 0).length;
   const childVoiceRate: number | null = totalSessions > 0 ? Math.round((sessionsWithVoice / totalSessions) * 100) : null;
   const overdueFollowUpCount = profiles.reduce((sum, p) => sum + p.overdueFollowUpCount, 0);
 

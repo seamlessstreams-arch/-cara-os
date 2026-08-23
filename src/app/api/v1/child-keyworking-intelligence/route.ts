@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
 
   // ── Keyworking Sessions ────────────────────────────────────────────────
   const sessions: KeyworkSessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
-    .filter((s: any) => s.child_id === childId)
-    .map((s: any) => ({
+    .filter((s) => s.child_id === childId)
+    .map((s) => ({
       id: s.id,
       date: (s.date ?? today).toString().slice(0, 10),
       type: s.type ?? "one_to_one",

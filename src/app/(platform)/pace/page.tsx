@@ -339,7 +339,7 @@ function ChildTab() {
         <div className="max-w-xs flex-1"><Label htmlFor="ccc1-child" className="text-xs">Child</Label>
           <Select value={childId} onValueChange={(v) => { setChildId(v); setEdit(null); }}>
             <SelectTrigger id="ccc1-child" className="mt-1 h-9"><SelectValue placeholder="Choose a child…" /></SelectTrigger>
-            <SelectContent>{children.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.preferred_name || c.first_name || c.id}</SelectItem>)}</SelectContent>
+            <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.preferred_name || c.first_name || c.id}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         {childId && !edit && <Button size="sm" variant="outline" onClick={startEdit}>{profile ? "Edit" : "Create profile"}</Button>}

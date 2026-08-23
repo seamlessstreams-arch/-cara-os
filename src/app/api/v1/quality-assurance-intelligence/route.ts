@@ -24,7 +24,7 @@ export async function GET() {
     ]);
 
   // ── Map QA audit records ──────────────────────────────────────────────
-  const audits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r: any) => ({
+  const audits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r) => ({
     id: r.id,
     title: r.title ?? "Untitled Audit",
     date: r.date ?? "",
@@ -38,7 +38,7 @@ export async function GET() {
       ? r.areas_for_improvement
       : [],
     actions: Array.isArray(r.actions)
-      ? r.actions.map((a: any): QAAuditActionInput => ({
+      ? r.actions.map((a): QAAuditActionInput => ({
           action: a.action ?? "",
           owner: a.owner ?? "",
           deadline: a.deadline ?? "",
@@ -49,8 +49,8 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

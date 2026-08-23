@@ -33,7 +33,7 @@ export async function GET() {
   ]);
 
   // ── Map care forms ────────────────────────────────────────────────────
-  const forms: CareFormInput[] = careForms.map((f: any) => ({
+  const forms: CareFormInput[] = careForms.map((f) => ({
     id: f.id,
     title: f.title,
     form_type: f.form_type,
@@ -56,8 +56,8 @@ export async function GET() {
 
   // ── Map active staff ──────────────────────────────────────────────────
   const staff: StaffRef[] = staffList
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 
 function toChildrenList(youngPeopleList: unknown[]) {
   return ((youngPeopleList ?? []) as any[])
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || yp.first_name || "Child",
     }));
@@ -57,8 +57,8 @@ export async function GET(req: NextRequest) {
       const entries = db.relationshipEntries.findByChild(childId);
       const analysis = analyseChildRelationships(
         entries,
-        (incidentsList ?? []).filter((i: any) => i.child_id === childId),
-        (missingEpisodesList ?? []).filter((m: any) => m.child_id === childId),
+        (incidentsList ?? []).filter((i) => i.child_id === childId),
+        (missingEpisodesList ?? []).filter((m) => m.child_id === childId),
         now,
       );
       // Convoy view over the same records: circles + network-shape detections.

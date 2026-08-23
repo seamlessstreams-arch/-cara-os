@@ -23,7 +23,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   const store = getStore();
   // The in-memory store is a module singleton; memoized so the timer
   // callbacks that capture this list stay compiler-preservable.
-  const children = useMemo(() => (store.youngPeople as any[] || []).filter((yp: any) => yp.status === "current"), [store.youngPeople]);
+  const children = useMemo(() => (store.youngPeople as any[] || []).filter((yp) => yp.status === "current"), [store.youngPeople]);
   const [selectedChild, setSelectedChild] = useState<string | null>(children[0]?.id ?? null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -47,7 +47,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   }, [timerRunning]);
 
   const startTimer = useCallback(() => {
-    const child = children.find((c: any) => c.id === selectedChild);
+    const child = children.find((c) => c.id === selectedChild);
     setTimerChild(child?.first_name ?? "Child");
     setTimerSeconds(0);
     setTimerRunning(true);
@@ -61,8 +61,8 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   const timeStr = mounted ? now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "--:--";
   const dateStr = mounted ? now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "";
 
-  const overdueTasks = (store.tasks as any[] || []).filter((t: any) => t.status === "pending" && t.due_date && t.due_date < now.toISOString().slice(0, 10)).length;
-  const todayLogs = (store.dailyLog as any[] || []).filter((l: any) => l.date === now.toISOString().slice(0, 10)).length;
+  const overdueTasks = (store.tasks as any[] || []).filter((t) => t.status === "pending" && t.due_date && t.due_date < now.toISOString().slice(0, 10)).length;
+  const todayLogs = (store.dailyLog as any[] || []).filter((l) => l.date === now.toISOString().slice(0, 10)).length;
   const missingLogs = children.length - todayLogs;
 
   const ACTIONS = [
@@ -113,7 +113,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
         <div>
           <p className="text-xs font-semibold text-[var(--cs-text-muted)] mb-2">CHILDREN ON SHIFT ({children.length})</p>
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {children.map((child: any) => (
+            {children.map((child) => (
               <button
                 key={child.id}
                 onClick={() => setSelectedChild(child.id)}

@@ -65,16 +65,16 @@ export async function GET() {
   const debriefs = (debriefRecordsList as any[]) ?? [];
 
   const activeChildren = youngPeople.filter(
-    (y: any) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status !== "moved_on" && y.status !== "discharged"
   );
   const activeStaff = staff.filter(
-    (s: any) => s.employment_status !== "left" && s.is_active !== false
+    (s) => s.employment_status !== "left" && s.is_active !== false
   );
 
   // ── Section 1: Children's outcomes and experiences ─────────────────────
-  const recentKW = keyWorkingSessions.filter((k: any) => (k.date ?? "") >= thirtyAgo);
+  const recentKW = keyWorkingSessions.filter((k) => (k.date ?? "") >= thirtyAgo);
   const voiceCount = keyWorkingSessions.filter(
-    (k: any) => k.child_voice && String(k.child_voice).trim().length > 10
+    (k) => k.child_voice && String(k.child_voice).trim().length > 10
   ).length;
   // With no children resident there is nothing to cover — that criterion is not
   // applicable rather than failed.
@@ -82,7 +82,7 @@ export async function GET() {
     recentKW.length > 0,
     voiceCount > 0,
     activeChildren.length > 0
-      ? new Set(recentKW.map((k: any) => k.child_id)).size >= activeChildren.length * 0.7
+      ? new Set(recentKW.map((k) => k.child_id)).size >= activeChildren.length * 0.7
       : null,
   ];
   const section1: EvidenceSection = {
@@ -91,7 +91,7 @@ export async function GET() {
     regulatoryRef: "CHR 2015 Reg 6, 7; UN CRC Article 12; Ofsted SCCIF",
     signal: sig(s1),
     keyFindings: [
-      `${recentKW.length} key work sessions in last 30 days across ${new Set(recentKW.map((k: any) => k.child_id)).size} children`,
+      `${recentKW.length} key work sessions in last 30 days across ${new Set(recentKW.map((k) => k.child_id)).size} children`,
       `${voiceCount} sessions with child voice recorded`,
     ],
     evidenceStrengths: [
@@ -100,7 +100,7 @@ export async function GET() {
     ].filter(Boolean),
     gaps: [
       voiceCount === 0 ? "No child voice recorded in key work sessions — this will be a significant concern for Ofsted" : "",
-      activeChildren.length > 0 && new Set(recentKW.map((k: any) => k.child_id)).size < activeChildren.length * 0.7
+      activeChildren.length > 0 && new Set(recentKW.map((k) => k.child_id)).size < activeChildren.length * 0.7
         ? "Not all children have had recent key work"
         : "",
     ].filter(Boolean),
@@ -108,18 +108,18 @@ export async function GET() {
 
   // ── Section 2: Safeguarding ───────────────────────────────────────────
   const openCritical = incidents.filter(
-    (i: any) => i.severity === "critical" && i.status !== "closed"
+    (i) => i.severity === "critical" && i.status !== "closed"
   ).length;
   const missingWithRHI = missingEpisodes.filter(
-    (m: any) => !m.current_missing && m.return_interview_completed === true
+    (m) => !m.current_missing && m.return_interview_completed === true
   ).length;
-  const totalReturned = missingEpisodes.filter((m: any) => !m.current_missing).length;
+  const totalReturned = missingEpisodes.filter((m) => !m.current_missing).length;
   // No returned episodes means no return home interviews were due.
   const rhiRate = rate(missingWithRHI, totalReturned);
   const s2 = [
     openCritical === 0,
     totalReturned > 0 ? meets(rhiRate, 80) : null,
-    riskAssessments.filter((r: any) => r.status !== "closed").length > 0,
+    riskAssessments.filter((r) => r.status !== "closed").length > 0,
   ];
   const section2: EvidenceSection = {
     id: "safeguarding",
@@ -129,7 +129,7 @@ export async function GET() {
     keyFindings: [
       `${incidents.length} incidents on record`,
       `Return home interview completion rate: ${formatRate(rhiRate, "no returned episodes to interview")}`,
-      `${riskAssessments.filter((r: any) => r.status !== "closed").length} active risk assessments`,
+      `${riskAssessments.filter((r) => r.status !== "closed").length} active risk assessments`,
     ],
     evidenceStrengths: [
       openCritical === 0 ? "No open critical incidents" : "",
@@ -144,10 +144,10 @@ export async function GET() {
   // ── Section 3: Quality of care ─────────────────────────────────────────
   // No incidents means no debriefs were due.
   const debriefRate = rate(
-    debriefs.filter((d: any) => d.linked_incident_id).length,
+    debriefs.filter((d) => d.linked_incident_id).length,
     incidents.length
   );
-  const latestReg44 = reg44.sort((a: any, b: any) =>
+  const latestReg44 = reg44.sort((a, b) =>
     (b.visit_date ?? "").localeCompare(a.visit_date ?? "")
   )[0];
   const reg44Age = latestReg44?.visit_date ? daysBetween(today, latestReg44.visit_date) : 999;
@@ -180,14 +180,14 @@ export async function GET() {
   const supCoverage = rate(
     new Set(
       reflectiveSupervisions
-        .filter((s: any) => (s.date ?? "") >= ninetyAgo)
-        .map((s: any) => s.staff_id)
+        .filter((s) => (s.date ?? "") >= ninetyAgo)
+        .map((s) => s.staff_id)
     ).size,
     activeStaff.length
   );
-  const mandatory = trainingRecords.filter((t: any) => t.is_mandatory === true);
+  const mandatory = trainingRecords.filter((t) => t.is_mandatory === true);
   const compliant = mandatory.filter(
-    (t: any) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
+    (t) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
   );
   // An empty mandatory training register is nothing recorded, not full compliance.
   const trainingRate = rateOf(compliant, mandatory);
@@ -221,12 +221,12 @@ export async function GET() {
 
   // ── Section 5: Children's wishes and feelings ─────────────────────────
   const wishesFeelings = keyWorkingSessions.filter(
-    (k: any) => k.child_voice && String(k.child_voice).trim().length > 20
+    (k) => k.child_voice && String(k.child_voice).trim().length > 20
   ).length;
   const childrenWithVoice = new Set(
     keyWorkingSessions
-      .filter((k: any) => k.child_voice && String(k.child_voice).trim().length > 20)
-      .map((k: any) => k.child_id)
+      .filter((k) => k.child_voice && String(k.child_voice).trim().length > 20)
+      .map((k) => k.child_id)
   ).size;
   // Coverage of children's voice is meaningless with no children resident.
   const s5 = [

@@ -18,12 +18,12 @@ export async function GET() {
   const result = computeWorkforceAbsence({
     today,
     staff: (staffList ?? [])
-      .filter((s: any) => s.is_active !== false && s.employment_status !== "inactive")
-      .map((s: any) => ({
+      .filter((s) => s.is_active !== false && s.employment_status !== "inactive")
+      .map((s) => ({
         id: String(s.id),
         full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       })),
-    records: (staffSicknessRecordsList ?? []).map((r: any) => ({
+    records: (staffSicknessRecordsList ?? []).map((r) => ({
       staff_id: String(r.staff_id),
       date_started: r.date_started ? String(r.date_started).slice(0, 10) : "",
       date_ended: r.date_ended ? String(r.date_ended).slice(0, 10) : null,

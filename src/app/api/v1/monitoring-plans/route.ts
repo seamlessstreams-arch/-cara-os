@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const youngPeople = await safeList(dal.youngPeople.findAll());
   const board = computeMonitoringBoard({
     plans: db.monitoringPlans.findAll(),
-    youngPeople: youngPeople.map((y: any) => ({
+    youngPeople: youngPeople.map((y) => ({
       id: String(y.id),
       first_name: String(y.first_name ?? ""),
       last_name: String(y.last_name ?? ""),

@@ -99,8 +99,8 @@ export function computeEventCapture(input: EventCaptureInput): EventCaptureResul
   // 2) Duplicate check — run detection over existing events + the draft, keep matches involving the draft.
   const dd = computeDuplicateDetection({ events: [...input.existingEvents, { ...draft, evidenceCategories: evidence_categories }], today });
   const matches: DuplicateMatch[] = (dd.duplicates ?? [])
-    .filter((d: any) => d.primary_event_id === draft.id || d.duplicate_event_id === draft.id)
-    .map((d: any) => ({
+    .filter((d) => d.primary_event_id === draft.id || d.duplicate_event_id === draft.id)
+    .map((d) => ({
       event_id: d.primary_event_id === draft.id ? d.duplicate_event_id : d.primary_event_id,
       similarity: d.similarity,
       reason: d.reason,
