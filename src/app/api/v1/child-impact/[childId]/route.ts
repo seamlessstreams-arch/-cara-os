@@ -32,6 +32,16 @@ import {
   type LessonLearnedInput,
 } from "@/lib/impact/child-impact-engine";
 
+// The store holds BOTH vocabularies for behaviour intensity at runtime — low,
+// medium, moderate, high, severe, critical — even though `BehaviourIntensity`
+// admits only four of them. Seeded rows assert themselves in with a blanket
+// `as BehaviourEntry[]`, which is why the divergence has never surfaced. Read
+// as a plain string here so the compiler does not insist the other spellings
+// are impossible, and normalised onto the vocabulary the type declares.
+function normaliseIntensity(intensity: string): string {
+  return intensity === "severe" ? "critical" : intensity === "medium" ? "moderate" : intensity;
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ childId: string }> },
@@ -75,26 +85,27 @@ export async function GET(
 
   // ── Risk Assessments ───────────────────────────────────────────────────
   const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       child_id: r.child_id,
-      risk_level: r.risk_level ?? r.level ?? "medium",
-      date: typeof r.date === "string" ? r.date.slice(0, 10) : (r.created_at ?? today).slice(0, 10),
-      review_date: r.review_date
-        ? (typeof r.review_date === "string" ? r.review_date.slice(0, 10) : r.review_date)
-        : null,
-      controls: Array.isArray(r.controls) ? r.controls :
-        Array.isArray(r.control_measures) ? r.control_measures.map((c: any) => c.measure ?? c) :
-        [],
-      category: r.category ?? "",
-      status: r.status ?? "active",
+      // `risk_level`, `controls`/`control_measures` and `category` are not on
+      // RiskAssessment, so this used to send the engine a constant "medium",
+      // an always-empty controls list and an empty category for every
+      // assessment. The record calls them current_level, mitigations and
+      // domain.
+      risk_level: r.current_level,
+      date: r.assessed_date.slice(0, 10),
+      review_date: r.review_date ? r.review_date.slice(0, 10) : null,
+      controls: r.mitigations.map((m) => m.strategy),
+      category: r.domain,
+      status: r.status,
     }));
 
   // ── Outcome Targets ────────────────────────────────────────────────────
   const outcome_targets: OutcomeTargetInput[] = (outcomeTargetsList ?? [])
-    .filter((t: any) => t.child_id === childId)
-    .map((t: any) => ({
+    .filter((t) => t.child_id === childId)
+    .map((t) => ({
       id: t.id,
       child_id: t.child_id,
       domain: t.domain ?? "",
@@ -111,144 +122,181 @@ export async function GET(
 
   // ── Incidents ──────────────────────────────────────────────────────────
   const incidents: IncidentInput[] = (incidentsList ?? [])
-    .filter((i: any) => (i.child_id === childId || i.young_person_id === childId))
-    .map((i: any) => ({
+    .filter((i) => i.child_id === childId)
+    .map((i) => ({
       id: i.id,
-      child_id: i.child_id ?? i.young_person_id ?? childId,
-      young_person_id: i.young_person_id ?? i.child_id ?? childId,
-      date: typeof i.date === "string" ? i.date.slice(0, 10) :
-        (typeof i.created_at === "string" ? i.created_at.slice(0, 10) : today),
-      severity: i.severity ?? "low",
-      category: i.category ?? i.type ?? "",
-      type: i.type ?? i.category ?? "",
+      child_id: i.child_id,
+      young_person_id: i.child_id,
+      date: i.date.slice(0, 10),
+      severity: i.severity,
+      category: i.type,
+      type: i.type,
       outcome: i.outcome ?? "",
     }));
 
   // ── Education Records ──────────────────────────────────────────────────
   const education_records: EducationRecordInput[] = (educationRecordsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       child_id: r.child_id,
-      attendance_percentage: r.attendance_percentage ?? r.attendance ?? null,
-      engagement_level: r.engagement_level ?? r.engagement ?? null,
-      achievement_notes: r.achievement_notes ?? r.achievements ?? null,
-      exclusions: r.exclusions ?? 0,
-      date: typeof r.date === "string" ? r.date.slice(0, 10) : null,
-      term: r.term ?? null,
+      // EducationRecord has none of attendance_percentage, engagement_level,
+      // achievement_notes, exclusions or term. Every one of those read as its
+      // fallback, so the whole education picture was null / null / null / 0.
+      //
+      // Two of them the record CAN answer, through record_type:
+      achievement_notes: r.record_type === "achievement" ? r.details : undefined,
+      exclusions: r.record_type === "exclusion" || r.record_type === "suspension" ? 1 : 0,
+      date: r.date.slice(0, 10),
+      // The other three it cannot. Attendance is modelled per event as
+      // `attendance_status` (present / absent_authorised / late / …), not as a
+      // percentage, and there is no engagement grade or term on the record —
+      // deriving either would mean inventing a scale. The engine's fields are
+      // optional and it filters `attendance_percentage != null` before
+      // averaging, so omitting them leaves the domain unmeasured rather than
+      // scored at zero.
     }));
 
   // ── Health Assessments ─────────────────────────────────────────────────
   const health_assessments: HealthAssessmentInput[] = (healthAssessmentsList ?? [])
-    .filter((h: any) => h.child_id === childId)
-    .map((h: any) => ({
+    .filter((h) => h.child_id === childId)
+    .map((h) => ({
       id: h.id,
       child_id: h.child_id,
-      date: typeof h.date === "string" ? h.date.slice(0, 10) : (h.created_at ?? today).slice(0, 10),
-      type: h.type ?? h.assessment_type ?? null,
-      outcome: h.outcome ?? null,
-      next_due: h.next_due ?? h.follow_up_date ?? null,
-      attended: h.attended ?? true,
+      date: h.date.slice(0, 10),
+      type: h.type,
+      // `outcome` and `attended` are not on HealthAssessment — outcome always
+      // read null and attended always read TRUE, so no health assessment had
+      // ever been missed. The record carries key_findings, and a status that
+      // says whether it happened.
+      outcome: h.key_findings.length > 0 ? h.key_findings.join("; ") : undefined,
+      next_due: h.next_due ?? undefined,
+      attended:
+        h.status === "completed" ? true : h.status === "overdue" ? false : undefined,
     }));
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
   const key_work_sessions: KeyWorkSessionInput[] = (keyWorkingSessionsList ?? [])
-    .filter((k: any) => k.child_id === childId)
-    .map((k: any) => ({
+    .filter((k) => k.child_id === childId)
+    .map((k) => ({
       id: k.id,
       child_id: k.child_id,
-      date: typeof k.date === "string" ? k.date.slice(0, 10) : (k.created_at ?? today).slice(0, 10),
-      duration_minutes: k.duration_minutes ?? k.duration ?? 45,
-      child_engaged: k.child_engaged ??
-        (k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true),
-      child_views_captured: k.child_views_captured ??
-        !!(k.child_voice && k.child_voice.trim().length > 0),
-      topics: Array.isArray(k.topics) ? k.topics : Array.isArray(k.themes) ? k.themes : [],
-      themes: Array.isArray(k.themes) ? k.themes : Array.isArray(k.topics) ? k.topics : [],
+      date: k.date.slice(0, 10),
+      // duration_minutes / child_engaged / child_views_captured / themes are
+      // not on KeyWorkingSession, but each already had a live operand after it,
+      // so the values were right and only the reads were dead.
+      duration_minutes: k.duration,
+      child_engaged:
+        k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true,
+      child_views_captured: !!(k.child_voice && k.child_voice.trim().length > 0),
+      topics: k.topics,
+      themes: k.topics,
       mood_before: k.mood_before ?? null,
       mood_after: k.mood_after ?? null,
     }));
 
   // ── Family Time Sessions ───────────────────────────────────────────────
   const family_time_sessions: FamilyTimeSessionInput[] = (familyTimeSessionsList ?? [])
-    .filter((f: any) => f.child_id === childId)
-    .map((f: any) => ({
+    .filter((f) => f.child_id === childId)
+    .map((f) => ({
       id: f.id,
       child_id: f.child_id,
-      date: typeof f.date === "string" ? f.date.slice(0, 10) : (f.created_at ?? today).slice(0, 10),
-      contact_type: f.contact_type ?? f.type ?? null,
-      quality: f.quality ?? null,
-      attended: f.attended ?? true,
-      notes: f.notes ?? null,
+      date: f.date.slice(0, 10),
+      // FamilyTimeSession has no contact_type, quality, attended or notes.
+      // What it does have is a written observation, so that is what goes.
+      notes: f.interactions_observed || undefined,
+      // `quality` is left out rather than guessed: the engine looks for
+      // "good" / "excellent" / "positive", and the record's nearest fields
+      // (warmth_affection_shown, parent_engagement) are free text, so any
+      // mapping would be a grade this home never awarded.
+      //
+      // `attended` is left out too. It used to read TRUE for every session;
+      // the record has no attendance field at all, and the engine reads an
+      // absent value as attended — which is the right default for a session
+      // that was written up, without asserting it.
     }));
 
   // ── Missing Episodes ───────────────────────────────────────────────────
   const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
-    .filter((m: any) => m.child_id === childId)
-    .map((m: any) => ({
+    .filter((m) => m.child_id === childId)
+    .map((m) => ({
       id: m.id,
       child_id: m.child_id,
-      date: typeof m.date === "string" ? m.date.slice(0, 10) :
-        (typeof m.reported_at === "string" ? m.reported_at.slice(0, 10) : today),
-      duration_hours: m.duration_hours ?? null,
-      return_interview_completed: m.return_interview_completed ?? m.rhi_completed ?? false,
+      // Neither `date` nor `reported_at` is on MissingEpisode, so this fell
+      // through to `today` — every missing episode appeared on the child's
+      // timeline as having happened today, which makes any recency or trend
+      // reading of them meaningless. The record calls it date_missing.
+      date: m.date_missing.slice(0, 10),
+      duration_hours: m.duration_hours ?? undefined,
+      return_interview_completed: m.return_interview_completed,
     }));
 
   // ── Independence Skills ────────────────────────────────────────────────
   const skillsRecord = (independenceSkillsRecordsList ?? []).find(
-    (r: any) => r.child_id === childId,
+    (r) => r.child_id === childId,
   );
   const independence_skills: IndependenceSkillInput | null = skillsRecord
     ? {
         child_id: childId,
-        skills: Array.isArray((skillsRecord as any).skills)
-          ? (skillsRecord as any).skills.map((s: any) => ({
-              name: s.name ?? "",
-              proficiency: s.proficiency ?? "not_started",
-              category: s.category ?? "",
-            }))
-          : [],
-        strengths: Array.isArray((skillsRecord as any).strengths)
-          ? (skillsRecord as any).strengths
-          : [],
-        areas_for_development: Array.isArray((skillsRecord as any).areas_for_development)
-          ? (skillsRecord as any).areas_for_development
-          : [],
+        // Was read through three `skillsRecord as any` casts. The record's
+        // shape already matches what the engine asks for, so the casts were
+        // buying nothing except the loss of checking.
+        skills: skillsRecord.skills.map((sk) => ({
+          name: sk.name,
+          proficiency: sk.proficiency,
+          category: sk.category,
+        })),
+        strengths: skillsRecord.strengths,
+        areas_for_development: skillsRecord.areas_for_development,
       }
     : null;
 
   // ── YP Feedback ────────────────────────────────────────────────────────
   const yp_feedback: YPFeedbackInput[] = (ypFeedbackList ?? [])
-    .filter((f: any) => f.child_id === childId)
-    .map((f: any) => ({
+    .filter((f) => f.child_id === childId)
+    .map((f) => ({
       id: f.id,
       child_id: f.child_id,
-      date: typeof f.date === "string" ? f.date.slice(0, 10) : (f.created_at ?? today).slice(0, 10),
+      date: f.date.slice(0, 10),
       type: feedbackTypeFromSentiment(f.sentiment),
-      category: f.category ?? null,
-      sentiment: f.sentiment ?? null,
-      response_given_to_child: f.response_given_to_child ?? f.response_given ?? false,
-      status: f.status ?? "open",
+      category: f.category,
+      sentiment: f.sentiment,
+      response_given_to_child: f.response_given_to_child,
+      // YPFeedbackEntry has no `status`, so every entry read as open — even
+      // the ones the child had already had answered. Same derivation as
+      // child-voice-participation now uses.
+      status: f.response_given_to_child ? "resolved" : "open",
     }));
 
   // ── Behaviour Entries ──────────────────────────────────────────────────
   const behaviour_entries: BehaviourEntryInput[] = (behaviourLogList ?? [])
-    .filter((b: any) => b.child_id === childId)
-    .map((b: any) => ({
+    .filter((b) => b.child_id === childId)
+    .map((b) => ({
       id: b.id,
       child_id: b.child_id,
-      date: typeof b.date === "string" ? b.date.slice(0, 10) : (b.created_at ?? today).slice(0, 10),
-      type: b.type ?? b.category ?? "",
-      severity: b.severity ?? "low",
-      category: b.category ?? b.type ?? "",
-      regulation_support_given: b.regulation_support_given ?? b.de_escalation_used ?? false,
+      date: b.date.slice(0, 10),
+      // None of type, category, severity or regulation_support_given is on
+      // BehaviourEntry, so every entry reached the engine as severity "low",
+      // no type, no category and no regulation support — including the one
+      // recorded as a self-harm attempt. The record calls them direction,
+      // intensity and strategy_used.
+      //
+      // Both spellings of both scales are live in the store: direction holds
+      // "concern" and "concerning", intensity holds all six of low, medium,
+      // moderate, high, severe, critical. Normalised onto the vocabulary
+      // extended.ts declares, by testing the value that has only one spelling
+      // — the other way round files a "concerning" row as positive.
+      type: b.direction === "positive" ? "positive" : "concern",
+      category: b.direction === "positive" ? "positive" : "concern",
+      severity: normaliseIntensity(b.intensity),
+      regulation_support_given: b.strategy_used.trim().length > 0,
       outcome: b.outcome ?? "",
     }));
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
   const lac_reviews: LACReviewInput[] = (lacReviewsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       child_id: r.child_id,
       date: typeof r.date === "string" ? r.date.slice(0, 10) : (r.created_at ?? today).slice(0, 10),
@@ -259,19 +307,20 @@ export async function GET(
 
   // ── Lessons Learned ────────────────────────────────────────────────────
   const lessons_learned: LessonLearnedInput[] = (lessonsLearnedList ?? [])
-    .filter((l: any) => !l.child_id || l.child_id === childId)
-    .map((l: any) => ({
+    // A LessonLearned is home-level: it has no child_id, so `!l.child_id` was
+    // always true and every lesson already reached every child. Stated rather
+    // than left looking like a filter that does something.
+    .map((l) => ({
       id: l.id,
-      child_id: l.child_id ?? null,
-      lesson: l.lesson ?? l.description ?? l.title ?? "",
-      date: typeof l.date === "string" ? l.date.slice(0, 10) : (l.created_at ?? today).slice(0, 10),
-      category: l.category ?? null,
+      lesson: l.lesson,
+      date: l.date_identified.slice(0, 10),
+      category: l.theme_area,
     }));
 
   // ── Advocacy Records ───────────────────────────────────────────────────
   const advocacy_records = (advocacyRecordsList ?? [])
-    .filter((a: any) => a.child_id === childId)
-    .map((a: any) => ({
+    .filter((a) => a.child_id === childId)
+    .map((a) => ({
       id: a.id,
       child_id: a.child_id,
       status: a.status ?? "active",

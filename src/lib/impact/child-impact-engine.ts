@@ -391,7 +391,13 @@ function scoreBehaviourWellbeing(input: ChildImpactInput): ChildImpactDomain {
   // Score: fewer incidents = better. Start at 80, deduct per recent incident.
   let score = 80;
   score -= recentIncidents.length * 8;
-  score -= recentBehaviour.filter((b) => b.severity === "high" || b.severity === "major").length * 5;
+  // "critical" was missing from this list while the incident check below
+  // (i.severity === "high" || "critical" || "major") already had it, so the
+  // most serious behaviour a child can record — a self-harm attempt — cost
+  // the score nothing.
+  score -= recentBehaviour.filter(
+    (b) => b.severity === "high" || b.severity === "critical" || b.severity === "major",
+  ).length * 5;
 
   // Regulation support
   const withSupport = recentBehaviour.filter((b) => b.regulation_support_given);
