@@ -399,7 +399,9 @@ describe("evaluateDigitalSkills", () => {
   it("handles empty child IDs", () => {
     const result = evaluateDigitalSkills(makeAssessments(), [], REFERENCE_DATE);
     expect(result.totalChildren).toBe(0);
-    expect(result.assessmentRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.assessmentRate).toBeNull();
+    expect(result.assessmentRate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(result.averageSkillLevel).toBe(0);
   });
 });
@@ -485,7 +487,9 @@ describe("evaluateDeviceAccess", () => {
   it("handles empty child IDs", () => {
     const result = evaluateDeviceAccess(makeDeviceAccess(), [], REFERENCE_DATE);
     expect(result.totalChildren).toBe(0);
-    expect(result.accessRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.accessRate).toBeNull();
+    expect(result.accessRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("ignores records for children not in childIds", () => {
@@ -498,9 +502,11 @@ describe("evaluateDeviceAccess", () => {
     expect(result.childrenWithAccess).toBe(1);
   });
 
-  it("returns 0% agreement compliance with no records", () => {
+  it("reports agreement compliance as unmeasured with no records", () => {
     const result = evaluateDeviceAccess([], CHILD_IDS, REFERENCE_DATE);
-    expect(result.agreementComplianceRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.agreementComplianceRate).toBeNull();
+    expect(result.agreementComplianceRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
@@ -556,9 +562,11 @@ describe("evaluateOnlineLearning", () => {
     expect(result.positiveOutcomeRate).toBe(95);
   });
 
-  it("returns 0% positive rate with no records", () => {
+  it("reports the positive rate as unmeasured with no records", () => {
     const result = evaluateOnlineLearning([], CHILD_IDS, PERIOD_START, PERIOD_END);
-    expect(result.positiveOutcomeRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.positiveOutcomeRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("calculates supervised rate", () => {
@@ -684,9 +692,11 @@ describe("evaluateDigitalCitizenship", () => {
     expect(result.positiveRate).toBe(92);
   });
 
-  it("returns 0% positive rate with no records", () => {
+  it("reports the positive rate as unmeasured with no records", () => {
     const result = evaluateDigitalCitizenship([], CHILD_IDS, PERIOD_START, PERIOD_END);
-    expect(result.positiveRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.positiveRate).toBeNull();
+    expect(result.positiveRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("counts area coverage correctly", () => {

@@ -515,7 +515,9 @@ describe("evaluateIdentitySupport", () => {
     expect(result.childrenWithAssessment).toBe(0);
     expect(result.assessmentRate).toBe(0);
     expect(result.totalNeedsIdentified).toBe(0);
-    expect(result.needsMetRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.needsMetRate).toBeNull();
+    expect(result.needsMetRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("tracks dimension coverage counts", () => {
@@ -765,7 +767,9 @@ describe("analyseDiversityIncidents", () => {
   it("handles zero incidents", () => {
     const result = analyseDiversityIncidents([], PERIOD_START, PERIOD_END);
     expect(result.totalIncidents).toBe(0);
-    expect(result.reportedRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.reportedRate).toBeNull();
+    expect(result.reportedRate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(result.averageResolutionDays).toBe(0);
   });
 });
