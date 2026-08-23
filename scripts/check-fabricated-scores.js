@@ -609,6 +609,19 @@ const EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*
 // containment as the sibling matchers, plus a trailing `(?!\.\d)` so `: 0.5`
 // (which is a rate literal, not a fab-0) never matches.
 const NON_EMPTY_TERNARY_ZERO = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?([^?:{};]{0,220}?):\s*0\b(?!\.\d)/g;
+// Same semantics, opposite spelling: `X === 0 ? 0 : <computed metric>`. The
+// matcher above only ever saw `X > 0 ? <metric> : 0`, so this form was
+// invisible — and it is the form 295 duplicated `pct(n, d)` helpers use:
+//
+//   function pct(n: number, d: number): number {
+//     return d === 0 ? 0 : Math.round((n / d) * 100);
+//   }
+//
+// A brand-new home therefore read 0% on every compliance rate it has: not
+// "nothing recorded yet" but "nothing done". Same compute gate, and the same
+// `${rel}:${collection}:0` key shape, so a site keeps its key whichever
+// spelling it is written in.
+const EMPTY_TERNARY_ZERO_INVERTED = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*0\s*:([^?:{};]{0,220}?)[;,)\n]/g;
 // Widened 2026-07-30 (from `Math.round(...*100)`-only) to cover any of the
 // canonical computed-metric shapes: percentage (Math.round(x*100)), duration/
 // count/currency averages (Math.round(sum/n), average(), mean(), meanOf()),
@@ -687,6 +700,16 @@ for (const dir of SCAN_DIRS) {
       // Key uses `:0` as the value marker; distinct from `:1` (unit) and
       // `:60..100` (percentage) so it can never collide at the same site.
       found.push({ key: `${rel}:${m[1]}:0`, rel, line, collection: m[1], value: 0 });
+    }
+
+    // The inverted spelling of the same thing.
+    EMPTY_TERNARY_ZERO_INVERTED.lastIndex = 0;
+    let mi;
+    while ((mi = EMPTY_TERNARY_ZERO_INVERTED.exec(src)) !== null) {
+      const body = mi[2];
+      if (!COMPUTE_CALL.test(body)) continue;
+      const line = src.slice(0, mi.index).split("\n").length;
+      found.push({ key: `${rel}:${mi[1]}:0`, rel, line, collection: mi[1], value: 0 });
     }
   }
 }
