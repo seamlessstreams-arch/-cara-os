@@ -419,7 +419,9 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
         impact_risk_assessment_records: [makeImpactAssessment()],
       }),
     );
-    expect(r.referral_assessment_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.referral_assessment_rate).toBeNull();
+    expect(r.referral_assessment_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("impact_assessment_rate is 0 when no impact records but other records exist", () => {
@@ -470,7 +472,9 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
       }),
     );
     // Only referral records exist; childConsultationRate uses impact, matching, admission
-    expect(r.child_consultation_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.child_consultation_rate).toBeNull();
+    expect(r.child_consultation_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
@@ -3204,7 +3208,9 @@ describe("Admissions Matching Engine — Edge cases", () => {
     );
     expect(r.total_impact_assessments).toBe(1);
     expect(r.total_referral_assessments).toBe(0);
-    expect(r.referral_assessment_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.referral_assessment_rate).toBeNull();
+    expect(r.referral_assessment_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("only matching records, no other arrays", () => {
@@ -3301,9 +3307,13 @@ describe("Admissions Matching Engine — Edge cases", () => {
         ],
       }),
     );
-    // criteriaMetRate = pct(0,0)=0
-    // matchingQualityRate = round((0+100+100+100)/4) = 75
-    expect(r.matching_quality_rate).toBe(75);
+    // This comment used to read:
+    //   criteriaMetRate = pct(0,0)=0
+    //   matchingQualityRate = round((0+100+100+100)/4) = 75
+    // — the fabricated 0 propagating into a composite and dragging it down by
+    // a quarter. There are no criteria records here, so that component is
+    // unmeasured, not zero; meanOf averages the three that ARE measured.
+    expect(r.matching_quality_rate).toBe(100);
   });
 
   it("risks_identified_count=0 => mitigationDocumentationRate=0 (no divide by zero)", () => {

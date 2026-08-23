@@ -8,6 +8,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type MedType = "regular" | "prn" | "controlled" | "topical" | "inhaler" | "injection" | "other";
 export type AdminStatus = "given" | "refused" | "withheld" | "not_available" | "self_administered" | "late" | "missed" | "scheduled";
 export type ErrorSeverity = "no_harm" | "low" | "moderate" | "severe" | "death";
@@ -65,37 +67,47 @@ export interface ChildMedicationInput {
 export type MedicationSafetyRating = "outstanding" | "good" | "adequate" | "inadequate" | "no_medications";
 
 export interface AdherenceProfile {
-  adherence_rate_30d: number;          // 0-100 (given+self_admin / total non-scheduled)
-  adherence_rate_7d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adherence_rate_30d: number | null;          // 0-100 (given+self_admin / total non-scheduled)
+  /** null when the population is empty — nothing measured, not 0%. */
+  adherence_rate_7d: number | null;
   refusal_count_30d: number;
   refusal_count_7d: number;
-  refusal_rate_30d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  refusal_rate_30d: number | null;
   late_count_30d: number;
-  late_rate_30d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  late_rate_30d: number | null;
   missed_count_30d: number;
-  missed_rate_30d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  missed_rate_30d: number | null;
   total_administrations_30d: number;
   total_administrations_7d: number;
   adherence_trend: "improving" | "stable" | "declining" | "insufficient_data";
 }
 
 export interface WitnessingProfile {
-  witnessing_rate_30d: number;         // 0-100
+  /** null when the population is empty — nothing measured, not 0%. */
+  witnessing_rate_30d: number | null;         // 0-100
   unwitnessed_count_30d: number;
-  controlled_drug_witnessing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  controlled_drug_witnessing_rate: number | null;
 }
 
 export interface PRNProfile {
   prn_count_30d: number;
   prn_count_7d: number;
   prn_trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
-  effectiveness_recorded_rate: number;
-  reason_recorded_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  effectiveness_recorded_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reason_recorded_rate: number | null;
   prn_medications: { name: string; count_30d: number }[];
 }
 
 export interface TimelinesProfile {
-  on_time_rate_30d: number;            // within 30 mins of scheduled
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate_30d: number | null;            // within 30 mins of scheduled
   avg_delay_minutes: number | null;
   max_delay_minutes: number | null;
 }
@@ -104,7 +116,8 @@ export interface StockProfile {
   medications_with_stock: number;
   stock_low_count: number;             // <7 days estimated supply
   stock_checked_recently: number;      // checked within 7 days
-  stock_check_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stock_check_rate: number | null;
 }
 
 export interface ErrorProfile {
@@ -112,7 +125,8 @@ export interface ErrorProfile {
   errors_30d: number;
   open_errors: number;
   highest_severity: ErrorSeverity | null;
-  remedial_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  remedial_completion_rate: number | null;
 }
 
 export interface MedicationDetail {
@@ -123,11 +137,13 @@ export interface MedicationDetail {
   frequency: string;
   is_active: boolean;
   administrations_30d: number;
-  adherence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adherence_rate: number | null;
   refusal_count: number;
   late_count: number;
   missed_count: number;
-  witnessing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  witnessing_rate: number | null;
 }
 
 export interface ChildMedicationResult {
@@ -166,8 +182,9 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
-function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
+// Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
+function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 function avg(nums: number[]): number | null {
@@ -253,8 +270,14 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
 
   let adherenceTrend: "improving" | "stable" | "declining" | "insufficient_data" = "insufficient_data";
   if (admins30d.length >= 5 && adminsPrior30d.length >= 5) {
-    const diff = adherenceRate30d - adherenceRatePrior;
-    if (diff >= 5) adherenceTrend = "improving";
+    // Both windows must be measured for a difference to mean anything; the
+    // length guards above already ensure it, but the compiler cannot see that.
+    const diff =
+      adherenceRate30d === null || adherenceRatePrior === null
+        ? null
+        : adherenceRate30d - adherenceRatePrior;
+    if (diff === null) adherenceTrend = "insufficient_data";
+    else if (diff >= 5) adherenceTrend = "improving";
     else if (diff <= -5) adherenceTrend = "declining";
     else adherenceTrend = "stable";
   }
@@ -401,30 +424,34 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
       missed_count: medAdmins.filter((a) => a.status === "missed").length,
       witnessing_rate: pct(medWitnessed.length, medGiven.length),
     };
-  }).sort((a, b) => a.adherence_rate - b.adherence_rate); // worst adherence first
+  }).sort((a, b) =>
+    // Worst adherence first; an unmeasured medication has no place in that
+    // ordering, so it sorts to the end rather than to the front.
+    (a.adherence_rate ?? Number.POSITIVE_INFINITY) - (b.adherence_rate ?? Number.POSITIVE_INFINITY),
+  );
 
   // ── Scoring ─────────────────────────────────────────────────────────────
   let score = 50;
 
   // Adherence (+/- up to 20)
-  if (adherenceRate30d >= 95) score += 20;
-  else if (adherenceRate30d >= 85) score += 12;
-  else if (adherenceRate30d >= 70) score += 5;
-  else if (adherenceRate30d >= 50) score -= 5;
+  if (meets(adherenceRate30d, 95)) score += 20;
+  else if (meets(adherenceRate30d, 85)) score += 12;
+  else if (meets(adherenceRate30d, 70)) score += 5;
+  else if (meets(adherenceRate30d, 50)) score -= 5;
   else if (admins30d.length > 0) score -= 15;
 
   // Witnessing (+/- up to 10)
-  if (witnessingRate30d >= 95) score += 10;
-  else if (witnessingRate30d >= 80) score += 5;
-  else if (witnessingRate30d < 50 && givenAdmins30d.length > 0) score -= 10;
+  if (meets(witnessingRate30d, 95)) score += 10;
+  else if (meets(witnessingRate30d, 80)) score += 5;
+  else if (below(witnessingRate30d, 50) && givenAdmins30d.length > 0) score -= 10;
 
   // Controlled drug witnessing (critical)
-  if (hasControlled && controlledWitnessingRate < 100 && controlledAdmins.length > 0) score -= 10;
+  if (hasControlled && below(controlledWitnessingRate, 100) && controlledAdmins.length > 0) score -= 10;
 
   // Timeliness (+/- up to 8)
-  if (timeliness.on_time_rate_30d >= 95) score += 8;
-  else if (timeliness.on_time_rate_30d >= 80) score += 4;
-  else if (timeliness.on_time_rate_30d < 60 && delays.length > 0) score -= 5;
+  if (meets(timeliness.on_time_rate_30d, 95)) score += 8;
+  else if (meets(timeliness.on_time_rate_30d, 80)) score += 4;
+  else if (below(timeliness.on_time_rate_30d, 60) && delays.length > 0) score -= 5;
 
   // Refusals (penalty)
   if (refused30d >= 5) score -= 8;
@@ -442,12 +469,12 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
 
   // PRN documentation
   if (prnAdmins30d.length > 0) {
-    if (prn.effectiveness_recorded_rate >= 90 && prn.reason_recorded_rate >= 90) score += 5;
-    else if (prn.reason_recorded_rate < 50) score -= 5;
+    if (meets(prn.effectiveness_recorded_rate, 90) && meets(prn.reason_recorded_rate, 90)) score += 5;
+    else if (below(prn.reason_recorded_rate, 50)) score -= 5;
   }
 
   // Stock management
-  if (medsWithStock.length > 0 && stock.stock_check_rate >= 80) score += 3;
+  if (medsWithStock.length > 0 && meets(stock.stock_check_rate, 80)) score += 3;
   if (stockLow.length > 0) score -= 3;
 
   // Trend adjustment
@@ -470,26 +497,26 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (adherenceRate30d >= 95 && admins30d.length >= 10) strengths.push(`Excellent medication adherence at ${adherenceRate30d}% over 30 days.`);
-  if (witnessingRate30d >= 95 && givenAdmins30d.length >= 5) strengths.push(`Strong witnessing compliance at ${witnessingRate30d}% — all administrations properly observed.`);
+  if (meets(adherenceRate30d, 95) && admins30d.length >= 10) strengths.push(`Excellent medication adherence at ${adherenceRate30d}% over 30 days.`);
+  if (meets(witnessingRate30d, 95) && givenAdmins30d.length >= 5) strengths.push(`Strong witnessing compliance at ${witnessingRate30d}% — all administrations properly observed.`);
   if (hasControlled && controlledWitnessingRate === 100 && controlledAdmins.length > 0) strengths.push("100% witnessing rate for controlled drugs — full regulatory compliance.");
-  if (timeliness.on_time_rate_30d >= 95 && delays.length >= 5) strengths.push(`${timeliness.on_time_rate_30d}% of administrations on time — excellent timeliness.`);
+  if (meets(timeliness.on_time_rate_30d, 95) && delays.length >= 5) strengths.push(`${timeliness.on_time_rate_30d}% of administrations on time — excellent timeliness.`);
   if (refused30d === 0 && admins30d.length >= 10) strengths.push("No medication refusals in 30 days — consistent engagement.");
   if (missed30d === 0 && admins30d.length >= 10) strengths.push("No missed doses in 30 days — reliable administration.");
   if (errors90d.length === 0 && admins30d.length > 0) strengths.push("No medication errors recorded in 90 days — safe practice.");
-  if (prnAdmins30d.length > 0 && prn.effectiveness_recorded_rate >= 90) strengths.push("PRN effectiveness consistently documented — good clinical practice.");
+  if (prnAdmins30d.length > 0 && meets(prn.effectiveness_recorded_rate, 90)) strengths.push("PRN effectiveness consistently documented — good clinical practice.");
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (adherenceRate30d < 70 && admins30d.length >= 5) concerns.push(`Low medication adherence at ${adherenceRate30d}% — health outcomes at risk (Reg 23).`);
+  if (below(adherenceRate30d, 70) && admins30d.length >= 5) concerns.push(`Low medication adherence at ${adherenceRate30d}% — health outcomes at risk (Reg 23).`);
   if (refused30d >= 3) concerns.push(`${refused30d} medication refusals in 30 days — pattern requires review.`);
   if (missed30d >= 2) concerns.push(`${missed30d} missed doses in 30 days — potential safeguarding concern (Reg 23).`);
-  if (witnessingRate30d < 80 && givenAdmins30d.length >= 5) concerns.push(`Witnessing rate only ${witnessingRate30d}% — ${witnessing.unwitnessed_count_30d} unwitnessed administrations.`);
-  if (hasControlled && controlledWitnessingRate < 100 && controlledAdmins.length > 0) concerns.push("Controlled drugs administered without witness — regulatory breach (Reg 12).");
+  if (below(witnessingRate30d, 80) && givenAdmins30d.length >= 5) concerns.push(`Witnessing rate only ${witnessingRate30d}% — ${witnessing.unwitnessed_count_30d} unwitnessed administrations.`);
+  if (hasControlled && below(controlledWitnessingRate, 100) && controlledAdmins.length > 0) concerns.push("Controlled drugs administered without witness — regulatory breach (Reg 12).");
   if (errors30d.length > 0) concerns.push(`${errors30d.length} medication error(s) in last 30 days — investigation required.`);
   if (highestSeverity === "severe" || highestSeverity === "death") concerns.push("Severe medication error recorded — critical patient safety concern.");
   if (openErrors.length > 0) concerns.push(`${openErrors.length} medication error(s) still open — remedial actions outstanding.`);
-  if (timeliness.on_time_rate_30d < 70 && delays.length >= 5) concerns.push(`Only ${timeliness.on_time_rate_30d}% on-time administration — timeliness needs improvement.`);
+  if (below(timeliness.on_time_rate_30d, 70) && delays.length >= 5) concerns.push(`Only ${timeliness.on_time_rate_30d}% on-time administration — timeliness needs improvement.`);
   if (stockLow.length > 0) concerns.push(`${stockLow.length} medication(s) with low stock (<7 doses) — reorder needed.`);
   if (activeMeds.length > 0 && admins7d.length === 0 && activeMeds.some((m) => m.type === "regular")) {
     concerns.push("No medication administrations recorded in last 7 days despite active regular medications.");
@@ -501,13 +528,13 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   let rank = 0;
 
   if (missed30d >= 2) recs.push({ rank: ++rank, recommendation: `Review missed dose protocol — ${missed30d} missed doses in 30 days. Ensure staff understand escalation pathway.`, urgency: "immediate", regulatory_ref: "Reg 23" });
-  if (hasControlled && controlledWitnessingRate < 100 && controlledAdmins.length > 0) recs.push({ rank: ++rank, recommendation: "Ensure all controlled drug administrations are witnessed and countersigned. Immediate audit required.", urgency: "immediate", regulatory_ref: "Reg 12" });
+  if (hasControlled && below(controlledWitnessingRate, 100) && controlledAdmins.length > 0) recs.push({ rank: ++rank, recommendation: "Ensure all controlled drug administrations are witnessed and countersigned. Immediate audit required.", urgency: "immediate", regulatory_ref: "Reg 12" });
   if (errors30d.length > 0) recs.push({ rank: ++rank, recommendation: "Complete investigation of recent medication error(s) and implement remedial actions.", urgency: "immediate", regulatory_ref: "Reg 23" });
   if (refused30d >= 3) recs.push({ rank: ++rank, recommendation: `Consider medication review with prescriber — ${refused30d} refusals may indicate side effects or disengagement.`, urgency: "soon", regulatory_ref: "Reg 23" });
-  if (witnessingRate30d < 80 && givenAdmins30d.length >= 5) recs.push({ rank: ++rank, recommendation: `Improve witnessing compliance — currently ${witnessingRate30d}%. Brief all staff on witnessing protocol.`, urgency: "soon", regulatory_ref: "Reg 12" });
-  if (timeliness.on_time_rate_30d < 70 && delays.length >= 5) recs.push({ rank: ++rank, recommendation: "Review medication administration scheduling to improve timeliness.", urgency: "soon", regulatory_ref: "Reg 23" });
+  if (below(witnessingRate30d, 80) && givenAdmins30d.length >= 5) recs.push({ rank: ++rank, recommendation: `Improve witnessing compliance — currently ${witnessingRate30d}%. Brief all staff on witnessing protocol.`, urgency: "soon", regulatory_ref: "Reg 12" });
+  if (below(timeliness.on_time_rate_30d, 70) && delays.length >= 5) recs.push({ rank: ++rank, recommendation: "Review medication administration scheduling to improve timeliness.", urgency: "soon", regulatory_ref: "Reg 23" });
   if (stockLow.length > 0) recs.push({ rank: ++rank, recommendation: `Reorder low-stock medications (${stockLow.length} medication(s) below 7-dose threshold).`, urgency: "soon", regulatory_ref: "Reg 23" });
-  if (prnAdmins30d.length > 0 && prn.effectiveness_recorded_rate < 70) recs.push({ rank: ++rank, recommendation: "Improve PRN effectiveness documentation — clinical review needs outcome evidence.", urgency: "planned", regulatory_ref: "Reg 23" });
+  if (prnAdmins30d.length > 0 && below(prn.effectiveness_recorded_rate, 70)) recs.push({ rank: ++rank, recommendation: "Improve PRN effectiveness documentation — clinical review needs outcome evidence.", urgency: "planned", regulatory_ref: "Reg 23" });
   if (activeMeds.length > 0 && admins7d.length === 0 && activeMeds.some((m) => m.type === "regular")) recs.push({ rank: ++rank, recommendation: "Investigate gap in medication recording — no administrations in past 7 days despite active prescriptions.", urgency: "immediate", regulatory_ref: "Reg 23" });
 
   // ── Insights ──────────────────────────────────────────────────────────
@@ -519,7 +546,7 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   if (missed30d >= 2) {
     insights.push({ severity: "critical", text: `${missed30d} missed doses in 30 days. Under Reg 23, homes must ensure children receive prescribed medication. Missed doses represent a direct compliance risk.` });
   }
-  if (hasControlled && controlledWitnessingRate < 100 && controlledAdmins.length > 0) {
+  if (hasControlled && below(controlledWitnessingRate, 100) && controlledAdmins.length > 0) {
     insights.push({ severity: "critical", text: "Controlled drug administration without witnessing is a serious regulatory breach under Reg 12. This would be flagged as a priority area in any inspection." });
   }
   if (adherenceTrend === "declining") {
@@ -531,7 +558,7 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   if (rating === "outstanding") {
     insights.push({ severity: "positive", text: `Outstanding medication safety for ${child_name}. Adherence, witnessing, timeliness, and documentation all meet the highest standards — evidence of excellent Reg 23 compliance.` });
   } else if (rating === "good" && errors90d.length === 0) {
-    insights.push({ severity: "positive", text: `Good medication safety practice for ${child_name} with no errors in 90 days. Minor improvements in ${witnessingRate30d < 95 ? "witnessing" : "timeliness"} would elevate to outstanding.` });
+    insights.push({ severity: "positive", text: `Good medication safety practice for ${child_name} with no errors in 90 days. Minor improvements in ${below(witnessingRate30d, 95) ? "witnessing" : "timeliness"} would elevate to outstanding.` });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────

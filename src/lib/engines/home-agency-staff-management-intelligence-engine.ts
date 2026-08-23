@@ -7,6 +7,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface AgencyShiftInput {
   id: string;
   worker_name: string;
@@ -69,10 +71,14 @@ export interface AgencyStaffManagementResult {
   agency_score: number;
   headline: string;
   total_agency_shifts: number;
-  vetting_compliance_rate: number;
-  induction_completion_rate: number;
-  positive_feedback_rate: number;
-  safeguarding_briefing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  vetting_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  induction_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_feedback_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguarding_briefing_rate: number | null;
   concerns_flagged: number;
   strengths: string[];
   concerns: string[];
@@ -87,8 +93,9 @@ export interface AgencyStaffManagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -160,42 +167,42 @@ export function computeAgencyStaffManagement(
   let score = 52;
 
   // Modifier 1: Vetting compliance
-  if (vettingRate >= 95) score += 5;
-  else if (vettingRate >= 80) score += 2;
+  if (meets(vettingRate, 95)) score += 5;
+  else if (meets(vettingRate, 80)) score += 2;
   else score -= 5;
 
   // Modifier 2: Induction topic coverage
   if (inductions.length === 0) {
     score -= 1;
   } else {
-    if (topicCoverageRate >= 90) score += 6;
-    else if (topicCoverageRate >= 70) score += 2;
-    else if (topicCoverageRate < 50) score -= 5;
+    if (meets(topicCoverageRate, 90)) score += 6;
+    else if (meets(topicCoverageRate, 70)) score += 2;
+    else if (below(topicCoverageRate, 50)) score -= 5;
   }
 
   // Modifier 3: Feedback quality
   if (feedback.length === 0) {
     // no adjustment
   } else {
-    if (positiveFeedbackRate >= 90) score += 5;
-    else if (positiveFeedbackRate >= 70) score += 2;
-    else if (positiveFeedbackRate < 50) score -= 4;
+    if (meets(positiveFeedbackRate, 90)) score += 5;
+    else if (meets(positiveFeedbackRate, 70)) score += 2;
+    else if (below(positiveFeedbackRate, 50)) score -= 4;
   }
 
   // Modifier 4: Safeguarding briefing rate
-  if (safeguardingRate >= 95) score += 5;
-  else if (safeguardingRate >= 80) score += 2;
-  else if (safeguardingRate < 60) score -= 5;
+  if (meets(safeguardingRate, 95)) score += 5;
+  else if (meets(safeguardingRate, 80)) score += 2;
+  else if (below(safeguardingRate, 60)) score -= 5;
 
   // Modifier 5: DBS enhanced compliance
   if (dbsRate === 100) score += 4;
-  else if (dbsRate >= 90) score += 1;
-  else if (dbsRate < 80) score -= 4;
+  else if (meets(dbsRate, 90)) score += 1;
+  else if (below(dbsRate, 80)) score -= 4;
 
   // Modifier 6: Concern management
   if (concernsCount === 0) score += 5;
-  else if (concernRate <= 10) score += 2;
-  else if (concernRate > 20) score -= 5;
+  else if ((concernRate !== null && concernRate <= 10)) score += 2;
+  else if (above(concernRate, 20)) score -= 5;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -221,45 +228,45 @@ export function computeAgencyStaffManagement(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (vettingRate >= 95) strengths.push("Excellent vetting compliance — all agency workers are fully vetted before shifts");
-  if (safeguardingRate >= 95) strengths.push("All agency staff receive safeguarding briefings before working with children");
+  if (meets(vettingRate, 95)) strengths.push("Excellent vetting compliance — all agency workers are fully vetted before shifts");
+  if (meets(safeguardingRate, 95)) strengths.push("All agency staff receive safeguarding briefings before working with children");
   if (dbsRate === 100) strengths.push("100% enhanced DBS compliance across all agency shifts");
-  if (positiveFeedbackRate >= 90 && feedback.length > 0) strengths.push("Agency staff consistently receive positive feedback from permanent staff");
-  if (topicCoverageRate >= 90 && inductions.length > 0) strengths.push("Comprehensive induction programme covers all key topics for agency staff");
+  if (meets(positiveFeedbackRate, 90) && feedback.length > 0) strengths.push("Agency staff consistently receive positive feedback from permanent staff");
+  if (meets(topicCoverageRate, 90) && inductions.length > 0) strengths.push("Comprehensive induction programme covers all key topics for agency staff");
   if (concernsCount === 0) strengths.push("No concerns flagged about agency staff conduct or practice");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (vettingRate < 80) concerns.push(`Only ${vettingRate}% of agency shifts have fully vetted workers — significant safeguarding risk`);
-  if (safeguardingRate < 60) concerns.push(`Safeguarding briefing rate is critically low at ${safeguardingRate}%`);
-  if (dbsRate < 80) concerns.push(`DBS enhanced compliance is below 80% at ${dbsRate}% — children may be at risk`);
-  if (positiveFeedbackRate < 50 && feedback.length > 0) concerns.push("Majority of agency staff feedback is negative — quality of care may be affected");
-  if (concernRate > 20) concerns.push(`High rate of concerns flagged (${concernRate}%) about agency staff`);
-  if (topicCoverageRate < 50 && inductions.length > 0) concerns.push("Agency induction topic coverage is critically low");
+  if (below(vettingRate, 80)) concerns.push(`Only ${vettingRate}% of agency shifts have fully vetted workers — significant safeguarding risk`);
+  if (below(safeguardingRate, 60)) concerns.push(`Safeguarding briefing rate is critically low at ${safeguardingRate}%`);
+  if (below(dbsRate, 80)) concerns.push(`DBS enhanced compliance is below 80% at ${dbsRate}% — children may be at risk`);
+  if (below(positiveFeedbackRate, 50) && feedback.length > 0) concerns.push("Majority of agency staff feedback is negative — quality of care may be affected");
+  if (above(concernRate, 20)) concerns.push(`High rate of concerns flagged (${concernRate}%) about agency staff`);
+  if (below(topicCoverageRate, 50) && inductions.length > 0) concerns.push("Agency induction topic coverage is critically low");
   if (inductions.length === 0 && shifts.length > 0) concerns.push("No formal inductions recorded for agency staff");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: AgencyStaffManagementResult["recommendations"] = [];
 
-  if (vettingRate < 80) {
+  if (below(vettingRate, 80)) {
     recs.push({ rank: 1, recommendation: "Implement mandatory pre-shift vetting verification for all agency workers", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (safeguardingRate < 80) {
+  if (below(safeguardingRate, 80)) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure all agency staff receive safeguarding briefing before each shift", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (dbsRate < 90) {
+  if (below(dbsRate, 90)) {
     recs.push({ rank: recs.length + 1, recommendation: "Verify enhanced DBS status for all agency staff before shift commencement", urgency: "soon", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (positiveFeedbackRate < 70 && feedback.length > 0) {
+  if (below(positiveFeedbackRate, 70) && feedback.length > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review agency provider quality and consider alternative agencies for improved standards", urgency: "soon", regulatory_ref: "SCCIF Leadership" });
   }
   if (inductions.length === 0 && shifts.length > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Develop and implement a structured induction process for all agency staff", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (topicCoverageRate < 70 && inductions.length > 0) {
+  if (below(topicCoverageRate, 70) && inductions.length > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Expand induction content to cover all required safeguarding and practice topics", urgency: "soon", regulatory_ref: "SCCIF Leadership" });
   }
-  if (concernRate > 10) {
+  if (above(concernRate, 10)) {
     recs.push({ rank: recs.length + 1, recommendation: "Investigate recurring concerns with agency staff and address root causes with provider", urgency: "soon", regulatory_ref: "SCCIF Leadership" });
   }
 
@@ -269,19 +276,19 @@ export function computeAgencyStaffManagement(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: AgencyStaffManagementResult["insights"] = [];
 
-  if (vettingRate === 100 && dbsRate === 100 && safeguardingRate >= 95) {
+  if (vettingRate === 100 && dbsRate === 100 && meets(safeguardingRate, 95)) {
     insights.push({ text: "Agency safeguarding framework is robust — vetting, DBS and briefing compliance all at highest level", severity: "positive" });
   }
-  if (vettingRate < 80 || dbsRate < 80) {
+  if (below(vettingRate, 80) || below(dbsRate, 80)) {
     insights.push({ text: "Agency worker safeguarding checks have critical gaps — immediate action required to protect children", severity: "critical" });
   }
-  if (concernRate > 20) {
+  if (above(concernRate, 20)) {
     insights.push({ text: "Pattern of concerns with agency staff suggests systemic issues with provider quality or matching", severity: "critical" });
   }
-  if (positiveFeedbackRate >= 90 && feedback.length > 0) {
+  if (meets(positiveFeedbackRate, 90) && feedback.length > 0) {
     insights.push({ text: "Consistently positive feedback indicates effective agency relationships and quality oversight", severity: "positive" });
   }
-  if (topicCoverageRate < 50 && inductions.length > 0) {
+  if (below(topicCoverageRate, 50) && inductions.length > 0) {
     insights.push({ text: "Incomplete induction coverage means agency staff may lack essential knowledge about children's needs", severity: "warning" });
   }
   if (shifts.length > 0 && inductions.length === 0) {

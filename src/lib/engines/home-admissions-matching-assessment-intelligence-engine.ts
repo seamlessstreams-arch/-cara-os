@@ -12,7 +12,7 @@
 //             admissionPlanningRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -185,12 +185,14 @@ export interface AdmissionsMatchingResult {
   // empty: no source records ⇒ no signal. "0% impact assessment / 0%
   // matching / 0% suitability / 0% planning" would read as a home taking
   // random referrals with no thought, not "unmeasured". Fab-0 doctrine.
-  referral_assessment_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referral_assessment_rate: number | null;
   impact_assessment_rate: number | null;
   matching_quality_rate: number | null;
   suitability_review_rate: number | null;
   admission_planning_rate: number | null;
-  child_consultation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_consultation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AdmissionsMatchingRecommendation[];
@@ -199,8 +201,9 @@ export interface AdmissionsMatchingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -360,7 +363,7 @@ export function computeAdmissionsMatchingAssessment(
 
   // Composite impact assessment rate
   const impactAssessmentRate: number | null = totalImpactAssessments > 0
-    ? Math.round((individualImpactRate + impactChildConsultRate + mitigationAdequacyRate + safeguardingImplicationsRate) / 4)
+    ? meanOf([individualImpactRate, impactChildConsultRate, mitigationAdequacyRate, safeguardingImplicationsRate])
       : null;
 
   // --- Matching criteria metrics ---
@@ -390,7 +393,7 @@ export function computeAdmissionsMatchingAssessment(
 
   // Composite matching quality rate
   const matchingQualityRate: number | null = totalMatchingRecords > 0
-    ? Math.round((criteriaMetRate + matchingChildViewsRate + domainCoverageRate + matchingRationaleRate) / 4)
+    ? meanOf([criteriaMetRate, matchingChildViewsRate, domainCoverageRate, matchingRationaleRate])
       : null;
 
   // --- Placement suitability metrics ---
@@ -416,7 +419,7 @@ export function computeAdmissionsMatchingAssessment(
 
   // Composite suitability review rate
   const suitabilityReviewRate: number | null = totalSuitabilityReviews > 0
-    ? Math.round((suitabilityDeterminedRate + sopCheckRate + decisionRationaleRate + regulatoryMetRate) / 4)
+    ? meanOf([suitabilityDeterminedRate, sopCheckRate, decisionRationaleRate, regulatoryMetRate])
       : null;
 
   // --- Admission planning metrics ---
@@ -449,7 +452,7 @@ export function computeAdmissionsMatchingAssessment(
 
   // Composite admission planning rate
   const admissionPlanningRate: number | null = totalAdmissionPlans > 0
-    ? Math.round((introVisitRate + childPrepRate + staffBriefingRate + placementPlanRate + keyWorkerRate) / 5)
+    ? meanOf([introVisitRate, childPrepRate, staffBriefingRate, placementPlanRate, keyWorkerRate])
       : null;
 
   // --- Child consultation composite ---
@@ -479,8 +482,8 @@ export function computeAdmissionsMatchingAssessment(
   let score = 52;
 
   // --- Bonus 1: referralAssessmentRate (>=90: +4, >=70: +2) ---
-  if (referralAssessmentRate >= 90) score += 4;
-  else if (referralAssessmentRate >= 70) score += 2;
+  if (meets(referralAssessmentRate, 90)) score += 4;
+  else if (meets(referralAssessmentRate, 70)) score += 2;
 
   // --- Bonus 2: impactAssessmentRate (>=90: +4, >=70: +2) ---
   if (meets(impactAssessmentRate, 90)) score += 4;
@@ -499,16 +502,16 @@ export function computeAdmissionsMatchingAssessment(
   else if (meets(admissionPlanningRate, 70)) score += 1;
 
   // --- Bonus 6: childConsultationRate (>=90: +3, >=70: +1) ---
-  if (childConsultationRate >= 90) score += 3;
-  else if (childConsultationRate >= 70) score += 1;
+  if (meets(childConsultationRate, 90)) score += 3;
+  else if (meets(childConsultationRate, 70)) score += 1;
 
   // --- Bonus 7: safeguardingCheckRate (>=90: +3, >=70: +1) ---
-  if (safeguardingCheckRate >= 90) score += 3;
-  else if (safeguardingCheckRate >= 70) score += 1;
+  if (meets(safeguardingCheckRate, 90)) score += 3;
+  else if (meets(safeguardingCheckRate, 70)) score += 1;
 
   // --- Bonus 8: sopAlignmentRate (>=90: +3, >=70: +1) ---
-  if (sopAlignmentRate >= 90) score += 3;
-  else if (sopAlignmentRate >= 70) score += 1;
+  if (meets(sopAlignmentRate, 90)) score += 3;
+  else if (meets(sopAlignmentRate, 70)) score += 1;
 
   // --- Bonus 9: avgReferralQuality + avgImpactQuality composite (>=4.0: +2, >=3.0: +1) ---
   const avgQualityComposite: number | null = totalReferralAssessments > 0 && totalImpactAssessments > 0
@@ -522,13 +525,13 @@ export function computeAdmissionsMatchingAssessment(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // referralAssessmentRate < 40 → -5 (guarded)
-  if (referralAssessmentRate < 40 && referral_assessment_records.length > 0) score -= 5;
+  if (below(referralAssessmentRate, 40) && referral_assessment_records.length > 0) score -= 5;
 
   // below(impactAssessmentRate, 40) → -5 (guarded)
   if (below(impactAssessmentRate, 40) && impact_risk_assessment_records.length > 0) score -= 5;
 
   // childConsultationRate < 30 → -4 (guarded)
-  if (childConsultationRate < 30 && totalChildConsultDenom > 0) score -= 4;
+  if (below(childConsultationRate, 30) && totalChildConsultDenom > 0) score -= 4;
 
   // below(matchingQualityRate, 30) → -4 (guarded)
   if (below(matchingQualityRate, 30) && matching_criteria_records.length > 0) score -= 4;
@@ -541,11 +544,11 @@ export function computeAdmissionsMatchingAssessment(
 
   const strengths: string[] = [];
 
-  if (referralAssessmentRate >= 90 && totalReferralAssessments > 0) {
+  if (meets(referralAssessmentRate, 90) && totalReferralAssessments > 0) {
     strengths.push(
       `${referralAssessmentRate}% referral assessment completion — the home demonstrates thorough pre-admission evaluation of every referral, ensuring informed placement decisions.`,
     );
-  } else if (referralAssessmentRate >= 70 && totalReferralAssessments > 0) {
+  } else if (meets(referralAssessmentRate, 70) && totalReferralAssessments > 0) {
     strengths.push(
       `${referralAssessmentRate}% referral assessment rate — good completion of pre-admission assessments supporting sound placement decisions.`,
     );
@@ -591,51 +594,51 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (childConsultationRate >= 90 && totalChildConsultDenom > 0) {
+  if (meets(childConsultationRate, 90) && totalChildConsultDenom > 0) {
     strengths.push(
       `${childConsultationRate}% child consultation across admissions processes — children's views consistently drive placement decisions, demonstrating genuine commitment to the voice of the child.`,
     );
-  } else if (childConsultationRate >= 70 && totalChildConsultDenom > 0) {
+  } else if (meets(childConsultationRate, 70) && totalChildConsultDenom > 0) {
     strengths.push(
       `${childConsultationRate}% child consultation rate — good engagement with children's views during admissions and matching.`,
     );
   }
 
-  if (safeguardingCheckRate >= 90 && totalReferralAssessments > 0) {
+  if (meets(safeguardingCheckRate, 90) && totalReferralAssessments > 0) {
     strengths.push(
       `${safeguardingCheckRate}% safeguarding history checks — comprehensive safeguarding screening of referrals protects existing residents and supports informed decision-making.`,
     );
-  } else if (safeguardingCheckRate >= 70 && totalReferralAssessments > 0) {
+  } else if (meets(safeguardingCheckRate, 70) && totalReferralAssessments > 0) {
     strengths.push(
       `${safeguardingCheckRate}% safeguarding check rate — good practice in screening referral safeguarding histories.`,
     );
   }
 
-  if (sopAlignmentRate >= 90 && totalReferralAssessments > 0) {
+  if (meets(sopAlignmentRate, 90) && totalReferralAssessments > 0) {
     strengths.push(
       `${sopAlignmentRate}% alignment with Statement of Purpose — every referral is rigorously assessed against the home's registered purpose, ensuring appropriate placements.`,
     );
   }
 
-  if (introVisitRate >= 90 && totalAdmissionPlans > 0) {
+  if (meets(introVisitRate, 90) && totalAdmissionPlans > 0) {
     strengths.push(
       "Introductory visits are completed for virtually all admissions — children are given the opportunity to experience the home before placement, reducing anxiety and supporting successful transitions.",
     );
   }
 
-  if (existingPrepRate >= 90 && totalAdmissionPlans > 0) {
+  if (meets(existingPrepRate, 90) && totalAdmissionPlans > 0) {
     strengths.push(
       "Existing children are consistently prepared for new admissions — the home actively manages the impact of arrivals on the established group.",
     );
   }
 
-  if (managerSignOffRate >= 90 && totalImpactAssessments > 0) {
+  if (meets(managerSignOffRate, 90) && totalImpactAssessments > 0) {
     strengths.push(
       "Manager sign-off is obtained on virtually all impact assessments — demonstrating strong governance and oversight of admission decisions.",
     );
   }
 
-  if (domainCoverageRate >= 90 && totalMatchingRecords > 0) {
+  if (meets(domainCoverageRate, 90) && totalMatchingRecords > 0) {
     strengths.push(
       `${domainCoverageRate}% matching domain coverage — age, needs, risk, cultural, emotional, and behavioural compatibility are consistently assessed across all matching evaluations.`,
     );
@@ -647,7 +650,7 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (firstReviewRate >= 90 && totalAdmissionPlans > 0) {
+  if (meets(firstReviewRate, 90) && totalAdmissionPlans > 0) {
     strengths.push(
       "First placement reviews are scheduled for virtually all new admissions — the home monitors whether matching decisions prove effective.",
     );
@@ -663,11 +666,11 @@ export function computeAdmissionsMatchingAssessment(
 
   const concerns: string[] = [];
 
-  if (referralAssessmentRate < 40 && totalReferralAssessments > 0) {
+  if (below(referralAssessmentRate, 40) && totalReferralAssessments > 0) {
     concerns.push(
       `Only ${referralAssessmentRate}% referral assessment completion — the majority of referrals lack completed pre-admission assessments, undermining the home's ability to make informed placement decisions (Reg 36).`,
     );
-  } else if (referralAssessmentRate < 70 && referralAssessmentRate >= 40 && totalReferralAssessments > 0) {
+  } else if (below(referralAssessmentRate, 70) && meets(referralAssessmentRate, 40) && totalReferralAssessments > 0) {
     concerns.push(
       `Referral assessment completion at ${referralAssessmentRate}% — too many referrals are not being fully assessed before admission decisions, creating risk of unsuitable placements.`,
     );
@@ -705,23 +708,23 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (childConsultationRate < 30 && totalChildConsultDenom > 0) {
+  if (below(childConsultationRate, 30) && totalChildConsultDenom > 0) {
     concerns.push(
       `Only ${childConsultationRate}% child consultation across admissions — children's voices are largely absent from placement decisions, contradicting the voice of the child principle.`,
     );
-  } else if (childConsultationRate < 70 && childConsultationRate >= 30 && totalChildConsultDenom > 0) {
+  } else if (below(childConsultationRate, 70) && meets(childConsultationRate, 30) && totalChildConsultDenom > 0) {
     concerns.push(
       `Child consultation at ${childConsultationRate}% — not all children are consistently consulted during admissions and matching processes.`,
     );
   }
 
-  if (safeguardingCheckRate < 50 && totalReferralAssessments > 0) {
+  if (below(safeguardingCheckRate, 50) && totalReferralAssessments > 0) {
     concerns.push(
       `Only ${safeguardingCheckRate}% of referrals have safeguarding history checks — the home may be accepting children without adequate safeguarding screening, putting existing residents at risk.`,
     );
   }
 
-  if (sopAlignmentRate < 50 && totalReferralAssessments > 0) {
+  if (below(sopAlignmentRate, 50) && totalReferralAssessments > 0) {
     concerns.push(
       `Only ${sopAlignmentRate}% of referrals assessed against the Statement of Purpose — the home may be accepting placements outside its registered purpose.`,
     );
@@ -745,31 +748,31 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (highRiskImpacts > 0 && mitigationAdequacyRate < 50 && totalImpactAssessments > 0) {
+  if (highRiskImpacts > 0 && below(mitigationAdequacyRate, 50) && totalImpactAssessments > 0) {
     concerns.push(
       `${highRiskImpacts} high/very-high risk impact assessment${highRiskImpacts > 1 ? "s" : ""} with inadequate mitigations — serious risks to existing children are not being properly managed.`,
     );
   }
 
-  if (decisionRationaleRate < 50 && totalSuitabilityReviews > 0) {
+  if (below(decisionRationaleRate, 50) && totalSuitabilityReviews > 0) {
     concerns.push(
       `Only ${decisionRationaleRate}% of suitability decisions have documented rationale — Ofsted will question the rigour and transparency of placement decisions.`,
     );
   }
 
-  if (introVisitRate < 50 && totalAdmissionPlans > 0) {
+  if (below(introVisitRate, 50) && totalAdmissionPlans > 0) {
     concerns.push(
       `Only ${introVisitRate}% of admissions include an introductory visit — children are being placed without the opportunity to experience the home beforehand, increasing anxiety and placement disruption risk.`,
     );
   }
 
-  if (firstReviewRate < 40 && totalAdmissionPlans > 0) {
+  if (below(firstReviewRate, 40) && totalAdmissionPlans > 0) {
     concerns.push(
       `Only ${firstReviewRate}% of admissions have a first review scheduled — the home cannot verify whether matching decisions prove effective without planned reviews.`,
     );
   }
 
-  if (timelyAssessmentRate < 50 && totalReferralAssessments > 0) {
+  if (below(timelyAssessmentRate, 50) && totalReferralAssessments > 0) {
     concerns.push(
       `Only ${timelyAssessmentRate}% of referral assessments completed within expected timeframes — delays in assessment may lead to pressure for hasty admission decisions.`,
     );
@@ -780,7 +783,7 @@ export function computeAdmissionsMatchingAssessment(
   const recommendations: AdmissionsMatchingRecommendation[] = [];
   let rank = 0;
 
-  if (referralAssessmentRate < 40 && totalReferralAssessments > 0) {
+  if (below(referralAssessmentRate, 40) && totalReferralAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -810,7 +813,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (childConsultationRate < 30 && totalChildConsultDenom > 0) {
+  if (below(childConsultationRate, 30) && totalChildConsultDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -820,7 +823,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (safeguardingCheckRate < 50 && totalReferralAssessments > 0) {
+  if (below(safeguardingCheckRate, 50) && totalReferralAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -850,7 +853,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (sopAlignmentRate < 70 && totalReferralAssessments > 0) {
+  if (below(sopAlignmentRate, 70) && totalReferralAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -870,7 +873,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (decisionRationaleRate < 60 && totalSuitabilityReviews > 0) {
+  if (below(decisionRationaleRate, 60) && totalSuitabilityReviews > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -880,7 +883,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (introVisitRate < 70 && totalAdmissionPlans > 0) {
+  if (below(introVisitRate, 70) && totalAdmissionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -890,7 +893,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (firstReviewRate < 60 && totalAdmissionPlans > 0) {
+  if (below(firstReviewRate, 60) && totalAdmissionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -900,7 +903,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (existingPrepRate < 70 && totalAdmissionPlans > 0) {
+  if (below(existingPrepRate, 70) && totalAdmissionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,8 +914,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    referralAssessmentRate >= 40 &&
-    referralAssessmentRate < 70 &&
+    meets(referralAssessmentRate, 40) &&
+    below(referralAssessmentRate, 70) &&
     totalReferralAssessments > 0
   ) {
     recommendations.push({
@@ -925,8 +928,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    childConsultationRate >= 30 &&
-    childConsultationRate < 70 &&
+    meets(childConsultationRate, 30) &&
+    below(childConsultationRate, 70) &&
     totalChildConsultDenom > 0
   ) {
     recommendations.push({
@@ -938,7 +941,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (peerDynamicsRate < 60 && totalImpactAssessments > 0) {
+  if (below(peerDynamicsRate, 60) && totalImpactAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -954,7 +957,7 @@ export function computeAdmissionsMatchingAssessment(
 
   // -- Critical insights --
 
-  if (referralAssessmentRate < 40 && totalReferralAssessments > 0) {
+  if (below(referralAssessmentRate, 40) && totalReferralAssessments > 0) {
     insights.push({
       text: `Only ${referralAssessmentRate}% of referral assessments are completed. Without thorough pre-admission evaluation, the home cannot evidence that it accepts appropriate placements or that admission decisions are informed by comprehensive assessment of the child's needs, risks, and background. Ofsted will view this as a significant shortfall under Reg 36.`,
       severity: "critical",
@@ -975,7 +978,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (childConsultationRate < 30 && totalChildConsultDenom > 0) {
+  if (below(childConsultationRate, 30) && totalChildConsultDenom > 0) {
     insights.push({
       text: `Child consultation at only ${childConsultationRate}% across admissions processes. Children's views are largely absent from placement decisions. Under SCCIF, the voice of the child must inform matching and admission decisions — without this, the home cannot demonstrate child-centred practice.`,
       severity: "critical",
@@ -989,7 +992,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (safeguardingCheckRate < 30 && totalReferralAssessments > 0) {
+  if (below(safeguardingCheckRate, 30) && totalReferralAssessments > 0) {
     insights.push({
       text: `Only ${safeguardingCheckRate}% of referrals include safeguarding history checks. Admitting children without reviewing their safeguarding background exposes existing residents to unassessed risk — this represents a fundamental safeguarding failure.`,
       severity: "critical",
@@ -999,8 +1002,8 @@ export function computeAdmissionsMatchingAssessment(
   // -- Warning insights --
 
   if (
-    referralAssessmentRate >= 40 &&
-    referralAssessmentRate < 70 &&
+    meets(referralAssessmentRate, 40) &&
+    below(referralAssessmentRate, 70) &&
     totalReferralAssessments > 0
   ) {
     insights.push({
@@ -1032,8 +1035,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    childConsultationRate >= 30 &&
-    childConsultationRate < 70 &&
+    meets(childConsultationRate, 30) &&
+    below(childConsultationRate, 70) &&
     totalChildConsultDenom > 0
   ) {
     insights.push({
@@ -1079,8 +1082,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    timelyAssessmentRate >= 40 &&
-    timelyAssessmentRate < 70 &&
+    meets(timelyAssessmentRate, 40) &&
+    below(timelyAssessmentRate, 70) &&
     totalReferralAssessments > 0
   ) {
     insights.push({
@@ -1090,8 +1093,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    managerSignOffRate >= 50 &&
-    managerSignOffRate < 80 &&
+    meets(managerSignOffRate, 50) &&
+    below(managerSignOffRate, 80) &&
     totalImpactAssessments > 0
   ) {
     insights.push({
@@ -1110,9 +1113,9 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    referralAssessmentRate >= 90 &&
-    safeguardingCheckRate >= 90 &&
-    sopAlignmentRate >= 90 &&
+    meets(referralAssessmentRate, 90) &&
+    meets(safeguardingCheckRate, 90) &&
+    meets(sopAlignmentRate, 90) &&
     totalReferralAssessments > 0
   ) {
     insights.push({
@@ -1123,8 +1126,8 @@ export function computeAdmissionsMatchingAssessment(
 
   if (
     meets(impactAssessmentRate, 90) &&
-    impactChildConsultRate >= 90 &&
-    mitigationAdequacyRate >= 90 &&
+    meets(impactChildConsultRate, 90) &&
+    meets(mitigationAdequacyRate, 90) &&
     totalImpactAssessments > 0
   ) {
     insights.push({
@@ -1135,7 +1138,7 @@ export function computeAdmissionsMatchingAssessment(
 
   if (
     meets(matchingQualityRate, 90) &&
-    domainCoverageRate >= 90 &&
+    meets(domainCoverageRate, 90) &&
     totalMatchingRecords > 0
   ) {
     insights.push({
@@ -1145,7 +1148,7 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    childConsultationRate >= 90 &&
+    meets(childConsultationRate, 90) &&
     totalChildConsultDenom > 0
   ) {
     insights.push({
@@ -1156,7 +1159,7 @@ export function computeAdmissionsMatchingAssessment(
 
   if (
     meets(admissionPlanningRate, 90) &&
-    existingPrepRate >= 90 &&
+    meets(existingPrepRate, 90) &&
     totalAdmissionPlans > 0
   ) {
     insights.push({
@@ -1166,8 +1169,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    introVisitRate >= 90 &&
-    introPositiveRate >= 80 &&
+    meets(introVisitRate, 90) &&
+    meets(introPositiveRate, 80) &&
     introVisitCompleted > 0
   ) {
     insights.push({
@@ -1183,7 +1186,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (conditionalOutcomes > 0 && conditionsDocRate >= 80 && totalSuitabilityReviews > 0) {
+  if (conditionalOutcomes > 0 && meets(conditionsDocRate, 80) && totalSuitabilityReviews > 0) {
     insights.push({
       text: "Conditional placements have well-documented conditions — the home applies proportionate safeguards with clear expectations, demonstrating nuanced decision-making rather than binary accept/reject outcomes.",
       severity: "positive",
@@ -1191,7 +1194,7 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    firstReviewRate >= 90 &&
+    meets(firstReviewRate, 90) &&
     totalAdmissionPlans > 0
   ) {
     insights.push({

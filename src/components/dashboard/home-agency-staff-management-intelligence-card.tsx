@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,16 +78,16 @@ export function HomeAgencyStaffManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_agency_shifts > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_agency_shifts}</p>
               <p className="text-[9px] text-muted-foreground">Shifts</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.vetting_compliance_rate >= 90 ? "bg-green-50" : d.vetting_compliance_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.vetting_compliance_rate >= 90 ? "text-[--cs-success]" : d.vetting_compliance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.vetting_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.vetting_compliance_rate, 90) ? "bg-green-50" : meets(d.vetting_compliance_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.vetting_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.vetting_compliance_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.vetting_compliance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Vetted</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.induction_completion_rate >= 90 ? "bg-green-50" : d.induction_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.induction_completion_rate >= 90 ? "text-[--cs-success]" : d.induction_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.induction_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.induction_completion_rate, 90) ? "bg-green-50" : meets(d.induction_completion_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.induction_completion_rate, 90) ? "text-[--cs-success]" : meets(d.induction_completion_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.induction_completion_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Inducted</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_briefing_rate >= 90 ? "bg-green-50" : d.safeguarding_briefing_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_briefing_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_briefing_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_briefing_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safeguarding_briefing_rate, 90) ? "bg-green-50" : meets(d.safeguarding_briefing_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safeguarding_briefing_rate, 90) ? "text-[--cs-success]" : meets(d.safeguarding_briefing_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_briefing_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Safeguarding</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.concerns_flagged === 0 ? "bg-green-50" : d.concerns_flagged <= 2 ? "bg-amber-50" : "bg-red-50")}>

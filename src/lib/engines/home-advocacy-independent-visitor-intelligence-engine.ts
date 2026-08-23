@@ -6,7 +6,7 @@
 // deps.
 // CHR 2015 Reg 5 (Engaging with the wider system), Reg 7 (Children's views),
 // Reg 22 (Independent person), SCCIF "Voice of the child".
-import { meets, below } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // Store keys: independentVisitorRecords, advocacyServiceRecords,
 //             representationRecords, visitComplianceRecords,
@@ -154,11 +154,16 @@ export interface AdvocacyVisitorResult {
   advocacy_rating: AdvocacyVisitorRating;
   advocacy_score: number;
   headline: string;
-  visitor_allocation_rate: number;
-  advocacy_access_rate: number;
-  representation_quality_rate: number;
-  visit_compliance_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitor_allocation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacy_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  representation_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visit_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   // fab-0: null when no satisfaction records / no components.
   child_satisfaction_rate: number | null;
   strengths: string[];
@@ -169,8 +174,9 @@ export interface AdvocacyVisitorResult {
 
 // -- Helpers ------------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -493,69 +499,67 @@ export function computeAdvocacyIndependentVisitor(
   const childVoiceRate = pct(voiceNumerator, voiceDenominator);
 
   // --- Child satisfaction composite rate ---
-  const satBoolCount =
-    (feelsListened > 0 ? feelsListenedRate : 0) +
-    (trustsAdvocate > 0 ? trustRate : 0) +
-    (feelsViewsMakeDifference > 0 ? viewsMakeDifferenceRate : 0);
-  const satBoolDivisor =
-    (feelsListened > 0 ? 1 : 0) +
-    (trustsAdvocate > 0 ? 1 : 0) +
-    (feelsViewsMakeDifference > 0 ? 1 : 0);
-  // fab-0: null when no satisfaction records at all. With records present but
-  // every bool false, satBoolDivisor is 0 → keep returning 0 (that IS the
-  // finding: children feel unheard); guard the divide-by-zero with || 1.
+  // A hand-rolled mean over the components that have records behind them,
+  // which is what meanOf() does — it drops the nulls and averages the rest.
+  const satComponents = [
+    feelsListened > 0 ? feelsListenedRate : null,
+    trustsAdvocate > 0 ? trustRate : null,
+    feelsViewsMakeDifference > 0 ? viewsMakeDifferenceRate : null,
+  ];
+  // The two zero cases are NOT the same and the original said so: no
+  // satisfaction records at all is unmeasured (null), while records present
+  // with every bool false is a real 0 — children feel unheard. That is the
+  // finding, so it is kept deliberately rather than swept into null.
   const childSatisfactionRate: number | null =
-    totalSatRecords > 0
-      ? Math.round(satBoolCount / (satBoolDivisor || 1))
-      : null;
+    totalSatRecords > 0 ? meanOf(satComponents) ?? 0 : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: visitorAllocationRate (>=90: +5, >=70: +3) ---
-  if (visitorAllocationRate >= 90) score += 5;
-  else if (visitorAllocationRate >= 70) score += 3;
+  if (meets(visitorAllocationRate, 90)) score += 5;
+  else if (meets(visitorAllocationRate, 70)) score += 3;
 
   // --- Bonus 2: advocacyAccessRate (>=90: +5, >=70: +3) ---
-  if (advocacyAccessRate >= 90) score += 5;
-  else if (advocacyAccessRate >= 70) score += 3;
+  if (meets(advocacyAccessRate, 90)) score += 5;
+  else if (meets(advocacyAccessRate, 70)) score += 3;
 
   // --- Bonus 3: representationQualityRate (>=90: +4, >=70: +2) ---
-  if (representationQualityRate >= 90) score += 4;
-  else if (representationQualityRate >= 70) score += 2;
+  if (meets(representationQualityRate, 90)) score += 4;
+  else if (meets(representationQualityRate, 70)) score += 2;
 
   // --- Bonus 4: visitComplianceRate (>=90: +4, >=70: +2) ---
-  if (visitComplianceRate >= 90) score += 4;
-  else if (visitComplianceRate >= 70) score += 2;
+  if (meets(visitComplianceRate, 90)) score += 4;
+  else if (meets(visitComplianceRate, 70)) score += 2;
 
   // --- Bonus 5: childVoiceRate (>=80: +4, >=60: +2) ---
-  if (childVoiceRate >= 80) score += 4;
-  else if (childVoiceRate >= 60) score += 2;
+  if (meets(childVoiceRate, 80)) score += 4;
+  else if (meets(childVoiceRate, 60)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=80: +3, >=60: +1) ---
   if (meets(childSatisfactionRate, 80)) score += 3;
   else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: independenceRate (>=90: +3, >=70: +1) ---
-  if (independenceRate >= 90) score += 3;
-  else if (independenceRate >= 70) score += 1;
+  if (meets(independenceRate, 90)) score += 3;
+  else if (meets(independenceRate, 70)) score += 1;
 
   // Max bonuses: 5+5+4+4+4+3+3 = 28
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // visitorAllocationRate < 50 -> -5
-  if (visitorAllocationRate < 50 && totalIVRecords > 0) score -= 5;
+  if (below(visitorAllocationRate, 50) && totalIVRecords > 0) score -= 5;
 
   // advocacyAccessRate < 50 -> -5
-  if (advocacyAccessRate < 50 && totalAdvocacyRecords > 0) score -= 5;
+  if (below(advocacyAccessRate, 50) && totalAdvocacyRecords > 0) score -= 5;
 
   // visitComplianceRate < 50 -> -4
-  if (visitComplianceRate < 50 && totalVisitRecords > 0) score -= 4;
+  if (below(visitComplianceRate, 50) && totalVisitRecords > 0) score -= 4;
 
   // representationQualityRate < 30 -> -4
-  if (representationQualityRate < 30 && totalRepRecords > 0) score -= 4;
+  if (below(representationQualityRate, 30) && totalRepRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -565,135 +569,135 @@ export function computeAdvocacyIndependentVisitor(
 
   const strengths: string[] = [];
 
-  if (visitorAllocationRate >= 90 && totalIVRecords > 0) {
+  if (meets(visitorAllocationRate, 90) && totalIVRecords > 0) {
     strengths.push(
       `${visitorAllocationRate}% of children have an allocated independent visitor -- the home demonstrates strong commitment to ensuring children have trusted adults outside the care system.`,
     );
-  } else if (visitorAllocationRate >= 70 && totalIVRecords > 0) {
+  } else if (meets(visitorAllocationRate, 70) && totalIVRecords > 0) {
     strengths.push(
       `${visitorAllocationRate}% independent visitor allocation rate -- most children have access to an independent trusted adult.`,
     );
   }
 
-  if (matchQualityRate >= 80 && totalIVRecords > 0) {
+  if (meets(matchQualityRate, 80) && totalIVRecords > 0) {
     strengths.push(
       `${matchQualityRate}% of independent visitor matches rated good or excellent -- children are well matched with visitors who understand their needs and backgrounds.`,
     );
   }
 
-  if (relationshipRate >= 80 && totalIVRecords > 0) {
+  if (meets(relationshipRate, 80) && totalIVRecords > 0) {
     strengths.push(
       `Relationships established in ${relationshipRate}% of independent visitor placements -- children have meaningful, trusting relationships with their independent visitors.`,
     );
   }
 
-  if (ivVisitCompletionRate >= 90 && totalIVVisitsPlanned > 0) {
+  if (meets(ivVisitCompletionRate, 90) && totalIVVisitsPlanned > 0) {
     strengths.push(
       `${ivVisitCompletionRate}% of planned independent visitor visits completed -- visit schedules are consistently maintained.`,
     );
-  } else if (ivVisitCompletionRate >= 70 && totalIVVisitsPlanned > 0) {
+  } else if (meets(ivVisitCompletionRate, 70) && totalIVVisitsPlanned > 0) {
     strengths.push(
       `${ivVisitCompletionRate}% of planned independent visitor visits completed -- good visit completion rate.`,
     );
   }
 
-  if (ivEngagementRate >= 80 && totalIVRecords > 0) {
+  if (meets(ivEngagementRate, 80) && totalIVRecords > 0) {
     strengths.push(
       `Children engaged during ${ivEngagementRate}% of independent visitor visits -- visits are meaningful and child-centred.`,
     );
   }
 
-  if (advocacyAccessRate >= 90 && totalAdvocacyRecords > 0) {
+  if (meets(advocacyAccessRate, 90) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${advocacyAccessRate}% advocacy access rate -- children have excellent access to independent advocacy services when they need them.`,
     );
-  } else if (advocacyAccessRate >= 70 && totalAdvocacyRecords > 0) {
+  } else if (meets(advocacyAccessRate, 70) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${advocacyAccessRate}% advocacy access rate -- most children can access independent advocacy services.`,
     );
   }
 
-  if (rightsInformedRate >= 90 && totalAdvocacyRecords > 0) {
+  if (meets(rightsInformedRate, 90) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${rightsInformedRate}% of children informed of their advocacy rights -- the home ensures children know they can access independent support.`,
     );
   }
 
-  if (advocacyMeetingAttendanceRate >= 90 && totalAdvocacyMeetings > 0) {
+  if (meets(advocacyMeetingAttendanceRate, 90) && totalAdvocacyMeetings > 0) {
     strengths.push(
       `Advocates attended ${advocacyMeetingAttendanceRate}% of relevant meetings -- children's voices are consistently amplified through professional advocacy.`,
     );
   }
 
-  if (outcomeRate >= 80 && totalAdvocacyRecords > 0) {
+  if (meets(outcomeRate, 80) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${outcomeRate}% of advocacy interventions achieved their outcome -- advocacy is effective in securing positive results for children.`,
     );
   }
 
-  if (independenceRate >= 90 && totalAdvocacyRecords > 0) {
+  if (meets(independenceRate, 90) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${independenceRate}% of advocacy services are independent of the home -- genuine independence is maintained in advocacy provision.`,
     );
   }
 
-  if (timelinessRate >= 80 && totalAdvocacyRecords > 0) {
+  if (meets(timelinessRate, 80) && totalAdvocacyRecords > 0) {
     strengths.push(
       `${timelinessRate}% of first advocacy contacts made within 5 working days -- children receive timely access to their advocate.`,
     );
   }
 
-  if (representationQualityRate >= 90 && totalRepRecords > 0) {
+  if (meets(representationQualityRate, 90) && totalRepRecords > 0) {
     strengths.push(
       `${representationQualityRate}% of representation events rated good or excellent -- children's views are being powerfully represented in decisions about their lives.`,
     );
-  } else if (representationQualityRate >= 70 && totalRepRecords > 0) {
+  } else if (meets(representationQualityRate, 70) && totalRepRecords > 0) {
     strengths.push(
       `${representationQualityRate}% of representation events rated good or excellent -- children are generally well represented.`,
     );
   }
 
-  if (feltHeardRate >= 80 && totalRepRecords > 0) {
+  if (meets(feltHeardRate, 80) && totalRepRecords > 0) {
     strengths.push(
       `${feltHeardRate}% of children felt heard during meetings and reviews -- children experience genuine participation, not tokenistic involvement.`,
     );
   }
 
-  if (decisionReflectionRate >= 80 && totalRepRecords > 0) {
+  if (meets(decisionReflectionRate, 80) && totalRepRecords > 0) {
     strengths.push(
       `${decisionReflectionRate}% of decisions reflected children's expressed views -- children can see that their voices make a real difference to outcomes.`,
     );
   }
 
-  if (feedbackRate >= 80 && totalRepRecords > 0) {
+  if (meets(feedbackRate, 80) && totalRepRecords > 0) {
     strengths.push(
       `Feedback given to children after ${feedbackRate}% of representation events -- the home closes the loop, ensuring children know how their views were used.`,
     );
   }
 
-  if (visitComplianceRate >= 90 && totalVisitRecords > 0) {
+  if (meets(visitComplianceRate, 90) && totalVisitRecords > 0) {
     strengths.push(
       `${visitComplianceRate}% visit compliance rate -- scheduled visits are consistently completed, demonstrating reliable oversight of children's welfare.`,
     );
-  } else if (visitComplianceRate >= 70 && totalVisitRecords > 0) {
+  } else if (meets(visitComplianceRate, 70) && totalVisitRecords > 0) {
     strengths.push(
       `${visitComplianceRate}% visit compliance rate -- most scheduled visits are being completed.`,
     );
   }
 
-  if (seenAloneRate >= 80 && totalVisitRecords > 0) {
+  if (meets(seenAloneRate, 80) && totalVisitRecords > 0) {
     strengths.push(
       `Children seen alone in ${seenAloneRate}% of visits -- children have private opportunities to share concerns away from staff.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && totalFollowUp > 0) {
+  if (meets(followUpCompletionRate, 90) && totalFollowUp > 0) {
     strengths.push(
       `${followUpCompletionRate}% of visit follow-up actions completed -- issues identified during visits are resolved promptly.`,
     );
   }
 
-  if (reportTimelinessRate >= 90 && totalVisitRecords > 0) {
+  if (meets(reportTimelinessRate, 90) && totalVisitRecords > 0) {
     strengths.push(
       `${reportTimelinessRate}% of visit reports filed on time -- documentation is timely and supports effective oversight.`,
     );
@@ -715,29 +719,29 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (wouldUseAgainRate >= 80 && totalSatRecords > 0) {
+  if (meets(wouldUseAgainRate, 80) && totalSatRecords > 0) {
     strengths.push(
       `${wouldUseAgainRate}% of children would use advocacy services again -- children trust and value the advocacy provision.`,
     );
   }
 
-  if (childVoiceRate >= 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 80) && voiceDenominator > 0) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of advocacy, visiting, and representation contexts -- children's wishes and feelings genuinely shape the support they receive.`,
     );
-  } else if (childVoiceRate >= 60 && voiceDenominator > 0) {
+  } else if (meets(childVoiceRate, 60) && voiceDenominator > 0) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of advocacy, visiting, and representation contexts -- good practice in consulting children about their independent support.`,
     );
   }
 
-  if (ivIssueResolutionRate >= 90 && totalIVIssuesRaised > 0) {
+  if (meets(ivIssueResolutionRate, 90) && totalIVIssuesRaised > 0) {
     strengths.push(
       `${ivIssueResolutionRate}% of issues raised by independent visitors resolved -- the home responds effectively to independent visitor feedback.`,
     );
   }
 
-  if (complaintsUnderstandingRate >= 90 && totalSatRecords > 0) {
+  if (meets(complaintsUnderstandingRate, 90) && totalSatRecords > 0) {
     strengths.push(
       `${complaintsUnderstandingRate}% of children understand the complaints process -- children are empowered to raise concerns through formal channels.`,
     );
@@ -747,61 +751,61 @@ export function computeAdvocacyIndependentVisitor(
 
   const concerns: string[] = [];
 
-  if (visitorAllocationRate < 50 && totalIVRecords > 0) {
+  if (below(visitorAllocationRate, 50) && totalIVRecords > 0) {
     concerns.push(
       `Only ${visitorAllocationRate}% of children have an allocated independent visitor -- the majority of children lack a trusted independent adult outside the care system, denying them a critical safeguard.`,
     );
-  } else if (visitorAllocationRate < 70 && visitorAllocationRate >= 50 && totalIVRecords > 0) {
+  } else if (below(visitorAllocationRate, 70) && meets(visitorAllocationRate, 50) && totalIVRecords > 0) {
     concerns.push(
       `Independent visitor allocation at ${visitorAllocationRate}% -- not all children who would benefit have an allocated independent visitor.`,
     );
   }
 
-  if (matchQualityRate < 50 && totalIVRecords > 0) {
+  if (below(matchQualityRate, 50) && totalIVRecords > 0) {
     concerns.push(
       `Only ${matchQualityRate}% of independent visitor matches rated good or excellent -- poor matching undermines the effectiveness of the independent visitor scheme and risks children disengaging.`,
     );
   }
 
-  if (relationshipRate < 60 && totalIVRecords > 0) {
+  if (below(relationshipRate, 60) && totalIVRecords > 0) {
     concerns.push(
       `Relationships established in only ${relationshipRate}% of independent visitor placements -- without genuine relationships, independent visiting becomes a compliance exercise rather than meaningful support.`,
     );
   }
 
-  if (ivVisitCompletionRate < 50 && totalIVVisitsPlanned > 0) {
+  if (below(ivVisitCompletionRate, 50) && totalIVVisitsPlanned > 0) {
     concerns.push(
       `Only ${ivVisitCompletionRate}% of planned independent visitor visits completed -- children are not receiving the regularity of contact they are entitled to.`,
     );
-  } else if (ivVisitCompletionRate < 70 && ivVisitCompletionRate >= 50 && totalIVVisitsPlanned > 0) {
+  } else if (below(ivVisitCompletionRate, 70) && meets(ivVisitCompletionRate, 50) && totalIVVisitsPlanned > 0) {
     concerns.push(
       `Independent visitor visit completion at ${ivVisitCompletionRate}% -- some children are missing scheduled visits.`,
     );
   }
 
-  if (advocacyAccessRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(advocacyAccessRate, 50) && totalAdvocacyRecords > 0) {
     concerns.push(
       `Only ${advocacyAccessRate}% advocacy access rate -- the majority of children referred for advocacy do not have an allocated advocate, denying them independent support at critical moments.`,
     );
-  } else if (advocacyAccessRate < 70 && advocacyAccessRate >= 50 && totalAdvocacyRecords > 0) {
+  } else if (below(advocacyAccessRate, 70) && meets(advocacyAccessRate, 50) && totalAdvocacyRecords > 0) {
     concerns.push(
       `Advocacy access at ${advocacyAccessRate}% -- not all children who need advocacy can access it in a timely manner.`,
     );
   }
 
-  if (rightsInformedRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(rightsInformedRate, 50) && totalAdvocacyRecords > 0) {
     concerns.push(
       `Only ${rightsInformedRate}% of children informed of their advocacy rights -- children cannot exercise rights they do not know they have.`,
     );
   }
 
-  if (independenceRate < 70 && totalAdvocacyRecords > 0) {
+  if (below(independenceRate, 70) && totalAdvocacyRecords > 0) {
     concerns.push(
       `Only ${independenceRate}% of advocacy services are independent of the home -- lack of independence compromises the integrity of advocacy and may prevent children from speaking freely.`,
     );
   }
 
-  if (timelinessRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(timelinessRate, 50) && totalAdvocacyRecords > 0) {
     concerns.push(
       `Only ${timelinessRate}% of first advocacy contacts made within 5 working days -- delays in accessing advocacy mean children wait too long for independent support at critical moments.`,
     );
@@ -813,61 +817,61 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (representationQualityRate < 30 && totalRepRecords > 0) {
+  if (below(representationQualityRate, 30) && totalRepRecords > 0) {
     concerns.push(
       `Only ${representationQualityRate}% of representation events rated good or excellent -- children's views are not being adequately presented or considered in decisions about their lives.`,
     );
-  } else if (representationQualityRate < 70 && representationQualityRate >= 30 && totalRepRecords > 0) {
+  } else if (below(representationQualityRate, 70) && meets(representationQualityRate, 30) && totalRepRecords > 0) {
     concerns.push(
       `Representation quality rated good or excellent in only ${representationQualityRate}% of events -- the quality of child representation needs improvement.`,
     );
   }
 
-  if (feltHeardRate < 50 && totalRepRecords > 0) {
+  if (below(feltHeardRate, 50) && totalRepRecords > 0) {
     concerns.push(
       `Only ${feltHeardRate}% of children felt heard during meetings and reviews -- children's participation is tokenistic rather than genuine, undermining their confidence in the care system.`,
     );
-  } else if (feltHeardRate < 70 && feltHeardRate >= 50 && totalRepRecords > 0) {
+  } else if (below(feltHeardRate, 70) && meets(feltHeardRate, 50) && totalRepRecords > 0) {
     concerns.push(
       `Only ${feltHeardRate}% of children felt heard -- some children are not experiencing genuine participation in decisions about their lives.`,
     );
   }
 
-  if (decisionReflectionRate < 50 && totalRepRecords > 0) {
+  if (below(decisionReflectionRate, 50) && totalRepRecords > 0) {
     concerns.push(
       `Only ${decisionReflectionRate}% of decisions reflected children's expressed views -- children's voices are being sought but not acted upon, which erodes trust.`,
     );
   }
 
-  if (repBarrierRate >= 30 && totalRepRecords > 0) {
+  if (meets(repBarrierRate, 30) && totalRepRecords > 0) {
     concerns.push(
       `Barriers to participation encountered in ${repBarrierRate}% of representation events -- persistent obstacles are preventing children from fully engaging in meetings about their care.`,
     );
   }
 
-  if (visitComplianceRate < 50 && totalVisitRecords > 0) {
+  if (below(visitComplianceRate, 50) && totalVisitRecords > 0) {
     concerns.push(
       `Only ${visitComplianceRate}% visit compliance rate -- the majority of scheduled visits are not being completed, representing a significant failure of independent oversight.`,
     );
-  } else if (visitComplianceRate < 70 && visitComplianceRate >= 50 && totalVisitRecords > 0) {
+  } else if (below(visitComplianceRate, 70) && meets(visitComplianceRate, 50) && totalVisitRecords > 0) {
     concerns.push(
       `Visit compliance at ${visitComplianceRate}% -- not all scheduled visits are being completed.`,
     );
   }
 
-  if (seenAloneRate < 50 && totalVisitRecords > 0) {
+  if (below(seenAloneRate, 50) && totalVisitRecords > 0) {
     concerns.push(
       `Children seen alone in only ${seenAloneRate}% of visits -- children may not have private opportunities to share concerns, which undermines the safeguarding value of visits.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && totalFollowUp > 0) {
+  if (below(followUpCompletionRate, 50) && totalFollowUp > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of visit follow-up actions completed -- issues identified during visits are not being resolved, undermining the purpose of independent oversight.`,
     );
   }
 
-  if (reportFiledRate < 70 && totalVisitRecords > 0) {
+  if (below(reportFiledRate, 70) && totalVisitRecords > 0) {
     concerns.push(
       `Visit reports filed for only ${reportFiledRate}% of visits -- incomplete reporting undermines accountability and the ability to track children's welfare over time.`,
     );
@@ -885,17 +889,17 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (knowsIVRate < 50 && totalSatRecords > 0) {
+  if (below(knowsIVRate, 50) && totalSatRecords > 0) {
     concerns.push(
       `Only ${knowsIVRate}% of children know who their independent visitor is -- children cannot benefit from a service they do not know exists.`,
     );
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     concerns.push(
       `Child voice captured in only ${childVoiceRate}% of advocacy, visiting, and representation contexts -- children's wishes and feelings are not sufficiently shaping the support they receive.`,
     );
-  } else if (childVoiceRate < 60 && childVoiceRate >= 50 && voiceDenominator > 0) {
+  } else if (below(childVoiceRate, 60) && meets(childVoiceRate, 50) && voiceDenominator > 0) {
     concerns.push(
       `Child voice rate at ${childVoiceRate}% -- children's views need to be more consistently captured across advocacy, visiting, and representation contexts.`,
     );
@@ -924,7 +928,7 @@ export function computeAdvocacyIndependentVisitor(
   const recommendations: AdvocacyVisitorRecommendation[] = [];
   let rank = 0;
 
-  if (visitorAllocationRate < 50 && totalIVRecords > 0) {
+  if (below(visitorAllocationRate, 50) && totalIVRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -934,7 +938,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (advocacyAccessRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(advocacyAccessRate, 50) && totalAdvocacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -944,7 +948,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (visitComplianceRate < 50 && totalVisitRecords > 0) {
+  if (below(visitComplianceRate, 50) && totalVisitRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -954,7 +958,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (representationQualityRate < 30 && totalRepRecords > 0) {
+  if (below(representationQualityRate, 30) && totalRepRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +968,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,7 +978,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (rightsInformedRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(rightsInformedRate, 50) && totalAdvocacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +988,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (independenceRate < 70 && totalAdvocacyRecords > 0) {
+  if (below(independenceRate, 70) && totalAdvocacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +998,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (feltHeardRate < 50 && totalRepRecords > 0) {
+  if (below(feltHeardRate, 50) && totalRepRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +1008,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (seenAloneRate < 50 && totalVisitRecords > 0) {
+  if (below(seenAloneRate, 50) && totalVisitRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,7 +1018,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (followUpCompletionRate < 50 && totalFollowUp > 0) {
+  if (below(followUpCompletionRate, 50) && totalFollowUp > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1028,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (matchQualityRate < 50 && totalIVRecords > 0) {
+  if (below(matchQualityRate, 50) && totalIVRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1038,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (knowsIVRate < 50 && totalSatRecords > 0) {
+  if (below(knowsIVRate, 50) && totalSatRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1044,7 +1048,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (decisionReflectionRate < 50 && totalRepRecords > 0) {
+  if (below(decisionReflectionRate, 50) && totalRepRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,7 +1058,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (visitorAllocationRate >= 50 && visitorAllocationRate < 70 && totalIVRecords > 0) {
+  if (meets(visitorAllocationRate, 50) && below(visitorAllocationRate, 70) && totalIVRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1068,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (advocacyAccessRate >= 50 && advocacyAccessRate < 70 && totalAdvocacyRecords > 0) {
+  if (meets(advocacyAccessRate, 50) && below(advocacyAccessRate, 70) && totalAdvocacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1078,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (representationQualityRate >= 30 && representationQualityRate < 70 && totalRepRecords > 0) {
+  if (meets(representationQualityRate, 30) && below(representationQualityRate, 70) && totalRepRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,7 +1088,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (visitComplianceRate >= 50 && visitComplianceRate < 70 && totalVisitRecords > 0) {
+  if (meets(visitComplianceRate, 50) && below(visitComplianceRate, 70) && totalVisitRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1094,7 +1098,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (reportFiledRate < 70 && totalVisitRecords > 0) {
+  if (below(reportFiledRate, 70) && totalVisitRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1140,28 +1144,28 @@ export function computeAdvocacyIndependentVisitor(
 
   // --- Critical insights ---
 
-  if (visitorAllocationRate < 50 && totalIVRecords > 0) {
+  if (below(visitorAllocationRate, 50) && totalIVRecords > 0) {
     insights.push({
       text: `Only ${visitorAllocationRate}% of children have an allocated independent visitor. Ofsted will view the failure to provide independent visitors as evidence that the home does not prioritise children's access to trusted adults outside the care system -- a direct failure under Reg 22.`,
       severity: "critical",
     });
   }
 
-  if (advocacyAccessRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(advocacyAccessRate, 50) && totalAdvocacyRecords > 0) {
     insights.push({
       text: `Only ${advocacyAccessRate}% advocacy access rate. Children who cannot access independent advocacy are unable to challenge decisions or raise concerns through independent channels -- this undermines Reg 5 compliance and the fundamental principle of child-centred care.`,
       severity: "critical",
     });
   }
 
-  if (visitComplianceRate < 50 && totalVisitRecords > 0) {
+  if (below(visitComplianceRate, 50) && totalVisitRecords > 0) {
     insights.push({
       text: `Only ${visitComplianceRate}% visit compliance rate. Missed visits mean children lose vital contact with independent adults who can identify concerns, monitor their welfare, and amplify their voices. Ofsted will view this as a significant safeguarding gap.`,
       severity: "critical",
     });
   }
 
-  if (representationQualityRate < 30 && totalRepRecords > 0) {
+  if (below(representationQualityRate, 30) && totalRepRecords > 0) {
     insights.push({
       text: `Representation quality rated good or excellent in only ${representationQualityRate}% of events. Children's views are not being effectively presented or considered in decisions about their lives -- this is a fundamental failure of the home's duty to hear and act on children's voices under Reg 7.`,
       severity: "critical",
@@ -1175,7 +1179,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (independenceRate < 50 && totalAdvocacyRecords > 0) {
+  if (below(independenceRate, 50) && totalAdvocacyRecords > 0) {
     insights.push({
       text: `Only ${independenceRate}% of advocacy services are independent of the home. Advocacy that is not genuinely independent cannot fulfil its purpose -- children may not feel safe to raise concerns about their care if their advocate has ties to the home.`,
       severity: "critical",
@@ -1184,35 +1188,35 @@ export function computeAdvocacyIndependentVisitor(
 
   // --- Warning insights ---
 
-  if (visitorAllocationRate >= 50 && visitorAllocationRate < 70 && totalIVRecords > 0) {
+  if (meets(visitorAllocationRate, 50) && below(visitorAllocationRate, 70) && totalIVRecords > 0) {
     insights.push({
       text: `Independent visitor allocation at ${visitorAllocationRate}% -- improving but some children still lack access to an independent trusted adult. Each unallocated child misses out on a vital safeguard.`,
       severity: "warning",
     });
   }
 
-  if (advocacyAccessRate >= 50 && advocacyAccessRate < 70 && totalAdvocacyRecords > 0) {
+  if (meets(advocacyAccessRate, 50) && below(advocacyAccessRate, 70) && totalAdvocacyRecords > 0) {
     insights.push({
       text: `Advocacy access at ${advocacyAccessRate}% -- not all children who need independent advocacy can access it. Consider whether referral pathways are clear and responsive.`,
       severity: "warning",
     });
   }
 
-  if (representationQualityRate >= 30 && representationQualityRate < 70 && totalRepRecords > 0) {
+  if (meets(representationQualityRate, 30) && below(representationQualityRate, 70) && totalRepRecords > 0) {
     insights.push({
       text: `Representation quality rated good or excellent in ${representationQualityRate}% of events -- there is room to improve how children's views are captured, presented, and acted upon in decisions.`,
       severity: "warning",
     });
   }
 
-  if (visitComplianceRate >= 50 && visitComplianceRate < 70 && totalVisitRecords > 0) {
+  if (meets(visitComplianceRate, 50) && below(visitComplianceRate, 70) && totalVisitRecords > 0) {
     insights.push({
       text: `Visit compliance at ${visitComplianceRate}% -- some visits are being missed, reducing the frequency of independent oversight. Review scheduling and cancellation processes.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceRate >= 50 && childVoiceRate < 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 50) && below(childVoiceRate, 80) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of advocacy, visiting, and representation contexts -- while some consultation is happening, children's wishes and feelings need to be more consistently shaping their support.`,
       severity: "warning",
@@ -1226,21 +1230,21 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (followUpCompletionRate >= 50 && followUpCompletionRate < 90 && totalFollowUp > 0) {
+  if (meets(followUpCompletionRate, 50) && below(followUpCompletionRate, 90) && totalFollowUp > 0) {
     insights.push({
       text: `Follow-up action completion at ${followUpCompletionRate}% -- some issues raised during visits are not being resolved. This risks Ofsted identifying a pattern of unaddressed concerns.`,
       severity: "warning",
     });
   }
 
-  if (repBarrierRate >= 30 && totalRepRecords > 0) {
+  if (meets(repBarrierRate, 30) && totalRepRecords > 0) {
     insights.push({
       text: `Barriers to participation encountered in ${repBarrierRate}% of representation events -- persistent obstacles suggest systemic issues with meeting formats, timing, or support that need targeted resolution.`,
       severity: "warning",
     });
   }
 
-  if (timelinessRate >= 50 && timelinessRate < 80 && totalAdvocacyRecords > 0) {
+  if (meets(timelinessRate, 50) && below(timelinessRate, 80) && totalAdvocacyRecords > 0) {
     insights.push({
       text: `First advocacy contact within 5 days in ${timelinessRate}% of cases -- while most children receive timely contact, delays can leave children unsupported at critical moments.`,
       severity: "warning",
@@ -1267,56 +1271,56 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (visitorAllocationRate >= 90 && advocacyAccessRate >= 90 && totalIVRecords > 0 && totalAdvocacyRecords > 0) {
+  if (meets(visitorAllocationRate, 90) && meets(advocacyAccessRate, 90) && totalIVRecords > 0 && totalAdvocacyRecords > 0) {
     insights.push({
       text: `Independent visitor allocation at ${visitorAllocationRate}% and advocacy access at ${advocacyAccessRate}% -- the home provides comprehensive independent support for children. Ofsted will recognise this as evidence of genuinely child-centred practice and robust Reg 22 compliance.`,
       severity: "positive",
     });
   }
 
-  if (feltHeardRate >= 80 && decisionReflectionRate >= 80 && totalRepRecords > 0) {
+  if (meets(feltHeardRate, 80) && meets(decisionReflectionRate, 80) && totalRepRecords > 0) {
     insights.push({
       text: `${feltHeardRate}% of children felt heard and ${decisionReflectionRate}% of decisions reflected their views -- children experience genuine participation, not tokenistic involvement. This is exemplary practice under Reg 7 and SCCIF voice of the child standards.`,
       severity: "positive",
     });
   }
 
-  if (visitComplianceRate >= 90 && seenAloneRate >= 80 && totalVisitRecords > 0) {
+  if (meets(visitComplianceRate, 90) && meets(seenAloneRate, 80) && totalVisitRecords > 0) {
     insights.push({
       text: `${visitComplianceRate}% visit compliance with ${seenAloneRate}% of children seen alone -- independent oversight is consistent and children have private opportunities to share concerns. This demonstrates robust safeguarding practice.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceRate >= 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 80) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of advocacy, visiting, and representation contexts -- children's wishes and feelings genuinely shape the independent support they receive. This is exemplary practice in respecting children's autonomy and rights.`,
       severity: "positive",
     });
   }
 
-  if (totalSatRecords > 0 && overallSatisfactionAvg !== null && overallSatisfactionAvg >= 4.0 && wouldUseAgainRate >= 80) {
+  if (totalSatRecords > 0 && overallSatisfactionAvg !== null && overallSatisfactionAvg >= 4.0 && meets(wouldUseAgainRate, 80)) {
     insights.push({
       text: `Overall satisfaction at ${overallSatisfactionAvg}/5 with ${wouldUseAgainRate}% willing to use advocacy again -- children trust and value the independent support available to them. This reflects a culture where children's voices are genuinely heard and respected.`,
       severity: "positive",
     });
   }
 
-  if (ivIssueResolutionRate >= 90 && followUpCompletionRate >= 90 && totalIVIssuesRaised > 0 && totalFollowUp > 0) {
+  if (meets(ivIssueResolutionRate, 90) && meets(followUpCompletionRate, 90) && totalIVIssuesRaised > 0 && totalFollowUp > 0) {
     insights.push({
       text: `${ivIssueResolutionRate}% IV issue resolution with ${followUpCompletionRate}% follow-up completion -- the home responds promptly and effectively to concerns raised through independent channels. This demonstrates accountability and continuous improvement.`,
       severity: "positive",
     });
   }
 
-  if (independenceRate >= 90 && rightsInformedRate >= 90 && totalAdvocacyRecords > 0) {
+  if (meets(independenceRate, 90) && meets(rightsInformedRate, 90) && totalAdvocacyRecords > 0) {
     insights.push({
       text: `${independenceRate}% advocacy independence with ${rightsInformedRate}% rights awareness -- advocacy is genuinely independent and children know their rights. This creates the conditions for children to speak freely and seek support without fear.`,
       severity: "positive",
     });
   }
 
-  if (reportTimelinessRate >= 90 && reportFiledRate >= 90 && totalVisitRecords > 0) {
+  if (meets(reportTimelinessRate, 90) && meets(reportFiledRate, 90) && totalVisitRecords > 0) {
     insights.push({
       text: `${reportFiledRate}% of visit reports filed with ${reportTimelinessRate}% on time -- documentation is thorough and timely, supporting effective oversight and providing a clear evidence trail for regulatory inspection.`,
       severity: "positive",

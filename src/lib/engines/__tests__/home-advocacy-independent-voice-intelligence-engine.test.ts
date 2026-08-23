@@ -108,13 +108,16 @@ describe("Zero records with children present", () => {
     expect(res.advocacy_rating).toBe("adequate");
   });
 
-  it("reports 0 for all rates", () => {
+  it("reports rates over an empty population as unmeasured, not as 0", () => {
     const res = run([], 6);
-    expect(res.active_rate).toBe(0);
+    // No advocacy records at all, so every rate whose denominator is those
+    // records is unmeasured. children_with_advocacy_rate is the exception and
+    // stays 0: its denominator is the six children, who do exist.
+    expect(res.active_rate).toBeNull();
+    expect(res.independent_rate).toBeNull();
+    expect(res.child_voice_rate).toBeNull();
+    expect(res.private_session_rate).toBeNull();
     expect(res.children_with_advocacy_rate).toBe(0);
-    expect(res.independent_rate).toBe(0);
-    expect(res.child_voice_rate).toBe(0);
-    expect(res.private_session_rate).toBe(0);
     expect(res.advocacy_type_variety).toBe(0);
     expect(res.total_records).toBe(0);
   });
@@ -332,14 +335,17 @@ describe("Rating thresholds", () => {
     // coverage: 1 child / 6 = 17% < 30 -> -5
     // type: "peer" -> independent rate 0% < 10 -> -4
     // child_view: false -> 0% < 30 -> -4
-    // visits: 0 -> private 0/0 = 0% < 10 -> -4
+    // visits: 0 -> private session rate is UNMEASURED, so no -4.
+    //   This line used to read "private 0/0 = 0% < 10 -> -4": a home with zero
+    //   visits was docked four points for a rate that was never measured.
+    //   below(null, 10) is false, so the penalty no longer applies.
     // variety: 1 -> -3
-    // 52 - 5 - 5 - 4 - 4 - 4 - 3 = 27
+    // 52 - 5 - 5 - 4 - 4 - 3 = 31
     const records = [
       makeRecord({ child_id: "c1", advocacy_type: "peer", status: "pending_referral", has_child_view: false, visit_count: 0, private_session_count: 0 }),
     ];
     const res = run(records, 6);
-    expect(res.advocacy_score).toBe(27);
+    expect(res.advocacy_score).toBe(31);
     expect(res.advocacy_rating).toBe("inadequate");
   });
 
@@ -690,7 +696,9 @@ describe("Modifier 4: Child voice rate", () => {
 
   it("no adjustment for zero records", () => {
     const res = run([], 6);
-    expect(res.child_voice_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(res.child_voice_rate).toBeNull();
+    expect(res.child_voice_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("child voice at exact 90% boundary gets +5", () => {
@@ -790,12 +798,16 @@ describe("Modifier 5: Private session rate", () => {
       makeRecord({ visit_count: 0, private_session_count: 0 }),
     ];
     const res = run(records);
-    expect(res.private_session_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(res.private_session_rate).toBeNull();
+    expect(res.private_session_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("subtracts -1 when total is 0", () => {
     const res = run([], 6);
-    expect(res.private_session_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(res.private_session_rate).toBeNull();
+    expect(res.private_session_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("private rate at exact 60% boundary gets +4", () => {
@@ -1714,7 +1726,9 @@ describe("Edge cases", () => {
       makeRecord({ visit_count: 0, private_session_count: 0 }),
     ];
     const res = run(records);
-    expect(res.private_session_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(res.private_session_rate).toBeNull();
+    expect(res.private_session_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("handles total_children of 1", () => {

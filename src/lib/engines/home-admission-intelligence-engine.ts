@@ -8,6 +8,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface AdmissionReferralInput {
   id: string;
   referral_date: string;
@@ -46,13 +48,17 @@ export interface ReferralProfile {
   withdrawn: number;
   placed: number;
   emergency_count: number;
-  acceptance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acceptance_rate: number | null;
 }
 
 export interface AssessmentProfile {
-  impact_assessment_rate: number;
-  matching_consideration_rate: number;
-  decision_documented_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impact_assessment_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matching_consideration_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  decision_documented_rate: number | null;
   // fab-0: null when no decided referrals.
   avg_days_to_decision: number | null;
   pending_over_14_days: number;
@@ -62,8 +68,10 @@ export interface QualityProfile {
   // fab-0: null when no referrals.
   avg_needs_per_referral: number | null;
   avg_risk_factors_per_referral: number | null;
-  declined_with_reason_rate: number;
-  occupancy_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  declined_with_reason_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  occupancy_rate: number | null;
 }
 
 export interface AdmissionInsight {
@@ -104,8 +112,9 @@ function toRating(score: number): AdmissionRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -217,19 +226,19 @@ export function computeHomeAdmission(
   let score = 54;
 
   // 1. Impact assessment rate (±5)
-  if (impactRate >= 80) score += 5;
-  else if (impactRate >= 60) score += 2;
+  if (meets(impactRate, 80)) score += 5;
+  else if (meets(impactRate, 60)) score += 2;
   else score -= 4;
 
   // 2. Matching consideration rate (±4)
-  if (matchingRate >= 80) score += 4;
-  else if (matchingRate >= 60) score += 2;
+  if (meets(matchingRate, 80)) score += 4;
+  else if (meets(matchingRate, 60)) score += 2;
   else score -= 3;
 
   // 3. Decision documentation (±4)
   if (decided.length > 0) {
-    if (decisionDocRate >= 80) score += 4;
-    else if (decisionDocRate >= 60) score += 2;
+    if (meets(decisionDocRate, 80)) score += 4;
+    else if (meets(decisionDocRate, 60)) score += 2;
     else score -= 3;
   }
 
@@ -255,14 +264,14 @@ export function computeHomeAdmission(
 
   // 7. Emergency referrals proportion (±2)
   const emergencyPct = pct(emergency, referrals.length);
-  if (emergencyPct <= 20) score += 2;
-  else if (emergencyPct <= 40) score += 0;
+  if ((emergencyPct !== null && emergencyPct <= 20)) score += 2;
+  else if ((emergencyPct !== null && emergencyPct <= 40)) score += 0;
   else score -= 2;
 
   // 8. Acceptance rate reasonableness (±2) — not too high (rubber-stamping) not too low
   if (decided.length > 0) {
-    if (acceptanceRate >= 30 && acceptanceRate <= 80) score += 2;
-    else if (acceptanceRate > 80) score += 0; // might be rubber-stamping
+    if (meets(acceptanceRate, 30) && (acceptanceRate !== null && acceptanceRate <= 80)) score += 2;
+    else if (above(acceptanceRate, 80)) score += 0; // might be rubber-stamping
     else score -= 1; // very low acceptance
   }
 
@@ -271,50 +280,50 @@ export function computeHomeAdmission(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (impactRate >= 80) strengths.push(`Impact assessments completed for ${impactRate}% of referrals — matching decisions are evidence-based.`);
-  if (matchingRate >= 80) strengths.push(`Matching considerations documented for ${matchingRate}% of referrals — placement stability is prioritised.`);
-  if (decisionDocRate >= 80 && decided.length > 0) strengths.push(`Decision rationale documented for ${decisionDocRate}% of decisions — transparent governance.`);
+  if (meets(impactRate, 80)) strengths.push(`Impact assessments completed for ${impactRate}% of referrals — matching decisions are evidence-based.`);
+  if (meets(matchingRate, 80)) strengths.push(`Matching considerations documented for ${matchingRate}% of referrals — placement stability is prioritised.`);
+  if (meets(decisionDocRate, 80) && decided.length > 0) strengths.push(`Decision rationale documented for ${decisionDocRate}% of decisions — transparent governance.`);
   if (decided.length > 0 && avgDaysToDecision !== null && avgDaysToDecision <= 14) strengths.push(`Average decision time ${avgDaysToDecision} days — referrals are processed promptly.`);
   if (declinedReasonRate === 100 && declined > 0) strengths.push("All declined referrals have documented rationale — accountability and transparency in admissions.");
   if (pendingOver14Days === 0) strengths.push("No referrals pending beyond 14 days — admission process is timely.");
-  if (placed > 0 && impactRate >= 80) strengths.push(`${placed} successful placement${placed > 1 ? "s" : ""} with comprehensive impact assessment — safe, considered admissions.`);
+  if (placed > 0 && meets(impactRate, 80)) strengths.push(`${placed} successful placement${placed > 1 ? "s" : ""} with comprehensive impact assessment — safe, considered admissions.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (impactRate < 60 && nonWithdrawn.length > 0) concerns.push(`Impact assessments completed for only ${impactRate}% of referrals — Reg 14 requires assessment of impact on existing children.`);
-  if (matchingRate < 60 && nonWithdrawn.length > 0) concerns.push(`Matching considerations documented for only ${matchingRate}% of referrals — placement matching must be thorough.`);
+  if (below(impactRate, 60) && nonWithdrawn.length > 0) concerns.push(`Impact assessments completed for only ${impactRate}% of referrals — Reg 14 requires assessment of impact on existing children.`);
+  if (below(matchingRate, 60) && nonWithdrawn.length > 0) concerns.push(`Matching considerations documented for only ${matchingRate}% of referrals — placement matching must be thorough.`);
   if (pendingOver14Days > 0) concerns.push(`${pendingOver14Days} referral${pendingOver14Days > 1 ? "s" : ""} pending over 14 days — children and placing authorities need timely responses.`);
   if (decided.length > 0 && avgDaysToDecision !== null && avgDaysToDecision > 21) concerns.push(`Average ${avgDaysToDecision} days to decision — referrals should be processed within 14 days where possible.`);
-  if (declinedReasonRate < 100 && declined > 0) concerns.push("Not all declined referrals have a documented reason — transparency is essential.");
-  if (emergencyPct > 40) concerns.push(`${emergencyPct}% of referrals are emergency — high emergency rate may indicate the home is being used as a last resort rather than a planned placement.`);
+  if (below(declinedReasonRate, 100) && declined > 0) concerns.push("Not all declined referrals have a documented reason — transparency is essential.");
+  if (above(emergencyPct, 40)) concerns.push(`${emergencyPct}% of referrals are emergency — high emergency rate may indicate the home is being used as a last resort rather than a planned placement.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: AdmissionRecommendation[] = [];
   let rank = 1;
 
-  if (impactRate < 60 && nonWithdrawn.length > 0) {
+  if (below(impactRate, 60) && nonWithdrawn.length > 0) {
     recs.push({ rank: rank++, recommendation: "Complete impact assessments for all referrals before making placement decisions.", urgency: "immediate", regulatory_ref: "Reg 14" });
   }
   if (pendingOver14Days > 0) {
     recs.push({ rank: rank++, recommendation: `Process ${pendingOver14Days} outstanding referral${pendingOver14Days > 1 ? "s" : ""} pending over 14 days.`, urgency: "immediate", regulatory_ref: "Reg 14" });
   }
-  if (matchingRate < 60 && nonWithdrawn.length > 0) {
+  if (below(matchingRate, 60) && nonWithdrawn.length > 0) {
     recs.push({ rank: rank++, recommendation: "Document matching considerations for all referrals — assess compatibility with existing children.", urgency: "soon", regulatory_ref: "Reg 14" });
   }
-  if (declinedReasonRate < 100 && declined > 0) {
+  if (below(declinedReasonRate, 100) && declined > 0) {
     recs.push({ rank: rank++, recommendation: "Document clear rationale for all declined referrals.", urgency: "soon", regulatory_ref: "Reg 14" });
   }
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: AdmissionInsight[] = [];
 
-  if (impactRate < 60 && nonWithdrawn.length > 0) {
+  if (below(impactRate, 60) && nonWithdrawn.length > 0) {
     insights.push({ text: `Impact assessments completed for only ${impactRate}% of referrals. Ofsted expects every placement decision to be informed by a thorough impact assessment. This is a Reg 14 requirement and a common area of inspection criticism.`, severity: "critical" });
   }
   if (pendingOver14Days > 1) {
     insights.push({ text: `${pendingOver14Days} referrals pending beyond 14 days. Ofsted expects timely decision-making — delayed responses affect children waiting for placement and damage relationships with placing authorities.`, severity: "warning" });
   }
-  if (impactRate >= 80 && matchingRate >= 80 && decisionDocRate >= 80) {
+  if (meets(impactRate, 80) && meets(matchingRate, 80) && meets(decisionDocRate, 80)) {
     insights.push({ text: `${impactRate}% impact assessment, ${matchingRate}% matching consideration, and ${decisionDocRate}% decision documentation rates demonstrate a rigorous, transparent admissions process — a key indicator of outstanding leadership.`, severity: "positive" });
   }
   if (declined > 0 && declinedReasonRate === 100) {

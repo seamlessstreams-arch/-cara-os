@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { below, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -89,7 +90,7 @@ export function HomeAdmissionIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.admission_rating] ?? RATING_STYLES.insufficient_data;
   const hasPending = d.assessment_profile.pending_over_14_days > 0;
-  const lowImpact = d.assessment_profile.impact_assessment_rate < 60 && d.referral_profile.total_referrals > 0;
+  const lowImpact = below(d.assessment_profile.impact_assessment_rate, 60) && d.referral_profile.total_referrals > 0;
   const isAlert = lowImpact || d.admission_rating === "inadequate";
 
   return (
@@ -120,8 +121,8 @@ export function HomeAdmissionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.assessment_profile.impact_assessment_rate >= 80 ? "text-[--cs-success]" :
-                  d.assessment_profile.impact_assessment_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.assessment_profile.impact_assessment_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.assessment_profile.impact_assessment_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.assessment_profile.impact_assessment_rate}%
                 </p>
@@ -134,8 +135,8 @@ export function HomeAdmissionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.assessment_profile.matching_consideration_rate >= 80 ? "text-[--cs-success]" :
-                  d.assessment_profile.matching_consideration_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.assessment_profile.matching_consideration_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.assessment_profile.matching_consideration_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.assessment_profile.matching_consideration_rate}%
                 </p>
@@ -163,8 +164,8 @@ export function HomeAdmissionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BarChart3 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.quality_profile.occupancy_rate >= 80 ? "text-[--cs-success]" :
-                  d.quality_profile.occupancy_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.quality_profile.occupancy_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.quality_profile.occupancy_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.quality_profile.occupancy_rate}%
                 </p>
@@ -196,7 +197,7 @@ export function HomeAdmissionIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Assessment</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Decision docs: <span className={cn("font-medium", d.assessment_profile.decision_documented_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.assessment_profile.decision_documented_rate}%</span></p>
+                <p>Decision docs: <span className={cn("font-medium", meets(d.assessment_profile.decision_documented_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.assessment_profile.decision_documented_rate}%</span></p>
                 {hasPending && (
                   <p>Pending &gt;14d: <span className="font-medium text-red-600">{d.assessment_profile.pending_over_14_days}</span></p>
                 )}
