@@ -37,6 +37,8 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type RecordType =
   | "daily_log"
   | "incident"
@@ -89,12 +91,15 @@ export interface StaffRecordProfile {
   staffId: string;
   staffName: string;
   totalRecords: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   averageTimeliness: number;      // hours from event to record
   averageFieldCompletion: number; // %
-  signOffRate: number;            // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  signOffRate: number | null;            // %
   averageWordCount: number;
-  crossReferenceRate: number;     // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  crossReferenceRate: number | null;     // %
 }
 
 // ── Result Types ──────────────────────────────────────────────────────────────
@@ -102,14 +107,16 @@ export interface StaffRecordProfile {
 export interface CompletionResult {
   totalExpected: number;
   totalFulfilled: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   missingByType: { recordType: RecordType; expected: number; missing: number }[];
 }
 
 export interface TimelinessResult {
   totalRecords: number;
   withinTimescale: number;
-  timelinessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null;
   averageDelayHours: number;
   lateByType: { recordType: RecordType; count: number; avgDelayHours: number }[];
 }
@@ -125,7 +132,8 @@ export interface QualityResult {
 export interface SignOffResult {
   totalRecords: number;
   signedOff: number;
-  signOffRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signOffRate: number | null;
   pendingSignOff: number;
   queriedRecords: number;
   typeBreakdown: { recordType: RecordType; total: number; signedOff: number }[];
@@ -134,7 +142,8 @@ export interface SignOffResult {
 export interface CrossReferenceResult {
   totalRecords: number;
   withCrossReferences: number;
-  crossReferenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crossReferenceRate: number | null;
   incidentsWithoutDailyLog: number;
   restraintsWithoutIncident: number;
   missingWithoutSafeguarding: number;
@@ -217,8 +226,11 @@ export function getTimescaleHours(t: RecordType): number {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
+// rate here — not "nothing recorded" but "nothing done". rate() answers
+// null, and meets()/below() are false for null in both directions.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
@@ -538,19 +550,19 @@ export function generateRecordQualityIntelligence(
 
   // 1. Completion rate (25)
   let completionScore = 0;
-  if (completion.completionRate >= 98) completionScore = 25;
-  else if (completion.completionRate >= 95) completionScore = 20;
-  else if (completion.completionRate >= 90) completionScore = 15;
-  else if (completion.completionRate >= 80) completionScore = 10;
-  else if (completion.completionRate >= 60) completionScore = 5;
+  if (meets(completion.completionRate, 98)) completionScore = 25;
+  else if (meets(completion.completionRate, 95)) completionScore = 20;
+  else if (meets(completion.completionRate, 90)) completionScore = 15;
+  else if (meets(completion.completionRate, 80)) completionScore = 10;
+  else if (meets(completion.completionRate, 60)) completionScore = 5;
 
   // 2. Timeliness (25)
   let timelinessScore = 0;
-  if (timeliness.timelinessRate >= 95) timelinessScore = 25;
-  else if (timeliness.timelinessRate >= 90) timelinessScore = 20;
-  else if (timeliness.timelinessRate >= 80) timelinessScore = 15;
-  else if (timeliness.timelinessRate >= 70) timelinessScore = 10;
-  else if (timeliness.timelinessRate >= 50) timelinessScore = 5;
+  if (meets(timeliness.timelinessRate, 95)) timelinessScore = 25;
+  else if (meets(timeliness.timelinessRate, 90)) timelinessScore = 20;
+  else if (meets(timeliness.timelinessRate, 80)) timelinessScore = 15;
+  else if (meets(timeliness.timelinessRate, 70)) timelinessScore = 10;
+  else if (meets(timeliness.timelinessRate, 50)) timelinessScore = 5;
 
   // 3. Quality / fields (20)
   let qualityScore = 0;
@@ -559,24 +571,24 @@ export function generateRecordQualityIntelligence(
   else if (quality.averageFieldCompletion >= 70) qualityScore += 4;
 
   const belowMinRate = pct(quality.recordsBelowMinWords, quality.totalRecords);
-  if (quality.totalRecords > 0 && belowMinRate <= 5) qualityScore += 10;
-  else if (quality.totalRecords > 0 && belowMinRate <= 15) qualityScore += 7;
-  else if (quality.totalRecords > 0 && belowMinRate <= 30) qualityScore += 3;
+  if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 5)) qualityScore += 10;
+  else if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 15)) qualityScore += 7;
+  else if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 30)) qualityScore += 3;
 
   qualityScore = Math.min(qualityScore, 20);
 
   // 4. Sign-off (15)
   let signOffScore = 0;
-  if (signOff.signOffRate >= 90) signOffScore = 15;
-  else if (signOff.signOffRate >= 75) signOffScore = 10;
-  else if (signOff.signOffRate >= 60) signOffScore = 7;
-  else if (signOff.signOffRate >= 40) signOffScore = 3;
+  if (meets(signOff.signOffRate, 90)) signOffScore = 15;
+  else if (meets(signOff.signOffRate, 75)) signOffScore = 10;
+  else if (meets(signOff.signOffRate, 60)) signOffScore = 7;
+  else if (meets(signOff.signOffRate, 40)) signOffScore = 3;
 
   // 5. Cross-referencing (15)
   let crossRefScore = 0;
-  if (crossReferencing.crossReferenceRate >= 80) crossRefScore += 8;
-  else if (crossReferencing.crossReferenceRate >= 60) crossRefScore += 5;
-  else if (crossReferencing.crossReferenceRate >= 40) crossRefScore += 2;
+  if (meets(crossReferencing.crossReferenceRate, 80)) crossRefScore += 8;
+  else if (meets(crossReferencing.crossReferenceRate, 60)) crossRefScore += 5;
+  else if (meets(crossReferencing.crossReferenceRate, 40)) crossRefScore += 2;
 
   const gapPenalty =
     crossReferencing.incidentsWithoutDailyLog +
@@ -610,18 +622,18 @@ export function generateRecordQualityIntelligence(
   const areasForDevelopment: string[] = [];
   const immediateActions: string[] = [];
 
-  if (completion.completionRate >= 98) {
+  if (meets(completion.completionRate, 98)) {
     strengths.push("Outstanding record completion — virtually no missing records");
-  } else if (completion.completionRate >= 95) {
+  } else if (meets(completion.completionRate, 95)) {
     strengths.push("Excellent record completion rate above 95%");
   }
-  if (timeliness.timelinessRate >= 95) {
+  if (meets(timeliness.timelinessRate, 95)) {
     strengths.push("Records consistently completed within required timescales");
   }
-  if (signOff.signOffRate >= 90) {
+  if (meets(signOff.signOffRate, 90)) {
     strengths.push("Strong management oversight — 90%+ records signed off");
   }
-  if (crossReferencing.crossReferenceRate >= 80) {
+  if (meets(crossReferencing.crossReferenceRate, 80)) {
     strengths.push("Good cross-referencing between related records");
   }
   if (quality.averageFieldCompletion >= 95) {
@@ -631,17 +643,17 @@ export function generateRecordQualityIntelligence(
     strengths.push("No significant strengths identified — record quality requires attention");
   }
 
-  if (completion.completionRate < 90) {
+  if (below(completion.completionRate, 90)) {
     areasForDevelopment.push(
       `Record completion rate at ${completion.completionRate}% — target 95%+`,
     );
   }
-  if (timeliness.timelinessRate < 80) {
+  if (below(timeliness.timelinessRate, 80)) {
     areasForDevelopment.push(
       `${timeliness.timelinessRate}% records within timescale — target 90%+`,
     );
   }
-  if (signOff.signOffRate < 75) {
+  if (below(signOff.signOffRate, 75)) {
     areasForDevelopment.push(
       `Sign-off rate at ${signOff.signOffRate}% — manager review needed more frequently`,
     );
@@ -651,7 +663,7 @@ export function generateRecordQualityIntelligence(
       `${quality.recordsBelowMinWords} record${quality.recordsBelowMinWords !== 1 ? "s" : ""} below minimum word count — improve detail`,
     );
   }
-  if (crossReferencing.crossReferenceRate < 60) {
+  if (below(crossReferencing.crossReferenceRate, 60)) {
     areasForDevelopment.push("Cross-referencing between related records needs improvement");
   }
   if (areasForDevelopment.length === 0) {

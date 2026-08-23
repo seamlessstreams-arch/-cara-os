@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type { StaffTrainingResult, StaffTrainingProfile } from "@/lib/staff-training/staff-training-engine";
 import { getCategoryLabel, getRoleLabel } from "@/lib/staff-training/staff-training-engine";
 
@@ -41,7 +42,16 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
+// `value` is null when nothing has been measured yet. A zero-width bar reads
+// as "0%", so an unmeasured rate gets a muted track and no fill at all.
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  if (value === null) {
+    return (
+      <div className="flex items-center gap-2 w-full" aria-label="Not yet measured">
+        <div className="flex-1 h-2 rounded-full bg-gray-100" />
+      </div>
+    );
+  }
   const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
   return (
     <div className="flex items-center gap-2 w-full">
@@ -91,7 +101,7 @@ function StaffCard({ profile }: { profile: StaffTrainingProfile }) {
         <div>
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>Mandatory Training</span>
-            <span>{profile.mandatoryComplianceRate}%</span>
+            <span>{formatRate(profile.mandatoryComplianceRate)}</span>
           </div>
           <ProgressBar value={profile.mandatoryComplianceRate} max={100} color="bg-blue-500" />
         </div>
@@ -231,27 +241,23 @@ export function StaffTrainingDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard
           label="Mandatory Compliance"
-          value={data.mandatoryCompliance.overallComplianceRate}
-          suffix="%"
-          color={data.mandatoryCompliance.overallComplianceRate >= 95 ? "text-green-600" : data.mandatoryCompliance.overallComplianceRate >= 80 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.mandatoryCompliance.overallComplianceRate)}
+          color={meets(data.mandatoryCompliance.overallComplianceRate, 95) ? "text-green-600" : meets(data.mandatoryCompliance.overallComplianceRate, 80) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Certifications Valid"
-          value={data.certifications.validityRate}
-          suffix="%"
-          color={data.certifications.validityRate >= 100 ? "text-green-600" : data.certifications.validityRate >= 80 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.certifications.validityRate)}
+          color={meets(data.certifications.validityRate, 100) ? "text-green-600" : meets(data.certifications.validityRate, 80) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="CPD Target Met"
-          value={data.cpd.targetMetRate}
-          suffix="%"
-          color={data.cpd.targetMetRate >= 80 ? "text-green-600" : data.cpd.targetMetRate >= 60 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.cpd.targetMetRate)}
+          color={meets(data.cpd.targetMetRate, 80) ? "text-green-600" : meets(data.cpd.targetMetRate, 60) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Qualifications Met"
-          value={data.qualifications.qualificationComplianceRate}
-          suffix="%"
-          color={data.qualifications.qualificationComplianceRate >= 100 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.qualifications.qualificationComplianceRate)}
+          color={meets(data.qualifications.qualificationComplianceRate, 100) ? "text-green-600" : "text-amber-600"}
         />
       </div>
 
@@ -261,9 +267,8 @@ export function StaffTrainingDashboardWidget() {
         <MetricCard label="Avg CPD Hours" value={data.cpd.averageHours} suffix="h" />
         <MetricCard
           label="Needs Covered"
-          value={data.specialistTraining.coverageRate}
-          suffix="%"
-          color={data.specialistTraining.coverageRate >= 80 ? "text-green-600" : data.specialistTraining.coverageRate >= 60 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.specialistTraining.coverageRate)}
+          color={meets(data.specialistTraining.coverageRate, 80) ? "text-green-600" : meets(data.specialistTraining.coverageRate, 60) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard label="Certifications" value={data.certifications.totalCertifications} />
       </div>
@@ -285,7 +290,7 @@ export function StaffTrainingDashboardWidget() {
             📋 {data.specialistTraining.uncoveredNeeds} UNCOVERED NEED{data.specialistTraining.uncoveredNeeds !== 1 ? "S" : ""}
           </span>
         )}
-        {data.mandatoryCompliance.overallComplianceRate >= 95 && (
+        {meets(data.mandatoryCompliance.overallComplianceRate, 95) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             ✅ STRONG MANDATORY COMPLIANCE
           </span>

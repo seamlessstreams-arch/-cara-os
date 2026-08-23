@@ -679,11 +679,15 @@ describe("evaluateRecommendations", () => {
 
     it("returns zero totals", () => {
       expect(r.totalRecommendations).toBe(0);
-      expect(r.completionRate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.completionRate).toBeNull();
+      expect(r.completionRate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("returns 0 impact assessed rate", () => {
-      expect(r.impactAssessedRate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.impactAssessedRate).toBeNull();
+      expect(r.impactAssessedRate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -793,7 +797,9 @@ describe("evaluateChildParticipation", () => {
     });
 
     it("returns 0% issues actioned rate (no issues to action)", () => {
-      expect(r.issuesActionedRate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.issuesActionedRate).toBeNull();
+      expect(r.issuesActionedRate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -817,7 +823,9 @@ describe("evaluateChildParticipation", () => {
     });
 
     it("returns 0% spoken to rate", () => {
-      expect(r.childrenSpokenToRate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.childrenSpokenToRate).toBeNull();
+      expect(r.childrenSpokenToRate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("returns 0% child coverage", () => {
@@ -833,7 +841,9 @@ describe("evaluateChildParticipation", () => {
     const r = evaluateChildParticipation(PARTICIPATION, []);
 
     it("returns 0% child coverage", () => {
-      expect(r.childCoverage).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.childCoverage).toBeNull();
+      expect(r.childCoverage).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 });
@@ -959,7 +969,9 @@ describe("evaluateManagementResponse", () => {
     });
 
     it("returns 0% on-time rate", () => {
-      expect(r.respondedOnTimeRate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.respondedOnTimeRate).toBeNull();
+      expect(r.respondedOnTimeRate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("lists all visits as missing response", () => {

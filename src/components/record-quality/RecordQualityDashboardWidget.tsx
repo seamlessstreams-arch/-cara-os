@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type { RecordQualityResult, RecordType, StaffRecordProfile } from "@/lib/record-quality/record-quality-engine";
 import { getRecordTypeLabel, getTimescaleHours } from "@/lib/record-quality/record-quality-engine";
 
@@ -41,7 +42,12 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
+// `value` is null when nothing has been measured yet. A zero-width bar reads
+// as "0%", so an unmeasured rate gets a muted track and no fill at all.
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  if (value === null) {
+    return <div className="flex items-center gap-2 w-full" aria-label="Not yet measured"><div className="flex-1 h-2 rounded-full bg-gray-100" /></div>;
+  }
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return (
     <div className="flex items-center gap-2 w-full">
@@ -76,14 +82,14 @@ function StaffProfileCard({ profile }: { profile: StaffRecordProfile }) {
         <div>
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>Sign-Off Rate</span>
-            <span>{profile.signOffRate}%</span>
+            <span>{formatRate(profile.signOffRate)}</span>
           </div>
           <ProgressBar value={profile.signOffRate} max={100} color="bg-green-500" />
         </div>
         <div>
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>Cross-Referencing</span>
-            <span>{profile.crossReferenceRate}%</span>
+            <span>{formatRate(profile.crossReferenceRate)}</span>
           </div>
           <ProgressBar value={profile.crossReferenceRate} max={100} color="bg-purple-500" />
         </div>
@@ -173,21 +179,21 @@ export function RecordQualityDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard
           label="Completion Rate"
-          value={data.completion.completionRate}
+          value={formatRate(data.completion.completionRate)}
           suffix="%"
-          color={data.completion.completionRate >= 95 ? "text-green-600" : data.completion.completionRate >= 80 ? "text-amber-600" : "text-red-600"}
+          color={meets(data.completion.completionRate, 95) ? "text-green-600" : meets(data.completion.completionRate, 80) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="On Time"
-          value={data.timeliness.timelinessRate}
+          value={formatRate(data.timeliness.timelinessRate)}
           suffix="%"
-          color={data.timeliness.timelinessRate >= 90 ? "text-green-600" : data.timeliness.timelinessRate >= 70 ? "text-amber-600" : "text-red-600"}
+          color={meets(data.timeliness.timelinessRate, 90) ? "text-green-600" : meets(data.timeliness.timelinessRate, 70) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Sign-Off Rate"
-          value={data.signOff.signOffRate}
+          value={formatRate(data.signOff.signOffRate)}
           suffix="%"
-          color={data.signOff.signOffRate >= 90 ? "text-green-600" : data.signOff.signOffRate >= 75 ? "text-amber-600" : "text-red-600"}
+          color={meets(data.signOff.signOffRate, 90) ? "text-green-600" : meets(data.signOff.signOffRate, 75) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Field Completion"
@@ -204,7 +210,7 @@ export function RecordQualityDashboardWidget() {
         <MetricCard label="Avg Words" value={data.quality.averageWordCount} />
         <MetricCard
           label="Cross-Referenced"
-          value={data.crossReferencing.crossReferenceRate}
+          value={formatRate(data.crossReferencing.crossReferenceRate)}
           suffix="%"
         />
       </div>
@@ -236,12 +242,12 @@ export function RecordQualityDashboardWidget() {
             🔗 {data.crossReferencing.incidentsWithoutDailyLog} INCIDENTS UNLINKED
           </span>
         )}
-        {data.timeliness.timelinessRate >= 95 && (
+        {meets(data.timeliness.timelinessRate, 95) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             ⚡ EXCELLENT TIMELINESS
           </span>
         )}
-        {data.signOff.signOffRate >= 90 && (
+        {meets(data.signOff.signOffRate, 90) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             ✅ STRONG OVERSIGHT
           </span>
@@ -325,7 +331,7 @@ export function RecordQualityDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Records with cross-references</span>
-              <span className="font-medium">{data.crossReferencing.withCrossReferences}/{data.crossReferencing.totalRecords} ({data.crossReferencing.crossReferenceRate}%)</span>
+              <span className="font-medium">{data.crossReferencing.withCrossReferences}/{data.crossReferencing.totalRecords} ({formatRate(data.crossReferencing.crossReferenceRate)})</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Incidents without daily log link</span>

@@ -232,7 +232,9 @@ describe("Record Quality — evaluateCompletion", () => {
   it("handles empty expectations", () => {
     const result = evaluateCompletion([], PERIOD_START, PERIOD_END);
     expect(result.totalExpected).toBe(0);
-    expect(result.completionRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.completionRate).toBeNull();
+    expect(result.completionRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("excludes out-of-period expectations", () => {
@@ -290,7 +292,9 @@ describe("Record Quality — evaluateTimeliness", () => {
   it("handles no records", () => {
     const result = evaluateTimeliness([], PERIOD_START, PERIOD_END);
     expect(result.totalRecords).toBe(0);
-    expect(result.timelinessRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.timelinessRate).toBeNull();
+    expect(result.timelinessRate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(result.averageDelayHours).toBe(0);
   });
 
@@ -439,7 +443,9 @@ describe("Record Quality — evaluateSignOff", () => {
   it("handles no records", () => {
     const result = evaluateSignOff([], PERIOD_START, PERIOD_END);
     expect(result.totalRecords).toBe(0);
-    expect(result.signOffRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.signOffRate).toBeNull();
+    expect(result.signOffRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
@@ -485,7 +491,9 @@ describe("Record Quality — evaluateCrossReferencing", () => {
   it("handles no records", () => {
     const result = evaluateCrossReferencing([], PERIOD_START, PERIOD_END);
     expect(result.totalRecords).toBe(0);
-    expect(result.crossReferenceRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.crossReferenceRate).toBeNull();
+    expect(result.crossReferenceRate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(result.incidentsWithoutDailyLog).toBe(0);
   });
 
