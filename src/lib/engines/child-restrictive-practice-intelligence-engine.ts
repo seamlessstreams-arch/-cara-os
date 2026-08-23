@@ -8,6 +8,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { rate } from "@/lib/metrics/rate";
+
 export interface RestraintStaffInput {
   staff_id: string;
   role: string;
@@ -120,8 +122,9 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
-function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
+// Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
+function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 function avg(nums: number[]): number | null {

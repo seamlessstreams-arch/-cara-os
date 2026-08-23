@@ -7,6 +7,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface AdvocacyRecordInput {
   id: string;
   child_id: string;
@@ -41,11 +43,16 @@ export interface AdvocacyVoiceResult {
   advocacy_score: number;
   headline: string;
   total_records: number;
-  active_rate: number;
-  children_with_advocacy_rate: number;
-  independent_rate: number;
-  child_voice_rate: number;
-  private_session_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  active_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_advocacy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independent_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  private_session_rate: number | null;
   advocacy_type_variety: number;
   strengths: string[];
   concerns: string[];
@@ -60,8 +67,9 @@ export interface AdvocacyVoiceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -130,45 +138,45 @@ export function computeAdvocacyIndependentVoice(
   if (total === 0) {
     score -= 3;
   } else {
-    if (activeRate >= 80) score += 5;
-    else if (activeRate >= 50) score += 2;
-    else if (activeRate < 30) score -= 5;
+    if (meets(activeRate, 80)) score += 5;
+    else if (meets(activeRate, 50)) score += 2;
+    else if (below(activeRate, 30)) score -= 5;
   }
 
   // Modifier 2: Children with advocacy access (coverage)
   if (total === 0) {
     // no adjustment
   } else {
-    if (childrenWithAdvocacyRate >= 80) score += 6;
-    else if (childrenWithAdvocacyRate >= 50) score += 2;
-    else if (childrenWithAdvocacyRate < 30) score -= 5;
+    if (meets(childrenWithAdvocacyRate, 80)) score += 6;
+    else if (meets(childrenWithAdvocacyRate, 50)) score += 2;
+    else if (below(childrenWithAdvocacyRate, 30)) score -= 5;
   }
 
   // Modifier 3: Independent advocacy rate
   if (total === 0) {
     score -= 1;
   } else {
-    if (independentRate >= 50) score += 5;
-    else if (independentRate >= 25) score += 2;
-    else if (independentRate < 10) score -= 4;
+    if (meets(independentRate, 50)) score += 5;
+    else if (meets(independentRate, 25)) score += 2;
+    else if (below(independentRate, 10)) score -= 4;
   }
 
   // Modifier 4: Child voice captured
   if (total === 0) {
     // no adjustment
   } else {
-    if (childVoiceRate >= 90) score += 5;
-    else if (childVoiceRate >= 60) score += 2;
-    else if (childVoiceRate < 30) score -= 4;
+    if (meets(childVoiceRate, 90)) score += 5;
+    else if (meets(childVoiceRate, 60)) score += 2;
+    else if (below(childVoiceRate, 30)) score -= 4;
   }
 
   // Modifier 5: Private session availability
   if (total === 0) {
     score -= 1;
   } else {
-    if (privateSessionRate >= 60) score += 4;
-    else if (privateSessionRate >= 30) score += 1;
-    else if (privateSessionRate < 10) score -= 4;
+    if (meets(privateSessionRate, 60)) score += 4;
+    else if (meets(privateSessionRate, 30)) score += 1;
+    else if (below(privateSessionRate, 10)) score -= 4;
   }
 
   // Modifier 6: Advocacy type variety
@@ -204,21 +212,21 @@ export function computeAdvocacyIndependentVoice(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (activeRate >= 80 && total > 0) strengths.push("Advocacy referrals are consistently progressed — children receive timely support");
-  if (childrenWithAdvocacyRate >= 80 && total > 0) strengths.push("Most children have access to an advocate — the home proactively facilitates independent voice");
-  if (independentRate >= 50 && total > 0) strengths.push("Strong use of independent advocates ensures children have truly independent support");
-  if (childVoiceRate >= 90 && total > 0) strengths.push("Children's own views are captured in nearly all advocacy records");
-  if (privateSessionRate >= 60 && total > 0) strengths.push("Private sessions are prioritised — children can speak freely without staff present");
+  if (meets(activeRate, 80) && total > 0) strengths.push("Advocacy referrals are consistently progressed — children receive timely support");
+  if (meets(childrenWithAdvocacyRate, 80) && total > 0) strengths.push("Most children have access to an advocate — the home proactively facilitates independent voice");
+  if (meets(independentRate, 50) && total > 0) strengths.push("Strong use of independent advocates ensures children have truly independent support");
+  if (meets(childVoiceRate, 90) && total > 0) strengths.push("Children's own views are captured in nearly all advocacy records");
+  if (meets(privateSessionRate, 60) && total > 0) strengths.push("Private sessions are prioritised — children can speak freely without staff present");
   if (uniqueTypes >= 4 && total > 0) strengths.push("Diverse advocacy types including independent, peer, legal and complaints support");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No advocacy records — children may not have access to independent support");
-  if (activeRate < 30 && total > 0) concerns.push("Most advocacy referrals are inactive — children are not receiving ongoing support");
-  if (childrenWithAdvocacyRate < 30 && total > 0) concerns.push("Very few children have any advocacy contact — access is severely limited");
-  if (independentRate < 10 && total > 0) concerns.push("Almost no independent advocacy — children lack a truly independent voice");
-  if (childVoiceRate < 30 && total > 0) concerns.push("Children's views are rarely captured in advocacy records — their voice is being lost");
-  if (privateSessionRate < 10 && total > 0) concerns.push("Private sessions are almost non-existent — children cannot speak freely");
+  if (below(activeRate, 30) && total > 0) concerns.push("Most advocacy referrals are inactive — children are not receiving ongoing support");
+  if (below(childrenWithAdvocacyRate, 30) && total > 0) concerns.push("Very few children have any advocacy contact — access is severely limited");
+  if (below(independentRate, 10) && total > 0) concerns.push("Almost no independent advocacy — children lack a truly independent voice");
+  if (below(childVoiceRate, 30) && total > 0) concerns.push("Children's views are rarely captured in advocacy records — their voice is being lost");
+  if (below(privateSessionRate, 10) && total > 0) concerns.push("Private sessions are almost non-existent — children cannot speak freely");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: AdvocacyVoiceResult["recommendations"] = [];
@@ -226,16 +234,16 @@ export function computeAdvocacyIndependentVoice(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Establish advocacy referral pathways and ensure every child knows how to access an advocate", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (childrenWithAdvocacyRate < 50 && total > 0) {
+  if (below(childrenWithAdvocacyRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Proactively offer advocacy to all children including those who have not requested it", urgency: "soon", regulatory_ref: "SCCIF Voice" });
   }
-  if (independentRate < 25 && total > 0) {
+  if (below(independentRate, 25) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Increase use of independent advocates from organisations such as NYAS or Coram Voice", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (childVoiceRate < 60 && total > 0) {
+  if (below(childVoiceRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure the child's own words and views are recorded in every advocacy interaction", urgency: "immediate", regulatory_ref: "SCCIF Voice" });
   }
-  if (privateSessionRate < 30 && total > 0) {
+  if (below(privateSessionRate, 30) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Facilitate private sessions where children can speak to advocates without staff present", urgency: "planned", regulatory_ref: "CHR 2015 Reg 7" });
   }
   if (uniqueTypes < 2 && total > 0) {
@@ -247,16 +255,16 @@ export function computeAdvocacyIndependentVoice(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: AdvocacyVoiceResult["insights"] = [];
 
-  if (childVoiceRate >= 90 && independentRate >= 50 && childrenWithAdvocacyRate >= 80 && total >= 10) {
+  if (meets(childVoiceRate, 90) && meets(independentRate, 50) && meets(childrenWithAdvocacyRate, 80) && total >= 10) {
     insights.push({ text: "Advocacy provision is exemplary — children are empowered through independent voices that genuinely represent their wishes", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No advocacy records means Ofsted cannot verify that children have independent support to express their views", severity: "critical" });
   }
-  if (childVoiceRate < 30 && total > 0) {
+  if (below(childVoiceRate, 30) && total > 0) {
     insights.push({ text: "Children's voices are absent from advocacy records — this undermines the purpose of advocacy itself", severity: "warning" });
   }
-  if (childrenWithAdvocacyRate >= 80 && total > 0) {
+  if (meets(childrenWithAdvocacyRate, 80) && total > 0) {
     insights.push({ text: "Wide advocacy access shows the home actively promotes children's right to be heard", severity: "positive" });
   }
   if (uniqueTypes >= 4 && total > 0) {

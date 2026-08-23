@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 12/13/40.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface AccidentRecordInput {
   id: string;
   child_id: string | null;
@@ -61,8 +63,10 @@ export interface AccidentInjuryResult {
   injuries_unexplained: number;
   hospital_visits: number;
   riddor_count: number;
-  debrief_rate: number;
-  safety_check_pass_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debrief_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safety_check_pass_rate: number | null;
   children_with_repeat_injuries: number;
   strengths: string[];
   concerns: string[];
@@ -72,7 +76,8 @@ export interface AccidentInjuryResult {
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null { return rate(n, d); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): AccidentInjuryResult {
@@ -138,25 +143,25 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
 
   // Mod 3: Investigation & debrief (±5)
   const investRate = pct(investigated, recent.length);
-  if (recent.length === 0 || investRate >= 95) score += 5;
-  else if (investRate >= 80) score += 3;
-  else if (investRate >= 60) score += 0;
+  if (recent.length === 0 || meets(investRate, 95)) score += 5;
+  else if (meets(investRate, 80)) score += 3;
+  else if (meets(investRate, 60)) score += 0;
   else score -= 5;
 
   // Mod 4: Injury response (±5)
   const bodyMapRate = pct(bodyMapDone, recentInjuries.length);
   const swReportRate = pct(reportedToSW, recentInjuries.length);
   if (recentInjuries.length === 0) score += 5;
-  else if (bodyMapRate >= 95 && swReportRate >= 90) score += 5;
-  else if (bodyMapRate >= 80 && swReportRate >= 70) score += 2;
-  else if (bodyMapRate >= 60) score += 0;
+  else if (meets(bodyMapRate, 95) && meets(swReportRate, 90)) score += 5;
+  else if (meets(bodyMapRate, 80) && meets(swReportRate, 70)) score += 2;
+  else if (meets(bodyMapRate, 60)) score += 0;
   else score -= 5;
 
   // Mod 5: Safety checks (±5)
   if (recentChecks.length === 0) score += 0; // neutral
-  else if (checkPassRate >= 95 && issueResRate >= 90) score += 5;
-  else if (checkPassRate >= 80) score += 3;
-  else if (checkPassRate >= 60) score += 0;
+  else if (meets(checkPassRate, 95) && meets(issueResRate, 90)) score += 5;
+  else if (meets(checkPassRate, 80)) score += 3;
+  else if (meets(checkPassRate, 60)) score += 0;
   else score -= 5;
 
   // Mod 6: Unexplained injuries (±5)
@@ -185,8 +190,8 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   if (recent.length === 0 && recentInjuries.length === 0) strengths.push("Zero accidents and injuries in the last 90 days — exemplary safety culture.");
   else if (seriousAccidents.length === 0) strengths.push("No serious accidents in the last 90 days — effective hazard management.");
   if (unexplainedInjuries.length === 0 && recentInjuries.length > 0) strengths.push("All injuries have documented origin — thorough recording practice.");
-  if (recent.length > 0 && investRate >= 95) strengths.push("Over 95% of accidents fully investigated — strong governance response.");
-  if (recentChecks.length > 0 && checkPassRate >= 95) strengths.push("Safety check pass rate exceeds 95% — proactive environmental management.");
+  if (recent.length > 0 && meets(investRate, 95)) strengths.push("Over 95% of accidents fully investigated — strong governance response.");
+  if (recentChecks.length > 0 && meets(checkPassRate, 95)) strengths.push("Safety check pass rate exceeds 95% — proactive environmental management.");
   if (repeatChildren === 0 && recentInjuries.length > 0) strengths.push("No repeat injury patterns — individual risk management is effective.");
 
   // ── Concerns ────────────────────────────────────────────────────────────
@@ -196,8 +201,8 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   if (unexplainedInjuries.length >= 2) concerns.push(`${unexplainedInjuries.length} unexplained injuries — potential safeguarding concern requiring immediate investigation.`);
   if (repeatChildren >= 2) concerns.push(`${repeatChildren} children with repeat injuries (3+) — pattern suggests ongoing risk factor.`);
   if (riddorCount >= 2) concerns.push(`${riddorCount} RIDDOR reportable incidents — regulatory scrutiny likely.`);
-  if (recentInjuries.length > 0 && bodyMapRate < 70) concerns.push(`Body map completion at ${bodyMapRate}% — forensic evidence gaps in injury documentation.`);
-  if (recentChecks.length > 0 && checkPassRate < 70) concerns.push(`Safety check pass rate at ${checkPassRate}% — environmental hazards not being addressed.`);
+  if (recentInjuries.length > 0 && below(bodyMapRate, 70)) concerns.push(`Body map completion at ${bodyMapRate}% — forensic evidence gaps in injury documentation.`);
+  if (recentChecks.length > 0 && below(checkPassRate, 70)) concerns.push(`Safety check pass rate at ${checkPassRate}% — environmental hazards not being addressed.`);
 
   // ── Recommendations ─────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
@@ -205,8 +210,8 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   if (unexplainedInjuries.length >= 2) recommendations.push({ rank: ++rank, recommendation: `Immediate safeguarding review for ${unexplainedInjuries.length} unexplained injuries — strategy discussion with local authority required.`, urgency: "immediate", regulatory_ref: "Reg 34" });
   if (seriousAccidents.length >= 2) recommendations.push({ rank: ++rank, recommendation: "Commission independent environmental risk review following multiple serious accidents.", urgency: "immediate", regulatory_ref: "Reg 13" });
   if (repeatChildren >= 1) recommendations.push({ rank: ++rank, recommendation: `Review individual risk assessments for ${repeatChildren} child(ren) with repeat injuries.`, urgency: "soon", regulatory_ref: "Reg 12" });
-  if (recent.length > 0 && investRate < 80) recommendations.push({ rank: ++rank, recommendation: `Improve accident investigation rate from ${investRate}% — all incidents must be investigated.`, urgency: "soon", regulatory_ref: "Reg 40" });
-  if (recentInjuries.length > 0 && bodyMapRate < 80) recommendations.push({ rank: ++rank, recommendation: `Ensure body maps completed for all injuries — current rate ${bodyMapRate}%.`, urgency: "soon", regulatory_ref: "Reg 12" });
+  if (recent.length > 0 && below(investRate, 80)) recommendations.push({ rank: ++rank, recommendation: `Improve accident investigation rate from ${investRate}% — all incidents must be investigated.`, urgency: "soon", regulatory_ref: "Reg 40" });
+  if (recentInjuries.length > 0 && below(bodyMapRate, 80)) recommendations.push({ rank: ++rank, recommendation: `Ensure body maps completed for all injuries — current rate ${bodyMapRate}%.`, urgency: "soon", regulatory_ref: "Reg 12" });
   if (score < 65) recommendations.push({ rank: ++rank, recommendation: "Develop comprehensive accident prevention and environmental safety plan.", urgency: "planned", regulatory_ref: "Reg 13" });
 
   // ── Insights ────────────────────────────────────────────────────────────
@@ -214,7 +219,7 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   if (surveillance_rating === "outstanding") insights.push({ text: "Accident and injury surveillance is outstanding — children live in a safe, well-monitored environment.", severity: "positive" });
   if (surveillance_rating === "inadequate") insights.push({ text: "Accident and injury surveillance is inadequate — children may be at risk from environmental hazards or unrecognised patterns.", severity: "critical" });
   if (unexplainedInjuries.length >= 1 && selfHarmInjuries.length >= 1) insights.push({ text: "Both unexplained and self-harm injuries recorded — consider whether one may be masking the other.", severity: "warning" });
-  if (seriousAccidents.length >= 2 && checkPassRate < 80) insights.push({ text: "Serious accidents correlate with low safety check pass rate — environmental management needs urgent attention.", severity: "critical" });
+  if (seriousAccidents.length >= 2 && below(checkPassRate, 80)) insights.push({ text: "Serious accidents correlate with low safety check pass rate — environmental management needs urgent attention.", severity: "critical" });
   // Location analysis
   const locationCounts: Record<string, number> = {};
   recent.forEach(a => { locationCounts[a.location] = (locationCounts[a.location] ?? 0) + 1; });
