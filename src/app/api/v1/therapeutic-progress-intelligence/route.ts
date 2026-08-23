@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
+import type { CheckInSleepQuality } from "@/types/extended";
 import {
   computeTherapeuticProgress,
   type TherapeuticProgressInput,
@@ -16,6 +17,16 @@ import {
 } from "@/lib/engines/therapeutic-progress-intelligence-engine";
 
 export const dynamic = "force-dynamic";
+
+// CheckInSleepQuality is a declared five-point ordinal, so it maps onto the
+// engine's numeric scale without inventing anything.
+const SLEEP_QUALITY_SCORE: Record<CheckInSleepQuality, number> = {
+  poor: 1,
+  disrupted: 2,
+  ok: 3,
+  good: 4,
+  great: 5,
+};
 
 export async function GET(request: NextRequest) {
   const childId = request.nextUrl.searchParams.get("childId");
@@ -55,8 +66,8 @@ export async function GET(request: NextRequest) {
 
   // ── Therapy Sessions ──────────────────────────────────────────────────────
   const therapySessions: TherapySessionInput[] = (traumaTherapyLogsList ?? [])
-    .filter((t: any) => t.child_id === childId)
-    .map((t: any) => ({
+    .filter((t) => t.child_id === childId)
+    .map((t) => ({
       id: t.id,
       session_date: (t.session_date ?? "").slice(0, 10),
       modality: t.modality ?? "unknown",
@@ -72,8 +83,8 @@ export async function GET(request: NextRequest) {
 
   // ── Keywork Sessions ──────────────────────────────────────────────────────
   const keyworkSessions: KeyworkSessionInput[] = (keyWorkingSessionsList ?? [])
-    .filter((k: any) => k.child_id === childId)
-    .map((k: any) => ({
+    .filter((k) => k.child_id === childId)
+    .map((k) => ({
       id: k.id,
       date: (k.date ?? "").slice(0, 10),
       type: k.type ?? "one_to_one",
@@ -88,73 +99,93 @@ export async function GET(request: NextRequest) {
 
   // ── Behaviour Entries ─────────────────────────────────────────────────────
   const behaviourEntries: BehaviourEntryInput[] = (behaviourLogList ?? [])
-    .filter((b: any) => b.child_id === childId)
-    .map((b: any) => ({
+    .filter((b) => b.child_id === childId)
+    .map((b) => ({
       date: (b.date ?? "").slice(0, 10),
-      type: b.type ?? b.behaviour_type ?? "verbal",
-      severity: b.severity ?? b.intensity ?? "medium",
-      trigger: b.trigger ?? b.antecedent ?? "",
-      de_escalation_used: b.de_escalation_used ?? b.de_escalation ?? false,
-      response_effective: b.response_effective ?? b.intervention_effective ?? false,
+      // `type` and `de_escalation_used` named fields BehaviourEntry does not
+      // have, so every entry arrived as type "verbal" with de-escalation never
+      // used — which left the engine computing its de-escalation rate over an
+      // empty set for every child.
+      type: b.direction,
+      severity: b.intensity,
+      trigger: b.trigger || b.antecedent,
+      de_escalation_used: b.strategy_used.trim().length > 0,
+      // BehaviourEntry records what was tried but never grades whether it
+      // worked — `outcome` and `consequence` are free text. Null says
+      // unmeasured; `false` used to say "it did not work", about every entry.
+      response_effective: null,
     }));
 
   // ── Outcome Targets ───────────────────────────────────────────────────────
   const outcomeTargets: OutcomeTargetInput[] = (outcomeTargetsList ?? [])
-    .filter((t: any) => t.child_id === childId)
-    .map((t: any) => ({
+    .filter((t) => t.child_id === childId)
+    .map((t) => ({
       id: t.id,
       domain: t.domain ?? "general",
-      target: t.target ?? t.title ?? "",
-      status: t.status ?? "active",
-      direction: t.direction ?? "stable",
-      baseline_score: t.baseline_score ?? null,
-      current_score: t.current_score ?? null,
+      // OutcomeTarget calls these target_description, baseline_rating and
+      // current_rating. As written the target text was always "" and both
+      // scores always null, so the engine's progress calculation — the whole
+      // point of the outcomes section — ran over an empty list for every child.
+      target: t.target_description,
+      status: t.status,
+      direction: t.direction,
+      baseline_score: t.baseline_rating,
+      current_score: t.current_rating,
       created_at: (t.created_at ?? "").slice(0, 10),
     }));
 
   // ── Outcome Reviews ───────────────────────────────────────────────────────
   const outcomeReviews = (outcomeReviewsList ?? [])
-    .filter((r: any) => {
+    .filter((r) => {
       const targetIds = outcomeTargets.map((t) => t.id);
       return targetIds.includes(r.target_id);
     })
-    .map((r: any) => ({
+    .map((r) => ({
       target_id: r.target_id,
-      date: (r.date ?? r.review_date ?? "").slice(0, 10),
-      score: r.score ?? r.progress_score ?? 0,
-      reviewer_notes: r.reviewer_notes ?? r.notes ?? "",
+      date: r.review_date.slice(0, 10),
+      // OutcomeReview calls these new_rating and progress_notes; every review
+      // reached the engine scored 0 with no notes.
+      score: r.new_rating,
+      reviewer_notes: r.progress_notes,
     }));
 
   // ── CAMHS Referrals ───────────────────────────────────────────────────────
   const camhsReferrals: CamhsReferralInput[] = (camhsReferralsList ?? [])
-    .filter((c: any) => c.child_id === childId)
-    .map((c: any) => ({
+    .filter((c) => c.child_id === childId)
+    .map((c) => ({
       id: c.id,
       referral_date: (c.referral_date ?? "").slice(0, 10),
       referral_status: c.referral_status ?? "unknown",
       current_therapeutic_approach: c.current_therapeutic_approach ?? "",
       sessions_held: c.sessions_held ?? 0,
       sessions_scheduled: c.sessions_scheduled ?? 0,
-      engagement_level: c.current_engagement_level ?? c.engagement_level ?? "unknown",
+      engagement_level: c.current_engagement_level,
       waiting_time_weeks: c.waiting_time_weeks ?? 0,
     }));
 
   // ── Mental Health Check-Ins ───────────────────────────────────────────────
   const mentalHealthCheckIns: MentalHealthCheckInInput[] = (mentalHealthCheckInsList ?? [])
-    .filter((m: any) => m.child_id === childId)
-    .map((m: any) => ({
-      date: (m.date ?? m.check_date ?? "").slice(0, 10),
-      overall_mood: m.overall_mood ?? m.mood_score ?? 5,
-      anxiety_level: m.anxiety_level ?? m.anxiety_score ?? 0,
-      sleep_quality: m.sleep_quality ?? m.sleep_score ?? 5,
-      self_harm_risk: m.self_harm_risk ?? m.risk_level ?? "none",
-      stressors: m.stressors ?? [],
+    .filter((m) => m.child_id === childId)
+    .map((m) => ({
+      // MentalHealthCheckIn has none of overall_mood, anxiety_level,
+      // sleep_score, self_harm_risk or stressors. It has mood_rating (1-5),
+      // sleep_quality as a five-point word, and whats_heavy — what the child
+      // said was weighing on them. This collection is EMPTY today, so these
+      // were latent rather than live, but `self_harm_risk: "none"` is the one
+      // worth naming: it is an active claim that a child is not at risk, and
+      // nothing in a check-in supports making it either way.
+      date: m.date.slice(0, 10),
+      overall_mood: m.mood_rating,
+      anxiety_level: null,
+      sleep_quality: SLEEP_QUALITY_SCORE[m.sleep_quality],
+      self_harm_risk: null,
+      stressors: m.whats_heavy ? [m.whats_heavy] : [],
     }));
 
   // ── Incidents (child-specific) ────────────────────────────────────────────
   const incidents: ChildIncidentInput[] = (incidentsList ?? [])
-    .filter((i: any) => i.child_id === childId)
-    .map((i: any) => ({
+    .filter((i) => i.child_id === childId)
+    .map((i) => ({
       date: (i.date ?? "").slice(0, 10),
       type: i.type ?? "incident",
       severity: i.severity ?? "medium",
@@ -162,11 +193,13 @@ export async function GET(request: NextRequest) {
 
   // ── Restraint Records ─────────────────────────────────────────────────────
   const restraintRecords: RestraintRecordInput[] = (restraintsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
-      date: (r.date ?? r.incident_date ?? "").slice(0, 10),
-      duration_minutes: r.duration_minutes ?? r.duration ?? 0,
-      type: r.type ?? r.restraint_type ?? "physical",
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
+      // `date` and `duration` were already the live operands here; only the
+      // dead names beside them go.
+      date: r.date.slice(0, 10),
+      duration_minutes: r.duration,
+      type: r.restraint_type,
     }));
 
   const input: TherapeuticProgressInput = {

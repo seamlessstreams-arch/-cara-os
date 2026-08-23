@@ -8,7 +8,7 @@
 // SCCIF: Overall experiences and progress of children.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -62,7 +62,10 @@ export interface BehaviourEntryInput {
   severity: string;
   trigger?: string;
   de_escalation_used: boolean;
-  response_effective: boolean;
+  /** null where nothing recorded whether the approach worked. BehaviourEntry
+   *  records what was tried but never grades the result, so `false` there
+   *  would report every de-escalation as having failed. */
+  response_effective: boolean | null;
 }
 
 export interface OutcomeTargetInput {
@@ -71,7 +74,9 @@ export interface OutcomeTargetInput {
   target: string;
   status: string;
   direction: string;
+  /** On the OutcomeRating scale, 1-5. */
   baseline_score: number | null;
+  /** On the OutcomeRating scale, 1-5. */
   current_score: number | null;
   created_at: string;
 }
@@ -97,9 +102,12 @@ export interface CamhsReferralInput {
 export interface MentalHealthCheckInInput {
   date: string;
   overall_mood: number;
-  anxiety_level: number;
+  /** null where nothing measures it. A MentalHealthCheckIn does not. */
+  anxiety_level: number | null;
   sleep_quality: number;
-  self_harm_risk: string;
+  /** null where nothing records it. `"none"` is an active claim that a child
+   *  is not at risk of self-harm, and a mood check-in cannot support it. */
+  self_harm_risk: string | null;
   stressors: string[];
 }
 
@@ -435,9 +443,13 @@ function computeBehaviourTrajectory(input: TherapeuticProgressInput): BehaviourT
     return d > 30 && d <= 60;
   }).length;
 
+  // Rate over the entries whose outcome was actually graded. An entry that
+  // recorded de-escalation but not whether it worked is unmeasured, not a
+  // failure — counting it as one is the same lie as `?? 0` on an empty rate.
   const deEscEntries = entries.filter((e) => e.de_escalation_used);
-  const deEscSuccess = deEscEntries.filter((e) => e.response_effective).length;
-  const deEscRate: number | null = deEscEntries.length > 0 ? Math.round((deEscSuccess / deEscEntries.length) * 100) : null;
+  const deEscGraded = deEscEntries.filter((e) => e.response_effective !== null);
+  const deEscSuccess = deEscGraded.filter((e) => e.response_effective).length;
+  const deEscRate = rate(deEscSuccess, deEscGraded.length);
 
   let direction: TrajectoryDirection = "stable";
   if (inc30d + res30d < inc60d + res60d - 1) direction = "improving";
@@ -521,9 +533,15 @@ function computeOutcomeProgress(input: TherapeuticProgressInput): OutcomeProgres
   const declining = targets.filter((t) => t.direction === "declining").length;
   const achieved = targets.filter((t) => t.status === "achieved" || t.status === "completed").length;
 
+  // Headroom is measured against the top of the scale the ratings are ON.
+  // This read `10 - baseline`, which halves the progress of every target:
+  // baseline 2 to current 4 is 2 of the 3 available points, 67%, not 25%.
+  const RATING_MAX = 5;
   const progressScores = targets
     .filter((t) => t.baseline_score !== null && t.current_score !== null && t.baseline_score !== 0)
-    .map((t) => Math.round(((t.current_score! - t.baseline_score!) / Math.max(1, 10 - t.baseline_score!)) * 100));
+    .map((t) =>
+      Math.round(((t.current_score! - t.baseline_score!) / Math.max(1, RATING_MAX - t.baseline_score!)) * 100),
+    );
   const avgProgress: number | null = progressScores.length > 0 ? Math.round(average(progressScores)) : null;
 
   return { total_targets: total, improving, stable, declining, achieved, average_progress_pct: avgProgress };
