@@ -621,6 +621,20 @@ const NON_EMPTY_TERNARY_ZERO = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s
 // "nothing recorded yet" but "nothing done". Same compute gate, and the same
 // `${rel}:${collection}:0` key shape, so a site keeps its key whichever
 // spelling it is written in.
+// A third spelling, and the one an exported helper usually takes: the guard
+// clause is a STATEMENT, not a ternary, so neither matcher above can see it.
+//
+//   function pct(num: number, den: number): number {
+//     if (den === 0) return 0;
+//     return Math.round((num / den) * 100);
+//   }
+//
+// 173 helpers are written this way. The body captured (m[2]) is everything up
+// to the next `return`, so the same COMPUTE_CALL gate applies and a plain
+// `if (n === 0) return 0;` before non-metric work does not match.
+const EMPTY_GUARD_CLAUSE_ZERO =
+  /if\s*\(\s*([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\)\s*(?:\{\s*)?return\s+0\s*;\s*\}?\s*return\s+([^;]{0,220}?);/g;
+
 const EMPTY_TERNARY_ZERO_INVERTED = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*0\s*:([^?:{};]{0,220}?)[;,)\n]/g;
 // Widened 2026-07-30 (from `Math.round(...*100)`-only) to cover any of the
 // canonical computed-metric shapes: percentage (Math.round(x*100)), duration/
@@ -710,6 +724,16 @@ for (const dir of SCAN_DIRS) {
       if (!COMPUTE_CALL.test(body)) continue;
       const line = src.slice(0, mi.index).split("\n").length;
       found.push({ key: `${rel}:${mi[1]}:0`, rel, line, collection: mi[1], value: 0 });
+    }
+
+    // …and the statement-shaped guard clause.
+    EMPTY_GUARD_CLAUSE_ZERO.lastIndex = 0;
+    let mg;
+    while ((mg = EMPTY_GUARD_CLAUSE_ZERO.exec(src)) !== null) {
+      const body = mg[2];
+      if (!COMPUTE_CALL.test(body)) continue;
+      const line = src.slice(0, mg.index).split("\n").length;
+      found.push({ key: `${rel}:${mg[1]}:0`, rel, line, collection: mg[1], value: 0 });
     }
   }
 }
