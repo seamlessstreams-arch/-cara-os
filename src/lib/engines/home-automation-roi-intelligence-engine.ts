@@ -9,6 +9,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface SavedTimeMetricInput {
   id: string;
   care_event_id: string;
@@ -72,9 +74,12 @@ export interface AutomationROIResult {
   automation_score: number;
   headline: string;
   total_time_saved: number;
-  route_success_rate: number;
-  automation_coverage: number;
-  error_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  route_success_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  automation_coverage: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  error_rate: number | null;
   route_type_diversity: number;
   avg_minutes_per_route: number;
   strengths: string[];
@@ -89,8 +94,9 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function toRating(score: number): AutomationROIRating {
@@ -182,23 +188,23 @@ export function computeAutomationROI(
   let score = 52;
 
   // 1. Route success rate
-  if (routeSuccessRate >= 95) score += 6;
-  else if (routeSuccessRate >= 80) score += 3;
-  else if (routeSuccessRate < 50) score -= 8;
-  else if (routeSuccessRate < 65) score -= 5;
+  if (meets(routeSuccessRate, 95)) score += 6;
+  else if (meets(routeSuccessRate, 80)) score += 3;
+  else if (below(routeSuccessRate, 50)) score -= 8;
+  else if (below(routeSuccessRate, 65)) score -= 5;
 
   // 2. Automation coverage (events with routes / total events)
-  if (automationCoverage >= 90) score += 5;
-  else if (automationCoverage >= 70) score += 2;
-  else if (automationCoverage < 40) score -= 5;
+  if (meets(automationCoverage, 90)) score += 5;
+  else if (meets(automationCoverage, 70)) score += 2;
+  else if (below(automationCoverage, 40)) score -= 5;
 
   // 3. Error rate (lower is better)
   if (routes.length === 0) {
     score -= 1;
   } else {
-    if (errorRate < 5) score += 5;
-    else if (errorRate < 15) score += 2;
-    else if (errorRate > 30) score -= 4;
+    if (below(errorRate, 5)) score += 5;
+    else if (below(errorRate, 15)) score += 2;
+    else if (above(errorRate, 30)) score -= 4;
   }
 
   // 4. Time saved effectiveness (minutes per staff)
@@ -214,9 +220,9 @@ export function computeAutomationROI(
   // 6. Retry rate and reliability
   const totalRetries = routes.reduce((sum, r) => sum + r.retry_count, 0);
   const retryRate = pct(routes.filter(r => r.retry_count > 0).length, routes.length);
-  if (retryRate < 5 && routes.length > 0) score += 5;
-  else if (retryRate < 15) score += 2;
-  else if (retryRate > 30) score -= 4;
+  if (below(retryRate, 5) && routes.length > 0) score += 5;
+  else if (below(retryRate, 15)) score += 2;
+  else if (above(retryRate, 30)) score -= 4;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -225,19 +231,19 @@ export function computeAutomationROI(
 
   const strengths: string[] = [];
 
-  if (routeSuccessRate >= 95 && routes.length > 0) {
+  if (meets(routeSuccessRate, 95) && routes.length > 0) {
     strengths.push(`${routeSuccessRate}% route success rate — automated routing is highly reliable and consistent.`);
-  } else if (routeSuccessRate >= 80 && routes.length > 0) {
+  } else if (meets(routeSuccessRate, 80) && routes.length > 0) {
     strengths.push(`${routeSuccessRate}% route success rate — automated routing is performing well with minor failures.`);
   }
 
-  if (automationCoverage >= 90) {
+  if (meets(automationCoverage, 90)) {
     strengths.push(`${automationCoverage}% automation coverage — nearly all care events are being routed automatically.`);
-  } else if (automationCoverage >= 70) {
+  } else if (meets(automationCoverage, 70)) {
     strengths.push(`${automationCoverage}% automation coverage — good proportion of care events have automated routing.`);
   }
 
-  if (routes.length > 0 && errorRate < 5) {
+  if (routes.length > 0 && below(errorRate, 5)) {
     strengths.push(`Only ${errorRate}% error rate — automation is running cleanly with minimal failures.`);
   }
 
@@ -251,7 +257,7 @@ export function computeAutomationROI(
     strengths.push(`${routeTypeDiversity} route types active — automation covers a broad range of care event workflows.`);
   }
 
-  if (retryRate < 5 && routes.length > 0) {
+  if (below(retryRate, 5) && routes.length > 0) {
     strengths.push(`Only ${retryRate}% of routes required retries — first-time routing reliability is excellent.`);
   }
 
@@ -263,15 +269,15 @@ export function computeAutomationROI(
 
   const concerns: string[] = [];
 
-  if (routes.length > 0 && routeSuccessRate < 65) {
+  if (routes.length > 0 && below(routeSuccessRate, 65)) {
     concerns.push(`Only ${routeSuccessRate}% route success rate — ${failedRoutes.length} routes have failed, meaning care event data is not reaching linked records reliably.`);
   }
 
-  if (events.length > 0 && automationCoverage < 40) {
+  if (events.length > 0 && below(automationCoverage, 40)) {
     concerns.push(`Only ${automationCoverage}% automation coverage — ${events.length - eventsWithRoutes.length} care events have no automated routing, requiring manual data transfer.`);
   }
 
-  if (routes.length > 0 && errorRate > 30) {
+  if (routes.length > 0 && above(errorRate, 30)) {
     concerns.push(`${errorRate}% error rate across ${routes.length} routes — automation errors are frequent and may indicate system configuration issues.`);
   }
 
@@ -285,7 +291,7 @@ export function computeAutomationROI(
     concerns.push(`Only 1 route type active — automation should cover multiple workflow types including safeguarding, health, and behavioural routing.`);
   }
 
-  if (retryRate > 30 && routes.length > 0) {
+  if (above(retryRate, 30) && routes.length > 0) {
     concerns.push(`${retryRate}% of routes required retries with ${totalRetries} total retry attempts — routing reliability needs investigation.`);
   }
 
@@ -294,15 +300,15 @@ export function computeAutomationROI(
   const recs: AutomationROIRecommendation[] = [];
   let rank = 1;
 
-  if (routes.length > 0 && routeSuccessRate < 65) {
+  if (routes.length > 0 && below(routeSuccessRate, 65)) {
     recs.push({ rank: rank++, recommendation: "Investigate and resolve route failures — care event data must flow to chronologies, risk assessments, and LAC reviews without interruption.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
-  if (events.length > 0 && automationCoverage < 40) {
+  if (events.length > 0 && below(automationCoverage, 40)) {
     recs.push({ rank: rank++, recommendation: "Expand automation coverage — configure routing rules for all care event categories to ensure data reaches linked records automatically.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
-  if (routes.length > 0 && errorRate > 30) {
+  if (routes.length > 0 && above(errorRate, 30)) {
     recs.push({ rank: rank++, recommendation: "Address high error rate in automated routing — review system configuration, network connectivity, and route definitions to reduce failures.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
@@ -314,7 +320,7 @@ export function computeAutomationROI(
     recs.push({ rank: rank++, recommendation: "Configure additional route types — automation should cover safeguarding alerts, health notifications, behavioural tracking, and education updates.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
-  if (retryRate > 30 && routes.length > 0) {
+  if (above(retryRate, 30) && routes.length > 0) {
     recs.push({ rank: rank++, recommendation: "Investigate high retry rates — frequent retries suggest intermittent failures that increase processing time and risk data delivery delays.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
@@ -322,11 +328,11 @@ export function computeAutomationROI(
 
   const insights: AutomationROIInsight[] = [];
 
-  if (routeSuccessRate >= 95 && automationCoverage >= 90 && errorRate < 5 && routes.length > 0) {
+  if (meets(routeSuccessRate, 95) && meets(automationCoverage, 90) && below(errorRate, 5) && routes.length > 0) {
     insights.push({ text: `Automation is exemplary — ${routeSuccessRate}% route success, ${automationCoverage}% coverage, and only ${errorRate}% errors. The platform is operating at peak efficiency, ensuring care event data flows seamlessly to all linked records. Ofsted will see a home where technology supports robust care governance.`, severity: "positive" });
   }
 
-  if (routeSuccessRate >= 80 && automationCoverage >= 70 && routes.length > 0) {
+  if (meets(routeSuccessRate, 80) && meets(automationCoverage, 70) && routes.length > 0) {
     insights.push({ text: `Strong automation performance — ${routeSuccessRate}% success rate with ${automationCoverage}% coverage demonstrates that the platform is well-configured and staff are using automated workflows effectively. This supports the SCCIF "Well-led and managed" judgement area.`, severity: "positive" });
   }
 
@@ -334,23 +340,23 @@ export function computeAutomationROI(
     insights.push({ text: `Automation has saved ${totalTimeSaved} minutes (${Math.round(totalTimeSaved / 60 * 10) / 10} hours) across ${total_staff} staff members. This significant time saving allows staff to spend more time with children and less on administrative tasks, directly supporting better care outcomes.`, severity: "positive" });
   }
 
-  if (routes.length > 0 && routeSuccessRate < 50) {
+  if (routes.length > 0 && below(routeSuccessRate, 50)) {
     insights.push({ text: `Route success rate is critically low at ${routeSuccessRate}%. More than half of automated routes are failing, meaning care event data is not reaching linked records. Without reliable routing, the home cannot evidence that safeguarding, health, and behavioural data is being tracked across all relevant systems.`, severity: "critical" });
   }
 
-  if (events.length > 0 && automationCoverage < 40) {
+  if (events.length > 0 && below(automationCoverage, 40)) {
     insights.push({ text: `Automation coverage of ${automationCoverage}% means most care events lack automated routing. Staff must manually transfer data between systems, increasing workload and the risk of information being missed. Effective automation is a key indicator of a well-managed home under SCCIF.`, severity: "critical" });
   }
 
-  if (routes.length > 0 && errorRate > 30) {
+  if (routes.length > 0 && above(errorRate, 30)) {
     insights.push({ text: `${errorRate}% of routes have errors — this high error rate suggests systemic issues with the automation configuration. Frequent errors undermine staff confidence in the platform and may lead to manual workarounds that bypass governance controls.`, severity: "warning" });
   }
 
-  if (retryRate > 30 && routes.length > 0) {
+  if (above(retryRate, 30) && routes.length > 0) {
     insights.push({ text: `${retryRate}% of routes required retries with ${totalRetries} total attempts. While retries show the system is resilient, the volume indicates underlying reliability issues that should be investigated to prevent data delivery delays.`, severity: "warning" });
   }
 
-  if (routeTypeDiversity >= 4 && routeSuccessRate >= 80) {
+  if (routeTypeDiversity >= 4 && meets(routeSuccessRate, 80)) {
     insights.push({ text: `${routeTypeDiversity} route types operating with ${routeSuccessRate}% success rate demonstrates comprehensive automation coverage across multiple care domains. This breadth of automation supports holistic care governance.`, severity: "positive" });
   }
 

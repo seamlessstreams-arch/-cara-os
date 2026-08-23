@@ -15,7 +15,7 @@
 //             childBenefitRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -184,12 +184,18 @@ export interface AromatherapyWellbeingResult {
   total_relaxation_programmes: number;
   total_calming_techniques: number;
   total_child_benefit_assessments: number;
-  aromatherapy_access_rate: number;
-  therapy_quality_rate: number;
-  relaxation_effectiveness_rate: number;
-  calming_technique_rate: number;
-  child_benefit_rate: number;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  aromatherapy_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapy_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relaxation_effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  calming_technique_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_benefit_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AromatherapyWellbeingRecommendation[];
@@ -198,8 +204,9 @@ export interface AromatherapyWellbeingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -548,50 +555,50 @@ export function computeAromatherapyWellbeingTherapies(
   let score = 52;
 
   // --- Bonus 1: aromatherapyAccessRate (>=80: +4, >=50: +2) ---
-  if (aromatherapyAccessRate >= 80) score += 4;
-  else if (aromatherapyAccessRate >= 50) score += 2;
+  if (meets(aromatherapyAccessRate, 80)) score += 4;
+  else if (meets(aromatherapyAccessRate, 50)) score += 2;
 
   // --- Bonus 2: therapyQualityRate (>=90: +4, >=70: +2) ---
-  if (therapyQualityRate >= 90) score += 4;
-  else if (therapyQualityRate >= 70) score += 2;
+  if (meets(therapyQualityRate, 90)) score += 4;
+  else if (meets(therapyQualityRate, 70)) score += 2;
 
   // --- Bonus 3: relaxationEffectivenessRate (>=85: +4, >=65: +2) ---
-  if (relaxationEffectivenessRate >= 85) score += 4;
-  else if (relaxationEffectivenessRate >= 65) score += 2;
+  if (meets(relaxationEffectivenessRate, 85)) score += 4;
+  else if (meets(relaxationEffectivenessRate, 65)) score += 2;
 
   // --- Bonus 4: calmingTechniqueRate (>=85: +3, >=65: +1) ---
-  if (calmingTechniqueRate >= 85) score += 3;
-  else if (calmingTechniqueRate >= 65) score += 1;
+  if (meets(calmingTechniqueRate, 85)) score += 3;
+  else if (meets(calmingTechniqueRate, 65)) score += 1;
 
   // --- Bonus 5: childBenefitRate (>=85: +4, >=65: +2) ---
-  if (childBenefitRate >= 85) score += 4;
-  else if (childBenefitRate >= 65) score += 2;
+  if (meets(childBenefitRate, 85)) score += 4;
+  else if (meets(childBenefitRate, 65)) score += 2;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: aromaSafetyRate (>=95: +3, >=80: +1) ---
-  if (aromaSafetyRate >= 95) score += 3;
-  else if (aromaSafetyRate >= 80) score += 1;
+  if (meets(aromaSafetyRate, 95)) score += 3;
+  else if (meets(aromaSafetyRate, 80)) score += 1;
 
   // --- Bonus 8: relaxationChildInvolvedRate (>=90: +3, >=70: +1) ---
-  if (relaxationChildInvolvedRate >= 90) score += 3;
-  else if (relaxationChildInvolvedRate >= 70) score += 1;
+  if (meets(relaxationChildInvolvedRate, 90)) score += 3;
+  else if (meets(relaxationChildInvolvedRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // therapyQualityRate < 40 → -5
-  if (therapyQualityRate < 40 && (totalAromaSessions + totalWellbeingTherapies) > 0) score -= 5;
+  if (below(therapyQualityRate, 40) && (totalAromaSessions + totalWellbeingTherapies) > 0) score -= 5;
 
   // relaxationEffectivenessRate < 40 → -5
-  if (relaxationEffectivenessRate < 40 && totalRelaxationProgrammes > 0) score -= 5;
+  if (below(relaxationEffectivenessRate, 40) && totalRelaxationProgrammes > 0) score -= 5;
 
   // childBenefitRate < 40 → -5
-  if (childBenefitRate < 40 && totalBenefitAssessments > 0) score -= 5;
+  if (below(childBenefitRate, 40) && totalBenefitAssessments > 0) score -= 5;
 
   // aromaAdverseRate > 20 → -3
-  if (aromaAdverseRate > 20 && totalAromaSessions > 0) score -= 3;
+  if (above(aromaAdverseRate, 20) && totalAromaSessions > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -601,125 +608,125 @@ export function computeAromatherapyWellbeingTherapies(
 
   const strengths: string[] = [];
 
-  if (aromatherapyAccessRate >= 80 && total_children > 0) {
+  if (meets(aromatherapyAccessRate, 80) && total_children > 0) {
     strengths.push(
       `${aromatherapyAccessRate}% aromatherapy access rate — the majority of children on placement have access to aromatherapy sessions, demonstrating the home's commitment to complementary therapy provision.`,
     );
-  } else if (aromatherapyAccessRate >= 50 && total_children > 0) {
+  } else if (meets(aromatherapyAccessRate, 50) && total_children > 0) {
     strengths.push(
       `${aromatherapyAccessRate}% of children have accessed aromatherapy sessions — the home offers aromatherapy to a reasonable proportion of its children.`,
     );
   }
 
-  if (therapyQualityRate >= 90 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  if (meets(therapyQualityRate, 90) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     strengths.push(
       `${therapyQualityRate}% therapy quality — sessions are delivered by qualified therapists with proper consent, and notes are consistently recorded, evidencing high-quality complementary therapy practice.`,
     );
-  } else if (therapyQualityRate >= 70 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  } else if (meets(therapyQualityRate, 70) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     strengths.push(
       `${therapyQualityRate}% therapy quality rate — the home generally maintains good standards in complementary therapy delivery.`,
     );
   }
 
-  if (aromaSafetyRate >= 95 && totalAromaSessions > 0) {
+  if (meets(aromaSafetyRate, 95) && totalAromaSessions > 0) {
     strengths.push(
       `${aromaSafetyRate}% aromatherapy safety compliance — consent, allergy checks, contraindication checks, and risk assessments are consistently completed before every session, demonstrating exemplary safeguarding practice.`,
     );
-  } else if (aromaSafetyRate >= 80 && totalAromaSessions > 0) {
+  } else if (meets(aromaSafetyRate, 80) && totalAromaSessions > 0) {
     strengths.push(
       `${aromaSafetyRate}% aromatherapy safety compliance — the home generally maintains good safety standards in aromatherapy delivery.`,
     );
   }
 
-  if (relaxationEffectivenessRate >= 85 && totalRelaxationProgrammes > 0) {
+  if (meets(relaxationEffectivenessRate, 85) && totalRelaxationProgrammes > 0) {
     strengths.push(
       `${relaxationEffectivenessRate}% relaxation programme effectiveness — outcomes are achieved, anxiety is reduced, children provide positive feedback, and programmes are regularly reviewed.`,
     );
-  } else if (relaxationEffectivenessRate >= 65 && totalRelaxationProgrammes > 0) {
+  } else if (meets(relaxationEffectivenessRate, 65) && totalRelaxationProgrammes > 0) {
     strengths.push(
       `${relaxationEffectivenessRate}% relaxation programme effectiveness — programmes are generally achieving their intended outcomes.`,
     );
   }
 
-  if (calmingTechniqueRate >= 85 && totalCalmingTechniques > 0) {
+  if (meets(calmingTechniqueRate, 85) && totalCalmingTechniques > 0) {
     strengths.push(
       `${calmingTechniqueRate}% calming technique effectiveness — sensory-based calming interventions are appropriate, effective, consider children's sensory profiles, and successfully de-escalate situations.`,
     );
-  } else if (calmingTechniqueRate >= 65 && totalCalmingTechniques > 0) {
+  } else if (meets(calmingTechniqueRate, 65) && totalCalmingTechniques > 0) {
     strengths.push(
       `${calmingTechniqueRate}% calming technique effectiveness — sensory-based calming techniques are generally well matched to children's needs.`,
     );
   }
 
-  if (childBenefitRate >= 85 && totalBenefitAssessments > 0) {
+  if (meets(childBenefitRate, 85) && totalBenefitAssessments > 0) {
     strengths.push(
       `${childBenefitRate}% child benefit rate — complementary therapies are demonstrably improving children's wellbeing, with evidence from child self-reports, staff observations, and captured child voice.`,
     );
-  } else if (childBenefitRate >= 65 && totalBenefitAssessments > 0) {
+  } else if (meets(childBenefitRate, 65) && totalBenefitAssessments > 0) {
     strengths.push(
       `${childBenefitRate}% child benefit rate — the home can evidence that complementary therapies are benefiting the majority of participating children.`,
     );
   }
 
-  if (childEngagementRate >= 90 && engagementPositiveDenominator > 0) {
+  if (meets(childEngagementRate, 90) && engagementPositiveDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement across therapies — children consistently provide positive feedback and actively engage with complementary therapy sessions, reflecting child-centred, meaningful provision.`,
     );
-  } else if (childEngagementRate >= 70 && engagementPositiveDenominator > 0) {
+  } else if (meets(childEngagementRate, 70) && engagementPositiveDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement rate — the majority of children engage positively with the complementary therapy offer.`,
     );
   }
 
-  if (aromaMoodImprovedRate >= 80 && totalAromaSessions > 0) {
+  if (meets(aromaMoodImprovedRate, 80) && totalAromaSessions > 0) {
     strengths.push(
       `${aromaMoodImprovedRate}% mood improvement following aromatherapy sessions — children's emotional state consistently improves after aromatherapy, demonstrating therapeutic impact.`,
     );
-  } else if (aromaMoodImprovedRate >= 60 && totalAromaSessions > 0) {
+  } else if (meets(aromaMoodImprovedRate, 60) && totalAromaSessions > 0) {
     strengths.push(
       `${aromaMoodImprovedRate}% mood improvement after aromatherapy — a good proportion of children experience mood improvement following sessions.`,
     );
   }
 
-  if (calmingChildInitiatedRate >= 70 && totalCalmingTechniques > 0) {
+  if (meets(calmingChildInitiatedRate, 70) && totalCalmingTechniques > 0) {
     strengths.push(
       `${calmingChildInitiatedRate}% of calming techniques child-initiated — children are independently using sensory-based calming strategies, demonstrating internalised self-regulation skills.`,
     );
-  } else if (calmingChildInitiatedRate >= 50 && totalCalmingTechniques > 0) {
+  } else if (meets(calmingChildInitiatedRate, 50) && totalCalmingTechniques > 0) {
     strengths.push(
       `${calmingChildInitiatedRate}% of calming techniques child-initiated — a good proportion of children are independently seeking out calming strategies.`,
     );
   }
 
-  if (relaxationChildInvolvedRate >= 90 && totalRelaxationProgrammes > 0) {
+  if (meets(relaxationChildInvolvedRate, 90) && totalRelaxationProgrammes > 0) {
     strengths.push(
       `${relaxationChildInvolvedRate}% child involvement in relaxation programme planning — children actively shape their own relaxation programmes, ensuring interventions are personalised and meaningful.`,
     );
-  } else if (relaxationChildInvolvedRate >= 70 && totalRelaxationProgrammes > 0) {
+  } else if (meets(relaxationChildInvolvedRate, 70) && totalRelaxationProgrammes > 0) {
     strengths.push(
       `${relaxationChildInvolvedRate}% child involvement in planning — most children are consulted about their relaxation programmes.`,
     );
   }
 
-  if (wellbeingAnxietyReducedRate >= 80 && totalWellbeingTherapies > 0) {
+  if (meets(wellbeingAnxietyReducedRate, 80) && totalWellbeingTherapies > 0) {
     strengths.push(
       `${wellbeingAnxietyReducedRate}% anxiety reduction observed following wellbeing therapies — complementary therapies are effectively supporting children's emotional regulation and mental health.`,
     );
   }
 
-  if (calmingDeEscalationRate >= 85 && totalCalmingTechniques > 0) {
+  if (meets(calmingDeEscalationRate, 85) && totalCalmingTechniques > 0) {
     strengths.push(
       `${calmingDeEscalationRate}% de-escalation achieved through calming techniques — sensory-based interventions are highly effective in supporting children during times of heightened anxiety or distress.`,
     );
   }
 
-  if (benefitWantsContinueRate >= 90 && totalBenefitAssessments > 0) {
+  if (meets(benefitWantsContinueRate, 90) && totalBenefitAssessments > 0) {
     strengths.push(
       `${benefitWantsContinueRate}% of children want to continue their complementary therapies — children value and look forward to their therapy sessions, reflecting genuinely child-centred provision.`,
     );
   }
 
-  if (aromaGoalsMetRate >= 85 && aromaGoalsSet > 0) {
+  if (meets(aromaGoalsMetRate, 85) && aromaGoalsSet > 0) {
     strengths.push(
       `${aromaGoalsMetRate}% of aromatherapy session goals met — sessions have clear therapeutic objectives that are consistently achieved, demonstrating focused, outcome-oriented practice.`,
     );
@@ -735,95 +742,95 @@ export function computeAromatherapyWellbeingTherapies(
 
   const concerns: string[] = [];
 
-  if (therapyQualityRate < 40 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  if (below(therapyQualityRate, 40) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     concerns.push(
       `Only ${therapyQualityRate}% therapy quality — a significant proportion of complementary therapy sessions lack qualified therapists, proper consent, or adequate notes. This undermines the safety and therapeutic value of the provision.`,
     );
-  } else if (therapyQualityRate < 70 && therapyQualityRate >= 40 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  } else if (below(therapyQualityRate, 70) && meets(therapyQualityRate, 40) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     concerns.push(
       `Therapy quality rate at ${therapyQualityRate}% — some sessions are not meeting the expected standards for therapist qualification, consent, or documentation.`,
     );
   }
 
-  if (relaxationEffectivenessRate < 40 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationEffectivenessRate, 40) && totalRelaxationProgrammes > 0) {
     concerns.push(
       `Only ${relaxationEffectivenessRate}% relaxation programme effectiveness — programmes are not achieving measurable outcomes, children's anxiety is not reducing, and reviews are not being conducted. This means resources are being allocated without demonstrable benefit.`,
     );
-  } else if (relaxationEffectivenessRate < 65 && relaxationEffectivenessRate >= 40 && totalRelaxationProgrammes > 0) {
+  } else if (below(relaxationEffectivenessRate, 65) && meets(relaxationEffectivenessRate, 40) && totalRelaxationProgrammes > 0) {
     concerns.push(
       `Relaxation programme effectiveness at ${relaxationEffectivenessRate}% — programmes need improvement in achieving measurable outcomes and reducing children's anxiety levels.`,
     );
   }
 
-  if (childBenefitRate < 40 && totalBenefitAssessments > 0) {
+  if (below(childBenefitRate, 40) && totalBenefitAssessments > 0) {
     concerns.push(
       `Only ${childBenefitRate}% child benefit rate — complementary therapies are not demonstrating measurable improvements in children's wellbeing. The home cannot evidence that therapy provision is achieving its intended purpose.`,
     );
-  } else if (childBenefitRate < 65 && childBenefitRate >= 40 && totalBenefitAssessments > 0) {
+  } else if (below(childBenefitRate, 65) && meets(childBenefitRate, 40) && totalBenefitAssessments > 0) {
     concerns.push(
       `Child benefit rate at ${childBenefitRate}% — evidence of therapeutic benefit needs strengthening, particularly through child self-report and staff observation.`,
     );
   }
 
-  if (calmingTechniqueRate < 40 && totalCalmingTechniques > 0) {
+  if (below(calmingTechniqueRate, 40) && totalCalmingTechniques > 0) {
     concerns.push(
       `Only ${calmingTechniqueRate}% calming technique effectiveness — sensory-based calming interventions are not appropriately matched to children's needs, not considering sensory profiles, or not achieving de-escalation. Staff require additional training in sensory-based calming approaches.`,
     );
-  } else if (calmingTechniqueRate < 65 && calmingTechniqueRate >= 40 && totalCalmingTechniques > 0) {
+  } else if (below(calmingTechniqueRate, 65) && meets(calmingTechniqueRate, 40) && totalCalmingTechniques > 0) {
     concerns.push(
       `Calming technique effectiveness at ${calmingTechniqueRate}% — some sensory-based interventions are not achieving the intended calming or de-escalation outcomes.`,
     );
   }
 
-  if (aromaSafetyRate < 70 && totalAromaSessions > 0) {
+  if (below(aromaSafetyRate, 70) && totalAromaSessions > 0) {
     concerns.push(
       `Aromatherapy safety compliance at only ${aromaSafetyRate}% — consent, allergy checks, contraindication screening, or risk assessments are not consistently completed. This represents a significant safeguarding gap in the use of essential oils and aromatherapy products with children.`,
     );
-  } else if (aromaSafetyRate < 80 && aromaSafetyRate >= 70 && totalAromaSessions > 0) {
+  } else if (below(aromaSafetyRate, 80) && meets(aromaSafetyRate, 70) && totalAromaSessions > 0) {
     concerns.push(
       `Aromatherapy safety compliance at ${aromaSafetyRate}% — some safety checks are being missed before sessions, which must be addressed to protect children from adverse reactions.`,
     );
   }
 
-  if (aromaAdverseRate > 20 && totalAromaSessions > 0) {
+  if (above(aromaAdverseRate, 20) && totalAromaSessions > 0) {
     concerns.push(
       `${aromaAdverseRate}% adverse reaction rate in aromatherapy sessions — this is unacceptably high and indicates that safety screening, oil selection, or application methods need urgent review.`,
     );
-  } else if (aromaAdverseRate > 10 && aromaAdverseRate <= 20 && totalAromaSessions > 0) {
+  } else if (above(aromaAdverseRate, 10) && (aromaAdverseRate !== null && aromaAdverseRate <= 20) && totalAromaSessions > 0) {
     concerns.push(
       `${aromaAdverseRate}% adverse reaction rate in aromatherapy — some children are experiencing adverse reactions. Review allergy screening protocols and oil selection.`,
     );
   }
 
-  if (childEngagementRate < 50 && engagementPositiveDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementPositiveDenominator > 0) {
     concerns.push(
       `Only ${childEngagementRate}% child engagement across therapies — the majority of children are not positively engaging with complementary therapy provision. This may indicate that the therapy offer does not align with children's preferences or needs.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50 && engagementPositiveDenominator > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50) && engagementPositiveDenominator > 0) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — a significant proportion of children are not reporting positive engagement with the complementary therapy offer.`,
     );
   }
 
-  if (aromatherapyAccessRate < 30 && total_children > 0 && totalAromaSessions > 0) {
+  if (below(aromatherapyAccessRate, 30) && total_children > 0 && totalAromaSessions > 0) {
     concerns.push(
       `Only ${aromatherapyAccessRate}% of children have accessed aromatherapy — the therapy offer is not reaching the majority of children on placement. Review whether barriers to access exist.`,
     );
   }
 
-  if (relaxationChildInvolvedRate < 50 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationChildInvolvedRate, 50) && totalRelaxationProgrammes > 0) {
     concerns.push(
       `Only ${relaxationChildInvolvedRate}% child involvement in relaxation programme planning — children's views and preferences about their relaxation needs are not being sought, undermining the voice of the child.`,
     );
   }
 
-  if (benefitChildVoiceRate < 50 && totalBenefitAssessments > 0) {
+  if (below(benefitChildVoiceRate, 50) && totalBenefitAssessments > 0) {
     concerns.push(
       `Only ${benefitChildVoiceRate}% of child benefit assessments capture the child's voice — children's own views about the impact of therapies are not being recorded, which weakens the evidence base and Ofsted's ability to hear from children directly.`,
     );
   }
 
-  if (benefitReviewOverdueRate > 30 && totalBenefitAssessments > 0) {
+  if (above(benefitReviewOverdueRate, 30) && totalBenefitAssessments > 0) {
     concerns.push(
       `${benefitReviewOverdueRate}% of child benefit assessments are overdue for review — outcomes are not being monitored in a timely way, which may mean children's changing needs are not being identified.`,
     );
@@ -841,7 +848,7 @@ export function computeAromatherapyWellbeingTherapies(
     );
   }
 
-  if (wellbeingQualifiedRate < 70 && totalWellbeingTherapies > 0) {
+  if (below(wellbeingQualifiedRate, 70) && totalWellbeingTherapies > 0) {
     concerns.push(
       `Only ${wellbeingQualifiedRate}% of wellbeing therapy sessions delivered by qualified therapists — children should receive complementary therapies from appropriately trained and qualified practitioners.`,
     );
@@ -852,7 +859,7 @@ export function computeAromatherapyWellbeingTherapies(
   const recommendations: AromatherapyWellbeingRecommendation[] = [];
   let rank = 0;
 
-  if (therapyQualityRate < 40 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  if (below(therapyQualityRate, 40) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -862,7 +869,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (aromaSafetyRate < 70 && totalAromaSessions > 0) {
+  if (below(aromaSafetyRate, 70) && totalAromaSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -872,7 +879,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (aromaAdverseRate > 20 && totalAromaSessions > 0) {
+  if (above(aromaAdverseRate, 20) && totalAromaSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -882,7 +889,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (relaxationEffectivenessRate < 40 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationEffectivenessRate, 40) && totalRelaxationProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -892,7 +899,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (childBenefitRate < 40 && totalBenefitAssessments > 0) {
+  if (below(childBenefitRate, 40) && totalBenefitAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -902,7 +909,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (childEngagementRate < 50 && engagementPositiveDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementPositiveDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -932,7 +939,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (calmingTechniqueRate < 40 && totalCalmingTechniques > 0) {
+  if (below(calmingTechniqueRate, 40) && totalCalmingTechniques > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -942,7 +949,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (relaxationChildInvolvedRate < 50 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationChildInvolvedRate, 50) && totalRelaxationProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -952,7 +959,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (benefitChildVoiceRate < 50 && totalBenefitAssessments > 0) {
+  if (below(benefitChildVoiceRate, 50) && totalBenefitAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +969,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (benefitReviewOverdueRate > 30 && totalBenefitAssessments > 0) {
+  if (above(benefitReviewOverdueRate, 30) && totalBenefitAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -973,8 +980,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    therapyQualityRate >= 40 &&
-    therapyQualityRate < 70 &&
+    meets(therapyQualityRate, 40) &&
+    below(therapyQualityRate, 70) &&
     (totalAromaSessions + totalWellbeingTherapies) > 0
   ) {
     recommendations.push({
@@ -987,8 +994,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    relaxationEffectivenessRate >= 40 &&
-    relaxationEffectivenessRate < 65 &&
+    meets(relaxationEffectivenessRate, 40) &&
+    below(relaxationEffectivenessRate, 65) &&
     totalRelaxationProgrammes > 0
   ) {
     recommendations.push({
@@ -1001,8 +1008,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    calmingTechniqueRate >= 40 &&
-    calmingTechniqueRate < 65 &&
+    meets(calmingTechniqueRate, 40) &&
+    below(calmingTechniqueRate, 65) &&
     totalCalmingTechniques > 0
   ) {
     recommendations.push({
@@ -1015,8 +1022,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childBenefitRate >= 40 &&
-    childBenefitRate < 65 &&
+    meets(childBenefitRate, 40) &&
+    below(childBenefitRate, 65) &&
     totalBenefitAssessments > 0
   ) {
     recommendations.push({
@@ -1029,8 +1036,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     engagementPositiveDenominator > 0
   ) {
     recommendations.push({
@@ -1042,7 +1049,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (aromatherapyAccessRate < 50 && aromatherapyAccessRate > 0 && total_children > 0) {
+  if (below(aromatherapyAccessRate, 50) && above(aromatherapyAccessRate, 0) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,7 +1059,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (wellbeingQualifiedRate < 70 && totalWellbeingTherapies > 0) {
+  if (below(wellbeingQualifiedRate, 70) && totalWellbeingTherapies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1062,7 +1069,7 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (relaxationStaffTrainedRate < 70 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationStaffTrainedRate, 70) && totalRelaxationProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1078,35 +1085,35 @@ export function computeAromatherapyWellbeingTherapies(
 
   // -- Critical insights --
 
-  if (therapyQualityRate < 40 && (totalAromaSessions + totalWellbeingTherapies) > 0) {
+  if (below(therapyQualityRate, 40) && (totalAromaSessions + totalWellbeingTherapies) > 0) {
     insights.push({
       text: `Only ${therapyQualityRate}% therapy quality rate. Ofsted expects complementary therapies to be delivered by qualified practitioners with proper consent and documentation. Poor therapy quality undermines both the safety of the provision and the home's ability to evidence therapeutic benefit for children.`,
       severity: "critical",
     });
   }
 
-  if (aromaSafetyRate < 70 && totalAromaSessions > 0) {
+  if (below(aromaSafetyRate, 70) && totalAromaSessions > 0) {
     insights.push({
       text: `Aromatherapy safety compliance at only ${aromaSafetyRate}%. Essential oils can cause allergic reactions, skin irritation, or interact with medications. Incomplete safety screening before aromatherapy sessions with looked-after children represents a significant safeguarding concern under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (aromaAdverseRate > 20 && totalAromaSessions > 0) {
+  if (above(aromaAdverseRate, 20) && totalAromaSessions > 0) {
     insights.push({
       text: `${aromaAdverseRate}% adverse reaction rate in aromatherapy. This is unacceptably high and suggests systemic failures in safety screening, contraindication checking, or oil selection. Children in care are a vulnerable population and aromatherapy must be delivered with the highest safety standards.`,
       severity: "critical",
     });
   }
 
-  if (relaxationEffectivenessRate < 40 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationEffectivenessRate, 40) && totalRelaxationProgrammes > 0) {
     insights.push({
       text: `Only ${relaxationEffectivenessRate}% relaxation programme effectiveness. Relaxation programmes exist but are not achieving their intended purpose — outcomes are not met, anxiety is not reducing, and programmes are not reviewed. This represents a significant waste of resources and a missed opportunity to support children's emotional wellbeing.`,
       severity: "critical",
     });
   }
 
-  if (childBenefitRate < 40 && totalBenefitAssessments > 0) {
+  if (below(childBenefitRate, 40) && totalBenefitAssessments > 0) {
     insights.push({
       text: `Only ${childBenefitRate}% child benefit rate. The home's complementary therapy provision is not translating into measurable improvements in children's wellbeing. Without demonstrable benefit, Ofsted may question whether the provision meets children's actual needs or whether resources should be directed to more effective interventions.`,
       severity: "critical",
@@ -1130,8 +1137,8 @@ export function computeAromatherapyWellbeingTherapies(
   // -- Warning insights --
 
   if (
-    therapyQualityRate >= 40 &&
-    therapyQualityRate < 70 &&
+    meets(therapyQualityRate, 40) &&
+    below(therapyQualityRate, 70) &&
     (totalAromaSessions + totalWellbeingTherapies) > 0
   ) {
     insights.push({
@@ -1141,8 +1148,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    relaxationEffectivenessRate >= 40 &&
-    relaxationEffectivenessRate < 65 &&
+    meets(relaxationEffectivenessRate, 40) &&
+    below(relaxationEffectivenessRate, 65) &&
     totalRelaxationProgrammes > 0
   ) {
     insights.push({
@@ -1152,8 +1159,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childBenefitRate >= 40 &&
-    childBenefitRate < 65 &&
+    meets(childBenefitRate, 40) &&
+    below(childBenefitRate, 65) &&
     totalBenefitAssessments > 0
   ) {
     insights.push({
@@ -1163,8 +1170,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    calmingTechniqueRate >= 40 &&
-    calmingTechniqueRate < 65 &&
+    meets(calmingTechniqueRate, 40) &&
+    below(calmingTechniqueRate, 65) &&
     totalCalmingTechniques > 0
   ) {
     insights.push({
@@ -1174,8 +1181,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     engagementPositiveDenominator > 0
   ) {
     insights.push({
@@ -1185,8 +1192,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    aromaSafetyRate >= 70 &&
-    aromaSafetyRate < 80 &&
+    meets(aromaSafetyRate, 70) &&
+    below(aromaSafetyRate, 80) &&
     totalAromaSessions > 0
   ) {
     insights.push({
@@ -1196,8 +1203,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    aromatherapyAccessRate >= 30 &&
-    aromatherapyAccessRate < 50 &&
+    meets(aromatherapyAccessRate, 30) &&
+    below(aromatherapyAccessRate, 50) &&
     total_children > 0
   ) {
     insights.push({
@@ -1206,21 +1213,21 @@ export function computeAromatherapyWellbeingTherapies(
     });
   }
 
-  if (relaxationChildInvolvedRate < 50 && totalRelaxationProgrammes > 0) {
+  if (below(relaxationChildInvolvedRate, 50) && totalRelaxationProgrammes > 0) {
     insights.push({
       text: `Only ${relaxationChildInvolvedRate}% child involvement in relaxation programme planning — children's views about what helps them relax are not being sought. Child-centred relaxation programmes are more likely to be effective and sustained.`,
       severity: "warning",
     });
   }
 
-  if (benefitChildVoiceRate < 50 && totalBenefitAssessments > 0) {
+  if (below(benefitChildVoiceRate, 50) && totalBenefitAssessments > 0) {
     insights.push({
       text: `Only ${benefitChildVoiceRate}% of benefit assessments capture the child's voice. Children's own perspective on whether therapies help them is the most powerful evidence of impact — Ofsted inspectors specifically seek this under SCCIF.`,
       severity: "warning",
     });
   }
 
-  if (benefitReviewOverdueRate > 30 && totalBenefitAssessments > 0) {
+  if (above(benefitReviewOverdueRate, 30) && totalBenefitAssessments > 0) {
     insights.push({
       text: `${benefitReviewOverdueRate}% of benefit assessments are overdue for review. Without timely reviews, the home cannot track whether therapies continue to meet children's evolving needs or identify when changes to the therapy plan are required.`,
       severity: "warning",
@@ -1228,8 +1235,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    aromaAdverseRate > 10 &&
-    aromaAdverseRate <= 20 &&
+    above(aromaAdverseRate, 10) &&
+    (aromaAdverseRate !== null && aromaAdverseRate <= 20) &&
     totalAromaSessions > 0
   ) {
     insights.push({
@@ -1284,7 +1291,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    aromaSafetyRate >= 95 &&
+    meets(aromaSafetyRate, 95) &&
     aromaAdverseRate === 0 &&
     totalAromaSessions > 0
   ) {
@@ -1295,7 +1302,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    therapyQualityRate >= 90 &&
+    meets(therapyQualityRate, 90) &&
     (totalAromaSessions + totalWellbeingTherapies) > 0
   ) {
     insights.push({
@@ -1305,8 +1312,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    relaxationEffectivenessRate >= 85 &&
-    relaxationAnxietyReducedRate >= 80 &&
+    meets(relaxationEffectivenessRate, 85) &&
+    meets(relaxationAnxietyReducedRate, 80) &&
     totalRelaxationProgrammes > 0
   ) {
     insights.push({
@@ -1316,8 +1323,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childBenefitRate >= 85 &&
-    benefitChildSelfReportRate >= 80 &&
+    meets(childBenefitRate, 85) &&
+    meets(benefitChildSelfReportRate, 80) &&
     totalBenefitAssessments > 0
   ) {
     insights.push({
@@ -1327,8 +1334,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    calmingTechniqueRate >= 85 &&
-    calmingDeEscalationRate >= 85 &&
+    meets(calmingTechniqueRate, 85) &&
+    meets(calmingDeEscalationRate, 85) &&
     totalCalmingTechniques > 0
   ) {
     insights.push({
@@ -1338,7 +1345,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    childEngagementRate >= 90 &&
+    meets(childEngagementRate, 90) &&
     engagementPositiveDenominator > 0
   ) {
     insights.push({
@@ -1348,7 +1355,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    calmingChildInitiatedRate >= 70 &&
+    meets(calmingChildInitiatedRate, 70) &&
     totalCalmingTechniques > 0
   ) {
     insights.push({
@@ -1358,8 +1365,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    relaxationChildInvolvedRate >= 90 &&
-    relaxationChildPositiveRate >= 90 &&
+    meets(relaxationChildInvolvedRate, 90) &&
+    meets(relaxationChildPositiveRate, 90) &&
     totalRelaxationProgrammes > 0
   ) {
     insights.push({
@@ -1369,7 +1376,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    benefitWantsContinueRate >= 90 &&
+    meets(benefitWantsContinueRate, 90) &&
     totalBenefitAssessments > 0
   ) {
     insights.push({
@@ -1379,8 +1386,8 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    wellbeingMoodImprovedRate >= 80 &&
-    wellbeingAnxietyReducedRate >= 80 &&
+    meets(wellbeingMoodImprovedRate, 80) &&
+    meets(wellbeingAnxietyReducedRate, 80) &&
     totalWellbeingTherapies > 0
   ) {
     insights.push({

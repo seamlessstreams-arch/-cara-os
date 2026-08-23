@@ -179,11 +179,21 @@ describe("zero records with positive total_children", () => {
 
   it("all metric rates are 0", () => {
     expect(r.children_assessed_rate).toBe(0);
-    expect(r.deadline_compliance_rate).toBe(0);
-    expect(r.immunisation_rate).toBe(0);
-    expect(r.dental_optical_rate).toBe(0);
-    expect(r.child_contribution_rate).toBe(0);
-    expect(r.report_sharing_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.deadline_compliance_rate).toBeNull();
+    expect(r.deadline_compliance_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.immunisation_rate).toBeNull();
+    expect(r.immunisation_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.dental_optical_rate).toBeNull();
+    expect(r.dental_optical_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.child_contribution_rate).toBeNull();
+    expect(r.child_contribution_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.report_sharing_rate).toBeNull();
+    expect(r.report_sharing_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("adds concern about no assessments recorded", () => {

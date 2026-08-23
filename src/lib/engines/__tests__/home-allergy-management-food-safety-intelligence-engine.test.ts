@@ -1223,7 +1223,9 @@ describe("rates", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       epipen_check_records: [],
     }));
-    expect(r.epipen_check_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.epipen_check_rate).toBeNull();
+    expect(r.epipen_check_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("foodLabellingRate: pct(totalItemsCorrect, totalItemsChecked)", () => {
@@ -1241,7 +1243,9 @@ describe("rates", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       food_labelling_records: [],
     }));
-    expect(r.food_labelling_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.food_labelling_rate).toBeNull();
+    expect(r.food_labelling_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("emergencyResponseRate: average of procedure, epipen, call rates", () => {
@@ -1384,7 +1388,9 @@ describe("edge cases", () => {
         makeFood({ id: "f1", items_checked: 0, items_correctly_labelled: 0 }),
       ],
     }));
-    expect(r.food_labelling_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.food_labelling_rate).toBeNull();
+    expect(r.food_labelling_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("multiple food audits aggregate across all records", () => {
@@ -2669,7 +2675,9 @@ describe("miscellaneous", () => {
       ],
     }));
     // food_labelling_rate = 0 but totalFoodAudits = 1
-    expect(r.food_labelling_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.food_labelling_rate).toBeNull();
+    expect(r.food_labelling_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("singular epipen expired grammar", () => {

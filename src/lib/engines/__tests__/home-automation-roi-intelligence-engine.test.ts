@@ -856,7 +856,9 @@ describe("Home Automation ROI Intelligence Engine", () => {
         routes: [makeRoute()],
         metrics: [makeMetric()],
       }));
-      expect(r.automation_coverage).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.automation_coverage).toBeNull();
+      expect(r.automation_coverage).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -870,7 +872,9 @@ describe("Home Automation ROI Intelligence Engine", () => {
         metrics: [makeMetric()],
       }));
       // 0 routes → -1
-      expect(r.error_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.error_rate).toBeNull();
+      expect(r.error_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("gives +5 for <5% error rate with routes", () => {
@@ -1146,10 +1150,16 @@ describe("Home Automation ROI Intelligence Engine", () => {
         events: [makeEvent()],
         metrics: [makeMetric()],
       }));
-      // 0 routes → retryRate = 0 (pct(0,0)=0), but routes.length === 0 so condition fails for +5
-      // Falls through: <15% → +2
-      // 52 - 8(success 0%<50) + 5(coverage 100%) - 1(no routes) - 4(min/staff 1) - 4(diversity 0) + 2(retry) = 42 (would be 45 if +5 applied)
-      expect(r.automation_score).toBe(42);
+      // With no routes, BOTH the retry rate and the success rate are unmeasured
+      // rather than 0, so neither the bonus nor the penalty that the fabricated
+      // zeros used to trigger applies:
+      //   was: 52 - 8(success "0%" < 50) … + 2(retry "0%" < 15)  = 42
+      //   now: 52 + 5(coverage 100%) - 1(no routes) - 4(min/staff 1)
+      //        - 4(diversity 0)                                   = 48
+      // The test's own point — no +5 bonus when routes is empty — still holds;
+      // what has gone is the consolation +2 and the -8, both awarded on a
+      // number nothing measured. That is the fabrication in both directions.
+      expect(r.automation_score).toBe(48);
     });
   });
 
@@ -1793,7 +1803,9 @@ describe("Home Automation ROI Intelligence Engine", () => {
         events: [makeEvent()],
         metrics: [makeMetric()],
       }));
-      expect(r.route_success_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.route_success_rate).toBeNull();
+      expect(r.route_success_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("returns 0 when denominator is 0 for automation coverage", () => {
@@ -1802,7 +1814,9 @@ describe("Home Automation ROI Intelligence Engine", () => {
         routes: [makeRoute()],
         metrics: [makeMetric()],
       }));
-      expect(r.automation_coverage).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.automation_coverage).toBeNull();
+      expect(r.automation_coverage).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("returns 0 when denominator is 0 for error rate", () => {
@@ -1811,7 +1825,9 @@ describe("Home Automation ROI Intelligence Engine", () => {
         events: [makeEvent()],
         metrics: [makeMetric()],
       }));
-      expect(r.error_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.error_rate).toBeNull();
+      expect(r.error_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("rounds to nearest integer", () => {

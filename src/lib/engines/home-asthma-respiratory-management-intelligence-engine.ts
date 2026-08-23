@@ -16,6 +16,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 export interface AsthmaActionPlanRecordInput {
   id: string;
   child_id: string;
@@ -176,8 +178,9 @@ export interface AsthmaRespiratoryInput {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -307,16 +310,12 @@ export function computeAsthmaRespiratoryManagement(
   ).length;
 
   // Action plan coverage: composite of plan_in_place, plan_current, gp_approved, plan_accessible
-  const actionPlanCoverageRate =
-    totalActionPlanRecords > 0
-      ? Math.round(
-          (pct(plansInPlace, totalActionPlanRecords) +
-            pct(plansCurrent, totalActionPlanRecords) +
-            pct(plansGpApproved, totalActionPlanRecords) +
-            pct(plansAccessible, totalActionPlanRecords)) /
-            4,
-        )
-      : 0;
+  const actionPlanCoverageRate = meanOf([
+    pct(plansInPlace, totalActionPlanRecords),
+    pct(plansCurrent, totalActionPlanRecords),
+    pct(plansGpApproved, totalActionPlanRecords),
+    pct(plansAccessible, totalActionPlanRecords),
+  ]);
 
   const gpApprovalRate = pct(plansGpApproved, totalActionPlanRecords);
   const triggersDocumentedRate = pct(plansTriggersDocumented, totalActionPlanRecords);
@@ -431,17 +430,10 @@ export function computeAsthmaRespiratoryManagement(
   const appropriateActionRate = pct(appropriateActions, episodesOccurred);
 
   // Composite trigger management rate
-  const triggerManagementRate =
-    totalTriggerRecords > 0
-      ? Math.round(
-          (triggerIdentificationRate +
-            avoidancePlanRate +
-            envControlRate +
-            staffTriggerAwarenessRate +
-            triggerDocumentedRate) /
-            5,
-        )
-      : 0;
+  // meanOf already answers null when every component is unmeasured, so the
+  // `totalTriggerRecords > 0 ? … : 0` guard is redundant — and its 0 was
+  // the fabrication this series exists to remove.
+  const triggerManagementRate = meanOf([triggerIdentificationRate, avoidancePlanRate, envControlRate, staffTriggerAwarenessRate, triggerDocumentedRate]);
 
   // Trigger type distribution
   const triggerTypeCounts: Record<string, number> = {};
@@ -505,13 +497,7 @@ export function computeAsthmaRespiratoryManagement(
   // Peak flow monitoring composite
   const peakFlowMonitoringRate =
     totalPeakFlowRecords > 0
-      ? Math.round(
-          (peakFlowTechniqueRate +
-            diaryRecordingRate +
-            greenZoneRate +
-            actionTakenRate) /
-            4,
-        )
+      ? meanOf([peakFlowTechniqueRate, diaryRecordingRate, greenZoneRate, actionTakenRate])
       : null;
 
   // --- Emergency preparedness metrics ---
@@ -561,17 +547,10 @@ export function computeAsthmaRespiratoryManagement(
   const drillSuccessRate = pct(drillsSuccessful, drillsCompleted);
 
   // Emergency preparedness composite
-  const emergencyPreparednessRate =
-    totalEmergencyRecords > 0
-      ? Math.round(
-          (inhalerAccessibleRate +
-            staffTrainedEmergencyRate +
-            protocolDisplayedRate +
-            emergencyContactsRate +
-            ambulanceProcedureRate) /
-            5,
-        )
-      : 0;
+  // meanOf already answers null when every component is unmeasured, so the
+  // `totalEmergencyRecords > 0 ? … : 0` guard is redundant — and its 0 was
+  // the fabrication this series exists to remove.
+  const emergencyPreparednessRate = meanOf([inhalerAccessibleRate, staffTrainedEmergencyRate, protocolDisplayedRate, emergencyContactsRate, ambulanceProcedureRate]);
 
   // --- Child self-management composite ---
   // Draws from: child_involved_in_plan, child_can_self_administer,
@@ -613,46 +592,46 @@ export function computeAsthmaRespiratoryManagement(
   let score = 52;
 
   // --- Bonus 1: actionPlanCoverageRate (>=90: +5, >=70: +3) ---
-  if (actionPlanCoverageRate >= 90) score += 5;
-  else if (actionPlanCoverageRate >= 70) score += 3;
+  if (meets(actionPlanCoverageRate, 90)) score += 5;
+  else if (meets(actionPlanCoverageRate, 70)) score += 3;
 
   // --- Bonus 2: inhalerTechniqueRate (>=95: +5, >=80: +3) ---
-  if (inhalerTechniqueRate >= 95) score += 5;
-  else if (inhalerTechniqueRate >= 80) score += 3;
+  if (meets(inhalerTechniqueRate, 95)) score += 5;
+  else if (meets(inhalerTechniqueRate, 80)) score += 3;
 
   // --- Bonus 3: triggerManagementRate (>=85: +4, >=65: +2) ---
-  if (triggerManagementRate >= 85) score += 4;
-  else if (triggerManagementRate >= 65) score += 2;
+  if (meets(triggerManagementRate, 85)) score += 4;
+  else if (meets(triggerManagementRate, 65)) score += 2;
 
   // --- Bonus 4: peakFlowMonitoringRate (>=85: +4, >=65: +2) ---
   if ((peakFlowMonitoringRate ?? 0) >= 85) score += 4;
   else if ((peakFlowMonitoringRate ?? 0) >= 65) score += 2;
 
   // --- Bonus 5: emergencyPreparednessRate (>=90: +5, >=75: +3) ---
-  if (emergencyPreparednessRate >= 90) score += 5;
-  else if (emergencyPreparednessRate >= 75) score += 3;
+  if (meets(emergencyPreparednessRate, 90)) score += 5;
+  else if (meets(emergencyPreparednessRate, 75)) score += 3;
 
   // --- Bonus 6: childSelfManagementRate (>=85: +3, >=65: +1) ---
-  if (childSelfManagementRate >= 85) score += 3;
-  else if (childSelfManagementRate >= 65) score += 1;
+  if (meets(childSelfManagementRate, 85)) score += 3;
+  else if (meets(childSelfManagementRate, 65)) score += 1;
 
   // --- Bonus 7: staffTrainingCoverageRate (>=90: +2, >=70: +1) ---
-  if (staffTrainingCoverageRate >= 90) score += 2;
-  else if (staffTrainingCoverageRate >= 70) score += 1;
+  if (meets(staffTrainingCoverageRate, 90)) score += 2;
+  else if (meets(staffTrainingCoverageRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // actionPlanCoverageRate < 40 → -6 (guarded)
-  if (actionPlanCoverageRate < 40 && action_plan_records.length > 0) score -= 6;
+  if (below(actionPlanCoverageRate, 40) && action_plan_records.length > 0) score -= 6;
 
   // inhalerTechniqueRate < 50 → -5 (guarded)
-  if (inhalerTechniqueRate < 50 && inhaler_technique_records.length > 0) score -= 5;
+  if (below(inhalerTechniqueRate, 50) && inhaler_technique_records.length > 0) score -= 5;
 
   // emergencyPreparednessRate < 40 → -5 (guarded)
-  if (emergencyPreparednessRate < 40 && emergency_preparedness_records.length > 0) score -= 5;
+  if (below(emergencyPreparednessRate, 40) && emergency_preparedness_records.length > 0) score -= 5;
 
   // redZoneRate > 30 → -4 (guarded)
-  if (redZoneRate > 30 && peak_flow_records.length > 0) score -= 4;
+  if (above(redZoneRate, 30) && peak_flow_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -662,31 +641,31 @@ export function computeAsthmaRespiratoryManagement(
 
   const strengths: string[] = [];
 
-  if (actionPlanCoverageRate >= 90 && totalActionPlanRecords > 0) {
+  if (meets(actionPlanCoverageRate, 90) && totalActionPlanRecords > 0) {
     strengths.push(
       `${actionPlanCoverageRate}% asthma action plan coverage — comprehensive plans are in place, current, GP-approved, and accessible, ensuring every child's respiratory needs are systematically managed.`,
     );
-  } else if (actionPlanCoverageRate >= 70 && totalActionPlanRecords > 0) {
+  } else if (meets(actionPlanCoverageRate, 70) && totalActionPlanRecords > 0) {
     strengths.push(
       `${actionPlanCoverageRate}% action plan coverage — the home maintains good asthma action plan provision with most plans current and approved.`,
     );
   }
 
-  if (inhalerTechniqueRate >= 95 && totalInhalerRecords > 0) {
+  if (meets(inhalerTechniqueRate, 95) && totalInhalerRecords > 0) {
     strengths.push(
       `${inhalerTechniqueRate}% correct inhaler technique — children demonstrate excellent inhaler competency, ensuring medication is delivered effectively.`,
     );
-  } else if (inhalerTechniqueRate >= 80 && totalInhalerRecords > 0) {
+  } else if (meets(inhalerTechniqueRate, 80) && totalInhalerRecords > 0) {
     strengths.push(
       `${inhalerTechniqueRate}% inhaler technique accuracy — good levels of inhaler competency across assessed children.`,
     );
   }
 
-  if (triggerManagementRate >= 85 && totalTriggerRecords > 0) {
+  if (meets(triggerManagementRate, 85) && totalTriggerRecords > 0) {
     strengths.push(
       `${triggerManagementRate}% trigger management rate — triggers are well-identified, avoidance plans are in place, and environmental controls are effectively implemented.`,
     );
-  } else if (triggerManagementRate >= 65 && totalTriggerRecords > 0) {
+  } else if (meets(triggerManagementRate, 65) && totalTriggerRecords > 0) {
     strengths.push(
       `${triggerManagementRate}% trigger management effectiveness — the home has reasonable trigger identification and avoidance strategies in place.`,
     );
@@ -702,83 +681,83 @@ export function computeAsthmaRespiratoryManagement(
     );
   }
 
-  if (emergencyPreparednessRate >= 90 && totalEmergencyRecords > 0) {
+  if (meets(emergencyPreparednessRate, 90) && totalEmergencyRecords > 0) {
     strengths.push(
       `${emergencyPreparednessRate}% emergency preparedness — emergency inhalers are accessible, staff are trained, protocols are displayed, and emergency contacts are current.`,
     );
-  } else if (emergencyPreparednessRate >= 75 && totalEmergencyRecords > 0) {
+  } else if (meets(emergencyPreparednessRate, 75) && totalEmergencyRecords > 0) {
     strengths.push(
       `${emergencyPreparednessRate}% emergency preparedness rate — the home has good respiratory emergency arrangements in place.`,
     );
   }
 
-  if (childSelfManagementRate >= 85 && totalSelfMgmtDenom > 0) {
+  if (meets(childSelfManagementRate, 85) && totalSelfMgmtDenom > 0) {
     strengths.push(
       `${childSelfManagementRate}% child self-management capability — children are actively involved in managing their own respiratory health, demonstrating excellent empowerment and health literacy.`,
     );
-  } else if (childSelfManagementRate >= 65 && totalSelfMgmtDenom > 0) {
+  } else if (meets(childSelfManagementRate, 65) && totalSelfMgmtDenom > 0) {
     strengths.push(
       `${childSelfManagementRate}% child self-management rate — good levels of children's involvement in their own respiratory health management.`,
     );
   }
 
-  if (staffTrainingCoverageRate >= 90 && totalStaffCount > 0) {
+  if (meets(staffTrainingCoverageRate, 90) && totalStaffCount > 0) {
     strengths.push(
       `${staffTrainingCoverageRate}% staff trained in respiratory emergency response — virtually all staff are equipped to respond to asthma emergencies.`,
     );
-  } else if (staffTrainingCoverageRate >= 70 && totalStaffCount > 0) {
+  } else if (meets(staffTrainingCoverageRate, 70) && totalStaffCount > 0) {
     strengths.push(
       `${staffTrainingCoverageRate}% staff training coverage for respiratory emergencies — good levels of preparedness across the staff team.`,
     );
   }
 
-  if (gpApprovalRate >= 95 && totalActionPlanRecords > 0) {
+  if (meets(gpApprovalRate, 95) && totalActionPlanRecords > 0) {
     strengths.push(
       `${gpApprovalRate}% of action plans are GP-approved — excellent clinical oversight ensuring plans are medically sound and appropriate.`,
     );
   }
 
-  if (greenZoneRate >= 80 && totalPeakFlowRecords > 0) {
+  if (meets(greenZoneRate, 80) && totalPeakFlowRecords > 0) {
     strengths.push(
       `${greenZoneRate}% of peak flow readings in the green zone — the majority of children demonstrate well-controlled asthma.`,
     );
   }
 
-  if (appropriateActionRate >= 95 && episodesOccurred > 0) {
+  if (meets(appropriateActionRate, 95) && episodesOccurred > 0) {
     strengths.push(
       `${appropriateActionRate}% of respiratory episodes managed with appropriate action — staff respond effectively when children experience asthma symptoms.`,
     );
-  } else if (appropriateActionRate >= 80 && episodesOccurred > 0) {
+  } else if (meets(appropriateActionRate, 80) && episodesOccurred > 0) {
     strengths.push(
       `${appropriateActionRate}% appropriate response rate during respiratory episodes — the home generally manages asthma events well.`,
     );
   }
 
-  if (retrainingProvidedRate >= 95 && retrainingNeeded > 0) {
+  if (meets(retrainingProvidedRate, 95) && retrainingNeeded > 0) {
     strengths.push(
       "Retraining is consistently provided when inhaler technique deficiencies are identified — demonstrating responsive and proactive health care management.",
     );
   }
 
-  if (drillSuccessRate >= 90 && drillsCompleted > 0) {
+  if (meets(drillSuccessRate, 90) && drillsCompleted > 0) {
     strengths.push(
       `${drillSuccessRate}% of respiratory emergency drills completed successfully — the home is well-rehearsed in managing asthma emergencies.`,
     );
   }
 
-  if (actionTakenRate >= 95 && actionRequired > 0) {
+  if (meets(actionTakenRate, 95) && actionRequired > 0) {
     strengths.push(
       `${actionTakenRate}% of peak flow readings requiring action received appropriate response — demonstrating excellent monitoring-to-action responsiveness.`,
     );
   }
 
-  if (triggersDocumentedRate >= 95 && totalTriggerRecords > 0) {
+  if (meets(triggersDocumentedRate, 95) && totalTriggerRecords > 0) {
     strengths.push(
       `${triggersDocumentedRate}% of triggers documented in care plans — trigger management is embedded within care planning, ensuring consistency and continuity.`,
     );
   }
 
-  if (specialistAssessmentRate >= 80 && totalInhalerRecords > 0) {
+  if (meets(specialistAssessmentRate, 80) && totalInhalerRecords > 0) {
     strengths.push(
       `${specialistAssessmentRate}% of inhaler technique assessments conducted by healthcare professionals — high-quality clinical oversight of inhaler competency.`,
     );
@@ -788,31 +767,31 @@ export function computeAsthmaRespiratoryManagement(
 
   const concerns: string[] = [];
 
-  if (actionPlanCoverageRate < 40 && totalActionPlanRecords > 0) {
+  if (below(actionPlanCoverageRate, 40) && totalActionPlanRecords > 0) {
     concerns.push(
       `Only ${actionPlanCoverageRate}% asthma action plan coverage — many plans are absent, outdated, not GP-approved, or inaccessible, meaning children's respiratory needs may not be safely managed. This is a significant Regulation 14 concern.`,
     );
-  } else if (actionPlanCoverageRate < 70 && actionPlanCoverageRate >= 40 && totalActionPlanRecords > 0) {
+  } else if (below(actionPlanCoverageRate, 70) && meets(actionPlanCoverageRate, 40) && totalActionPlanRecords > 0) {
     concerns.push(
       `Action plan coverage at ${actionPlanCoverageRate}% — gaps in plan currency, GP approval, or accessibility mean some children's respiratory health is not comprehensively managed.`,
     );
   }
 
-  if (inhalerTechniqueRate < 50 && totalInhalerRecords > 0) {
+  if (below(inhalerTechniqueRate, 50) && totalInhalerRecords > 0) {
     concerns.push(
       `Only ${inhalerTechniqueRate}% correct inhaler technique — the majority of children are not using inhalers correctly, meaning medication may not be effectively delivered. This directly impacts children's respiratory health and safety.`,
     );
-  } else if (inhalerTechniqueRate < 80 && inhalerTechniqueRate >= 50 && totalInhalerRecords > 0) {
+  } else if (below(inhalerTechniqueRate, 80) && meets(inhalerTechniqueRate, 50) && totalInhalerRecords > 0) {
     concerns.push(
       `Inhaler technique accuracy at ${inhalerTechniqueRate}% — a significant number of children are not demonstrating correct technique, reducing medication effectiveness.`,
     );
   }
 
-  if (triggerManagementRate < 40 && totalTriggerRecords > 0) {
+  if (below(triggerManagementRate, 40) && totalTriggerRecords > 0) {
     concerns.push(
       `Only ${triggerManagementRate}% trigger management effectiveness — triggers are poorly identified, avoidance plans are inadequate, and environmental controls are not effectively implemented, leaving children exposed to preventable respiratory episodes.`,
     );
-  } else if (triggerManagementRate < 65 && triggerManagementRate >= 40 && totalTriggerRecords > 0) {
+  } else if (below(triggerManagementRate, 65) && meets(triggerManagementRate, 40) && totalTriggerRecords > 0) {
     concerns.push(
       `Trigger management at ${triggerManagementRate}% — inconsistent identification, avoidance planning, or environmental control of respiratory triggers requires improvement.`,
     );
@@ -828,89 +807,89 @@ export function computeAsthmaRespiratoryManagement(
     );
   }
 
-  if (emergencyPreparednessRate < 40 && totalEmergencyRecords > 0) {
+  if (below(emergencyPreparednessRate, 40) && totalEmergencyRecords > 0) {
     concerns.push(
       `Only ${emergencyPreparednessRate}% emergency preparedness — critical gaps in emergency inhaler access, staff training, protocol display, or emergency contacts present a serious risk to children's safety during asthma emergencies.`,
     );
-  } else if (emergencyPreparednessRate < 75 && emergencyPreparednessRate >= 40 && totalEmergencyRecords > 0) {
+  } else if (below(emergencyPreparednessRate, 75) && meets(emergencyPreparednessRate, 40) && totalEmergencyRecords > 0) {
     concerns.push(
       `Emergency preparedness at ${emergencyPreparednessRate}% — gaps in equipment access, staff training, or emergency procedures need attention to ensure safe management of respiratory emergencies.`,
     );
   }
 
-  if (childSelfManagementRate < 30 && totalSelfMgmtDenom > 0) {
+  if (below(childSelfManagementRate, 30) && totalSelfMgmtDenom > 0) {
     concerns.push(
       `Only ${childSelfManagementRate}% child self-management capability — children are not being supported to understand and manage their own respiratory health, missing opportunities for empowerment and independence.`,
     );
-  } else if (childSelfManagementRate < 65 && childSelfManagementRate >= 30 && totalSelfMgmtDenom > 0) {
+  } else if (below(childSelfManagementRate, 65) && meets(childSelfManagementRate, 30) && totalSelfMgmtDenom > 0) {
     concerns.push(
       `Child self-management at ${childSelfManagementRate}% — many children are not yet able to identify their triggers, self-administer medication, or monitor their own peak flow independently.`,
     );
   }
 
-  if (redZoneRate > 30 && totalPeakFlowRecords > 0) {
+  if (above(redZoneRate, 30) && totalPeakFlowRecords > 0) {
     concerns.push(
       `${redZoneRate}% of peak flow readings in the red zone — a high proportion of readings indicate severely compromised respiratory function. Urgent clinical review is needed for affected children.`,
     );
-  } else if (redZoneRate > 15 && redZoneRate <= 30 && totalPeakFlowRecords > 0) {
+  } else if (above(redZoneRate, 15) && (redZoneRate !== null && redZoneRate <= 30) && totalPeakFlowRecords > 0) {
     concerns.push(
       `${redZoneRate}% of peak flow readings in the red zone — a notable proportion of readings indicate poor respiratory control, warranting clinical review and action plan reassessment.`,
     );
   }
 
-  if (overdueReviewRate > 30 && totalActionPlanRecords > 0) {
+  if (above(overdueReviewRate, 30) && totalActionPlanRecords > 0) {
     concerns.push(
       `${overdueReviewRate}% of asthma action plans overdue for review — overdue plans may contain outdated medication details or inappropriate emergency steps, compromising children's safety.`,
     );
-  } else if (overdueReviewRate > 10 && overdueReviewRate <= 30 && totalActionPlanRecords > 0) {
+  } else if (above(overdueReviewRate, 10) && (overdueReviewRate !== null && overdueReviewRate <= 30) && totalActionPlanRecords > 0) {
     concerns.push(
       `${overdueReviewRate}% of action plans overdue for review — some plans need timely updating to ensure they reflect current health needs and medication regimens.`,
     );
   }
 
-  if (retrainingNeededRate > 40 && totalInhalerRecords > 0) {
+  if (above(retrainingNeededRate, 40) && totalInhalerRecords > 0) {
     concerns.push(
       `${retrainingNeededRate}% of inhaler technique assessments identified retraining needs — a high proportion of children require technique correction, suggesting initial training may be insufficient.`,
     );
   }
 
-  if (retrainingProvidedRate < 70 && retrainingNeeded > 0) {
+  if (below(retrainingProvidedRate, 70) && retrainingNeeded > 0) {
     concerns.push(
       `Only ${retrainingProvidedRate}% of identified retraining needs have been addressed — children who need inhaler technique correction are not receiving it, meaning poor technique persists.`,
     );
   }
 
-  if (overdueInhalerCheckRate > 20 && totalInhalerRecords > 0) {
+  if (above(overdueInhalerCheckRate, 20) && totalInhalerRecords > 0) {
     concerns.push(
       `${overdueInhalerCheckRate}% of inhaler technique checks are overdue — technique can deteriorate over time and must be regularly assessed to ensure effective medication delivery.`,
     );
   }
 
-  if (staffTrainingCoverageRate < 50 && totalStaffCount > 0) {
+  if (below(staffTrainingCoverageRate, 50) && totalStaffCount > 0) {
     concerns.push(
       `Only ${staffTrainingCoverageRate}% of staff trained in respiratory emergency response — insufficient training coverage means not all shifts may have a staff member capable of managing an asthma emergency.`,
     );
   }
 
-  if (severeEpisodeRate > 20 && totalTriggerRecords > 0) {
+  if (above(severeEpisodeRate, 20) && totalTriggerRecords > 0) {
     concerns.push(
       `${severeEpisodeRate}% of respiratory episodes classified as severe or emergency — a high rate of serious episodes suggests trigger management and preventive measures are not effective enough.`,
     );
   }
 
-  if (appropriateActionRate < 80 && episodesOccurred > 0) {
+  if (below(appropriateActionRate, 80) && episodesOccurred > 0) {
     concerns.push(
       `Only ${appropriateActionRate}% of respiratory episodes received appropriate action — some asthma events are not being managed correctly, presenting a direct risk to children's health and safety.`,
     );
   }
 
-  if (actionTakenRate < 70 && actionRequired > 0) {
+  if (below(actionTakenRate, 70) && actionRequired > 0) {
     concerns.push(
       `Only ${actionTakenRate}% of peak flow readings requiring action received a response — abnormal readings are not consistently triggering the intervention steps outlined in action plans.`,
     );
   }
 
-  if (decliningRate > 25 && totalPeakFlowRecords > 0) {
+  if (above(decliningRate, 25) && totalPeakFlowRecords > 0) {
     concerns.push(
       `${decliningRate}% of peak flow records show a declining trend — worsening respiratory function across multiple readings requires clinical review and potential treatment adjustment.`,
     );
@@ -921,7 +900,7 @@ export function computeAsthmaRespiratoryManagement(
   const recommendations: AsthmaRespiratoryRecommendation[] = [];
   let rank = 0;
 
-  if (actionPlanCoverageRate < 40 && totalActionPlanRecords > 0) {
+  if (below(actionPlanCoverageRate, 40) && totalActionPlanRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -931,7 +910,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (inhalerTechniqueRate < 50 && totalInhalerRecords > 0) {
+  if (below(inhalerTechniqueRate, 50) && totalInhalerRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -941,7 +920,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (emergencyPreparednessRate < 40 && totalEmergencyRecords > 0) {
+  if (below(emergencyPreparednessRate, 40) && totalEmergencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -951,7 +930,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (redZoneRate > 30 && totalPeakFlowRecords > 0) {
+  if (above(redZoneRate, 30) && totalPeakFlowRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,7 +940,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (triggerManagementRate < 40 && totalTriggerRecords > 0) {
+  if (below(triggerManagementRate, 40) && totalTriggerRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -971,7 +950,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (staffTrainingCoverageRate < 50 && totalStaffCount > 0) {
+  if (below(staffTrainingCoverageRate, 50) && totalStaffCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -981,7 +960,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (appropriateActionRate < 80 && episodesOccurred > 0) {
+  if (below(appropriateActionRate, 80) && episodesOccurred > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,7 +970,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (retrainingProvidedRate < 70 && retrainingNeeded > 0) {
+  if (below(retrainingProvidedRate, 70) && retrainingNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1001,7 +980,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (childSelfManagementRate < 30 && totalSelfMgmtDenom > 0) {
+  if (below(childSelfManagementRate, 30) && totalSelfMgmtDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1012,8 +991,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    actionPlanCoverageRate >= 40 &&
-    actionPlanCoverageRate < 70 &&
+    meets(actionPlanCoverageRate, 40) &&
+    below(actionPlanCoverageRate, 70) &&
     totalActionPlanRecords > 0
   ) {
     recommendations.push({
@@ -1026,8 +1005,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    inhalerTechniqueRate >= 50 &&
-    inhalerTechniqueRate < 80 &&
+    meets(inhalerTechniqueRate, 50) &&
+    below(inhalerTechniqueRate, 80) &&
     totalInhalerRecords > 0
   ) {
     recommendations.push({
@@ -1040,8 +1019,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    triggerManagementRate >= 40 &&
-    triggerManagementRate < 65 &&
+    meets(triggerManagementRate, 40) &&
+    below(triggerManagementRate, 65) &&
     totalTriggerRecords > 0
   ) {
     recommendations.push({
@@ -1068,8 +1047,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    emergencyPreparednessRate >= 40 &&
-    emergencyPreparednessRate < 75 &&
+    meets(emergencyPreparednessRate, 40) &&
+    below(emergencyPreparednessRate, 75) &&
     totalEmergencyRecords > 0
   ) {
     recommendations.push({
@@ -1082,8 +1061,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    childSelfManagementRate >= 30 &&
-    childSelfManagementRate < 65 &&
+    meets(childSelfManagementRate, 30) &&
+    below(childSelfManagementRate, 65) &&
     totalSelfMgmtDenom > 0
   ) {
     recommendations.push({
@@ -1095,7 +1074,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (overdueReviewRate > 10 && totalActionPlanRecords > 0) {
+  if (above(overdueReviewRate, 10) && totalActionPlanRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1105,7 +1084,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (actionTakenRate < 70 && actionRequired > 0) {
+  if (below(actionTakenRate, 70) && actionRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1116,8 +1095,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    staffTrainingCoverageRate >= 50 &&
-    staffTrainingCoverageRate < 70 &&
+    meets(staffTrainingCoverageRate, 50) &&
+    below(staffTrainingCoverageRate, 70) &&
     totalStaffCount > 0
   ) {
     recommendations.push({
@@ -1129,7 +1108,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (specialistAssessmentRate < 50 && totalInhalerRecords > 0) {
+  if (below(specialistAssessmentRate, 50) && totalInhalerRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1140,8 +1119,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    redZoneRate > 15 &&
-    redZoneRate <= 30 &&
+    above(redZoneRate, 15) &&
+    (redZoneRate !== null && redZoneRate <= 30) &&
     totalPeakFlowRecords > 0
   ) {
     recommendations.push({
@@ -1154,7 +1133,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    decliningRate > 25 &&
+    above(decliningRate, 25) &&
     totalPeakFlowRecords > 0
   ) {
     recommendations.push({
@@ -1172,35 +1151,35 @@ export function computeAsthmaRespiratoryManagement(
 
   // -- Critical insights --
 
-  if (actionPlanCoverageRate < 40 && totalActionPlanRecords > 0) {
+  if (below(actionPlanCoverageRate, 40) && totalActionPlanRecords > 0) {
     insights.push({
       text: `Only ${actionPlanCoverageRate}% asthma action plan coverage. Without current, approved, accessible action plans, staff may not know how to manage a child's asthma on a day-to-day basis or in an emergency. This presents a direct risk under Regulation 14 and must be addressed urgently.`,
       severity: "critical",
     });
   }
 
-  if (inhalerTechniqueRate < 50 && totalInhalerRecords > 0) {
+  if (below(inhalerTechniqueRate, 50) && totalInhalerRecords > 0) {
     insights.push({
       text: `Only ${inhalerTechniqueRate}% correct inhaler technique. Incorrect technique means reliever and preventer medication is not reaching the airways effectively — children may experience more symptoms, more exacerbations, and more emergency events as a direct consequence of poor technique.`,
       severity: "critical",
     });
   }
 
-  if (emergencyPreparednessRate < 40 && totalEmergencyRecords > 0) {
+  if (below(emergencyPreparednessRate, 40) && totalEmergencyRecords > 0) {
     insights.push({
       text: `Only ${emergencyPreparednessRate}% emergency preparedness. Critical gaps in emergency equipment, staff training, or procedures mean the home may not be able to respond safely to a severe asthma attack. An asthma attack can become life-threatening within minutes — preparedness is not optional.`,
       severity: "critical",
     });
   }
 
-  if (redZoneRate > 30 && totalPeakFlowRecords > 0) {
+  if (above(redZoneRate, 30) && totalPeakFlowRecords > 0) {
     insights.push({
       text: `${redZoneRate}% of peak flow readings in the red zone. A high proportion of red-zone readings indicates that multiple children's asthma is severely uncontrolled. This requires immediate clinical escalation — red-zone readings signal that a child may be at risk of a serious or life-threatening asthma attack.`,
       severity: "critical",
     });
   }
 
-  if (staffTrainingCoverageRate < 50 && totalStaffCount > 0) {
+  if (below(staffTrainingCoverageRate, 50) && totalStaffCount > 0) {
     insights.push({
       text: `Only ${staffTrainingCoverageRate}% of staff trained in respiratory emergency response. Asthma emergencies can occur at any time — if the staff member on duty has not been trained, the delay in responding could be life-threatening. Every shift must have trained staff.`,
       severity: "critical",
@@ -1221,7 +1200,7 @@ export function computeAsthmaRespiratoryManagement(
     });
   }
 
-  if (severeEpisodeRate > 20 && totalTriggerRecords > 0) {
+  if (above(severeEpisodeRate, 20) && totalTriggerRecords > 0) {
     insights.push({
       text: `${severeEpisodeRate}% of respiratory episodes are severe or emergency-level. A high rate of serious events suggests that preventive management — trigger avoidance, medication compliance, early intervention — is not working effectively. Each severe episode represents a significant risk to the child.`,
       severity: "critical",
@@ -1231,8 +1210,8 @@ export function computeAsthmaRespiratoryManagement(
   // -- Warning insights --
 
   if (
-    actionPlanCoverageRate >= 40 &&
-    actionPlanCoverageRate < 70 &&
+    meets(actionPlanCoverageRate, 40) &&
+    below(actionPlanCoverageRate, 70) &&
     totalActionPlanRecords > 0
   ) {
     insights.push({
@@ -1242,8 +1221,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    inhalerTechniqueRate >= 50 &&
-    inhalerTechniqueRate < 80 &&
+    meets(inhalerTechniqueRate, 50) &&
+    below(inhalerTechniqueRate, 80) &&
     totalInhalerRecords > 0
   ) {
     insights.push({
@@ -1253,8 +1232,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    triggerManagementRate >= 40 &&
-    triggerManagementRate < 65 &&
+    meets(triggerManagementRate, 40) &&
+    below(triggerManagementRate, 65) &&
     totalTriggerRecords > 0
   ) {
     insights.push({
@@ -1275,8 +1254,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    emergencyPreparednessRate >= 40 &&
-    emergencyPreparednessRate < 75 &&
+    meets(emergencyPreparednessRate, 40) &&
+    below(emergencyPreparednessRate, 75) &&
     totalEmergencyRecords > 0
   ) {
     insights.push({
@@ -1286,8 +1265,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    childSelfManagementRate >= 30 &&
-    childSelfManagementRate < 65 &&
+    meets(childSelfManagementRate, 30) &&
+    below(childSelfManagementRate, 65) &&
     totalSelfMgmtDenom > 0
   ) {
     insights.push({
@@ -1297,8 +1276,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    overdueReviewRate > 10 &&
-    overdueReviewRate <= 30 &&
+    above(overdueReviewRate, 10) &&
+    (overdueReviewRate !== null && overdueReviewRate <= 30) &&
     totalActionPlanRecords > 0
   ) {
     insights.push({
@@ -1308,7 +1287,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    retrainingNeededRate > 40 &&
+    above(retrainingNeededRate, 40) &&
     totalInhalerRecords > 0
   ) {
     insights.push({
@@ -1318,8 +1297,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    redZoneRate > 15 &&
-    redZoneRate <= 30 &&
+    above(redZoneRate, 15) &&
+    (redZoneRate !== null && redZoneRate <= 30) &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
@@ -1329,7 +1308,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    amberZoneRate > 40 &&
+    above(amberZoneRate, 40) &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
@@ -1339,8 +1318,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    decliningRate > 15 &&
-    decliningRate <= 25 &&
+    above(decliningRate, 15) &&
+    (decliningRate !== null && decliningRate <= 25) &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
@@ -1366,8 +1345,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    staffTrainingCoverageRate >= 50 &&
-    staffTrainingCoverageRate < 70 &&
+    meets(staffTrainingCoverageRate, 50) &&
+    below(staffTrainingCoverageRate, 70) &&
     totalStaffCount > 0
   ) {
     insights.push({
@@ -1386,8 +1365,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    actionPlanCoverageRate >= 90 &&
-    gpApprovalRate >= 95 &&
+    meets(actionPlanCoverageRate, 90) &&
+    meets(gpApprovalRate, 95) &&
     totalActionPlanRecords > 0
   ) {
     insights.push({
@@ -1397,8 +1376,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    inhalerTechniqueRate >= 95 &&
-    stepCompletionRate >= 95 &&
+    meets(inhalerTechniqueRate, 95) &&
+    meets(stepCompletionRate, 95) &&
     totalInhalerRecords > 0
   ) {
     insights.push({
@@ -1408,8 +1387,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    triggerManagementRate >= 85 &&
-    staffTriggerAwarenessRate >= 90 &&
+    meets(triggerManagementRate, 85) &&
+    meets(staffTriggerAwarenessRate, 90) &&
     totalTriggerRecords > 0
   ) {
     insights.push({
@@ -1420,7 +1399,7 @@ export function computeAsthmaRespiratoryManagement(
 
   if (
     (peakFlowMonitoringRate ?? 0) >= 85 &&
-    greenZoneRate >= 80 &&
+    meets(greenZoneRate, 80) &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
@@ -1430,8 +1409,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    emergencyPreparednessRate >= 90 &&
-    staffTrainingCoverageRate >= 90 &&
+    meets(emergencyPreparednessRate, 90) &&
+    meets(staffTrainingCoverageRate, 90) &&
     totalEmergencyRecords > 0
   ) {
     insights.push({
@@ -1441,7 +1420,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    childSelfManagementRate >= 85 &&
+    meets(childSelfManagementRate, 85) &&
     totalSelfMgmtDenom > 0
   ) {
     insights.push({
@@ -1451,9 +1430,9 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    appropriateActionRate >= 95 &&
+    meets(appropriateActionRate, 95) &&
     episodesOccurred > 0 &&
-    actionTakenRate >= 95 &&
+    meets(actionTakenRate, 95) &&
     actionRequired > 0
   ) {
     insights.push({
@@ -1463,7 +1442,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    drillSuccessRate >= 90 &&
+    meets(drillSuccessRate, 90) &&
     drillsCompleted >= 2
   ) {
     insights.push({
@@ -1473,7 +1452,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    retrainingProvidedRate >= 95 &&
+    meets(retrainingProvidedRate, 95) &&
     retrainingNeeded > 0
   ) {
     insights.push({
@@ -1483,7 +1462,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    improvingRate >= 40 &&
+    meets(improvingRate, 40) &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
