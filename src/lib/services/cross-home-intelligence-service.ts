@@ -11,8 +11,7 @@ import { isLiveTenant } from "@/lib/db/live-mode";
 import { todayStr } from "@/lib/utils";
 
 import { seedDay } from "@/lib/seed-date";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

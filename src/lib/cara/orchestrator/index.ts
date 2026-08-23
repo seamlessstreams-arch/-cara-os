@@ -30,9 +30,7 @@ import { getModelProfile } from "./model-registry";
 import { recordCost, persistCost } from "./cost-tracker";
 import { formatResponse, formatBlockedResponse } from "./response-formatter";
 import type { CaraRequest, CaraResponse, EvidenceItem } from "./types";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Main Orchestration Entry Point ────────────────────────────────────────
 

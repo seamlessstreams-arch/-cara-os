@@ -11,9 +11,9 @@
 
 import { createServerClient, isSupabaseEnabled } from "./server";
 import type { CommsChannel, CommsMessage, CommsMessageReceipt, CommsMessageAction, StaffTrustNoticeAck } from "@/types/comms";
+import type { SB } from "@/lib/supabase/loose-client";
 
 // Loose-typed — these tables aren't in the generated Database types yet.
-type SB = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 function sb(): SB | null {
   return createServerClient() as unknown as SB;
 }

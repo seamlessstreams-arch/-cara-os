@@ -14,9 +14,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { orchestrate } from "@/lib/cara/orchestrator";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function POST(req: NextRequest) {
   try {

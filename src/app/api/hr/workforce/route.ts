@@ -22,7 +22,7 @@ import type {
 } from "@/lib/hr-files";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

@@ -8,8 +8,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 
 import { londonWeekStart } from "@/lib/utils";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;

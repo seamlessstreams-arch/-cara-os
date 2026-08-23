@@ -19,8 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export type ServiceResult<T> = { ok: boolean; data?: T; error?: string };
 

@@ -12,7 +12,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { IndependenceInput, LifeSkill, SkillCategory, SkillLevel, EETStatus } from "@/lib/cara/independence-intelligence";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

@@ -12,9 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export interface VoiceHistoryEntry {
   id: string;

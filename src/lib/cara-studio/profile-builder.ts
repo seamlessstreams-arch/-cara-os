@@ -21,7 +21,7 @@ import type { CaraChildProfile, EvidenceRef } from "./types";
 import { todayStr } from "@/lib/utils";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Main Builder ─────────────────────────────────────────────────────────────
 

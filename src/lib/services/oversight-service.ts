@@ -9,9 +9,7 @@ import type {
   CsManagementOversightNote, OversightRecordType,
   ServiceResult,
 } from "@/types/operations";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;

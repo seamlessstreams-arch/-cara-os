@@ -13,9 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { todayStr } from "@/lib/utils";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Signal Types ─────────────────────────────────────────────────────────────
 

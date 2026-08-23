@@ -7,9 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export type GoldenThreadInput = {
   homeId: string;

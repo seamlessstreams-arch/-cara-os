@@ -13,8 +13,7 @@ import type { ScheduledOccurrence, LifecycleStatus } from "@/lib/quality-ecology
 import type { UserContext } from "@/lib/permissions/types";
 import { readJsonBody } from "@/lib/http/read-json";
 import { todayStr } from "@/lib/utils";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 interface TransitionRequest {
   occurrenceId: string;

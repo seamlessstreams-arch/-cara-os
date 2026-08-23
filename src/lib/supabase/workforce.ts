@@ -15,8 +15,8 @@
 import { createServerClient, isSupabaseEnabled } from "./server";
 import type { SignInVerification } from "@/lib/attendance/presence-verification";
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
+import type { SB } from "@/lib/supabase/loose-client";
 
-type SB = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 function sb(): SB | null {
   return createServerClient() as unknown as SB;
 }

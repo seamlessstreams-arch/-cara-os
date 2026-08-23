@@ -16,8 +16,7 @@ import { TONES, GENERATION_TYPES } from "@/lib/cara-studio/types";
 import type { GenerationRequest, GroundingSource } from "@/lib/cara-studio/types";
 import { gatherSourcesForRequest } from "@/lib/cara/cara-studio-sources";
 import type { CaraGenerationRequest } from "@/types/cara-studio";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // The standalone Studio page offers a richer artifact catalogue
 // (CARA_ARTIFACT_TYPE_LABELS — 31 entries) than the generator's GenerationType

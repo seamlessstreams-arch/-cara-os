@@ -21,8 +21,7 @@ import { checkAccess } from "./access-decision-service";
 import { computeShiftActive, isShiftEnforcementEnabled } from "./shift-enforcement";
 import type { UserContext, ResourceType, Action, Role, EmploymentStatus } from "./types";
 import type { AccessCheckRequest } from "./access-decision-service";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

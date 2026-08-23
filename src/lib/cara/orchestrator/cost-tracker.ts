@@ -11,9 +11,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { CostEntry, ModelProfileId } from "./types";
 import { getModelProfile } from "./model-registry";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // ── Cost per 1K tokens by model (USD) ─────────────────────────────────────
 // These are approximations. Update as pricing changes.
