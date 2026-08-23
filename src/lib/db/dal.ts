@@ -20,6 +20,11 @@ import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
 import type { BehaviourSupportPlan } from "@/types/extended";
+// Row types for the child-data collections below. The in-memory store already
+// holds these exact types; only the Supabase path was untyped, and its `any`
+// was collapsing the union — so every consumer had to annotate `(x: any)`.
+import type { YoungPerson, Incident, DailyLogEntry } from "@/types";
+import type { MissingEpisode } from "@/types/extended";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -86,17 +91,17 @@ export const dal = {
 
   // ── Young People ──────────────────────────────────────────────────────────
   youngPeople: {
-    async findAll(status?: string) {
+    async findAll(status?: string): Promise<YoungPerson[]> {
       const c = sb();
       if (c) return sq.getYoungPeople(c, homeId(), status);
       return db.youngPeople.findAll();
     },
-    async findById(id: string) {
+    async findById(id: string): Promise<YoungPerson | null> {
       const c = sb();
       if (c) return sq.getYoungPersonById(c, id);
-      return db.youngPeople.findById(id);
+      return db.youngPeople.findById(id) ?? null;
     },
-    async findCurrent() {
+    async findCurrent(): Promise<YoungPerson[]> {
       const c = sb();
       if (c) return sq.getYoungPeople(c, homeId(), "current");
       return db.youngPeople.findCurrent();
@@ -155,15 +160,15 @@ export const dal = {
 
   // ── Incidents ─────────────────────────────────────────────────────────────
   incidents: {
-    async findAll(filters?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+    async findAll(filters?: { status?: string; child_id?: string; needs_oversight?: boolean }): Promise<Incident[]> {
       const c = sb();
       if (c) return sq.getIncidents(c, homeId(), filters);
       return db.incidents.findAll();
     },
-    async findById(id: string) {
+    async findById(id: string): Promise<Incident | null> {
       const c = sb();
       if (c) return sq.getIncidentById(c, id);
-      return db.incidents.findById(id);
+      return db.incidents.findById(id) ?? null;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) {
@@ -186,7 +191,7 @@ export const dal = {
 
   // ── Missing Episodes ──────────────────────────────────────────────────────
   missingEpisodes: {
-    async findAll(filters?: { child_id?: string; status?: string; risk_level?: string }) {
+    async findAll(filters?: { child_id?: string; status?: string; risk_level?: string }): Promise<MissingEpisode[]> {
       const c = sb();
       if (c) return sq.getMissingEpisodes(c, homeId(), filters);
       return db.missingEpisodes.findAll();
@@ -344,12 +349,12 @@ export const dal = {
 
   // ── Daily Log ─────────────────────────────────────────────────────────────
   dailyLog: {
-    async findAll(filters?: { child_id?: string; date?: string; entry_type?: string; days?: number }) {
+    async findAll(filters?: { child_id?: string; date?: string; entry_type?: string; days?: number }): Promise<DailyLogEntry[]> {
       const c = sb();
       if (c) return sq.getDailyLog(c, homeId(), filters);
       return db.dailyLog.findAll();
     },
-    async findByChild(childId: string) {
+    async findByChild(childId: string): Promise<DailyLogEntry[]> {
       const c = sb();
       if (c) return sq.getDailyLog(c, homeId(), { child_id: childId });
       return db.dailyLog.findByChild(childId);
