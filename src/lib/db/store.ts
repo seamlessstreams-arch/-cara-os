@@ -5551,7 +5551,7 @@ store.outcomeTargets = [
   { ...outBase, id: "ot_014", child_id: "yp_casey", domain: "education", target_description: "Improve school attendance and engagement", success_criteria: "Achieve 90% attendance and positive behaviour reports", baseline_rating: 3 as const, current_rating: 3 as const, target_rating: 4 as const, direction: "stable" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_chervelle", set_date: daysFromNow(-40), yp_voice: "I like art and drama. The other lessons are okay.", notes: "Attendance 85%. Strong in creative subjects. Maths support in place.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_015", child_id: "yp_casey", domain: "self_care", target_description: "Develop consistent self-care routines — morning and evening", success_criteria: "Complete morning routine independently on 5 out of 7 days", baseline_rating: 2 as const, current_rating: 3 as const, target_rating: 4 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(14), set_by: "staff_chervelle", set_date: daysFromNow(-35), yp_voice: "I like choosing my own clothes now. I'm getting better at mornings.", notes: "Morning routine chart working well. Evening routine still needs prompting.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_016", child_id: "yp_casey", domain: "identity", target_description: "Explore heritage and build positive self-image", success_criteria: "Complete life story work and engage in 1 cultural activity per month", baseline_rating: 2 as const, current_rating: 3 as const, target_rating: 4 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(30), set_by: "staff_chervelle", set_date: daysFromNow(-50), yp_voice: "I want to know more about my background. The memory box is cool.", notes: "Life story book in progress. Memory box started.", evidence_notes: null, created_at: outNow, updated_at: outNow },
-] as OutcomeTarget[];
+];
 
 // Seed outcome reviews (recent progress check-ins)
 store.outcomeReviews = [
@@ -5560,7 +5560,7 @@ store.outcomeReviews = [
   { id: "or_003", target_id: "ot_007", child_id: "yp_jordan", home_id: "home_oak", review_date: daysFromNow(-7), previous_rating: 3 as const, new_rating: 4 as const, direction: "improving" as const, reviewer_id: "staff_anna", reviewer_role: "Key Worker", yp_participated: true, yp_voice: "I got a good mark in my maths test! I want to keep doing well.", progress_notes: "Jordan making excellent academic progress. Reading age improved. Teacher reports positive engagement.", barriers: null, next_steps: "Continue current support. Consider gifted/talented register for maths.", created_at: outNow },
   { id: "or_004", target_id: "ot_012", child_id: "yp_casey", home_id: "home_oak", review_date: daysFromNow(-7), previous_rating: 2 as const, new_rating: 2 as const, direction: "stable" as const, reviewer_id: "staff_chervelle", reviewer_role: "Key Worker", yp_participated: true, yp_voice: "I tried but I still can't sleep. The new medicine might help.", progress_notes: "Sleep onset still averaging 23:15. Melatonin dose reviewed — increased to 4mg trial starting this week. Good compliance with taking medication.", barriers: "Anxiety at bedtime — worries about family. Room temperature sometimes too warm.", next_steps: "Monitor new dose for 2 weeks. Consider weighted blanket. Explore bedtime wind-down routine.", created_at: outNow },
   { id: "or_005", target_id: "ot_013", child_id: "yp_casey", home_id: "home_oak", review_date: daysFromNow(-10), previous_rating: 2 as const, new_rating: 3 as const, direction: "improving" as const, reviewer_id: "staff_chervelle", reviewer_role: "Key Worker", yp_participated: true, yp_voice: "Sam taught me to breathe when I feel upset. It works sometimes.", progress_notes: "Casey now using 3 regulation strategies: deep breathing, counting, and drawing. CAMHS therapist reports good therapeutic engagement.", barriers: "Difficulty generalising strategies to school environment.", next_steps: "Share strategies with school SENCO. Consider visual prompt card.", created_at: outNow },
-] as OutcomeReview[];
+];
 
 // ── Seed Reg 44 Visit Reports ─────────────────────────────────────────────────
 
@@ -5663,7 +5663,7 @@ store.reg44VisitReports = [
     notes: "Visitor expressed concern about the notification delay and requested written confirmation that the process has been reviewed. This has been provided.",
     created_at: new Date(Date.now() - 97 * 86400000).toISOString(),
   },
-] as Reg44VisitReport[];
+];
 
 // Seed education records
 store.educationRecords = [
@@ -6242,33 +6242,33 @@ const behBase = { created_at: daysFromNow(0) };
 store.behaviourLog = [
   // Alex — mix of positive and concerning (mostly evenings)
   { ...behBase, id: "beh_001", child_id: "yp_alex", date: daysFromNow(-1), time: "09:15", direction: "positive" as const, intensity: "low" as const, title: "Engaged well with morning routine", antecedent: "Staff used visual schedule", behaviour: "Completed breakfast and hygiene tasks without prompting", consequence: "Verbal praise and extra gaming time earned", trigger: "", strategy_used: "Visual schedule and choice board", outcome: "Alex cooperated fully. Positive start to the day.", recorded_by: "staff_darren" },
-  { ...behBase, id: "beh_002", child_id: "yp_alex", date: daysFromNow(-2), time: "19:30", direction: "concerning" as const, intensity: "medium" as const, title: "Verbal aggression after phone call", antecedent: "Phone call with family member ended abruptly", behaviour: "Shouted at staff, used threatening language, paced corridor", consequence: "Offered quiet space and 1:1 time", trigger: "Family contact", strategy_used: "Offered quiet space and verbal de-escalation", outcome: "Alex settled after 15 minutes in his room. Apologised later.", recorded_by: "staff_edward" },
+  { ...behBase, id: "beh_002", child_id: "yp_alex", date: daysFromNow(-2), time: "19:30", direction: "concern" as const, intensity: "moderate" as const, title: "Verbal aggression after phone call", antecedent: "Phone call with family member ended abruptly", behaviour: "Shouted at staff, used threatening language, paced corridor", consequence: "Offered quiet space and 1:1 time", trigger: "Family contact", strategy_used: "Offered quiet space and verbal de-escalation", outcome: "Alex settled after 15 minutes in his room. Apologised later.", recorded_by: "staff_edward" },
   { ...behBase, id: "beh_003", child_id: "yp_alex", date: daysFromNow(-3), time: "16:00", direction: "positive" as const, intensity: "low" as const, title: "Helped younger peer with homework", antecedent: "Jordan struggling with maths", behaviour: "Alex offered to help and showed patience", consequence: "Staff praised prosocial behaviour", trigger: "", strategy_used: "", outcome: "Positive interaction lasted 30 minutes. Both YP benefited.", recorded_by: "staff_anna" },
-  { ...behBase, id: "beh_004", child_id: "yp_alex", date: daysFromNow(-4), time: "21:45", direction: "concerning" as const, intensity: "high" as const, title: "Property damage in bedroom", antecedent: "Request to turn off gaming console at bedtime", behaviour: "Alex threw controller at wall, cracking plaster. Shouted and kicked door.", consequence: "Staff maintained calm presence. Repair discussed next day.", trigger: "Perceived restriction on gaming", strategy_used: "Low-arousal approach and minimal language", outcome: "Alex eventually settled but refused debrief until morning.", recorded_by: "staff_chervelle" },
+  { ...behBase, id: "beh_004", child_id: "yp_alex", date: daysFromNow(-4), time: "21:45", direction: "concern" as const, intensity: "high" as const, title: "Property damage in bedroom", antecedent: "Request to turn off gaming console at bedtime", behaviour: "Alex threw controller at wall, cracking plaster. Shouted and kicked door.", consequence: "Staff maintained calm presence. Repair discussed next day.", trigger: "Perceived restriction on gaming", strategy_used: "Low-arousal approach and minimal language", outcome: "Alex eventually settled but refused debrief until morning.", recorded_by: "staff_chervelle" },
   { ...behBase, id: "beh_005", child_id: "yp_alex", date: daysFromNow(-5), time: "14:30", direction: "positive" as const, intensity: "low" as const, title: "Completed full day at school", antecedent: "Key worker preparation talk in morning", behaviour: "Attended all lessons, positive teacher feedback", consequence: "Takeaway Friday earned", trigger: "", strategy_used: "Morning preparation and social story", outcome: "Best school day this term. Alex proud of achievement.", recorded_by: "staff_ryan" },
-  { ...behBase, id: "beh_006", child_id: "yp_alex", date: daysFromNow(-6), time: "18:45", direction: "concerning" as const, intensity: "medium" as const, title: "Refused evening meal and became argumentative", antecedent: "Peer made comment about Alex's appearance", behaviour: "Verbal aggression towards peer, refused to eat, went to room", consequence: "Staff offered alternative meal later. 1:1 discussion.", trigger: "Peer comment", strategy_used: "Verbal reassurance and space", outcome: "Alex regulated after 20 minutes. Ate snack later.", recorded_by: "staff_edward" },
+  { ...behBase, id: "beh_006", child_id: "yp_alex", date: daysFromNow(-6), time: "18:45", direction: "concern" as const, intensity: "moderate" as const, title: "Refused evening meal and became argumentative", antecedent: "Peer made comment about Alex's appearance", behaviour: "Verbal aggression towards peer, refused to eat, went to room", consequence: "Staff offered alternative meal later. 1:1 discussion.", trigger: "Peer comment", strategy_used: "Verbal reassurance and space", outcome: "Alex regulated after 20 minutes. Ate snack later.", recorded_by: "staff_edward" },
   { ...behBase, id: "beh_007", child_id: "yp_alex", date: daysFromNow(-8), time: "10:30", direction: "positive" as const, intensity: "low" as const, title: "Positive key worker session", antecedent: "Scheduled 1:1 time with Daniel", behaviour: "Engaged openly, discussed feelings about court proceedings", consequence: "Alex expressed gratitude for support", trigger: "", strategy_used: "", outcome: "Excellent engagement. Alex identified two coping strategies.", recorded_by: "staff_edward" },
-  { ...behBase, id: "beh_008", child_id: "yp_alex", date: daysFromNow(-10), time: "20:15", direction: "concerning" as const, intensity: "severe" as const, title: "Self-harm attempt following difficult conversation", antecedent: "Discussion about upcoming court proceedings", behaviour: "Alex attempted to use sharp object. Staff intervened.", consequence: "PI required. Body map completed. Medical attention.", trigger: "Court proceedings anxiety", strategy_used: "Verbal de-escalation attempted but insufficient", outcome: "PI used. Alex assessed by ambulance. Settled with 1:1 support.", recorded_by: "staff_ryan" },
+  { ...behBase, id: "beh_008", child_id: "yp_alex", date: daysFromNow(-10), time: "20:15", direction: "concern" as const, intensity: "critical" as const, title: "Self-harm attempt following difficult conversation", antecedent: "Discussion about upcoming court proceedings", behaviour: "Alex attempted to use sharp object. Staff intervened.", consequence: "PI required. Body map completed. Medical attention.", trigger: "Court proceedings anxiety", strategy_used: "Verbal de-escalation attempted but insufficient", outcome: "PI used. Alex assessed by ambulance. Settled with 1:1 support.", recorded_by: "staff_ryan" },
   { ...behBase, id: "beh_009", child_id: "yp_alex", date: daysFromNow(-12), time: "15:00", direction: "positive" as const, intensity: "low" as const, title: "Used grounding technique independently", antecedent: "Started becoming agitated during group activity", behaviour: "Alex recognised escalation and asked to leave. Used 5-4-3-2-1.", consequence: "Staff praised self-awareness", trigger: "", strategy_used: "Self-initiated grounding technique", outcome: "Excellent self-regulation. Returned to group after 10 minutes.", recorded_by: "staff_anna" },
-  { ...behBase, id: "beh_010", child_id: "yp_alex", date: daysFromNow(-14), time: "22:00", direction: "concerning" as const, intensity: "medium" as const, title: "Late evening agitation and verbal threats", antecedent: "Peer conflict earlier unresolved", behaviour: "Pacing corridor, making verbal threats towards peer's bedroom door", consequence: "Staff separated YP, offered cooling off walk", trigger: "Unresolved peer conflict", strategy_used: "Physical separation and offered walk", outcome: "Alex calmed after walk with staff. Agreed to debrief in morning.", recorded_by: "staff_edward" },
+  { ...behBase, id: "beh_010", child_id: "yp_alex", date: daysFromNow(-14), time: "22:00", direction: "concern" as const, intensity: "moderate" as const, title: "Late evening agitation and verbal threats", antecedent: "Peer conflict earlier unresolved", behaviour: "Pacing corridor, making verbal threats towards peer's bedroom door", consequence: "Staff separated YP, offered cooling off walk", trigger: "Unresolved peer conflict", strategy_used: "Physical separation and offered walk", outcome: "Alex calmed after walk with staff. Agreed to debrief in morning.", recorded_by: "staff_edward" },
   // Alex older entries (15-28 days ago) for trend comparison
-  { ...behBase, id: "beh_011", child_id: "yp_alex", date: daysFromNow(-16), time: "19:00", direction: "concerning" as const, intensity: "high" as const, title: "Threw furniture in communal area", antecedent: "Lost board game to peer", behaviour: "Threw game pieces and overturned table", consequence: "Room cleared, Team Teach hold considered", trigger: "Losing game", strategy_used: "Low-arousal approach", outcome: "Settled after 25 minutes without PI. Apologised next day.", recorded_by: "staff_chervelle" },
-  { ...behBase, id: "beh_012", child_id: "yp_alex", date: daysFromNow(-18), time: "08:00", direction: "concerning" as const, intensity: "medium" as const, title: "Refused morning routine entirely", antecedent: "Poor sleep night before", behaviour: "Refused to get up, verbally aggressive to staff", consequence: "Staff gave space, returned after 30 min", trigger: "Tiredness", strategy_used: "Space and time", outcome: "Eventually engaged at 10am. Quiet morning.", recorded_by: "staff_darren" },
+  { ...behBase, id: "beh_011", child_id: "yp_alex", date: daysFromNow(-16), time: "19:00", direction: "concern" as const, intensity: "high" as const, title: "Threw furniture in communal area", antecedent: "Lost board game to peer", behaviour: "Threw game pieces and overturned table", consequence: "Room cleared, Team Teach hold considered", trigger: "Losing game", strategy_used: "Low-arousal approach", outcome: "Settled after 25 minutes without PI. Apologised next day.", recorded_by: "staff_chervelle" },
+  { ...behBase, id: "beh_012", child_id: "yp_alex", date: daysFromNow(-18), time: "08:00", direction: "concern" as const, intensity: "moderate" as const, title: "Refused morning routine entirely", antecedent: "Poor sleep night before", behaviour: "Refused to get up, verbally aggressive to staff", consequence: "Staff gave space, returned after 30 min", trigger: "Tiredness", strategy_used: "Space and time", outcome: "Eventually engaged at 10am. Quiet morning.", recorded_by: "staff_darren" },
   { ...behBase, id: "beh_013", child_id: "yp_alex", date: daysFromNow(-20), time: "17:30", direction: "positive" as const, intensity: "low" as const, title: "Cooked dinner with staff support", antecedent: "Life skills activity planned", behaviour: "Alex chose recipe and followed instructions", consequence: "Shared meal with group, positive feedback", trigger: "", strategy_used: "", outcome: "Great engagement. Alex enjoyed cooking spaghetti bolognese.", recorded_by: "staff_anna" },
-  { ...behBase, id: "beh_014", child_id: "yp_alex", date: daysFromNow(-22), time: "14:50", direction: "concerning" as const, intensity: "high" as const, title: "Physical aggression towards staff following refused request", antecedent: "Community trip refused due to incomplete homework", behaviour: "Alex ran towards front door, became physically threatening", consequence: "PI required in corridor", trigger: "Refused community time", strategy_used: "Verbal de-escalation attempted", outcome: "Team Teach hold used for 2 minutes. Alex settled.", recorded_by: "staff_chervelle" },
+  { ...behBase, id: "beh_014", child_id: "yp_alex", date: daysFromNow(-22), time: "14:50", direction: "concern" as const, intensity: "high" as const, title: "Physical aggression towards staff following refused request", antecedent: "Community trip refused due to incomplete homework", behaviour: "Alex ran towards front door, became physically threatening", consequence: "PI required in corridor", trigger: "Refused community time", strategy_used: "Verbal de-escalation attempted", outcome: "Team Teach hold used for 2 minutes. Alex settled.", recorded_by: "staff_chervelle" },
   // Jordan — mostly positive, occasional concerning
   { ...behBase, id: "beh_015", child_id: "yp_jordan", date: daysFromNow(-1), time: "14:00", direction: "positive" as const, intensity: "low" as const, title: "Excellent engagement at football training", antecedent: "Regular scheduled activity", behaviour: "Full participation, positive interactions with teammates", consequence: "Praise from coach and staff", trigger: "", strategy_used: "", outcome: "Jordan returned in high spirits. Great social skills demonstrated.", recorded_by: "staff_lackson" },
-  { ...behBase, id: "beh_016", child_id: "yp_jordan", date: daysFromNow(-3), time: "17:00", direction: "concerning" as const, intensity: "low" as const, title: "Withdrew to bedroom after contact call", antecedent: "Mum cancelled planned visit", behaviour: "Jordan went quiet, refused evening meal, stayed in room", consequence: "Staff checked in, offered space", trigger: "Cancelled family contact", strategy_used: "Gentle check-ins, respect for space", outcome: "Jordan came down for supper. Brief chat with key worker.", recorded_by: "staff_anna" },
+  { ...behBase, id: "beh_016", child_id: "yp_jordan", date: daysFromNow(-3), time: "17:00", direction: "concern" as const, intensity: "low" as const, title: "Withdrew to bedroom after contact call", antecedent: "Mum cancelled planned visit", behaviour: "Jordan went quiet, refused evening meal, stayed in room", consequence: "Staff checked in, offered space", trigger: "Cancelled family contact", strategy_used: "Gentle check-ins, respect for space", outcome: "Jordan came down for supper. Brief chat with key worker.", recorded_by: "staff_anna" },
   { ...behBase, id: "beh_017", child_id: "yp_jordan", date: daysFromNow(-5), time: "10:00", direction: "positive" as const, intensity: "low" as const, title: "Helped with younger children at community group", antecedent: "Community volunteering session", behaviour: "Supportive and patient with younger children", consequence: "Certificate from group leader", trigger: "", strategy_used: "", outcome: "Jordan beaming. Excellent prosocial behaviour.", recorded_by: "staff_chervelle" },
   { ...behBase, id: "beh_018", child_id: "yp_jordan", date: daysFromNow(-7), time: "08:30", direction: "positive" as const, intensity: "low" as const, title: "Independent morning routine without prompts", antecedent: "Established routine", behaviour: "Shower, breakfast, school prep all completed independently", consequence: "Earned cinema trip points", trigger: "", strategy_used: "", outcome: "Third consecutive independent morning. Excellent progress.", recorded_by: "staff_ryan" },
   { ...behBase, id: "beh_019", child_id: "yp_jordan", date: daysFromNow(-9), time: "16:30", direction: "positive" as const, intensity: "low" as const, title: "Managed frustration during homework", antecedent: "Difficult maths problem", behaviour: "Asked for help calmly instead of giving up", consequence: "Praise for communication", trigger: "", strategy_used: "Self-regulation — asking for help", outcome: "Completed homework. Jordan recognised own progress.", recorded_by: "staff_anna" },
   // Casey — mostly positive, very few concerning
-  { ...behBase, id: "beh_020", child_id: "yp_casey", date: daysFromNow(-1), time: "15:30", direction: "concerning" as const, intensity: "medium" as const, title: "Distressed after phone call from mother", antecedent: "Unplanned phone call from mum", behaviour: "Crying, refusing to speak, withdrew to room", consequence: "1:1 support from Naomi", trigger: "Family contact", strategy_used: "Active listening and grounding", outcome: "Casey settled after 20 minutes. Reviewed contact agreement.", recorded_by: "staff_chervelle" },
+  { ...behBase, id: "beh_020", child_id: "yp_casey", date: daysFromNow(-1), time: "15:30", direction: "concern" as const, intensity: "moderate" as const, title: "Distressed after phone call from mother", antecedent: "Unplanned phone call from mum", behaviour: "Crying, refusing to speak, withdrew to room", consequence: "1:1 support from Naomi", trigger: "Family contact", strategy_used: "Active listening and grounding", outcome: "Casey settled after 20 minutes. Reviewed contact agreement.", recorded_by: "staff_chervelle" },
   { ...behBase, id: "beh_021", child_id: "yp_casey", date: daysFromNow(-2), time: "11:00", direction: "positive" as const, intensity: "low" as const, title: "Creative writing session — excellent work", antecedent: "Scheduled education time", behaviour: "Produced creative story, shared with group", consequence: "Displayed on notice board with permission", trigger: "", strategy_used: "", outcome: "Casey proud of work. Growing confidence in literacy.", recorded_by: "staff_anna" },
   { ...behBase, id: "beh_022", child_id: "yp_casey", date: daysFromNow(-4), time: "09:00", direction: "positive" as const, intensity: "low" as const, title: "Took morning medication willingly", antecedent: "Staff offered choice of timing", behaviour: "Accepted medication with no refusal", consequence: "Praise for cooperation", trigger: "", strategy_used: "Offering choice and control", outcome: "Three consecutive days of willing medication. Progress noted.", recorded_by: "staff_darren" },
   { ...behBase, id: "beh_023", child_id: "yp_casey", date: daysFromNow(-6), time: "14:00", direction: "positive" as const, intensity: "low" as const, title: "Positive CAMHS session", antecedent: "Scheduled therapy appointment", behaviour: "Engaged openly with therapist", consequence: "Therapist reported good progress", trigger: "", strategy_used: "", outcome: "Casey discussed trauma memories safely. Big step.", recorded_by: "staff_chervelle" },
-  { ...behBase, id: "beh_024", child_id: "yp_casey", date: daysFromNow(-11), time: "20:00", direction: "concerning" as const, intensity: "low" as const, title: "Difficulty settling at bedtime", antecedent: "Overheard staff discussing her review", behaviour: "Restless, asking repeated questions about placement", consequence: "Extended bedtime support", trigger: "Anxiety about placement review", strategy_used: "Reassurance and grounding", outcome: "Casey settled after 30 min extra support. Melatonin effective.", recorded_by: "staff_edward" },
-] as BehaviourEntry[];
+  { ...behBase, id: "beh_024", child_id: "yp_casey", date: daysFromNow(-11), time: "20:00", direction: "concern" as const, intensity: "low" as const, title: "Difficulty settling at bedtime", antecedent: "Overheard staff discussing her review", behaviour: "Restless, asking repeated questions about placement", consequence: "Extended bedtime support", trigger: "Anxiety about placement review", strategy_used: "Reassurance and grounding", outcome: "Casey settled after 30 min extra support. Melatonin effective.", recorded_by: "staff_edward" },
+];
 
 // ── Sanctions & Rewards Seed Data ────────────────────────────────────────────
 
@@ -6276,20 +6276,20 @@ store.sanctionRewards = [
   // Alex — more balanced now but historically sanctions-heavy
   { id: "sr_001", child_id: "yp_alex", date: daysFromNow(-1), time: "09:30", direction: "reward" as const, reward_type: "privilege" as const, sanction_type: null, title: "Extra gaming time earned", description: "Full cooperation with morning routine", context: "Alex completed all morning tasks without prompting", child_response: "Pleased and motivated", outcome: "Positive morning sustained", proportionate: true, recorded_by: "staff_darren", created_at: daysFromNow(-1) },
   { id: "sr_002", child_id: "yp_alex", date: daysFromNow(-4), time: "22:00", direction: "sanction" as const, reward_type: null, sanction_type: "loss_of_privilege" as const, title: "Loss of evening gaming privilege", description: "Property damage in bedroom — threw controller at wall", context: "Following refusal to turn off console at bedtime", child_response: "Initially angry, accepted next day after debrief", outcome: "Alex contributed to repair cost from pocket money", proportionate: true, recorded_by: "staff_chervelle", created_at: daysFromNow(-4) },
-  { id: "sr_003", child_id: "yp_alex", date: daysFromNow(-5), time: "16:00", direction: "reward" as const, reward_type: "activity" as const, sanction_type: null, title: "Takeaway Friday earned", description: "Full week at school with positive feedback", context: "Alex attended all lessons and received good report from AP", child_response: "Very happy — chose pizza", outcome: "Positive reinforcement of school attendance", proportionate: true, recorded_by: "staff_ryan", created_at: daysFromNow(-5) },
+  { id: "sr_003", child_id: "yp_alex", date: daysFromNow(-5), time: "16:00", direction: "reward" as const, reward_type: "activity_reward" as const, sanction_type: null, title: "Takeaway Friday earned", description: "Full week at school with positive feedback", context: "Alex attended all lessons and received good report from AP", child_response: "Very happy — chose pizza", outcome: "Positive reinforcement of school attendance", proportionate: true, recorded_by: "staff_ryan", created_at: daysFromNow(-5) },
   { id: "sr_004", child_id: "yp_alex", date: daysFromNow(-8), time: "11:00", direction: "reward" as const, reward_type: "verbal_praise" as const, sanction_type: null, title: "Verbal praise for engagement in key work", description: "Open and honest engagement in key worker session", context: "Alex shared feelings about court proceedings", child_response: "Appreciative — said thank you", outcome: "Strengthened trust relationship", proportionate: true, recorded_by: "staff_edward", created_at: daysFromNow(-8) },
   { id: "sr_005", child_id: "yp_alex", date: daysFromNow(-12), time: "15:15", direction: "reward" as const, reward_type: "verbal_praise" as const, sanction_type: null, title: "Praised for using grounding technique", description: "Self-initiated de-escalation using 5-4-3-2-1", context: "Alex recognised own escalation and removed self from group", child_response: "Proud — said CAMHS taught him", outcome: "Excellent self-regulation", proportionate: true, recorded_by: "staff_anna", created_at: daysFromNow(-12) },
   { id: "sr_006", child_id: "yp_alex", date: daysFromNow(-16), time: "19:30", direction: "sanction" as const, reward_type: null, sanction_type: "loss_of_privilege" as const, title: "Loss of TV privilege for evening", description: "Threw game pieces and overturned table in communal area", context: "Lost board game to peer — unable to regulate frustration", child_response: "Accepted next day. Apologised.", outcome: "Discussed alternatives to throwing", proportionate: true, recorded_by: "staff_chervelle", created_at: daysFromNow(-16) },
   { id: "sr_007", child_id: "yp_alex", date: daysFromNow(-22), time: "15:30", direction: "sanction" as const, reward_type: null, sanction_type: "loss_of_privilege" as const, title: "Community trip removed for remainder of day", description: "Physical aggression towards staff after refused request", context: "PI required — proportionate consequence applied", child_response: "Initially very upset, accepted after debrief", outcome: "Linked to BSP boundary around physical aggression", proportionate: true, recorded_by: "staff_ryan", created_at: daysFromNow(-22) },
   // Jordan — mostly rewards
-  { id: "sr_008", child_id: "yp_jordan", date: daysFromNow(-1), time: "17:00", direction: "reward" as const, reward_type: "activity" as const, sanction_type: null, title: "Cinema trip earned", description: "Two full weeks without absconding", context: "Jordan has maintained excellent engagement with routines", child_response: "Excited — chose horror film", outcome: "Positive reinforcement of safe boundaries", proportionate: true, recorded_by: "staff_anna", created_at: daysFromNow(-1) },
+  { id: "sr_008", child_id: "yp_jordan", date: daysFromNow(-1), time: "17:00", direction: "reward" as const, reward_type: "activity_reward" as const, sanction_type: null, title: "Cinema trip earned", description: "Two full weeks without absconding", context: "Jordan has maintained excellent engagement with routines", child_response: "Excited — chose horror film", outcome: "Positive reinforcement of safe boundaries", proportionate: true, recorded_by: "staff_anna", created_at: daysFromNow(-1) },
   { id: "sr_009", child_id: "yp_jordan", date: daysFromNow(-7), time: "09:00", direction: "reward" as const, reward_type: "privilege" as const, sanction_type: null, title: "Later bedtime on weekend", description: "Three consecutive independent mornings", context: "Jordan completing routine without prompting", child_response: "Motivated — values independence", outcome: "Building self-management skills", proportionate: true, recorded_by: "staff_ryan", created_at: daysFromNow(-7) },
   { id: "sr_010", child_id: "yp_jordan", date: daysFromNow(-14), time: "17:30", direction: "reward" as const, reward_type: "verbal_praise" as const, sanction_type: null, title: "Praise for community volunteering", description: "Excellent behaviour and helpfulness at youth group", context: "Certificate awarded by group leader", child_response: "Beaming — asked to go again", outcome: "Strengthening community links", proportionate: true, recorded_by: "staff_chervelle", created_at: daysFromNow(-14) },
   // Casey — all rewards
   { id: "sr_011", child_id: "yp_casey", date: daysFromNow(-2), time: "11:30", direction: "reward" as const, reward_type: "privilege" as const, sanction_type: null, title: "Creative writing displayed on notice board", description: "Excellent creative writing shared with group", context: "Casey produced story and gave permission to display", child_response: "Proud and pleased", outcome: "Growing confidence in literacy and self-expression", proportionate: true, recorded_by: "staff_anna", created_at: daysFromNow(-2) },
   { id: "sr_012", child_id: "yp_casey", date: daysFromNow(-4), time: "09:30", direction: "reward" as const, reward_type: "verbal_praise" as const, sanction_type: null, title: "Praised for medication compliance", description: "Three days of willing medication acceptance", context: "Staff offered choice of timing — Casey responded well", child_response: "Acknowledged with smile", outcome: "Medication refusals reducing significantly", proportionate: true, recorded_by: "staff_darren", created_at: daysFromNow(-4) },
-  { id: "sr_013", child_id: "yp_casey", date: daysFromNow(-9), time: "15:00", direction: "reward" as const, reward_type: "activity" as const, sanction_type: null, title: "Art supplies purchased", description: "Casey requested art materials as reward for CAMHS engagement", context: "Positive therapy sessions and homework completion", child_response: "Grateful — started painting same evening", outcome: "Therapeutic value of creative outlet", proportionate: true, recorded_by: "staff_chervelle", created_at: daysFromNow(-9) },
-] as SanctionRewardEntry[];
+  { id: "sr_013", child_id: "yp_casey", date: daysFromNow(-9), time: "15:00", direction: "reward" as const, reward_type: "activity_reward" as const, sanction_type: null, title: "Art supplies purchased", description: "Casey requested art materials as reward for CAMHS engagement", context: "Positive therapy sessions and homework completion", child_response: "Grateful — started painting same evening", outcome: "Therapeutic value of creative outlet", proportionate: true, recorded_by: "staff_chervelle", created_at: daysFromNow(-9) },
+];
 
 // ── Restraints Seed Data ─────────────────────────────────────────────────────
 
@@ -6357,7 +6357,7 @@ store.restraints = [
     body_map_completed: true, medical_check_completed: true,
     recorded_by: "staff_ryan", created_at: daysFromNow(-10),
   },
-] as RestraintRecord[];
+];
 
 // Practice OS demo arc — APPENDED to the blocks above (which REASSIGN the
 // collections, so the literal spreads earlier in this file never survive).
@@ -6494,7 +6494,7 @@ store.visitors = [
     children_seen: ["yp_casey"], notes: null,
     created_at: daysFromNow(-22),
   },
-] as VisitorEntry[];
+];
 
 // ── Independence Pathways Seed Data ───────────────────────────────────────────
 
@@ -6553,7 +6553,7 @@ store.independencePathways = [
     notes: "Casey making steady progress. Personal care strongest. Money management and home management need development.",
     created_at: daysFromNow(-10),
   },
-] as IndependencePathway[];
+];
 
 // ── House Meetings Seed Data ──────────────────────────────────────────────────
 
@@ -6654,7 +6654,7 @@ store.houseMeetings = [
     duration: 20,
     created_at: daysFromNow(-28),
   },
-] as HouseMeeting[];
+];
 
 // ── Notifiable Events Seed Data ───────────────────────────────────────────────
 
@@ -6737,7 +6737,7 @@ store.notifiableEvents = [
     follow_up: "BSP boundary around peer conflict reinforced.",
     lesson_learned: "TV access rota may reduce friction between Alex and Jordan.",
   },
-] as NotifiableEvent[];
+];
 
 // ── Pocket Money Transactions (Finance Intelligence) ──────────────────────────
 
@@ -6780,7 +6780,7 @@ store.pocketMoneyTransactions = [
   { id: "pm_025", child_id: "yp_casey", date: daysFromNow(-3), type: "savings_deposit", amount: 15, description: "Weekly savings", category: "savings", receipt_held: false, approved_by: "staff_darren", notes: null, created_at: new Date().toISOString() },
   { id: "pm_026", child_id: "yp_casey", date: daysFromNow(-10), type: "savings_deposit", amount: 15, description: "Weekly savings", category: "savings", receipt_held: false, approved_by: "staff_darren", notes: null, created_at: new Date().toISOString() },
   { id: "pm_027", child_id: "yp_casey", date: daysFromNow(-17), type: "savings_deposit", amount: 15, description: "Weekly savings", category: "savings", receipt_held: false, approved_by: "staff_darren", notes: null, created_at: new Date().toISOString() },
-] as PocketMoneyTransaction[];
+];
 
 // ── Clothing Allowances (Finance Intelligence) ────────────────────────────────
 
@@ -6788,7 +6788,7 @@ store.clothingAllowanceRecords = [
   { id: "car_001", child_id: "yp_alex", financial_year: "2025-2026", annual_budget: 600, quarterly_allowance: 150, current_quarter: 2, quarter_spend: 90, ytd_spend: 240, purchases: [], preferences: ["sportswear", "trainers"], sizes: { shoe: "8", top: "M", trousers: "30" }, notes: "", created_at: new Date().toISOString() },
   { id: "car_002", child_id: "yp_jordan", financial_year: "2025-2026", annual_budget: 600, quarterly_allowance: 150, current_quarter: 2, quarter_spend: 145, ytd_spend: 420, purchases: [], preferences: ["streetwear", "hoodies"], sizes: { shoe: "9", top: "L", trousers: "32" }, notes: "Approaching budget limit", created_at: new Date().toISOString() },
   { id: "car_003", child_id: "yp_casey", financial_year: "2025-2026", annual_budget: 600, quarterly_allowance: 150, current_quarter: 2, quarter_spend: 45, ytd_spend: 130, purchases: [], preferences: ["casual", "art supplies"], sizes: { shoe: "6", top: "S", trousers: "28" }, notes: "", created_at: new Date().toISOString() },
-] as ClothingAllowanceRecord[];
+];
 
 // ── Complaints (Complaints Intelligence) ──────────────────────────────────────
 
@@ -6801,7 +6801,7 @@ store.complaintOutcomeRecords = [
   { id: "cmp_006", complaint_date: daysFromNow(-45), complainant: "Anonymous", source: "anonymous" as const, theme: "staff_conduct" as const, outcome: "not_upheld" as const, investigated_by: "staff_darren", date_resolved: daysFromNow(-30), response_time_days: 15, child_id: null, summary: "Allegation of staff using phones during shifts", findings: "CCTV reviewed — no evidence to support claim. Staff phone policy in place.", lessons_learned: "Phone-free zone signage refreshed in communal areas", practice_changes: ["Refreshed phone policy signage"], complainant_satisfied: null, escalated: false, escalated_to: null, ofsted_notified: false, created_at: new Date().toISOString() },
   { id: "cmp_007", complaint_date: daysFromNow(-3), complainant: "Casey", source: "child" as const, theme: "privacy" as const, outcome: "ongoing" as const, investigated_by: "staff_anna", date_resolved: null, response_time_days: 0, child_id: "yp_casey", summary: "Felt room was entered without knocking during quiet time", findings: "", lessons_learned: "", practice_changes: [], complainant_satisfied: null, escalated: false, escalated_to: null, ofsted_notified: false, created_at: new Date().toISOString() },
   { id: "cmp_008", complaint_date: daysFromNow(-35), complainant: "Placing Authority (Jane Roberts)", source: "professional" as const, theme: "medication" as const, outcome: "upheld" as const, investigated_by: "staff_darren", date_resolved: daysFromNow(-20), response_time_days: 15, child_id: "yp_casey", summary: "Medication given 45 minutes late on two occasions", findings: "Late administration confirmed on MAR — staff workload at handover time", lessons_learned: "Medication round to start 15 minutes before handover", practice_changes: ["Medication schedule adjusted to avoid handover overlap", "Second witness requirement reiterated"], complainant_satisfied: true, escalated: true, escalated_to: "Ofsted", ofsted_notified: true, created_at: new Date().toISOString() },
-] as ComplaintOutcomeRecord[];
+];
 
 // ── QA Audit Records (Quality Assurance Intelligence) ─────────────────────────
 
@@ -6812,7 +6812,7 @@ store.qaAuditRecords = [
   { id: "qa_004", title: "Health & Safety Audit", date: daysFromNow(-20), auditor: "staff_ryan", scope: "health_safety", overall_rating: "excellent" as const, score: 4, findings: ["All areas clean and well-maintained", "Fire exits clear"], strengths: ["Excellent premises condition", "Regular deep cleaning schedule", "COSHH records up to date"], areas_for_improvement: ["Garden shed needs new lock"], actions: [{ action: "Replace garden shed lock", owner: "staff_edward", deadline: daysFromNow(-5), status: "completed" as const }, { action: "Order replacement first aid supplies", owner: "staff_anna", deadline: daysFromNow(-3), status: "completed" as const }], notes: "" },
   { id: "qa_005", title: "Care Planning Audit", date: daysFromNow(-10), auditor: "staff_darren", scope: "care_planning", overall_rating: "good" as const, score: 3, findings: ["All children have current care plans", "Placement plans reviewed on time"], strengths: ["Child participation in care plan reviews", "Multi-agency input evidenced"], areas_for_improvement: ["Pathway plan for Jordan needs update"], actions: [{ action: "Update Jordan pathway plan with leaving care PA", owner: "staff_darren", deadline: daysFromNow(14), status: "pending" as const }, { action: "Schedule Casey care plan review", owner: "staff_anna", deadline: daysFromNow(7), status: "pending" as const }, { action: "File Alex annual review minutes", owner: "staff_ryan", deadline: daysFromNow(-2), status: "completed" as const }], notes: "" },
   { id: "qa_006", title: "Fire Safety Audit", date: daysFromNow(-5), auditor: "staff_ryan", scope: "fire_safety", overall_rating: "good" as const, score: 3, findings: ["Fire drills on schedule", "Equipment serviced"], strengths: ["Monthly drill programme maintained", "All staff trained"], areas_for_improvement: ["Assembly point signage faded"], actions: [{ action: "Replace assembly point signage", owner: "staff_edward", deadline: daysFromNow(14), status: "pending" as const }], notes: "" },
-] as QAAuditRecord[];
+];
 
 // ── Home Policies (Policies Intelligence) ─────────────────────────────────────
 
@@ -6835,7 +6835,7 @@ store.homePolicies = [
   { id: "pol_010", title: "Medication Policy", category: "medication" as const, description: "Safe medication management", version: "3.2", status: "current" as const, owner_id: "staff_darren", approved_by: "staff_darren", approved_date: daysFromNow(-30), effective_date: daysFromNow(-30), next_review_date: daysFromNow(50), last_reviewed: daysFromNow(-30), statutory_basis: "Reg 23", linked_standard: "SCCIF: Health", key_points: ["Storage", "Administration", "Error reporting"], read_acknowledgements: allStaffAck, total_staff_required: 8, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: "pol_011", title: "Fire Safety Policy", category: "fire_safety" as const, description: "Fire prevention and evacuation", version: "2.0", status: "current" as const, owner_id: "staff_ryan", approved_by: "staff_darren", approved_date: daysFromNow(-100), effective_date: daysFromNow(-100), next_review_date: daysFromNow(80), last_reviewed: daysFromNow(-100), statutory_basis: "Reg 25, Fire Safety Order 2005", linked_standard: "SCCIF: Safe", key_points: ["Drill schedule", "Equipment checks", "Night-time procedures"], read_acknowledgements: allStaffAck, total_staff_required: 8, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: "pol_012", title: "Whistleblowing Policy", category: "whistleblowing" as const, description: "Raising concerns procedure", version: "1.3", status: "current" as const, owner_id: "staff_darren", approved_by: "staff_darren", approved_date: daysFromNow(-200), effective_date: daysFromNow(-200), next_review_date: daysFromNow(100), last_reviewed: daysFromNow(-200), statutory_basis: "Reg 38, PIDA 1998", linked_standard: "SCCIF: Leadership", key_points: ["How to raise concerns", "Protection from reprisal", "External contacts"], read_acknowledgements: allStaffAck, total_staff_required: 8, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-] as HomePolicy[];
+];
 
 // ── Protocol Drills (Emergency Intelligence) ──────────────────────────────────
 
@@ -6848,7 +6848,7 @@ store.protocolDrills = [
   { id: "drill_006", date: daysFromNow(-120), scenario_type: "intruder_alert" as const, scenario_description: "Unknown person at front door scenario", lead_by: "staff_darren", participants: ["staff_darren", "staff_ryan", "staff_anna"], response_time_minutes: 6, protocol_followed: true, deviations: "", learning_points: ["CCTV check first", "Children to safe room"], actions_required: [], outcome: "satisfactory" as const, next_drill_due: daysFromNow(-30), linked_protocol: "Intruder Alert Protocol", created_at: new Date().toISOString() },
   { id: "drill_007", date: daysFromNow(-15), scenario_type: "flooding" as const, scenario_description: "Burst pipe scenario in laundry room", lead_by: "staff_edward", participants: ["staff_edward", "staff_anna", "staff_lackson"], response_time_minutes: 3.5, protocol_followed: true, deviations: "", learning_points: ["Stopcock location known by all participants"], actions_required: [], outcome: "satisfactory" as const, next_drill_due: daysFromNow(75), linked_protocol: "Flood Plan", created_at: new Date().toISOString() },
   { id: "drill_008", date: daysFromNow(-7), scenario_type: "evacuation" as const, scenario_description: "Night-time fire evacuation drill", lead_by: "staff_anna", participants: ["staff_anna", "staff_chervelle"], response_time_minutes: 4.2, protocol_followed: true, deviations: "", learning_points: ["All children accounted for within 4 minutes", "Emergency lighting working"], actions_required: [], outcome: "satisfactory" as const, next_drill_due: daysFromNow(83), linked_protocol: "Fire Evacuation Plan", created_at: new Date().toISOString() },
-] as ProtocolDrill[];
+];
 
 // ── Emergency Plans (Emergency Intelligence) ──────────────────────────────────
 
@@ -6857,7 +6857,7 @@ store.emergencyPlans = [
   { id: "eplan_002", title: "Power Failure Plan", plan_type: "power_failure" as const, colour: "amber", scenario: "Complete power loss to the home", immediate_actions: ["Check fuse box", "Deploy torches", "Reassure children", "Contact utility provider"], contact_sequence: [{ who: "Electricity provider", number: "105", when: "Immediately" }, { who: "Registered Manager", number: "07xxx", when: "Within 15 minutes" }], evacuation_required: false, assembly_point: null, child_considerations: ["Jordan anxious in dark — nightlight battery backup available"], staff_roles: ["Senior staff coordinates response", "One staff stays with children"], equipment_needed: ["Torches", "Battery radio", "Blankets"], recovery_actions: ["Check all appliances safe when power returns", "Log duration and impact"], last_tested: daysFromNow(-20), next_test: daysFromNow(70), status: "current" as const, created_at: new Date().toISOString() },
   { id: "eplan_003", title: "Flood / Water Damage Plan", plan_type: "flood_water_damage" as const, colour: "blue", scenario: "Burst pipe or external flooding", immediate_actions: ["Turn off water at stopcock", "Move children upstairs if ground floor affected", "Protect electrics"], contact_sequence: [{ who: "Emergency plumber", number: "01onal", when: "Immediately" }, { who: "Insurance company", number: "0800xxx", when: "Within 1 hour" }], evacuation_required: false, assembly_point: null, child_considerations: ["Ensure medication stored safely above water level"], staff_roles: ["Senior staff assesses severity", "Support staff secures belongings"], equipment_needed: ["Sandbags", "Mops", "Dehumidifier"], recovery_actions: ["Photograph damage for insurance", "Arrange alternative accommodation if needed"], last_tested: daysFromNow(-100), next_test: daysFromNow(-10), status: "review_due" as const, created_at: new Date().toISOString() },
   { id: "eplan_004", title: "Serious Incident Plan", plan_type: "serious_incident" as const, colour: "red", scenario: "Serious injury, death, or major safeguarding event", immediate_actions: ["Call 999 if medical emergency", "Secure scene", "Notify manager immediately", "Begin contemporaneous notes"], contact_sequence: [{ who: "Emergency services", number: "999", when: "Immediately" }, { who: "Ofsted", number: "0300 123 1231", when: "Within 24 hours" }, { who: "Local Authority MASH", number: "01xxx", when: "Same day" }], evacuation_required: false, assembly_point: null, child_considerations: ["Other children may need immediate reassurance and debriefing"], staff_roles: ["Manager leads response", "Staff provide 1:1 support to children"], equipment_needed: ["First aid kit", "Defibrillator", "Incident report forms"], recovery_actions: ["Staff debrief within 24 hours", "RIDDOR report if applicable", "Review risk assessments"], last_tested: daysFromNow(-30), next_test: daysFromNow(60), status: "current" as const, created_at: new Date().toISOString() },
-] as EmergencyPlan[];
+];
 
 // ── Staff Wellbeing Records ─────────────────────────────────────────────────
 store.staffWellbeingRecords = [
@@ -6949,7 +6949,7 @@ store.staffWellbeingRecords = [
     follow_up_date: daysFromNow(22), conducted_by: "staff_darren",
     confidential: false, notes: "Marcus managing well but workload needs monitoring as deputy demands increase.",
   },
-] as StaffWellbeingRecord[];
+];
 
 // ── Peer Dynamics ───────────────────────────────────────────────────────────
 store.peerDynamics = [
@@ -6997,7 +6997,7 @@ store.peerDynamics = [
     next_review_due: daysFromNow(20), notes: "Healthy, supportive relationship. A genuine strength of the home.",
     created_at: daysFromNow(-40) + "T10:00:00Z",
   },
-] as PeerDynamic[];
+];
 
 store.peerGroupDynamics = [
   {
@@ -7018,7 +7018,7 @@ store.peerGroupDynamics = [
     recommendations: ["Maintain current approach", "Plan a group outing to reinforce positive dynamics"],
     created_at: daysFromNow(-35) + "T11:00:00Z",
   },
-] as PeerGroupDynamic[];
+];
 
 // ── On-Call Shifts ──────────────────────────────────────────────────────────
 store.onCallShifts = [
@@ -7093,7 +7093,7 @@ store.onCallShifts = [
     feedback_on_arrangements: "",
     review_notes: "", created_at: today + "T08:00:00Z",
   },
-] as OnCallShift[];
+];
 
 // ── Transition Planning Records (Reg 14) ────────────────────────────────────
 store.transitionPlanningRecords = [
@@ -7170,7 +7170,7 @@ store.transitionPlanningRecords = [
     percent_complete: 35, review_date: daysFromNow(-8), notes: "Casey is engaging well. Sensitive area — pace carefully.",
     created_at: `${seedDay(-36)}T10:00:00Z`,
   },
-] as TransitionPlanningRecord[];
+];
 
 // ── Delegated Authority (Reg 22) ────────────────────────────────────────────
 store.delegatedAuthority = [
@@ -7215,7 +7215,7 @@ store.delegatedAuthority = [
     ],
     notes: "Review overdue — chase SW Lisa Chen. Education authority pending school confirmation.",
   },
-] as DelegatedAuthority[];
+];
 
 // ── Fire Drills (Reg 25) ────────────────────────────────────────────────────
 store.fireDrills = [
@@ -7287,7 +7287,7 @@ store.fireDrills = [
     notes: "Quarterly full building evacuation. Good practice.",
     created_at: daysFromNow(-100) + "T11:00:00Z",
   },
-] as FireDrill[];
+];
 
 // ── Sleep Log (Reg 7/10) ────────────────────────────────────────────────────
 store.sleepLog = [
@@ -7376,7 +7376,7 @@ store.sleepLog = [
     morning_handover: "Jordan fine in morning. Ate breakfast. Monitor today.",
     hours_slept: null,
   },
-] as SleepLogEntry[];
+];
 
 // ── Additional Daily Log entries (Reg 36 — Recording quality) ───────────────
 const dlBase = { home_id: "home_oak", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), created_by: "staff_darren", updated_by: "staff_darren", cara_assist_used: false };

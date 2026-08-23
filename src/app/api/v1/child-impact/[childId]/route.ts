@@ -32,16 +32,6 @@ import {
   type LessonLearnedInput,
 } from "@/lib/impact/child-impact-engine";
 
-// The store holds BOTH vocabularies for behaviour intensity at runtime — low,
-// medium, moderate, high, severe, critical — even though `BehaviourIntensity`
-// admits only four of them. Seeded rows assert themselves in with a blanket
-// `as BehaviourEntry[]`, which is why the divergence has never surfaced. Read
-// as a plain string here so the compiler does not insist the other spellings
-// are impossible, and normalised onto the vocabulary the type declares.
-function normaliseIntensity(intensity: string): string {
-  return intensity === "severe" ? "critical" : intensity === "medium" ? "moderate" : intensity;
-}
-
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ childId: string }> },
@@ -281,14 +271,14 @@ export async function GET(
       // recorded as a self-harm attempt. The record calls them direction,
       // intensity and strategy_used.
       //
-      // Both spellings of both scales are live in the store: direction holds
-      // "concern" and "concerning", intensity holds all six of low, medium,
-      // moderate, high, severe, critical. Normalised onto the vocabulary
-      // extended.ts declares, by testing the value that has only one spelling
-      // — the other way round files a "concerning" row as positive.
-      type: b.direction === "positive" ? "positive" : "concern",
-      category: b.direction === "positive" ? "positive" : "concern",
-      severity: normaliseIntensity(b.intensity),
+      // The seed used to hold both spellings of both scales past a blanket
+      // `as BehaviourEntry[]`, which is why these went through a normaliser.
+      // The seed now speaks the vocabulary its type declares and the cast is
+      // gone, so intensity passes straight through — and the engine reads
+      // "critical" for the top tier, which is what it now receives.
+      type: b.direction,
+      category: b.direction,
+      severity: b.intensity,
       regulation_support_given: b.strategy_used.trim().length > 0,
       outcome: b.outcome ?? "",
     }));
