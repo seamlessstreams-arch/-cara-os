@@ -156,7 +156,9 @@ describe("Staff Training — evaluateMandatoryCompliance", () => {
   it("handles empty staff list", () => {
     const result = evaluateMandatoryCompliance([], demoRecords, PERIOD_START, PERIOD_END);
     expect(result.totalStaff).toBe(0);
-    expect(result.overallComplianceRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.overallComplianceRate).toBeNull();
+    expect(result.overallComplianceRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("handles empty training records", () => {
@@ -209,7 +211,9 @@ describe("Staff Training — evaluateCertifications", () => {
     ];
     const result = evaluateCertifications(noCerts, REFERENCE_DATE);
     expect(result.totalCertifications).toBe(0);
-    expect(result.validityRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.validityRate).toBeNull();
+    expect(result.validityRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("sorts expiring details by soonest first", () => {
@@ -278,7 +282,9 @@ describe("Staff Training — evaluateCpd", () => {
   it("handles empty data", () => {
     const result = evaluateCpd([], [], PERIOD_START, PERIOD_END);
     expect(result.averageHours).toBe(0);
-    expect(result.targetMetRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.targetMetRate).toBeNull();
+    expect(result.targetMetRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
@@ -320,7 +326,9 @@ describe("Staff Training — evaluateQualifications", () => {
   it("handles empty staff", () => {
     const result = evaluateQualifications([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.qualificationComplianceRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.qualificationComplianceRate).toBeNull();
+    expect(result.qualificationComplianceRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
@@ -379,7 +387,9 @@ describe("Staff Training — evaluateSpecialistTraining", () => {
   it("handles empty needs", () => {
     const result = evaluateSpecialistTraining([], demoRecords);
     expect(result.totalChildNeeds).toBe(0);
-    expect(result.coverageRate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.coverageRate).toBeNull();
+    expect(result.coverageRate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 

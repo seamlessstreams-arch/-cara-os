@@ -39,6 +39,8 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type TrainingCategory =
   | "safeguarding"
   | "first_aid"
@@ -117,9 +119,11 @@ export interface MandatoryComplianceResult {
     staffName: string;
     completedCategories: TrainingCategory[];
     missingCategories: TrainingCategory[];
-    complianceRate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    complianceRate: number | null;
   }[];
-  overallComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallComplianceRate: number | null;
 }
 
 export interface CertificationResult {
@@ -127,7 +131,8 @@ export interface CertificationResult {
   valid: number;
   expiringSoon: number;   // within 60 days
   expired: number;
-  validityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  validityRate: number | null;
   expiringDetails: {
     staffName: string;
     category: TrainingCategory;
@@ -155,7 +160,8 @@ export interface CpdResult {
   }[];
   averageHours: number;
   staffMeetingTarget: number;
-  targetMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  targetMetRate: number | null;
 }
 
 export interface QualificationResult {
@@ -168,14 +174,16 @@ export interface QualificationResult {
     meetsRoleRequirement: boolean;
     qualificationGap?: string;
   }[];
-  qualificationComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualificationComplianceRate: number | null;
 }
 
 export interface SpecialistTrainingResult {
   totalChildNeeds: number;
   coveredNeeds: number;
   uncoveredNeeds: number;
-  coverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverageRate: number | null;
   needsCoverage: {
     childName: string;
     need: string;
@@ -192,7 +200,8 @@ export interface StaffTrainingProfile {
   qualificationLevel: QualificationLevel;
   totalCourses: number;
   totalHours: number;
-  mandatoryComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mandatoryComplianceRate: number | null;
   certificationsValid: number;
   certificationsExpired: number;
   certificationsExpiringSoon: number;
@@ -295,8 +304,11 @@ export function getMandatoryCategories(): TrainingCategory[] {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
+// rate here — not "nothing recorded" but "nothing done". rate() answers
+// null, and meets()/below() are false for null in both directions.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
@@ -577,11 +589,11 @@ export function buildStaffProfiles(
 
     // Overall readiness
     let overallReadiness: StaffTrainingProfile["overallReadiness"];
-    if (mandatoryComplianceRate >= 100 && certificationsExpired === 0 && periodRecords.length >= 5) {
+    if (meets(mandatoryComplianceRate, 100) && certificationsExpired === 0 && periodRecords.length >= 5) {
       overallReadiness = "excellent";
-    } else if (mandatoryComplianceRate >= 88 && certificationsExpired === 0) {
+    } else if (meets(mandatoryComplianceRate, 88) && certificationsExpired === 0) {
       overallReadiness = "good";
-    } else if (mandatoryComplianceRate >= 63 || certificationsExpired <= 1) {
+    } else if (meets(mandatoryComplianceRate, 63) || certificationsExpired <= 1) {
       overallReadiness = "attention_needed";
     } else {
       overallReadiness = "critical";
@@ -626,46 +638,46 @@ export function generateStaffTrainingIntelligence(
 
   // 1. Mandatory training compliance (30)
   let mandatoryScore = 0;
-  if (mandatoryCompliance.overallComplianceRate >= 100) mandatoryScore = 30;
-  else if (mandatoryCompliance.overallComplianceRate >= 95) mandatoryScore = 25;
-  else if (mandatoryCompliance.overallComplianceRate >= 88) mandatoryScore = 20;
-  else if (mandatoryCompliance.overallComplianceRate >= 75) mandatoryScore = 12;
-  else if (mandatoryCompliance.overallComplianceRate >= 50) mandatoryScore = 5;
+  if (meets(mandatoryCompliance.overallComplianceRate, 100)) mandatoryScore = 30;
+  else if (meets(mandatoryCompliance.overallComplianceRate, 95)) mandatoryScore = 25;
+  else if (meets(mandatoryCompliance.overallComplianceRate, 88)) mandatoryScore = 20;
+  else if (meets(mandatoryCompliance.overallComplianceRate, 75)) mandatoryScore = 12;
+  else if (meets(mandatoryCompliance.overallComplianceRate, 50)) mandatoryScore = 5;
 
   // 2. Certification validity (20)
   let certScore = 0;
   if (certifications.totalCertifications > 0) {
-    if (certifications.validityRate >= 100) certScore = 20;
-    else if (certifications.validityRate >= 90) certScore = 15;
-    else if (certifications.validityRate >= 80) certScore = 10;
-    else if (certifications.validityRate >= 60) certScore = 5;
+    if (meets(certifications.validityRate, 100)) certScore = 20;
+    else if (meets(certifications.validityRate, 90)) certScore = 15;
+    else if (meets(certifications.validityRate, 80)) certScore = 10;
+    else if (meets(certifications.validityRate, 60)) certScore = 5;
   }
 
   // 3. CPD hours (15)
   let cpdScore = 0;
   if (cpd.staffCpd.length > 0) {
-    if (cpd.targetMetRate >= 100) cpdScore = 15;
-    else if (cpd.targetMetRate >= 80) cpdScore = 12;
-    else if (cpd.targetMetRate >= 60) cpdScore = 8;
-    else if (cpd.targetMetRate >= 40) cpdScore = 4;
+    if (meets(cpd.targetMetRate, 100)) cpdScore = 15;
+    else if (meets(cpd.targetMetRate, 80)) cpdScore = 12;
+    else if (meets(cpd.targetMetRate, 60)) cpdScore = 8;
+    else if (meets(cpd.targetMetRate, 40)) cpdScore = 4;
   }
 
   // 4. Qualification levels (20)
   let qualScore = 0;
   if (qualifications.totalStaff > 0) {
-    if (qualifications.qualificationComplianceRate >= 100) qualScore = 20;
-    else if (qualifications.qualificationComplianceRate >= 80) qualScore = 15;
-    else if (qualifications.qualificationComplianceRate >= 60) qualScore = 10;
-    else if (qualifications.qualificationComplianceRate >= 40) qualScore = 5;
+    if (meets(qualifications.qualificationComplianceRate, 100)) qualScore = 20;
+    else if (meets(qualifications.qualificationComplianceRate, 80)) qualScore = 15;
+    else if (meets(qualifications.qualificationComplianceRate, 60)) qualScore = 10;
+    else if (meets(qualifications.qualificationComplianceRate, 40)) qualScore = 5;
   }
 
   // 5. Specialist/needs-based training (15)
   let specialistScore = 0;
   if (specialistTraining.totalChildNeeds > 0) {
-    if (specialistTraining.coverageRate >= 100) specialistScore = 15;
-    else if (specialistTraining.coverageRate >= 80) specialistScore = 12;
-    else if (specialistTraining.coverageRate >= 60) specialistScore = 8;
-    else if (specialistTraining.coverageRate >= 40) specialistScore = 4;
+    if (meets(specialistTraining.coverageRate, 100)) specialistScore = 15;
+    else if (meets(specialistTraining.coverageRate, 80)) specialistScore = 12;
+    else if (meets(specialistTraining.coverageRate, 60)) specialistScore = 8;
+    else if (meets(specialistTraining.coverageRate, 40)) specialistScore = 4;
   }
 
   const overallScore = Math.min(100, Math.max(0,
@@ -684,28 +696,28 @@ export function generateStaffTrainingIntelligence(
   const areasForDevelopment: string[] = [];
   const immediateActions: string[] = [];
 
-  if (mandatoryCompliance.overallComplianceRate >= 100) {
+  if (meets(mandatoryCompliance.overallComplianceRate, 100)) {
     strengths.push("All staff fully compliant with mandatory training requirements");
-  } else if (mandatoryCompliance.overallComplianceRate >= 95) {
+  } else if (meets(mandatoryCompliance.overallComplianceRate, 95)) {
     strengths.push("Excellent mandatory training compliance above 95%");
   }
   if (certifications.expired === 0 && certifications.totalCertifications > 0) {
     strengths.push("All certifications current — no expired certificates");
   }
-  if (cpd.targetMetRate >= 100 && cpd.staffCpd.length > 0) {
+  if (meets(cpd.targetMetRate, 100) && cpd.staffCpd.length > 0) {
     strengths.push("All staff meeting CPD target of 30 hours per year");
   }
-  if (qualifications.qualificationComplianceRate >= 100 && qualifications.totalStaff > 0) {
+  if (meets(qualifications.qualificationComplianceRate, 100) && qualifications.totalStaff > 0) {
     strengths.push("All staff hold appropriate qualifications for their roles");
   }
-  if (specialistTraining.coverageRate >= 100 && specialistTraining.totalChildNeeds > 0) {
+  if (meets(specialistTraining.coverageRate, 100) && specialistTraining.totalChildNeeds > 0) {
     strengths.push("Specialist training covers all identified children's needs");
   }
   if (strengths.length === 0) {
     strengths.push("No significant strengths identified — training programme requires attention");
   }
 
-  if (mandatoryCompliance.overallComplianceRate < 88) {
+  if (below(mandatoryCompliance.overallComplianceRate, 88)) {
     areasForDevelopment.push(
       `Mandatory training compliance at ${mandatoryCompliance.overallComplianceRate}% — target 100%`,
     );
@@ -715,7 +727,7 @@ export function generateStaffTrainingIntelligence(
       `${certifications.expiringSoon} certification${certifications.expiringSoon !== 1 ? "s" : ""} expiring within 60 days — book renewals`,
     );
   }
-  if (cpd.targetMetRate < 80 && cpd.staffCpd.length > 0) {
+  if (below(cpd.targetMetRate, 80) && cpd.staffCpd.length > 0) {
     areasForDevelopment.push(
       `Only ${cpd.targetMetRate}% of staff meeting CPD target — plan additional training`,
     );

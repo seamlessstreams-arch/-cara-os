@@ -28,6 +28,8 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type VisitFocus =
   | "overall_quality"
   | "safeguarding"
@@ -116,15 +118,21 @@ export interface ManagementResponse {
 export interface VisitComplianceResult {
   totalVisitsExpected: number;
   totalVisitsCompleted: number;
-  visitCompletionRate: number;
-  independentVisitorRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentVisitorRate: number | null;
   nonIndependentVisits: string[];
   averageChildrenSpoken: number;
   averageStaffSpoken: number;
-  recordsReviewedRate: number;
-  environmentInspectedRate: number;
-  reportOnTimeRate: number;
-  ofstedSharedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordsReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmentInspectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ofstedSharedRate: number | null;
   ratingBreakdown: { rating: string; count: number }[];
   focusAreaCoverage: { area: VisitFocus; count: number }[];
   missedMonths: string[];
@@ -136,38 +144,52 @@ export interface VisitComplianceResult {
 export interface RecommendationResult {
   totalRecommendations: number;
   completedCount: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   openCount: number;
   inProgressCount: number;
   overdueCount: number;
   rejectedCount: number;
-  overdueRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overdueRate: number | null;
   priorityBreakdown: { priority: RecommendationPriority; count: number; completedCount: number }[];
   averageCompletionDays: number;
-  impactAssessedRate: number;
-  withEvidenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  withEvidenceRate: number | null;
   overdueRecommendations: { id: string; description: string; priority: RecommendationPriority; targetDate: string }[];
 }
 
 export interface ChildParticipationResult {
   totalRecords: number;
-  childrenSpokenToRate: number;
-  viewsCapturedRate: number;
-  positiveFeedbackRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenSpokenToRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  viewsCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveFeedbackRate: number | null;
   totalIssuesRaised: number;
-  issuesActionedRate: number;
-  childCoverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issuesActionedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childCoverage: number | null;
   childCoverageBreakdown: { childId: string; childName: string; timesSpokenTo: number; totalVisits: number }[];
   unheardChildren: { childId: string; childName: string }[];
 }
 
 export interface ManagementResponseResult {
   totalResponses: number;
-  respondedOnTimeRate: number;
-  averageAcceptanceRate: number;
-  averageRejectionRate: number;
-  actionPlanCreatedRate: number;
-  sharedWithRIRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  respondedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  averageAcceptanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  averageRejectionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanCreatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedWithRIRate: number | null;
   totalRejectionReasons: string[];
   visitsMissingResponse: string[];
 }
@@ -255,8 +277,11 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
+// rate here — not "nothing recorded" but "nothing done". rate() answers
+// null, and meets()/below() are false for null in both directions.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
@@ -795,14 +820,14 @@ export function generateReg44ComplianceIntelligence(
 
   // Monthly frequency (10 pts)
   if (visitCompliance.visitCompletionRate === 100) visitScore += 10;
-  else if (visitCompliance.visitCompletionRate >= 80) visitScore += 7;
-  else if (visitCompliance.visitCompletionRate >= 60) visitScore += 4;
-  else if (visitCompliance.visitCompletionRate >= 40) visitScore += 2;
+  else if (meets(visitCompliance.visitCompletionRate, 80)) visitScore += 7;
+  else if (meets(visitCompliance.visitCompletionRate, 60)) visitScore += 4;
+  else if (meets(visitCompliance.visitCompletionRate, 40)) visitScore += 2;
 
   // Independence (6 pts)
   if (visitCompliance.independentVisitorRate === 100) visitScore += 6;
-  else if (visitCompliance.independentVisitorRate >= 80) visitScore += 4;
-  else if (visitCompliance.independentVisitorRate >= 50) visitScore += 2;
+  else if (meets(visitCompliance.independentVisitorRate, 80)) visitScore += 4;
+  else if (meets(visitCompliance.independentVisitorRate, 50)) visitScore += 2;
 
   // Quality — ratings (6 pts)
   const outstandingOrGood = visitCompliance.ratingBreakdown
@@ -810,18 +835,18 @@ export function generateReg44ComplianceIntelligence(
     .reduce((sum, r) => sum + r.count, 0);
   const qualityRate = pct(outstandingOrGood, visitCompliance.totalVisitsCompleted);
   if (qualityRate === 100) visitScore += 6;
-  else if (qualityRate >= 80) visitScore += 4;
-  else if (qualityRate >= 60) visitScore += 2;
+  else if (meets(qualityRate, 80)) visitScore += 4;
+  else if (meets(qualityRate, 60)) visitScore += 2;
 
   // Report timeliness (4 pts)
   if (visitCompliance.reportOnTimeRate === 100) visitScore += 4;
-  else if (visitCompliance.reportOnTimeRate >= 80) visitScore += 2;
-  else if (visitCompliance.reportOnTimeRate >= 60) visitScore += 1;
+  else if (meets(visitCompliance.reportOnTimeRate, 80)) visitScore += 2;
+  else if (meets(visitCompliance.reportOnTimeRate, 60)) visitScore += 1;
 
   // Ofsted sharing (4 pts)
   if (visitCompliance.ofstedSharedRate === 100) visitScore += 4;
-  else if (visitCompliance.ofstedSharedRate >= 80) visitScore += 2;
-  else if (visitCompliance.ofstedSharedRate >= 50) visitScore += 1;
+  else if (meets(visitCompliance.ofstedSharedRate, 80)) visitScore += 2;
+  else if (meets(visitCompliance.ofstedSharedRate, 50)) visitScore += 1;
 
   visitScore = Math.min(visitScore, 30);
 
@@ -829,15 +854,15 @@ export function generateReg44ComplianceIntelligence(
   let recScore = 0;
 
   // Completion rate (10 pts)
-  if (recommendationResult.completionRate >= 90) recScore += 10;
-  else if (recommendationResult.completionRate >= 75) recScore += 7;
-  else if (recommendationResult.completionRate >= 50) recScore += 4;
-  else if (recommendationResult.completionRate >= 25) recScore += 2;
+  if (meets(recommendationResult.completionRate, 90)) recScore += 10;
+  else if (meets(recommendationResult.completionRate, 75)) recScore += 7;
+  else if (meets(recommendationResult.completionRate, 50)) recScore += 4;
+  else if (meets(recommendationResult.completionRate, 25)) recScore += 2;
 
   // Overdue (5 pts — penalty for overdue)
   if (recommendationResult.overdueCount === 0) recScore += 5;
-  else if (recommendationResult.overdueRate <= 10) recScore += 3;
-  else if (recommendationResult.overdueRate <= 25) recScore += 1;
+  else if ((recommendationResult.overdueRate !== null && recommendationResult.overdueRate <= 10)) recScore += 3;
+  else if ((recommendationResult.overdueRate !== null && recommendationResult.overdueRate <= 25)) recScore += 1;
 
   // Immediate priority overdue: extra penalty
   const immediateOverdue = recommendationResult.overdueRecommendations.filter(
@@ -846,14 +871,14 @@ export function generateReg44ComplianceIntelligence(
   if (immediateOverdue > 0) recScore -= Math.min(immediateOverdue * 2, 5);
 
   // Impact assessed (5 pts)
-  if (recommendationResult.impactAssessedRate >= 80) recScore += 5;
-  else if (recommendationResult.impactAssessedRate >= 60) recScore += 3;
-  else if (recommendationResult.impactAssessedRate >= 40) recScore += 1;
+  if (meets(recommendationResult.impactAssessedRate, 80)) recScore += 5;
+  else if (meets(recommendationResult.impactAssessedRate, 60)) recScore += 3;
+  else if (meets(recommendationResult.impactAssessedRate, 40)) recScore += 1;
 
   // Evidence provided (5 pts)
-  if (recommendationResult.withEvidenceRate >= 80) recScore += 5;
-  else if (recommendationResult.withEvidenceRate >= 60) recScore += 3;
-  else if (recommendationResult.withEvidenceRate >= 40) recScore += 1;
+  if (meets(recommendationResult.withEvidenceRate, 80)) recScore += 5;
+  else if (meets(recommendationResult.withEvidenceRate, 60)) recScore += 3;
+  else if (meets(recommendationResult.withEvidenceRate, 40)) recScore += 1;
 
   recScore = Math.max(0, Math.min(recScore, 25));
 
@@ -862,27 +887,27 @@ export function generateReg44ComplianceIntelligence(
 
   // Coverage: all children spoken to at least once (8 pts)
   if (childParticipation.childCoverage === 100) childScore += 8;
-  else if (childParticipation.childCoverage >= 80) childScore += 5;
-  else if (childParticipation.childCoverage >= 60) childScore += 3;
-  else if (childParticipation.childCoverage >= 40) childScore += 1;
+  else if (meets(childParticipation.childCoverage, 80)) childScore += 5;
+  else if (meets(childParticipation.childCoverage, 60)) childScore += 3;
+  else if (meets(childParticipation.childCoverage, 40)) childScore += 1;
 
   // Spoken-to rate per visit (6 pts)
-  if (childParticipation.childrenSpokenToRate >= 90) childScore += 6;
-  else if (childParticipation.childrenSpokenToRate >= 75) childScore += 4;
-  else if (childParticipation.childrenSpokenToRate >= 50) childScore += 2;
+  if (meets(childParticipation.childrenSpokenToRate, 90)) childScore += 6;
+  else if (meets(childParticipation.childrenSpokenToRate, 75)) childScore += 4;
+  else if (meets(childParticipation.childrenSpokenToRate, 50)) childScore += 2;
 
   // Views captured (5 pts)
-  if (childParticipation.viewsCapturedRate >= 90) childScore += 5;
-  else if (childParticipation.viewsCapturedRate >= 75) childScore += 3;
-  else if (childParticipation.viewsCapturedRate >= 50) childScore += 1;
+  if (meets(childParticipation.viewsCapturedRate, 90)) childScore += 5;
+  else if (meets(childParticipation.viewsCapturedRate, 75)) childScore += 3;
+  else if (meets(childParticipation.viewsCapturedRate, 50)) childScore += 1;
 
   // Issues actioned (6 pts)
   if (childParticipation.totalIssuesRaised === 0) {
     childScore += 6; // No issues = full marks
   } else {
     if (childParticipation.issuesActionedRate === 100) childScore += 6;
-    else if (childParticipation.issuesActionedRate >= 80) childScore += 4;
-    else if (childParticipation.issuesActionedRate >= 50) childScore += 2;
+    else if (meets(childParticipation.issuesActionedRate, 80)) childScore += 4;
+    else if (meets(childParticipation.issuesActionedRate, 50)) childScore += 2;
   }
 
   childScore = Math.min(childScore, 25);
@@ -892,23 +917,23 @@ export function generateReg44ComplianceIntelligence(
 
   // Timeliness (6 pts)
   if (managementResponseResult.respondedOnTimeRate === 100) mgmtScore += 6;
-  else if (managementResponseResult.respondedOnTimeRate >= 80) mgmtScore += 4;
-  else if (managementResponseResult.respondedOnTimeRate >= 60) mgmtScore += 2;
+  else if (meets(managementResponseResult.respondedOnTimeRate, 80)) mgmtScore += 4;
+  else if (meets(managementResponseResult.respondedOnTimeRate, 60)) mgmtScore += 2;
 
   // Acceptance rate (4 pts)
-  if (managementResponseResult.averageAcceptanceRate >= 90) mgmtScore += 4;
-  else if (managementResponseResult.averageAcceptanceRate >= 75) mgmtScore += 2;
-  else if (managementResponseResult.averageAcceptanceRate >= 50) mgmtScore += 1;
+  if (meets(managementResponseResult.averageAcceptanceRate, 90)) mgmtScore += 4;
+  else if (meets(managementResponseResult.averageAcceptanceRate, 75)) mgmtScore += 2;
+  else if (meets(managementResponseResult.averageAcceptanceRate, 50)) mgmtScore += 1;
 
   // Action plans created (4 pts)
   if (managementResponseResult.actionPlanCreatedRate === 100) mgmtScore += 4;
-  else if (managementResponseResult.actionPlanCreatedRate >= 80) mgmtScore += 2;
-  else if (managementResponseResult.actionPlanCreatedRate >= 50) mgmtScore += 1;
+  else if (meets(managementResponseResult.actionPlanCreatedRate, 80)) mgmtScore += 2;
+  else if (meets(managementResponseResult.actionPlanCreatedRate, 50)) mgmtScore += 1;
 
   // Shared with RI (4 pts)
   if (managementResponseResult.sharedWithRIRate === 100) mgmtScore += 4;
-  else if (managementResponseResult.sharedWithRIRate >= 80) mgmtScore += 2;
-  else if (managementResponseResult.sharedWithRIRate >= 50) mgmtScore += 1;
+  else if (meets(managementResponseResult.sharedWithRIRate, 80)) mgmtScore += 2;
+  else if (meets(managementResponseResult.sharedWithRIRate, 50)) mgmtScore += 1;
 
   // Penalty for missing responses (2 pts penalty)
   if (managementResponseResult.visitsMissingResponse.length > 0) {
@@ -957,7 +982,7 @@ export function generateReg44ComplianceIntelligence(
   if (visitCompliance.ofstedSharedRate === 100 && visitCompliance.totalVisitsCompleted > 0) {
     strengths.push("All visit reports shared with Ofsted as required");
   }
-  if (recommendationResult.completionRate >= 80) {
+  if (meets(recommendationResult.completionRate, 80)) {
     strengths.push(
       `Strong recommendation completion rate of ${recommendationResult.completionRate}%`,
     );
@@ -1007,12 +1032,12 @@ export function generateReg44ComplianceIntelligence(
       `${managementResponseResult.visitsMissingResponse.length} visit${managementResponseResult.visitsMissingResponse.length !== 1 ? "s" : ""} without a management response`,
     );
   }
-  if (recommendationResult.impactAssessedRate < 80 && recommendationResult.completedCount > 0) {
+  if (below(recommendationResult.impactAssessedRate, 80) && recommendationResult.completedCount > 0) {
     areasForDevelopment.push(
       `Impact assessment completed for only ${recommendationResult.impactAssessedRate}% of completed recommendations`,
     );
   }
-  if (visitCompliance.reportOnTimeRate < 100 && visitCompliance.totalVisitsCompleted > 0) {
+  if (below(visitCompliance.reportOnTimeRate, 100) && visitCompliance.totalVisitsCompleted > 0) {
     areasForDevelopment.push(
       `Report submission on-time rate is ${visitCompliance.reportOnTimeRate}% (target: 100%)`,
     );
@@ -1055,13 +1080,13 @@ export function generateReg44ComplianceIntelligence(
   }
   if (
     childParticipation.totalIssuesRaised > 0 &&
-    childParticipation.issuesActionedRate < 100
+    below(childParticipation.issuesActionedRate, 100)
   ) {
     immediateActions.push(
       "MEDIUM: Action outstanding issues raised by children during Reg 44 visits",
     );
   }
-  if (managementResponseResult.sharedWithRIRate < 100 && managementResponseResult.totalResponses > 0) {
+  if (below(managementResponseResult.sharedWithRIRate, 100) && managementResponseResult.totalResponses > 0) {
     immediateActions.push(
       "MEDIUM: Ensure all management responses and action plans are shared with the Responsible Individual",
     );
