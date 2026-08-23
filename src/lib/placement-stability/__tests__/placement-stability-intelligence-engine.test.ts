@@ -366,8 +366,13 @@ describe("generatePlacementStabilityIntelligenceReport", () => {
   });
   it("requires_improvement for score 40-59", () => {
     const r = generatePlacementStabilityIntelligenceReport({ homeId: "home-oak", periodStart: "2025-01-01", periodEnd: "2025-12-31", records: [], policy: { ...allFalsePolicy(), placementStabilityPolicy: true, matchingProcedure: true, disruptionManagementPolicy: true }, staff: [makeStaff()] });
-    // Policy 12 + Staff 25 + Quality 0 + Compliance 0 = 37 -> inadequate
-    // Add more policy: 4+4+4+4 = 16 + 25 = 41
+    // Policy 12 + Staff 25 + Quality 0 + Compliance 0 = 37 -> inadequate.
+    // The block derived that and then never asserted it, so the lower half of
+    // the 40 boundary went unpinned.
+    expect(r.overallScore).toBe(37);
+    expect(r.rating).toBe("inadequate");
+
+    // One more policy takes it to 41 — over the boundary.
     const r2 = generatePlacementStabilityIntelligenceReport({ homeId: "home-oak", periodStart: "2025-01-01", periodEnd: "2025-12-31", records: [], policy: { ...allFalsePolicy(), placementStabilityPolicy: true, matchingProcedure: true, disruptionManagementPolicy: true, transitionPlanningFramework: true }, staff: [makeStaff()] });
     expect(r2.overallScore).toBe(41);
     expect(r2.rating).toBe("requires_improvement");

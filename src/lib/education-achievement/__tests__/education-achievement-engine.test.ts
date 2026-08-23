@@ -1376,8 +1376,14 @@ describe("Education Achievement Intelligence Engine", () => {
         DEMO_ATTENDANCE, DEMO_PEPS, DEMO_OUTCOMES, DEMO_STABILITY, DEMO_EXCLUSIONS,
         "oak-house", PERIOD_START, PERIOD_END,
       );
-      // Jordan's PEP has ppFundingUsed: false, so rate is 67% > 50%, no action
-      // But let's test with low PP funding
+      // Jordan's PEP has ppFundingUsed: false, so rate is 67% > 50% — above the
+      // threshold, so NO action should fire. The negative half of the boundary
+      // was documented here and never asserted.
+      expect(result.actions).not.toEqual(
+        expect.arrayContaining([expect.stringContaining("Pupil Premium Plus")]),
+      );
+
+      // Below the threshold, the action does fire.
       const lowPPPeps = [
         makePEP({ id: "p1", ppFundingUsed: false }),
         makePEP({ id: "p2", childId: "child-b", ppFundingUsed: false }),

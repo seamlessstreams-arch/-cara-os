@@ -258,8 +258,12 @@ describe("Activities & Enrichment Intelligence Engine", () => {
           makeActivity({ category: "outdoor" }),
         ],
       }));
-      // sport = 57% (4/7), technically just under 60%
-      // Let's use 5/7 = 71%
+      // sport = 57% (4/7), technically just under 60% — so it must NOT be
+      // penalised. That is the boundary this block was built to pin, and it
+      // went unasserted: 4 categories x 20 = 80, no concentration deduction.
+      expect(result.varietyScore).toBe(80);
+
+      // 5/7 = 71% crosses the threshold and does take the penalty.
       const result2 = analyseActivities(makeInput({
         activities: [
           makeActivity({ category: "sport" }),
@@ -272,7 +276,8 @@ describe("Activities & Enrichment Intelligence Engine", () => {
         ],
       }));
       // 3 categories * 20 = 60, minus 15 for concentration = 45
-      expect(result2.varietyScore).toBeLessThan(55);
+      expect(result2.varietyScore).toBe(45);
+      expect(result2.varietyScore).toBeLessThan(result.varietyScore);
     });
   });
 
