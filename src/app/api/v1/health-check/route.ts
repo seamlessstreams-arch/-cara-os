@@ -35,8 +35,8 @@ export async function GET(_req: NextRequest) {
   // home with no records at all. On a safeguarding surface, false confidence is
   // worse than showing nothing — hence the honest no-data path below.
   const [youngPeople, incidents, allMars, shifts, training] = await Promise.all([
-    safeList(dal.youngPeople.findAll() as Promise<Record<string, unknown>[]>),
-    safeList(dal.incidents.findAll() as Promise<Record<string, unknown>[]>),
+    safeList(dal.youngPeople.findAll() as unknown as Promise<Record<string, unknown>[]>),
+    safeList(dal.incidents.findAll() as unknown as Promise<Record<string, unknown>[]>),
     safeList(dal.medicationAdministrations.findAll() as Promise<Record<string, unknown>[]>),
     safeList(dal.shifts.findAll() as Promise<Record<string, unknown>[]>),
     safeList(dal.training.findAll() as Promise<Record<string, unknown>[]>),

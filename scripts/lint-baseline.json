@@ -1,7 +1,7 @@
 {
  "@next/next/no-img-element": 3,
  "@next/next/no-location-assign-relative-destination": 1,
- "@typescript-eslint/no-explicit-any": 4999,
+ "@typescript-eslint/no-explicit-any": 4995,
  "@typescript-eslint/no-unused-expressions": 9,
  "@typescript-eslint/no-unused-vars": 22
 }

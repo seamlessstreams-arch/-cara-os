@@ -39,10 +39,22 @@ export async function GET() {
     const add = (r: FollowUpSourceRecord) => { if (r.source_id) records.push(r); };
 
     for (const i of incidentsList ?? []) {
-      add({ event: "incident_created", source_table: "incidents", source_id: i.id, child_id: i.child_id ?? i.young_person_id ?? null, content: `${i.type ?? ""} ${i.description ?? i.summary ?? ""}`.trim(), label: `Incident — ${i.type ?? i.incident_type ?? "general"}`, date: day(i.date ?? i.incident_date ?? i.created_at) });
+      // The `?? i.young_person_id ?? i.summary ?? i.incident_type ?? i.incident_date`
+      // fallbacks that used to sit here name fields Incident does not have, so
+      // the first branch always won. Typing the dal surfaced them as dead.
+      add({ event: "incident_created", source_table: "incidents", source_id: i.id, child_id: i.child_id ?? null, content: `${i.type ?? ""} ${i.description ?? ""}`.trim(), label: `Incident — ${i.type ?? "general"}`, date: day(i.date ?? i.created_at) });
     }
     for (const m of missingEpisodesList ?? []) {
-      add({ event: "missing_episode_created", source_table: "missing_episodes", source_id: m.id, child_id: m.child_id ?? null, content: m.circumstances ?? m.notes ?? "", label: "Missing from care episode", date: day(m.date_missing ?? m.created_at) });
+      // `m.circumstances ?? m.notes` named two fields MissingEpisode has
+      // NEITHER of, so content was always "". Latent rather than live — the
+      // missing_episode rule ignores content — but any rule that starts
+      // reading it would have seen nothing. Built from the fields that exist.
+      const missingContent = [
+        m.location_last_seen ? `last seen ${m.location_last_seen}` : "",
+        m.return_interview_notes ?? "",
+        m.pattern_notes ?? "",
+      ].filter(Boolean).join(" · ");
+      add({ event: "missing_episode_created", source_table: "missing_episodes", source_id: m.id, child_id: m.child_id ?? null, content: missingContent, label: "Missing from care episode", date: day(m.date_missing ?? m.created_at) });
     }
     for (const r of restraintsList ?? []) {
       add({ event: "restraint_recorded", source_table: "restraints", source_id: r.id, child_id: r.child_id ?? null, content: `physical intervention ${r.description ?? ""}`.trim(), label: "Physical intervention / restraint", date: day(r.date ?? r.created_at) });

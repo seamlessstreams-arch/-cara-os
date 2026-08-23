@@ -57,7 +57,7 @@ export async function GET(
 
   // ── Find child ─────────────────────────────────────────────────────────
   const yp = (youngPeopleList ?? []).find(
-    (y: any) => y.id === childId,
+    (y) => y.id === childId,
   );
   if (!yp) {
     return NextResponse.json(
@@ -66,10 +66,11 @@ export async function GET(
     );
   }
 
-  const childName = (
-    (yp as any).name ??
-    `${(yp as any).first_name ?? ""} ${(yp as any).last_name ?? ""}`.trim()
-  ) || childId;
+  // `yp.name` used to be read here through an `as any`. YoungPerson has no
+  // such field, so that branch never fired and the concatenation below was
+  // always what ran — typing the dal surfaced it. Behaviour is unchanged.
+  const childName =
+    `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || childId;
 
   // ── Risk Assessments ───────────────────────────────────────────────────
   const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
