@@ -70,7 +70,10 @@ function makeTraining(overrides: Partial<StaffCulturalTraining> = {}): StaffCult
 // -- pct -----------------------------------------------------------------------
 
 describe("pct", () => {
-  it("returns 0 for zero denominator", () => expect(pct(5, 0)).toBe(0));
+  it("returns null for a zero denominator — nothing measured, not 0%", () => {
+    expect(pct(5, 0)).toBeNull();
+    expect(pct(5, 0)).not.toBe(0); // 0% is a claim about a population that does not exist
+  });
   it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
   it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
   it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));

@@ -15,6 +15,8 @@
 
 // -- Type unions ---------------------------------------------------------------
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export type ComplaintType =
   | "care_quality"
   | "staff_conduct"
@@ -202,21 +204,30 @@ export interface StaffComplaintsTraining {
 export interface ComplaintsHandlingResult {
   overallScore: number;
   totalComplaints: number;
-  resolvedRate: number;
-  resolvedWithinTimescaleRate: number;
-  advocacyOfferedRate: number;
-  satisfactionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedWithinTimescaleRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyOfferedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  satisfactionRate: number | null;
   averageDaysToResolve: number;
 }
 
 export interface AdvocacyAccessResult {
   overallScore: number;
   totalReferrals: number;
-  contactMadeRate: number;
-  independentRate: number;
-  childInformedRate: number;
-  timelyAccessRate: number;
-  ongoingSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contactMadeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyAccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ongoingSupportRate: number | null;
 }
 
 export interface ResolutionQualityResult {
@@ -233,12 +244,18 @@ export interface ResolutionQualityResult {
 export interface StaffComplaintsReadinessResult {
   overallScore: number;
   totalStaff: number;
-  complaintsProcedureRate: number;
-  advocacyReferralRate: number;
-  childRightsRate: number;
-  conflictResolutionRate: number;
-  recordKeepingRate: number;
-  escalationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complaintsProcedureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyReferralRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childRightsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationRate: number | null;
 }
 
 export interface ChildComplaintsSummary {
@@ -270,9 +287,9 @@ export interface ComplaintsAdvocacyAccessIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
+// Was `if (den === 0) return 0;`: nothing recorded read as 0%.
+export function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 export function getRating(score: number): Rating {
@@ -314,28 +331,28 @@ export function evaluateComplaintsHandling(
     (c) => c.status === "resolved" || c.status === "withdrawn",
   ).length;
   const resolvedRate = pct(resolved, complaints.length);
-  if (resolvedRate >= 90) score += 7;
-  else if (resolvedRate >= 70) score += 5;
-  else if (resolvedRate >= 50) score += 3;
-  else if (resolvedRate > 0) score += 1;
+  if (meets(resolvedRate, 90)) score += 7;
+  else if (meets(resolvedRate, 70)) score += 5;
+  else if (meets(resolvedRate, 50)) score += 3;
+  else if (above(resolvedRate, 0)) score += 1;
 
   const timely = complaints.filter(
     (c) => c.resolvedWithinTimescale,
   ).length;
   const resolvedWithinTimescaleRate = pct(timely, complaints.length);
-  if (resolvedWithinTimescaleRate >= 90) score += 6;
-  else if (resolvedWithinTimescaleRate >= 70) score += 4;
-  else if (resolvedWithinTimescaleRate >= 50) score += 3;
-  else if (resolvedWithinTimescaleRate > 0) score += 1;
+  if (meets(resolvedWithinTimescaleRate, 90)) score += 6;
+  else if (meets(resolvedWithinTimescaleRate, 70)) score += 4;
+  else if (meets(resolvedWithinTimescaleRate, 50)) score += 3;
+  else if (above(resolvedWithinTimescaleRate, 0)) score += 1;
 
   const advocacyOffered = complaints.filter(
     (c) => c.advocacyOffered,
   ).length;
   const advocacyOfferedRate = pct(advocacyOffered, complaints.length);
-  if (advocacyOfferedRate >= 90) score += 6;
-  else if (advocacyOfferedRate >= 70) score += 4;
-  else if (advocacyOfferedRate >= 50) score += 3;
-  else if (advocacyOfferedRate > 0) score += 1;
+  if (meets(advocacyOfferedRate, 90)) score += 6;
+  else if (meets(advocacyOfferedRate, 70)) score += 4;
+  else if (meets(advocacyOfferedRate, 50)) score += 3;
+  else if (above(advocacyOfferedRate, 0)) score += 1;
 
   const satisfied = complaints.filter(
     (c) =>
@@ -343,10 +360,10 @@ export function evaluateComplaintsHandling(
       c.childSatisfaction === "satisfied",
   ).length;
   const satisfactionRate = pct(satisfied, complaints.length);
-  if (satisfactionRate >= 80) score += 6;
-  else if (satisfactionRate >= 60) score += 4;
-  else if (satisfactionRate >= 40) score += 3;
-  else if (satisfactionRate > 0) score += 1;
+  if (meets(satisfactionRate, 80)) score += 6;
+  else if (meets(satisfactionRate, 60)) score += 4;
+  else if (meets(satisfactionRate, 40)) score += 3;
+  else if (above(satisfactionRate, 0)) score += 1;
 
   const totalDays = complaints.reduce(
     (sum, c) => sum + c.daysToResolve,
@@ -393,37 +410,37 @@ export function evaluateAdvocacyAccess(
 
   const contactMade = records.filter((r) => r.contactMade).length;
   const contactMadeRate = pct(contactMade, records.length);
-  if (contactMadeRate >= 90) score += 7;
-  else if (contactMadeRate >= 70) score += 5;
-  else if (contactMadeRate >= 50) score += 3;
-  else if (contactMadeRate > 0) score += 1;
+  if (meets(contactMadeRate, 90)) score += 7;
+  else if (meets(contactMadeRate, 70)) score += 5;
+  else if (meets(contactMadeRate, 50)) score += 3;
+  else if (above(contactMadeRate, 0)) score += 1;
 
   const independent = records.filter(
     (r) => r.independentFromHome,
   ).length;
   const independentRate = pct(independent, records.length);
-  if (independentRate >= 90) score += 6;
-  else if (independentRate >= 70) score += 4;
-  else if (independentRate >= 50) score += 3;
-  else if (independentRate > 0) score += 1;
+  if (meets(independentRate, 90)) score += 6;
+  else if (meets(independentRate, 70)) score += 4;
+  else if (meets(independentRate, 50)) score += 3;
+  else if (above(independentRate, 0)) score += 1;
 
   const childInformed = records.filter(
     (r) => r.childInformed,
   ).length;
   const childInformedRate = pct(childInformed, records.length);
-  if (childInformedRate >= 90) score += 6;
-  else if (childInformedRate >= 70) score += 4;
-  else if (childInformedRate >= 50) score += 3;
-  else if (childInformedRate > 0) score += 1;
+  if (meets(childInformedRate, 90)) score += 6;
+  else if (meets(childInformedRate, 70)) score += 4;
+  else if (meets(childInformedRate, 50)) score += 3;
+  else if (above(childInformedRate, 0)) score += 1;
 
   const timely = records.filter(
     (r) => r.accessWithinTimescale,
   ).length;
   const timelyAccessRate = pct(timely, records.length);
-  if (timelyAccessRate >= 90) score += 6;
-  else if (timelyAccessRate >= 70) score += 4;
-  else if (timelyAccessRate >= 50) score += 3;
-  else if (timelyAccessRate > 0) score += 1;
+  if (meets(timelyAccessRate, 90)) score += 6;
+  else if (meets(timelyAccessRate, 70)) score += 4;
+  else if (meets(timelyAccessRate, 50)) score += 3;
+  else if (above(timelyAccessRate, 0)) score += 1;
 
   const ongoing = records.filter((r) => r.ongoingSupport).length;
   const ongoingSupportRate = pct(ongoing, records.length);
@@ -523,50 +540,50 @@ export function evaluateStaffComplaintsReadiness(
     (t) => t.complaintsProcedure,
   ).length;
   const complaintsProcedureRate = pct(procedure, training.length);
-  if (complaintsProcedureRate >= 90) score += 6;
-  else if (complaintsProcedureRate >= 70) score += 4;
-  else if (complaintsProcedureRate >= 50) score += 3;
-  else if (complaintsProcedureRate > 0) score += 1;
+  if (meets(complaintsProcedureRate, 90)) score += 6;
+  else if (meets(complaintsProcedureRate, 70)) score += 4;
+  else if (meets(complaintsProcedureRate, 50)) score += 3;
+  else if (above(complaintsProcedureRate, 0)) score += 1;
 
   const advocacy = training.filter((t) => t.advocacyReferral).length;
   const advocacyReferralRate = pct(advocacy, training.length);
-  if (advocacyReferralRate >= 90) score += 5;
-  else if (advocacyReferralRate >= 70) score += 3;
-  else if (advocacyReferralRate >= 50) score += 2;
-  else if (advocacyReferralRate > 0) score += 1;
+  if (meets(advocacyReferralRate, 90)) score += 5;
+  else if (meets(advocacyReferralRate, 70)) score += 3;
+  else if (meets(advocacyReferralRate, 50)) score += 2;
+  else if (above(advocacyReferralRate, 0)) score += 1;
 
   const rights = training.filter(
     (t) => t.childRightsAwareness,
   ).length;
   const childRightsRate = pct(rights, training.length);
-  if (childRightsRate >= 90) score += 5;
-  else if (childRightsRate >= 70) score += 3;
-  else if (childRightsRate >= 50) score += 2;
-  else if (childRightsRate > 0) score += 1;
+  if (meets(childRightsRate, 90)) score += 5;
+  else if (meets(childRightsRate, 70)) score += 3;
+  else if (meets(childRightsRate, 50)) score += 2;
+  else if (above(childRightsRate, 0)) score += 1;
 
   const conflict = training.filter(
     (t) => t.conflictResolution,
   ).length;
   const conflictResolutionRate = pct(conflict, training.length);
-  if (conflictResolutionRate >= 90) score += 4;
-  else if (conflictResolutionRate >= 70) score += 3;
-  else if (conflictResolutionRate >= 50) score += 2;
-  else if (conflictResolutionRate > 0) score += 1;
+  if (meets(conflictResolutionRate, 90)) score += 4;
+  else if (meets(conflictResolutionRate, 70)) score += 3;
+  else if (meets(conflictResolutionRate, 50)) score += 2;
+  else if (above(conflictResolutionRate, 0)) score += 1;
 
   const recordKeeping = training.filter(
     (t) => t.recordKeeping,
   ).length;
   const recordKeepingRate = pct(recordKeeping, training.length);
-  if (recordKeepingRate >= 90) score += 3;
-  else if (recordKeepingRate >= 70) score += 2;
-  else if (recordKeepingRate >= 50) score += 1;
+  if (meets(recordKeepingRate, 90)) score += 3;
+  else if (meets(recordKeepingRate, 70)) score += 2;
+  else if (meets(recordKeepingRate, 50)) score += 1;
 
   const escalation = training.filter(
     (t) => t.escalationProcess,
   ).length;
   const escalationRate = pct(escalation, training.length);
-  if (escalationRate >= 90) score += 2;
-  else if (escalationRate >= 70) score += 1;
+  if (meets(escalationRate, 90)) score += 2;
+  else if (meets(escalationRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -642,9 +659,9 @@ export function buildChildComplaintsSummaries(
     ).length;
     if (entry.complaints.length === 0) {
       score += 3;
-    } else if (pct(satisfied, entry.complaints.length) >= 80) {
+    } else if (meets(pct(satisfied, entry.complaints.length), 80)) {
       score += 3;
-    } else if (pct(satisfied, entry.complaints.length) >= 50) {
+    } else if (meets(pct(satisfied, entry.complaints.length), 50)) {
       score += 2;
     } else if (satisfied > 0) {
       score += 1;
@@ -670,7 +687,7 @@ export function buildChildComplaintsSummaries(
       advocacyAccessed: entry.advocacy.length > 0,
       satisfactionPositive:
         entry.complaints.length === 0 ||
-        pct(satisfied, entry.complaints.length) >= 50,
+        meets(pct(satisfied, entry.complaints.length), 50),
       overallScore: Math.min(Math.max(score, 0), 10),
     };
   });
@@ -715,7 +732,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.resolvedRate >= 90 &&
+    meets(complaintsHandling.resolvedRate, 90) &&
     complaints.length > 0
   ) {
     strengths.push(
@@ -723,7 +740,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.advocacyOfferedRate >= 90 &&
+    meets(complaintsHandling.advocacyOfferedRate, 90) &&
     complaints.length > 0
   ) {
     strengths.push(
@@ -731,7 +748,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    advocacyAccess.contactMadeRate >= 90 &&
+    meets(advocacyAccess.contactMadeRate, 90) &&
     advocacyRecords.length > 0
   ) {
     strengths.push(
@@ -752,7 +769,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    staffComplaintsReadiness.complaintsProcedureRate >= 90 &&
+    meets(staffComplaintsReadiness.complaintsProcedureRate, 90) &&
     training.length > 0
   ) {
     strengths.push(
@@ -760,7 +777,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.satisfactionRate >= 80 &&
+    meets(complaintsHandling.satisfactionRate, 80) &&
     complaints.length > 0
   ) {
     strengths.push(
@@ -772,7 +789,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
   const areasForImprovement: string[] = [];
 
   if (
-    complaintsHandling.resolvedWithinTimescaleRate < 70 &&
+    below(complaintsHandling.resolvedWithinTimescaleRate, 70) &&
     complaints.length > 0
   ) {
     areasForImprovement.push(
@@ -780,7 +797,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.advocacyOfferedRate < 70 &&
+    below(complaintsHandling.advocacyOfferedRate, 70) &&
     complaints.length > 0
   ) {
     areasForImprovement.push(
@@ -788,7 +805,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    advocacyAccess.independentRate < 70 &&
+    below(advocacyAccess.independentRate, 70) &&
     advocacyRecords.length > 0
   ) {
     areasForImprovement.push(
@@ -804,7 +821,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    staffComplaintsReadiness.childRightsRate < 70 &&
+    below(staffComplaintsReadiness.childRightsRate, 70) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -812,7 +829,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.satisfactionRate < 50 &&
+    below(complaintsHandling.satisfactionRate, 50) &&
     complaints.length > 0
   ) {
     areasForImprovement.push(
@@ -839,7 +856,7 @@ export function generateComplaintsAdvocacyAccessIntelligence(
     );
   }
   if (
-    complaintsHandling.resolvedRate < 50 &&
+    below(complaintsHandling.resolvedRate, 50) &&
     complaints.length > 0
   ) {
     actions.push(
