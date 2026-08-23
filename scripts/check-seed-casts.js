@@ -9,6 +9,22 @@
 // typed declarations so an incomplete record is a build-visible error.
 //
 // Allowed: `as const`, `satisfies`, and whole-file idioms outside seed files.
+//
+// Second check, added after the behaviour-log incident: a WHOLE-ARRAY
+// terminator, `] as BehaviourEntry[];`, hides exactly the same class and this
+// guard could not see it — partly because it only matched `} as Type` on a
+// member, and partly because store.ts is not named like a seed file and was
+// never scanned at all. 17 seeded behaviour rows carried words their own type
+// does not admit (direction "concerning" for "concern", intensity "medium" /
+// "severe" for "moderate" / "critical"), which made the home's own
+// high/critical counter read 5 where the truth is 9. Three sanctions rows said
+// reward_type "activity" where SRRewardType says "activity_reward", so the
+// Type column on /sanctions-rewards rendered blank for them.
+//
+// The two checks keep separate scopes on purpose. Member-level casts are
+// checked in seed-named files only; store.ts carries 425 of them and burning
+// those down is its own piece of work. Whole-array terminators are checked in
+// store.ts too, where the count is now zero and can stay there.
 // ─────────────────────────────────────────────────────────────────────────────
 const fs = require("node:fs");
 const path = require("node:path");
@@ -41,10 +57,36 @@ for (const root of roots) {
   }
 }
 
-if (violations.length > 0) {
-  console.error("Seed-cast guard FAILED — member-level casts hide incomplete seed records from tsc:");
-  for (const v of violations) console.error("  " + v);
-  console.error("Declare the array/record with an explicit type annotation instead, and complete the record.");
+// ── Whole-array terminators: `] as SomeType[];` ─────────────────────────────
+// Wider scope than the member check: store.ts holds most of the seed data and
+// does not match the seed-file naming patterns.
+const ARRAY_CAST_FILES = ["src/lib/db/store.ts"];
+for (const root of roots) for (const file of walk(root)) ARRAY_CAST_FILES.push(file);
+
+const arrayCastViolations = [];
+for (const file of [...new Set(ARRAY_CAST_FILES)]) {
+  if (!fs.existsSync(file)) continue;
+  const lines = fs.readFileSync(file, "utf8").split("\n");
+  lines.forEach((line, i) => {
+    const m = line.match(/^\s*\]\s+as\s+([A-Z][A-Za-z0-9_]*)\[\]\s*;\s*$/);
+    if (m) arrayCastViolations.push(`${file}:${i + 1}  ] as ${m[1]}[]`);
+  });
+}
+
+if (violations.length > 0 || arrayCastViolations.length > 0) {
+  if (violations.length > 0) {
+    console.error("Seed-cast guard FAILED — member-level casts hide incomplete seed records from tsc:");
+    for (const v of violations) console.error("  " + v);
+    console.error("Declare the array/record with an explicit type annotation instead, and complete the record.");
+  }
+  if (arrayCastViolations.length > 0) {
+    console.error("Seed-cast guard FAILED — a whole-array cast hides every row in the array from tsc:");
+    for (const v of arrayCastViolations) console.error("  " + v);
+    console.error("Annotate the declaration instead (`const X: Row[] = [`), or assign to an already-typed");
+    console.error("property and drop the cast, so each row is checked against the type it claims to be.");
+  }
   process.exit(1);
 }
-console.log("Seed-cast guard passed: no member-level casts in seed files.");
+console.log(
+  `Seed-cast guard passed: no member-level casts in seed files, no whole-array casts in ${new Set(ARRAY_CAST_FILES).size} seed/store file(s).`,
+);

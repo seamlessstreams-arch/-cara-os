@@ -13,16 +13,19 @@ const d = (v: unknown, fb = ""): string => (v == null ? fb : v.toString().slice(
 describe("behaviour-trigger-patterns integration (real seed data)", () => {
   const store = getStore();
 
-  const children: BehaviourChildRef[] = (store.youngPeople as any[])
+  const children: BehaviourChildRef[] = store.youngPeople
     .filter((yp) => yp.status === "current")
     .map((yp) => ({ id: yp.id, name: yp.preferred_name || `${yp.first_name} ${yp.last_name}`.trim() }));
-  const entries: BehaviourEntryInput[] = (store.behaviourLog as any[])
+  // The two `as any[]` casts that used to be here are gone: the seeded
+  // behaviour log is checked against BehaviourEntry now that its blanket
+  // `as BehaviourEntry[]` has been removed.
+  const entries: BehaviourEntryInput[] = store.behaviourLog
     .filter((b) => b.child_id)
     .map((b) => ({
       child_id: b.child_id,
       date: d(b.date ?? b.created_at),
-      direction: b.direction ?? "concern",
-      intensity: b.intensity ?? "low",
+      direction: b.direction,
+      intensity: b.intensity,
       trigger: b.trigger ?? "",
       antecedent: b.antecedent ?? "",
       strategy_used: b.strategy_used ?? "",
@@ -36,9 +39,14 @@ describe("behaviour-trigger-patterns integration (real seed data)", () => {
     expect(result.overview.children_analysed).toBe(result.children.length);
   });
 
-  it("normalises the seed's 'concerning'/'medium' values and counts concerns", () => {
-    // The seed uses direction "concerning" and intensity "medium"; the engine must
-    // still recognise these as concerns with a valid intensity rank.
+  it("counts the seed's concerning entries", () => {
+    // This used to read "normalises the seed's 'concerning'/'medium' values".
+    // The seed no longer carries those — it speaks the vocabulary its own type
+    // declares. The engine still accepts both spellings, and must, because its
+    // input type is its own; what it no longer has to do is paper over a seed
+    // that disagreed with BehaviourEntry.
+    const concerning = entries.filter((e) => e.direction !== "positive");
+    expect(concerning.length).toBeGreaterThan(0);
     expect(result.overview.total_concerning_90d).toBeGreaterThan(0);
   });
 

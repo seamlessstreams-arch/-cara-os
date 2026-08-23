@@ -60,12 +60,13 @@ export async function GET(request: NextRequest) {
       // medium / severe. Same scales, different spellings — and that mismatch
       // is where the phantom `intensity === "severe"` comparisons came from.
       //
-      // Both spellings are live in the store TODAY: direction holds "positive",
-      // "concern" AND "concerning"; intensity holds all six of low, medium,
-      // moderate, high, severe, critical. So neither of these may test for one
-      // spelling and assume the other — `=== "concern" ? … : "positive"` would
-      // quietly file every row spelled "concerning" as positive behaviour.
-      // Positive is the value with only one spelling, so it is the one tested.
+      // The seed used to hold BOTH spellings of both scales past a blanket
+      // `as BehaviourEntry[]`, and testing for one while assuming the other
+      // quietly filed every row spelled "concerning" as positive behaviour.
+      // The seed now speaks the vocabulary BehaviourEntry declares, so this is
+      // a straight translation between two type vocabularies rather than a
+      // guess about the data. Testing "positive" — the value both scales spell
+      // the same way — keeps it total either way.
       direction: b.direction === "positive" ? "positive" : "concerning",
       intensity:
         b.intensity === "moderate" ? "medium"

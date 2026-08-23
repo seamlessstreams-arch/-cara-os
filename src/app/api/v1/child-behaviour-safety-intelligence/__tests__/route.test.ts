@@ -80,13 +80,16 @@ describe("GET /api/v1/child-behaviour-safety-intelligence — sleep", () => {
 });
 
 describe("GET /api/v1/child-behaviour-safety-intelligence — behaviour vocabulary", () => {
-  it("files a concerning entry as concerning whichever spelling it carries", async () => {
+  it("files every non-positive entry as concerning", async () => {
     // extended.ts and the engine disagree on this word — "concern" vs
-    // "concerning" — and the store holds BOTH today, alongside all six
-    // intensity spellings. Testing for one and assuming the other files real
-    // concerning behaviour as positive, which is the flattering direction:
-    // for this child it turns 11 concerning entries into 3 and lifts the
-    // positive ratio from 42% to 84%.
+    // "concerning" — so a translation is unavoidable here. It must be TOTAL:
+    // testing the engine's spelling against a store that uses the type's
+    // (`=== "concerning" ? … : "positive"`) files every concerning entry as
+    // positive behaviour, which is the flattering direction. For this child
+    // that is 11 entries reported as 0.
+    //
+    // "positive" is the one value both vocabularies spell identically, so it
+    // is the one tested, and the counts are asserted against the store.
     const childId = childWithRestraints();
     const today = todayStr();
     const within30 = (d: string) => {
@@ -95,12 +98,9 @@ describe("GET /api/v1/child-behaviour-safety-intelligence — behaviour vocabula
     };
     const recent = getStore().behaviourLog.filter((b) => b.child_id === childId && within30(b.date));
     const concerning = recent.filter((b) => b.direction !== "positive");
-    const spellings = new Set(concerning.map((b) => b.direction));
 
-    // Non-vacuity, and the whole point: with one spelling present, an equality
-    // test on the other would pass here by luck.
-    expect(concerning.length).toBeGreaterThan(0);
-    expect(spellings.size).toBeGreaterThan(1);
+    expect(recent.length).toBeGreaterThan(0);
+    expect(concerning.length).toBeGreaterThan(0); // non-vacuity: 0 === 0 proves nothing
 
     const body = (await (await call(childId)).json()).data;
     expect(body.behaviour_profile.concerning_count_30d).toBe(concerning.length);
