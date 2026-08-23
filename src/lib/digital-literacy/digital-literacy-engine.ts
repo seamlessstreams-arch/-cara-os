@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Digital Literacy & Online Engagement Intelligence Engine
 //
@@ -138,7 +139,8 @@ export interface DigitalCitizenshipRecord {
 export interface DigitalSkillsResult {
   totalChildren: number;
   childrenWithAssessment: number;
-  assessmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentRate: number | null;
   averageSkillLevel: number;
   skillLevelDistribution: { level: SkillLevel; count: number }[];
   skillGaps: DigitalSkillCategory[];
@@ -149,9 +151,12 @@ export interface DigitalSkillsResult {
 export interface DeviceAccessResult {
   totalChildren: number;
   childrenWithAccess: number;
-  accessRate: number;
-  agreementComplianceRate: number;
-  ageAppropriateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  agreementComplianceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
   deviceTypeBreakdown: { deviceType: DeviceType; count: number }[];
   accessLevelBreakdown: { accessLevel: AccessLevel; count: number }[];
   overdueReviews: number;
@@ -163,8 +168,10 @@ export interface OnlineLearningResult {
   sessionsPerChild: number;
   activityTypeBreakdown: { activityType: string; count: number }[];
   activityTypeCount: number;
-  positiveOutcomeRate: number;
-  supervisedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisedRate: number | null;
   averageDuration: number;
   totalLearningMinutes: number;
   childrenWithNoLearning: string[];
@@ -172,7 +179,8 @@ export interface OnlineLearningResult {
 
 export interface DigitalCitizenshipResult {
   totalRecords: number;
-  positiveRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRate: number | null;
   areaCoverage: number;
   totalAreas: number;
   areaBreakdown: { area: string; positiveCount: number; totalCount: number }[];
@@ -192,7 +200,8 @@ export interface ChildDigitalProfile {
   learningMinutes: number;
   positiveOutcomes: number;
   citizenshipScore: number;
-  citizenshipPositiveRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  citizenshipPositiveRate: number | null;
   strengths: string[];
   developmentAreas: string[];
 }
@@ -282,8 +291,9 @@ export function getSkillLevelValue(level: SkillLevel): number {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
@@ -659,7 +669,7 @@ export function buildChildDigitalProfiles(
     if (learningSessionCount >= 5) {
       strengths.push("Active online learner");
     }
-    if (citizenshipPositiveRate >= 80 && totalCitizenship >= 2) {
+    if (meets(citizenshipPositiveRate, 80) && totalCitizenship >= 2) {
       strengths.push("Excellent digital citizenship");
     }
 
@@ -783,9 +793,9 @@ export function generateDigitalLiteracyIntelligence(
 
   // Assessment coverage (up to 12 points)
   if (digitalSkills.assessmentRate === 100) skillsScore += 12;
-  else if (digitalSkills.assessmentRate >= 80) skillsScore += 9;
-  else if (digitalSkills.assessmentRate >= 50) skillsScore += 5;
-  else if (digitalSkills.assessmentRate > 0) skillsScore += 2;
+  else if (meets(digitalSkills.assessmentRate, 80)) skillsScore += 9;
+  else if (meets(digitalSkills.assessmentRate, 50)) skillsScore += 5;
+  else if (above(digitalSkills.assessmentRate, 0)) skillsScore += 2;
 
   // Skill levels (up to 10 points)
   if (digitalSkills.averageSkillLevel >= 4) skillsScore += 10;
@@ -810,19 +820,19 @@ export function generateDigitalLiteracyIntelligence(
 
   // Access equity (up to 8 points)
   if (deviceAccess.accessRate === 100) accessScore += 8;
-  else if (deviceAccess.accessRate >= 80) accessScore += 6;
-  else if (deviceAccess.accessRate >= 50) accessScore += 3;
-  else if (deviceAccess.accessRate > 0) accessScore += 1;
+  else if (meets(deviceAccess.accessRate, 80)) accessScore += 6;
+  else if (meets(deviceAccess.accessRate, 50)) accessScore += 3;
+  else if (above(deviceAccess.accessRate, 0)) accessScore += 1;
 
   // Agreement compliance (up to 6 points)
   if (deviceAccess.agreementComplianceRate === 100) accessScore += 6;
-  else if (deviceAccess.agreementComplianceRate >= 80) accessScore += 4;
-  else if (deviceAccess.agreementComplianceRate >= 50) accessScore += 2;
+  else if (meets(deviceAccess.agreementComplianceRate, 80)) accessScore += 4;
+  else if (meets(deviceAccess.agreementComplianceRate, 50)) accessScore += 2;
 
   // Age appropriateness (up to 6 points)
   if (deviceAccess.ageAppropriateRate === 100) accessScore += 6;
-  else if (deviceAccess.ageAppropriateRate >= 80) accessScore += 4;
-  else if (deviceAccess.ageAppropriateRate >= 50) accessScore += 2;
+  else if (meets(deviceAccess.ageAppropriateRate, 80)) accessScore += 4;
+  else if (meets(deviceAccess.ageAppropriateRate, 50)) accessScore += 2;
 
   accessScore = Math.min(accessScore, 20);
 
@@ -843,9 +853,9 @@ export function generateDigitalLiteracyIntelligence(
   else if (onlineLearning.activityTypeCount >= 1) learningScore += 1;
 
   // Positive outcomes (up to 6 points)
-  if (onlineLearning.positiveOutcomeRate >= 90) learningScore += 6;
-  else if (onlineLearning.positiveOutcomeRate >= 75) learningScore += 4;
-  else if (onlineLearning.positiveOutcomeRate >= 50) learningScore += 2;
+  if (meets(onlineLearning.positiveOutcomeRate, 90)) learningScore += 6;
+  else if (meets(onlineLearning.positiveOutcomeRate, 75)) learningScore += 4;
+  else if (meets(onlineLearning.positiveOutcomeRate, 50)) learningScore += 2;
 
   // Children all engaged (up to 4 points)
   if (onlineLearning.childrenWithNoLearning.length === 0) learningScore += 4;
@@ -861,10 +871,10 @@ export function generateDigitalLiteracyIntelligence(
   let citizenshipScore = 0;
 
   // Positive demonstration rate (up to 10 points)
-  if (digitalCitizenship.positiveRate >= 90) citizenshipScore += 10;
-  else if (digitalCitizenship.positiveRate >= 75) citizenshipScore += 7;
-  else if (digitalCitizenship.positiveRate >= 50) citizenshipScore += 4;
-  else if (digitalCitizenship.positiveRate > 0) citizenshipScore += 2;
+  if (meets(digitalCitizenship.positiveRate, 90)) citizenshipScore += 10;
+  else if (meets(digitalCitizenship.positiveRate, 75)) citizenshipScore += 7;
+  else if (meets(digitalCitizenship.positiveRate, 50)) citizenshipScore += 4;
+  else if (above(digitalCitizenship.positiveRate, 0)) citizenshipScore += 2;
 
   // Area coverage (up to 9 points)
   const areaCoverageRate = pct(
@@ -872,9 +882,9 @@ export function generateDigitalLiteracyIntelligence(
     digitalCitizenship.totalAreas,
   );
   if (areaCoverageRate === 100) citizenshipScore += 9;
-  else if (areaCoverageRate >= 80) citizenshipScore += 7;
-  else if (areaCoverageRate >= 50) citizenshipScore += 4;
-  else if (areaCoverageRate > 0) citizenshipScore += 2;
+  else if (meets(areaCoverageRate, 80)) citizenshipScore += 7;
+  else if (meets(areaCoverageRate, 50)) citizenshipScore += 4;
+  else if (above(areaCoverageRate, 0)) citizenshipScore += 2;
 
   // Children participation (up to 6 points)
   const citizenshipParticipationRate = pct(
@@ -882,8 +892,8 @@ export function generateDigitalLiteracyIntelligence(
     childIds.length,
   );
   if (citizenshipParticipationRate === 100) citizenshipScore += 6;
-  else if (citizenshipParticipationRate >= 80) citizenshipScore += 4;
-  else if (citizenshipParticipationRate >= 50) citizenshipScore += 2;
+  else if (meets(citizenshipParticipationRate, 80)) citizenshipScore += 4;
+  else if (meets(citizenshipParticipationRate, 50)) citizenshipScore += 2;
 
   citizenshipScore = Math.min(citizenshipScore, 25);
 
@@ -924,7 +934,7 @@ export function generateDigitalLiteracyIntelligence(
   if (deviceAccess.agreementComplianceRate === 100) {
     strengths.push("All device access agreements signed and current");
   }
-  if (onlineLearning.positiveOutcomeRate >= 80) {
+  if (meets(onlineLearning.positiveOutcomeRate, 80)) {
     strengths.push(
       `High positive outcome rate from online learning (${onlineLearning.positiveOutcomeRate}%)`,
     );
@@ -932,7 +942,7 @@ export function generateDigitalLiteracyIntelligence(
   if (onlineLearning.activityTypeCount >= 4) {
     strengths.push("Good variety of online learning activities");
   }
-  if (digitalCitizenship.positiveRate >= 80 && digitalCitizenship.totalRecords > 0) {
+  if (meets(digitalCitizenship.positiveRate, 80) && digitalCitizenship.totalRecords > 0) {
     strengths.push(
       `Strong digital citizenship — ${digitalCitizenship.positiveRate}% positive demonstrations`,
     );
@@ -945,7 +955,7 @@ export function generateDigitalLiteracyIntelligence(
   }
 
   // Areas for development
-  if (digitalSkills.assessmentRate < 100) {
+  if (below(digitalSkills.assessmentRate, 100)) {
     areasForDevelopment.push(
       `Digital skills assessments needed for ${digitalSkills.totalChildren - digitalSkills.childrenWithAssessment} child${
         digitalSkills.totalChildren - digitalSkills.childrenWithAssessment !== 1 ? "ren" : ""
@@ -962,7 +972,7 @@ export function generateDigitalLiteracyIntelligence(
       `${deviceAccess.childrenWithoutAccess.length} child${deviceAccess.childrenWithoutAccess.length !== 1 ? "ren" : ""} without device access records`,
     );
   }
-  if (deviceAccess.agreementComplianceRate < 100 && deviceAccess.agreementComplianceRate > 0) {
+  if (below(deviceAccess.agreementComplianceRate, 100) && above(deviceAccess.agreementComplianceRate, 0)) {
     areasForDevelopment.push("Not all device access agreements are signed");
   }
   if (onlineLearning.childrenWithNoLearning.length > 0) {
@@ -1021,13 +1031,13 @@ export function generateDigitalLiteracyIntelligence(
       }`,
     );
   }
-  if (deviceAccess.ageAppropriateRate < 100 && deviceAccess.ageAppropriateRate > 0) {
+  if (below(deviceAccess.ageAppropriateRate, 100) && above(deviceAccess.ageAppropriateRate, 0)) {
     immediateActions.push(
       "Review device access for age-appropriateness concerns",
     );
   }
   if (
-    onlineLearning.positiveOutcomeRate < 50 &&
+    below(onlineLearning.positiveOutcomeRate, 50) &&
     onlineLearning.totalSessions > 0
   ) {
     immediateActions.push(
@@ -1035,7 +1045,7 @@ export function generateDigitalLiteracyIntelligence(
     );
   }
   if (
-    digitalCitizenship.positiveRate < 50 &&
+    below(digitalCitizenship.positiveRate, 50) &&
     digitalCitizenship.totalRecords > 0
   ) {
     immediateActions.push(

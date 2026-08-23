@@ -9,6 +9,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type BehaviourDirection = "positive" | "concerning";
 export type BehaviourIntensity = "low" | "medium" | "high" | "severe";
 export type SanctionRewardDirection = "reward" | "sanction";
@@ -78,26 +80,33 @@ export interface MoodTrajectory {
 }
 
 export interface BehaviourEmotionalProfile {
-  positive_rate_30d: number;       // 0-100
-  positive_rate_7d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_rate_30d: number | null;       // 0-100
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_rate_7d: number | null;
   behaviour_trend: "improving" | "stable" | "declining" | "insufficient_data";
   severe_incidents_30d: number;
   trigger_themes: { trigger: string; count: number }[];
-  strategy_use_rate: number;       // % of concerning entries where strategy was used
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_use_rate: number | null;       // % of concerning entries where strategy was used
 }
 
 export interface EngagementProfile {
   keywork_sessions_30d: number;
-  keywork_voice_rate: number;      // % where child voice recorded
-  keywork_mood_improvement_rate: number; // % where mood improved after
-  therapy_attendance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  keywork_voice_rate: number | null;      // % where child voice recorded
+  /** null when the population is empty — nothing measured, not 0%. */
+  keywork_mood_improvement_rate: number | null; // % where mood improved after
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapy_attendance_rate: number | null;
   therapy_engagement_quality: number; // 0-100 based on levels
 }
 
 export interface RewardBalanceProfile {
   rewards_30d: number;
   sanctions_30d: number;
-  reward_ratio: number;            // rewards / (rewards + sanctions) * 100
+  /** null when the population is empty — nothing measured, not 0%. */
+  reward_ratio: number | null;            // rewards / (rewards + sanctions) * 100
   balance_rating: "positive" | "balanced" | "sanctions_heavy" | "no_data";
 }
 
@@ -128,8 +137,9 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
-function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
+// Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
+function pct(num: number, den: number): number | null {
+  return rate(num, den);
 }
 
 function avg(nums: number[]): number | null {
@@ -262,7 +272,10 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   if (beh30d.length >= 3 && behPrior30d.length >= 3) {
     const currentRate = pct(positive30d, beh30d.length);
     const priorRate = pct(positivePrior, behPrior30d.length);
-    if (currentRate - priorRate >= 10) behaviourTrend = "improving";
+    // A trend needs both windows measured. The length guards above make that
+    // true today, but the difference is only meaningful when it is.
+    if (currentRate === null || priorRate === null) behaviourTrend = "insufficient_data";
+    else if (currentRate - priorRate >= 10) behaviourTrend = "improving";
     else if (priorRate - currentRate >= 10) behaviourTrend = "declining";
     else behaviourTrend = "stable";
   }
@@ -316,8 +329,8 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   let balanceRating: "positive" | "balanced" | "sanctions_heavy" | "no_data" = "no_data";
   if (sr30d.length > 0) {
     const ratio = pct(rewards30d, rewards30d + sanctions30d);
-    if (ratio >= 70) balanceRating = "positive";
-    else if (ratio >= 40) balanceRating = "balanced";
+    if (meets(ratio, 70)) balanceRating = "positive";
+    else if (meets(ratio, 40)) balanceRating = "balanced";
     else balanceRating = "sanctions_heavy";
   }
 
@@ -353,9 +366,9 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   // Behaviour positive rate (+/- 10)
   if (beh30d.length >= 3) {
     const posRate = pct(positive30d, beh30d.length);
-    if (posRate >= 70) score += 10;
-    else if (posRate >= 50) score += 3;
-    else if (posRate < 30) score -= 8;
+    if (meets(posRate, 70)) score += 10;
+    else if (meets(posRate, 50)) score += 3;
+    else if (below(posRate, 30)) score -= 8;
   }
 
   // Behaviour trend
@@ -368,12 +381,12 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
 
   // Keywork engagement (+/- 5)
   if (kw30d.length >= 3) score += 3;
-  if (engagementProfile.keywork_voice_rate >= 80) score += 3;
+  if (meets(engagementProfile.keywork_voice_rate, 80)) score += 3;
 
   // Therapy engagement
   if (therapy30d.length > 0) {
-    if (engagementProfile.therapy_attendance_rate >= 90) score += 5;
-    else if (engagementProfile.therapy_attendance_rate < 50) score -= 5;
+    if (meets(engagementProfile.therapy_attendance_rate, 90)) score += 5;
+    else if (below(engagementProfile.therapy_attendance_rate, 50)) score -= 5;
   }
 
   // Reward balance
@@ -393,10 +406,10 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   const strengths: string[] = [];
   if (avgMood30d !== null && avgMood30d >= 7) strengths.push(`Good average mood of ${avgMood30d}/10 over 30 days — ${child_name} appears emotionally settled.`);
   if (moodTrend === "improving") strengths.push("Mood trajectory is improving — emotional wellbeing trending positively.");
-  if (behaviourProfile.positive_rate_30d >= 70 && beh30d.length >= 3) strengths.push(`${behaviourProfile.positive_rate_30d}% positive behaviour entries — strong emotional regulation.`);
+  if (meets(behaviourProfile.positive_rate_30d, 70) && beh30d.length >= 3) strengths.push(`${behaviourProfile.positive_rate_30d}% positive behaviour entries — strong emotional regulation.`);
   if (behaviourTrend === "improving") strengths.push("Behaviour pattern is improving — fewer concerning episodes and more positive interactions.");
-  if (engagementProfile.keywork_voice_rate >= 80 && kw30d.length >= 2) strengths.push(`${child_name}'s voice captured in ${engagementProfile.keywork_voice_rate}% of keywork sessions — excellent participation.`);
-  if (engagementProfile.therapy_attendance_rate >= 90 && therapy30d.length >= 2) strengths.push(`${engagementProfile.therapy_attendance_rate}% therapy attendance — strong therapeutic engagement.`);
+  if (meets(engagementProfile.keywork_voice_rate, 80) && kw30d.length >= 2) strengths.push(`${child_name}'s voice captured in ${engagementProfile.keywork_voice_rate}% of keywork sessions — excellent participation.`);
+  if (meets(engagementProfile.therapy_attendance_rate, 90) && therapy30d.length >= 2) strengths.push(`${engagementProfile.therapy_attendance_rate}% therapy attendance — strong therapeutic engagement.`);
   if (balanceRating === "positive" && sr30d.length >= 3) strengths.push("Positive reward-to-sanction ratio — strengths-based approach in evidence.");
   if (lowMoodDays === 0 && mood30d.length >= 5) strengths.push("No low mood days recorded in 30 days — consistent emotional stability.");
 
@@ -409,7 +422,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   if (severe30d >= 2) concerns.push(`${severe30d} high/severe behaviour incidents in 30 days — emotional distress manifesting in behaviour.`);
   if (behaviourTrend === "declining") concerns.push("Behaviour pattern declining — more concerning entries than previously.");
   if (balanceRating === "sanctions_heavy") concerns.push(`Sanctions outweigh rewards (${sanctions30d} vs ${rewards30d}) — consider whether approach is strengths-based (Reg 19).`);
-  if (engagementProfile.therapy_attendance_rate < 50 && therapy30d.length >= 2) concerns.push(`Therapy attendance only ${engagementProfile.therapy_attendance_rate}% — therapeutic support not being accessed.`);
+  if (below(engagementProfile.therapy_attendance_rate, 50) && therapy30d.length >= 2) concerns.push(`Therapy attendance only ${engagementProfile.therapy_attendance_rate}% — therapeutic support not being accessed.`);
   if (kw30d.length === 0 && totalDataPoints > 0) concerns.push("No keywork sessions recorded in 30 days — direct emotional support may be lacking.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -420,7 +433,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   if (moodTrend === "declining" && lowMoodDays >= 3) recs.push({ rank: ++rank, recommendation: "Declining mood trend with multiple low mood days — consider CAMHS referral or increased therapeutic input.", urgency: "immediate", regulatory_ref: "Reg 10" });
   if (severe30d >= 2) recs.push({ rank: ++rank, recommendation: "Review behaviour support plan — frequent high-intensity episodes suggest current strategies may not be meeting emotional needs.", urgency: "soon", regulatory_ref: "Reg 20" });
   if (balanceRating === "sanctions_heavy") recs.push({ rank: ++rank, recommendation: "Rebalance approach towards positive reinforcement — sanctions-heavy practice risks disengagement.", urgency: "soon", regulatory_ref: "Reg 19" });
-  if (engagementProfile.therapy_attendance_rate < 50 && therapy30d.length >= 2) recs.push({ rank: ++rank, recommendation: "Explore barriers to therapy attendance — consider timing, transport, or therapeutic relationship.", urgency: "soon", regulatory_ref: "Reg 10" });
+  if (below(engagementProfile.therapy_attendance_rate, 50) && therapy30d.length >= 2) recs.push({ rank: ++rank, recommendation: "Explore barriers to therapy attendance — consider timing, transport, or therapeutic relationship.", urgency: "soon", regulatory_ref: "Reg 10" });
   if (kw30d.length === 0) recs.push({ rank: ++rank, recommendation: "Schedule regular keywork sessions — essential for emotional monitoring and relationship building.", urgency: "soon", regulatory_ref: "Reg 10" });
   if (moodVariability === "high") recs.push({ rank: ++rank, recommendation: "High mood variability — consider emotional regulation focused work with CAMHS or therapeutic team.", urgency: "planned", regulatory_ref: "Reg 10" });
 
@@ -442,7 +455,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   if (rating === "outstanding") {
     insights.push({ severity: "positive", text: `Outstanding emotional wellbeing indicators for ${child_name}. Stable mood, positive behaviour, strong engagement, and balanced approach. Excellent evidence of Reg 7 and 10 compliance.` });
   }
-  if (balanceRating === "positive" && behaviourProfile.positive_rate_30d >= 60) {
+  if (balanceRating === "positive" && meets(behaviourProfile.positive_rate_30d, 60)) {
     insights.push({ severity: "positive", text: `Positive reward balance and high positive behaviour rate suggest ${child_name} is responding well to the care approach. This is exactly what Ofsted looks for under SCCIF "Experiences and progress."` });
   }
 

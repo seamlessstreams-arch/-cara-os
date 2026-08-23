@@ -27,6 +27,8 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type IdentityDimension =
   | "ethnic_heritage"
   | "religious_belief"
@@ -149,20 +151,24 @@ export interface StaffDiversityTraining {
 export interface IdentitySupportResult {
   totalChildren: number;
   childrenWithAssessment: number;
-  assessmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentRate: number | null;
   totalNeedsIdentified: number;
   needsMet: number;
   needsPartiallyMet: number;
   needsUnmet: number;
-  needsMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  needsMetRate: number | null;
   dimensionCoverage: Record<IdentityDimension, number>;
 }
 
 export interface ActivityProvisionResult {
   totalActivities: number;
   activitiesPerChild: number;
-  childEngagementRate: number;
-  childInitiatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null;
   activityTypeBreakdown: { activityType: IdentityActivityType; count: number }[];
   dimensionBreakdown: { dimension: IdentityDimension; count: number }[];
   childrenWithNoActivities: string[];
@@ -170,9 +176,12 @@ export interface ActivityProvisionResult {
 
 export interface IncidentAnalysisResult {
   totalIncidents: number;
-  reportedRate: number;
-  investigatedRate: number;
-  resolvedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  investigatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedRate: number | null;
   averageResolutionDays: number;
   typeBreakdown: { incidentType: DiversityIncidentType; count: number }[];
   perpetratorBreakdown: { perpetrator: IncidentPerpetrator; count: number }[];
@@ -183,7 +192,8 @@ export interface IncidentAnalysisResult {
 export interface StaffCompetenceResult {
   totalStaff: number;
   staffWithTraining: number;
-  trainingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingRate: number | null;
   expiredTraining: number;
   trainingTypeBreakdown: { trainingType: TrainingType; count: number }[];
   staffMissingTraining: string[];
@@ -197,9 +207,11 @@ export interface ChildIdentityProfile {
   needsIdentified: number;
   needsMet: number;
   needsUnmet: number;
-  needsMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  needsMetRate: number | null;
   activitiesCount: number;
-  activityEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityEngagementRate: number | null;
   childInitiatedCount: number;
   dimensionsCovered: IdentityDimension[];
   dimensionGaps: IdentityDimension[];
@@ -293,8 +305,9 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
@@ -719,9 +732,9 @@ export function generateCultureIdentityIntelligence(
   // 1. Identity needs assessed (20)
   let assessmentScore = 0;
   if (identitySupport.assessmentRate === 100) assessmentScore = 20;
-  else if (identitySupport.assessmentRate >= 80) assessmentScore = 15;
-  else if (identitySupport.assessmentRate >= 60) assessmentScore = 10;
-  else if (identitySupport.assessmentRate >= 40) assessmentScore = 5;
+  else if (meets(identitySupport.assessmentRate, 80)) assessmentScore = 15;
+  else if (meets(identitySupport.assessmentRate, 60)) assessmentScore = 10;
+  else if (meets(identitySupport.assessmentRate, 40)) assessmentScore = 5;
   else assessmentScore = 0;
 
   // 2. Activity provision (25)
@@ -734,14 +747,14 @@ export function generateCultureIdentityIntelligence(
   else activityScore = 0;
 
   // Engagement bonus
-  if (activityProvision.childEngagementRate >= 80) activityScore += 5;
-  else if (activityProvision.childEngagementRate >= 60) activityScore += 3;
-  else if (activityProvision.childEngagementRate >= 40) activityScore += 1;
+  if (meets(activityProvision.childEngagementRate, 80)) activityScore += 5;
+  else if (meets(activityProvision.childEngagementRate, 60)) activityScore += 3;
+  else if (meets(activityProvision.childEngagementRate, 40)) activityScore += 1;
 
   // Child-initiated bonus
-  if (activityProvision.childInitiatedRate >= 30) activityScore += 5;
-  else if (activityProvision.childInitiatedRate >= 15) activityScore += 3;
-  else if (activityProvision.childInitiatedRate >= 5) activityScore += 1;
+  if (meets(activityProvision.childInitiatedRate, 30)) activityScore += 5;
+  else if (meets(activityProvision.childInitiatedRate, 15)) activityScore += 3;
+  else if (meets(activityProvision.childInitiatedRate, 5)) activityScore += 1;
 
   activityScore = Math.min(activityScore, 25);
 
@@ -749,21 +762,21 @@ export function generateCultureIdentityIntelligence(
   let needsMetScore = 0;
   if (identitySupport.totalNeedsIdentified === 0) {
     // No needs identified — neutral if assessments done, penalty if not
-    needsMetScore = identitySupport.assessmentRate >= 80 ? 15 : 5;
+    needsMetScore = meets(identitySupport.assessmentRate, 80) ? 15 : 5;
   } else {
-    if (identitySupport.needsMetRate >= 90) needsMetScore = 20;
-    else if (identitySupport.needsMetRate >= 75) needsMetScore = 15;
-    else if (identitySupport.needsMetRate >= 60) needsMetScore = 10;
-    else if (identitySupport.needsMetRate >= 40) needsMetScore = 5;
+    if (meets(identitySupport.needsMetRate, 90)) needsMetScore = 20;
+    else if (meets(identitySupport.needsMetRate, 75)) needsMetScore = 15;
+    else if (meets(identitySupport.needsMetRate, 60)) needsMetScore = 10;
+    else if (meets(identitySupport.needsMetRate, 40)) needsMetScore = 5;
     else needsMetScore = 0;
   }
 
   // 4. Staff competence (15)
   let staffScore = 0;
-  if (staffCompetence.trainingRate >= 90) staffScore = 12;
-  else if (staffCompetence.trainingRate >= 75) staffScore = 9;
-  else if (staffCompetence.trainingRate >= 50) staffScore = 6;
-  else if (staffCompetence.trainingRate >= 25) staffScore = 3;
+  if (meets(staffCompetence.trainingRate, 90)) staffScore = 12;
+  else if (meets(staffCompetence.trainingRate, 75)) staffScore = 9;
+  else if (meets(staffCompetence.trainingRate, 50)) staffScore = 6;
+  else if (meets(staffCompetence.trainingRate, 25)) staffScore = 3;
   else staffScore = 0;
 
   // Expired training penalty
@@ -782,15 +795,15 @@ export function generateCultureIdentityIntelligence(
   let incidentScore = 10; // Start perfect, deduct for issues
   if (incidentAnalysis.totalIncidents > 0) {
     // Reporting failures
-    if (incidentAnalysis.reportedRate < 100) {
+    if (below(incidentAnalysis.reportedRate, 100)) {
       incidentScore -= 3;
     }
     // Investigation gaps
-    if (incidentAnalysis.investigatedRate < 100) {
+    if (below(incidentAnalysis.investigatedRate, 100)) {
       incidentScore -= 2;
     }
     // Resolution rate
-    if (incidentAnalysis.resolvedRate < 80) {
+    if (below(incidentAnalysis.resolvedRate, 80)) {
       incidentScore -= 2;
     }
     // Staff as perpetrator is serious
@@ -858,22 +871,22 @@ export function generateCultureIdentityIntelligence(
       "All children have identity needs assessments on record",
     );
   }
-  if (identitySupport.needsMetRate >= 80) {
+  if (meets(identitySupport.needsMetRate, 80)) {
     strengths.push(
       `${identitySupport.needsMetRate}% of identified identity needs are being met`,
     );
   }
-  if (activityProvision.childEngagementRate >= 80) {
+  if (meets(activityProvision.childEngagementRate, 80)) {
     strengths.push(
       "High child engagement rate in identity-supporting activities",
     );
   }
-  if (activityProvision.childInitiatedRate >= 25) {
+  if (meets(activityProvision.childInitiatedRate, 25)) {
     strengths.push(
       "Children are initiating their own identity-related activities",
     );
   }
-  if (staffCompetence.trainingRate >= 90) {
+  if (meets(staffCompetence.trainingRate, 90)) {
     strengths.push(
       "Excellent staff diversity and equality training compliance",
     );
@@ -892,7 +905,7 @@ export function generateCultureIdentityIntelligence(
   }
 
   // Areas for development
-  if (identitySupport.assessmentRate < 100) {
+  if (below(identitySupport.assessmentRate, 100)) {
     areasForDevelopment.push(
       `${identitySupport.totalChildren - identitySupport.childrenWithAssessment} child${identitySupport.totalChildren - identitySupport.childrenWithAssessment !== 1 ? "ren" : ""} lack identity needs assessments`,
     );
@@ -907,7 +920,7 @@ export function generateCultureIdentityIntelligence(
       `${activityProvision.childrenWithNoActivities.join(", ")} had no identity-supporting activities`,
     );
   }
-  if (staffCompetence.trainingRate < 80) {
+  if (below(staffCompetence.trainingRate, 80)) {
     areasForDevelopment.push(
       `Staff diversity training coverage is ${staffCompetence.trainingRate}% (target: 100%)`,
     );
@@ -942,7 +955,7 @@ export function generateCultureIdentityIntelligence(
 
   if (
     incidentAnalysis.totalIncidents > 0 &&
-    incidentAnalysis.reportedRate < 100
+    below(incidentAnalysis.reportedRate, 100)
   ) {
     immediateActions.push(
       "HIGH: Unreported diversity incidents detected — review incident recording procedures",
