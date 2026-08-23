@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface ChildInfo {
   id: string;
   name: string;
@@ -81,8 +83,10 @@ export interface ReviewParticipation {
   written_views_count: number;
   declined_count: number;
   did_not_participate_count: number;
-  participation_rate: number;     // 0-100 (attended + represented + written)
-  views_recorded_rate: number;    // 0-100
+  /** null when the population is empty — nothing measured, not 100%. */
+  participation_rate: number | null;     // 0-100 (attended + represented + written)
+  /** null when the population is empty — nothing measured, not 100%. */
+  views_recorded_rate: number | null;    // 0-100
 }
 
 export interface AdvocacyOverview {
@@ -96,8 +100,10 @@ export interface AdvocacyOverview {
 
 export interface KeyWorkEngagement {
   total_sessions_30d: number;
-  engagement_rate: number;        // 0-100 (child_engaged / total)
-  views_capture_rate: number;     // 0-100
+  /** null when the population is empty — nothing measured, not 100%. */
+  engagement_rate: number | null;        // 0-100 (child_engaged / total)
+  /** null when the population is empty — nothing measured, not 100%. */
+  views_capture_rate: number | null;     // 0-100
   top_themes: { theme: string; count: number }[];
 }
 
@@ -106,8 +112,10 @@ export interface FeedbackAnalysis {
   complaints: number;
   compliments: number;
   suggestions: number;
-  response_rate: number;          // 0-100
-  response_within_target_rate: number; // 0-100
+  /** null when the population is empty — nothing measured, not 100%. */
+  response_rate: number | null;          // 0-100
+  /** null when the population is empty — nothing measured, not 100%. */
+  response_within_target_rate: number | null; // 0-100
   open_count: number;
 }
 
@@ -168,9 +176,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 // ── Main Computation ────────────────────────────────────────────────────────
 
@@ -196,8 +201,8 @@ export function computeChildVoiceParticipation(
     written_views_count: writtenCount,
     declined_count: declinedCount,
     did_not_participate_count: noPartCount,
-    participation_rate: pct(participatingCount, reviews90d.length),
-    views_recorded_rate: pct(viewsRecorded, reviews90d.length),
+    participation_rate: rate(participatingCount, reviews90d.length),
+    views_recorded_rate: rate(viewsRecorded, reviews90d.length),
   };
 
   // ── Advocacy Overview ─────────────────────────────────────────────────
@@ -247,8 +252,8 @@ export function computeChildVoiceParticipation(
 
   const key_work_engagement: KeyWorkEngagement = {
     total_sessions_30d: kw30d.length,
-    engagement_rate: pct(kwEngaged, kw30d.length),
-    views_capture_rate: pct(kwViewsCaptured, kw30d.length),
+    engagement_rate: rate(kwEngaged, kw30d.length),
+    views_capture_rate: rate(kwViewsCaptured, kw30d.length),
     top_themes: topThemes,
   };
 
@@ -266,8 +271,8 @@ export function computeChildVoiceParticipation(
     complaints,
     compliments,
     suggestions,
-    response_rate: pct(responded, fb90d.length),
-    response_within_target_rate: pct(withinTarget, fb90d.length),
+    response_rate: rate(responded, fb90d.length),
+    response_within_target_rate: rate(withinTarget, fb90d.length),
     open_count: openFeedback,
   };
 
@@ -314,27 +319,27 @@ export function computeChildVoiceParticipation(
 
   // Review participation
   if (review_participation.participation_rate === 100 && reviews90d.length > 0) score += 10;
-  else if (review_participation.participation_rate >= 80) score += 5;
-  else if (review_participation.participation_rate < 50 && reviews90d.length > 0) score -= 10;
+  else if (meets(review_participation.participation_rate, 80)) score += 5;
+  else if (below(review_participation.participation_rate, 50) && reviews90d.length > 0) score -= 10;
 
   if (review_participation.views_recorded_rate === 100 && reviews90d.length > 0) score += 5;
-  else if (review_participation.views_recorded_rate < 80 && reviews90d.length > 0) score -= 5;
+  else if (below(review_participation.views_recorded_rate, 80) && reviews90d.length > 0) score -= 5;
 
   // Advocacy
   if (childrenWithAdvocacy > 0) score += 5;
   if (privateSessions >= 3) score += 3;
 
   // Key work
-  if (key_work_engagement.engagement_rate >= 80 && kw30d.length >= 3) score += 10;
-  else if (key_work_engagement.engagement_rate >= 60) score += 5;
+  if (meets(key_work_engagement.engagement_rate, 80) && kw30d.length >= 3) score += 10;
+  else if (meets(key_work_engagement.engagement_rate, 60)) score += 5;
   else if (kw30d.length < 2 && children.length > 0) score -= 5;
 
-  if (key_work_engagement.views_capture_rate >= 80 && kw30d.length >= 3) score += 5;
+  if (meets(key_work_engagement.views_capture_rate, 80) && kw30d.length >= 3) score += 5;
 
   // Feedback
   if (fb90d.length > 0) score += 3;
   if (feedback_analysis.response_rate === 100 && fb90d.length > 0) score += 5;
-  else if (feedback_analysis.response_rate < 80 && fb90d.length >= 2) score -= 3;
+  else if (below(feedback_analysis.response_rate, 80) && fb90d.length >= 2) score -= 3;
   if (openFeedback > 0) score -= 2;
 
   // Children without voice
@@ -376,11 +381,11 @@ export function computeChildVoiceParticipation(
     strengths.push("Multiple private advocacy sessions evidenced — children have confidential access to independent support.");
   }
 
-  if (key_work_engagement.engagement_rate >= 80 && kw30d.length >= 5) {
+  if (meets(key_work_engagement.engagement_rate, 80) && kw30d.length >= 5) {
     strengths.push(`${key_work_engagement.engagement_rate}% key work engagement rate across ${kw30d.length} sessions — children are actively participating in their own support.`);
   }
 
-  if (key_work_engagement.views_capture_rate >= 80 && kw30d.length >= 3) {
+  if (meets(key_work_engagement.views_capture_rate, 80) && kw30d.length >= 3) {
     strengths.push("Child views captured in 80%+ of key work sessions — evidencing that children's perspectives inform daily care practice.");
   }
 
@@ -395,7 +400,7 @@ export function computeChildVoiceParticipation(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (review_participation.participation_rate < 50 && reviews90d.length >= 2) {
+  if (below(review_participation.participation_rate, 50) && reviews90d.length >= 2) {
     concerns.push(`Only ${review_participation.participation_rate}% LAC review participation — children must be supported to participate in their reviews. Ofsted will scrutinise this (Reg 7).`);
   }
 
@@ -403,7 +408,7 @@ export function computeChildVoiceParticipation(
     concerns.push(`${noPartCount} review${noPartCount !== 1 ? "s" : ""} where children did not participate — investigate barriers and ensure alternative ways of contributing are offered.`);
   }
 
-  if (review_participation.views_recorded_rate < 80 && reviews90d.length >= 2) {
+  if (below(review_participation.views_recorded_rate, 80) && reviews90d.length >= 2) {
     concerns.push(`Child views recorded in only ${review_participation.views_recorded_rate}% of reviews — wishes and feelings must be documented even when children don't attend.`);
   }
 
@@ -411,7 +416,7 @@ export function computeChildVoiceParticipation(
     concerns.push("No children currently have advocacy access — all children should know how to access an independent advocate (Reg 45).");
   }
 
-  if (key_work_engagement.engagement_rate < 50 && kw30d.length >= 3) {
+  if (below(key_work_engagement.engagement_rate, 50) && kw30d.length >= 3) {
     concerns.push(`Key work engagement rate at ${key_work_engagement.engagement_rate}% — low engagement may indicate relationship difficulties or session quality issues.`);
   }
 
@@ -423,7 +428,7 @@ export function computeChildVoiceParticipation(
     concerns.push(`${openFeedback} unresolved pieces of child feedback — delayed responses undermine children's confidence that their voice matters.`);
   }
 
-  if (feedback_analysis.response_rate < 80 && fb90d.length >= 2) {
+  if (below(feedback_analysis.response_rate, 80) && fb90d.length >= 2) {
     concerns.push(`Feedback response rate at ${feedback_analysis.response_rate}% — all feedback must receive a timely, meaningful response.`);
   }
 
@@ -476,7 +481,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (key_work_engagement.engagement_rate < 50 && kw30d.length >= 3) {
+  if (below(key_work_engagement.engagement_rate, 50) && kw30d.length >= 3) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review key work approach — low engagement suggests sessions may not be meeting children's needs. Consider changing timing, format, or venue. Ask children what works for them.",
@@ -517,7 +522,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (review_participation.participation_rate === 100 && key_work_engagement.engagement_rate >= 80 && reviews90d.length > 0 && kw30d.length >= 3) {
+  if (review_participation.participation_rate === 100 && meets(key_work_engagement.engagement_rate, 80) && reviews90d.length > 0 && kw30d.length >= 3) {
     insights.push({
       severity: "positive",
       text: "Excellent participation across reviews and key work. Children are consistently heard in both formal and informal settings — this dual-track approach demonstrates genuine commitment to child-centred practice.",

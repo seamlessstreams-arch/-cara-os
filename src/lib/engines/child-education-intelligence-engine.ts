@@ -16,7 +16,7 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
-import { rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 export interface EducationRecordInput {
   id: string;
@@ -236,9 +236,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 function avg(arr: number[]): number {
   return arr.length > 0 ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
@@ -288,42 +285,51 @@ export function computeChildEducationIntelligence(
     }
   }
 
-  // pct(0,0) returns 100 — so a child with NO attendance records (e.g. newly
-  // placed, or NEET) would otherwise read 100% / "excellent". Treat zero sessions
-  // as insufficient_data so it can't masquerade as perfect attendance.
+  // This used to read `hasAttendanceData ? pct(...) : 0`, because pct(0,0)
+  // returned 100 and a child with no attendance records — newly placed, or NEET
+  // — would have read "excellent". The guard was right about the problem and
+  // wrong about the answer: 0% attendance is a fabrication in the other
+  // direction. rate() returns null for an empty population, so the guard is not
+  // needed here at all, and the band's own insufficient_data state carries the
+  // meaning.
   const hasAttendanceData = totalSessions > 0;
-  const overallAttendancePct = hasAttendanceData ? pct(presentCount, totalSessions) : 0;
+  const overallAttendancePct = rate(presentCount, totalSessions);
   const attendanceBand: AttendanceBand =
     !hasAttendanceData ? "insufficient_data" :
-    overallAttendancePct >= 96 ? "excellent" :
-    overallAttendancePct >= 90 ? "good" :
-    overallAttendancePct >= 85 ? "concern" :
-    overallAttendancePct >= 50 ? "persistent_absence" :
+    meets(overallAttendancePct, 96) ? "excellent" :
+    meets(overallAttendancePct, 90) ? "good" :
+    meets(overallAttendancePct, 85) ? "concern" :
+    meets(overallAttendancePct, 50) ? "persistent_absence" :
     "severe_absence";
 
   // Attendance trend: compare 30d vs 30-60d
-  let sessions30dPct = 0;
-  let sessions60dPct = 0;
+  // null, not 0: a child whose attendance records all predate the window has
+  // nothing measured in it, and `rate()` says so.
+  let sessions30dPct: number | null = null;
+  let sessions60dPct: number | null = null;
 
   if (attendance_records.length > 0) {
     const rec30d = attendance_records.filter((r) => isWithin(today, r.date, 30));
     const rec60d = attendance_records.filter((r) => isWithin(today, r.date, 60) && !isWithin(today, r.date, 30));
     const present30d = rec30d.filter((r) => PRESENT_CODES.includes(r.attendance_code)).length;
     const present60d = rec60d.filter((r) => PRESENT_CODES.includes(r.attendance_code)).length;
-    sessions30dPct = pct(present30d, rec30d.length);
-    sessions60dPct = pct(present60d, rec60d.length);
+    sessions30dPct = rate(present30d, rec30d.length);
+    sessions60dPct = rate(present60d, rec60d.length);
   } else {
     const eduAtt = education_records.filter((r) => r.attendance_status);
     const att30d = eduAtt.filter((r) => isWithin(today, r.date, 30));
     const att60d = eduAtt.filter((r) => isWithin(today, r.date, 60) && !isWithin(today, r.date, 30));
     const present30d = att30d.filter((r) => r.attendance_status === "present" || r.attendance_status === "late" || r.attendance_status === "part_day").length;
     const present60d = att60d.filter((r) => r.attendance_status === "present" || r.attendance_status === "late" || r.attendance_status === "part_day").length;
-    sessions30dPct = pct(present30d, att30d.length);
-    sessions60dPct = pct(present60d, att60d.length);
+    sessions30dPct = rate(present30d, att30d.length);
+    sessions60dPct = rate(present60d, att60d.length);
   }
 
+  // A trend needs both windows measured. `totalSessions < 5` does not
+  // guarantee that: a child can have plenty of records, all of them older than
+  // the 60-day window, and comparing two unmeasured windows is not a trend.
   const attendanceTrend: "improving" | "stable" | "declining" | "insufficient_data" =
-    totalSessions < 5 ? "insufficient_data" :
+    totalSessions < 5 || sessions30dPct === null || sessions60dPct === null ? "insufficient_data" :
     sessions30dPct > sessions60dPct + 5 ? "improving" :
     sessions30dPct < sessions60dPct - 5 ? "declining" :
     "stable";
@@ -369,9 +375,9 @@ export function computeChildEducationIntelligence(
     nextReview: string | null;
     targetsSet: number;
     targetsAchieved: number;
-    vshRate: number;
-    childParticipationRate: number;
-    ppDiscussedRate: number;
+    vshRate: number | null;
+    childParticipationRate: number | null;
+    ppDiscussedRate: number | null;
   };
 
   if (pep_records.length > 0) {
@@ -385,9 +391,9 @@ export function computeChildEducationIntelligence(
       nextReview: latest?.next_review_date?.slice(0, 10) ?? null,
       targetsSet: pep_records.reduce((s, p) => s + p.targets_set, 0),
       targetsAchieved: pep_records.reduce((s, p) => s + p.targets_achieved, 0),
-      vshRate: pct(pep_records.filter((p) => p.virtual_school_involved).length, pep_records.length),
-      childParticipationRate: pct(pep_records.filter((p) => p.child_participated).length, pep_records.length),
-      ppDiscussedRate: pct(pep_records.filter((p) => p.pupil_premium_discussed).length, pep_records.length),
+      vshRate: rate(pep_records.filter((p) => p.virtual_school_involved).length, pep_records.length),
+      childParticipationRate: rate(pep_records.filter((p) => p.child_participated).length, pep_records.length),
+      ppDiscussedRate: rate(pep_records.filter((p) => p.pupil_premium_discussed).length, pep_records.length),
     };
   } else {
     const pepMeetings = education_records.filter((r) => r.record_type === "pep_meeting");
@@ -417,14 +423,9 @@ export function computeChildEducationIntelligence(
     pep_current: pepCurrent,
     targets_set: pepData.targetsSet,
     targets_achieved: pepData.targetsAchieved,
-    // NOT pct(): its 0-denominator fallback is 100, so a child with no PEP
-    // targets read "100% of PEP targets achieved" — and that fed +5 into the
-    // education score. The output type is already nullable; `rate()` returns
-    // null so an unset target list reads as unmeasured.
-    //
-    // The pct(n,d) helper is allowlisted in check-fabricated-scores.js with the
-    // note that "call-site correctness depends on each caller's semantics".
-    // This is one of the call sites where it does not hold.
+    // A child with no PEP targets used to read "100% of PEP targets achieved",
+    // because the local pct(n,d) fell back to 100 on an empty denominator — and
+    // that fed +5 into the education score.
     target_achievement_rate: rate(pepData.targetsAchieved, pepData.targetsSet),
     virtual_school_involved_rate: pepData.vshRate,
     child_participation_rate: pepData.childParticipationRate,
@@ -457,8 +458,8 @@ export function computeChildEducationIntelligence(
 
   const homework: HomeworkAnalysis = {
     total_sessions_30d: hw30d.length,
-    completion_rate: pct(hwCompleted.length, hw30d.length),
-    engagement_rate: pct(hwEngaged.length, hw30d.length),
+    completion_rate: rate(hwCompleted.length, hw30d.length),
+    engagement_rate: rate(hwEngaged.length, hw30d.length),
     avg_duration_minutes: hwDurations.length > 0 ? Math.round(avg(hwDurations)) : null,
     support_level: supportLevel,
     subjects: hwSubjects,
@@ -491,8 +492,8 @@ export function computeChildEducationIntelligence(
 
   const engagement: EngagementAnalysis = {
     total_events_90d: engagement90d.length,
-    attendance_rate: pct(attended.length, engagementGraded.length),
-    staff_attendance_rate: pct(staffAttended.length, engagement90d.length),
+    attendance_rate: rate(attended.length, engagementGraded.length),
+    staff_attendance_rate: rate(staffAttended.length, engagement90d.length),
     event_types: eventTypes,
   };
 
@@ -512,10 +513,10 @@ export function computeChildEducationIntelligence(
   // Attendance — only score when there are attendance records. A child with no
   // attendance data must not read as excellent (+15) NOR as severe absence (-20).
   if (hasAttendanceData) {
-    if (overallAttendancePct >= 96) score += 15;
-    else if (overallAttendancePct >= 90) score += 8;
-    else if (overallAttendancePct >= 85) score += 0;
-    else if (overallAttendancePct >= 50) score -= 10;
+    if (meets(overallAttendancePct, 96)) score += 15;
+    else if (meets(overallAttendancePct, 90)) score += 8;
+    else if (meets(overallAttendancePct, 85)) score += 0;
+    else if (meets(overallAttendancePct, 50)) score -= 10;
     else score -= 20;
   }
 
@@ -532,15 +533,15 @@ export function computeChildEducationIntelligence(
   else if (pepData.total === 0) score -= 10;
   else score -= 5;
 
-  if ((pep_compliance.target_achievement_rate ?? 0) >= 75) score += 5;
-  else if ((pep_compliance.target_achievement_rate ?? 0) < 50 && pepData.targetsSet > 0) score -= 3;
+  if (meets(pep_compliance.target_achievement_rate, 75)) score += 5;
+  else if (below(pep_compliance.target_achievement_rate, 50) && pepData.targetsSet > 0) score -= 3;
 
   // EHCP
   if (ehcpStatus.has_ehcp && ehcpStatus.review_overdue) score -= 5;
   if (ehcpStatus.has_ehcp && ehcpStatus.provision_in_place) score += 3;
 
   // Homework
-  if (homework.total_sessions_30d >= 10 && (homework.completion_rate ?? 0) >= 80) score += 5;
+  if (homework.total_sessions_30d >= 10 && meets(homework.completion_rate, 80)) score += 5;
   else if (homework.total_sessions_30d === 0) score -= 3;
 
   // Tutoring
@@ -551,7 +552,7 @@ export function computeChildEducationIntelligence(
   else if (achievements.length === 1) score += 2;
 
   // Engagement
-  if ((engagement.attendance_rate ?? 0) >= 80 && engagement90d.length >= 2) score += 3;
+  if (meets(engagement.attendance_rate, 80) && engagement90d.length >= 2) score += 3;
 
   // Concerns
   const openConcerns = education_records.filter((r) => r.record_type === "concern" && r.status !== "resolved");
@@ -583,9 +584,9 @@ export function computeChildEducationIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (overallAttendancePct >= 96) {
+  if (meets(overallAttendancePct, 96)) {
     strengths.push(`Excellent attendance at ${overallAttendancePct}% — above the 96% national expectation for looked after children.`);
-  } else if (overallAttendancePct >= 90) {
+  } else if (meets(overallAttendancePct, 90)) {
     strengths.push(`Good attendance at ${overallAttendancePct}% — positive engagement with education.`);
   }
 
@@ -597,7 +598,7 @@ export function computeChildEducationIntelligence(
     strengths.push(`${child_name} participates in all PEP meetings — voice is central to education planning.`);
   }
 
-  if ((pep_compliance.target_achievement_rate ?? 0) >= 75 && pepData.targetsSet > 0) {
+  if (meets(pep_compliance.target_achievement_rate, 75) && pepData.targetsSet > 0) {
     strengths.push(`${pep_compliance.target_achievement_rate}% of PEP targets achieved — strong progress against education plan.`);
   }
 
@@ -605,7 +606,7 @@ export function computeChildEducationIntelligence(
     strengths.push(`${achievements.length} achievements recorded — ${child_name} is being recognised for educational progress.`);
   }
 
-  if ((homework.completion_rate ?? 0) >= 80 && homework.total_sessions_30d >= 5) {
+  if (meets(homework.completion_rate, 80) && homework.total_sessions_30d >= 5) {
     strengths.push(`Homework completion rate at ${homework.completion_rate}% — consistent academic engagement at home.`);
   }
 
@@ -656,11 +657,11 @@ export function computeChildEducationIntelligence(
     concerns.push(`${openConcerns.length} open education concern(s) requiring follow-up — ensure actions are tracked and resolved.`);
   }
 
-  if (homework.total_sessions_30d >= 5 && (homework.completion_rate ?? 0) < 50) {
+  if (homework.total_sessions_30d >= 5 && below(homework.completion_rate, 50)) {
     concerns.push(`Homework completion rate at ${homework.completion_rate}% — consider additional support or adapted homework approach.`);
   }
 
-  if (homework.total_sessions_30d >= 5 && (homework.engagement_rate ?? 0) < 50) {
+  if (homework.total_sessions_30d >= 5 && below(homework.engagement_rate, 50)) {
     concerns.push("Low homework engagement — explore barriers with child and consider if current approach is meeting their needs.");
   }
 
@@ -738,7 +739,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (homework.total_sessions_30d >= 5 && (homework.completion_rate ?? 0) < 50) {
+  if (homework.total_sessions_30d >= 5 && below(homework.completion_rate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review homework approach — consider adapted tasks, reduced volume, or different support arrangements. Discuss with school and child.",
@@ -779,7 +780,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (attendanceTrend === "improving" && overallAttendancePct >= 90) {
+  if (attendanceTrend === "improving" && meets(overallAttendancePct, 90)) {
     insights.push({
       severity: "positive",
       text: `${child_name}'s attendance is improving and now at ${overallAttendancePct}%. Consistent education engagement builds stability, routine, and aspiration — key protective factors for LAC children.`,
@@ -793,7 +794,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (pepCurrent && (pep_compliance.target_achievement_rate ?? 0) >= 75) {
+  if (pepCurrent && meets(pep_compliance.target_achievement_rate, 75)) {
     insights.push({
       severity: "positive",
       text: `PEP is current with ${pep_compliance.target_achievement_rate}% target achievement rate. This evidences effective education planning with measurable outcomes — exactly what inspectors want to see.`,

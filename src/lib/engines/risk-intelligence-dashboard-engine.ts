@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, rate } from "@/lib/metrics/rate";
+
 export type RiskLevel = "very_high" | "high" | "medium" | "low" | "minimal";
 export type ExploitationType = "cse" | "cce" | "online_exploitation" | "radicalisation" | "peer_on_peer" | string;
 export type IncidentSeverity = "critical" | "high" | "medium" | "low";
@@ -272,9 +274,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(numerator: number, denominator: number): number {
-  return denominator > 0 ? Math.round((numerator / denominator) * 100) : 100;
-}
 
 const SEVERITY_SCORE: Record<string, number> = {
   critical: 4,
@@ -352,7 +351,7 @@ export function computeRiskIntelligenceDashboard(
   const decreasingAssessments = currentAssessments.filter((a) => a.trend === "decreasing");
   homeRiskScore -= decreasingAssessments.length * 3;
   if (currentAssessments.length > 0) {
-    const childVoiceRate = pct(
+    const childVoiceRate = rate(
       currentAssessments.filter((a) => a.has_child_views).length,
       currentAssessments.length,
     );
@@ -447,7 +446,7 @@ export function computeRiskIntelligenceDashboard(
   const avgDuration = missing90d.length > 0
     ? Math.round((missing90d.reduce((s, m) => s + m.duration_hours, 0) / missing90d.length) * 10) / 10
     : null;
-  const returnInterviewRate = pct(
+  const returnInterviewRate = rate(
     missing90d.filter((m) => m.return_interview_completed).length,
     missing90d.length,
   );
@@ -490,7 +489,7 @@ export function computeRiskIntelligenceDashboard(
     unique_children_90d: uniqueRestraintChildren.size,
     avg_duration_minutes: avgRestraintDuration,
     trend: restraintTrend,
-    debrief_rate: pct(childDebriefed.length, restraints90d.length),
+    debrief_rate: rate(childDebriefed.length, restraints90d.length),
     injuries_count: totalInjuries,
     unreviewed_count: unreviewedRestraints.length,
   };
@@ -625,7 +624,7 @@ export function computeRiskIntelligenceDashboard(
   }
 
   if (currentAssessments.length > 0) {
-    const voiceRate = pct(currentAssessments.filter((a) => a.has_child_views).length, currentAssessments.length);
+    const voiceRate = rate(currentAssessments.filter((a) => a.has_child_views).length, currentAssessments.length);
     if (voiceRate === 100) {
       strengths.push(
         "Child's voice present in 100% of active risk assessments — demonstrating genuine child-centred safety planning.",
@@ -634,7 +633,7 @@ export function computeRiskIntelligenceDashboard(
   }
 
   if (currentAssessments.length > 0) {
-    const contingencyRate = pct(currentAssessments.filter((a) => a.has_contingency_plan).length, currentAssessments.length);
+    const contingencyRate = rate(currentAssessments.filter((a) => a.has_contingency_plan).length, currentAssessments.length);
     if (contingencyRate === 100) {
       strengths.push(
         "Contingency plans in place for all active risk assessments — preparedness for escalation is strong.",
@@ -738,7 +737,7 @@ export function computeRiskIntelligenceDashboard(
     );
   }
 
-  if (missing90d.length > 0 && returnInterviewRate < 100) {
+  if (missing90d.length > 0 && below(returnInterviewRate, 100)) {
     concerns.push(
       `Return interview completion rate at ${returnInterviewRate}% — all missing episodes must have a timely return interview (Reg 34).`,
     );
@@ -828,7 +827,7 @@ export function computeRiskIntelligenceDashboard(
     });
   }
 
-  if (missing90d.length > 0 && returnInterviewRate < 100) {
+  if (missing90d.length > 0 && below(returnInterviewRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete outstanding return interviews for missing episodes. Each interview should explore push/pull factors and update safety planning.",

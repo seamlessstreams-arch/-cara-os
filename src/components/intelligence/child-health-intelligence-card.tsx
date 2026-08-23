@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -119,7 +120,7 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
         {med.active_medications > 0 && (
           <div className="grid grid-cols-4 gap-2">
             <div className={cn("text-center rounded-lg p-2", (med.given_rate ?? 0) >= 95 ? "bg-green-50" : (med.given_rate ?? 0) >= 80 ? "bg-blue-50" : (med.given_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-lg font-bold tabular-nums", (med.given_rate ?? 0) >= 95 ? "text-green-600" : (med.given_rate ?? 0) >= 80 ? "text-blue-600" : (med.given_rate ?? 0) >= 70 ? "text-amber-600" : "text-red-600")}>{med.given_rate}%</p>
+              <p className={cn("text-lg font-bold tabular-nums", (med.given_rate ?? 0) >= 95 ? "text-green-600" : (med.given_rate ?? 0) >= 80 ? "text-blue-600" : (med.given_rate ?? 0) >= 70 ? "text-amber-600" : "text-red-600")}>{formatRate(med.given_rate)}</p>
               <p className="text-[10px] text-muted-foreground">Med Compliance</p>
             </div>
             <div className={cn("text-center rounded-lg p-2", med.refused_count_30d === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -131,7 +132,7 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
               <p className="text-[10px] text-muted-foreground">Missed (30d)</p>
             </div>
             <div className={cn("text-center rounded-lg p-2", med.witnessed_rate === 100 ? "bg-green-50" : "bg-slate-50")}>
-              <p className={cn("text-lg font-bold tabular-nums", med.witnessed_rate === 100 ? "text-green-600" : "text-slate-600")}>{med.witnessed_rate}%</p>
+              <p className={cn("text-lg font-bold tabular-nums", med.witnessed_rate === 100 ? "text-green-600" : "text-slate-600")}>{formatRate(med.witnessed_rate)}</p>
               <p className="text-[10px] text-muted-foreground">Witnessed</p>
             </div>
           </div>
@@ -179,7 +180,7 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
               <p className="text-[10px] text-muted-foreground">
                 {camhs.engaged ? (
                   <>
-                    <span className="text-purple-600">Active</span> · {camhs.attendance_rate}% attendance
+                    <span className="text-purple-600">Active</span> · {formatRate(camhs.attendance_rate)} attendance
                     {camhs.engagement_level && <span> · {camhs.engagement_level}</span>}
                   </>
                 ) : camhs.waiting ? (
@@ -227,7 +228,7 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
               <div className="min-w-0">
                 <p className="font-medium text-slate-700">Appointments (90d)</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {appt.total_90d} total · {appt.attended_rate}% attended
+                  {appt.total_90d} total · {formatRate(appt.attended_rate)} attended
                   {appt.dna_count > 0 && <span className="text-red-600"> · {appt.dna_count} DNA</span>}
                   {appt.rescheduled_count > 0 && <span> · {appt.rescheduled_count} rescheduled</span>}
                 </p>
@@ -260,8 +261,8 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
                   <span className="font-medium text-slate-700 truncate">{m.name}</span>
                   <span className="text-[10px] text-muted-foreground capitalize">{m.type}</span>
                 </div>
-                <span className={cn("text-xs font-bold tabular-nums", m.compliance_rate >= 95 ? "text-green-600" : m.compliance_rate >= 80 ? "text-blue-600" : m.compliance_rate >= 70 ? "text-amber-600" : "text-red-600")}>
-                  {m.compliance_rate}%
+                <span className={cn("text-xs font-bold tabular-nums", m.compliance_rate === null ? "text-slate-400" : meets(m.compliance_rate, 95) ? "text-green-600" : meets(m.compliance_rate, 80) ? "text-blue-600" : meets(m.compliance_rate, 70) ? "text-amber-600" : "text-red-600")}>
+                  {formatRate(m.compliance_rate)}
                 </span>
               </div>
             ))}

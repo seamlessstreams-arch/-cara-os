@@ -274,10 +274,6 @@ const ALLOWED = new Map([
     "src/lib/engines/behaviour-intelligence-engine.ts:totalWithIncidents:100",
     "category share / positive_percentage — vacuous on 0 incidents (0/0 arithmetic); frontend's arr.length>0 idiom decides whether to render the number",
   ],
-  [
-    "src/lib/engines/child-behaviour-safety-intelligence-engine.ts:d:100",
-    "the shared pct(n,d) helper duplicated in each child-domain engine — d=0 returns 100 as a divide-by-zero fallback; call-site correctness depends on each caller's semantics (same trade-off as the family of duplicated pct helpers)",
-  ],
 
   // ── Baseline burn-down 2026-07-29 batch 3 ──
   // The remaining 5 duplicated pct(n,d) helpers in child-domain engines
@@ -285,26 +281,6 @@ const ALLOWED = new Map([
   // home-safety domain (bathroom-shower + continence) which is
   // uniformly inverse-frequency: 0 hazards / refusals / breaches =
   // no adverse event to resolve.
-  [
-    "src/lib/engines/child-education-intelligence-engine.ts:d:100",
-    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
-  [
-    "src/lib/engines/child-health-intelligence-engine.ts:d:100",
-    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
-  [
-    "src/lib/engines/child-placement-quality-engine.ts:d:100",
-    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
-  [
-    "src/lib/engines/child-safeguarding-intelligence-engine.ts:d:100",
-    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
-  [
-    "src/lib/engines/child-voice-participation-engine.ts:d:100",
-    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
   [
     "src/lib/engines/health-wellbeing-engine.ts:totalChecks:100",
     "overall pass rate on child health checks — 0 checks ⇒ nothing yet monitored; vacuously complete on a fresh tenant",
@@ -430,10 +406,6 @@ const ALLOWED = new Map([
   [
     "src/lib/engines/regulatory-reporting-intelligence-engine.ts:totalRecommendations:100",
     "recommendation completion rate — 0 recommendations ⇒ vacuously complete",
-  ],
-  [
-    "src/lib/engines/risk-intelligence-dashboard-engine.ts:denominator:100",
-    "percentage form of the same pct(n,d) helper twin (see :denominator:1 above)",
   ],
   [
     "src/lib/engines/rota-intelligence-engine.ts:completionDenom:100",

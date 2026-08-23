@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, rate } from "@/lib/metrics/rate";
+
 export type RiskLevel = "low" | "medium" | "high" | "very_high";
 export type RiskTrend = "increasing" | "stable" | "decreasing";
 export type MitigationEffectiveness = "effective" | "partially_effective" | "not_effective" | "not_yet_assessed";
@@ -115,7 +117,8 @@ export interface MissingProfile {
   total_90d: number;
   total_hours_missing: number;
   high_risk_count: number;
-  return_interview_rate: number;
+  /** null when the population is empty — nothing measured, not 100%. */
+  return_interview_rate: number | null;
   contextual_risk_count: number;
   repeat_pattern: boolean;
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
@@ -125,8 +128,10 @@ export interface RestraintProfile {
   total_90d: number;
   total_duration_minutes: number;
   injuries_count: number;
-  debrief_rate: number;
-  review_rate: number;
+  /** null when the population is empty — nothing measured, not 100%. */
+  debrief_rate: number | null;
+  /** null when the population is empty — nothing measured, not 100%. */
+  review_rate: number | null;
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
 }
 
@@ -179,9 +184,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 function riskLevelScore(level: RiskLevel): number {
   switch (level) {
@@ -281,7 +283,7 @@ export function computeChildSafeguarding(
     total_90d: missing90d.length,
     total_hours_missing: Math.round(totalHoursMissing * 10) / 10,
     high_risk_count: highRiskMissing.length,
-    return_interview_rate: pct(riCompleted.length, returnedEpisodes.length),
+    return_interview_rate: rate(riCompleted.length, returnedEpisodes.length),
     contextual_risk_count: contextualRiskMissing.length,
     repeat_pattern: hasRepeatPattern,
     trend: compareTrend(
@@ -306,8 +308,8 @@ export function computeChildSafeguarding(
     total_90d: restraints90d.length,
     total_duration_minutes: totalRestraintMins,
     injuries_count: injuriesFromRestraints,
-    debrief_rate: pct(debriefed.length, restraints90d.length),
-    review_rate: pct(reviewed.length, restraints90d.length),
+    debrief_rate: rate(debriefed.length, restraints90d.length),
+    review_rate: rate(reviewed.length, restraints90d.length),
     trend: compareTrend(
       restraintsRecent.map(() => 1),
       restraintsOlder.map(() => 1),
@@ -371,7 +373,7 @@ export function computeChildSafeguarding(
   else if (missing90d.length >= 3) score -= 5;
   if (highRiskMissing.length > 0) score -= highRiskMissing.length * 3;
   if (missing_profile.return_interview_rate === 100 && returnedEpisodes.length > 0) score += 3;
-  else if (missing_profile.return_interview_rate < 100 && returnedEpisodes.length > 0) score -= 3;
+  else if (below(missing_profile.return_interview_rate, 100) && returnedEpisodes.length > 0) score -= 3;
   if (missing_profile.trend === "decreasing") score += 3;
   if (missing_profile.trend === "increasing") score -= 5;
   if (contextualRiskMissing.length > 0) score -= 3;
@@ -381,7 +383,7 @@ export function computeChildSafeguarding(
   else if (restraints90d.length >= 3) score -= 5;
   if (injuriesFromRestraints > 0) score -= 5;
   if (restraint_profile.debrief_rate === 100 && restraints90d.length > 0) score += 3;
-  else if (restraint_profile.debrief_rate < 100 && restraints90d.length > 0) score -= 3;
+  else if (below(restraint_profile.debrief_rate, 100) && restraints90d.length > 0) score -= 3;
   if (restraint_profile.trend === "decreasing") score += 3;
   if (restraint_profile.trend === "increasing") score -= 5;
 
@@ -497,7 +499,7 @@ export function computeChildSafeguarding(
     concerns.push(`${highRiskMissing.length} high/critical risk missing episode${highRiskMissing.length !== 1 ? "s" : ""}. Each episode represents a significant safeguarding concern.`);
   }
 
-  if (missing_profile.return_interview_rate < 100 && returnedEpisodes.length > 0) {
+  if (below(missing_profile.return_interview_rate, 100) && returnedEpisodes.length > 0) {
     concerns.push(`Return interview completion at ${missing_profile.return_interview_rate}%. All returned children must have a return interview to understand push/pull factors (Reg 34).`);
   }
 
@@ -509,7 +511,7 @@ export function computeChildSafeguarding(
     concerns.push(`${injuriesFromRestraints} injur${injuriesFromRestraints !== 1 ? "ies" : "y"} recorded during restraint in 90 days. Every injury must be documented, reported, and investigated (Reg 13, Reg 35).`);
   }
 
-  if (restraint_profile.debrief_rate < 100 && restraints90d.length > 0) {
+  if (below(restraint_profile.debrief_rate, 100) && restraints90d.length > 0) {
     concerns.push(`Restraint debrief rate at ${restraint_profile.debrief_rate}%. All children must be debriefed after restrictive intervention to ensure their wellbeing and views are heard.`);
   }
 
@@ -564,7 +566,7 @@ export function computeChildSafeguarding(
     });
   }
 
-  if (missing_profile.return_interview_rate < 100 && returnedEpisodes.length > 0) {
+  if (below(missing_profile.return_interview_rate, 100) && returnedEpisodes.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all return interviews are completed within 72 hours of a child being found. Use an independent person where possible to capture the child's experience and identify push/pull factors.",
@@ -584,7 +586,7 @@ export function computeChildSafeguarding(
     });
   }
 
-  if (restraint_profile.debrief_rate < 100 && restraints90d.length > 0) {
+  if (below(restraint_profile.debrief_rate, 100) && restraints90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all children are debriefed within 24 hours of any restrictive intervention. Document the debrief and incorporate learning into the behaviour support plan.",

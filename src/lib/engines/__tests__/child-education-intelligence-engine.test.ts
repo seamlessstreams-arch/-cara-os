@@ -174,6 +174,12 @@ describe("Child Education Intelligence Engine", () => {
   it("reports insufficient_data (not 100% 'excellent') for a child with NO attendance records", () => {
     // A child with education records but zero attendance sessions previously read
     // 100% / "excellent" (pct(0,0)=100) + earned the score boost and strength.
+    //
+    // This used to assert `overall_pct` was 0, which was the guard's own answer
+    // — `hasAttendanceData ? pct(...) : 0`. That is the same fabrication in the
+    // other direction: a child with nothing recorded had not attended 0% of
+    // their sessions. `rate()` returns null for an empty population and the
+    // band's insufficient_data state carries the meaning.
     const result = computeChildEducationIntelligence(baseInput({
       attendance_records: [],
       education_records: [
@@ -182,7 +188,8 @@ describe("Child Education Intelligence Engine", () => {
     }));
     expect(result.attendance.total_sessions).toBe(0);
     expect(result.attendance.band).toBe("insufficient_data");
-    expect(result.attendance.overall_pct).toBe(0);
+    expect(result.attendance.overall_pct).toBeNull();
+    expect(result.attendance.overall_pct).not.toBe(100); // the bug this test was written for
     expect(result.strengths.some((s) => s.includes("Excellent attendance"))).toBe(false);
   });
 

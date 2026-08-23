@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export type BehaviourDirection = "positive" | "concerning";
 export type BehaviourIntensity = "low" | "medium" | "high" | "severe";
 
@@ -111,7 +113,8 @@ export interface BehaviourProfile {
   total_entries_30d: number;
   positive_count_30d: number;
   concerning_count_30d: number;
-  positive_ratio: number;         // 0-100
+  /** null when the population is empty — nothing measured, not 100%. */
+  positive_ratio: number | null;         // 0-100
   high_severe_count_30d: number;
   trend: "improving" | "stable" | "declining" | "insufficient_data";
   top_triggers: string[];
@@ -224,9 +227,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 function avg(arr: number[]): number | null {
   return arr.length > 0 ? Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10 : null;
@@ -304,7 +304,7 @@ export function computeChildBehaviourSafety(
     total_entries_30d: beh30d.length,
     positive_count_30d: pos30d.length,
     concerning_count_30d: con30d.length,
-    positive_ratio: pct(pos30d.length, beh30d.length),
+    positive_ratio: rate(pos30d.length, beh30d.length),
     high_severe_count_30d: highSevere30d.length,
     trend: behaviourTrend,
     top_triggers: topTriggers,
@@ -347,7 +347,7 @@ export function computeChildBehaviourSafety(
     total_90d: inc90d.length,
     by_type: byType,
     severity_breakdown: severityBreakdown,
-    de_escalation_rate: pct(deEscAttempted, inc90d.length),
+    de_escalation_rate: rate(deEscAttempted, inc90d.length),
     trend: incidentTrend,
     open_count: openIncidents,
   };
@@ -373,8 +373,8 @@ export function computeChildBehaviourSafety(
     total_30d: rst30d.length,
     total_90d: rst90d.length,
     avg_duration_minutes: avg(rstDurations),
-    de_escalation_rate: pct(rstDeEsc, rst90d.length),
-    debrief_rate: pct(rstDebriefed, rst90d.length),
+    de_escalation_rate: rate(rstDeEsc, rst90d.length),
+    debrief_rate: rate(rstDebriefed, rst90d.length),
     injury_count: rstInjuries,
     unreviewed_count: rstUnreviewed,
     trend: restraintTrend,
@@ -392,7 +392,7 @@ export function computeChildBehaviourSafety(
     total_30d: miss30d.length,
     total_90d: miss90d.length,
     avg_duration_hours: avg(missDurations),
-    return_interview_rate: pct(missRI, miss90d.length),
+    return_interview_rate: rate(missRI, miss90d.length),
     high_risk_count: highRisk,
     repeat_missing: repeatMissing,
   };
@@ -415,7 +415,7 @@ export function computeChildBehaviourSafety(
     rewards_30d: rewards30d.length,
     sanctions_30d: sanctions30d.length,
     ratio,
-    proportionate_rate: pct(proportionateCount, sr30d.length),
+    proportionate_rate: rate(proportionateCount, sr30d.length),
     balance_rating: balanceRating,
   };
 
@@ -454,9 +454,9 @@ export function computeChildBehaviourSafety(
   let score = 50;
 
   // Behaviour balance
-  if (behaviour_profile.positive_ratio >= 70) score += 10;
-  else if (behaviour_profile.positive_ratio >= 50) score += 3;
-  else if (behaviour_profile.positive_ratio < 30 && beh30d.length >= 3) score -= 10;
+  if (meets(behaviour_profile.positive_ratio, 70)) score += 10;
+  else if (meets(behaviour_profile.positive_ratio, 50)) score += 3;
+  else if (below(behaviour_profile.positive_ratio, 30) && beh30d.length >= 3) score -= 10;
 
   if (behaviourTrend === "improving") score += 5;
   else if (behaviourTrend === "declining") score -= 5;
@@ -477,7 +477,7 @@ export function computeChildBehaviourSafety(
   else if (rst30d.length >= 2) score -= 5;
   if (rstInjuries > 0) score -= 5;
   if (restraint_profile.debrief_rate === 100 && rst90d.length > 0) score += 3;
-  else if ((restraint_profile.debrief_rate ?? 0) < 80 && rst90d.length > 0) score -= 3;
+  else if (below(restraint_profile.debrief_rate, 80) && rst90d.length > 0) score -= 3;
   if (rstUnreviewed > 0) score -= 3;
 
   // Missing
@@ -521,7 +521,7 @@ export function computeChildBehaviourSafety(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (behaviour_profile.positive_ratio >= 70 && beh30d.length >= 5) {
+  if (meets(behaviour_profile.positive_ratio, 70) && beh30d.length >= 5) {
     strengths.push(`${behaviour_profile.positive_ratio}% of recorded behaviours are positive — evidencing a strengths-based approach (Reg 12).`);
   }
 
@@ -568,7 +568,7 @@ export function computeChildBehaviourSafety(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (behaviour_profile.positive_ratio < 30 && beh30d.length >= 5) {
+  if (below(behaviour_profile.positive_ratio, 30) && beh30d.length >= 5) {
     concerns.push(`Only ${behaviour_profile.positive_ratio}% of behaviours are positive — the recording is heavily weighted toward concerning entries. Review whether positive behaviours are being systematically captured (Reg 12).`);
   }
 
@@ -600,7 +600,7 @@ export function computeChildBehaviourSafety(
     concerns.push(`${rstInjuries} injury/ies recorded during restraints — each must be documented, medically assessed, and reported to the Registered Manager (Reg 20).`);
   }
 
-  if ((restraint_profile.debrief_rate ?? 0) < 80 && rst90d.length >= 2) {
+  if (below(restraint_profile.debrief_rate, 80) && rst90d.length >= 2) {
     concerns.push(`Restraint debrief rate at ${restraint_profile.debrief_rate}% — debriefs must occur after every physical intervention to support the child and review necessity (Reg 20).`);
   }
 
@@ -616,7 +616,7 @@ export function computeChildBehaviourSafety(
     concerns.push(`${highRisk} high-risk/CS-risk missing episode${highRisk !== 1 ? "s" : ""} in 90 days — escalation to placing authority and police is mandatory.`);
   }
 
-  if ((missing_profile.return_interview_rate ?? 0) < 100 && miss90d.length > 0) {
+  if (below(missing_profile.return_interview_rate, 100) && miss90d.length > 0) {
     concerns.push(`Return interview completion rate at ${missing_profile.return_interview_rate}% — all children returning from missing must receive an independent return interview.`);
   }
 
@@ -646,7 +646,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (rst30d.length >= 2 && (restraint_profile.debrief_rate ?? 0) < 100) {
+  if (rst30d.length >= 2 && below(restraint_profile.debrief_rate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete outstanding restraint debriefs. Review restraint reduction strategy with team. Consider whether additional de-escalation training is needed.",
@@ -656,7 +656,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (highRisk > 0 && (missing_profile.return_interview_rate ?? 0) < 100) {
+  if (highRisk > 0 && below(missing_profile.return_interview_rate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Arrange independent return interviews for all outstanding missing episodes. Update missing risk assessment and share with placing authority.",
@@ -771,7 +771,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (behaviourTrend === "improving" && behaviour_profile.positive_ratio >= 60) {
+  if (behaviourTrend === "improving" && meets(behaviour_profile.positive_ratio, 60)) {
     insights.push({
       severity: "positive",
       text: `${child_name} shows an improving behaviour trajectory with ${behaviour_profile.positive_ratio}% positive entries. This pattern demonstrates the effectiveness of current positive behaviour support strategies — ensure the team maintains consistency.`,

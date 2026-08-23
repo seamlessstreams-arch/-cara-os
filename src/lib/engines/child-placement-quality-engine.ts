@@ -14,6 +14,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface DailyLogInput {
   id: string;
   date: string;
@@ -87,20 +89,24 @@ export interface EngagementProfile {
 
 export interface KeyWorkProfile {
   sessions_30d: number;
-  engagement_rate: number;
-  mood_improvement_rate: number;     // % where mood_after > mood_before
+  /** null when the population is empty — nothing measured, not 100%. */
+  engagement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 100%. */
+  mood_improvement_rate: number | null;     // % where mood_after > mood_before
   top_themes: { theme: string; count: number }[];
 }
 
 export interface WelfareProfile {
   checks_30d: number;
-  ok_rate: number;
+  /** null when the population is empty — nothing measured, not 100%. */
+  ok_rate: number | null;
   concern_count: number;
 }
 
 export interface ActivityProfile {
   activities_30d: number;
-  participation_rate: number;
+  /** null when the population is empty — nothing measured, not 100%. */
+  participation_rate: number | null;
   types: { type: string; count: number }[];
 }
 
@@ -160,9 +166,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
 
 function avg(values: number[]): number {
   return values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
@@ -267,8 +270,8 @@ export function computeChildPlacementQuality(
 
   const key_work: KeyWorkProfile = {
     sessions_30d: kw30d.length,
-    engagement_rate: pct(kwEngaged.length, kw30d.length),
-    mood_improvement_rate: pct(kwMoodImproved.length, kw30d.length),
+    engagement_rate: rate(kwEngaged.length, kw30d.length),
+    mood_improvement_rate: rate(kwMoodImproved.length, kw30d.length),
     top_themes: topThemes,
   };
 
@@ -279,7 +282,7 @@ export function computeChildPlacementQuality(
 
   const welfare: WelfareProfile = {
     checks_30d: welf30d.length,
-    ok_rate: pct(okChecks.length, welf30d.length),
+    ok_rate: rate(okChecks.length, welf30d.length),
     concern_count: concernChecks.length,
   };
 
@@ -297,7 +300,7 @@ export function computeChildPlacementQuality(
 
   const activityProfile: ActivityProfile = {
     activities_30d: act30d.length,
-    participation_rate: pct(participated.length, act30d.length),
+    participation_rate: rate(participated.length, act30d.length),
     types: actTypes,
   };
 
@@ -327,17 +330,17 @@ export function computeChildPlacementQuality(
   if (typeSpread.length >= 4) score += 2;
 
   // Key work
-  if (kw30d.length >= 3 && key_work.engagement_rate >= 80) score += 8;
+  if (kw30d.length >= 3 && meets(key_work.engagement_rate, 80)) score += 8;
   else if (kw30d.length >= 2) score += 3;
   else if (kw30d.length === 0) score -= 5;
-  if (key_work.mood_improvement_rate >= 60 && kw30d.length >= 2) score += 3;
+  if (meets(key_work.mood_improvement_rate, 60) && kw30d.length >= 2) score += 3;
 
   // Welfare
   if (welfare.ok_rate === 100 && welf30d.length >= 5) score += 3;
   if (welfare.concern_count > 0) score -= welfare.concern_count * 2;
 
   // Activities
-  if (activityProfile.participation_rate >= 80 && act30d.length >= 3) score += 5;
+  if (meets(activityProfile.participation_rate, 80) && act30d.length >= 3) score += 5;
   else if (act30d.length === 0) score -= 3;
 
   score = clamp(Math.round(score), 0, 100);
@@ -384,11 +387,11 @@ export function computeChildPlacementQuality(
     strengths.push(`Average mood score of ${avg30d}/10 over the past 30 days indicates a positive care experience. ${child_name} appears happy and settled.`);
   }
 
-  if (key_work.engagement_rate >= 80 && kw30d.length >= 3) {
+  if (meets(key_work.engagement_rate, 80) && kw30d.length >= 3) {
     strengths.push(`${key_work.engagement_rate}% key work engagement across ${kw30d.length} sessions demonstrates a strong working relationship with ${key_worker_name}.`);
   }
 
-  if (key_work.mood_improvement_rate >= 60 && kw30d.length >= 2) {
+  if (meets(key_work.mood_improvement_rate, 60) && kw30d.length >= 2) {
     strengths.push(`Mood improved in ${key_work.mood_improvement_rate}% of key work sessions. Key work is having a positive therapeutic impact.`);
   }
 
@@ -396,7 +399,7 @@ export function computeChildPlacementQuality(
     strengths.push(`${uniqueStaff} different staff have recorded daily logs for ${child_name}. This breadth of recording ensures a complete picture of daily life (Reg 6).`);
   }
 
-  if (activityProfile.participation_rate >= 80 && act30d.length >= 3) {
+  if (meets(activityProfile.participation_rate, 80) && act30d.length >= 3) {
     strengths.push(`${activityProfile.participation_rate}% activity participation rate across ${act30d.length} activities. ${child_name} is actively engaged in the life of the home.`);
   }
 
@@ -423,7 +426,7 @@ export function computeChildPlacementQuality(
     concerns.push(`No key work sessions recorded in 30 days. Every child should have regular 1:1 time with their key worker to feel heard and supported (Reg 5).`);
   }
 
-  if (key_work.engagement_rate < 50 && kw30d.length >= 2) {
+  if (below(key_work.engagement_rate, 50) && kw30d.length >= 2) {
     concerns.push(`Key work engagement rate at ${key_work.engagement_rate}%. Low engagement may indicate relationship difficulties or that sessions are not meeting ${child_name}'s needs.`);
   }
 
@@ -439,7 +442,7 @@ export function computeChildPlacementQuality(
     concerns.push("No structured activities recorded in 30 days. Children need enriching experiences and opportunities to develop interests (Reg 7).");
   }
 
-  if (activityProfile.participation_rate < 50 && act30d.length >= 3) {
+  if (below(activityProfile.participation_rate, 50) && act30d.length >= 3) {
     concerns.push(`Activity participation rate at ${activityProfile.participation_rate}%. ${child_name} may be withdrawing from communal life — explore reasons sensitively.`);
   }
 
@@ -505,7 +508,7 @@ export function computeChildPlacementQuality(
     });
   }
 
-  if (key_work.engagement_rate < 50 && kw30d.length >= 2) {
+  if (below(key_work.engagement_rate, 50) && kw30d.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Review key work approach with ${child_name}. Consider changing timing, location, or format. Ask what they would prefer — some children engage better during activities rather than formal sessions.`,
@@ -539,7 +542,7 @@ export function computeChildPlacementQuality(
     });
   }
 
-  if (moodTrend === "improving" && key_work.engagement_rate >= 80 && kw30d.length >= 3) {
+  if (moodTrend === "improving" && meets(key_work.engagement_rate, 80) && kw30d.length >= 3) {
     insights.push({
       severity: "positive",
       text: `Mood is improving alongside high key work engagement. This correlation suggests the key working relationship is having a direct positive impact on ${child_name}'s wellbeing — exactly the kind of evidence Ofsted looks for.`,
