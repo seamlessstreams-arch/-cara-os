@@ -16,6 +16,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { rate } from "@/lib/metrics/rate";
+
 export interface EducationRecordInput {
   id: string;
   date: string;
@@ -60,14 +62,17 @@ export interface TutoringInput {
   subject: string;
   duration_minutes: number;
   tutor_feedback: string;
-  progress_rating: number;     // 1-5
+  /** 1-5, or null where nothing grades progress. A TutoringRecord does not. */
+  progress_rating: number | null;
 }
 
 export interface SchoolEngagementInput {
   id: string;
   date: string;
   event_type: string;          // parents_evening, open_day, school_trip, award_ceremony, sports_day, performance, etc.
-  attended: boolean;
+  /** null where nothing records whether the CHILD attended. A
+   *  SchoolEngagementEvent records who came from the home, not that. */
+  attended: boolean | null;
   staff_attended: boolean;
   child_feedback: string;
 }
@@ -412,7 +417,15 @@ export function computeChildEducationIntelligence(
     pep_current: pepCurrent,
     targets_set: pepData.targetsSet,
     targets_achieved: pepData.targetsAchieved,
-    target_achievement_rate: pct(pepData.targetsAchieved, pepData.targetsSet),
+    // NOT pct(): its 0-denominator fallback is 100, so a child with no PEP
+    // targets read "100% of PEP targets achieved" — and that fed +5 into the
+    // education score. The output type is already nullable; `rate()` returns
+    // null so an unset target list reads as unmeasured.
+    //
+    // The pct(n,d) helper is allowlisted in check-fabricated-scores.js with the
+    // note that "call-site correctness depends on each caller's semantics".
+    // This is one of the call sites where it does not hold.
+    target_achievement_rate: rate(pepData.targetsAchieved, pepData.targetsSet),
     virtual_school_involved_rate: pepData.vshRate,
     child_participation_rate: pepData.childParticipationRate,
     pupil_premium_discussed_rate: pepData.ppDiscussedRate,
@@ -453,7 +466,11 @@ export function computeChildEducationIntelligence(
 
   // ── Tutoring Analysis ─────────────────────────────────────────────────
   const tutor90d = tutoring_sessions.filter((t) => isWithin(today, t.date, 90));
-  const tutorRatings = tutor90d.map((t) => t.progress_rating);
+  // Average over the arrangements that are actually graded; an ungraded one
+  // is unmeasured, not a middling 3.
+  const tutorRatings = tutor90d
+    .map((t) => t.progress_rating)
+    .filter((r): r is number => r !== null);
   const tutorSubjects = [...new Set(tutor90d.map((t) => t.subject))];
   const tutorHours = Math.round((tutor90d.reduce((s, t) => s + t.duration_minutes, 0) / 60) * 10) / 10;
 
@@ -466,13 +483,15 @@ export function computeChildEducationIntelligence(
 
   // ── Engagement Analysis ───────────────────────────────────────────────
   const engagement90d = school_engagement_events.filter((e) => isWithin(today, e.date, 90));
-  const attended = engagement90d.filter((e) => e.attended);
+  // Rate over the events where the child's attendance was actually recorded.
+  const engagementGraded = engagement90d.filter((e) => e.attended !== null);
+  const attended = engagementGraded.filter((e) => e.attended);
   const staffAttended = engagement90d.filter((e) => e.staff_attended);
   const eventTypes = [...new Set(engagement90d.map((e) => e.event_type))];
 
   const engagement: EngagementAnalysis = {
     total_events_90d: engagement90d.length,
-    attendance_rate: pct(attended.length, engagement90d.length),
+    attendance_rate: pct(attended.length, engagementGraded.length),
     staff_attendance_rate: pct(staffAttended.length, engagement90d.length),
     event_types: eventTypes,
   };
