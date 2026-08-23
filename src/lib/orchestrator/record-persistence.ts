@@ -13,10 +13,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import type { SB } from "@/lib/supabase/loose-client";
 
 // Loose-typed client — these tables aren't in the generated Database types.
 // Matches the established pattern used across src/lib/services/*.
-type SB = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 function sb(): SB | null {
   return createServerClient() as unknown as SB;
 }

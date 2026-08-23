@@ -13,9 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { hasIntelligencePermission } from "@/lib/cara/intelligence-permissions";
 import { readJsonBody } from "@/lib/http/read-json";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // Roles that can approve drafts
 const APPROVAL_ROLES = [

@@ -13,7 +13,7 @@ import type { PlacementStabilityInput, PlacementHistory, DisruptionIndicator } f
 import { londonDayDiff } from "@/lib/utils";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

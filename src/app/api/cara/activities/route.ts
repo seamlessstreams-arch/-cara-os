@@ -12,7 +12,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ActivityInput, Activity, ActivityCategory } from "@/lib/cara/activities-intelligence";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

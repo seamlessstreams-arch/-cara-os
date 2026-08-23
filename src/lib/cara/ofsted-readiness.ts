@@ -14,9 +14,8 @@
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { todayStr } from "@/lib/utils";
+import type { SB } from "@/lib/supabase/loose-client";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
 type Row = Record<string, unknown>;
 
 const QUALITY_STANDARDS = [

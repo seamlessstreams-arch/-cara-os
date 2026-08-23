@@ -9,9 +9,7 @@
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateCaraJson } from "./provider";
 import { CARA_CORE_GUARDRAILS, buildHumanWritingInstruction } from "./guardrails";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function startMockInspection(input: {
   homeId: string;

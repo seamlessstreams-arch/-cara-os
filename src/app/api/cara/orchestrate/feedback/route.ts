@@ -12,9 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { readJsonBody } from "@/lib/http/read-json";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 const VALID_ISSUE_TYPES = ["inaccurate", "unhelpful", "unsafe", "slow", "incomplete", "other"];
 

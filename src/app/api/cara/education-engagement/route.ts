@@ -10,8 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { analyseEducationEngagement } from "@/lib/cara/education-engagement-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { EducationInput, EducationWeek } from "@/lib/cara/education-engagement-intelligence";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

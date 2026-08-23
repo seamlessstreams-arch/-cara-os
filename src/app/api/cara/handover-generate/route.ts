@@ -17,9 +17,7 @@ import type { CaraRequest } from "@/lib/cara/orchestrator/types";
 import { readJsonBody } from "@/lib/http/read-json";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { todayStr } from "@/lib/utils";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 interface HandoverGenerateRequest {
   homeId: string;

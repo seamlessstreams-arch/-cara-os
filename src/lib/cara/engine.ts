@@ -23,9 +23,7 @@ import {
   detectUnsafeOutput,
   hashPrompt,
 } from "./guardrails";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 function evidenceForPrompt(evidence: Awaited<ReturnType<typeof retrieveCaraEvidence>>) {
   return evidence.map((item, index) => ({

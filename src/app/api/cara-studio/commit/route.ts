@@ -12,8 +12,7 @@ import { commitRequestSchema } from "@/lib/cara-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 // Roles permitted to commit content to records
 const COMMIT_ROLES = [

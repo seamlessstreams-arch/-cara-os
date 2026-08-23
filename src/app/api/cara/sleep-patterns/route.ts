@@ -10,8 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { analyseSleepPatterns } from "@/lib/cara/sleep-pattern-intelligence";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { SleepInput, SleepNight } from "@/lib/cara/sleep-pattern-intelligence";
-
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

@@ -11,7 +11,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { GenerationStatus } from "@/lib/cara-studio/types";
 
 import { seedDay } from "@/lib/seed-date";
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 export async function GET(req: NextRequest) {
   try {

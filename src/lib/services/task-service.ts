@@ -12,9 +12,7 @@ import type {
 } from "@/types/operations";
 import * as fallback from "./task-store-fallback";
 import { londonDayDiff } from "@/lib/utils";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = any;
+import type { SB } from "@/lib/supabase/loose-client";
 
 function sb(): SB | null {
   if (!isSupabaseEnabled()) return null;
