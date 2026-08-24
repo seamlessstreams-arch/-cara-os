@@ -5,6 +5,8 @@
 // CHR 2015 Reg 10: "The health and well-being standard." SCCIF: Health.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface AppointmentRecordInput {
@@ -38,12 +40,17 @@ export interface HealthAppointmentResult {
   appointment_score: number;
   headline: string;
   total_appointments: number;
-  attendance_rate: number;
-  missed_rate: number;
-  outcome_documentation_rate: number;
-  transport_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attendance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  missed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcome_documentation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transport_compliance_rate: number | null;
   health_domain_variety: number;
-  children_with_appointments_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_appointments_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -56,10 +63,6 @@ export interface HealthAppointmentResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -103,21 +106,21 @@ export function computeHealthAppointmentContinuity(
   const total = appointments.length;
 
   const attended = appointments.filter(a => a.status === "attended").length;
-  const attendanceRate = pct(attended, total);
+  const attendanceRate = rate(attended, total);
 
   const missed = appointments.filter(a => a.status === "missed").length;
-  const missedRate = pct(missed, total);
+  const missedRate = rate(missed, total);
 
   const withOutcome = appointments.filter(a => a.has_outcome).length;
-  const outcomeRate = pct(withOutcome, total);
+  const outcomeRate = rate(withOutcome, total);
 
   const withTransport = appointments.filter(a => a.transport_arranged).length;
-  const transportRate = pct(withTransport, total);
+  const transportRate = rate(withTransport, total);
 
   const uniqueTypes = new Set(appointments.map(a => a.appointment_type)).size;
 
   const uniqueChildren = new Set(appointments.map(a => a.child_id)).size;
-  const childrenRate = pct(uniqueChildren, total_children);
+  const childrenRate = rate(uniqueChildren, total_children);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -126,9 +129,9 @@ export function computeHealthAppointmentContinuity(
   if (total === 0) {
     score -= 3;
   } else {
-    if (attendanceRate >= 90) score += 6;
-    else if (attendanceRate >= 75) score += 2;
-    else if (attendanceRate < 60) score -= 5;
+    if (meets(attendanceRate, 90)) score += 6;
+    else if (meets(attendanceRate, 75)) score += 2;
+    else if (below(attendanceRate, 60)) score -= 5;
   }
 
   // Modifier 2: Missed appointment rate (lower is better)
@@ -136,26 +139,26 @@ export function computeHealthAppointmentContinuity(
     // no adjustment
   } else {
     if (missedRate === 0) score += 5;
-    else if (missedRate <= 5) score += 2;
-    else if (missedRate >= 20) score -= 5;
+    else if ((missedRate !== null && missedRate <= 5)) score += 2;
+    else if (meets(missedRate, 20)) score -= 5;
   }
 
   // Modifier 3: Outcome documentation
   if (total === 0) {
     score -= 1;
   } else {
-    if (outcomeRate >= 85) score += 5;
-    else if (outcomeRate >= 60) score += 2;
-    else if (outcomeRate < 40) score -= 4;
+    if (meets(outcomeRate, 85)) score += 5;
+    else if (meets(outcomeRate, 60)) score += 2;
+    else if (below(outcomeRate, 40)) score -= 4;
   }
 
   // Modifier 4: Transport compliance
   if (total === 0) {
     // no adjustment
   } else {
-    if (transportRate >= 90) score += 4;
-    else if (transportRate >= 70) score += 1;
-    else if (transportRate < 50) score -= 4;
+    if (meets(transportRate, 90)) score += 4;
+    else if (meets(transportRate, 70)) score += 1;
+    else if (below(transportRate, 50)) score -= 4;
   }
 
   // Modifier 5: Health domain variety (breadth of health engagement)
@@ -171,9 +174,9 @@ export function computeHealthAppointmentContinuity(
   if (total === 0) {
     score -= 2;
   } else {
-    if (childrenRate >= 90) score += 5;
-    else if (childrenRate >= 60) score += 2;
-    else if (childrenRate < 40) score -= 5;
+    if (meets(childrenRate, 90)) score += 5;
+    else if (meets(childrenRate, 60)) score += 2;
+    else if (below(childrenRate, 40)) score -= 5;
   }
 
   score = clamp(score, 0, 100);
@@ -200,20 +203,20 @@ export function computeHealthAppointmentContinuity(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (attendanceRate >= 90 && total > 0) strengths.push("Excellent appointment attendance ensures children receive consistent healthcare");
+  if (meets(attendanceRate, 90) && total > 0) strengths.push("Excellent appointment attendance ensures children receive consistent healthcare");
   if (missedRate === 0 && total > 0) strengths.push("No missed appointments — every health engagement is prioritised");
-  if (outcomeRate >= 85 && total > 0) strengths.push("Appointment outcomes are consistently documented — care continuity is assured");
-  if (transportRate >= 90 && total > 0) strengths.push("Transport is reliably arranged for all appointments");
+  if (meets(outcomeRate, 85) && total > 0) strengths.push("Appointment outcomes are consistently documented — care continuity is assured");
+  if (meets(transportRate, 90) && total > 0) strengths.push("Transport is reliably arranged for all appointments");
   if (uniqueTypes >= 5 && total > 0) strengths.push("Broad range of health services engaged — children receive holistic healthcare");
-  if (childrenRate >= 90 && total > 0) strengths.push("All children have scheduled health appointments — no child is overlooked");
+  if (meets(childrenRate, 90) && total > 0) strengths.push("All children have scheduled health appointments — no child is overlooked");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No health appointments recorded — children may not be accessing essential healthcare");
-  if (missedRate >= 20 && total > 0) concerns.push(`${missedRate}% of appointments are missed — children are not receiving planned healthcare`);
-  if (attendanceRate < 60 && total > 0) concerns.push("Appointment attendance is critically low — health needs are going unmet");
-  if (outcomeRate < 40 && total > 0) concerns.push("Most appointments lack outcome documentation — care continuity is compromised");
-  if (childrenRate < 40 && total > 0) concerns.push("Most children have no recorded appointments — health oversight is inadequate");
+  if (meets(missedRate, 20) && total > 0) concerns.push(`${formatRate(missedRate)} of appointments are missed — children are not receiving planned healthcare`);
+  if (below(attendanceRate, 60) && total > 0) concerns.push("Appointment attendance is critically low — health needs are going unmet");
+  if (below(outcomeRate, 40) && total > 0) concerns.push("Most appointments lack outcome documentation — care continuity is compromised");
+  if (below(childrenRate, 40) && total > 0) concerns.push("Most children have no recorded appointments — health oversight is inadequate");
   if (uniqueTypes <= 1 && total > 0) concerns.push("Health engagement is limited to a single domain — broader health needs may be unmet");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -222,19 +225,19 @@ export function computeHealthAppointmentContinuity(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Establish a comprehensive health appointment tracking system for all children", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 10" });
   }
-  if (missedRate >= 10 && total > 0) {
+  if (meets(missedRate, 10) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Investigate and address reasons for missed appointments to improve attendance", urgency: "immediate", regulatory_ref: "SCCIF Health" });
   }
-  if (outcomeRate < 60 && total > 0) {
+  if (below(outcomeRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure outcomes are recorded for every attended appointment", urgency: "soon", regulatory_ref: "CHR 2015 Reg 10" });
   }
-  if (childrenRate < 60 && total > 0) {
+  if (below(childrenRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review health needs of children without appointments and schedule accordingly", urgency: "immediate", regulatory_ref: "SCCIF Health" });
   }
   if (uniqueTypes < 3 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Broaden health engagement to include dental, optician, and specialist services", urgency: "planned", regulatory_ref: "CHR 2015 Reg 10" });
   }
-  if (transportRate < 70 && total > 0) {
+  if (below(transportRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure transport is arranged in advance for all health appointments", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25" });
   }
 
@@ -243,16 +246,16 @@ export function computeHealthAppointmentContinuity(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: HealthAppointmentResult["insights"] = [];
 
-  if (attendanceRate >= 90 && outcomeRate >= 85 && childrenRate >= 90 && total >= 10) {
+  if (meets(attendanceRate, 90) && meets(outcomeRate, 85) && meets(childrenRate, 90) && total >= 10) {
     insights.push({ text: "Health appointment management is exemplary — every child receives timely, well-documented healthcare", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No health appointments on record means Ofsted cannot verify children are accessing healthcare", severity: "critical" });
   }
-  if (missedRate >= 20 && total > 0) {
+  if (meets(missedRate, 20) && total > 0) {
     insights.push({ text: "High missed appointment rate suggests barriers to healthcare access — investigate transport, consent and motivation", severity: "warning" });
   }
-  if (childrenRate >= 90 && total > 0) {
+  if (meets(childrenRate, 90) && total > 0) {
     insights.push({ text: "All children have health appointments — the home ensures no child falls through the net", severity: "positive" });
   }
   if (uniqueTypes >= 5 && total > 0) {

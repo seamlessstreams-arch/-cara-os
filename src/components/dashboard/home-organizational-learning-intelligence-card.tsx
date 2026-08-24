@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -138,7 +139,7 @@ export function HomeOrganizationalLearningIntelligenceCard() {
                   (d.sir.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.sir.action_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.sir.total_actions > 0 ? `${d.sir.action_completion_rate}%` : "—"}
+                  {d.sir.total_actions > 0 ? `${formatRate(d.sir.action_completion_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">SIR Actions</p>

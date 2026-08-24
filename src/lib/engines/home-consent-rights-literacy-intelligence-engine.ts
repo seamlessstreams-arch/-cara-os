@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 5/7.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ConsentRecordInput {
@@ -57,8 +59,10 @@ export interface ConsentRightsResult {
   active_consents: number;
   expired_consents: number;
   children_rights_assessed: number;
-  rights_knowledge_rate: number;
-  pr_documentation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rights_knowledge_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pr_documentation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -66,10 +70,6 @@ export interface ConsentRightsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -111,10 +111,10 @@ export function computeConsentRightsIntelligence(
       .filter((c) => c.status !== "expired")
       .map((c) => c.child_id),
   ).size;
-  const coverageRate = pct(childrenWithConsent, total_children);
+  const coverageRate = rate(childrenWithConsent, total_children);
 
   // Expired + pending rate
-  const expiredRate = pct(expiredConsents + pendingConsents, totalConsents);
+  const expiredRate = rate(expiredConsents + pendingConsents, totalConsents);
 
   // Rights literacy
   const childrenRightsAssessed = rights_literacy.length;
@@ -130,26 +130,26 @@ export function computeConsentRightsIntelligence(
     ].filter(Boolean).length;
     return knowsCount >= 4;
   }).length;
-  const rightsRate = pct(literateChildren, total_children);
+  const rightsRate = rate(literateChildren, total_children);
 
   // Rights exercise
   const childrenExercised = rights_literacy.filter((r) => r.rights_used_count > 0).length;
   const exerciseRate = rights_literacy.length > 0
-    ? pct(childrenExercised, rights_literacy.length)
+    ? rate(childrenExercised, rights_literacy.length)
     : 0;
 
   // Parental responsibility
   const prDocumented = parental_responsibility.filter(
     (p) => p.pr_documented && p.delegated_authorities_clear,
   ).length;
-  const prRate = pct(prDocumented, total_children);
+  const prRate = rate(prDocumented, total_children);
 
   // PR review & LA sign-off
   const prReviewed = parental_responsibility.filter(
     (p) => p.reviewed_recently && p.signed_off_by_la,
   ).length;
   const reviewedRate = parental_responsibility.length > 0
-    ? pct(prReviewed, parental_responsibility.length)
+    ? rate(prReviewed, parental_responsibility.length)
     : 0;
 
   const rightsKnowledgeRate = rightsRate;
@@ -160,50 +160,50 @@ export function computeConsentRightsIntelligence(
   let score = 52;
 
   // Mod 1: Consent coverage (±6)
-  if (coverageRate >= 90) score += 6;
-  else if (coverageRate >= 75) score += 3;
-  else if (coverageRate >= 50) score += 0;
+  if (meets(coverageRate, 90)) score += 6;
+  else if (meets(coverageRate, 75)) score += 3;
+  else if (meets(coverageRate, 50)) score += 0;
   else score -= 6;
 
   // Mod 2: Expired/pending consent management (±5)
-  if (expiredRate <= 5) score += 5;
-  else if (expiredRate <= 15) score += 2;
-  else if (expiredRate <= 30) score += 0;
+  if ((expiredRate !== null && expiredRate <= 5)) score += 5;
+  else if ((expiredRate !== null && expiredRate <= 15)) score += 2;
+  else if ((expiredRate !== null && expiredRate <= 30)) score += 0;
   else score -= 5;
 
   // Mod 3: Rights knowledge (±6)
-  if (rightsRate >= 90) score += 6;
-  else if (rightsRate >= 70) score += 3;
-  else if (rightsRate >= 50) score += 0;
+  if (meets(rightsRate, 90)) score += 6;
+  else if (meets(rightsRate, 70)) score += 3;
+  else if (meets(rightsRate, 50)) score += 0;
   else score -= 6;
 
   // Mod 4: Rights exercise (±4)
   if (rights_literacy.length === 0) {
     score += 0;
-  } else if (exerciseRate >= 50) {
+  } else if (meets(exerciseRate, 50)) {
     score += 4;
-  } else if (exerciseRate >= 25) {
+  } else if (meets(exerciseRate, 25)) {
     score += 2;
-  } else if (exerciseRate >= 10) {
+  } else if (meets(exerciseRate, 10)) {
     score += 0;
   } else {
     score -= 4;
   }
 
   // Mod 5: PR documentation (±5)
-  if (prRate >= 95) score += 5;
-  else if (prRate >= 80) score += 3;
-  else if (prRate >= 60) score += 0;
+  if (meets(prRate, 95)) score += 5;
+  else if (meets(prRate, 80)) score += 3;
+  else if (meets(prRate, 60)) score += 0;
   else score -= 5;
 
   // Mod 6: PR review & LA sign-off (±4)
   if (parental_responsibility.length === 0) {
     score += 0;
-  } else if (reviewedRate >= 90) {
+  } else if (meets(reviewedRate, 90)) {
     score += 4;
-  } else if (reviewedRate >= 70) {
+  } else if (meets(reviewedRate, 70)) {
     score += 2;
-  } else if (reviewedRate >= 50) {
+  } else if (meets(reviewedRate, 50)) {
     score += 0;
   } else {
     score -= 4;
@@ -224,19 +224,19 @@ export function computeConsentRightsIntelligence(
 
   const strengths: string[] = [];
 
-  if (coverageRate >= 90 && totalConsents > 0) {
+  if (meets(coverageRate, 90) && totalConsents > 0) {
     strengths.push("Consent records in place for over 90% of children — decisions are properly documented.");
   }
-  if (rightsRate >= 90 && rights_literacy.length > 0) {
+  if (meets(rightsRate, 90) && rights_literacy.length > 0) {
     strengths.push("Over 90% of children understand their key rights — children are empowered.");
   }
-  if (prRate >= 95) {
+  if (meets(prRate, 95)) {
     strengths.push("Parental responsibility documentation is comprehensive — delegated authority is clear.");
   }
-  if (expiredRate <= 5 && totalConsents > 0) {
+  if ((expiredRate !== null && expiredRate <= 5) && totalConsents > 0) {
     strengths.push("Less than 5% of consents expired — proactive consent management.");
   }
-  if (exerciseRate >= 50 && rights_literacy.length > 0) {
+  if (meets(exerciseRate, 50) && rights_literacy.length > 0) {
     strengths.push("Children are actively exercising their rights — voice is lived, not theoretical.");
   }
 
@@ -247,13 +247,13 @@ export function computeConsentRightsIntelligence(
   if (expiredConsents > 3) {
     concerns.push(`${expiredConsents} expired consents need renewal — children may lack proper authorisation.`);
   }
-  if (rightsRate < 50 && total_children > 0) {
+  if (below(rightsRate, 50) && total_children > 0) {
     concerns.push("Under 50% of children know their key rights — rights literacy programme needed.");
   }
-  if (prRate < 60) {
-    concerns.push(`Parental responsibility documentation incomplete for ${100 - prRate}% of children.`);
+  if (below(prRate, 60)) {
+    concerns.push(`Parental responsibility documentation incomplete for ${100 - prRate!}% of children.`);
   }
-  if (coverageRate < 60) {
+  if (below(coverageRate, 60)) {
     concerns.push("Consent coverage below 60% — significant gaps in documented authority.");
   }
 
@@ -262,7 +262,7 @@ export function computeConsentRightsIntelligence(
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
 
-  if (rightsRate < 70) {
+  if (below(rightsRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Implement structured rights literacy programme to ensure all children understand their rights to complain, access advocacy, contact Ofsted, and refuse contact.",
@@ -278,7 +278,7 @@ export function computeConsentRightsIntelligence(
       regulatory_ref: "Reg 5",
     });
   }
-  if (prRate < 80) {
+  if (below(prRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete parental responsibility documentation for all children, ensuring delegated authorities are clearly recorded and understood.",
@@ -311,7 +311,7 @@ export function computeConsentRightsIntelligence(
       severity: "critical",
     });
   }
-  if (exerciseRate >= 50 && rightsRate >= 80) {
+  if (meets(exerciseRate, 50) && meets(rightsRate, 80)) {
     insights.push({
       text: "Children both know and use their rights — this reflects a genuinely rights-respecting culture.",
       severity: "positive",
@@ -326,7 +326,7 @@ export function computeConsentRightsIntelligence(
   } else if (consent_rights_rating === "good") {
     headline = `Good consent & rights management — ${concerns.length > 0 ? `${concerns.length} area(s) to address` : "consistent practice"}.`;
   } else if (consent_rights_rating === "adequate") {
-    headline = `Adequate consent & rights — gaps in ${rightsRate < 70 ? "rights literacy" : "consent coverage"} need addressing.`;
+    headline = `Adequate consent & rights — gaps in ${below(rightsRate, 70) ? "rights literacy" : "consent coverage"} need addressing.`;
   } else {
     headline = "Consent & rights inadequate — children's legal protections and awareness are significantly compromised.";
   }

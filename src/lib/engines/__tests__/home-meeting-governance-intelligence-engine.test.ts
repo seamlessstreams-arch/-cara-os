@@ -226,10 +226,10 @@ describe("computeHomeMeetingGovernance", () => {
       expect(r.regularity_profile.avg_days_between).toBe(14);
     });
 
-    it("returns 0 avg_days_between for a single meeting", () => {
+    it("avg_days_between is unmeasured for a single meeting", () => {
       const meetings = [makeMeeting({ date: "2026-05-01" })];
       const r = computeHomeMeetingGovernance(baseInput({ meetings }));
-      expect(r.regularity_profile.avg_days_between).toBeNull();;
+      expect(r.regularity_profile.avg_days_between).toBeNull();
     });
 
     it("includes gap from last meeting to today in max_gap calculation", () => {
@@ -297,12 +297,16 @@ describe("computeHomeMeetingGovernance", () => {
       expect(r.attendance_profile.lowest_attendance_rate).toBe(25);
     });
 
-    it("treats zero children (present + absent = 0) as 100% attendance", () => {
+    it("leaves attendance unmeasured for a meeting with 0 children present and 0 absent", () => {
+      // A meeting nobody was expected at is not evidence of 100% attendance —
+      // that used to be a fabricated pass for exactly the population this
+      // guard exists to catch. There is nothing to measure, so the rate is
+      // null rather than defaulting either way.
       const meetings = [
         makeMeeting({ date: "2026-05-01", children_present_count: 0, children_absent_count: 0 }),
       ];
       const r = computeHomeMeetingGovernance(baseInput({ meetings }));
-      expect(r.attendance_profile.avg_child_attendance_rate).toBe(100);
+      expect(r.attendance_profile.avg_child_attendance_rate).toBeNull();
     });
 
     it("computes average staff present", () => {
@@ -338,13 +342,13 @@ describe("computeHomeMeetingGovernance", () => {
       expect(r.action_profile.completion_rate).toBe(60);
     });
 
-    it("returns 0 completion rate when no previous actions exist", () => {
+    it("completion_rate is unmeasured when no previous actions exist", () => {
       const meetings = [
         makeMeeting({ date: "2026-05-01", actions_from_previous: [] }),
       ];
       const r = computeHomeMeetingGovernance(baseInput({ meetings }));
       expect(r.action_profile.total_previous_actions).toBe(0);
-      expect(r.action_profile.completion_rate).toBe(0);
+      expect(r.action_profile.completion_rate).toBeNull();
     });
 
     it("tracks new actions and average per meeting", () => {
@@ -393,12 +397,12 @@ describe("computeHomeMeetingGovernance", () => {
       expect(r.engagement_profile.avg_duration).toBe(30);
     });
 
-    it("returns 0 child-raised rate when no agenda items exist", () => {
+    it("child_raised_rate is unmeasured when no agenda items exist", () => {
       const meetings = [
         makeMeeting({ date: "2026-05-01", agenda_item_count: 0, child_raised_count: 0 }),
       ];
       const r = computeHomeMeetingGovernance(baseInput({ meetings }));
-      expect(r.engagement_profile.child_raised_rate).toBe(0);
+      expect(r.engagement_profile.child_raised_rate).toBeNull();
     });
   });
 

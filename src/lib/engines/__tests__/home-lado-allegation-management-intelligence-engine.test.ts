@@ -1116,7 +1116,7 @@ describe("Metric calculations", () => {
         }),
       ],
     });
-    expect(r.average_days_to_close).toBeNull();;
+    expect(r.average_days_to_close).toBeNull();
   });
 });
 

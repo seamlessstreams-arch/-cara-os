@@ -6,6 +6,8 @@
 // Reg 12: health & safety. Reg 13: child protection.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface LadoReferralInput {
@@ -89,10 +91,6 @@ function toRating(score: number): LadoAllegationRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   const da = new Date(a + "T00:00:00Z");
   const db = new Date(b + "T00:00:00Z");
@@ -136,10 +134,10 @@ export function computeLadoAllegationManagement(
 
   const ofstedNotifiedCount = referrals.filter((r) => r.ofsted_notified).length;
   const ofstedNotificationRate =
-    totalReferrals > 0 ? pct(ofstedNotifiedCount, totalReferrals) : 0;
+    totalReferrals > 0 ? rate(ofstedNotifiedCount, totalReferrals) : 0;
 
   const resolutionRate =
-    totalReferrals > 0 ? pct(closedOrNfa.length, totalReferrals) : 0;
+    totalReferrals > 0 ? rate(closedOrNfa.length, totalReferrals) : 0;
 
   const closedWithDays = referrals.filter((r) => r.days_to_close > 0);
   const averageDaysToClose =
@@ -155,38 +153,38 @@ export function computeLadoAllegationManagement(
     (r) => r.strategy_meeting_held,
   ).length;
   const strategyMeetingRate =
-    totalReferrals > 0 ? pct(strategyMeetingHeld, totalReferrals) : 0;
+    totalReferrals > 0 ? rate(strategyMeetingHeld, totalReferrals) : 0;
 
   // ── Training coverage ──────────────────────────────────────────────
   const saferRecruitmentTrained = training.filter(
     (t) => t.safer_recruitment_trained,
   ).length;
   const trainingCoverage =
-    training.length > 0 ? pct(saferRecruitmentTrained, training.length) : 0;
+    training.length > 0 ? rate(saferRecruitmentTrained, training.length) : 0;
 
   // ── Lessons learned rate ───────────────────────────────────────────
   const lessonsLearnedCount = referrals.filter(
     (r) => r.has_lesson_learned,
   ).length;
   const lessonsLearnedRate =
-    totalReferrals > 0 ? pct(lessonsLearnedCount, totalReferrals) : 0;
+    totalReferrals > 0 ? rate(lessonsLearnedCount, totalReferrals) : 0;
 
   // ── Scoring ───────────────────────────────────────────────────────
   let score = 52;
 
   // 1. Ofsted notification compliance (±5)
   if (totalReferrals > 0) {
-    if (ofstedNotificationRate >= 95) score += 5;
-    else if (ofstedNotificationRate >= 80) score += 2;
-    else if (ofstedNotificationRate >= 60) score += 0;
+    if (meets(ofstedNotificationRate, 95)) score += 5;
+    else if (meets(ofstedNotificationRate, 80)) score += 2;
+    else if (meets(ofstedNotificationRate, 60)) score += 0;
     else score -= 5;
   }
 
   // 2. Resolution rate (closed+nfa / total) (+6/-5)
   if (totalReferrals > 0) {
-    if (resolutionRate >= 90) score += 6;
-    else if (resolutionRate >= 70) score += 3;
-    else if (resolutionRate >= 50) score += 0;
+    if (meets(resolutionRate, 90)) score += 6;
+    else if (meets(resolutionRate, 70)) score += 3;
+    else if (meets(resolutionRate, 50)) score += 0;
     else score -= 5;
   }
 
@@ -202,25 +200,25 @@ export function computeLadoAllegationManagement(
 
   // 4. Strategy meeting compliance (+5/-4)
   if (totalReferrals > 0) {
-    if (strategyMeetingRate >= 95) score += 5;
-    else if (strategyMeetingRate >= 80) score += 2;
-    else if (strategyMeetingRate >= 50) score += 0;
+    if (meets(strategyMeetingRate, 95)) score += 5;
+    else if (meets(strategyMeetingRate, 80)) score += 2;
+    else if (meets(strategyMeetingRate, 50)) score += 0;
     else score -= 4;
   }
 
   // 5. Staff training coverage (safer_recruitment_trained %) (+4/-4)
   if (training.length > 0) {
-    if (trainingCoverage >= 95) score += 4;
-    else if (trainingCoverage >= 80) score += 1;
-    else if (trainingCoverage >= 60) score += 0;
+    if (meets(trainingCoverage, 95)) score += 4;
+    else if (meets(trainingCoverage, 80)) score += 1;
+    else if (meets(trainingCoverage, 60)) score += 0;
     else score -= 4;
   }
 
   // 6. Learning from allegations (has_lesson_learned %) (+5/-5)
   if (totalReferrals > 0) {
-    if (lessonsLearnedRate >= 90) score += 5;
-    else if (lessonsLearnedRate >= 70) score += 2;
-    else if (lessonsLearnedRate >= 40) score += 0;
+    if (meets(lessonsLearnedRate, 90)) score += 5;
+    else if (meets(lessonsLearnedRate, 70)) score += 2;
+    else if (meets(lessonsLearnedRate, 40)) score += 0;
     else score -= 5;
   } else {
     score += 2; // no referrals
@@ -232,12 +230,12 @@ export function computeLadoAllegationManagement(
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (ofstedNotificationRate >= 95 && totalReferrals > 0) {
+  if (meets(ofstedNotificationRate, 95) && totalReferrals > 0) {
     strengths.push(
       `Ofsted notification rate at ${ofstedNotificationRate}% — strong regulatory compliance.`,
     );
   }
-  if (resolutionRate >= 90 && totalReferrals > 0) {
+  if (meets(resolutionRate, 90) && totalReferrals > 0) {
     strengths.push(
       `${resolutionRate}% of allegations resolved — effective case management.`,
     );
@@ -250,12 +248,12 @@ export function computeLadoAllegationManagement(
       "All closed referrals resolved within 30 days — timely allegation handling.",
     );
   }
-  if (strategyMeetingRate >= 95 && totalReferrals > 0) {
+  if (meets(strategyMeetingRate, 95) && totalReferrals > 0) {
     strengths.push(
       `Strategy meetings held for ${strategyMeetingRate}% of referrals — robust multi-agency response.`,
     );
   }
-  if (trainingCoverage >= 95 && training.length > 0) {
+  if (meets(trainingCoverage, 95) && training.length > 0) {
     strengths.push(
       `${trainingCoverage}% staff trained in safer recruitment — safeguarding culture embedded.`,
     );
@@ -290,7 +288,7 @@ export function computeLadoAllegationManagement(
   }
 
   // Ofsted notification rate < 80%
-  if (ofstedNotificationRate < 80 && totalReferrals > 0) {
+  if (below(ofstedNotificationRate, 80) && totalReferrals > 0) {
     concerns.push(
       `Ofsted notification rate at ${ofstedNotificationRate}% — below 80% threshold.`,
     );
@@ -305,7 +303,7 @@ export function computeLadoAllegationManagement(
   }
 
   // Staff training < 60%
-  if (trainingCoverage < 60 && training.length > 0) {
+  if (below(trainingCoverage, 60) && training.length > 0) {
     concerns.push(
       `Only ${trainingCoverage}% of staff trained in safer recruitment — significant safeguarding gap.`,
     );
@@ -324,7 +322,7 @@ export function computeLadoAllegationManagement(
     });
   }
 
-  if (ofstedNotificationRate < 80 && totalReferrals > 0) {
+  if (below(ofstedNotificationRate, 80) && totalReferrals > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -346,7 +344,7 @@ export function computeLadoAllegationManagement(
     });
   }
 
-  if (trainingCoverage < 60 && training.length > 0) {
+  if (below(trainingCoverage, 60) && training.length > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -372,7 +370,7 @@ export function computeLadoAllegationManagement(
   const insights: LadoAllegationResult["insights"] = [];
 
   // Positive: no referrals + good training
-  if (totalReferrals === 0 && trainingCoverage >= 95) {
+  if (totalReferrals === 0 && meets(trainingCoverage, 95)) {
     insights.push({
       text: "No allegations with strong safeguarding training culture — preventative approach is working.",
       severity: "positive",

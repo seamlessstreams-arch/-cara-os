@@ -5,7 +5,7 @@
 // Pure deterministic engine. CHR 2015 Reg 31–34 / Schedule 2.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 export interface StaffResilienceSnapshot {
   staff_id: string;
@@ -68,18 +68,16 @@ export interface WorkforceResilienceResult {
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
-
 function scoreStaff(s: StaffResilienceSnapshot): { score: number; risks: string[] } {
   let score = 0;
   const risks: string[] = [];
 
   // Supervision (0–25)
   if (s.supervision_due > 0) {
-    const rate = pct(s.supervision_completed, s.supervision_due);
-    if (rate >= 90) score += 25;
-    else if (rate >= 75) score += 18;
-    else if (rate >= 50) score += 10;
+    const supervisionRate = rate(s.supervision_completed, s.supervision_due) ?? 0;
+    if (supervisionRate >= 90) score += 25;
+    else if (supervisionRate >= 75) score += 18;
+    else if (supervisionRate >= 50) score += 10;
     else { score += 3; risks.push("supervision"); }
   } else {
     score += 12; // neutral
@@ -121,7 +119,9 @@ function scoreStaff(s: StaffResilienceSnapshot): { score: number; risks: string[
   if (s.mandatory_training_current && s.dbs_current) compScore += 5;
   score += Math.min(compScore, 25);
 
-  return { score: Math.min(pct(score, 100), 100), risks: [...new Set(risks)] };
+  // `score` is already a sum of fixed 0-25 sub-scores against a 100-point
+  // scale, not a rate over a population — rate() doesn't apply here.
+  return { score: Math.min(score, 100), risks: [...new Set(risks)] };
 }
 
 /* ── main ────────────────────────────────────────────────────────────────── */
@@ -152,16 +152,16 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
 
   // ── Home-level operational score (0–100) ────────────────────────────────
   let opsScore = 0;
-  const shiftCoverage = pct(home_level.shifts_covered, home_level.shifts_total);
-  if (shiftCoverage >= 95) opsScore += 25;
-  else if (shiftCoverage >= 85) opsScore += 18;
-  else if (shiftCoverage >= 70) opsScore += 10;
+  const shiftCoverage = rate(home_level.shifts_covered, home_level.shifts_total);
+  if (meets(shiftCoverage, 95)) opsScore += 25;
+  else if (meets(shiftCoverage, 85)) opsScore += 18;
+  else if (meets(shiftCoverage, 70)) opsScore += 10;
   else opsScore += 3;
 
-  const vacancyRate = pct(home_level.vacancy_count, home_level.vacancy_total_posts);
-  if (vacancyRate <= 5) opsScore += 20;
-  else if (vacancyRate <= 15) opsScore += 14;
-  else if (vacancyRate <= 25) opsScore += 7;
+  const vacancyRate = rate(home_level.vacancy_count, home_level.vacancy_total_posts);
+  if ((vacancyRate !== null && vacancyRate <= 5)) opsScore += 20;
+  else if ((vacancyRate !== null && vacancyRate <= 15)) opsScore += 14;
+  else if ((vacancyRate !== null && vacancyRate <= 25)) opsScore += 7;
   else opsScore += 2;
 
   if (home_level.agency_staff_in_use === 0) opsScore += 15;
@@ -183,10 +183,10 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   else opsScore += 2;
 
   const exitRate = home_level.exit_interviews_due > 0
-    ? pct(home_level.exit_interviews_conducted, home_level.exit_interviews_due)
+    ? rate(home_level.exit_interviews_conducted, home_level.exit_interviews_due)
     : 100;
-  if (exitRate >= 90) opsScore += 10;
-  else if (exitRate >= 70) opsScore += 6;
+  if (meets(exitRate, 90)) opsScore += 10;
+  else if (meets(exitRate, 70)) opsScore += 6;
   else opsScore += 2;
 
   opsScore = Math.min(Math.round((opsScore / opsMax) * 100), 100);
@@ -220,9 +220,9 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   const strengths: string[] = [];
   if (flourishing >= scored.length * 0.7) strengths.push(`${flourishing} of ${scored.length} staff members are flourishing — excellent workforce stability.`);
   if (atRisk === 0 && scored.length >= 3) strengths.push("No staff members at risk — baseline workforce resilience is maintained.");
-  if (shiftCoverage >= 95) strengths.push("Shift coverage exceeds 95% — operational continuity is strong.");
+  if (meets(shiftCoverage, 95)) strengths.push("Shift coverage exceeds 95% — operational continuity is strong.");
   if (home_level.agency_staff_in_use === 0 && total_staff >= 5) strengths.push("No agency staff required — the home operates with a fully permanent workforce.");
-  if (vacancyRate <= 5) strengths.push("Vacancy rate below 5% — recruitment pipeline is effective.");
+  if ((vacancyRate !== null && vacancyRate <= 5)) strengths.push("Vacancy rate below 5% — recruitment pipeline is effective.");
   const noRiskDomains = domain_scores.filter(d => d.staff_at_risk === 0 && d.name !== "operational_resilience");
   if (noRiskDomains.length >= 3) strengths.push(`No staff at risk across ${noRiskDomains.length} of 4 domains — broad workforce health.`);
 
@@ -230,9 +230,9 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   const concerns: string[] = [];
   if (atRisk >= 3) concerns.push(`${atRisk} staff members are at risk (score <40%) — workforce fragility threatens care quality.`);
   else if (atRisk >= 1) concerns.push(`${atRisk} staff member(s) at risk — individual support plans needed.`);
-  if (vacancyRate > 20) concerns.push(`Vacancy rate at ${vacancyRate}% — significant recruitment gap undermines stability.`);
+  if (above(vacancyRate, 20)) concerns.push(`Vacancy rate at ${formatRate(vacancyRate)} — significant recruitment gap undermines stability.`);
   if (home_level.agency_staff_in_use >= 4) concerns.push(`${home_level.agency_staff_in_use} agency staff in use — high reliance on temporary workforce.`);
-  if (shiftCoverage < 80) concerns.push(`Shift coverage at ${shiftCoverage}% — operational risk from understaffing.`);
+  if (below(shiftCoverage, 80)) concerns.push(`Shift coverage at ${formatRate(shiftCoverage)} — operational risk from understaffing.`);
   const highRiskDomains = domain_scores.filter(d => d.staff_at_risk >= Math.ceil(scored.length * 0.5));
   highRiskDomains.forEach(d => concerns.push(`${d.staff_at_risk} of ${scored.length} staff at risk in ${d.name} — systemic workforce issue.`));
 
@@ -240,8 +240,8 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
   if (atRisk >= 2) recommendations.push({ rank: ++rank, recommendation: `Urgent support plans for ${atRisk} at-risk staff — supervision, wellbeing checks, and development reviews needed.`, urgency: "immediate", regulatory_ref: "Reg 33" });
-  if (vacancyRate > 20) recommendations.push({ rank: ++rank, recommendation: "Accelerate recruitment strategy to address high vacancy rate.", urgency: "immediate", regulatory_ref: "Reg 31" });
-  if (shiftCoverage < 85) recommendations.push({ rank: ++rank, recommendation: `Improve shift coverage from ${shiftCoverage}% — review rota planning and contingency arrangements.`, urgency: "soon", regulatory_ref: "Reg 31" });
+  if (above(vacancyRate, 20)) recommendations.push({ rank: ++rank, recommendation: "Accelerate recruitment strategy to address high vacancy rate.", urgency: "immediate", regulatory_ref: "Reg 31" });
+  if (below(shiftCoverage, 85)) recommendations.push({ rank: ++rank, recommendation: `Improve shift coverage from ${formatRate(shiftCoverage)} — review rota planning and contingency arrangements.`, urgency: "soon", regulatory_ref: "Reg 31" });
   const supervisionRisk = domain_scores.find(d => d.name === "supervision")?.staff_at_risk ?? 0;
   if (supervisionRisk >= 2) recommendations.push({ rank: ++rank, recommendation: `Ensure supervision compliance — ${supervisionRisk} staff members have supervision gaps.`, urgency: "soon", regulatory_ref: "Reg 33" });
   const trainingRisk = domain_scores.find(d => d.name === "training")?.staff_at_risk ?? 0;
@@ -255,11 +255,11 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   if (atRisk >= 1 && flourishing >= 1) insights.push({ text: "Variation in staff wellbeing — some staff flourish while others struggle. Inconsistent support may indicate management blind spots.", severity: "warning" });
   const wellbeingRisk = domain_scores.find(d => d.name === "wellbeing")?.staff_at_risk ?? 0;
   if (wellbeingRisk >= 3) insights.push({ text: "Widespread staff wellbeing concerns — burnout risk is high and will impact children's care if not addressed.", severity: "critical" });
-  if (home_level.agency_staff_in_use >= 3 && vacancyRate > 15) insights.push({ text: "High agency use combined with vacancies suggests a recruitment crisis — children's relational stability is at risk.", severity: "warning" });
+  if (home_level.agency_staff_in_use >= 3 && above(vacancyRate, 15)) insights.push({ text: "High agency use combined with vacancies suggests a recruitment crisis — children's relational stability is at risk.", severity: "warning" });
 
   // ── Headline ────────────────────────────────────────────────────────────
   let headline = "";
-  if (resilience_rating === "outstanding") headline = `Outstanding workforce resilience — ${flourishing} of ${scored.length} staff flourishing, ${shiftCoverage}% shift coverage.`;
+  if (resilience_rating === "outstanding") headline = `Outstanding workforce resilience — ${flourishing} of ${scored.length} staff flourishing, ${formatRate(shiftCoverage)} shift coverage.`;
   else if (resilience_rating === "good") headline = `Good workforce resilience — most staff stable, ${atRisk > 0 ? `${atRisk} need(s) support` : "strong operational capacity"}.`;
   else if (resilience_rating === "adequate") headline = `Adequate workforce resilience — ${struggling + atRisk} staff struggling or at risk, focused investment needed.`;
   else headline = `Workforce resilience inadequate — ${atRisk} staff at risk, urgent stabilisation required.`;

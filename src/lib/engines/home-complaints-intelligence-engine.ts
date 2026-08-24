@@ -5,6 +5,8 @@
 // CHR 2015 Reg 39. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ComplaintInput {
@@ -109,10 +111,6 @@ function toRating(score: number): ComplaintsRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeComplaints(
@@ -147,7 +145,7 @@ export function computeHomeComplaints(
     : null;
 
   const within10 = resolved.filter(c => c.response_time_days > 0 && c.response_time_days <= 10).length;
-  const within10Rate = pct(within10, responseTimes.length);
+  const within10Rate = rate(within10, responseTimes.length);
 
   const responseProfile: ResponseProfile = {
     total_complaints: complaints.length,
@@ -164,7 +162,7 @@ export function computeHomeComplaints(
 
   const withSatisfaction = resolved.filter(c => c.complainant_satisfied !== null);
   const satisfied = withSatisfaction.filter(c => c.complainant_satisfied === true).length;
-  const satisfactionRate = pct(satisfied, withSatisfaction.length);
+  const satisfactionRate = rate(satisfied, withSatisfaction.length);
 
   const escalated = complaints.filter(c => c.escalated).length;
 
@@ -178,13 +176,13 @@ export function computeHomeComplaints(
 
   // ── Learning Profile ───────────────────────────────────────────────
   const withFindings = resolved.filter(c => c.has_findings).length;
-  const findingsRate = pct(withFindings, resolved.length);
+  const findingsRate = rate(withFindings, resolved.length);
 
   const withLessons = resolved.filter(c => c.has_lessons_learned).length;
-  const lessonsRate = pct(withLessons, resolved.length);
+  const lessonsRate = rate(withLessons, resolved.length);
 
   const withPracticeChanges = resolved.filter(c => c.practice_changes_count > 0).length;
-  const practiceChangeRate = pct(withPracticeChanges, resolved.length);
+  const practiceChangeRate = rate(withPracticeChanges, resolved.length);
 
   const totalPracticeChanges = complaints.reduce((a, c) => a + c.practice_changes_count, 0);
 
@@ -214,15 +212,15 @@ export function computeHomeComplaints(
 
   // 1. Response timeliness (±5)
   if (responseTimes.length > 0) {
-    if (within10Rate >= 80) score += 5;
-    else if (within10Rate >= 60) score += 2;
+    if (meets(within10Rate, 80)) score += 5;
+    else if (meets(within10Rate, 60)) score += 2;
     else score -= 3;
   }
 
   // 2. Satisfaction rate (±4)
   if (withSatisfaction.length > 0) {
-    if (satisfactionRate >= 80) score += 4;
-    else if (satisfactionRate >= 60) score += 2;
+    if (meets(satisfactionRate, 80)) score += 4;
+    else if (meets(satisfactionRate, 60)) score += 2;
     else score -= 3;
   } else {
     score += 1; // no satisfaction data available
@@ -230,22 +228,22 @@ export function computeHomeComplaints(
 
   // 3. Findings documented (±4)
   if (resolved.length > 0) {
-    if (findingsRate >= 80) score += 4;
-    else if (findingsRate >= 60) score += 2;
+    if (meets(findingsRate, 80)) score += 4;
+    else if (meets(findingsRate, 60)) score += 2;
     else score -= 3;
   }
 
   // 4. Lessons learned (±3)
   if (resolved.length > 0) {
-    if (lessonsRate >= 80) score += 3;
-    else if (lessonsRate >= 60) score += 1;
+    if (meets(lessonsRate, 80)) score += 3;
+    else if (meets(lessonsRate, 60)) score += 1;
     else score -= 2;
   }
 
   // 5. Practice changes (±3)
   if (resolved.length > 0) {
-    if (practiceChangeRate >= 60) score += 3;
-    else if (practiceChangeRate >= 40) score += 1;
+    if (meets(practiceChangeRate, 60)) score += 3;
+    else if (meets(practiceChangeRate, 40)) score += 1;
     else score -= 2;
   }
 
@@ -261,9 +259,9 @@ export function computeHomeComplaints(
   else score += 0;
 
   // 8. Low escalation rate (±3)
-  const escalationRate = pct(escalated, complaints.length);
-  if (escalationRate <= 10) score += 3;
-  else if (escalationRate <= 25) score += 1;
+  const escalationRate = rate(escalated, complaints.length);
+  if ((escalationRate !== null && escalationRate <= 10)) score += 3;
+  else if ((escalationRate !== null && escalationRate <= 25)) score += 1;
   else score -= 2;
 
   score = clamp(score, 0, 100);
@@ -271,20 +269,20 @@ export function computeHomeComplaints(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (within10Rate >= 80 && responseTimes.length > 0) strengths.push(`${within10Rate}% of complaints resolved within 10 days — demonstrates responsive governance.`);
-  if (satisfactionRate >= 80 && withSatisfaction.length > 0) strengths.push(`${satisfactionRate}% complainant satisfaction — concerns are taken seriously and resolved effectively.`);
-  if (findingsRate >= 80 && resolved.length > 0) strengths.push(`Findings documented in ${findingsRate}% of complaints — thorough investigation culture.`);
-  if (lessonsRate >= 80 && resolved.length > 0) strengths.push(`Lessons learned recorded in ${lessonsRate}% of complaints — reflective practice embedded.`);
-  if (practiceChangeRate >= 60 && resolved.length > 0) strengths.push(`${practiceChangeRate}% of complaints led to practice changes — complaints drive improvement.`);
+  if (meets(within10Rate, 80) && responseTimes.length > 0) strengths.push(`${formatRate(within10Rate)} of complaints resolved within 10 days — demonstrates responsive governance.`);
+  if (meets(satisfactionRate, 80) && withSatisfaction.length > 0) strengths.push(`${formatRate(satisfactionRate)} complainant satisfaction — concerns are taken seriously and resolved effectively.`);
+  if (meets(findingsRate, 80) && resolved.length > 0) strengths.push(`Findings documented in ${formatRate(findingsRate)} of complaints — thorough investigation culture.`);
+  if (meets(lessonsRate, 80) && resolved.length > 0) strengths.push(`Lessons learned recorded in ${formatRate(lessonsRate)} of complaints — reflective practice embedded.`);
+  if (meets(practiceChangeRate, 60) && resolved.length > 0) strengths.push(`${formatRate(practiceChangeRate)} of complaints led to practice changes — complaints drive improvement.`);
   if (child >= 2) strengths.push(`${child} complaints from children — children feel empowered to raise concerns.`);
   if (sources >= 3) strengths.push(`Complaints from ${sources} different source types — the home is transparent and accessible.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (within10Rate < 60 && responseTimes.length > 0) concerns.push(`Only ${within10Rate}% of complaints resolved within 10 days — Reg 39 expects timely resolution.`);
-  if (satisfactionRate < 60 && withSatisfaction.length > 0) concerns.push(`Only ${satisfactionRate}% complainant satisfaction — complainants feel their concerns are not adequately addressed.`);
-  if (findingsRate < 60 && resolved.length > 0) concerns.push(`Findings documented in only ${findingsRate}% of complaints — investigations must be thorough and recorded.`);
-  if (lessonsRate < 60 && resolved.length > 0) concerns.push(`Lessons learned recorded in only ${lessonsRate}% of complaints — learning from complaints is essential.`);
+  if (below(within10Rate, 60) && responseTimes.length > 0) concerns.push(`Only ${formatRate(within10Rate)} of complaints resolved within 10 days — Reg 39 expects timely resolution.`);
+  if (below(satisfactionRate, 60) && withSatisfaction.length > 0) concerns.push(`Only ${formatRate(satisfactionRate)} complainant satisfaction — complainants feel their concerns are not adequately addressed.`);
+  if (below(findingsRate, 60) && resolved.length > 0) concerns.push(`Findings documented in only ${formatRate(findingsRate)} of complaints — investigations must be thorough and recorded.`);
+  if (below(lessonsRate, 60) && resolved.length > 0) concerns.push(`Lessons learned recorded in only ${formatRate(lessonsRate)} of complaints — learning from complaints is essential.`);
   if (child === 0 && complaints.length > 0) concerns.push("No complaints from children — this may indicate children don't feel empowered to complain.");
   if (escalated > 1) concerns.push(`${escalated} complaints escalated — recurring escalation suggests the internal process needs strengthening.`);
   if (ongoing.length > 2) concerns.push(`${ongoing.length} complaints still ongoing — outstanding complaints need timely resolution.`);
@@ -293,10 +291,10 @@ export function computeHomeComplaints(
   const recs: ComplaintsRecommendation[] = [];
   let rank = 1;
 
-  if (within10Rate < 60 && responseTimes.length > 0) {
+  if (below(within10Rate, 60) && responseTimes.length > 0) {
     recs.push({ rank: rank++, recommendation: "Implement a 10-day target for complaint resolution — track in the complaints log.", urgency: "immediate", regulatory_ref: "Reg 39" });
   }
-  if (findingsRate < 60 && resolved.length > 0) {
+  if (below(findingsRate, 60) && resolved.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure all complaints have documented findings — even when not upheld.", urgency: "soon", regulatory_ref: "Reg 39" });
   }
   if (child === 0 && complaints.length > 0) {
@@ -305,7 +303,7 @@ export function computeHomeComplaints(
   if (ongoing.length > 2) {
     recs.push({ rank: rank++, recommendation: `Resolve ${ongoing.length} outstanding complaints — set deadlines and assign investigators.`, urgency: "immediate", regulatory_ref: "Reg 39" });
   }
-  if (lessonsRate < 60 && resolved.length > 0) {
+  if (below(lessonsRate, 60) && resolved.length > 0) {
     recs.push({ rank: rank++, recommendation: "Record lessons learned for every completed complaint — this evidences a learning culture.", urgency: "planned", regulatory_ref: "Reg 39" });
   }
 
@@ -315,11 +313,11 @@ export function computeHomeComplaints(
   if (child === 0 && complaints.length > 0) {
     insights.push({ text: "No complaints received from children. Ofsted expects children to feel safe and empowered to complain — the absence of child complaints is more likely to be seen as a concern than a strength. Promote the procedure actively.", severity: "warning" });
   }
-  if (within10Rate >= 80 && findingsRate >= 80 && lessonsRate >= 80) {
-    insights.push({ text: `${within10Rate}% resolved within 10 days, ${findingsRate}% documented findings, and ${lessonsRate}% with lessons learned — this demonstrates an outstanding complaints culture that Ofsted will recognise as evidence of reflective, responsive leadership.`, severity: "positive" });
+  if (meets(within10Rate, 80) && meets(findingsRate, 80) && meets(lessonsRate, 80)) {
+    insights.push({ text: `${formatRate(within10Rate)} resolved within 10 days, ${formatRate(findingsRate)} documented findings, and ${formatRate(lessonsRate)} with lessons learned — this demonstrates an outstanding complaints culture that Ofsted will recognise as evidence of reflective, responsive leadership.`, severity: "positive" });
   }
-  if (child >= 2 && satisfactionRate >= 80) {
-    insights.push({ text: `Children are actively using the complaints procedure (${child} complaints) with ${satisfactionRate}% satisfaction — this is powerful evidence that children's voices are heard and acted upon.`, severity: "positive" });
+  if (child >= 2 && meets(satisfactionRate, 80)) {
+    insights.push({ text: `Children are actively using the complaints procedure (${child} complaints) with ${formatRate(satisfactionRate)} satisfaction — this is powerful evidence that children's voices are heard and acted upon.`, severity: "positive" });
   }
   if (escalated > 1) {
     insights.push({ text: `${escalated} complaints required escalation. Ofsted will examine whether the internal process is robust enough to resolve concerns before they escalate — consider whether investigation timelines and communication are adequate.`, severity: "warning" });
@@ -328,9 +326,9 @@ export function computeHomeComplaints(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding complaints management — ${within10Rate}% resolved within 10 days, ${satisfactionRate}% satisfaction.`;
+    headline = `Outstanding complaints management — ${formatRate(within10Rate)} resolved within 10 days, ${formatRate(satisfactionRate)} satisfaction.`;
   } else if (rating === "good") {
-    headline = `Good complaints management — responsive resolution with ${findingsRate}% documented findings.`;
+    headline = `Good complaints management — responsive resolution with ${formatRate(findingsRate)} documented findings.`;
   } else if (rating === "adequate") {
     headline = "Adequate complaints management — gaps in response timeliness, documentation, or learning need addressing.";
   } else {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,12 +86,12 @@ export function HomeGovernanceManagementOversightIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_board_reports >= 2 ? "text-[--cs-success]" : d.total_board_reports >= 1 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.total_board_reports}</p>
               <p className="text-[9px] text-muted-foreground">Reports</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.operational_meeting_rate >= 80 ? "bg-green-50" : d.operational_meeting_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.operational_meeting_rate >= 80 ? "text-[--cs-success]" : d.operational_meeting_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.operational_meeting_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.operational_meeting_rate, 80) ? "bg-green-50" : meets(d.operational_meeting_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.operational_meeting_rate, 80) ? "text-[--cs-success]" : meets(d.operational_meeting_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.operational_meeting_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ops Effective</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.commissioning_satisfaction_rate >= 80 ? "bg-green-50" : d.commissioning_satisfaction_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.commissioning_satisfaction_rate >= 80 ? "text-[--cs-success]" : d.commissioning_satisfaction_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.commissioning_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.commissioning_satisfaction_rate, 80) ? "bg-green-50" : meets(d.commissioning_satisfaction_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.commissioning_satisfaction_rate, 80) ? "text-[--cs-success]" : meets(d.commissioning_satisfaction_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.commissioning_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comm Rating</p>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -72,20 +73,20 @@ export function HomeManagementWalkroundOversightIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_walkrounds > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_walkrounds}</p>
               <p className="text-[9px] text-muted-foreground">Rounds</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_observation_rate >= 70 ? "bg-green-50" : d.positive_observation_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_observation_rate >= 70 ? "text-[--cs-success]" : d.positive_observation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_observation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_observation_rate, 70) ? "bg-green-50" : meets(d.positive_observation_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_observation_rate, 70) ? "text-[--cs-success]" : meets(d.positive_observation_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_observation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.environmental_pass_rate >= 90 ? "bg-green-50" : d.environmental_pass_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.environmental_pass_rate >= 90 ? "text-[--cs-success]" : d.environmental_pass_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.environmental_pass_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.environmental_pass_rate, 90) ? "bg-green-50" : meets(d.environmental_pass_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.environmental_pass_rate, 90) ? "text-[--cs-success]" : meets(d.environmental_pass_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.environmental_pass_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Environment</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_interaction_rate >= 80 ? "bg-green-50" : d.child_interaction_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_interaction_rate >= 80 ? "text-[--cs-success]" : d.child_interaction_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_interaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_interaction_rate, 80) ? "bg-green-50" : meets(d.child_interaction_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_interaction_rate, 80) ? "text-[--cs-success]" : meets(d.child_interaction_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_interaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Talk</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.follow_up_completion_rate >= 90 ? "bg-green-50" : d.follow_up_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_completion_rate >= 90 ? "text-[--cs-success]" : d.follow_up_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.follow_up_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.follow_up_completion_rate, 90) ? "bg-green-50" : meets(d.follow_up_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.follow_up_completion_rate, 90) ? "text-[--cs-success]" : meets(d.follow_up_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.follow_up_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Follow-up</p>
             </div>
           </div>

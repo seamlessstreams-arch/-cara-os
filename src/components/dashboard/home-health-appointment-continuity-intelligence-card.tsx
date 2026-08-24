@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Stethoscope } from "lucide-react";
@@ -74,24 +75,24 @@ export function HomeHealthAppointmentContinuityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_appointments > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_appointments}</p>
               <p className="text-[9px] text-muted-foreground">Total</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.attendance_rate >= 90 ? "bg-green-50" : d.attendance_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.attendance_rate >= 90 ? "text-[--cs-success]" : d.attendance_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.attendance_rate, 90) ? "bg-green-50" : meets(d.attendance_rate, 75) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.attendance_rate, 90) ? "text-[--cs-success]" : meets(d.attendance_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attended</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.missed_rate === 0 ? "bg-green-50" : d.missed_rate <= 10 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.missed_rate === 0 ? "text-[--cs-success]" : d.missed_rate <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.missed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.missed_rate === 0 ? "bg-green-50" : (d.missed_rate !== null && d.missed_rate <= 10) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.missed_rate === 0 ? "text-[--cs-success]" : (d.missed_rate !== null && d.missed_rate <= 10) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.missed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Missed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.outcome_documentation_rate >= 85 ? "bg-green-50" : d.outcome_documentation_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outcome_documentation_rate >= 85 ? "text-[--cs-success]" : d.outcome_documentation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outcome_documentation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.outcome_documentation_rate, 85) ? "bg-green-50" : meets(d.outcome_documentation_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.outcome_documentation_rate, 85) ? "text-[--cs-success]" : meets(d.outcome_documentation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outcome_documentation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Outcomes</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.health_domain_variety >= 5 ? "bg-green-50" : d.health_domain_variety >= 3 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.health_domain_variety >= 5 ? "text-[--cs-success]" : d.health_domain_variety >= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.health_domain_variety}</p>
               <p className="text-[9px] text-muted-foreground">Domains</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_with_appointments_rate >= 90 ? "bg-green-50" : d.children_with_appointments_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_with_appointments_rate >= 90 ? "text-[--cs-success]" : d.children_with_appointments_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_with_appointments_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.children_with_appointments_rate, 90) ? "bg-green-50" : meets(d.children_with_appointments_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_with_appointments_rate, 90) ? "text-[--cs-success]" : meets(d.children_with_appointments_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_with_appointments_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
           </div>

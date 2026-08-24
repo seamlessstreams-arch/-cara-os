@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Rainbow } from "lucide-react";
@@ -71,8 +72,8 @@ export function HomeDiversityInclusionEqualityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_cultural_plans > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_cultural_plans}</p>
               <p className="text-[9px] text-muted-foreground">Cultural</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.identity_affirmation_rate >= 90 ? "bg-green-50" : d.identity_affirmation_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.identity_affirmation_rate >= 90 ? "text-[--cs-success]" : d.identity_affirmation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.identity_affirmation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.identity_affirmation_rate, 90) ? "bg-green-50" : meets(d.identity_affirmation_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.identity_affirmation_rate, 90) ? "text-[--cs-success]" : meets(d.identity_affirmation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.identity_affirmation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Affirmed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.diversity_events_completed >= 4 ? "bg-green-50" : d.diversity_events_completed >= 2 ? "bg-amber-50" : "bg-red-50")}>
@@ -83,8 +84,8 @@ export function HomeDiversityInclusionEqualityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.hate_incidents_total === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.hate_incidents_total}</p>
               <p className="text-[9px] text-muted-foreground">Hate Inc.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hate_resolution_rate >= 90 || d.hate_incidents_total === 0 ? "bg-green-50" : d.hate_resolution_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hate_resolution_rate >= 90 || d.hate_incidents_total === 0 ? "text-[--cs-success]" : d.hate_resolution_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hate_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hate_resolution_rate, 90) || d.hate_incidents_total === 0 ? "bg-green-50" : meets(d.hate_resolution_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hate_resolution_rate, 90) || d.hate_incidents_total === 0 ? "text-[--cs-success]" : meets(d.hate_resolution_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hate_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
           </div>

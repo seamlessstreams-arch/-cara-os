@@ -83,13 +83,13 @@ describe("Home Health Appointment Continuity Intelligence Engine", () => {
       expect(r.appointment_rating).toBe("adequate");
     });
 
-    it("sets all metrics to 0 when appointments empty", () => {
+    it("leaves every rate unmeasured when appointments are empty", () => {
       const r = computeHealthAppointmentContinuity(baseInput());
       expect(r.total_appointments).toBe(0);
-      expect(r.attendance_rate).toBe(0);
-      expect(r.missed_rate).toBe(0);
-      expect(r.outcome_documentation_rate).toBe(0);
-      expect(r.transport_compliance_rate).toBe(0);
+      expect(r.attendance_rate).toBeNull();
+      expect(r.missed_rate).toBeNull();
+      expect(r.outcome_documentation_rate).toBeNull();
+      expect(r.transport_compliance_rate).toBeNull();
       expect(r.health_domain_variety).toBe(0);
       expect(r.children_with_appointments_rate).toBe(0);
     });

@@ -952,12 +952,12 @@ describe("Home Professional Network Intelligence Engine", () => {
       expect(r.contact_currency_rate).toBe(0);
     });
 
-    it("returns 0% currency when no active contacts", () => {
+    it("contact_currency_rate is unmeasured when no active contacts", () => {
       const contacts = [
         makeContact({ id: "c1", is_active: false, last_contact: "2026-05-25" }),
       ];
       const r = computeProfessionalNetwork(baseInput({ contacts, meetings: [makeMeeting()] }));
-      expect(r.contact_currency_rate).toBe(0); // pct(0, 0) = 0
+      expect(r.contact_currency_rate).toBeNull(); // pct(0, 0) = 0
     });
 
     it("quarterly frequency uses 90-day window", () => {
@@ -1049,13 +1049,13 @@ describe("Home Professional Network Intelligence Engine", () => {
       expect(r.meeting_completion_rate).toBe(50);
     });
 
-    it("gives -2 when no completed or cancelled meetings (denominator 0)", () => {
+    it("gives -2 when no completed or cancelled meetings (rate unmeasured)", () => {
       // All meetings are "scheduled"
       const meetings = [
         makeMeeting({ id: "mtg_1", date: "2026-05-15", meeting_status: "scheduled" }),
       ];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
-      expect(r.meeting_completion_rate).toBe(0); // pct(0, 0) = 0
+      expect(r.meeting_completion_rate).toBeNull(); // pct(0, 0) = 0
     });
 
     it("gives 0 modifier for 60-79% meeting completion rate", () => {
@@ -1132,7 +1132,7 @@ describe("Home Professional Network Intelligence Engine", () => {
         makeMeeting({ id: "mtg_1", date: "2026-04-10", meeting_status: "cancelled" }),
       ];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
-      expect(r.child_participation_rate).toBe(0); // pct(0, 0) = 0
+      expect(r.child_participation_rate).toBeNull(); // pct(0, 0) = 0
     });
 
     it("gives 0 modifier for 40-69% participation", () => {
@@ -1202,7 +1202,7 @@ describe("Home Professional Network Intelligence Engine", () => {
         actions_completed: 0,
       })];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
-      expect(r.action_completion_rate).toBe(0); // pct(0, 0) = 0
+      expect(r.action_completion_rate).toBeNull(); // pct(0, 0) = 0
     });
 
     it("gives 0 modifier for 50-69% action completion", () => {
@@ -2335,7 +2335,7 @@ describe("Home Professional Network Intelligence Engine", () => {
   // ── pct helper behaviour ─────────────────────────────────────────────────
 
   describe("pct helper behaviour (via engine rates)", () => {
-    it("returns 0 when denominator is 0 for action completion", () => {
+    it("action_completion_rate is unmeasured when its denominator is 0", () => {
       const meetings = [makeMeeting({
         date: "2026-05-15",
         meeting_status: "completed",
@@ -2343,13 +2343,13 @@ describe("Home Professional Network Intelligence Engine", () => {
         actions_completed: 0,
       })];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
     });
 
-    it("returns 0 when no active contacts for currency", () => {
+    it("contact_currency_rate is unmeasured when no active contacts", () => {
       const contacts = [makeContact({ is_active: false })];
       const r = computeProfessionalNetwork(baseInput({ contacts, meetings: [makeMeeting()] }));
-      expect(r.contact_currency_rate).toBe(0);
+      expect(r.contact_currency_rate).toBeNull();
     });
 
     it("rounds to nearest integer", () => {
@@ -2627,7 +2627,7 @@ describe("Home Professional Network Intelligence Engine", () => {
       ];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
       // meetingDenominator = 0 → -2 for meeting modifier
-      expect(r.meeting_completion_rate).toBe(0);
+      expect(r.meeting_completion_rate).toBeNull();
     });
 
     it("handles contact_frequency with unrecognised value", () => {
@@ -2640,7 +2640,7 @@ describe("Home Professional Network Intelligence Engine", () => {
       expect(r.contact_currency_rate).toBe(100);
     });
 
-    it("handles 0 action items in completed meetings (action completion = 0)", () => {
+    it("handles 0 action items in completed meetings (action_completion_rate unmeasured)", () => {
       const meetings = [makeMeeting({
         date: "2026-05-10",
         meeting_status: "completed",
@@ -2648,7 +2648,7 @@ describe("Home Professional Network Intelligence Engine", () => {
         actions_completed: 0,
       })];
       const r = computeProfessionalNetwork(baseInput({ contacts: [makeContact()], meetings }));
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
     });
 
     it("handles mix of active and inactive contacts for currency calculation", () => {

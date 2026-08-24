@@ -7,6 +7,8 @@
 // SCCIF: "The effectiveness of leaders and managers."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CompetencyProfileInput {
@@ -109,10 +111,6 @@ export interface HomeCompetencyLandscapeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function avg(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
@@ -153,9 +151,9 @@ export function computeHomeCompetencyLandscape(
     highest_readiness: scores.length > 0 ? Math.max(...scores.filter((v): v is number => v !== null)) : null,
     lowest_readiness: scores.length > 0 ? Math.min(...scores.filter((v): v is number => v !== null)) : null,
     staff_above_70: staffAbove70,
-    staff_above_70_rate: pct(staffAbove70, profiles.length),
+    staff_above_70_rate: rate(staffAbove70, profiles.length),
     staff_with_target: staffWithTarget,
-    staff_with_target_rate: pct(staffWithTarget, profiles.length),
+    staff_with_target_rate: rate(staffWithTarget, profiles.length),
   };
 
   // ── Stage Distribution ───────────────────────────────────────────────────
@@ -184,12 +182,12 @@ export function computeHomeCompetencyLandscape(
     active_plans: activePlans.length,
     completed_plans: completedPlans.length,
     paused_plans: pausedPlans.length,
-    plan_coverage_rate: pct(staffWithPlans, total_staff),
+    plan_coverage_rate: rate(staffWithPlans, total_staff),
     total_actions: totalActions,
     completed_actions: completedActions,
     overdue_actions: overdueActions,
-    action_completion_rate: pct(completedActions, totalActions),
-    overdue_action_rate: pct(overdueActions, totalActions),
+    action_completion_rate: rate(completedActions, totalActions),
+    overdue_action_rate: rate(overdueActions, totalActions),
   };
 
   // ── Currency Profile ─────────────────────────────────────────────────────
@@ -203,7 +201,7 @@ export function computeHomeCompetencyLandscape(
 
   const currencyProfile: CurrencyProfile = {
     overdue_assessments: overdueAssessments,
-    overdue_assessment_rate: pct(overdueAssessments, profiles.length),
+    overdue_assessment_rate: rate(overdueAssessments, profiles.length),
     avg_days_since_assessment: avg(daysSinceValues),
   };
 

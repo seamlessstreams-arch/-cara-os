@@ -5,6 +5,8 @@
 // SCCIF: "How well does the leadership team support staff wellbeing?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface WellbeingCheckInput {
@@ -54,7 +56,8 @@ export interface MoraleProfile {
 export interface CoverageProfile {
   total_checks: number;
   unique_staff_checked: number;
-  coverage_rate: number;               // % of total_staff with at least 1 check
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverage_rate: number | null;               // % of total_staff with at least 1 check
   checks_last_30_days: number;
   checks_last_90_days: number;
 }
@@ -110,10 +113,6 @@ export interface HomeStaffWellbeingResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -204,7 +203,7 @@ export function computeHomeStaffWellbeing(
   const coverage: CoverageProfile = {
     total_checks: wellbeing_checks.length,
     unique_staff_checked: uniqueStaff.size,
-    coverage_rate: pct(uniqueStaff.size, total_staff),
+    coverage_rate: rate(uniqueStaff.size, total_staff),
     checks_last_30_days: last30.length,
     checks_last_90_days: last90.length,
   };
@@ -266,37 +265,40 @@ export function computeHomeStaffWellbeing(
   // mod2: Staff coverage (±4)
   // What proportion of staff have had a wellbeing check
   const mod2 =
-    coverage.coverage_rate >= 80 ? 4 :
-    coverage.coverage_rate >= 60 ? 2 :
-    coverage.coverage_rate >= 40 ? 0 : -3;
+    meets(coverage.coverage_rate, 80) ? 4 :
+    meets(coverage.coverage_rate, 60) ? 2 :
+    meets(coverage.coverage_rate, 40) ? 0 : -3;
   score += mod2;
 
   // mod3: At-risk staff (±4)
   // Staff scoring <= 4 overall
-  const atRiskRate = pct(morale.at_risk_count, wellbeing_checks.length);
+  const atRiskRate = rate(morale.at_risk_count, wellbeing_checks.length);
   const mod3 =
     morale.at_risk_count === 0 ? 4 :
-    atRiskRate <= 15 ? 1 :
-    atRiskRate <= 30 ? -1 : -4;
+    (atRiskRate !== null && atRiskRate <= 15) ? 1 :
+    (atRiskRate !== null && atRiskRate <= 30) ? -1 : -4;
   score += mod3;
 
   // mod4: Action responsiveness (±3)
   // Checks with support needed should have actions agreed
   const supportNeeded = stressor_profile.checks_with_support_needed;
-  const actionRate = supportNeeded === 0 ? 100 : pct(stressor_profile.checks_with_action_agreed, supportNeeded);
+  const actionRate = supportNeeded === 0 ? 100 : rate(stressor_profile.checks_with_action_agreed, supportNeeded);
   const mod4 =
-    actionRate >= 90 ? 3 :
-    actionRate >= 70 ? 1 :
-    actionRate >= 50 ? 0 : -2;
+    meets(actionRate, 90) ? 3 :
+    meets(actionRate, 70) ? 1 :
+    meets(actionRate, 50) ? 0 : -2;
   score += mod4;
 
   // mod5: Follow-up compliance (±3)
   // Overdue follow-ups indicate lack of care
+  // Both zero-checks below leave the denominator positive by the time rate()
+  // is called, so it never answers null here.
+  const overdueFollowUpRate = rate(follow_ups.overdue_follow_ups, follow_ups.total_follow_ups_due);
   const mod5 =
     follow_ups.total_follow_ups_due === 0 ? 0 :
     follow_ups.overdue_follow_ups === 0 ? 3 :
-    pct(follow_ups.overdue_follow_ups, follow_ups.total_follow_ups_due) <= 25 ? 1 :
-    pct(follow_ups.overdue_follow_ups, follow_ups.total_follow_ups_due) <= 50 ? -1 : -3;
+    below(overdueFollowUpRate, 26) ? 1 :
+    below(overdueFollowUpRate, 51) ? -1 : -3;
   score += mod5;
 
   // mod6: Check type diversity (±3)
@@ -335,9 +337,9 @@ export function computeHomeStaffWellbeing(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (morale.avg_overall >= 7) strengths.push("Average staff morale is high, indicating a supportive working environment.");
-  if (coverage.coverage_rate >= 80) strengths.push(`${coverage.coverage_rate}% of staff have had a wellbeing check — excellent coverage.`);
+  if (meets(coverage.coverage_rate, 80)) strengths.push(`${coverage.coverage_rate}% of staff have had a wellbeing check — excellent coverage.`);
   if (morale.at_risk_count === 0) strengths.push("No staff members are currently flagged as at-risk.");
-  if (actionRate >= 90 && supportNeeded > 0) strengths.push("Management responds to wellbeing concerns with agreed actions in almost all cases.");
+  if (meets(actionRate, 90) && supportNeeded > 0) strengths.push("Management responds to wellbeing concerns with agreed actions in almost all cases.");
   if (follow_ups.overdue_follow_ups === 0 && follow_ups.total_follow_ups_due > 0) strengths.push("All scheduled wellbeing follow-ups are on track — none overdue.");
   if (typesUsed >= 4) strengths.push(`${typesUsed} different check types used, showing a proactive and varied approach to staff support.`);
   if (stressor_profile.total_positives > stressor_profile.total_stressors) strengths.push("Staff report more positives than stressors — healthy cultural indicator.");
@@ -347,9 +349,9 @@ export function computeHomeStaffWellbeing(
   const concerns: string[] = [];
   if (morale.avg_overall < 5) concerns.push(`Average staff morale is low (${morale.avg_overall}/10) — urgent leadership attention needed.`);
   if (morale.at_risk_count > 0) concerns.push(`${morale.at_risk_count} staff member(s) scored ≤4 overall — at risk of burnout or disengagement.`);
-  if (coverage.coverage_rate < 50) concerns.push(`Only ${coverage.coverage_rate}% of staff have had a wellbeing check — significant gaps in monitoring.`);
+  if (below(coverage.coverage_rate, 50)) concerns.push(`Only ${coverage.coverage_rate}% of staff have had a wellbeing check — significant gaps in monitoring.`);
   if (follow_ups.overdue_follow_ups > 0) concerns.push(`${follow_ups.overdue_follow_ups} wellbeing follow-up(s) are overdue — support commitments not being met.`);
-  if (actionRate < 70 && supportNeeded > 0) concerns.push("Staff requesting support are not consistently receiving agreed actions.");
+  if (below(actionRate, 70) && supportNeeded > 0) concerns.push("Staff requesting support are not consistently receiving agreed actions.");
   if (morale.avg_workload < 5) concerns.push(`Average workload score is low (${morale.avg_workload}/10) — staff feeling overburdened.`);
   if (stressor_profile.total_stressors > stressor_profile.total_positives * 2) concerns.push("Stressors significantly outweigh positives — team culture may be deteriorating.");
 
@@ -373,7 +375,7 @@ export function computeHomeStaffWellbeing(
       regulatory_ref: "Reg 33",
     });
   }
-  if (coverage.coverage_rate < 60) {
+  if (below(coverage.coverage_rate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Extend wellbeing checks to all staff — aim for 100% coverage within 30 days.",

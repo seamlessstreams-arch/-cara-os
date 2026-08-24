@@ -9,6 +9,8 @@
 // SCCIF: "Impact of leaders and managers", "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ProfessionalContactInput {
@@ -73,10 +75,14 @@ export interface ProfessionalNetworkResult {
   network_score: number;
   headline: string;
   total_contacts: number;
-  contact_currency_rate: number;
-  meeting_completion_rate: number;
-  child_participation_rate: number;
-  action_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contact_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meeting_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_participation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
   role_diversity: number;
   strengths: string[];
   concerns: string[];
@@ -88,10 +94,6 @@ export interface ProfessionalNetworkResult {
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 function daysBetween(a: string, b: string): number {
@@ -181,22 +183,22 @@ export function computeProfessionalNetwork(
     const days = daysBetween(c.last_contact, today);
     return days <= window;
   });
-  const contactCurrencyRate = pct(currentContacts.length, activeContacts.length);
+  const contactCurrencyRate = rate(currentContacts.length, activeContacts.length);
 
   // Meeting completion rate (completed / (completed + cancelled))
   const completedMeetings = meetings.filter(m => m.meeting_status === "completed");
   const cancelledMeetings = meetings.filter(m => m.meeting_status === "cancelled");
   const meetingDenominator = completedMeetings.length + cancelledMeetings.length;
-  const meetingCompletionRate = pct(completedMeetings.length, meetingDenominator);
+  const meetingCompletionRate = rate(completedMeetings.length, meetingDenominator);
 
   // Child participation rate (child_participated among completed meetings)
   const childParticipated = completedMeetings.filter(m => m.child_participated);
-  const childParticipationRate = pct(childParticipated.length, completedMeetings.length);
+  const childParticipationRate = rate(childParticipated.length, completedMeetings.length);
 
   // Action completion rate (actions_completed / action_items_count across completed meetings)
   const totalActionItems = completedMeetings.reduce((sum, m) => sum + m.action_items_count, 0);
   const totalActionsCompleted = completedMeetings.reduce((sum, m) => sum + m.actions_completed, 0);
-  const actionCompletionRate = pct(totalActionsCompleted, totalActionItems);
+  const actionCompletionRate = rate(totalActionsCompleted, totalActionItems);
 
   // Role diversity: count of unique role values across all contacts
   const uniqueRoles = new Set(contacts.map(c => c.role));
@@ -207,36 +209,36 @@ export function computeProfessionalNetwork(
   let score = 52;
 
   // 1. Contact currency (current / active contacts)
-  if (contactCurrencyRate >= 95) score += 6;
-  else if (contactCurrencyRate >= 80) score += 3;
-  else if (contactCurrencyRate < 50) score -= 8;
-  else if (contactCurrencyRate < 65) score -= 4;
+  if (meets(contactCurrencyRate, 95)) score += 6;
+  else if (meets(contactCurrencyRate, 80)) score += 3;
+  else if (below(contactCurrencyRate, 50)) score -= 8;
+  else if (below(contactCurrencyRate, 65)) score -= 4;
 
   // 2. Meeting completion rate
   if (meetingDenominator === 0) {
     score -= 2;
   } else {
-    if (meetingCompletionRate >= 95) score += 5;
-    else if (meetingCompletionRate >= 80) score += 2;
-    else if (meetingCompletionRate < 60) score -= 5;
+    if (meets(meetingCompletionRate, 95)) score += 5;
+    else if (meets(meetingCompletionRate, 80)) score += 2;
+    else if (below(meetingCompletionRate, 60)) score -= 5;
   }
 
   // 3. Child participation in completed meetings
   if (completedMeetings.length === 0) {
     score -= 1;
   } else {
-    if (childParticipationRate >= 90) score += 5;
-    else if (childParticipationRate >= 70) score += 2;
-    else if (childParticipationRate < 40) score -= 4;
+    if (meets(childParticipationRate, 90)) score += 5;
+    else if (meets(childParticipationRate, 70)) score += 2;
+    else if (below(childParticipationRate, 40)) score -= 4;
   }
 
   // 4. Action follow-through (actions_completed / action_items_count)
   if (totalActionItems === 0) {
     score -= 1;
   } else {
-    if (actionCompletionRate >= 90) score += 5;
-    else if (actionCompletionRate >= 70) score += 2;
-    else if (actionCompletionRate < 50) score -= 4;
+    if (meets(actionCompletionRate, 90)) score += 5;
+    else if (meets(actionCompletionRate, 70)) score += 2;
+    else if (below(actionCompletionRate, 50)) score -= 4;
   }
 
   // 5. Role diversity
@@ -249,8 +251,8 @@ export function computeProfessionalNetwork(
   const goodBreadth = contactsPerChild >= 3;
   const okBreadth = contactsPerChild >= 1.5;
   const hasDecisionsMeetings = completedMeetings.filter(m => m.has_decisions);
-  const decisionRate = pct(hasDecisionsMeetings.length, completedMeetings.length);
-  const highQualityEngagement = goodBreadth && decisionRate >= 80;
+  const decisionRate = rate(hasDecisionsMeetings.length, completedMeetings.length);
+  const highQualityEngagement = goodBreadth && meets(decisionRate, 80);
 
   if (highQualityEngagement) score += 5;
   else if (okBreadth) score += 2;
@@ -263,28 +265,28 @@ export function computeProfessionalNetwork(
 
   const strengths: string[] = [];
 
-  if (contactCurrencyRate >= 95 && activeContacts.length > 0) {
-    strengths.push(`${contactCurrencyRate}% of professional contacts are current — exemplary network maintenance.`);
-  } else if (contactCurrencyRate >= 80 && activeContacts.length > 0) {
-    strengths.push(`${contactCurrencyRate}% contact currency rate — strong professional relationship maintenance.`);
+  if (meets(contactCurrencyRate, 95) && activeContacts.length > 0) {
+    strengths.push(`${formatRate(contactCurrencyRate)} of professional contacts are current — exemplary network maintenance.`);
+  } else if (meets(contactCurrencyRate, 80) && activeContacts.length > 0) {
+    strengths.push(`${formatRate(contactCurrencyRate)} contact currency rate — strong professional relationship maintenance.`);
   }
 
-  if (meetingDenominator > 0 && meetingCompletionRate >= 95) {
-    strengths.push(`${meetingCompletionRate}% meeting completion rate — multi-agency meetings are consistently taking place.`);
-  } else if (meetingDenominator > 0 && meetingCompletionRate >= 80) {
-    strengths.push(`${meetingCompletionRate}% meeting completion rate — good multi-agency engagement.`);
+  if (meetingDenominator > 0 && meets(meetingCompletionRate, 95)) {
+    strengths.push(`${formatRate(meetingCompletionRate)} meeting completion rate — multi-agency meetings are consistently taking place.`);
+  } else if (meetingDenominator > 0 && meets(meetingCompletionRate, 80)) {
+    strengths.push(`${formatRate(meetingCompletionRate)} meeting completion rate — good multi-agency engagement.`);
   }
 
-  if (completedMeetings.length > 0 && childParticipationRate >= 90) {
-    strengths.push(`${childParticipationRate}% child participation in meetings — children's voices are central to professional decision-making.`);
-  } else if (completedMeetings.length > 0 && childParticipationRate >= 70) {
-    strengths.push(`${childParticipationRate}% child participation rate — good involvement of children in their own meetings.`);
+  if (completedMeetings.length > 0 && meets(childParticipationRate, 90)) {
+    strengths.push(`${formatRate(childParticipationRate)} child participation in meetings — children's voices are central to professional decision-making.`);
+  } else if (completedMeetings.length > 0 && meets(childParticipationRate, 70)) {
+    strengths.push(`${formatRate(childParticipationRate)} child participation rate — good involvement of children in their own meetings.`);
   }
 
-  if (totalActionItems > 0 && actionCompletionRate >= 90) {
-    strengths.push(`${actionCompletionRate}% action completion rate — decisions from meetings are being followed through effectively.`);
-  } else if (totalActionItems > 0 && actionCompletionRate >= 70) {
-    strengths.push(`${actionCompletionRate}% action completion rate — good follow-through on meeting decisions.`);
+  if (totalActionItems > 0 && meets(actionCompletionRate, 90)) {
+    strengths.push(`${formatRate(actionCompletionRate)} action completion rate — decisions from meetings are being followed through effectively.`);
+  } else if (totalActionItems > 0 && meets(actionCompletionRate, 70)) {
+    strengths.push(`${formatRate(actionCompletionRate)} action completion rate — good follow-through on meeting decisions.`);
   }
 
   if (roleDiversity >= 5) {
@@ -294,36 +296,36 @@ export function computeProfessionalNetwork(
   }
 
   if (highQualityEngagement) {
-    strengths.push(`${Math.round(contactsPerChild * 10) / 10} contacts per child with ${decisionRate}% of meetings producing decisions — network is both broad and effective.`);
+    strengths.push(`${Math.round(contactsPerChild * 10) / 10} contacts per child with ${formatRate(decisionRate)} of meetings producing decisions — network is both broad and effective.`);
   }
 
   // ── Concerns ──────────────────────────────────────────────────────────
 
   const concerns: string[] = [];
 
-  if (activeContacts.length > 0 && contactCurrencyRate < 65) {
+  if (activeContacts.length > 0 && below(contactCurrencyRate, 65)) {
     const stale = activeContacts.length - currentContacts.length;
-    concerns.push(`Only ${contactCurrencyRate}% of professional contacts are current — ${stale} active contacts have lapsed beyond their expected frequency, weakening the support network.`);
+    concerns.push(`Only ${formatRate(contactCurrencyRate)} of professional contacts are current — ${stale} active contacts have lapsed beyond their expected frequency, weakening the support network.`);
   }
 
-  if (meetingDenominator > 0 && meetingCompletionRate < 60) {
-    concerns.push(`Only ${meetingCompletionRate}% meeting completion rate — ${cancelledMeetings.length} meetings cancelled in the last 12 months, disrupting multi-agency coordination.`);
+  if (meetingDenominator > 0 && below(meetingCompletionRate, 60)) {
+    concerns.push(`Only ${formatRate(meetingCompletionRate)} meeting completion rate — ${cancelledMeetings.length} meetings cancelled in the last 12 months, disrupting multi-agency coordination.`);
   }
 
   if (meetingDenominator === 0 && meetings.length > 0) {
     concerns.push("All meetings in the last 12 months are scheduled but none completed or cancelled — meeting outcomes are not being tracked.");
   }
 
-  if (completedMeetings.length > 0 && childParticipationRate < 40) {
-    concerns.push(`Only ${childParticipationRate}% child participation rate — children are not being included in decisions about their own care.`);
+  if (completedMeetings.length > 0 && below(childParticipationRate, 40)) {
+    concerns.push(`Only ${formatRate(childParticipationRate)} child participation rate — children are not being included in decisions about their own care.`);
   }
 
   if (completedMeetings.length === 0 && contacts.length > 0) {
     concerns.push("No completed multi-agency meetings in the last 12 months — professional coordination requires structured meeting forums.");
   }
 
-  if (totalActionItems > 0 && actionCompletionRate < 50) {
-    concerns.push(`Only ${actionCompletionRate}% of meeting actions completed — ${totalActionItems - totalActionsCompleted} actions outstanding, undermining the effectiveness of multi-agency planning.`);
+  if (totalActionItems > 0 && below(actionCompletionRate, 50)) {
+    concerns.push(`Only ${formatRate(actionCompletionRate)} of meeting actions completed — ${totalActionItems - totalActionsCompleted} actions outstanding, undermining the effectiveness of multi-agency planning.`);
   }
 
   if (roleDiversity < 2 && contacts.length > 0) {
@@ -339,15 +341,15 @@ export function computeProfessionalNetwork(
   const recs: ProfessionalNetworkRecommendation[] = [];
   let rank = 1;
 
-  if (activeContacts.length > 0 && contactCurrencyRate < 65) {
+  if (activeContacts.length > 0 && below(contactCurrencyRate, 65)) {
     recs.push({ rank: rank++, recommendation: "Re-establish contact with lapsed professionals — update contact records and schedule engagement with all active contacts who have exceeded their expected contact frequency.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
   }
 
-  if (meetingDenominator > 0 && meetingCompletionRate < 60) {
+  if (meetingDenominator > 0 && below(meetingCompletionRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Address meeting cancellation rate — investigate causes and implement scheduling practices that protect multi-agency meetings from cancellation.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 22" });
   }
 
-  if (completedMeetings.length > 0 && childParticipationRate < 40) {
+  if (completedMeetings.length > 0 && below(childParticipationRate, 40)) {
     recs.push({ rank: rank++, recommendation: "Increase child participation in professional meetings — develop age-appropriate participation methods so every child can contribute to decisions about their care.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5" });
   }
 
@@ -355,7 +357,7 @@ export function computeProfessionalNetwork(
     recs.push({ rank: rank++, recommendation: "Schedule and convene multi-agency meetings — professionals meetings, LAC reviews, and strategy meetings must take place as required to coordinate each child's care.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 22" });
   }
 
-  if (totalActionItems > 0 && actionCompletionRate < 50) {
+  if (totalActionItems > 0 && below(actionCompletionRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Implement action tracking and follow-up — ensure all meeting actions are assigned, tracked, and completed within agreed timescales.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 22" });
   }
 
@@ -371,32 +373,32 @@ export function computeProfessionalNetwork(
 
   const insights: ProfessionalNetworkInsight[] = [];
 
-  if (contactCurrencyRate >= 95 && meetingCompletionRate >= 95 && childParticipationRate >= 90 && actionCompletionRate >= 90 && activeContacts.length > 0 && completedMeetings.length > 0) {
-    insights.push({ text: `Professional network is exemplary — ${contactCurrencyRate}% contacts current, ${meetingCompletionRate}% meetings completed, ${childParticipationRate}% child participation, and ${actionCompletionRate}% actions followed through. Ofsted will see a home where multi-agency working is embedded, children's voices are heard, and professional decisions lead to real outcomes.`, severity: "positive" });
+  if (meets(contactCurrencyRate, 95) && meets(meetingCompletionRate, 95) && meets(childParticipationRate, 90) && meets(actionCompletionRate, 90) && activeContacts.length > 0 && completedMeetings.length > 0) {
+    insights.push({ text: `Professional network is exemplary — ${formatRate(contactCurrencyRate)} contacts current, ${formatRate(meetingCompletionRate)} meetings completed, ${formatRate(childParticipationRate)} child participation, and ${formatRate(actionCompletionRate)} actions followed through. Ofsted will see a home where multi-agency working is embedded, children's voices are heard, and professional decisions lead to real outcomes.`, severity: "positive" });
   }
 
-  if (meetingCompletionRate >= 95 && childParticipationRate >= 90 && meetingDenominator > 0 && completedMeetings.length > 0) {
-    insights.push({ text: `Strong meeting culture with ${meetingCompletionRate}% completion and ${childParticipationRate}% child participation — multi-agency forums are prioritised and children are consistently included in professional decision-making. This evidences the SCCIF expectation that children are listened to and their views influence their care.`, severity: "positive" });
+  if (meets(meetingCompletionRate, 95) && meets(childParticipationRate, 90) && meetingDenominator > 0 && completedMeetings.length > 0) {
+    insights.push({ text: `Strong meeting culture with ${formatRate(meetingCompletionRate)} completion and ${formatRate(childParticipationRate)} child participation — multi-agency forums are prioritised and children are consistently included in professional decision-making. This evidences the SCCIF expectation that children are listened to and their views influence their care.`, severity: "positive" });
   }
 
   if (highQualityEngagement && roleDiversity >= 5) {
-    insights.push({ text: `Comprehensive professional network with ${roleDiversity} roles, ${Math.round(contactsPerChild * 10) / 10} contacts per child, and ${decisionRate}% of meetings producing decisions. This demonstrates the multi-agency coordination expected under Reg 5 and supports the SCCIF "Impact of leaders and managers" judgement area.`, severity: "positive" });
+    insights.push({ text: `Comprehensive professional network with ${roleDiversity} roles, ${Math.round(contactsPerChild * 10) / 10} contacts per child, and ${formatRate(decisionRate)} of meetings producing decisions. This demonstrates the multi-agency coordination expected under Reg 5 and supports the SCCIF "Impact of leaders and managers" judgement area.`, severity: "positive" });
   }
 
-  if (activeContacts.length > 0 && contactCurrencyRate < 50) {
-    insights.push({ text: `Contact currency is critically low at ${contactCurrencyRate}%. More than half of active professional contacts have lapsed beyond their expected frequency. Without current professional relationships, the home cannot demonstrate effective multi-agency working or ensure children's care plans are being implemented. Ofsted will view stale professional contacts as evidence of poor partnership working under Reg 5.`, severity: "critical" });
+  if (activeContacts.length > 0 && below(contactCurrencyRate, 50)) {
+    insights.push({ text: `Contact currency is critically low at ${formatRate(contactCurrencyRate)}. More than half of active professional contacts have lapsed beyond their expected frequency. Without current professional relationships, the home cannot demonstrate effective multi-agency working or ensure children's care plans are being implemented. Ofsted will view stale professional contacts as evidence of poor partnership working under Reg 5.`, severity: "critical" });
   }
 
-  if (meetingDenominator > 0 && meetingCompletionRate < 60) {
-    insights.push({ text: `Meeting completion rate of ${meetingCompletionRate}% means most scheduled multi-agency meetings are being cancelled. Under Reg 22, the registered person must maintain effective systems for reviewing the quality of care. Cancelled meetings disrupt care planning and professional coordination.`, severity: "critical" });
+  if (meetingDenominator > 0 && below(meetingCompletionRate, 60)) {
+    insights.push({ text: `Meeting completion rate of ${formatRate(meetingCompletionRate)} means most scheduled multi-agency meetings are being cancelled. Under Reg 22, the registered person must maintain effective systems for reviewing the quality of care. Cancelled meetings disrupt care planning and professional coordination.`, severity: "critical" });
   }
 
-  if (completedMeetings.length > 0 && childParticipationRate < 40) {
-    insights.push({ text: `Only ${childParticipationRate}% child participation in professional meetings. Children must be supported to participate in decisions about their care. Low participation rates indicate that children's voices are not being heard in the professional forums that shape their lives.`, severity: "warning" });
+  if (completedMeetings.length > 0 && below(childParticipationRate, 40)) {
+    insights.push({ text: `Only ${formatRate(childParticipationRate)} child participation in professional meetings. Children must be supported to participate in decisions about their care. Low participation rates indicate that children's voices are not being heard in the professional forums that shape their lives.`, severity: "warning" });
   }
 
-  if (totalActionItems > 0 && actionCompletionRate < 50) {
-    insights.push({ text: `Only ${actionCompletionRate}% of meeting actions completed. When professional meetings produce decisions that are not followed through, the entire multi-agency process is undermined. Action completion is essential to demonstrate that meetings lead to tangible improvements in children's care.`, severity: "critical" });
+  if (totalActionItems > 0 && below(actionCompletionRate, 50)) {
+    insights.push({ text: `Only ${formatRate(actionCompletionRate)} of meeting actions completed. When professional meetings produce decisions that are not followed through, the entire multi-agency process is undermined. Action completion is essential to demonstrate that meetings lead to tangible improvements in children's care.`, severity: "critical" });
   }
 
   if (roleDiversity < 2 && contacts.length > 0) {
@@ -407,7 +409,7 @@ export function computeProfessionalNetwork(
 
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding professional network — ${contactCurrencyRate}% contacts current, ${meetingCompletionRate}% meetings completed, ${roleDiversity} professional roles engaged.`;
+    headline = `Outstanding professional network — ${formatRate(contactCurrencyRate)} contacts current, ${formatRate(meetingCompletionRate)} meetings completed, ${roleDiversity} professional roles engaged.`;
   } else if (rating === "good") {
     headline = "Good professional network — solid multi-agency engagement with minor gaps in contact currency or meeting follow-through.";
   } else if (rating === "adequate") {

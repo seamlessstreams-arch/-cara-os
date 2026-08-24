@@ -489,6 +489,6 @@ describe("Edge cases", () => {
       ],
     }));
     // No non-null satisfaction → +1 bonus instead
-    expect(r.outcome_profile.satisfaction_rate).toBe(0);
+    expect(r.outcome_profile.satisfaction_rate).toBeNull();
   });
 });

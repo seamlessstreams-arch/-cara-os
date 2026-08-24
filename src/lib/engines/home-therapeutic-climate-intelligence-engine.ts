@@ -9,6 +9,8 @@
 // of leaders and managers."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface BehaviourLogInput {
@@ -66,7 +68,8 @@ export interface BehaviourClimateProfile {
   total_entries: number;
   positive_count: number;
   concerning_count: number;
-  positive_ratio: number;        // % positive
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_ratio: number | null;        // % positive
   high_intensity_count: number;
   children_with_entries: number;
 }
@@ -123,10 +126,6 @@ export interface HomeTherapeuticClimateResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -193,7 +192,7 @@ export function computeHomeTherapeuticClimate(
   // ── Behaviour Climate Profile ─────────────────────────────────
   const positive = behaviour.filter(b => b.direction === "positive").length;
   const concerning = behaviour.filter(b => b.direction === "concerning").length;
-  const positiveRatio = pct(positive, behaviour.length);
+  const positiveRatio = rate(positive, behaviour.length);
   const highIntensity = behaviour.filter(b => b.intensity === "high").length;
   const behaviourChildren = new Set(behaviour.map(b => b.child_id)).size;
 
@@ -219,8 +218,8 @@ export function computeHomeTherapeuticClimate(
     : null;
   const childDebriefed = restraints.filter(r => r.child_debriefed).length;
   const staffDebriefed = restraints.filter(r => r.staff_debriefed).length;
-  const childDebriefRate = pct(childDebriefed, totalRestraints);
-  const staffDebriefRate = pct(staffDebriefed, totalRestraints);
+  const childDebriefRate = rate(childDebriefed, totalRestraints);
+  const staffDebriefRate = rate(staffDebriefed, totalRestraints);
   const injuriesCount = restraints.reduce((s, r) => s + r.injuries_count, 0);
   const restrainedChildren = new Set(restraints.map(r => r.child_id)).size;
 
@@ -275,7 +274,7 @@ export function computeHomeTherapeuticClimate(
   const mostActive = Object.values(childEventCounts).filter(c => c >= 3).length;
   const allEventChildren = new Set(Object.keys(childEventCounts));
   const childrenNoEvents = Math.max(0, total_children - allEventChildren.size);
-  const calmRate = pct(childrenNoEvents, total_children);
+  const calmRate = rate(childrenNoEvents, total_children);
 
   const patternProfile: PatternProfile = {
     most_active_children: mostActive,
@@ -289,9 +288,9 @@ export function computeHomeTherapeuticClimate(
 
   // 1. Positive behaviour ratio (±5)
   if (behaviour.length === 0) score += 0; // no data — neutral
-  else if (positiveRatio >= 70) score += 5;
-  else if (positiveRatio >= 50) score += 3;
-  else if (positiveRatio >= 30) score += 0;
+  else if (meets(positiveRatio, 70)) score += 5;
+  else if (meets(positiveRatio, 50)) score += 3;
+  else if (meets(positiveRatio, 30)) score += 0;
   else score -= 4;
 
   // 2. Restraint frequency (±4)
@@ -302,8 +301,8 @@ export function computeHomeTherapeuticClimate(
 
   // 3. Debrief compliance (±3)
   if (totalRestraints === 0) score += 3; // no restraints is best state
-  else if (childDebriefRate >= 90 && staffDebriefRate >= 90) score += 3;
-  else if (childDebriefRate >= 70) score += 1;
+  else if (meets(childDebriefRate, 90) && meets(staffDebriefRate, 90)) score += 3;
+  else if (meets(childDebriefRate, 70)) score += 1;
   else score -= 2;
 
   // 4. Incident rate (±4)
@@ -325,9 +324,9 @@ export function computeHomeTherapeuticClimate(
 
   // 7. Calm rate — children with no events (±3)
   if (total_children === 0) score += 0;
-  else if (calmRate >= 75) score += 3;
-  else if (calmRate >= 50) score += 1;
-  else if (calmRate >= 25) score += 0;
+  else if (meets(calmRate, 75)) score += 3;
+  else if (meets(calmRate, 50)) score += 1;
+  else if (meets(calmRate, 25)) score += 0;
   else score -= 2;
 
   // 8. Injury-free restraints (±3)
@@ -341,19 +340,19 @@ export function computeHomeTherapeuticClimate(
 
   // ── Strengths ─────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (positiveRatio >= 70 && behaviour.length > 0) strengths.push(`${positiveRatio}% of behaviour entries are positive — the home nurtures and celebrates good behaviour.`);
+  if (meets(positiveRatio, 70) && behaviour.length > 0) strengths.push(`${formatRate(positiveRatio)} of behaviour entries are positive — the home nurtures and celebrates good behaviour.`);
   if (totalRestraints === 0) strengths.push("Zero restraints in the review period — the home is managing behaviour through therapeutic means.");
-  if (totalRestraints > 0 && childDebriefRate >= 90 && staffDebriefRate >= 90) strengths.push(`${childDebriefRate}% child and ${staffDebriefRate}% staff debrief completion — learning from every intervention.`);
+  if (totalRestraints > 0 && meets(childDebriefRate, 90) && meets(staffDebriefRate, 90)) strengths.push(`${formatRate(childDebriefRate)} child and ${formatRate(staffDebriefRate)} staff debrief completion — learning from every intervention.`);
   if (totalIncidents === 0) strengths.push("No incidents recorded — a calm and safe environment for children.");
   if (totalMissing === 0) strengths.push("No missing from care episodes — children feel safe and want to be here.");
-  if (calmRate >= 75 && total_children > 0) strengths.push(`${calmRate}% of children have had no concerning events — strong therapeutic stability.`);
+  if (meets(calmRate, 75) && total_children > 0) strengths.push(`${formatRate(calmRate)} of children have had no concerning events — strong therapeutic stability.`);
   if (totalRestraints > 0 && injuriesCount === 0) strengths.push("All restraints were injury-free — proportionate and safe physical intervention.");
 
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (positiveRatio < 30 && behaviour.length > 0) concerns.push(`Only ${positiveRatio}% of behaviour entries are positive — the atmosphere may feel punitive rather than therapeutic.`);
+  if (below(positiveRatio, 30) && behaviour.length > 0) concerns.push(`Only ${formatRate(positiveRatio)} of behaviour entries are positive — the atmosphere may feel punitive rather than therapeutic.`);
   if ((restraintRate ?? 0) > 1.0) concerns.push(`Restraint rate of ${(restraintRate ?? 0)} per child — frequency suggests de-escalation strategies need strengthening.`);
-  if (totalRestraints > 0 && childDebriefRate < 70) concerns.push(`Only ${childDebriefRate}% of children debriefed after restraint — their voice and wellbeing after intervention is being missed.`);
+  if (totalRestraints > 0 && below(childDebriefRate, 70)) concerns.push(`Only ${formatRate(childDebriefRate)} of children debriefed after restraint — their voice and wellbeing after intervention is being missed.`);
   if (injuriesCount > 1) concerns.push(`${injuriesCount} injuries during restraints — review technique and proportionality urgently.`);
   if (highSeverity > 1) concerns.push(`${highSeverity} high-severity incidents — pattern suggests escalation risk.`);
   if (totalMissing > 3) concerns.push(`${totalMissing} missing episodes — children may not feel safe or settled.`);
@@ -363,14 +362,14 @@ export function computeHomeTherapeuticClimate(
   const recs: TherapeuticClimateRecommendation[] = [];
   let rank = 1;
 
-  if (totalRestraints > 0 && childDebriefRate < 70) {
-    recs.push({ rank: rank++, recommendation: `Child debrief rate is only ${childDebriefRate}% — ensure every child is debriefed within 24 hours of any restraint, with their views recorded.`, urgency: "immediate", regulatory_ref: "Reg 20" });
+  if (totalRestraints > 0 && below(childDebriefRate, 70)) {
+    recs.push({ rank: rank++, recommendation: `Child debrief rate is only ${formatRate(childDebriefRate)} — ensure every child is debriefed within 24 hours of any restraint, with their views recorded.`, urgency: "immediate", regulatory_ref: "Reg 20" });
   }
   if (injuriesCount > 0) {
     recs.push({ rank: rank++, recommendation: `${injuriesCount} restraint injur${injuriesCount > 1 ? "ies" : "y"} recorded — review technique, notify appropriate bodies, and consider additional training.`, urgency: "immediate", regulatory_ref: "Reg 20" });
   }
-  if (positiveRatio < 50 && behaviour.length > 0) {
-    recs.push({ rank: rank++, recommendation: `Positive behaviour ratio is only ${positiveRatio}% — implement structured positive reinforcement and ensure staff are recording positive interactions.`, urgency: "soon", regulatory_ref: "Reg 19" });
+  if (below(positiveRatio, 50) && behaviour.length > 0) {
+    recs.push({ rank: rank++, recommendation: `Positive behaviour ratio is only ${formatRate(positiveRatio)} — implement structured positive reinforcement and ensure staff are recording positive interactions.`, urgency: "soon", regulatory_ref: "Reg 19" });
   }
   if (mostActive > 0) {
     recs.push({ rank: rank++, recommendation: `${mostActive} child${mostActive > 1 ? "ren show" : " shows"} concentrated concerning patterns — convene therapeutic planning meetings to review individual interventions.`, urgency: "soon", regulatory_ref: "Reg 35" });
@@ -383,7 +382,7 @@ export function computeHomeTherapeuticClimate(
   const insights: TherapeuticClimateInsight[] = [];
 
   if (rating === "outstanding") {
-    insights.push({ text: `Exemplary therapeutic climate — ${positiveRatio}% positive behaviour ratio${totalRestraints === 0 ? ", zero restraints" : ""}, with ${calmRate}% of children experiencing no concerning events. The home demonstrates a genuine therapeutic ethos where children feel safe, behaviour is understood contextually, and positive choices are celebrated. Ofsted inspectors will find strong evidence of Regulation 19 and 20 compliance.`, severity: "positive" });
+    insights.push({ text: `Exemplary therapeutic climate — ${formatRate(positiveRatio)} positive behaviour ratio${totalRestraints === 0 ? ", zero restraints" : ""}, with ${formatRate(calmRate)} of children experiencing no concerning events. The home demonstrates a genuine therapeutic ethos where children feel safe, behaviour is understood contextually, and positive choices are celebrated. Ofsted inspectors will find strong evidence of Regulation 19 and 20 compliance.`, severity: "positive" });
   }
   if (injuriesCount > 0) {
     insights.push({ text: `${injuriesCount} restraint injur${injuriesCount > 1 ? "ies" : "y"} recorded in the review period. Under Regulation 20, any injury during physical intervention requires investigation, notification, and review. Inspectors will scrutinise whether restraint is proportionate and whether alternatives were exhausted.`, severity: "critical" });
@@ -391,18 +390,18 @@ export function computeHomeTherapeuticClimate(
   if (totalRestraints > 0 && (avgDeEscalation ?? 0) < 1) {
     insights.push({ text: `Average de-escalation attempts before restraint is ${avgDeEscalation}. The Guide to the Children's Homes Regulations states that physical intervention must be used 'only when other methods of managing the behaviour have been attempted and failed.' Low de-escalation evidence raises proportionality concerns.`, severity: "critical" });
   }
-  if (positiveRatio >= 70 && behaviour.length >= 5) {
-    insights.push({ text: `${positiveRatio}% positive behaviour recording demonstrates that staff are actively capturing and reinforcing positive choices. This evidences a strengths-based, trauma-informed approach consistent with best practice in therapeutic residential care.`, severity: "positive" });
+  if (meets(positiveRatio, 70) && behaviour.length >= 5) {
+    insights.push({ text: `${formatRate(positiveRatio)} positive behaviour recording demonstrates that staff are actively capturing and reinforcing positive choices. This evidences a strengths-based, trauma-informed approach consistent with best practice in therapeutic residential care.`, severity: "positive" });
   }
   if (mostActive > 0 && total_children > 0) {
-    const concentrationRate = pct(mostActive, total_children);
-    insights.push({ text: `${concentrationRate}% of children account for the majority of concerning events. Concentrated patterns suggest individual therapeutic needs are not fully met — consider whether behaviour support plans are adequate and whether additional specialist input is needed.`, severity: concentrationRate > 50 ? "critical" : "warning" });
+    const concentrationRate = rate(mostActive, total_children);
+    insights.push({ text: `${formatRate(concentrationRate)} of children account for the majority of concerning events. Concentrated patterns suggest individual therapeutic needs are not fully met — consider whether behaviour support plans are adequate and whether additional specialist input is needed.`, severity: above(concentrationRate, 50) ? "critical" : "warning" });
   }
 
   // ── Headline ──────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding therapeutic climate — ${positiveRatio}% positive behaviour, ${totalRestraints === 0 ? "zero restraints" : `${totalRestraints} restraint${totalRestraints > 1 ? "s" : ""}`}, ${calmRate}% of children calm and settled.`;
+    headline = `Outstanding therapeutic climate — ${formatRate(positiveRatio)} positive behaviour, ${totalRestraints === 0 ? "zero restraints" : `${totalRestraints} restraint${totalRestraints > 1 ? "s" : ""}`}, ${formatRate(calmRate)} of children calm and settled.`;
   } else if (rating === "good") {
     headline = `Good therapeutic atmosphere — positive behaviour dominates with manageable incident levels.`;
   } else if (rating === "adequate") {

@@ -6,6 +6,8 @@
 // HACCP: Hazard Analysis and Critical Control Points food safety.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface FoodBudgetInput {
@@ -69,10 +71,6 @@ export interface FoodHygieneSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeFoodNutritionHygieneSafety(
@@ -103,11 +101,11 @@ export function computeFoodNutritionHygieneSafety(
   // Hygiene pass rate: pass / total non-n_a checks
   const nonNAChecks = hygiene_checks.filter(c => c.compliance !== "n_a");
   const passChecks = nonNAChecks.filter(c => c.compliance === "pass");
-  const hygienePassRate = pct(passChecks.length, nonNAChecks.length);
+  const hygienePassRate = rate(passChecks.length, nonNAChecks.length);
 
   // Budget adherence: budgets where total_spent <= weekly_budget
   const withinBudget = budgets.filter(b => b.total_spent <= b.weekly_budget);
-  const budgetAdherenceRate = pct(withinBudget.length, budgets.length);
+  const budgetAdherenceRate = rate(withinBudget.length, budgets.length);
 
   // Scratch cooking: average cook_from_scratch_proportion
   const scratchCookingRate = budgets.length > 0
@@ -116,16 +114,16 @@ export function computeFoodNutritionHygieneSafety(
 
   // Dietary compliance: meal_plans with dietary_needs_met
   const dietaryMetPlans = meal_plans.filter(m => m.dietary_needs_met);
-  const dietaryComplianceRate = pct(dietaryMetPlans.length, meal_plans.length);
+  const dietaryComplianceRate = rate(dietaryMetPlans.length, meal_plans.length);
 
   // Cultural inclusion: budgets with cultural_ingredients_included
   const culturalBudgets = budgets.filter(b => b.cultural_ingredients_included);
-  const culturalInclusionRate = pct(culturalBudgets.length, budgets.length);
+  const culturalInclusionRate = rate(culturalBudgets.length, budgets.length);
 
   // Action completion: action_completed where action_required
   const actionsRequired = hygiene_checks.filter(c => c.action_required);
   const actionsCompleted = actionsRequired.filter(c => c.action_completed);
-  const actionCompletionRate = pct(actionsCompleted.length, actionsRequired.length);
+  const actionCompletionRate = rate(actionsCompleted.length, actionsRequired.length);
 
   // ── Scoring ───────────────────────────────────────────────────────────
   // Base 52 + max ~30 from 6 modifiers
@@ -134,11 +132,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod1: Hygiene pass rate (±5)
   if (nonNAChecks.length === 0) {
     score -= 1;
-  } else if (hygienePassRate >= 95) {
+  } else if (meets(hygienePassRate, 95)) {
     score += 5;
-  } else if (hygienePassRate >= 80) {
+  } else if (meets(hygienePassRate, 80)) {
     score += 2;
-  } else if (hygienePassRate >= 60) {
+  } else if (meets(hygienePassRate, 60)) {
     score += 0;
   } else {
     score -= 5;
@@ -147,11 +145,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod2: Budget adherence (±6/-5)
   if (budgets.length === 0) {
     score += 0;
-  } else if (budgetAdherenceRate >= 90) {
+  } else if (meets(budgetAdherenceRate, 90)) {
     score += 6;
-  } else if (budgetAdherenceRate >= 70) {
+  } else if (meets(budgetAdherenceRate, 70)) {
     score += 3;
-  } else if (budgetAdherenceRate >= 50) {
+  } else if (meets(budgetAdherenceRate, 50)) {
     score += 0;
   } else {
     score -= 5;
@@ -173,11 +171,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod4: Dietary compliance (+5/-5)
   if (meal_plans.length === 0) {
     score -= 1;
-  } else if (dietaryComplianceRate >= 90) {
+  } else if (meets(dietaryComplianceRate, 90)) {
     score += 5;
-  } else if (dietaryComplianceRate >= 70) {
+  } else if (meets(dietaryComplianceRate, 70)) {
     score += 2;
-  } else if (dietaryComplianceRate >= 40) {
+  } else if (meets(dietaryComplianceRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -186,11 +184,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod5: Cultural & sensory inclusion (+4/-4)
   if (budgets.length === 0) {
     score -= 1;
-  } else if (culturalInclusionRate >= 80) {
+  } else if (meets(culturalInclusionRate, 80)) {
     score += 4;
-  } else if (culturalInclusionRate >= 50) {
+  } else if (meets(culturalInclusionRate, 50)) {
     score += 1;
-  } else if (culturalInclusionRate >= 20) {
+  } else if (meets(culturalInclusionRate, 20)) {
     score += 0;
   } else {
     score -= 4;
@@ -199,11 +197,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod6: Action completion (+5/-5)
   if (actionsRequired.length === 0) {
     score += 3;
-  } else if (actionCompletionRate >= 90) {
+  } else if (meets(actionCompletionRate, 90)) {
     score += 5;
-  } else if (actionCompletionRate >= 70) {
+  } else if (meets(actionCompletionRate, 70)) {
     score += 2;
-  } else if (actionCompletionRate >= 40) {
+  } else if (meets(actionCompletionRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -227,23 +225,23 @@ export function computeFoodNutritionHygieneSafety(
   let rank = 0;
 
   // Strengths
-  if (hygienePassRate >= 95 && nonNAChecks.length > 0) {
-    strengths.push(`${hygienePassRate}% hygiene pass rate — excellent food safety compliance.`);
+  if (meets(hygienePassRate, 95) && nonNAChecks.length > 0) {
+    strengths.push(`${formatRate(hygienePassRate)} hygiene pass rate — excellent food safety compliance.`);
   }
-  if (budgetAdherenceRate >= 90 && budgets.length > 0) {
-    strengths.push(`${budgetAdherenceRate}% of weeks within food budget — strong financial governance.`);
+  if (meets(budgetAdherenceRate, 90) && budgets.length > 0) {
+    strengths.push(`${formatRate(budgetAdherenceRate)} of weeks within food budget — strong financial governance.`);
   }
   if ((scratchCookingRate ?? 0) >= 70 && budgets.length > 0) {
     strengths.push(`${scratchCookingRate}% scratch cooking rate — children receive freshly prepared, home-cooked meals.`);
   }
-  if (dietaryComplianceRate >= 90 && meal_plans.length > 0) {
-    strengths.push(`${dietaryComplianceRate}% dietary compliance — every child's nutritional needs are being met.`);
+  if (meets(dietaryComplianceRate, 90) && meal_plans.length > 0) {
+    strengths.push(`${formatRate(dietaryComplianceRate)} dietary compliance — every child's nutritional needs are being met.`);
   }
-  if (culturalInclusionRate >= 80 && budgets.length > 0) {
-    strengths.push(`${culturalInclusionRate}% cultural ingredient inclusion — dietary diversity is celebrated.`);
+  if (meets(culturalInclusionRate, 80) && budgets.length > 0) {
+    strengths.push(`${formatRate(culturalInclusionRate)} cultural ingredient inclusion — dietary diversity is celebrated.`);
   }
-  if (actionCompletionRate >= 90 && actionsRequired.length > 0) {
-    strengths.push(`${actionCompletionRate}% action completion rate — hygiene actions are resolved promptly.`);
+  if (meets(actionCompletionRate, 90) && actionsRequired.length > 0) {
+    strengths.push(`${formatRate(actionCompletionRate)} action completion rate — hygiene actions are resolved promptly.`);
   }
   if (actionsRequired.length === 0 && nonNAChecks.length > 0) {
     strengths.push("No hygiene actions required — proactive food safety management.");
@@ -251,26 +249,26 @@ export function computeFoodNutritionHygieneSafety(
 
   // Concerns
   const failChecks = nonNAChecks.filter(c => c.compliance === "fail");
-  if (hygienePassRate < 60 && nonNAChecks.length > 0) {
-    concerns.push(`Hygiene pass rate is only ${hygienePassRate}% — food safety standards are significantly below acceptable levels.`);
+  if (below(hygienePassRate, 60) && nonNAChecks.length > 0) {
+    concerns.push(`Hygiene pass rate is only ${formatRate(hygienePassRate)} — food safety standards are significantly below acceptable levels.`);
   }
   if (failChecks.length >= 3) {
     concerns.push(`${failChecks.length} hygiene checks failed — systematic food safety failures require urgent attention.`);
   }
-  if (budgetAdherenceRate < 50 && budgets.length > 0) {
-    concerns.push(`Only ${budgetAdherenceRate}% of weeks within budget — food spending is poorly controlled.`);
+  if (below(budgetAdherenceRate, 50) && budgets.length > 0) {
+    concerns.push(`Only ${formatRate(budgetAdherenceRate)} of weeks within budget — food spending is poorly controlled.`);
   }
   if ((scratchCookingRate ?? 0) < 30 && budgets.length > 0) {
     concerns.push(`Scratch cooking rate is only ${scratchCookingRate}% — over-reliance on pre-prepared foods.`);
   }
-  if (dietaryComplianceRate < 40 && meal_plans.length > 0) {
-    concerns.push(`Only ${dietaryComplianceRate}% dietary compliance — children's nutritional needs are not being met.`);
+  if (below(dietaryComplianceRate, 40) && meal_plans.length > 0) {
+    concerns.push(`Only ${formatRate(dietaryComplianceRate)} dietary compliance — children's nutritional needs are not being met.`);
   }
-  if (culturalInclusionRate < 20 && budgets.length > 0) {
-    concerns.push(`Cultural ingredient inclusion is only ${culturalInclusionRate}% — cultural dietary needs may be neglected.`);
+  if (below(culturalInclusionRate, 20) && budgets.length > 0) {
+    concerns.push(`Cultural ingredient inclusion is only ${formatRate(culturalInclusionRate)} — cultural dietary needs may be neglected.`);
   }
-  if (actionCompletionRate < 40 && actionsRequired.length > 0) {
-    concerns.push(`Only ${actionCompletionRate}% of required hygiene actions completed — outstanding safety actions are not being resolved.`);
+  if (below(actionCompletionRate, 40) && actionsRequired.length > 0) {
+    concerns.push(`Only ${formatRate(actionCompletionRate)} of required hygiene actions completed — outstanding safety actions are not being resolved.`);
   }
   if (meal_plans.length === 0) {
     concerns.push("No meal plans recorded — dietary planning and child nutritional monitoring cannot be evidenced.");
@@ -283,19 +281,19 @@ export function computeFoodNutritionHygieneSafety(
   if (failChecks.length >= 2 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Conduct an immediate review of hygiene check failures and implement corrective actions to restore food safety standards.", urgency: "immediate", regulatory_ref: "HACCP" });
   }
-  if (actionCompletionRate < 40 && actionsRequired.length > 0 && rank < 5) {
+  if (below(actionCompletionRate, 40) && actionsRequired.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Clear outstanding hygiene actions urgently — incomplete actions indicate food safety risks are not being managed.", urgency: "immediate", regulatory_ref: "HACCP" });
   }
-  if (dietaryComplianceRate < 70 && meal_plans.length > 0 && rank < 5) {
+  if (below(dietaryComplianceRate, 70) && meal_plans.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Review meal planning to ensure every child's dietary needs are consistently met — this is a fundamental requirement of Reg 9.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
   }
   if ((scratchCookingRate ?? 0) < 50 && budgets.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Increase the proportion of meals cooked from scratch to promote healthier eating and life skills development.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (culturalInclusionRate < 50 && budgets.length > 0 && rank < 5) {
+  if (below(culturalInclusionRate, 50) && budgets.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure cultural and dietary diversity is reflected in food purchasing and meal planning to meet each child's identity needs.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (budgetAdherenceRate < 70 && budgets.length > 0 && rank < 5) {
+  if (below(budgetAdherenceRate, 70) && budgets.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Improve food budget governance — consistent overspending may indicate poor planning or waste.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 9" });
   }
   if (meal_plans.length === 0 && rank < 5) {
@@ -306,20 +304,20 @@ export function computeFoodNutritionHygieneSafety(
   }
 
   // Insights (up to 3)
-  if (hygienePassRate >= 95 && dietaryComplianceRate >= 90 && (scratchCookingRate ?? 0) >= 70 && culturalInclusionRate >= 80) {
+  if (meets(hygienePassRate, 95) && meets(dietaryComplianceRate, 90) && (scratchCookingRate ?? 0) >= 70 && meets(culturalInclusionRate, 80)) {
     insights.push({ text: "Food safety, nutrition, cultural inclusion, and scratch cooking are all at exemplary levels. This demonstrates outstanding child-centred nutritional care that Ofsted would recognise.", severity: "positive" });
   }
-  if (failChecks.length >= 3 && actionCompletionRate < 50) {
-    insights.push({ text: `${failChecks.length} hygiene failures with only ${actionCompletionRate}% action completion — this indicates systemic food safety governance failure that would be a serious regulatory concern.`, severity: "critical" });
+  if (failChecks.length >= 3 && below(actionCompletionRate, 50)) {
+    insights.push({ text: `${failChecks.length} hygiene failures with only ${formatRate(actionCompletionRate)} action completion — this indicates systemic food safety governance failure that would be a serious regulatory concern.`, severity: "critical" });
   }
-  if ((scratchCookingRate ?? 0) < 30 && budgets.length > 0 && dietaryComplianceRate < 70 && meal_plans.length > 0) {
-    insights.push({ text: `Low scratch cooking (${scratchCookingRate}%) combined with poor dietary compliance (${dietaryComplianceRate}%) suggests children are not receiving adequate nutritional care.`, severity: "warning" });
+  if ((scratchCookingRate ?? 0) < 30 && budgets.length > 0 && below(dietaryComplianceRate, 70) && meal_plans.length > 0) {
+    insights.push({ text: `Low scratch cooking (${scratchCookingRate}%) combined with poor dietary compliance (${formatRate(dietaryComplianceRate)}) suggests children are not receiving adequate nutritional care.`, severity: "warning" });
   }
-  if (budgetAdherenceRate >= 90 && (scratchCookingRate ?? 0) >= 70 && budgets.length > 0) {
+  if (meets(budgetAdherenceRate, 90) && (scratchCookingRate ?? 0) >= 70 && budgets.length > 0) {
     insights.push({ text: "Strong budget discipline alongside high scratch cooking rates shows effective food governance — resources are being well managed to benefit children.", severity: "positive" });
   }
-  if (hygienePassRate < 60 && nonNAChecks.length >= 5) {
-    insights.push({ text: `Hygiene pass rate of ${hygienePassRate}% across ${nonNAChecks.length} checks indicates persistent food safety non-compliance that must be addressed before any inspection.`, severity: "critical" });
+  if (below(hygienePassRate, 60) && nonNAChecks.length >= 5) {
+    insights.push({ text: `Hygiene pass rate of ${formatRate(hygienePassRate)} across ${nonNAChecks.length} checks indicates persistent food safety non-compliance that must be addressed before any inspection.`, severity: "critical" });
   }
 
   // Trim to max 3 insights
@@ -328,7 +326,7 @@ export function computeFoodNutritionHygieneSafety(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (food_rating === "outstanding") {
-    headline = `Outstanding food and hygiene safety — ${hygienePassRate}% hygiene pass rate, ${dietaryComplianceRate}% dietary compliance.`;
+    headline = `Outstanding food and hygiene safety — ${formatRate(hygienePassRate)} hygiene pass rate, ${formatRate(dietaryComplianceRate)} dietary compliance.`;
   } else if (food_rating === "good") {
     headline = `Good food and hygiene standards — ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : "well-managed food safety and nutrition."}`;
   } else if (food_rating === "adequate") {

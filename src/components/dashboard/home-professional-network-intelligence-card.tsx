@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,19 +75,19 @@ export function HomeProfessionalNetworkIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Contacts</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.contact_currency_rate >= 90 ? "bg-green-50" : d.contact_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.contact_currency_rate >= 90 ? "text-[--cs-success]" : d.contact_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.contact_currency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.contact_currency_rate >= 90 ? "text-[--cs-success]" : d.contact_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.contact_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Current</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.meeting_completion_rate >= 90 ? "bg-green-50" : d.meeting_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.meeting_completion_rate >= 90 ? "text-[--cs-success]" : d.meeting_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meeting_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.meeting_completion_rate >= 90 ? "text-[--cs-success]" : d.meeting_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.meeting_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_participation_rate >= 90 ? "bg-green-50" : d.child_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_participation_rate >= 90 ? "text-[--cs-success]" : d.child_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_participation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_participation_rate >= 90 ? "text-[--cs-success]" : d.child_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">YP Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.role_diversity >= 4 ? "bg-green-50" : "bg-amber-50")}>
