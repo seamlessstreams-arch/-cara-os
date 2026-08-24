@@ -16,6 +16,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 export interface TemperatureMonitoringRecordInput {
   id: string;
   bedroom_id: string;
@@ -179,8 +181,9 @@ export interface BedroomTempResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -380,9 +383,7 @@ export function computeBedroomTemperatureVentilation(
   // Composite heating check rate: operational + safety passed + thermostat working
   const heatingCheckRate =
     totalHeatingChecks > 0
-      ? Math.round(
-          (heatingOperationalRate + safetyCheckRate + thermostatWorkingRate) / 3,
-        )
+      ? meanOf([heatingOperationalRate, safetyCheckRate, thermostatWorkingRate])
       : null;
 
   // --- Window compliance metrics ---
@@ -459,9 +460,7 @@ export function computeBedroomTemperatureVentilation(
   // Composite child comfort rate: comfortable temp + sleeps well + bedding adequate
   const childComfortRate =
     totalComfortRecords > 0
-      ? Math.round(
-          (comfortableTempRate + sleepsWellRate + beddingAdequateRate) / 3,
-        )
+      ? meanOf([comfortableTempRate, sleepsWellRate, beddingAdequateRate])
       : null;
 
   // Unique children surveyed
@@ -501,48 +500,48 @@ export function computeBedroomTemperatureVentilation(
   let score = 52;
 
   // --- Bonus 1: temperatureMonitoringRate (>=90: +4, >=70: +2) ---
-  if (temperatureMonitoringRate >= 90) score += 4;
-  else if (temperatureMonitoringRate >= 70) score += 2;
+  if (meets(temperatureMonitoringRate, 90)) score += 4;
+  else if (meets(temperatureMonitoringRate, 70)) score += 2;
 
   // --- Bonus 2: ventilationRate (>=95: +4, >=80: +2) ---
-  if (ventilationRate >= 95) score += 4;
-  else if (ventilationRate >= 80) score += 2;
+  if (meets(ventilationRate, 95)) score += 4;
+  else if (meets(ventilationRate, 80)) score += 2;
 
   // --- Bonus 3: heatingCheckRate (>=90: +3, >=70: +1) ---
   if ((heatingCheckRate ?? 0) >= 90) score += 3;
   else if ((heatingCheckRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 4: windowComplianceRate (>=90: +3, >=70: +1) ---
-  if (windowComplianceRate >= 90) score += 3;
-  else if (windowComplianceRate >= 70) score += 1;
+  if (meets(windowComplianceRate, 90)) score += 3;
+  else if (meets(windowComplianceRate, 70)) score += 1;
 
   // --- Bonus 5: childComfortRate (>=90: +3, >=70: +1) ---
   if ((childComfortRate ?? 0) >= 90) score += 3;
   else if ((childComfortRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 6: actionResponseRate (>=90: +3, >=70: +1) ---
-  if (actionResponseRate >= 90) score += 3;
-  else if (actionResponseRate >= 70) score += 1;
+  if (meets(actionResponseRate, 90)) score += 3;
+  else if (meets(actionResponseRate, 70)) score += 1;
 
   // --- Bonus 7: safetyCheckRate (>=90: +3, >=70: +1) ---
-  if (safetyCheckRate >= 90) score += 3;
-  else if (safetyCheckRate >= 70) score += 1;
+  if (meets(safetyCheckRate, 90)) score += 3;
+  else if (meets(safetyCheckRate, 70)) score += 1;
 
   // --- Bonus 8: avgComfortRating (>=4.0: +3, >=3.0: +1) ---
   if ((avgComfortRating ?? 0) >= 4.0) score += 3;
   else if ((avgComfortRating ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 9: childVoiceCapturedRate (>=90: +2, >=70: +1) ---
-  if (childVoiceCapturedRate >= 90) score += 2;
-  else if (childVoiceCapturedRate >= 70) score += 1;
+  if (meets(childVoiceCapturedRate, 90)) score += 2;
+  else if (meets(childVoiceCapturedRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // temperatureMonitoringRate < 40 → -5 (guarded)
-  if (temperatureMonitoringRate < 40 && temperature_monitoring_records.length > 0) score -= 5;
+  if (below(temperatureMonitoringRate, 40) && temperature_monitoring_records.length > 0) score -= 5;
 
   // ventilationRate < 50 → -5 (guarded)
-  if (ventilationRate < 50 && ventilation_records.length > 0) score -= 5;
+  if (below(ventilationRate, 50) && ventilation_records.length > 0) score -= 5;
 
   // heatingCheckRate < 40 → -5 (guarded)
   if ((heatingCheckRate ?? 0) < 40 && heating_check_records.length > 0) score -= 5;
@@ -558,21 +557,21 @@ export function computeBedroomTemperatureVentilation(
 
   const strengths: string[] = [];
 
-  if (temperatureMonitoringRate >= 90 && totalTempRecords > 0) {
+  if (meets(temperatureMonitoringRate, 90) && totalTempRecords > 0) {
     strengths.push(
       `${temperatureMonitoringRate}% of temperature readings within target range — the home demonstrates excellent bedroom temperature management ensuring children sleep and live in comfortable conditions.`,
     );
-  } else if (temperatureMonitoringRate >= 70 && totalTempRecords > 0) {
+  } else if (meets(temperatureMonitoringRate, 70) && totalTempRecords > 0) {
     strengths.push(
       `${temperatureMonitoringRate}% temperature monitoring compliance — bedroom temperatures are generally well-managed and within acceptable ranges.`,
     );
   }
 
-  if (ventilationRate >= 95 && totalVentRecords > 0) {
+  if (meets(ventilationRate, 95) && totalVentRecords > 0) {
     strengths.push(
       `${ventilationRate}% ventilation adequacy — bedrooms are consistently well-ventilated, supporting healthy indoor air quality for children.`,
     );
-  } else if (ventilationRate >= 80 && totalVentRecords > 0) {
+  } else if (meets(ventilationRate, 80) && totalVentRecords > 0) {
     strengths.push(
       `${ventilationRate}% adequate ventilation across bedroom checks — good air quality management contributing to children's health and comfort.`,
     );
@@ -588,11 +587,11 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (windowComplianceRate >= 90 && totalWindowRecords > 0) {
+  if (meets(windowComplianceRate, 90) && totalWindowRecords > 0) {
     strengths.push(
       `${windowComplianceRate}% window compliance — windows across bedrooms meet safety and ventilation requirements, with appropriate restrictors and safety measures in place.`,
     );
-  } else if (windowComplianceRate >= 70 && totalWindowRecords > 0) {
+  } else if (meets(windowComplianceRate, 70) && totalWindowRecords > 0) {
     strengths.push(
       `${windowComplianceRate}% window compliance rate — most bedroom windows meet safety and ventilation standards.`,
     );
@@ -608,21 +607,21 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (actionResponseRate >= 90 && totalActionDenom > 0) {
+  if (meets(actionResponseRate, 90) && totalActionDenom > 0) {
     strengths.push(
       `${actionResponseRate}% action response rate — temperature, ventilation, and heating concerns are consistently addressed, demonstrating responsive premises management.`,
     );
-  } else if (actionResponseRate >= 70 && totalActionDenom > 0) {
+  } else if (meets(actionResponseRate, 70) && totalActionDenom > 0) {
     strengths.push(
       `${actionResponseRate}% action response rate — the home generally responds to temperature and ventilation concerns promptly.`,
     );
   }
 
-  if (safetyCheckRate >= 90 && totalHeatingChecks > 0) {
+  if (meets(safetyCheckRate, 90) && totalHeatingChecks > 0) {
     strengths.push(
       `${safetyCheckRate}% of heating safety checks passed — the home maintains high standards of heating safety across all bedrooms.`,
     );
-  } else if (safetyCheckRate >= 70 && totalHeatingChecks > 0) {
+  } else if (meets(safetyCheckRate, 70) && totalHeatingChecks > 0) {
     strengths.push(
       `${safetyCheckRate}% of heating safety checks passed — good compliance with heating safety requirements.`,
     );
@@ -638,23 +637,23 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (childVoiceCapturedRate >= 90 && totalComfortRecords > 0) {
+  if (meets(childVoiceCapturedRate, 90) && totalComfortRecords > 0) {
     strengths.push(
       `${childVoiceCapturedRate}% of comfort assessments capture the child's voice — demonstrating genuine engagement with children's views on their bedroom environment.`,
     );
-  } else if (childVoiceCapturedRate >= 70 && totalComfortRecords > 0) {
+  } else if (meets(childVoiceCapturedRate, 70) && totalComfortRecords > 0) {
     strengths.push(
       `${childVoiceCapturedRate}% of comfort assessments include child voice — good practice in seeking children's views on bedroom comfort.`,
     );
   }
 
-  if (nightTimeComplianceRate >= 90 && nightTimeRecords > 0) {
+  if (meets(nightTimeComplianceRate, 90) && nightTimeRecords > 0) {
     strengths.push(
       `${nightTimeComplianceRate}% of night-time temperature readings within range — bedroom temperatures are well-managed during sleeping hours, supporting children's rest and wellbeing.`,
     );
   }
 
-  if (calibrationRate >= 90 && totalTempRecords > 0) {
+  if (meets(calibrationRate, 90) && totalTempRecords > 0) {
     strengths.push(
       "Temperature monitoring equipment is regularly calibrated — readings are reliable and accurate, supporting evidence-based premises management.",
     );
@@ -666,17 +665,17 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (childCoverage >= 100 && total_children > 0) {
+  if (meets(childCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has had their bedroom comfort assessed — the home ensures all children's views on their sleeping environment are captured and considered.",
     );
-  } else if (childCoverage >= 80 && total_children > 0) {
+  } else if (meets(childCoverage, 80) && total_children > 0) {
     strengths.push(
       `${childCoverage}% of children have had bedroom comfort assessed — strong coverage ensuring most children's environmental preferences are known.`,
     );
   }
 
-  if (changesActionedRate >= 90 && changesRequested > 0) {
+  if (meets(changesActionedRate, 90) && changesRequested > 0) {
     strengths.push(
       `${changesActionedRate}% of child-requested bedroom changes actioned — the home demonstrates excellent responsiveness to children's preferences and needs.`,
     );
@@ -688,19 +687,19 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (restrictorRate >= 95 && totalWindowRecords > 0) {
+  if (meets(restrictorRate, 95) && totalWindowRecords > 0) {
     strengths.push(
       `${restrictorRate}% of windows fitted with restrictors — comprehensive window safety measures are in place across all bedrooms.`,
     );
   }
 
-  if (fallRiskAssessedRate >= 95 && totalWindowRecords > 0) {
+  if (meets(fallRiskAssessedRate, 95) && totalWindowRecords > 0) {
     strengths.push(
       `${fallRiskAssessedRate}% of windows have fall risk assessments — the home takes a thorough approach to window safety.`,
     );
   }
 
-  if (canAdjustTempRate >= 80 && totalComfortRecords > 0) {
+  if (meets(canAdjustTempRate, 80) && totalComfortRecords > 0) {
     strengths.push(
       `${canAdjustTempRate}% of children can adjust their bedroom temperature — promoting independence and personal comfort.`,
     );
@@ -710,21 +709,21 @@ export function computeBedroomTemperatureVentilation(
 
   const concerns: string[] = [];
 
-  if (temperatureMonitoringRate < 40 && totalTempRecords > 0) {
+  if (below(temperatureMonitoringRate, 40) && totalTempRecords > 0) {
     concerns.push(
       `Only ${temperatureMonitoringRate}% of bedroom temperature readings within target range — the majority of bedrooms are not maintained at safe, comfortable temperatures, posing a risk to children's health and wellbeing.`,
     );
-  } else if (temperatureMonitoringRate < 70 && temperatureMonitoringRate >= 40 && totalTempRecords > 0) {
+  } else if (below(temperatureMonitoringRate, 70) && meets(temperatureMonitoringRate, 40) && totalTempRecords > 0) {
     concerns.push(
       `Temperature monitoring compliance at ${temperatureMonitoringRate}% — bedroom temperatures are not consistently within acceptable ranges, indicating scope for improved temperature management.`,
     );
   }
 
-  if (ventilationRate < 50 && totalVentRecords > 0) {
+  if (below(ventilationRate, 50) && totalVentRecords > 0) {
     concerns.push(
       `Only ${ventilationRate}% adequate ventilation — the majority of bedroom ventilation checks reveal inadequate air quality, risking children's respiratory health and comfort.`,
     );
-  } else if (ventilationRate < 80 && ventilationRate >= 50 && totalVentRecords > 0) {
+  } else if (below(ventilationRate, 80) && meets(ventilationRate, 50) && totalVentRecords > 0) {
     concerns.push(
       `Ventilation adequacy at ${ventilationRate}% — inconsistent bedroom ventilation requires attention to ensure healthy indoor air quality across all bedrooms.`,
     );
@@ -740,11 +739,11 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (windowComplianceRate < 50 && totalWindowRecords > 0) {
+  if (below(windowComplianceRate, 50) && totalWindowRecords > 0) {
     concerns.push(
       `Only ${windowComplianceRate}% window compliance — significant non-compliance with window safety and ventilation standards creates potential safety risks in children's bedrooms.`,
     );
-  } else if (windowComplianceRate < 70 && windowComplianceRate >= 50 && totalWindowRecords > 0) {
+  } else if (below(windowComplianceRate, 70) && meets(windowComplianceRate, 50) && totalWindowRecords > 0) {
     concerns.push(
       `Window compliance at ${windowComplianceRate}% — not all bedroom windows meet safety and ventilation requirements, requiring attention.`,
     );
@@ -760,73 +759,73 @@ export function computeBedroomTemperatureVentilation(
     );
   }
 
-  if (mouldRate >= 20 && totalVentRecords > 0) {
+  if (meets(mouldRate, 20) && totalVentRecords > 0) {
     concerns.push(
       `Mould detected in ${mouldRate}% of ventilation checks — mould presence in children's bedrooms is a serious health hazard requiring urgent remediation and improved ventilation.`,
     );
-  } else if (mouldRate > 0 && mouldRate < 20 && totalVentRecords > 0) {
+  } else if (above(mouldRate, 0) && below(mouldRate, 20) && totalVentRecords > 0) {
     concerns.push(
       `Mould detected in ${mouldRate}% of ventilation checks — any mould in children's bedrooms requires attention to protect respiratory health.`,
     );
   }
 
-  if (condensationRate >= 30 && totalVentRecords > 0) {
+  if (meets(condensationRate, 30) && totalVentRecords > 0) {
     concerns.push(
       `Condensation present in ${condensationRate}% of ventilation checks — persistent condensation indicates inadequate ventilation and risks mould development in children's bedrooms.`,
     );
-  } else if (condensationRate >= 15 && condensationRate < 30 && totalVentRecords > 0) {
+  } else if (meets(condensationRate, 15) && below(condensationRate, 30) && totalVentRecords > 0) {
     concerns.push(
       `Condensation present in ${condensationRate}% of bedroom ventilation checks — this may indicate ventilation issues that could lead to mould if unaddressed.`,
     );
   }
 
-  if (serviceOverdueRate >= 20 && totalHeatingChecks > 0) {
+  if (meets(serviceOverdueRate, 20) && totalHeatingChecks > 0) {
     concerns.push(
       `${serviceOverdueRate}% of heating systems have overdue servicing — failure to maintain heating equipment compromises both safety and reliability of bedroom heating.`,
     );
   }
 
-  if (actionResponseRate < 50 && totalActionDenom > 0) {
+  if (below(actionResponseRate, 50) && totalActionDenom > 0) {
     concerns.push(
       `Only ${actionResponseRate}% action response rate — temperature, ventilation, and heating concerns are not being adequately addressed, leaving children in uncomfortable or unsafe conditions.`,
     );
-  } else if (actionResponseRate < 70 && actionResponseRate >= 50 && totalActionDenom > 0) {
+  } else if (below(actionResponseRate, 70) && meets(actionResponseRate, 50) && totalActionDenom > 0) {
     concerns.push(
       `Action response rate at ${actionResponseRate}% — some identified temperature and ventilation issues are not being resolved in a timely manner.`,
     );
   }
 
-  if (childCoverage < 50 && total_children > 0 && totalComfortRecords > 0) {
+  if (below(childCoverage, 50) && total_children > 0 && totalComfortRecords > 0) {
     concerns.push(
       `Only ${childCoverage}% of children have had bedroom comfort assessed — many children's views on their sleeping environment are not being captured.`,
     );
   }
 
-  if (poorConditionRate >= 20 && totalWindowRecords > 0) {
+  if (meets(poorConditionRate, 20) && totalWindowRecords > 0) {
     concerns.push(
       `${poorConditionRate}% of windows in poor or damaged condition — deteriorating windows compromise both thermal efficiency and safety in children's bedrooms.`,
     );
   }
 
-  if (nightTimeComplianceRate < 50 && nightTimeRecords > 0) {
+  if (below(nightTimeComplianceRate, 50) && nightTimeRecords > 0) {
     concerns.push(
       `Only ${nightTimeComplianceRate}% of night-time temperature readings within range — children may be sleeping in bedrooms that are too cold or too warm, affecting rest quality and health.`,
     );
   }
 
-  if (fallRiskAssessedRate < 50 && totalWindowRecords > 0) {
+  if (below(fallRiskAssessedRate, 50) && totalWindowRecords > 0) {
     concerns.push(
       `Only ${fallRiskAssessedRate}% of windows have fall risk assessments — inadequate assessment of fall risks from windows in children's bedrooms is a safety concern.`,
     );
   }
 
-  if (childVoiceCapturedRate < 50 && totalComfortRecords > 0) {
+  if (below(childVoiceCapturedRate, 50) && totalComfortRecords > 0) {
     concerns.push(
       `Only ${childVoiceCapturedRate}% of comfort assessments capture the child's voice — children's views on their bedroom environment are not being adequately sought or recorded.`,
     );
   }
 
-  if (beddingAdequateRate < 70 && totalComfortRecords > 0) {
+  if (below(beddingAdequateRate, 70) && totalComfortRecords > 0) {
     concerns.push(
       `Only ${beddingAdequateRate}% of children report adequate bedding — insufficient bedding provision affects children's comfort and ability to sleep well.`,
     );
@@ -837,7 +836,7 @@ export function computeBedroomTemperatureVentilation(
   const recommendations: BedroomTempRecommendation[] = [];
   let rank = 0;
 
-  if (temperatureMonitoringRate < 40 && totalTempRecords > 0) {
+  if (below(temperatureMonitoringRate, 40) && totalTempRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -847,7 +846,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (ventilationRate < 50 && totalVentRecords > 0) {
+  if (below(ventilationRate, 50) && totalVentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -867,7 +866,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (mouldRate >= 20 && totalVentRecords > 0) {
+  if (meets(mouldRate, 20) && totalVentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -887,7 +886,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (windowComplianceRate < 50 && totalWindowRecords > 0) {
+  if (below(windowComplianceRate, 50) && totalWindowRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -897,7 +896,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (actionResponseRate < 50 && totalActionDenom > 0) {
+  if (below(actionResponseRate, 50) && totalActionDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -907,7 +906,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (serviceOverdueRate >= 20 && totalHeatingChecks > 0) {
+  if (meets(serviceOverdueRate, 20) && totalHeatingChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -917,7 +916,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (condensationRate >= 30 && totalVentRecords > 0) {
+  if (meets(condensationRate, 30) && totalVentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,8 +927,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    temperatureMonitoringRate >= 40 &&
-    temperatureMonitoringRate < 70 &&
+    meets(temperatureMonitoringRate, 40) &&
+    below(temperatureMonitoringRate, 70) &&
     totalTempRecords > 0
   ) {
     recommendations.push({
@@ -942,8 +941,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    ventilationRate >= 50 &&
-    ventilationRate < 80 &&
+    meets(ventilationRate, 50) &&
+    below(ventilationRate, 80) &&
     totalVentRecords > 0
   ) {
     recommendations.push({
@@ -970,8 +969,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    windowComplianceRate >= 50 &&
-    windowComplianceRate < 70 &&
+    meets(windowComplianceRate, 50) &&
+    below(windowComplianceRate, 70) &&
     totalWindowRecords > 0
   ) {
     recommendations.push({
@@ -984,8 +983,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    childCoverage < 80 &&
-    childCoverage >= 50 &&
+    below(childCoverage, 80) &&
+    meets(childCoverage, 50) &&
     total_children > 0 &&
     totalComfortRecords > 0
   ) {
@@ -999,7 +998,7 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    childVoiceCapturedRate < 70 &&
+    below(childVoiceCapturedRate, 70) &&
     totalComfortRecords > 0
   ) {
     recommendations.push({
@@ -1026,7 +1025,7 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    calibrationRate < 70 &&
+    below(calibrationRate, 70) &&
     totalTempRecords > 0
   ) {
     recommendations.push({
@@ -1039,7 +1038,7 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    beddingSeasonalRate < 70 &&
+    below(beddingSeasonalRate, 70) &&
     totalComfortRecords > 0
   ) {
     recommendations.push({
@@ -1057,14 +1056,14 @@ export function computeBedroomTemperatureVentilation(
 
   // -- Critical insights --
 
-  if (temperatureMonitoringRate < 40 && totalTempRecords > 0) {
+  if (below(temperatureMonitoringRate, 40) && totalTempRecords > 0) {
     insights.push({
       text: `Only ${temperatureMonitoringRate}% of bedroom temperature readings within target range. Children are living and sleeping in bedrooms that are consistently too hot or too cold. Ofsted expects the home to maintain comfortable, safe living conditions under Reg 25 — this level of non-compliance suggests systemic failure in premises management.`,
       severity: "critical",
     });
   }
 
-  if (ventilationRate < 50 && totalVentRecords > 0) {
+  if (below(ventilationRate, 50) && totalVentRecords > 0) {
     insights.push({
       text: `Only ${ventilationRate}% adequate ventilation across bedroom checks. Poor ventilation leads to stale air, condensation, and mould — all of which directly affect children's respiratory health and quality of sleep. Inadequate ventilation in sleeping environments is a serious premises safety concern.`,
       severity: "critical",
@@ -1078,7 +1077,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (mouldRate >= 20 && totalVentRecords > 0) {
+  if (meets(mouldRate, 20) && totalVentRecords > 0) {
     insights.push({
       text: `Mould detected in ${mouldRate}% of bedroom ventilation checks. Mould in children's sleeping environments is a significant health hazard associated with respiratory conditions, allergies, and weakened immune systems. This requires immediate professional remediation and root-cause analysis.`,
       severity: "critical",
@@ -1099,7 +1098,7 @@ export function computeBedroomTemperatureVentilation(
     });
   }
 
-  if (windowComplianceRate < 50 && totalWindowRecords > 0) {
+  if (below(windowComplianceRate, 50) && totalWindowRecords > 0) {
     insights.push({
       text: `Only ${windowComplianceRate}% window compliance. Significant non-compliance with window safety standards — including missing restrictors, lack of safety glass, or unassessed fall risks — creates potential for serious injury. Window safety in children's bedrooms is a core premises safety requirement.`,
       severity: "critical",
@@ -1109,8 +1108,8 @@ export function computeBedroomTemperatureVentilation(
   // -- Warning insights --
 
   if (
-    temperatureMonitoringRate >= 40 &&
-    temperatureMonitoringRate < 70 &&
+    meets(temperatureMonitoringRate, 40) &&
+    below(temperatureMonitoringRate, 70) &&
     totalTempRecords > 0
   ) {
     insights.push({
@@ -1120,8 +1119,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    ventilationRate >= 50 &&
-    ventilationRate < 80 &&
+    meets(ventilationRate, 50) &&
+    below(ventilationRate, 80) &&
     totalVentRecords > 0
   ) {
     insights.push({
@@ -1142,8 +1141,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    windowComplianceRate >= 50 &&
-    windowComplianceRate < 70 &&
+    meets(windowComplianceRate, 50) &&
+    below(windowComplianceRate, 70) &&
     totalWindowRecords > 0
   ) {
     insights.push({
@@ -1164,8 +1163,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    actionResponseRate >= 50 &&
-    actionResponseRate < 70 &&
+    meets(actionResponseRate, 50) &&
+    below(actionResponseRate, 70) &&
     totalActionDenom > 0
   ) {
     insights.push({
@@ -1175,8 +1174,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    condensationRate >= 15 &&
-    condensationRate < 30 &&
+    meets(condensationRate, 15) &&
+    below(condensationRate, 30) &&
     totalVentRecords > 0
   ) {
     insights.push({
@@ -1197,8 +1196,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    serviceOverdueRate >= 10 &&
-    serviceOverdueRate < 20 &&
+    meets(serviceOverdueRate, 10) &&
+    below(serviceOverdueRate, 20) &&
     totalHeatingChecks > 0
   ) {
     insights.push({
@@ -1208,8 +1207,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    calibrationRate >= 50 &&
-    calibrationRate < 70 &&
+    meets(calibrationRate, 50) &&
+    below(calibrationRate, 70) &&
     totalTempRecords > 0
   ) {
     insights.push({
@@ -1242,8 +1241,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    temperatureMonitoringRate >= 90 &&
-    nightTimeComplianceRate >= 90 &&
+    meets(temperatureMonitoringRate, 90) &&
+    meets(nightTimeComplianceRate, 90) &&
     totalTempRecords > 0 &&
     nightTimeRecords > 0
   ) {
@@ -1254,9 +1253,9 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    ventilationRate >= 95 &&
+    meets(ventilationRate, 95) &&
     mouldRate === 0 &&
-    condensationRate < 5 &&
+    below(condensationRate, 5) &&
     totalVentRecords > 0
   ) {
     insights.push({
@@ -1277,7 +1276,7 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    actionResponseRate >= 90 &&
+    meets(actionResponseRate, 90) &&
     totalActionDenom > 0
   ) {
     insights.push({
@@ -1287,8 +1286,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    windowComplianceRate >= 90 &&
-    fallRiskAssessedRate >= 90 &&
+    meets(windowComplianceRate, 90) &&
+    meets(fallRiskAssessedRate, 90) &&
     totalWindowRecords > 0
   ) {
     insights.push({
@@ -1298,8 +1297,8 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    childCoverage >= 100 &&
-    childVoiceCapturedRate >= 90 &&
+    meets(childCoverage, 100) &&
+    meets(childVoiceCapturedRate, 90) &&
     total_children > 0 &&
     totalComfortRecords > 0
   ) {
@@ -1311,8 +1310,8 @@ export function computeBedroomTemperatureVentilation(
 
   if (
     (heatingCheckRate ?? 0) >= 90 &&
-    safetyCheckRate >= 90 &&
-    engineerCertifiedRate >= 90 &&
+    meets(safetyCheckRate, 90) &&
+    meets(engineerCertifiedRate, 90) &&
     totalHeatingChecks > 0
   ) {
     insights.push({
@@ -1322,9 +1321,9 @@ export function computeBedroomTemperatureVentilation(
   }
 
   if (
-    changesActionedRate >= 90 &&
+    meets(changesActionedRate, 90) &&
     changesRequested > 0 &&
-    childVoiceCapturedRate >= 80 &&
+    meets(childVoiceCapturedRate, 80) &&
     totalComfortRecords > 0
   ) {
     insights.push({

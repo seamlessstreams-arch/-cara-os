@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2,
@@ -130,8 +131,8 @@ export function HomeBehaviourIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ThumbsUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.behaviour_profile.positive_ratio >= 60 ? "text-[--cs-success]" :
-                  d.behaviour_profile.positive_ratio >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.behaviour_profile.positive_ratio, 60) ? "text-[--cs-success]" :
+                  meets(d.behaviour_profile.positive_ratio, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.behaviour_profile.positive_ratio}%
                 </p>
@@ -144,8 +145,8 @@ export function HomeBehaviourIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Sparkles className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.reinforcement_profile.reward_ratio >= 60 ? "text-[--cs-success]" :
-                  d.reinforcement_profile.reward_ratio >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.reinforcement_profile.reward_ratio, 60) ? "text-[--cs-success]" :
+                  meets(d.reinforcement_profile.reward_ratio, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.reinforcement_profile.reward_ratio}%
                 </p>
@@ -159,7 +160,7 @@ export function HomeBehaviourIntelligenceCard() {
                 <Scale className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.reinforcement_profile.proportionality_rate === 100 ? "text-[--cs-success]" :
-                  d.reinforcement_profile.proportionality_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.reinforcement_profile.proportionality_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.reinforcement_profile.proportionality_rate}%
                 </p>
@@ -172,8 +173,8 @@ export function HomeBehaviourIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Repeat className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.restorative_profile.relationship_repair_rate >= 80 ? "text-[--cs-success]" :
-                  d.restorative_profile.relationship_repair_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.restorative_profile.relationship_repair_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.restorative_profile.relationship_repair_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.restorative_profile.relationship_repair_rate}%
                 </p>
@@ -190,7 +191,7 @@ export function HomeBehaviourIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Behaviour</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Logs: <span className="font-medium text-slate-600">{d.behaviour_profile.total_logs_90d}</span> (90d)</p>
-                <p>ABC docs: <span className={cn("font-medium", d.behaviour_profile.abc_documentation_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.behaviour_profile.abc_documentation_rate}%</span></p>
+                <p>ABC docs: <span className={cn("font-medium", meets(d.behaviour_profile.abc_documentation_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.behaviour_profile.abc_documentation_rate}%</span></p>
                 {d.behaviour_profile.high_critical_count > 0 && (
                   <p>High/critical: <span className="font-medium text-red-600">{d.behaviour_profile.high_critical_count}</span></p>
                 )}
@@ -199,8 +200,8 @@ export function HomeBehaviourIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Restorative</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Child voice: <span className={cn("font-medium", d.restorative_profile.child_voice_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restorative_profile.child_voice_rate}%</span></p>
-                <p>BSP linked: <span className={cn("font-medium", d.restorative_profile.bsp_linked_rate >= 60 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restorative_profile.bsp_linked_rate}%</span></p>
+                <p>Child voice: <span className={cn("font-medium", meets(d.restorative_profile.child_voice_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restorative_profile.child_voice_rate}%</span></p>
+                <p>BSP linked: <span className={cn("font-medium", meets(d.restorative_profile.bsp_linked_rate, 60) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restorative_profile.bsp_linked_rate}%</span></p>
                 {hasRepeat && (
                   <p>Repeat concerns: <span className="font-medium text-red-600">{d.behaviour_profile.repeat_concern_children.length}</span></p>
                 )}

@@ -11,7 +11,7 @@
 //             enuresisEmotionalWellbeingRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -181,12 +181,18 @@ export interface BedwettingEnuresisResult {
   headline: string;
   total_management_plans: number;
   total_support_interactions: number;
-  management_plan_rate: number;
-  discreet_support_rate: number;
-  dignity_preservation_rate: number;
-  medical_referral_rate: number;
-  emotional_wellbeing_rate: number;
-  child_confidence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  management_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  discreet_support_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignity_preservation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medical_referral_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotional_wellbeing_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_confidence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: BedwettingEnuresisRecommendation[];
@@ -195,8 +201,9 @@ export interface BedwettingEnuresisResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -507,54 +514,54 @@ export function computeBedwettingEnuresisSupport(
   let score = 52;
 
   // --- Bonus 1: managementPlanRate (>=90: +4, >=70: +2) ---
-  if (managementPlanRate >= 90) score += 4;
-  else if (managementPlanRate >= 70) score += 2;
+  if (meets(managementPlanRate, 90)) score += 4;
+  else if (meets(managementPlanRate, 70)) score += 2;
 
   // --- Bonus 2: discreetSupportRate (>=90: +4, >=70: +2) ---
-  if (discreetSupportRate >= 90) score += 4;
-  else if (discreetSupportRate >= 70) score += 2;
+  if (meets(discreetSupportRate, 90)) score += 4;
+  else if (meets(discreetSupportRate, 70)) score += 2;
 
   // --- Bonus 3: dignityPreservationRate (>=90: +4, >=70: +2) ---
-  if (dignityPreservationRate >= 90) score += 4;
-  else if (dignityPreservationRate >= 70) score += 2;
+  if (meets(dignityPreservationRate, 90)) score += 4;
+  else if (meets(dignityPreservationRate, 70)) score += 2;
 
   // --- Bonus 4: medicalReferralRate (>=85: +3, >=65: +1) ---
-  if (medicalReferralRate >= 85) score += 3;
-  else if (medicalReferralRate >= 65) score += 1;
+  if (meets(medicalReferralRate, 85)) score += 3;
+  else if (meets(medicalReferralRate, 65)) score += 1;
 
   // --- Bonus 5: emotionalWellbeingRate (>=90: +3, >=70: +1) ---
-  if (emotionalWellbeingRate >= 90) score += 3;
-  else if (emotionalWellbeingRate >= 70) score += 1;
+  if (meets(emotionalWellbeingRate, 90)) score += 3;
+  else if (meets(emotionalWellbeingRate, 70)) score += 1;
 
   // --- Bonus 6: childConfidenceRate (>=90: +3, >=70: +1) ---
-  if (childConfidenceRate >= 90) score += 3;
-  else if (childConfidenceRate >= 70) score += 1;
+  if (meets(childConfidenceRate, 90)) score += 3;
+  else if (meets(childConfidenceRate, 70)) score += 1;
 
   // --- Bonus 7: planReviewRate (>=90: +3, >=70: +1) ---
-  if (planReviewRate >= 90) score += 3;
-  else if (planReviewRate >= 70) score += 1;
+  if (meets(planReviewRate, 90)) score += 3;
+  else if (meets(planReviewRate, 70)) score += 1;
 
   // --- Bonus 8: followUpCompletionRate (>=90: +2, >=70: +1) ---
-  if (followUpCompletionRate >= 90) score += 2;
-  else if (followUpCompletionRate >= 70) score += 1;
+  if (meets(followUpCompletionRate, 90)) score += 2;
+  else if (meets(followUpCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: noBlamingRate (>=95: +2, >=80: +1) ---
-  if (noBlamingRate >= 95) score += 2;
-  else if (noBlamingRate >= 80) score += 1;
+  if (meets(noBlamingRate, 95)) score += 2;
+  else if (meets(noBlamingRate, 80)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // Penalty 1: managementPlanRate < 50 → -5
-  if (managementPlanRate < 50 && management_plan_records.length > 0) score -= 5;
+  if (below(managementPlanRate, 50) && management_plan_records.length > 0) score -= 5;
 
   // Penalty 2: discreetSupportRate < 50 → -5
-  if (discreetSupportRate < 50 && discreet_support_records.length > 0) score -= 5;
+  if (below(discreetSupportRate, 50) && discreet_support_records.length > 0) score -= 5;
 
   // Penalty 3: dignityPreservationRate < 50 → -5
-  if (dignityPreservationRate < 50 && dignity_preservation_records.length > 0) score -= 5;
+  if (below(dignityPreservationRate, 50) && dignity_preservation_records.length > 0) score -= 5;
 
   // Penalty 4: significantImpactRate > 50 → -3
-  if (significantImpactRate > 50 && emotional_wellbeing_records.length > 0) score -= 3;
+  if (above(significantImpactRate, 50) && emotional_wellbeing_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -564,141 +571,141 @@ export function computeBedwettingEnuresisSupport(
 
   const strengths: string[] = [];
 
-  if (managementPlanRate >= 90 && totalManagementPlans > 0) {
+  if (meets(managementPlanRate, 90) && totalManagementPlans > 0) {
     strengths.push(
       `${managementPlanRate}% management plan quality — enuresis management plans are comprehensive, actively reviewed, child-centred, and staff are properly trained, demonstrating outstanding care planning for children experiencing bedwetting.`,
     );
-  } else if (managementPlanRate >= 70 && totalManagementPlans > 0) {
+  } else if (meets(managementPlanRate, 70) && totalManagementPlans > 0) {
     strengths.push(
       `${managementPlanRate}% management plan quality — the home maintains good-quality enuresis management plans with generally strong coverage of key elements.`,
     );
   }
 
-  if (discreetSupportRate >= 90 && totalDiscreetSupport > 0) {
+  if (meets(discreetSupportRate, 90) && totalDiscreetSupport > 0) {
     strengths.push(
       `${discreetSupportRate}% discreet support quality — bedwetting support is consistently handled with exceptional discretion, preserving children's privacy and maintaining their dignity at all times.`,
     );
-  } else if (discreetSupportRate >= 70 && totalDiscreetSupport > 0) {
+  } else if (meets(discreetSupportRate, 70) && totalDiscreetSupport > 0) {
     strengths.push(
       `${discreetSupportRate}% discreet support quality — the home generally handles bedwetting support with appropriate discretion and respect for children's privacy.`,
     );
   }
 
-  if (dignityPreservationRate >= 90 && totalDignityRecords > 0) {
+  if (meets(dignityPreservationRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `${dignityPreservationRate}% dignity preservation — the home consistently protects children's dignity through private laundry arrangements, discreet storage, sensitive language, and empowering children to manage their own care.`,
     );
-  } else if (dignityPreservationRate >= 70 && totalDignityRecords > 0) {
+  } else if (meets(dignityPreservationRate, 70) && totalDignityRecords > 0) {
     strengths.push(
       `${dignityPreservationRate}% dignity preservation — the home generally takes appropriate steps to protect children's dignity around bedwetting.`,
     );
   }
 
-  if (medicalReferralRate >= 85 && totalMedicalReferrals > 0) {
+  if (meets(medicalReferralRate, 85) && totalMedicalReferrals > 0) {
     strengths.push(
       `${medicalReferralRate}% medical referral quality — referrals are accepted, appointments attended, outcomes documented, and professional advice shared with staff, demonstrating excellent health care coordination under Reg 14.`,
     );
-  } else if (medicalReferralRate >= 65 && totalMedicalReferrals > 0) {
+  } else if (meets(medicalReferralRate, 65) && totalMedicalReferrals > 0) {
     strengths.push(
       `${medicalReferralRate}% medical referral quality — the home generally manages enuresis-related medical referrals effectively.`,
     );
   }
 
-  if (emotionalWellbeingRate >= 90 && totalEmotionalRecords > 0) {
+  if (meets(emotionalWellbeingRate, 90) && totalEmotionalRecords > 0) {
     strengths.push(
       `${emotionalWellbeingRate}% emotional wellbeing support — children feel supported, their voices are captured, coping strategies are in place, and they have confidence in managing their bedwetting.`,
     );
-  } else if (emotionalWellbeingRate >= 70 && totalEmotionalRecords > 0) {
+  } else if (meets(emotionalWellbeingRate, 70) && totalEmotionalRecords > 0) {
     strengths.push(
       `${emotionalWellbeingRate}% emotional wellbeing support — the home generally supports children's emotional needs around bedwetting effectively.`,
     );
   }
 
-  if (childConfidenceRate >= 90 && totalEmotionalRecords > 0) {
+  if (meets(childConfidenceRate, 90) && totalEmotionalRecords > 0) {
     strengths.push(
       `${childConfidenceRate}% child confidence in self-management — children feel empowered and confident in managing their bedwetting, reflecting sensitive staff practice and effective skill-building.`,
     );
-  } else if (childConfidenceRate >= 70 && totalEmotionalRecords > 0) {
+  } else if (meets(childConfidenceRate, 70) && totalEmotionalRecords > 0) {
     strengths.push(
       `${childConfidenceRate}% child confidence in self-management — most children feel capable of managing aspects of their bedwetting with appropriate support.`,
     );
   }
 
-  if (noBlamingRate >= 95 && totalDignityRecords > 0) {
+  if (meets(noBlamingRate, 95) && totalDignityRecords > 0) {
     strengths.push(
       `${noBlamingRate}% no-blame approach — staff consistently avoid blaming or shaming children about bedwetting, creating a safe and accepting environment that normalises enuresis.`,
     );
-  } else if (noBlamingRate >= 80 && totalDignityRecords > 0) {
+  } else if (meets(noBlamingRate, 80) && totalDignityRecords > 0) {
     strengths.push(
       `${noBlamingRate}% no-blame approach — staff generally avoid blaming or shaming children, maintaining a supportive atmosphere.`,
     );
   }
 
-  if (peerAwarenessRate >= 90 && totalDignityRecords > 0) {
+  if (meets(peerAwarenessRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `${peerAwarenessRate}% peer privacy maintained — other children are consistently kept unaware of bedwetting incidents, protecting children from potential embarrassment and peer teasing.`,
     );
-  } else if (peerAwarenessRate >= 70 && totalDignityRecords > 0) {
+  } else if (meets(peerAwarenessRate, 70) && totalDignityRecords > 0) {
     strengths.push(
       `${peerAwarenessRate}% peer privacy maintained — the home generally prevents other children from becoming aware of bedwetting incidents.`,
     );
   }
 
-  if (planReviewRate >= 90 && totalManagementPlans > 0) {
+  if (meets(planReviewRate, 90) && totalManagementPlans > 0) {
     strengths.push(
       `${planReviewRate}% of management plans reviewed — the home actively monitors and adapts enuresis management approaches, ensuring plans remain current and effective.`,
     );
-  } else if (planReviewRate >= 70 && totalManagementPlans > 0) {
+  } else if (meets(planReviewRate, 70) && totalManagementPlans > 0) {
     strengths.push(
       `${planReviewRate}% of management plans reviewed — the home generally reviews enuresis plans to assess effectiveness.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpRequired > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% medical follow-up completion — all required follow-up appointments and actions are completed, demonstrating thorough health care oversight.`,
     );
-  } else if (followUpCompletionRate >= 70 && followUpRequired > 0) {
+  } else if (meets(followUpCompletionRate, 70) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% medical follow-up completion — the home generally completes required follow-up actions from medical referrals.`,
     );
   }
 
-  if (childInvolvementRate >= 90 && totalManagementPlans > 0) {
+  if (meets(childInvolvementRate, 90) && totalManagementPlans > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in care planning — children are actively consulted about their enuresis management, ensuring plans reflect their preferences and promote autonomy.`,
     );
-  } else if (childInvolvementRate >= 70 && totalManagementPlans > 0) {
+  } else if (meets(childInvolvementRate, 70) && totalManagementPlans > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in care planning — most children are consulted about their management plans.`,
     );
   }
 
-  if (selfManagementRate >= 80 && totalDignityRecords > 0) {
+  if (meets(selfManagementRate, 80) && totalDignityRecords > 0) {
     strengths.push(
       `${selfManagementRate}% self-management skills teaching — the home actively builds children's independence by teaching them to manage aspects of their bedwetting themselves, promoting dignity and life skills.`,
     );
   }
 
-  if (overnightSupportRate >= 80 && totalDignityRecords > 0) {
+  if (meets(overnightSupportRate, 80) && totalDignityRecords > 0) {
     strengths.push(
       `${overnightSupportRate}% overnight stay support — children who experience bedwetting are supported to participate in sleepovers and overnight activities, ensuring they are not excluded from normal childhood experiences.`,
     );
   }
 
-  if (copingStrategiesRate >= 80 && totalEmotionalRecords > 0) {
+  if (meets(copingStrategiesRate, 80) && totalEmotionalRecords > 0) {
     strengths.push(
       `${copingStrategiesRate}% of children have coping strategies in place — the home ensures children have practical and emotional tools to manage the impact of bedwetting on their daily lives.`,
     );
   }
 
-  if (adviceSharedRate >= 90 && totalMedicalReferrals > 0) {
+  if (meets(adviceSharedRate, 90) && totalMedicalReferrals > 0) {
     strengths.push(
       `${adviceSharedRate}% professional advice shared with staff — medical guidance is consistently cascaded to the team, ensuring all staff provide consistent, evidence-based support.`,
     );
   }
 
-  if (staffTrainedRate >= 90 && totalManagementPlans > 0) {
+  if (meets(staffTrainedRate, 90) && totalManagementPlans > 0) {
     strengths.push(
       `${staffTrainedRate}% staff trained on individual plans — all staff supporting children with enuresis understand and can implement each child's specific management plan.`,
     );
@@ -708,99 +715,99 @@ export function computeBedwettingEnuresisSupport(
 
   const concerns: string[] = [];
 
-  if (managementPlanRate < 50 && totalManagementPlans > 0) {
+  if (below(managementPlanRate, 50) && totalManagementPlans > 0) {
     concerns.push(
       `Only ${managementPlanRate}% management plan quality — enuresis management plans lack key elements: plans may not be active, reviewed, child-centred, or staff may not be trained. This means children's bedwetting is not being managed systematically.`,
     );
-  } else if (managementPlanRate < 70 && managementPlanRate >= 50 && totalManagementPlans > 0) {
+  } else if (below(managementPlanRate, 70) && meets(managementPlanRate, 50) && totalManagementPlans > 0) {
     concerns.push(
       `Management plan quality at ${managementPlanRate}% — some enuresis plans are missing key elements such as regular reviews, child involvement, or staff training, reducing their effectiveness.`,
     );
   }
 
-  if (discreetSupportRate < 50 && totalDiscreetSupport > 0) {
+  if (below(discreetSupportRate, 50) && totalDiscreetSupport > 0) {
     concerns.push(
       `Only ${discreetSupportRate}% discreet support quality — bedwetting support is frequently not handled discreetly, potentially exposing children to embarrassment and undermining their dignity. This is a serious safeguarding concern.`,
     );
-  } else if (discreetSupportRate < 70 && discreetSupportRate >= 50 && totalDiscreetSupport > 0) {
+  } else if (below(discreetSupportRate, 70) && meets(discreetSupportRate, 50) && totalDiscreetSupport > 0) {
     concerns.push(
       `Discreet support quality at ${discreetSupportRate}% — bedwetting support is not consistently handled with appropriate discretion, putting some children at risk of embarrassment.`,
     );
   }
 
-  if (dignityPreservationRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityPreservationRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Only ${dignityPreservationRate}% dignity preservation — the home is failing to protect children's dignity around bedwetting across multiple domains including laundry, storage, language, and peer awareness. Children deserve to have their privacy absolutely protected in this sensitive area.`,
     );
-  } else if (dignityPreservationRate < 70 && dignityPreservationRate >= 50 && totalDignityRecords > 0) {
+  } else if (below(dignityPreservationRate, 70) && meets(dignityPreservationRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Dignity preservation at ${dignityPreservationRate}% — some aspects of dignity protection around bedwetting are inconsistent, with gaps in privacy arrangements or staff practice.`,
     );
   }
 
-  if (medicalReferralRate < 50 && totalMedicalReferrals > 0) {
+  if (below(medicalReferralRate, 50) && totalMedicalReferrals > 0) {
     concerns.push(
       `Only ${medicalReferralRate}% medical referral quality — enuresis-related medical referrals are not being effectively managed: appointments may be missed, outcomes not documented, or professional advice not shared with staff. This undermines Reg 14 health care requirements.`,
     );
-  } else if (medicalReferralRate < 65 && medicalReferralRate >= 50 && totalMedicalReferrals > 0) {
+  } else if (below(medicalReferralRate, 65) && meets(medicalReferralRate, 50) && totalMedicalReferrals > 0) {
     concerns.push(
       `Medical referral quality at ${medicalReferralRate}% — some medical referrals for enuresis are not being fully followed through, with gaps in attendance, documentation, or information sharing.`,
     );
   }
 
-  if (emotionalWellbeingRate < 50 && totalEmotionalRecords > 0) {
+  if (below(emotionalWellbeingRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `Only ${emotionalWellbeingRate}% emotional wellbeing support — children experiencing bedwetting are not feeling adequately supported emotionally, their voices are not being captured, and coping strategies are insufficient. The emotional impact of enuresis requires sensitive, proactive intervention.`,
     );
-  } else if (emotionalWellbeingRate < 70 && emotionalWellbeingRate >= 50 && totalEmotionalRecords > 0) {
+  } else if (below(emotionalWellbeingRate, 70) && meets(emotionalWellbeingRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `Emotional wellbeing support at ${emotionalWellbeingRate}% — some children's emotional needs around bedwetting are not being fully addressed, with gaps in voice capture, coping support, or confidence building.`,
     );
   }
 
-  if (childConfidenceRate < 50 && totalEmotionalRecords > 0) {
+  if (below(childConfidenceRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `Only ${childConfidenceRate}% child confidence in self-management — most children do not feel confident managing their bedwetting, suggesting the home needs to do more to empower children and build their independence around enuresis care.`,
     );
-  } else if (childConfidenceRate < 70 && childConfidenceRate >= 50 && totalEmotionalRecords > 0) {
+  } else if (below(childConfidenceRate, 70) && meets(childConfidenceRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `Child confidence at ${childConfidenceRate}% — a significant proportion of children lack confidence in managing their bedwetting, indicating more work is needed on skill-building and empowerment.`,
     );
   }
 
-  if (significantImpactRate > 50 && totalEmotionalRecords > 0) {
+  if (above(significantImpactRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `${significantImpactRate}% of children experience significant or severe emotional impact from bedwetting — the high emotional burden on children indicates that current support strategies are not effectively mitigating the psychological effects of enuresis.`,
     );
-  } else if (significantImpactRate > 30 && significantImpactRate <= 50 && totalEmotionalRecords > 0) {
+  } else if (above(significantImpactRate, 30) && (significantImpactRate !== null && significantImpactRate <= 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `${significantImpactRate}% of children experience significant or severe emotional impact — a notable proportion of children are suffering emotionally from their bedwetting, requiring more targeted intervention.`,
     );
   }
 
-  if (embarrassmentRate > 50 && totalEmotionalRecords > 0) {
+  if (above(embarrassmentRate, 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `${embarrassmentRate}% of children feel embarrassed about bedwetting — more than half of children report feeling embarrassed, indicating that normalisation and dignity preservation approaches need strengthening.`,
     );
-  } else if (embarrassmentRate > 30 && embarrassmentRate <= 50 && totalEmotionalRecords > 0) {
+  } else if (above(embarrassmentRate, 30) && (embarrassmentRate !== null && embarrassmentRate <= 50) && totalEmotionalRecords > 0) {
     concerns.push(
       `${embarrassmentRate}% of children feel embarrassed about bedwetting — a notable proportion of children feel embarrassment, suggesting dignity preservation measures could be improved.`,
     );
   }
 
-  if (noBlamingRate < 90 && totalDignityRecords > 0) {
+  if (below(noBlamingRate, 90) && totalDignityRecords > 0) {
     concerns.push(
       `No-blame approach at ${noBlamingRate}% — some children are being blamed or shamed about bedwetting, which is wholly unacceptable. Every child must be supported without any suggestion that bedwetting is their fault.`,
     );
   }
 
-  if (bedtimeAnxietyRate > 40 && totalEmotionalRecords > 0) {
+  if (above(bedtimeAnxietyRate, 40) && totalEmotionalRecords > 0) {
     concerns.push(
       `${bedtimeAnxietyRate}% of children experience anxiety around bedtime related to bedwetting — bedtime has become a source of stress rather than rest, which compounds the negative impact on children's overall wellbeing.`,
     );
   }
 
-  if (avoidsSleepoverRate > 40 && totalEmotionalRecords > 0) {
+  if (above(avoidsSleepoverRate, 40) && totalEmotionalRecords > 0) {
     concerns.push(
       `${avoidsSleepoverRate}% of children avoid overnight activities due to bedwetting — children are self-excluding from normal childhood experiences, indicating the home needs to provide more proactive support for overnight stays.`,
     );
@@ -836,13 +843,13 @@ export function computeBedwettingEnuresisSupport(
     );
   }
 
-  if (peerImpactRate > 30 && totalEmotionalRecords > 0) {
+  if (above(peerImpactRate, 30) && totalEmotionalRecords > 0) {
     concerns.push(
       `${peerImpactRate}% of children report moderate or significant peer relationship impact from bedwetting — enuresis is affecting children's friendships and social connections, requiring active intervention.`,
     );
   }
 
-  if (schoolImpactRate > 30 && totalEmotionalRecords > 0) {
+  if (above(schoolImpactRate, 30) && totalEmotionalRecords > 0) {
     concerns.push(
       `${schoolImpactRate}% of children report moderate or significant school impact from bedwetting — enuresis is affecting children's education and school experience, which requires liaison with schools.`,
     );
@@ -853,7 +860,7 @@ export function computeBedwettingEnuresisSupport(
   const recommendations: BedwettingEnuresisRecommendation[] = [];
   let rank = 0;
 
-  if (managementPlanRate < 50 && totalManagementPlans > 0) {
+  if (below(managementPlanRate, 50) && totalManagementPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -863,7 +870,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (discreetSupportRate < 50 && totalDiscreetSupport > 0) {
+  if (below(discreetSupportRate, 50) && totalDiscreetSupport > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -873,7 +880,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (dignityPreservationRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityPreservationRate, 50) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -883,7 +890,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (noBlamingRate < 90 && totalDignityRecords > 0) {
+  if (below(noBlamingRate, 90) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -893,7 +900,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (significantImpactRate > 50 && totalEmotionalRecords > 0) {
+  if (above(significantImpactRate, 50) && totalEmotionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -933,7 +940,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (medicalReferralRate < 50 && totalMedicalReferrals > 0) {
+  if (below(medicalReferralRate, 50) && totalMedicalReferrals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -943,7 +950,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (emotionalWellbeingRate < 50 && totalEmotionalRecords > 0) {
+  if (below(emotionalWellbeingRate, 50) && totalEmotionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -953,7 +960,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (childConfidenceRate < 50 && totalEmotionalRecords > 0) {
+  if (below(childConfidenceRate, 50) && totalEmotionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -963,7 +970,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (followUpCompletionRate < 50 && followUpRequired > 0) {
+  if (below(followUpCompletionRate, 50) && followUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -973,7 +980,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (planReviewRate < 50 && totalManagementPlans > 0) {
+  if (below(planReviewRate, 50) && totalManagementPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -983,7 +990,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (childInvolvementRate < 50 && totalManagementPlans > 0) {
+  if (below(childInvolvementRate, 50) && totalManagementPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,8 +1001,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    managementPlanRate >= 50 &&
-    managementPlanRate < 70 &&
+    meets(managementPlanRate, 50) &&
+    below(managementPlanRate, 70) &&
     totalManagementPlans > 0
   ) {
     recommendations.push({
@@ -1008,8 +1015,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    discreetSupportRate >= 50 &&
-    discreetSupportRate < 70 &&
+    meets(discreetSupportRate, 50) &&
+    below(discreetSupportRate, 70) &&
     totalDiscreetSupport > 0
   ) {
     recommendations.push({
@@ -1022,8 +1029,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    dignityPreservationRate >= 50 &&
-    dignityPreservationRate < 70 &&
+    meets(dignityPreservationRate, 50) &&
+    below(dignityPreservationRate, 70) &&
     totalDignityRecords > 0
   ) {
     recommendations.push({
@@ -1036,8 +1043,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    emotionalWellbeingRate >= 50 &&
-    emotionalWellbeingRate < 70 &&
+    meets(emotionalWellbeingRate, 50) &&
+    below(emotionalWellbeingRate, 70) &&
     totalEmotionalRecords > 0
   ) {
     recommendations.push({
@@ -1049,7 +1056,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (avoidsSleepoverRate > 30 && totalEmotionalRecords > 0) {
+  if (above(avoidsSleepoverRate, 30) && totalEmotionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1060,8 +1067,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    medicalReferralRate >= 50 &&
-    medicalReferralRate < 65 &&
+    meets(medicalReferralRate, 50) &&
+    below(medicalReferralRate, 65) &&
     totalMedicalReferrals > 0
   ) {
     recommendations.push({
@@ -1074,8 +1081,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    childConfidenceRate >= 50 &&
-    childConfidenceRate < 70 &&
+    meets(childConfidenceRate, 50) &&
+    below(childConfidenceRate, 70) &&
     totalEmotionalRecords > 0
   ) {
     recommendations.push({
@@ -1087,7 +1094,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (selfManagementRate < 60 && totalDignityRecords > 0) {
+  if (below(selfManagementRate, 60) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1097,7 +1104,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (peerImpactRate > 30 && totalEmotionalRecords > 0) {
+  if (above(peerImpactRate, 30) && totalEmotionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1113,35 +1120,35 @@ export function computeBedwettingEnuresisSupport(
 
   // -- Critical insights --
 
-  if (managementPlanRate < 50 && totalManagementPlans > 0) {
+  if (below(managementPlanRate, 50) && totalManagementPlans > 0) {
     insights.push({
       text: `Only ${managementPlanRate}% management plan quality. Ofsted expects children's health needs, including enuresis, to be managed through structured, reviewed, and child-centred plans. Poor plan quality means children's bedwetting is not being addressed systematically, undermining Reg 14 compliance.`,
       severity: "critical",
     });
   }
 
-  if (discreetSupportRate < 50 && totalDiscreetSupport > 0) {
+  if (below(discreetSupportRate, 50) && totalDiscreetSupport > 0) {
     insights.push({
       text: `Only ${discreetSupportRate}% discreet support quality. Bedwetting is an intensely personal and sensitive issue for children in care. When support is not handled discreetly, children are exposed to potential humiliation, peer teasing, and lasting psychological harm. This represents a failure of basic dignity preservation.`,
       severity: "critical",
     });
   }
 
-  if (dignityPreservationRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityPreservationRate, 50) && totalDignityRecords > 0) {
     insights.push({
       text: `Only ${dignityPreservationRate}% dignity preservation. Children who experience bedwetting are among the most vulnerable to loss of dignity in residential care. Multiple failings across laundry, storage, language, and peer awareness indicate systemic shortcomings that require urgent whole-home action.`,
       severity: "critical",
     });
   }
 
-  if (noBlamingRate < 90 && totalDignityRecords > 0) {
+  if (below(noBlamingRate, 90) && totalDignityRecords > 0) {
     insights.push({
       text: `No-blame approach at only ${noBlamingRate}%. Any instance of blaming or shaming a child for bedwetting is unacceptable. Enuresis is involuntary and often linked to trauma, developmental factors, or medical conditions. Staff must understand that blame compounds children's distress and damages the care relationship.`,
       severity: "critical",
     });
   }
 
-  if (significantImpactRate > 50 && totalEmotionalRecords > 0) {
+  if (above(significantImpactRate, 50) && totalEmotionalRecords > 0) {
     insights.push({
       text: `${significantImpactRate}% of children experience significant or severe emotional impact from bedwetting. The emotional toll of enuresis in looked-after children — who already carry the burden of adverse childhood experiences — can be profound. Chronic distress, low self-esteem, and social withdrawal require specialist therapeutic intervention.`,
       severity: "critical",
@@ -1162,7 +1169,7 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (medicalReferralRate < 50 && totalMedicalReferrals > 0) {
+  if (below(medicalReferralRate, 50) && totalMedicalReferrals > 0) {
     insights.push({
       text: `Only ${medicalReferralRate}% medical referral quality. When medical referrals are not properly followed through — missed appointments, undocumented outcomes, professional advice not shared with staff — children miss out on medical treatment that could resolve or improve their enuresis.`,
       severity: "critical",
@@ -1172,8 +1179,8 @@ export function computeBedwettingEnuresisSupport(
   // -- Warning insights --
 
   if (
-    managementPlanRate >= 50 &&
-    managementPlanRate < 70 &&
+    meets(managementPlanRate, 50) &&
+    below(managementPlanRate, 70) &&
     totalManagementPlans > 0
   ) {
     insights.push({
@@ -1183,8 +1190,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    discreetSupportRate >= 50 &&
-    discreetSupportRate < 70 &&
+    meets(discreetSupportRate, 50) &&
+    below(discreetSupportRate, 70) &&
     totalDiscreetSupport > 0
   ) {
     insights.push({
@@ -1194,8 +1201,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    dignityPreservationRate >= 50 &&
-    dignityPreservationRate < 70 &&
+    meets(dignityPreservationRate, 50) &&
+    below(dignityPreservationRate, 70) &&
     totalDignityRecords > 0
   ) {
     insights.push({
@@ -1205,8 +1212,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    childConfidenceRate >= 50 &&
-    childConfidenceRate < 70 &&
+    meets(childConfidenceRate, 50) &&
+    below(childConfidenceRate, 70) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1216,8 +1223,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    emotionalWellbeingRate >= 50 &&
-    emotionalWellbeingRate < 70 &&
+    meets(emotionalWellbeingRate, 50) &&
+    below(emotionalWellbeingRate, 70) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1227,8 +1234,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    embarrassmentRate > 30 &&
-    embarrassmentRate <= 50 &&
+    above(embarrassmentRate, 30) &&
+    (embarrassmentRate !== null && embarrassmentRate <= 50) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1238,8 +1245,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    bedtimeAnxietyRate > 20 &&
-    bedtimeAnxietyRate <= 40 &&
+    above(bedtimeAnxietyRate, 20) &&
+    (bedtimeAnxietyRate !== null && bedtimeAnxietyRate <= 40) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1249,8 +1256,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    avoidsSleepoverRate > 20 &&
-    avoidsSleepoverRate <= 40 &&
+    above(avoidsSleepoverRate, 20) &&
+    (avoidsSleepoverRate !== null && avoidsSleepoverRate <= 40) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1260,8 +1267,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    planReviewRate >= 50 &&
-    planReviewRate < 70 &&
+    meets(planReviewRate, 50) &&
+    below(planReviewRate, 70) &&
     totalManagementPlans > 0
   ) {
     insights.push({
@@ -1271,8 +1278,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 70 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 70) &&
     followUpRequired > 0
   ) {
     insights.push({
@@ -1283,7 +1290,7 @@ export function computeBedwettingEnuresisSupport(
 
   if (declinedProgress > 0 && assessmentsWithProgress > 0) {
     const declinedRate = pct(declinedProgress, assessmentsWithProgress);
-    if (declinedRate > 20) {
+    if (above(declinedRate, 20)) {
       insights.push({
         text: `${declinedRate}% of emotional wellbeing assessments show declining progress — some children's emotional state around bedwetting is worsening, which requires immediate review of support strategies and possible therapeutic referral.`,
         severity: "warning",
@@ -1299,7 +1306,7 @@ export function computeBedwettingEnuresisSupport(
   const highFrequency = (frequencyDistribution["nightly"] ?? 0) + (frequencyDistribution["several_per_week"] ?? 0);
   if (highFrequency > 0 && totalManagementPlans > 0) {
     const highFreqRate = pct(highFrequency, totalManagementPlans);
-    if (highFreqRate > 30) {
+    if (above(highFreqRate, 30)) {
       insights.push({
         text: `${highFreqRate}% of children experience bedwetting nightly or several times per week — high-frequency enuresis often indicates underlying medical, developmental, or emotional factors that require specialist assessment and targeted intervention beyond standard management plans.`,
         severity: "warning",
@@ -1335,8 +1342,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    managementPlanRate >= 90 &&
-    staffTrainedRate >= 90 &&
+    meets(managementPlanRate, 90) &&
+    meets(staffTrainedRate, 90) &&
     totalManagementPlans > 0
   ) {
     insights.push({
@@ -1346,8 +1353,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    discreetSupportRate >= 90 &&
-    dignityPreservationRate >= 90 &&
+    meets(discreetSupportRate, 90) &&
+    meets(dignityPreservationRate, 90) &&
     totalDiscreetSupport > 0 &&
     totalDignityRecords > 0
   ) {
@@ -1358,8 +1365,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    noBlamingRate >= 95 &&
-    peerAwarenessRate >= 90 &&
+    meets(noBlamingRate, 95) &&
+    meets(peerAwarenessRate, 90) &&
     totalDignityRecords > 0
   ) {
     insights.push({
@@ -1369,8 +1376,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    medicalReferralRate >= 85 &&
-    followUpCompletionRate >= 90 &&
+    meets(medicalReferralRate, 85) &&
+    meets(followUpCompletionRate, 90) &&
     totalMedicalReferrals > 0
   ) {
     insights.push({
@@ -1380,8 +1387,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    emotionalWellbeingRate >= 90 &&
-    childConfidenceRate >= 90 &&
+    meets(emotionalWellbeingRate, 90) &&
+    meets(childConfidenceRate, 90) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1391,7 +1398,7 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    childInvolvementRate >= 90 &&
+    meets(childInvolvementRate, 90) &&
     totalManagementPlans > 0
   ) {
     insights.push({
@@ -1401,7 +1408,7 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    overnightSupportRate >= 80 &&
+    meets(overnightSupportRate, 80) &&
     totalDignityRecords > 0
   ) {
     insights.push({
@@ -1411,8 +1418,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    copingStrategiesRate >= 90 &&
-    copingEffectivenessRate >= 80 &&
+    meets(copingStrategiesRate, 90) &&
+    meets(copingEffectivenessRate, 80) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({
@@ -1430,8 +1437,8 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (
-    feelsSupportedRate >= 90 &&
-    childVoiceRate >= 90 &&
+    meets(feelsSupportedRate, 90) &&
+    meets(childVoiceRate, 90) &&
     totalEmotionalRecords > 0
   ) {
     insights.push({

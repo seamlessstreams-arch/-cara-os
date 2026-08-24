@@ -278,11 +278,21 @@ describe("pct(0,0) = 0 edge case", () => {
       ...baseInput,
       management_plan_records: manyPlans(5),
     });
-    expect(r.discreet_support_rate).toBe(0);
-    expect(r.dignity_preservation_rate).toBe(0);
-    expect(r.medical_referral_rate).toBe(0);
-    expect(r.emotional_wellbeing_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.discreet_support_rate).toBeNull();
+    expect(r.discreet_support_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.dignity_preservation_rate).toBeNull();
+    expect(r.dignity_preservation_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.medical_referral_rate).toBeNull();
+    expect(r.medical_referral_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.emotional_wellbeing_rate).toBeNull();
+    expect(r.emotional_wellbeing_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.child_confidence_rate).toBeNull();
+    expect(r.child_confidence_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 
