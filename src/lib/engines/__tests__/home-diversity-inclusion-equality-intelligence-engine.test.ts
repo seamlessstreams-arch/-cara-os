@@ -149,7 +149,7 @@ describe("computeDiversityInclusionEquality", () => {
       expect(r.insights).toEqual([]);
     });
 
-    it("returns zero metrics for insufficient_data", () => {
+    it("leaves every rate unmeasured for insufficient_data", () => {
       const r = computeDiversityInclusionEquality({
         today: TODAY,
         total_children: 0,
@@ -159,10 +159,10 @@ describe("computeDiversityInclusionEquality", () => {
         cultural_plans: [],
       });
       expect(r.children_with_cultural_plans).toBe(0);
-      expect(r.identity_affirmation_rate).toBe(0);
+      expect(r.identity_affirmation_rate).toBeNull();
       expect(r.diversity_events_completed).toBe(0);
       expect(r.hate_incidents_total).toBe(0);
-      expect(r.hate_resolution_rate).toBe(0);
+      expect(r.hate_resolution_rate).toBeNull();
     });
 
     it("returns insufficient_data even when other data exists but children is 0", () => {

@@ -75,12 +75,12 @@ function progressSession(
 // ── computeKeyWorkCompliance ────────────────────────────────────────────────
 
 describe("computeKeyWorkCompliance", () => {
-  it("returns zero stats for empty inputs", () => {
+  it("compliance_percentage is unmeasured for empty inputs", () => {
     const result = computeKeyWorkCompliance([], [], NOW);
     expect(result.total_children).toBe(0);
     expect(result.children_on_track).toBe(0);
     expect(result.children_behind).toBe(0);
-    expect(result.compliance_percentage).toBeNull();;
+    expect(result.compliance_percentage).toBeNull();
     expect(result.by_child).toHaveLength(0);
   });
 
@@ -200,8 +200,8 @@ describe("computeSessionQuality", () => {
     expect(result.avg_mood).toBe(0);
     expect(result.avg_engagement).toBe(0);
     expect(result.avg_topics_per_session).toBe(0);
-    expect(result.voice_capture_rate).toBe(0);
-    expect(result.positive_observation_rate).toBe(0);
+    expect(result.voice_capture_rate).toBeNull();
+    expect(result.positive_observation_rate).toBeNull();
     expect(result.quality_rating).toBe("poor");
   });
 

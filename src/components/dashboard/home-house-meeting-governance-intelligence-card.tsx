@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
@@ -79,7 +80,7 @@ export function HomeHouseMeetingGovernanceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Attend</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.action_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.action_completion_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.action_completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.action_completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.child_feedback_rate ?? 0) >= 90 ? "bg-green-50" : (d.child_feedback_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>

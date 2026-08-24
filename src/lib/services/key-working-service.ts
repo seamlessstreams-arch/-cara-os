@@ -249,8 +249,8 @@ export function computeSessionQuality(
       avg_mood: 0,
       avg_engagement: 0,
       avg_topics_per_session: 0,
-      voice_capture_rate: 0,
-      positive_observation_rate: 0,
+      voice_capture_rate: null,
+      positive_observation_rate: null,
       quality_rating: "poor",
     };
   }

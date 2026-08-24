@@ -125,9 +125,9 @@ export function computeTherapeuticWellbeingImpact(
         "No children in the home -- therapeutic wellbeing impact cannot be assessed.",
       children_with_therapeutic_plans: 0,
       average_wellbeing_score: 0,
-      improving_trend_rate: 0,
-      self_soothing_coverage_rate: 0,
-      grief_support_rate: 0,
+      improving_trend_rate: null,
+      self_soothing_coverage_rate: null,
+      grief_support_rate: null,
       strengths: [],
       concerns: [
         "No children recorded -- therapeutic wellbeing data is unavailable.",

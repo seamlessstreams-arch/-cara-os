@@ -148,13 +148,13 @@ describe("computeGovernanceManagementOversight", () => {
       expect(r.governance_score).toBe(0);
     });
 
-    it("returns zeroed metrics when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const r = computeGovernanceManagementOversight(baseInput({ total_children: 0 }));
       expect(r.total_walkrounds).toBe(0);
       expect(r.total_governance_meetings).toBe(0);
       expect(r.total_board_reports).toBe(0);
-      expect(r.operational_meeting_rate).toBe(0);
-      expect(r.commissioning_satisfaction_rate).toBe(0);
+      expect(r.operational_meeting_rate).toBeNull();
+      expect(r.commissioning_satisfaction_rate).toBeNull();
     });
 
     it("returns empty strengths, concerns, and recommendations with an insight", () => {

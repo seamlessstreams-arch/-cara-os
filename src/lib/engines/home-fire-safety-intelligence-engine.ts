@@ -152,14 +152,14 @@ export function computeHomeFireSafety(
       },
       results: {
         satisfactory: 0, issues_identified: 0, failed: 0, not_completed: 0,
-        satisfactory_rate: 0, issues_actioned: 0, issue_response_rate: 0,
+        satisfactory_rate: null, issues_actioned: 0, issue_response_rate: null,
       },
       evacuation: {
         total_evacuations: 0, avg_evacuation_time: 0, fastest_evacuation: 0,
-        slowest_evacuation: 0, within_target: 0, target_compliance_rate: 0,
+        slowest_evacuation: 0, within_target: 0, target_compliance_rate: null,
       },
       participation: {
-        drills_all_present: 0, all_present_rate: 0, avg_children_per_drill: 0,
+        drills_all_present: 0, all_present_rate: null, avg_children_per_drill: 0,
         avg_staff_per_drill: 0, night_drills: 0, daytime_drills: 0,
       },
       strengths: [],

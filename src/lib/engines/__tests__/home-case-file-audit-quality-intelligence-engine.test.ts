@@ -332,7 +332,7 @@ describe("Edge cases", () => {
   it("handles no case file audits with children present — not insufficient_data", () => {
     const r = computeCaseFileAuditQuality(baseInput({ case_file_audits: [] }));
     expect(r.children_audited).toBe(0);
-    expect(r.average_audit_score).toBeNull();;
+    expect(r.average_audit_score).toBeNull();
     expect(r.green_rag_rate).toBe(0);
     expect(r.audit_rating).not.toBe("insufficient_data");
   });

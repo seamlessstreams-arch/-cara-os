@@ -57,10 +57,10 @@ describe("insufficient data guard", () => {
     expect(result.partnership_score).toBe(0);
     expect(result.headline).toBe("No data available for parent partnership analysis");
     expect(result.total_contacts).toBe(0);
-    expect(result.positive_engagement_rate).toBe(0);
-    expect(result.children_with_contact_rate).toBe(0);
-    expect(result.sw_informed_rate).toBe(0);
-    expect(result.positive_outcome_rate).toBe(0);
+    expect(result.positive_engagement_rate).toBeNull();
+    expect(result.children_with_contact_rate).toBeNull();
+    expect(result.sw_informed_rate).toBeNull();
+    expect(result.positive_outcome_rate).toBeNull();
     expect(result.contact_type_variety).toBe(0);
     expect(result.relationship_variety).toBe(0);
     expect(result.strengths).toEqual([]);

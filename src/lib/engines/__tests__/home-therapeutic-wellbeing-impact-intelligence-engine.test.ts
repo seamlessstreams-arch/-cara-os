@@ -125,15 +125,15 @@ describe("computeTherapeuticWellbeingImpact", () => {
       expect(r.wellbeing_score).toBe(0);
     });
 
-    it("returns zeroed metrics on insufficient data", () => {
+    it("leaves improving_trend_rate, self_soothing_coverage_rate and grief_support_rate unmeasured on insufficient data", () => {
       const r = computeTherapeuticWellbeingImpact(
         baseInput({ total_children: 0 }),
       );
       expect(r.children_with_therapeutic_plans).toBe(0);
       expect(r.average_wellbeing_score).toBe(0);
-      expect(r.improving_trend_rate).toBe(0);
-      expect(r.self_soothing_coverage_rate).toBe(0);
-      expect(r.grief_support_rate).toBe(0);
+      expect(r.improving_trend_rate).toBeNull();
+      expect(r.self_soothing_coverage_rate).toBeNull();
+      expect(r.grief_support_rate).toBeNull();
     });
 
     it("returns concern, recommendation and critical insight", () => {
@@ -470,7 +470,7 @@ describe("computeTherapeuticWellbeingImpact", () => {
         baseInput({ wellbeing_pulses: [] }),
       );
       // Mods 2 and 3 both become 0 (was +6 and +5, delta -11)
-      expect(r.average_wellbeing_score).toBeNull();;
+      expect(r.average_wellbeing_score).toBeNull();
       expect(r.wellbeing_score).toBe(71);
     });
   });

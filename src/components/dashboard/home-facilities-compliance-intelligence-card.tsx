@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -92,8 +93,8 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.facilities_rating] ?? RATING_STYLES.insufficient_data;
-  const hasFireIssues = d.fire.overdue_inspections > 0 || (d.fire.total_checks > 0 && d.fire.pass_rate < 70);
-  const hasWaterIssues = d.water.overdue_checks > 0 || (d.water.total_checks > 0 && d.water.compliance_rate < 70);
+  const hasFireIssues = d.fire.overdue_inspections > 0 || (d.fire.total_checks > 0 && below(d.fire.pass_rate, 70));
+  const hasWaterIssues = d.water.overdue_checks > 0 || (d.water.total_checks > 0 && below(d.water.compliance_rate, 70));
   const isAlert = hasFireIssues || hasWaterIssues || d.facilities_rating === "inadequate";
 
   return (
@@ -125,10 +126,10 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
                 <Flame className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.fire.total_checks === 0 ? "text-slate-400" :
-                  d.fire.pass_rate >= 90 ? "text-[--cs-success]" :
-                  d.fire.pass_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.fire.pass_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.fire.pass_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.fire.total_checks === 0 ? "--" : `${d.fire.pass_rate}%`}
+                  {d.fire.total_checks === 0 ? "--" : `${formatRate(d.fire.pass_rate)}`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Fire Pass</p>
@@ -140,10 +141,10 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
                 <Droplets className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.water.total_checks === 0 ? "text-slate-400" :
-                  d.water.compliance_rate >= 90 ? "text-[--cs-success]" :
-                  d.water.compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.water.compliance_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.water.compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.water.total_checks === 0 ? "--" : `${d.water.compliance_rate}%`}
+                  {d.water.total_checks === 0 ? "--" : `${formatRate(d.water.compliance_rate)}`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Water OK</p>
@@ -189,9 +190,9 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Checks: <span className="font-medium text-slate-600">{d.fire.total_checks}</span></p>
                 <p>Pass rate: <span className={cn("font-medium",
-                  d.fire.pass_rate >= 90 ? "text-[--cs-success]" :
-                  d.fire.pass_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.fire.pass_rate}%</span></p>
+                  meets(d.fire.pass_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.fire.pass_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                )}>{formatRate(d.fire.pass_rate)}</span></p>
                 {d.fire.overdue_inspections > 0 && (
                   <p>Overdue: <span className="font-medium text-red-600">{d.fire.overdue_inspections}</span></p>
                 )}
@@ -202,9 +203,9 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Checks: <span className="font-medium text-slate-600">{d.water.total_checks}</span></p>
                 <p>Compliance: <span className={cn("font-medium",
-                  d.water.compliance_rate >= 90 ? "text-[--cs-success]" :
-                  d.water.compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.water.compliance_rate}%</span></p>
+                  meets(d.water.compliance_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.water.compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                )}>{formatRate(d.water.compliance_rate)}</span></p>
                 {d.water.overdue_checks > 0 && (
                   <p>Overdue: <span className="font-medium text-red-600">{d.water.overdue_checks}</span></p>
                 )}

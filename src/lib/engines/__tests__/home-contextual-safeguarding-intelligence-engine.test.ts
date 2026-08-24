@@ -61,14 +61,14 @@ describe("computeContextualSafeguarding", () => {
       expect(r.headline).toBe("No data available for contextual safeguarding analysis");
     });
 
-    it("returns zero metrics when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const r = computeContextualSafeguarding(baseInput({ total_children: 0 }));
       expect(r.total_risks).toBe(0);
       expect(r.active_risks).toBe(0);
       expect(r.high_risk_count).toBe(0);
-      expect(r.protective_actions_rate).toBe(0);
-      expect(r.multi_agency_rate).toBe(0);
-      expect(r.resolution_rate).toBe(0);
+      expect(r.protective_actions_rate).toBeNull();
+      expect(r.multi_agency_rate).toBeNull();
+      expect(r.resolution_rate).toBeNull();
       expect(r.review_overdue_count).toBe(0);
     });
 
@@ -100,7 +100,7 @@ describe("computeContextualSafeguarding", () => {
       expect(r.safeguarding_rating).toBe("adequate");
     });
 
-    it("has correct metrics with zero risks", () => {
+    it("leaves every rate unmeasured with zero risks", () => {
       const r = computeContextualSafeguarding(baseInput());
       expect(r.total_risks).toBe(0);
       expect(r.active_risks).toBe(0);

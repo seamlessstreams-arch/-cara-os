@@ -89,7 +89,7 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
       headline: "No accident or injury data available for surveillance analysis.",
       accidents_total: 0, accidents_serious: 0, injuries_total: 0,
       injuries_unexplained: 0, hospital_visits: 0, riddor_count: 0,
-      debrief_rate: 0, safety_check_pass_rate: 0, children_with_repeat_injuries: 0,
+      debrief_rate: null, safety_check_pass_rate: null, children_with_repeat_injuries: 0,
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }

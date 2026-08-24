@@ -91,8 +91,8 @@ describe("Possessions Intelligence Engine", () => {
     it("returns empty result when no possessions", () => {
       const result = run([]);
       expect(result.overview.total_items).toBe(0);
-      expect(result.overview.photo_compliance_rate).toBe(0);
-      expect(result.overview.insurance_rate).toBe(0);
+      expect(result.overview.photo_compliance_rate).toBeNull();
+      expect(result.overview.insurance_rate).toBeNull();
       expect(result.overview.missing_items).toBe(0);
       expect(result.overview.total_value_estimate).toBe(0);
       expect(result.overview.avg_items_per_child).toBe(0);

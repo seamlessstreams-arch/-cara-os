@@ -80,9 +80,9 @@ describe("Insufficient data (total_children=0)", () => {
   it("zeroes all metrics", () => {
     const r = computeSelfEvaluationImprovement({ today: TODAY, total_children: 0, areas: [] });
     expect(r.total_areas).toBe(0);
-    expect(r.good_or_outstanding_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.evidence_coverage_rate).toBe(0);
+    expect(r.good_or_outstanding_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.evidence_coverage_rate).toBeNull();
     expect(r.areas_with_development_plans).toBe(0);
     expect(r.average_strengths_per_area).toBe(0);
   });
@@ -954,7 +954,7 @@ describe("Metric calculations", () => {
 
   it("average_strengths_per_area is unmeasured when there are no areas", () => {
     const r = computeSelfEvaluationImprovement(baseInput({ areas: [] }));
-    expect(r.average_strengths_per_area).toBeNull();;
+    expect(r.average_strengths_per_area).toBeNull();
   });
 
   it("total_areas matches length of areas array", () => {

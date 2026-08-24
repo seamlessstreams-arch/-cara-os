@@ -49,10 +49,14 @@ export interface ContextualSafeguardingResult {
   active_risk_count: number;
   high_risk_count: number;
   context_diversity: number;
-  protective_action_rate: number;
-  multi_agency_rate: number;
-  community_mapping_rate: number;
-  review_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  protective_action_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multi_agency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  community_mapping_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  review_compliance_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -98,10 +102,10 @@ export function computeContextualSafeguarding(
       active_risk_count: 0,
       high_risk_count: 0,
       context_diversity: 0,
-      protective_action_rate: 0,
-      multi_agency_rate: 0,
-      community_mapping_rate: 0,
-      review_compliance_rate: 0,
+      protective_action_rate: null,
+      multi_agency_rate: null,
+      community_mapping_rate: null,
+      review_compliance_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

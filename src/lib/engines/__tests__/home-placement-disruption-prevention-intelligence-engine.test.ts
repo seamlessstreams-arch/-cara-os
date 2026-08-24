@@ -114,7 +114,7 @@ describe("computePlacementDisruptionPrevention", () => {
       expect(r.disruption_score).toBe(0);
     });
 
-    it("returns zero metrics on insufficient data", () => {
+    it("leaves planned_ending_rate and disruption_rate unmeasured on insufficient data", () => {
       const r = computePlacementDisruptionPrevention({
         today: TODAY,
         total_children: 0,
@@ -123,8 +123,8 @@ describe("computePlacementDisruptionPrevention", () => {
         stability_factors: [],
       });
       expect(r.children_with_plans).toBe(0);
-      expect(r.planned_ending_rate).toBe(0);
-      expect(r.disruption_rate).toBe(0);
+      expect(r.planned_ending_rate).toBeNull();
+      expect(r.disruption_rate).toBeNull();
       expect(r.average_placement_months).toBe(0);
       expect(r.high_risk_children).toBe(0);
     });
@@ -980,10 +980,10 @@ describe("computePlacementDisruptionPrevention", () => {
       expect(r.average_placement_months).toBe(18);
     });
 
-    it("returns 0 average_placement_months when no placement ends", () => {
+    it("average_placement_months is unmeasured when no placement ends", () => {
       const input = baseInput({ placement_ends: [] });
       const r = computePlacementDisruptionPrevention(input);
-      expect(r.average_placement_months).toBeNull();;
+      expect(r.average_placement_months).toBeNull();
     });
 
     it("calculates high_risk_children as unique children with heightened or acute", () => {

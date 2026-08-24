@@ -178,7 +178,7 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
       expect(result.insights).toEqual([]);
     });
 
-    it("returns zeroed metrics on insufficient_data", () => {
+    it("leaves every rate unmeasured on insufficient_data", () => {
       const result = computeChildrensVoiceParticipation({
         today: TODAY,
         total_children: 0,
@@ -187,11 +187,11 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
         policies: [],
         expert_entries: [],
       });
-      expect(result.meeting_attendance_rate).toBe(0);
-      expect(result.feedback_response_rate).toBe(0);
-      expect(result.child_friendly_policy_rate).toBe(0);
+      expect(result.meeting_attendance_rate).toBeNull();
+      expect(result.feedback_response_rate).toBeNull();
+      expect(result.child_friendly_policy_rate).toBeNull();
       expect(result.expert_participation_count).toBe(0);
-      expect(result.positive_feedback_rate).toBe(0);
+      expect(result.positive_feedback_rate).toBeNull();
     });
   });
 

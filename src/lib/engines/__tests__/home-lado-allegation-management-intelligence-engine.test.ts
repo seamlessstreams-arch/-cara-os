@@ -155,7 +155,7 @@ describe("Insufficient data", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns zero for all metric fields when insufficient_data", () => {
+  it("leaves ofsted_notification_rate and resolution_rate unmeasured when insufficient_data", () => {
     const r = computeLadoAllegationManagement({
       today: TODAY,
       total_staff: 0,
@@ -165,8 +165,8 @@ describe("Insufficient data", () => {
     });
     expect(r.total_referrals).toBe(0);
     expect(r.open_referrals).toBe(0);
-    expect(r.ofsted_notification_rate).toBe(0);
-    expect(r.resolution_rate).toBe(0);
+    expect(r.ofsted_notification_rate).toBeNull();
+    expect(r.resolution_rate).toBeNull();
     expect(r.average_days_to_close).toBe(0);
   });
 
@@ -1106,7 +1106,7 @@ describe("Metric calculations", () => {
     expect(r.average_days_to_close).toBe(30);
   });
 
-  it("returns 0 for average_days_to_close when no closed referrals", () => {
+  it("average_days_to_close is unmeasured when no closed referrals", () => {
     const r = run({
       referrals: [
         makeLadoReferral({

@@ -193,12 +193,12 @@ describe("Home Automation ROI Intelligence Engine", () => {
       expect(r.recommendations).toEqual([]);
     });
 
-    it("returns 0 for all metric fields when insufficient_data", () => {
+    it("leaves route_success_rate and error_rate unmeasured when insufficient_data", () => {
       const r = computeAutomationROI(baseInput({ total_staff: 0 }));
       expect(r.total_time_saved).toBe(0);
-      expect(r.route_success_rate).toBe(0);
+      expect(r.route_success_rate).toBeNull();
       expect(r.automation_coverage).toBe(0);
-      expect(r.error_rate).toBe(0);
+      expect(r.error_rate).toBeNull();
       expect(r.route_type_diversity).toBe(0);
       expect(r.avg_minutes_per_route).toBe(0);
     });
@@ -850,7 +850,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
       expect(r.automation_coverage).toBe(67);
     });
 
-    it("returns 0% coverage when 0 events in window", () => {
+    it("automation_coverage is unmeasured when 0 events in window", () => {
       const r = computeAutomationROI(baseInput({
         events: [],
         routes: [makeRoute()],
@@ -1796,7 +1796,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
   // ── pct Helper Behaviour ────────────────────────────────────────────────
 
   describe("pct helper behaviour (via engine rates)", () => {
-    it("returns 0 when denominator is 0 for route success", () => {
+    it("route_success_rate is unmeasured for a zero denominator", () => {
       // 0 routes → pct(0, 0) = 0
       const r = computeAutomationROI(baseInput({
         routes: [],
@@ -1808,7 +1808,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
       expect(r.route_success_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
-    it("returns 0 when denominator is 0 for automation coverage", () => {
+    it("automation_coverage is unmeasured for a zero denominator", () => {
       const r = computeAutomationROI(baseInput({
         events: [],
         routes: [makeRoute()],
@@ -1819,7 +1819,7 @@ describe("Home Automation ROI Intelligence Engine", () => {
       expect(r.automation_coverage).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
-    it("returns 0 when denominator is 0 for error rate", () => {
+    it("error_rate is unmeasured for a zero denominator", () => {
       const r = computeAutomationROI(baseInput({
         routes: [],
         events: [makeEvent()],

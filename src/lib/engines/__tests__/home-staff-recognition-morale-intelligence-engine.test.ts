@@ -53,13 +53,13 @@ describe("insufficient data", () => {
     expect(r.headline).toBe("No data available for staff recognition analysis");
   });
 
-  it("returns zeroed metrics on insufficient data", () => {
+  it("leaves every rate unmeasured on insufficient data", () => {
     const r = computeStaffRecognitionMorale(baseInput({ total_staff: 0 }));
     expect(r.total_recognitions).toBe(0);
-    expect(r.staff_recognised_rate).toBe(0);
-    expect(r.child_involvement_rate).toBe(0);
-    expect(r.public_celebration_rate).toBe(0);
-    expect(r.impact_documented_rate).toBe(0);
+    expect(r.staff_recognised_rate).toBeNull();
+    expect(r.child_involvement_rate).toBeNull();
+    expect(r.public_celebration_rate).toBeNull();
+    expect(r.impact_documented_rate).toBeNull();
     expect(r.recognition_type_variety).toBe(0);
   });
 
