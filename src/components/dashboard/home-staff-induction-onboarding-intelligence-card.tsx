@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -74,7 +75,7 @@ export function HomeStaffInductionOnboardingIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Inductions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.completion_rate >= 90 ? "bg-green-50" : d.completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.completion_rate >= 90 ? "text-[--cs-success]" : d.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.completion_rate >= 90 ? "text-[--cs-success]" : d.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_coverage_rate >= 100 ? "bg-green-50" : d.safeguarding_coverage_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -122,10 +123,10 @@ export function HomeChildrensRightsParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.rights_compliance.fully_met_rate >= 90 ? "text-[--cs-success]" :
-                  d.rights_compliance.fully_met_rate >= 70 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.rights_compliance.fully_met_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.rights_compliance.fully_met_rate, 70) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.rights_compliance.total_rights > 0 ? `${d.rights_compliance.fully_met_rate}%` : "—"}
+                  {d.rights_compliance.total_rights > 0 ? `${formatRate(d.rights_compliance.fully_met_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Rights Met</p>
@@ -136,10 +137,10 @@ export function HomeChildrensRightsParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.feedback_loops.child_accepts_rate >= 85 ? "text-[--cs-success]" :
-                  d.feedback_loops.child_accepts_rate >= 70 ? "text-blue-600" : "text-[--cs-warning]"
+                  meets(d.feedback_loops.child_accepts_rate, 85) ? "text-[--cs-success]" :
+                  meets(d.feedback_loops.child_accepts_rate, 70) ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.feedback_loops.total_loops_90d > 0 ? `${d.feedback_loops.child_accepts_rate}%` : "—"}
+                  {d.feedback_loops.total_loops_90d > 0 ? `${formatRate(d.feedback_loops.child_accepts_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Feedback</p>
@@ -150,10 +151,10 @@ export function HomeChildrensRightsParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.participation.child_influence_rate >= 80 ? "text-[--cs-success]" :
-                  d.participation.child_influence_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.participation.child_influence_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.participation.child_influence_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.participation.total_entries_90d > 0 ? `${d.participation.child_influence_rate}%` : "—"}
+                  {d.participation.total_entries_90d > 0 ? `${formatRate(d.participation.child_influence_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Influence</p>

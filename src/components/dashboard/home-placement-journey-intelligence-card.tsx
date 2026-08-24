@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, MapPin } from "lucide-react";
@@ -74,19 +75,19 @@ export function HomePlacementJourneyIntelligenceCard() {
         {d.placement_journey_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.pre_admission.all_complete_rate >= 90 ? "text-[--cs-success]" : d.pre_admission.all_complete_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.pre_admission.total > 0 ? `${d.pre_admission.all_complete_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.pre_admission.all_complete_rate, 90) ? "text-[--cs-success]" : meets(d.pre_admission.all_complete_rate, 50) ? "text-blue-600" : "text-[--cs-risk]")}>{d.pre_admission.total > 0 ? `${d.pre_admission.all_complete_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Pre-Admission</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.welcome_packs.personalised_rate >= 80 ? "text-[--cs-success]" : d.welcome_packs.personalised_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.welcome_packs.total > 0 ? `${d.welcome_packs.personalised_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.welcome_packs.personalised_rate, 80) ? "text-[--cs-success]" : meets(d.welcome_packs.personalised_rate, 50) ? "text-blue-600" : "text-[--cs-risk]")}>{d.welcome_packs.total > 0 ? `${d.welcome_packs.personalised_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Welcome Packs</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.objectives.on_track_rate >= 70 ? "text-[--cs-success]" : d.objectives.on_track_rate >= 40 ? "text-blue-600" : "text-[--cs-risk]")}>{d.objectives.total > 0 ? `${d.objectives.on_track_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.objectives.on_track_rate, 70) ? "text-[--cs-success]" : meets(d.objectives.on_track_rate, 40) ? "text-blue-600" : "text-[--cs-risk]")}>{d.objectives.total > 0 ? `${d.objectives.on_track_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">On Track</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.return_interviews.within_24h_rate >= 90 ? "text-[--cs-success]" : d.return_interviews.within_24h_rate >= 60 ? "text-blue-600" : "text-[--cs-risk]")}>{d.return_interviews.total > 0 ? `${d.return_interviews.within_24h_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.return_interviews.within_24h_rate, 90) ? "text-[--cs-success]" : meets(d.return_interviews.within_24h_rate, 60) ? "text-blue-600" : "text-[--cs-risk]")}>{d.return_interviews.total > 0 ? `${d.return_interviews.within_24h_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Return 24h</p>
             </div>
           </div>

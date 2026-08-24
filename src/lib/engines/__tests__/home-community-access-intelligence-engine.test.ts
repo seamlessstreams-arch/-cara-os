@@ -889,14 +889,14 @@ describe("computeHomeCommunityAccess", () => {
 
   // ── pct helper via engine behaviour ───────────────────────────────
   describe("pct helper behaviour", () => {
-    it("returns 0 when denominator is 0", () => {
+    it("licence_checked_rate and vehicle_checked_rate are unmeasured when their denominator is 0", () => {
       const r = computeHomeCommunityAccess({
         today: TODAY, transport_logs: [], transport_ras: [],
         independent_travel_records: [], trip_plans: [],
         community_engagements: [], total_children: 0,
       });
-      expect(r.transport_safety.licence_checked_rate).toBe(0);
-      expect(r.transport_safety.vehicle_checked_rate).toBe(0);
+      expect(r.transport_safety.licence_checked_rate).toBeNull();
+      expect(r.transport_safety.vehicle_checked_rate).toBeNull();
     });
   });
 

@@ -72,15 +72,21 @@ export interface HolisticChildProgressResult {
   progress_score: number; // 0-100
   headline: string;
   children_with_data: number; // unique children across all inputs
-  outcome_improvement_rate: number; // % of reviews where score > previous_score
-  outcome_child_voice_rate: number; // % of outcome reviews with child voice
-  education_engagement_rate: number; // % of education records where engaged
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcome_improvement_rate: number | null; // % of reviews where score > previous_score
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcome_child_voice_rate: number | null; // % of outcome reviews with child voice
+  /** null when the population is empty — nothing measured, not 0%. */
+  education_engagement_rate: number | null; // % of education records where engaged
   average_attendance: number; // avg attendance across education records
-  key_work_completion_rate: number; // % of key work sessions completed
-  key_work_goal_progress_rate: number; // % of goals progressed out of total goals
+  /** null when the population is empty — nothing measured, not 0%. */
+  key_work_completion_rate: number | null; // % of key work sessions completed
+  /** null when the population is empty — nothing measured, not 0%. */
+  key_work_goal_progress_rate: number | null; // % of goals progressed out of total goals
   independence_readiness_average: number; // avg overall_readiness
   domain_coverage: number; // distinct domains covered across all inputs
-  child_voice_composite_rate: number; // avg child voice across all data types
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_composite_rate: number | null; // avg child voice across all data types
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref?: string }[];
@@ -133,15 +139,15 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
       progress_score: 0,
       headline: headline("insufficient_data", 0, 0),
       children_with_data: 0,
-      outcome_improvement_rate: 0,
-      outcome_child_voice_rate: 0,
-      education_engagement_rate: 0,
+      outcome_improvement_rate: null,
+      outcome_child_voice_rate: null,
+      education_engagement_rate: null,
       average_attendance: 0,
-      key_work_completion_rate: 0,
-      key_work_goal_progress_rate: 0,
+      key_work_completion_rate: null,
+      key_work_goal_progress_rate: null,
       independence_readiness_average: 0,
       domain_coverage: 0,
-      child_voice_composite_rate: 0,
+      child_voice_composite_rate: null,
       strengths: [],
       concerns: ["No data available across any progress domain — cannot assess children's holistic outcomes."],
       recommendations: [{ rank: 1, recommendation: "Begin capturing outcome reviews, education records, key working sessions, and independence assessments for all children.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" }],
@@ -156,15 +162,15 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
       progress_score: 18,
       headline: headline("inadequate", 18, 0),
       children_with_data: 0,
-      outcome_improvement_rate: 0,
-      outcome_child_voice_rate: 0,
-      education_engagement_rate: 0,
+      outcome_improvement_rate: null,
+      outcome_child_voice_rate: null,
+      education_engagement_rate: null,
       average_attendance: 0,
-      key_work_completion_rate: 0,
-      key_work_goal_progress_rate: 0,
+      key_work_completion_rate: null,
+      key_work_goal_progress_rate: null,
       independence_readiness_average: 0,
       domain_coverage: 0,
-      child_voice_composite_rate: 0,
+      child_voice_composite_rate: null,
       strengths: [],
       concerns: [
         `${input.total_children} children in placement but no holistic progress data recorded across any domain.`,

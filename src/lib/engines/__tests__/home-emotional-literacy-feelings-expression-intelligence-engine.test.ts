@@ -208,14 +208,14 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("all rates are 0 for insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computeEmotionalLiteracyFeelingsExpression(baseInput({ total_children: 0 }));
-      expect(r.emotion_identification_rate).toBe(0);
-      expect(r.vocabulary_breadth_rate).toBe(0);
-      expect(r.expression_tool_rate).toBe(0);
-      expect(r.journal_engagement_rate).toBe(0);
-      expect(r.staff_attunement_rate).toBe(0);
-      expect(r.child_progress_rate).toBe(0);
+      expect(r.emotion_identification_rate).toBeNull();
+      expect(r.vocabulary_breadth_rate).toBeNull();
+      expect(r.expression_tool_rate).toBeNull();
+      expect(r.journal_engagement_rate).toBeNull();
+      expect(r.staff_attunement_rate).toBeNull();
+      expect(r.child_progress_rate).toBeNull();
     });
 
     it("empty strengths/concerns/recommendations/insights for insufficient data", () => {
@@ -261,10 +261,10 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("leaves every rate unmeasured", () => {
       const r = computeEmotionalLiteracyFeelingsExpression(baseInput());
-      expect(r.emotion_identification_rate).toBe(0);
-      expect(r.staff_attunement_rate).toBe(0);
+      expect(r.emotion_identification_rate).toBeNull();
+      expect(r.staff_attunement_rate).toBeNull();
     });
   });
 
@@ -1435,7 +1435,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
       expect(r.child_progress_rate).toBe(63);
     });
 
-    it("child_progress_rate is 0 when no progress indicators", () => {
+    it("child_progress_rate is unmeasured when no progress indicators", () => {
       const r = computeEmotionalLiteracyFeelingsExpression(baseInput({
         total_children: 4,
         emotion_identification_records: [
@@ -1446,7 +1446,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
         ],
         // No tools, no journals → only id/vocab with first_assessment → 0 progressIndicators
       }));
-      expect(r.child_progress_rate).toBeNull();;
+      expect(r.child_progress_rate).toBeNull();
     });
   });
 
@@ -3349,7 +3349,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
         ],
       }));
       // idNonFirst = 0, so no progress indicator added
-      expect(r.child_progress_rate).toBeNull();;
+      expect(r.child_progress_rate).toBeNull();
     });
 
     it("partial domains still contribute to progress", () => {

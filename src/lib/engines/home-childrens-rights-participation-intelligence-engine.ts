@@ -94,9 +94,11 @@ export interface RightsComplianceProfile {
   partially_met_count: number;
   not_met_count: number;
   under_review_count: number;
-  fully_met_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fully_met_rate: number | null;
   evidence_avg: number | null;
-  child_feedback_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_feedback_rate: number | null;
 }
 
 export interface ChildLedMeetingProfile {
@@ -104,30 +106,39 @@ export interface ChildLedMeetingProfile {
   unique_children: number;
   avg_decisions: number | null;
   avg_child_agenda: number | null;
-  visible_change_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visible_change_rate: number | null;
 }
 
 export interface FeedbackLoopProfile {
   total_loops_90d: number;
-  acceptance_rate: number;
-  child_accepts_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acceptance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_accepts_rate: number | null;
   avg_closure_days: number | null;
-  visible_change_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visible_change_rate: number | null;
 }
 
 export interface PledgeProfile {
   total_pledges: number;
-  met_rate: number;
-  active_in_progress_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  met_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  active_in_progress_rate: number | null;
   avg_evidence: number | null;
-  child_feedback_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_feedback_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface ParticipationProfile {
   total_entries_90d: number;
-  child_influence_rate: number;
-  feedback_given_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_influence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedback_given_rate: number | null;
   avg_children_involved: number | null;
 }
 
@@ -136,7 +147,8 @@ export interface AdvocacyProfile {
   active_count: number;
   child_coverage: number;
   avg_visits: number | null;
-  child_view_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_view_rate: number | null;
   overdue_reviews: number;
 }
 
@@ -192,12 +204,12 @@ export function computeHomeChildrensRightsParticipation(
       rights_rating: "insufficient_data",
       rights_score: 0,
       headline: "No children's rights or participation data available for analysis.",
-      rights_compliance: { total_rights: 0, fully_met_count: 0, partially_met_count: 0, not_met_count: 0, under_review_count: 0, fully_met_rate: 0, evidence_avg: null, child_feedback_rate: 0 },
-      child_led_meetings: { total_meetings_90d: 0, unique_children: 0, avg_decisions: null, avg_child_agenda: null, visible_change_rate: 0 },
-      feedback_loops: { total_loops_90d: 0, acceptance_rate: 0, child_accepts_rate: 0, avg_closure_days: null, visible_change_rate: 0 },
-      pledges: { total_pledges: 0, met_rate: 0, active_in_progress_rate: 0, avg_evidence: null, child_feedback_rate: 0, overdue_reviews: 0 },
-      participation: { total_entries_90d: 0, child_influence_rate: 0, feedback_given_rate: 0, avg_children_involved: null },
-      advocacy: { total_records: 0, active_count: 0, child_coverage: 0, avg_visits: null, child_view_rate: 0, overdue_reviews: 0 },
+      rights_compliance: { total_rights: 0, fully_met_count: 0, partially_met_count: 0, not_met_count: 0, under_review_count: 0, fully_met_rate: null, evidence_avg: null, child_feedback_rate: null },
+      child_led_meetings: { total_meetings_90d: 0, unique_children: 0, avg_decisions: null, avg_child_agenda: null, visible_change_rate: null },
+      feedback_loops: { total_loops_90d: 0, acceptance_rate: null, child_accepts_rate: null, avg_closure_days: null, visible_change_rate: null },
+      pledges: { total_pledges: 0, met_rate: null, active_in_progress_rate: null, avg_evidence: null, child_feedback_rate: null, overdue_reviews: 0 },
+      participation: { total_entries_90d: 0, child_influence_rate: null, feedback_given_rate: null, avg_children_involved: null },
+      advocacy: { total_records: 0, active_count: 0, child_coverage: 0, avg_visits: null, child_view_rate: null, overdue_reviews: 0 },
       strengths: [],
       concerns: ["No children's rights or participation data — compliance with Reg 7 and UNCRC cannot be assessed."],
       recommendations: [],

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -122,10 +123,10 @@ export function HomeTherapeuticProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.behaviour_map.de_escalation_rate >= 90 ? "text-[--cs-success]" :
-                  d.behaviour_map.de_escalation_rate >= 70 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.behaviour_map.de_escalation_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.behaviour_map.de_escalation_rate, 70) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.behaviour_map.total_entries_90d > 0 ? `${d.behaviour_map.de_escalation_rate}%` : "—"}
+                  {d.behaviour_map.total_entries_90d > 0 ? `${formatRate(d.behaviour_map.de_escalation_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">De-escalation</p>
@@ -136,10 +137,10 @@ export function HomeTherapeuticProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Moon className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.sleep.good_quality_rate >= 70 ? "text-[--cs-success]" :
-                  d.sleep.good_quality_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.sleep.good_quality_rate, 70) ? "text-[--cs-success]" :
+                  meets(d.sleep.good_quality_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.sleep.total_assessments > 0 ? `${d.sleep.good_quality_rate}%` : "—"}
+                  {d.sleep.total_assessments > 0 ? `${formatRate(d.sleep.good_quality_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Sleep</p>
@@ -164,10 +165,10 @@ export function HomeTherapeuticProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Heart className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.self_soothing.effectiveness_rate >= 80 ? "text-[--cs-success]" :
-                  d.self_soothing.effectiveness_rate >= 50 ? "text-blue-600" : "text-[--cs-warning]"
+                  meets(d.self_soothing.effectiveness_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.self_soothing.effectiveness_rate, 50) ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.self_soothing.total_toolkits > 0 ? `${d.self_soothing.effectiveness_rate}%` : "—"}
+                  {d.self_soothing.total_toolkits > 0 ? `${formatRate(d.self_soothing.effectiveness_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Soothing</p>

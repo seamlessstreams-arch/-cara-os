@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -69,7 +70,7 @@ export function HomeLifeStoryIdentityIntelligenceCard() {
         {d.life_story_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.life_stories.child_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.life_stories.child_voice_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.life_stories.total > 0 ? `${d.life_stories.child_voice_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.life_stories.child_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.life_stories.child_voice_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.life_stories.total > 0 ? `${formatRate(d.life_stories.child_voice_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Story Voice</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">

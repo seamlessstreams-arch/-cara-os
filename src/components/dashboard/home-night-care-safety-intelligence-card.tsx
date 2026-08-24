@@ -15,7 +15,7 @@ import {
   Sunrise, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { meets } from "@/lib/metrics/rate";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { NightCareRating, HomeNightCareSafetyResult } from "@/lib/engines/home-night-care-safety-intelligence-engine";
 
@@ -57,7 +57,8 @@ const REC_STYLES: Record<string, string> = {
   planned: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]",
 };
 
-function scoreColor(score: number): string {
+function scoreColor(score: number | null): string {
+  if (score === null) return "text-muted-foreground";
   if (score >= 65) return "text-[--cs-success]";
   if (score >= 45) return "text-[--cs-warning]";
   return "text-[--cs-risk]";
@@ -134,16 +135,16 @@ export function HomeNightCareSafetyIntelligenceCard() {
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
-              <Shield className={cn("h-3.5 w-3.5", d.night_checks.room_temp_ok_rate >= 90 ? "text-green-500" : "text-amber-500")} />
+              <Shield className={cn("h-3.5 w-3.5", meets(d.night_checks.room_temp_ok_rate, 90) ? "text-green-500" : "text-amber-500")} />
               <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.night_checks.room_temp_ok_rate))}>
-                {d.night_checks.room_temp_ok_rate}%
+                {formatRate(d.night_checks.room_temp_ok_rate)}
               </p>
             </div>
             <p className="text-[10px] text-muted-foreground">Temp OK</p>
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
-            <p className={cn("text-lg font-bold tabular-nums", d.handovers.completion_rate >= 90 ? "text-[--cs-success]" : d.handovers.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {d.handovers.completion_rate}%
+            <p className={cn("text-lg font-bold tabular-nums", meets(d.handovers.completion_rate, 90) ? "text-[--cs-success]" : meets(d.handovers.completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(d.handovers.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Handover</p>
           </div>
@@ -160,7 +161,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-indigo-800">
                 <p>Coverage: <span className="font-bold">{d.bedtime_routines.child_coverage}%</span></p>
                 <p>Effectiveness: <span className="font-bold">{d.bedtime_routines.avg_effectiveness ?? "—"}/5</span></p>
-                <p>Child Agreed: <span className="font-bold">{d.bedtime_routines.child_agreed_rate}%</span></p>
+                <p>Child Agreed: <span className="font-bold">{formatRate(d.bedtime_routines.child_agreed_rate)}</span></p>
               </div>
             </div>
             <div className="rounded border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-2 text-xs">
@@ -171,7 +172,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-[--cs-warning]">
                 <p>Coverage: <span className="font-bold">{d.wake_up_routines.child_coverage}%</span></p>
                 <p>Effectiveness: <span className="font-bold">{d.wake_up_routines.avg_effectiveness ?? "—"}/5</span></p>
-                <p>Child Agreed: <span className="font-bold">{d.wake_up_routines.child_agreed_rate}%</span></p>
+                <p>Child Agreed: <span className="font-bold">{formatRate(d.wake_up_routines.child_agreed_rate)}</span></p>
               </div>
             </div>
           </div>

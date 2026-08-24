@@ -63,12 +63,18 @@ export interface MedicationAdministrationResult {
   medication_score: number;
   headline: string;
   total_administrations: number;
-  administration_rate: number;
-  on_time_rate: number;
-  refusal_rate: number;
-  witness_rate: number;
-  prn_documentation_rate: number;
-  reason_documented_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  administration_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  refusal_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  witness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  prn_documentation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reason_documented_rate: number | null;
   children_on_medication: number;
   total_active_medications: number;
   strengths: string[];
@@ -118,12 +124,12 @@ export function computeMedicationAdministration(
         medication_score: 0,
         headline: "No children in the home — medication administration cannot be assessed.",
         total_administrations: 0,
-        administration_rate: 0,
-        on_time_rate: 0,
-        refusal_rate: 0,
-        witness_rate: 0,
-        prn_documentation_rate: 0,
-        reason_documented_rate: 0,
+        administration_rate: null,
+        on_time_rate: null,
+        refusal_rate: null,
+        witness_rate: null,
+        prn_documentation_rate: null,
+        reason_documented_rate: null,
         children_on_medication: 0,
         total_active_medications: 0,
         strengths: [],
@@ -140,12 +146,12 @@ export function computeMedicationAdministration(
         medication_score: 0,
         headline: "No children currently on medication — no administration data to assess.",
         total_administrations: 0,
-        administration_rate: 0,
-        on_time_rate: 0,
-        refusal_rate: 0,
-        witness_rate: 0,
-        prn_documentation_rate: 0,
-        reason_documented_rate: 0,
+        administration_rate: null,
+        on_time_rate: null,
+        refusal_rate: null,
+        witness_rate: null,
+        prn_documentation_rate: null,
+        reason_documented_rate: null,
         children_on_medication: 0,
         total_active_medications: 0,
         strengths: [],

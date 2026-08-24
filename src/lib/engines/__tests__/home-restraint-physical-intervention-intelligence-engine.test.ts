@@ -92,14 +92,14 @@ describe("Home Restraint Physical Intervention Intelligence Engine", () => {
         expect(result.average_duration_minutes).toBe(0);
       });
 
-      it("returns all rates as 0", () => {
-        expect(result.de_escalation_rate).toBe(0);
-        expect(result.team_teach_compliance_rate).toBe(0);
-        expect(result.child_debrief_rate).toBe(0);
-        expect(result.review_completion_rate).toBe(0);
-        expect(result.body_map_rate).toBe(0);
-        expect(result.notification_rate).toBe(0);
-        expect(result.injury_rate).toBe(0);
+      it("leaves every rate unmeasured", () => {
+        expect(result.de_escalation_rate).toBeNull();
+        expect(result.team_teach_compliance_rate).toBeNull();
+        expect(result.child_debrief_rate).toBeNull();
+        expect(result.review_completion_rate).toBeNull();
+        expect(result.body_map_rate).toBeNull();
+        expect(result.notification_rate).toBeNull();
+        expect(result.injury_rate).toBeNull();
       });
 
       it("returns empty strengths", () => {

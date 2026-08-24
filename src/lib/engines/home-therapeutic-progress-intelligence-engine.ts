@@ -113,8 +113,10 @@ export interface BehaviourMapProfile {
   total_entries_90d: number;
   crisis_count: number;
   high_count: number;
-  de_escalation_rate: number;
-  trigger_identification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  de_escalation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trigger_identification_rate: number | null;
   children_mapped: number;
 }
 
@@ -124,7 +126,8 @@ export interface SensoryProfileSummary {
   overdue_reviews: number;
   // fab-0: null when no sensory profiles.
   avg_strategies: number | null;
-  child_views_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_views_rate: number | null;
 }
 
 export interface SleepAssessmentSummary {
@@ -132,8 +135,10 @@ export interface SleepAssessmentSummary {
   child_coverage: number;
   // fab-0: null when no sleep assessments.
   avg_hours: number | null;
-  good_quality_rate: number;
-  improving_trend_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  good_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improving_trend_rate: number | null;
   overdue_reviews: number;
 }
 
@@ -143,15 +148,19 @@ export interface EmotionalVocabSummary {
   // fab-0: null when no emotional vocab records.
   avg_feelings_recognised: number | null;
   breakthrough_count: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
 }
 
 export interface BereavementSummary {
   total_records: number;
   children_supported: number;
-  external_support_rate: number;
-  memory_work_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  external_support_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  memory_work_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
 }
 
 export interface AttachmentSummary {
@@ -160,15 +169,19 @@ export interface AttachmentSummary {
   overdue_reviews: number;
   // fab-0: null when no attachment profiles.
   avg_therapeutic_approaches: number | null;
-  child_views_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_views_rate: number | null;
 }
 
 export interface SelfSoothingSummary {
   total_toolkits: number;
   child_coverage: number;
-  child_led_rate: number;
-  effectiveness_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_led_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
 }
 
 export interface HomeTherapeuticProgressResult {
@@ -226,13 +239,13 @@ export function computeHomeTherapeuticProgress(
       therapeutic_rating: "insufficient_data",
       therapeutic_score: 0,
       headline: "No therapeutic data available for analysis.",
-      behaviour_map: { total_entries_90d: 0, crisis_count: 0, high_count: 0, de_escalation_rate: 0, trigger_identification_rate: 0, children_mapped: 0 },
-      sensory: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_strategies: null, child_views_rate: 0 },
-      sleep: { total_assessments: 0, child_coverage: 0, avg_hours: null, good_quality_rate: 0, improving_trend_rate: 0, overdue_reviews: 0 },
-      emotional_vocab: { total_records: 0, child_coverage: 0, avg_feelings_recognised: null, breakthrough_count: 0, child_voice_rate: 0 },
-      bereavement: { total_records: 0, children_supported: 0, external_support_rate: 0, memory_work_rate: 0, child_voice_rate: 0 },
-      attachment: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_therapeutic_approaches: null, child_views_rate: 0 },
-      self_soothing: { total_toolkits: 0, child_coverage: 0, child_led_rate: 0, effectiveness_rate: 0, child_voice_rate: 0 },
+      behaviour_map: { total_entries_90d: 0, crisis_count: 0, high_count: 0, de_escalation_rate: null, trigger_identification_rate: null, children_mapped: 0 },
+      sensory: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_strategies: null, child_views_rate: null },
+      sleep: { total_assessments: 0, child_coverage: 0, avg_hours: null, good_quality_rate: null, improving_trend_rate: null, overdue_reviews: 0 },
+      emotional_vocab: { total_records: 0, child_coverage: 0, avg_feelings_recognised: null, breakthrough_count: 0, child_voice_rate: null },
+      bereavement: { total_records: 0, children_supported: 0, external_support_rate: null, memory_work_rate: null, child_voice_rate: null },
+      attachment: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_therapeutic_approaches: null, child_views_rate: null },
+      self_soothing: { total_toolkits: 0, child_coverage: 0, child_led_rate: null, effectiveness_rate: null, child_voice_rate: null },
       strengths: [],
       concerns: [],
       recommendations: [],

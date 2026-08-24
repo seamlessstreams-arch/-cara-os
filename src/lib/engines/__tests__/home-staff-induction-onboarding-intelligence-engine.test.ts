@@ -290,7 +290,7 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
       expect(r.concerns[0]).toContain("12 staff recorded");
     });
 
-    it("insufficient_data has exactly 0 for all metric fields", () => {
+    it("insufficient_data leaves every rate unmeasured", () => {
       const r = computeStaffInductionOnboarding({
         today: "2026-05-28",
         total_staff: 0,
@@ -299,15 +299,15 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
         shadowing_records: [],
         handbook_acknowledgements: [],
       });
-      expect(r.completion_rate).toBe(0);
-      expect(r.agency_induction_completion_rate).toBe(0);
-      expect(r.safeguarding_coverage_rate).toBe(0);
-      expect(r.medication_coverage_rate).toBe(0);
-      expect(r.fire_safety_coverage_rate).toBe(0);
-      expect(r.shadowing_completion_rate).toBe(0);
-      expect(r.shadowing_competency_rate).toBe(0);
-      expect(r.handbook_acknowledgement_rate).toBe(0);
-      expect(r.lone_working_readiness_rate).toBe(0);
+      expect(r.completion_rate).toBeNull();
+      expect(r.agency_induction_completion_rate).toBeNull();
+      expect(r.safeguarding_coverage_rate).toBeNull();
+      expect(r.medication_coverage_rate).toBeNull();
+      expect(r.fire_safety_coverage_rate).toBeNull();
+      expect(r.shadowing_completion_rate).toBeNull();
+      expect(r.shadowing_competency_rate).toBeNull();
+      expect(r.handbook_acknowledgement_rate).toBeNull();
+      expect(r.lone_working_readiness_rate).toBeNull();
       expect(r.average_module_completion).toBe(0);
     });
   });

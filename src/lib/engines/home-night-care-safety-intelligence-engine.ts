@@ -87,9 +87,11 @@ export type NightCareRating =
 export interface NightCheckSummary {
   total_checks_30d: number;
   checks_per_child: number | null;
-  room_temp_ok_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  room_temp_ok_rate: number | null;
   concern_raised_count: number;
-  concern_follow_up_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  concern_follow_up_rate: number | null;
   scheduled_count: number;
   additional_count: number;
   children_checked: number;
@@ -97,7 +99,8 @@ export interface NightCheckSummary {
 
 export interface HandoverSummary {
   total_handovers: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
   avg_risk_briefing_count: number | null;
   avg_concerns_documented: number | null;
   avg_children_covered: number | null;
@@ -107,16 +110,20 @@ export interface AnxietySupportSummary {
   total_records: number;
   child_coverage: number;
   avg_strategies: number | null;
-  severe_crisis_with_referral_rate: number;
-  child_voice_rate: number;
-  child_preferences_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  severe_crisis_with_referral_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_preferences_rate: number | null;
 }
 
 export interface BedtimeRoutineSummary {
   total_routines: number;
   child_coverage: number;
   avg_effectiveness: number | null;
-  child_agreed_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_agreed_rate: number | null;
   avg_steps: number | null;
   overdue_reviews: number;
 }
@@ -125,24 +132,34 @@ export interface WakeUpRoutineSummary {
   total_routines: number;
   child_coverage: number;
   avg_effectiveness: number | null;
-  child_agreed_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_agreed_rate: number | null;
   avg_steps: number | null;
   overdue_reviews: number;
 }
 
 export interface SleepQualitySummary {
-  sleeping_rate: number;
-  settled_rate: number;
-  distressed_rate: number;
-  not_in_room_rate: number;
-  concern_resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleeping_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  settled_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  distressed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  not_in_room_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  concern_resolution_rate: number | null;
 }
 
 export interface ChildVoiceSummary {
-  anxiety_voice_rate: number;
-  bedtime_agreed_rate: number;
-  wakeup_agreed_rate: number;
-  anxiety_preferences_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  anxiety_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bedtime_agreed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wakeup_agreed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  anxiety_preferences_rate: number | null;
 }
 
 export interface ReviewComplianceSummary {
@@ -206,13 +223,13 @@ export function computeHomeNightCareSafety(
       night_care_rating: "insufficient_data",
       night_care_score: 0,
       headline: "No night care data available for analysis.",
-      night_checks: { total_checks_30d: 0, checks_per_child: null, room_temp_ok_rate: 0, concern_raised_count: 0, concern_follow_up_rate: 0, scheduled_count: 0, additional_count: 0, children_checked: 0 },
-      handovers: { total_handovers: 0, completion_rate: 0, avg_risk_briefing_count: null, avg_concerns_documented: null, avg_children_covered: null },
-      anxiety_support: { total_records: 0, child_coverage: 0, avg_strategies: null, severe_crisis_with_referral_rate: 0, child_voice_rate: 0, child_preferences_rate: 0 },
-      bedtime_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: 0, avg_steps: null, overdue_reviews: 0 },
-      wake_up_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: 0, avg_steps: null, overdue_reviews: 0 },
-      sleep_quality: { sleeping_rate: 0, settled_rate: 0, distressed_rate: 0, not_in_room_rate: 0, concern_resolution_rate: 0 },
-      child_voice: { anxiety_voice_rate: 0, bedtime_agreed_rate: 0, wakeup_agreed_rate: 0, anxiety_preferences_rate: 0 },
+      night_checks: { total_checks_30d: 0, checks_per_child: null, room_temp_ok_rate: null, concern_raised_count: 0, concern_follow_up_rate: null, scheduled_count: 0, additional_count: 0, children_checked: 0 },
+      handovers: { total_handovers: 0, completion_rate: null, avg_risk_briefing_count: null, avg_concerns_documented: null, avg_children_covered: null },
+      anxiety_support: { total_records: 0, child_coverage: 0, avg_strategies: null, severe_crisis_with_referral_rate: null, child_voice_rate: null, child_preferences_rate: null },
+      bedtime_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: null, avg_steps: null, overdue_reviews: 0 },
+      wake_up_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: null, avg_steps: null, overdue_reviews: 0 },
+      sleep_quality: { sleeping_rate: null, settled_rate: null, distressed_rate: null, not_in_room_rate: null, concern_resolution_rate: null },
+      child_voice: { anxiety_voice_rate: null, bedtime_agreed_rate: null, wakeup_agreed_rate: null, anxiety_preferences_rate: null },
       review_compliance: { anxiety_overdue: 0, bedtime_overdue: 0, wakeup_overdue: 0, total_overdue: 0 },
       strengths: [],
       concerns: [],

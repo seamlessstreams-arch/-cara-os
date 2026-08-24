@@ -81,17 +81,27 @@ export interface RegulatoryEvidenceCompletenessResult {
   evidence_score: number;
   headline: string;
   total_evidence_items: number;
-  filing_verified_rate: number;
-  filing_described_rate: number;
-  document_currency_rate: number;
-  document_signed_rate: number;
-  risk_assessment_currency_rate: number;
-  risk_mitigation_rate: number;
-  incident_report_rate: number;
-  incident_follow_up_rate: number;
-  high_severity_notification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  filing_verified_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  filing_described_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  document_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  document_signed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_assessment_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_mitigation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incident_report_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incident_follow_up_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  high_severity_notification_rate: number | null;
   evidence_category_coverage: number;
-  child_evidence_coverage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_evidence_coverage_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -158,17 +168,17 @@ export function computeRegulatoryEvidenceCompleteness(
       evidence_score: 15,
       headline: headlineFor("inadequate"),
       total_evidence_items: 0,
-      filing_verified_rate: 0,
-      filing_described_rate: 0,
-      document_currency_rate: 0,
-      document_signed_rate: 0,
-      risk_assessment_currency_rate: 0,
-      risk_mitigation_rate: 0,
-      incident_report_rate: 0,
-      incident_follow_up_rate: 0,
-      high_severity_notification_rate: 0,
+      filing_verified_rate: null,
+      filing_described_rate: null,
+      document_currency_rate: null,
+      document_signed_rate: null,
+      risk_assessment_currency_rate: null,
+      risk_mitigation_rate: null,
+      incident_report_rate: null,
+      incident_follow_up_rate: null,
+      high_severity_notification_rate: null,
       evidence_category_coverage: 0,
-      child_evidence_coverage_rate: 0,
+      child_evidence_coverage_rate: null,
       strengths: [],
       concerns: [
         "No regulatory evidence recorded despite active home with children/staff",
@@ -197,17 +207,17 @@ export function computeRegulatoryEvidenceCompleteness(
       evidence_score: 0,
       headline: headlineFor("insufficient_data"),
       total_evidence_items: 0,
-      filing_verified_rate: 0,
-      filing_described_rate: 0,
-      document_currency_rate: 0,
-      document_signed_rate: 0,
-      risk_assessment_currency_rate: 0,
-      risk_mitigation_rate: 0,
-      incident_report_rate: 0,
-      incident_follow_up_rate: 0,
-      high_severity_notification_rate: 0,
+      filing_verified_rate: null,
+      filing_described_rate: null,
+      document_currency_rate: null,
+      document_signed_rate: null,
+      risk_assessment_currency_rate: null,
+      risk_mitigation_rate: null,
+      incident_report_rate: null,
+      incident_follow_up_rate: null,
+      high_severity_notification_rate: null,
       evidence_category_coverage: 0,
-      child_evidence_coverage_rate: 0,
+      child_evidence_coverage_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

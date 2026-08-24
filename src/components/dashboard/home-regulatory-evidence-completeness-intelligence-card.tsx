@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,19 +75,19 @@ export function HomeRegulatoryEvidenceCompletenessIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Evidence</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.filing_verified_rate >= 90 ? "bg-green-50" : d.filing_verified_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.filing_verified_rate >= 90 ? "text-[--cs-success]" : d.filing_verified_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.filing_verified_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.filing_verified_rate >= 90 ? "text-[--cs-success]" : d.filing_verified_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.filing_verified_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Verified</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.document_currency_rate >= 95 ? "bg-green-50" : d.document_currency_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.document_currency_rate >= 95 ? "text-[--cs-success]" : d.document_currency_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.document_currency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.document_currency_rate >= 95 ? "text-[--cs-success]" : d.document_currency_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.document_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Current</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.risk_assessment_currency_rate >= 90 ? "bg-green-50" : d.risk_assessment_currency_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_currency_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_currency_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_assessment_currency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_currency_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_currency_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.risk_assessment_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risks</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.incident_report_rate >= 100 ? "bg-green-50" : d.incident_report_rate >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_report_rate >= 100 ? "text-[--cs-success]" : d.incident_report_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_report_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.incident_report_rate >= 100 ? "text-[--cs-success]" : d.incident_report_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.incident_report_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reports</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.evidence_category_coverage >= 6 ? "bg-green-50" : d.evidence_category_coverage >= 3 ? "bg-amber-50" : "bg-red-50")}>

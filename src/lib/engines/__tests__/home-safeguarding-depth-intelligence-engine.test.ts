@@ -843,14 +843,14 @@ describe("computeHomeSafeguardingDepth", () => {
       expect(r.supervision.avg_actions_completion_rate).toBe(100);
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("every rate is unmeasured when its denominator is 0", () => {
       const r = computeHomeSafeguardingDepth({
         today: TODAY, body_maps: [], disclosures: [], escalations: [],
         lado_referrals: [], safeguarding_supervisions: [], safe_touch_protocols: [],
         substance_screenings: [], total_children: 0, total_staff: 0,
       });
-      expect(r.body_maps.photo_evidence_rate).toBe(0);
-      expect(r.disclosures.response_within_1h_rate).toBe(0);
+      expect(r.body_maps.photo_evidence_rate).toBeNull();
+      expect(r.disclosures.response_within_1h_rate).toBeNull();
     });
   });
 });

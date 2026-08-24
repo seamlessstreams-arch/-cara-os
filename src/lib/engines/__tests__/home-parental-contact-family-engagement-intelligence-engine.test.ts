@@ -185,20 +185,20 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.insights).toHaveLength(0);
     });
 
-    it("returns all metric rates as 0 for insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computeParentalContactFamilyEngagement(baseInput());
-      expect(r.contact_compliance_rate).toBe(0);
-      expect(r.family_visit_quality_rate).toBe(0);
-      expect(r.parental_engagement_rate).toBe(0);
-      expect(r.supervised_contact_adherence_rate).toBe(0);
-      expect(r.family_support_coverage_rate).toBe(0);
-      expect(r.child_voice_in_contact_rate).toBe(0);
+      expect(r.contact_compliance_rate).toBeNull();
+      expect(r.family_visit_quality_rate).toBeNull();
+      expect(r.parental_engagement_rate).toBeNull();
+      expect(r.supervised_contact_adherence_rate).toBeNull();
+      expect(r.family_support_coverage_rate).toBeNull();
+      expect(r.child_voice_in_contact_rate).toBeNull();
       expect(r.contact_quality_avg).toBe(0);
-      expect(r.visit_risk_assessment_rate).toBe(0);
-      expect(r.parent_invitation_rate).toBe(0);
-      expect(r.parent_views_incorporation_rate).toBe(0);
-      expect(r.supervised_boundary_adherence_rate).toBe(0);
-      expect(r.family_support_attendance_rate).toBe(0);
+      expect(r.visit_risk_assessment_rate).toBeNull();
+      expect(r.parent_invitation_rate).toBeNull();
+      expect(r.parent_views_incorporation_rate).toBeNull();
+      expect(r.supervised_boundary_adherence_rate).toBeNull();
+      expect(r.family_support_attendance_rate).toBeNull();
     });
   });
 
@@ -251,7 +251,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.contact_compliance_rate).toBe(0);
       expect(r.family_visit_quality_rate).toBe(0);
       expect(r.parental_engagement_rate).toBe(0);
-      expect(r.supervised_contact_adherence_rate).toBeNull();;
+      expect(r.supervised_contact_adherence_rate).toBeNull();
     });
   });
 
@@ -2610,14 +2610,14 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.family_support_coverage_rate).toBe(33);
     });
 
-    it("supervised adherence is 0 when no supervised sessions", () => {
+    it("supervised_contact_adherence_rate is unmeasured when there are no supervised sessions", () => {
       const r = computeParentalContactFamilyEngagement(
         baseInput({
           total_children: 1,
           contact_schedule_records: [makeContact({ occurred: true })],
         }),
       );
-      expect(r.supervised_contact_adherence_rate).toBeNull();;
+      expect(r.supervised_contact_adherence_rate).toBeNull();
     });
 
     it("parent views incorporation rate is 0 when no parent participated", () => {
