@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { londonDateStr } from "@/lib/utils";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import { verifyPresence, type PresenceMethod, type PresenceResult, type PresenceBand } from "./presence-verification";
 import { persistSignInVerification } from "@/lib/supabase/workforce";
@@ -58,7 +59,16 @@ export function resolveSignInStaff(headers: { get(name: string): string | null }
 
 // ── Pure helpers (deterministic) ──────────────────────────────────────────────
 
-const ISO_DATE = (iso: string) => iso.slice(0, 10);
+// The calendar date of an instant, IN LONDON — because that is the timezone
+// shift.date is written in (todayStr() → londonDateStr()). Slicing the first
+// ten characters off an ISO string gives the UTC date instead, and between
+// 00:00 and 01:00 BST the two disagree: a staff member genuinely on shift was
+// told "You can only access this while on shift", because their shift was
+// filed under London's today and looked up under UTC's yesterday.
+const ISO_DATE = (iso: string) => {
+  const ms = Date.parse(iso);
+  return Number.isNaN(ms) ? iso.slice(0, 10) : londonDateStr(new Date(ms));
+};
 
 /** Build a comparable instant from a shift date (YYYY-MM-DD) + wall time (HH:MM). */
 export function scheduledInstant(date: string, hhmm: string): number | null {
@@ -123,7 +133,7 @@ function isOvernight(s: Shift): boolean {
 /** The calendar date (YYYY-MM-DD) one day before the given instant. */
 function prevDate(nowIso: string): string {
   const ms = Date.parse(nowIso);
-  return Number.isNaN(ms) ? ISO_DATE(nowIso) : ISO_DATE(new Date(ms - 86_400_000).toISOString());
+  return Number.isNaN(ms) ? ISO_DATE(nowIso) : londonDateStr(new Date(ms - 86_400_000));
 }
 
 /**
