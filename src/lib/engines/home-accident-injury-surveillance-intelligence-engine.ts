@@ -77,7 +77,6 @@ export interface AccidentInjuryResult {
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null { return rate(n, d); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): AccidentInjuryResult {
@@ -116,13 +115,13 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   // Safety checks
   const recentChecks = safety_checks.filter(c => daysBetween(c.date, today) <= 90 && daysBetween(c.date, today) >= 0);
   const checksPass = recentChecks.filter(c => c.passed).length;
-  const checkPassRate = pct(checksPass, recentChecks.length);
+  const checkPassRate = rate(checksPass, recentChecks.length);
   const issuesFound = recentChecks.reduce((s, c) => s + c.issues_found, 0);
   const issuesResolved = recentChecks.reduce((s, c) => s + c.issues_resolved, 0);
-  const issueResRate = pct(issuesResolved, issuesFound);
+  const issueResRate = rate(issuesResolved, issuesFound);
 
   // Global debrief rate
-  const debriefRate = pct(input.debrief_records_completed, input.debrief_records_total);
+  const debriefRate = rate(input.debrief_records_completed, input.debrief_records_total);
 
   // ── Scoring ─────────────────────────────────────────────────────────────
   let score = 52; // base
@@ -142,15 +141,15 @@ export function computeAccidentInjurySurveillance(input: AccidentInjuryInput): A
   else score -= 6;
 
   // Mod 3: Investigation & debrief (±5)
-  const investRate = pct(investigated, recent.length);
+  const investRate = rate(investigated, recent.length);
   if (recent.length === 0 || meets(investRate, 95)) score += 5;
   else if (meets(investRate, 80)) score += 3;
   else if (meets(investRate, 60)) score += 0;
   else score -= 5;
 
   // Mod 4: Injury response (±5)
-  const bodyMapRate = pct(bodyMapDone, recentInjuries.length);
-  const swReportRate = pct(reportedToSW, recentInjuries.length);
+  const bodyMapRate = rate(bodyMapDone, recentInjuries.length);
+  const swReportRate = rate(reportedToSW, recentInjuries.length);
   if (recentInjuries.length === 0) score += 5;
   else if (meets(bodyMapRate, 95) && meets(swReportRate, 90)) score += 5;
   else if (meets(bodyMapRate, 80) && meets(swReportRate, 70)) score += 2;

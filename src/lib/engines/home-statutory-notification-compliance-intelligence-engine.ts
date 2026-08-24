@@ -7,6 +7,8 @@
 // Pure deterministic engine — no imports, no LLM, no external deps.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface NotificationRecordInput {
@@ -84,10 +86,6 @@ export interface StatutoryNotificationComplianceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -183,27 +181,27 @@ export function computeStatutoryNotificationCompliance(
 
   // Timeliness: within_timeframe rate for notifications
   const timelyCount = recentNotifications.filter((n) => n.within_timeframe).length;
-  const timelinessRate = pct(timelyCount, recentNotifications.length);
+  const timelinessRate = rate(timelyCount, recentNotifications.length);
 
   // Completeness: notification_sent for all required notifiable events
   const requiredEvents = recentEvents.filter((e) => e.notification_required);
   const sentCount = requiredEvents.filter((e) => e.notification_sent).length;
-  const completenessRate = pct(sentCount, requiredEvents.length);
+  const completenessRate = rate(sentCount, requiredEvents.length);
 
   // Documentation quality: has_event_summary AND has_linked_event
   const documentedCount = recentNotifications.filter(
     (n) => n.has_event_summary && n.has_linked_event,
   ).length;
-  const documentationRate = pct(documentedCount, recentNotifications.length);
+  const documentationRate = rate(documentedCount, recentNotifications.length);
 
   // Follow-up compliance: follow_up_completed for all follow_up_required events
   const followUpRequired = recentEvents.filter((e) => e.follow_up_required);
   const followUpCompleted = followUpRequired.filter((e) => e.follow_up_completed).length;
-  const followUpRate = pct(followUpCompleted, followUpRequired.length);
+  const followUpRate = rate(followUpCompleted, followUpRequired.length);
 
   // Acknowledgement tracking
   const ackedCount = recentNotifications.filter((n) => n.acknowledgement_received).length;
-  const acknowledgementRate = pct(ackedCount, recentNotifications.length);
+  const acknowledgementRate = rate(ackedCount, recentNotifications.length);
 
   // Missed notifications: events that required notification but none sent
   const missedNotifications = requiredEvents.filter((e) => !e.notification_sent).length;
@@ -216,11 +214,11 @@ export function computeStatutoryNotificationCompliance(
     score += 0;
   } else if (timelinessRate === 100) {
     score += 6;
-  } else if (timelinessRate >= 90) {
+  } else if (meets(timelinessRate, 90)) {
     score += 3;
-  } else if (timelinessRate < 50) {
+  } else if (below(timelinessRate, 50)) {
     score += -5 + -3; // <70% penalty + <50% extra penalty
-  } else if (timelinessRate < 70) {
+  } else if (below(timelinessRate, 70)) {
     score -= 5;
   } else {
     score += 0; // 70-89% — no bonus, no penalty
@@ -233,9 +231,9 @@ export function computeStatutoryNotificationCompliance(
     score += 1;
   } else if (completenessRate === 100) {
     score += 5;
-  } else if (completenessRate >= 90) {
+  } else if (meets(completenessRate, 90)) {
     score += 2;
-  } else if (completenessRate < 70) {
+  } else if (below(completenessRate, 70)) {
     score -= 5;
   } else {
     score += 0; // 70-89% — neutral
@@ -244,11 +242,11 @@ export function computeStatutoryNotificationCompliance(
   // Modifier 3: Documentation quality
   if (recentNotifications.length === 0) {
     score -= 1;
-  } else if (documentationRate >= 95) {
+  } else if (meets(documentationRate, 95)) {
     score += 5;
-  } else if (documentationRate >= 80) {
+  } else if (meets(documentationRate, 80)) {
     score += 2;
-  } else if (documentationRate < 60) {
+  } else if (below(documentationRate, 60)) {
     score -= 4;
   } else {
     score += 0; // 60-79% — neutral
@@ -261,9 +259,9 @@ export function computeStatutoryNotificationCompliance(
     score += 1;
   } else if (followUpRate === 100) {
     score += 5;
-  } else if (followUpRate >= 80) {
+  } else if (meets(followUpRate, 80)) {
     score += 2;
-  } else if (followUpRate < 60) {
+  } else if (below(followUpRate, 60)) {
     score -= 4;
   } else {
     score += 0; // 60-79% — neutral
@@ -272,11 +270,11 @@ export function computeStatutoryNotificationCompliance(
   // Modifier 5: Acknowledgement tracking
   if (recentNotifications.length === 0) {
     score -= 1;
-  } else if (acknowledgementRate >= 90) {
+  } else if (meets(acknowledgementRate, 90)) {
     score += 4;
-  } else if (acknowledgementRate >= 70) {
+  } else if (meets(acknowledgementRate, 70)) {
     score += 2;
-  } else if (acknowledgementRate < 50) {
+  } else if (below(acknowledgementRate, 50)) {
     score -= 4;
   } else {
     score += 0; // 50-69% — neutral
@@ -290,7 +288,7 @@ export function computeStatutoryNotificationCompliance(
     const withRegulation = recentNotifications.filter(
       (n) => n.regulation && n.regulation.trim().length > 0,
     ).length;
-    const regulationRate = pct(withRegulation, recentNotifications.length);
+    const regulationRate = rate(withRegulation, recentNotifications.length);
 
     // Check recipient matching against known statutory recipients
     let correctRecipientCount = 0;
@@ -300,9 +298,11 @@ export function computeStatutoryNotificationCompliance(
         correctRecipientCount++;
       }
     }
-    const recipientRate = pct(correctRecipientCount, recentNotifications.length);
+    const recipientRate = rate(correctRecipientCount, recentNotifications.length);
 
-    const combinedRegulatoryRate = Math.round((regulationRate + recipientRate) / 2);
+    // Both rates share the same guarded denominator above, so meanOf is
+    // never dropping an unmeasured term here — it's just the cleaner idiom.
+    const combinedRegulatoryRate = meanOf([regulationRate, recipientRate])!;
 
     if (combinedRegulatoryRate >= 90) {
       score += 5;
@@ -329,7 +329,7 @@ export function computeStatutoryNotificationCompliance(
       "Every notifiable event requiring notification has been reported — no missed statutory duties.",
     );
   }
-  if (documentationRate >= 95 && recentNotifications.length > 0) {
+  if (meets(documentationRate, 95) && recentNotifications.length > 0) {
     strengths.push(
       "Notification documentation is thorough — event summaries and linked events consistently recorded.",
     );
@@ -339,7 +339,7 @@ export function computeStatutoryNotificationCompliance(
       "All follow-up actions completed for events requiring them — responsive post-event management.",
     );
   }
-  if (acknowledgementRate >= 90 && recentNotifications.length > 0) {
+  if (meets(acknowledgementRate, 90) && recentNotifications.length > 0) {
     strengths.push(
       "High rate of acknowledgement tracking — evidence of effective communication with statutory bodies.",
     );
@@ -353,7 +353,7 @@ export function computeStatutoryNotificationCompliance(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (timelinessRate < 70 && recentNotifications.length > 0) {
+  if (below(timelinessRate, 70) && recentNotifications.length > 0) {
     concerns.push(
       `Only ${timelinessRate}% of notifications submitted within required timeframes — regulatory breach risk.`,
     );
@@ -363,17 +363,17 @@ export function computeStatutoryNotificationCompliance(
       `${missedNotifications} notifiable event${missedNotifications > 1 ? "s" : ""} required notification but none was sent — statutory duty not met.`,
     );
   }
-  if (documentationRate < 60 && recentNotifications.length > 0) {
+  if (below(documentationRate, 60) && recentNotifications.length > 0) {
     concerns.push(
       `Documentation quality at ${documentationRate}% — event summaries or linked events missing from notifications.`,
     );
   }
-  if (followUpRate < 60 && followUpRequired.length > 0) {
+  if (below(followUpRate, 60) && followUpRequired.length > 0) {
     concerns.push(
       `Only ${followUpRate}% of required follow-ups completed — events without closure increase risk.`,
     );
   }
-  if (acknowledgementRate < 50 && recentNotifications.length > 0) {
+  if (below(acknowledgementRate, 50) && recentNotifications.length > 0) {
     concerns.push(
       `Only ${acknowledgementRate}% of notifications have acknowledgement received — unclear if statutory bodies are aware.`,
     );
@@ -396,23 +396,23 @@ export function computeStatutoryNotificationCompliance(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (timelinessRate < 100 && recentNotifications.length > 0) {
+  if (below(timelinessRate, 100) && recentNotifications.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Review notification procedures to ensure all statutory notifications are submitted within required timeframes.",
-      urgency: timelinessRate < 70 ? "immediate" : "soon",
+      urgency: below(timelinessRate, 70) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (followUpRate < 100 && followUpRequired.length > 0) {
+  if (below(followUpRate, 100) && followUpRequired.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Complete all outstanding follow-up actions for notifiable events to evidence responsive management.",
-      urgency: followUpRate < 60 ? "immediate" : "soon",
+      urgency: below(followUpRate, 60) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (documentationRate < 80 && recentNotifications.length > 0) {
+  if (below(documentationRate, 80) && recentNotifications.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Improve notification documentation — ensure every notification has an event summary and is linked to the originating event.",
@@ -420,7 +420,7 @@ export function computeStatutoryNotificationCompliance(
       regulatory_ref: "Schedule 5 CHR 2015",
     });
   }
-  if (acknowledgementRate < 70 && recentNotifications.length > 0) {
+  if (below(acknowledgementRate, 70) && recentNotifications.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Establish acknowledgement tracking process — follow up with statutory bodies to confirm receipt of all notifications.",
@@ -446,7 +446,7 @@ export function computeStatutoryNotificationCompliance(
       severity: "critical",
     });
   }
-  if (timelinessRate < 50 && recentNotifications.length > 0) {
+  if (below(timelinessRate, 50) && recentNotifications.length > 0) {
     insights.push({
       text: `Less than half of notifications were submitted on time. Ofsted will view persistent late notification as evidence of poor leadership and governance.`,
       severity: "critical",
@@ -470,13 +470,13 @@ export function computeStatutoryNotificationCompliance(
       severity: "positive",
     });
   }
-  if (documentationRate >= 95 && recentNotifications.length > 0) {
+  if (meets(documentationRate, 95) && recentNotifications.length > 0) {
     insights.push({
       text: "Notification documentation is consistently thorough. Ofsted will view this as evidence of effective record-keeping and governance.",
       severity: "positive",
     });
   }
-  if (acknowledgementRate < 50 && recentNotifications.length > 0) {
+  if (below(acknowledgementRate, 50) && recentNotifications.length > 0) {
     insights.push({
       text: "Low acknowledgement rates may indicate notifications are not reaching the intended recipients — this undermines the purpose of statutory notification.",
       severity: "warning",
@@ -494,7 +494,7 @@ export function computeStatutoryNotificationCompliance(
   if (rating === "outstanding") {
     headline = `Outstanding statutory notification compliance — ${recentNotifications.length} notification${recentNotifications.length !== 1 ? "s" : ""} with ${timelinessRate}% timeliness and ${missedNotifications === 0 ? "no" : missedNotifications} missed.`;
   } else if (rating === "good") {
-    headline = `Good statutory notification compliance — minor gaps in ${timelinessRate < 100 ? "timeliness" : "documentation or follow-up"}.`;
+    headline = `Good statutory notification compliance — minor gaps in ${below(timelinessRate, 100) ? "timeliness" : "documentation or follow-up"}.`;
   } else if (rating === "adequate") {
     headline = `Adequate statutory notification compliance — improvements needed in timeliness, completeness, or follow-up.`;
   } else {

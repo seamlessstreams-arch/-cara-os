@@ -11,6 +11,8 @@
 // Reg 5 (placement plan). SCCIF: "Safety of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type RiskDomain =
@@ -166,10 +168,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeChildRiskProfile(
@@ -238,7 +236,7 @@ export function computeChildRiskProfile(
     effective_count: effectiveM.length,
     partially_effective_count: partiallyM.length,
     not_effective_count: notEffectiveM.length,
-    effectiveness_rate: pct(effectiveM.length + partiallyM.length, allMitigations.length),
+    effectiveness_rate: rate(effectiveM.length + partiallyM.length, allMitigations.length),
     not_yet_assessed_count: notAssessedM.length,
   };
 
@@ -250,7 +248,7 @@ export function computeChildRiskProfile(
     total_current: current.length,
     overdue_count: overdueReviews.length,
     reviews_with_child_views: withViews.length,
-    child_views_rate: pct(withViews.length, current.length),
+    child_views_rate: rate(withViews.length, current.length),
   };
 
   // ── Score ─────────────────────────────────────────────────────────────
@@ -260,7 +258,7 @@ export function computeChildRiskProfile(
     score = 0;
   } else {
     // Risk trajectory
-    const improvingRate = pct(improving.length, current.length);
+    const improvingRate = rate(improving.length, current.length);
     if ((improvingRate ?? 0) >= 60) score += 15;
     else if ((improvingRate ?? 0) >= 40) score += 8;
     if (escalating.length > 0) score -= escalating.length * 5;
@@ -319,7 +317,7 @@ export function computeChildRiskProfile(
     strengths.push(`Risk management rated ${management_rating} (${score}%). Risks are comprehensively assessed, mitigations are working, and ${child_name}'s risk profile is being actively managed and reduced.`);
   }
 
-  if (improving.length > 0 && (pct(improving.length, current.length) ?? 0) >= 50) {
+  if (improving.length > 0 && (rate(improving.length, current.length) ?? 0) >= 50) {
     const improvingNames = improving.map((a) => DOMAIN_LABELS[a.domain]).join(", ");
     strengths.push(`${improving.length} risk${improving.length !== 1 ? "s" : ""} reducing (${improvingNames}). Active risk reduction demonstrates that interventions are working and the child's safety is improving.`);
   }

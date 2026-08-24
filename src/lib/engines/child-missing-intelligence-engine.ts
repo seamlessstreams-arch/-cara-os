@@ -12,6 +12,8 @@
 // SCCIF: "Safety of children", "Children missing from care."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface MissingEpisodeInput {
@@ -131,10 +133,6 @@ function clamp(v: number, lo: number, hi: number): number {
 
 function avg(values: number[]): number | null {
   return values.length > 0  ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10  : null;
-}
-
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 const RISK_ORDER: Record<string, number> = {
@@ -279,10 +277,10 @@ export function computeChildMissing(
   const policeForHighRisk = highCritical.filter((e) => e.reported_to_police);
 
   const response_quality: ResponseQuality = {
-    return_interview_rate: pct(riCompleted.length, returnedEpisodes.length),
+    return_interview_rate: rate(riCompleted.length, returnedEpisodes.length),
     avg_ri_delay_days: avg(riDelays),
-    police_reporting_rate: pct(policeForHighRisk.length, highCritical.length),
-    la_notification_rate: pct(laCount.length, returnedEpisodes.length),
+    police_reporting_rate: rate(policeForHighRisk.length, highCritical.length),
+    la_notification_rate: rate(laCount.length, returnedEpisodes.length),
   };
 
   // ── Patterns ─────────────────────────────────────────────────────────

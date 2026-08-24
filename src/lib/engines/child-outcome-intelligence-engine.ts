@@ -11,6 +11,8 @@
 // Reg 13 (promoting independence). SCCIF: "Progress and outcomes."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type OutcomeDomain =
@@ -159,10 +161,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 function avg(nums: number[]): number {
   if (nums.length === 0) return 0;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
@@ -199,7 +197,7 @@ export function computeChildOutcome(
     declining_count: decliningActive.length,
     avg_progress: avgProgress,
     targets_with_yp_voice: targetsWithVoice.length,
-    yp_voice_rate: pct(targetsWithVoice.length, targets.length),
+    yp_voice_rate: rate(targetsWithVoice.length, targets.length),
   };
 
   // ── Domain Profiles ───────────────────────────────────────────────────
@@ -259,7 +257,7 @@ export function computeChildOutcome(
   const review_compliance: ReviewCompliance = {
     total_reviews: reviews.length,
     reviews_with_yp: reviewsWithYP.length,
-    yp_participation_rate: pct(reviewsWithYP.length, reviews.length),
+    yp_participation_rate: rate(reviewsWithYP.length, reviews.length),
     reviews_with_barriers: reviewsWithBarriers.length,
     overdue_reviews: overdueTargets.length,
     avg_days_between_reviews: targetReviewGaps.length > 0 ? Math.round(avg(targetReviewGaps)) : null,
@@ -272,8 +270,8 @@ export function computeChildOutcome(
     score = 0;
   } else {
     // Progress direction weighting
-    const improvingRate = pct(improvingActive.length, activeTargets.length);
-    const decliningRate = pct(decliningActive.length, activeTargets.length);
+    const improvingRate = rate(improvingActive.length, activeTargets.length);
+    const decliningRate = rate(decliningActive.length, activeTargets.length);
 
     if ((improvingRate ?? 0) >= 70) score += 15;
     else if ((improvingRate ?? 0) >= 50) score += 8;
@@ -336,8 +334,8 @@ export function computeChildOutcome(
     strengths.push(`Outcome tracking rated ${progress_rating} (${score}%). ${child_name}'s targets show clear progress with evidence of real change in the child's life.`);
   }
 
-  if (improvingActive.length > 0 && (pct(improvingActive.length, activeTargets.length) ?? 0) >= 60) {
-    strengths.push(`${pct(improvingActive.length, activeTargets.length)}% of active targets are improving. This demonstrates that interventions and care planning are translating into measurable progress for ${child_name}.`);
+  if (improvingActive.length > 0 && (rate(improvingActive.length, activeTargets.length) ?? 0) >= 60) {
+    strengths.push(`${rate(improvingActive.length, activeTargets.length)}% of active targets are improving. This demonstrates that interventions and care planning are translating into measurable progress for ${child_name}.`);
   }
 
   if (achievedTargets.length > 0) {

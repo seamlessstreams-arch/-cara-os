@@ -11,7 +11,7 @@
 // Reg 7 (children's views), Reg 10 (daily life). SCCIF: "Quality of care."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { rate, meets } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -130,10 +130,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 function avg(nums: number[]): number {
   if (nums.length === 0) return 0;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
@@ -189,9 +185,9 @@ export function computeChildKeyworking(
     avg_mood_before: avg(moodBefores),
     avg_mood_after: avg(moodAfters),
     avg_improvement: avg(moodChanges),
-    positive_impact_rate: pct(positiveImpact.length, sessions.length),
-    no_change_rate: pct(noChange.length, sessions.length),
-    negative_impact_rate: pct(negativeImpact.length, sessions.length),
+    positive_impact_rate: rate(positiveImpact.length, sessions.length),
+    no_change_rate: rate(noChange.length, sessions.length),
+    negative_impact_rate: rate(negativeImpact.length, sessions.length),
   };
 
   // ── Session Type Breakdown ────────────────────────────────────────────
@@ -203,7 +199,7 @@ export function computeChildKeyworking(
     .map(([type, count]) => ({
       type,
       count,
-      percentage: pct(count, sessions.length),
+      percentage: rate(count, sessions.length),
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -215,9 +211,9 @@ export function computeChildKeyworking(
   const uniqueTopics = new Set(allTopics.map((t) => t.toLowerCase().trim()));
 
   const quality_metrics: QualityMetrics = {
-    child_voice_rate: pct(withVoice.length, sessions.length),
-    follow_up_set_rate: pct(withFollowUp.length, sessions.length),
-    follow_up_completion_rate: pct(followUpCompleted.length, withFollowUp.length),
+    child_voice_rate: rate(withVoice.length, sessions.length),
+    follow_up_set_rate: rate(withFollowUp.length, sessions.length),
+    follow_up_completion_rate: rate(followUpCompleted.length, withFollowUp.length),
     avg_duration_minutes: Math.round(avg(sessions.map((s) => s.duration_minutes))),
     avg_actions_per_session: avg(sessions.map((s) => s.actions_count)),
     topic_variety: uniqueTopics.size,

@@ -412,7 +412,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
       expect(r.completeness_rate).toBe(0);
     });
 
-    it("completeness_rate is 0 when no events require notification", () => {
+    it("completeness_rate is unmeasured when no events require notification", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifiable_events: [
@@ -420,7 +420,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.completeness_rate).toBe(0);
+      expect(r.completeness_rate).toBeNull();
     });
 
     it("calculates documentation_rate correctly — all documented", () => {
@@ -482,7 +482,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
       expect(r.follow_up_rate).toBe(50);
     });
 
-    it("follow_up_rate is 0 when no follow-ups required", () => {
+    it("follow_up_rate is unmeasured when no follow-ups required", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifiable_events: [
@@ -490,7 +490,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.follow_up_rate).toBe(0);
+      expect(r.follow_up_rate).toBeNull();
     });
 
     it("calculates acknowledgement_rate correctly", () => {
@@ -650,7 +650,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
         }),
       );
       // Score should reflect other modifiers but not timeliness
-      expect(r.timeliness_rate).toBe(0);
+      expect(r.timeliness_rate).toBeNull();
     });
   });
 
@@ -1020,7 +1020,7 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
         }),
       );
       // The modifier contributes -1 among others
-      expect(r.acknowledgement_rate).toBe(0);
+      expect(r.acknowledgement_rate).toBeNull();
     });
   });
 
@@ -2738,17 +2738,17 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
   // ═══════════════════════════════════════════════════════════════════════════
 
   describe("pct helper behaviour", () => {
-    it("returns 0 when denominator is 0 — timeliness with 0 notifications", () => {
+    it("timeliness_rate is unmeasured for a zero denominator", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifications: [],
           notifiable_events: [makeEvent({ id: "ev1" })],
         }),
       );
-      expect(r.timeliness_rate).toBe(0);
+      expect(r.timeliness_rate).toBeNull();
     });
 
-    it("returns 0 when denominator is 0 — completeness with 0 required events", () => {
+    it("completeness_rate is unmeasured for a zero denominator", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifiable_events: [
@@ -2756,10 +2756,10 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.completeness_rate).toBe(0);
+      expect(r.completeness_rate).toBeNull();
     });
 
-    it("returns 0 when denominator is 0 — follow-up with 0 required", () => {
+    it("follow_up_rate is unmeasured for a zero denominator", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifiable_events: [
@@ -2767,27 +2767,27 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.follow_up_rate).toBe(0);
+      expect(r.follow_up_rate).toBeNull();
     });
 
-    it("returns 0 when denominator is 0 — acknowledgement with 0 notifications", () => {
+    it("acknowledgement_rate is unmeasured for a zero denominator", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifications: [],
           notifiable_events: [makeEvent({ id: "ev1" })],
         }),
       );
-      expect(r.acknowledgement_rate).toBe(0);
+      expect(r.acknowledgement_rate).toBeNull();
     });
 
-    it("returns 0 when denominator is 0 — documentation with 0 notifications", () => {
+    it("documentation_rate is unmeasured for a zero denominator", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({
           notifications: [],
           notifiable_events: [makeEvent({ id: "ev1" })],
         }),
       );
-      expect(r.documentation_rate).toBe(0);
+      expect(r.documentation_rate).toBeNull();
     });
 
     it("rounds percentages correctly — 1/3 = 33", () => {

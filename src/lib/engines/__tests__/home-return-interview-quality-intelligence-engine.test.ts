@@ -973,12 +973,12 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
       expect(r.action_completion_rate).toBe(63); // Math.round(5/8 * 100)
     });
 
-    it("returns action_completion_rate of 0 when no actions exist", () => {
+    it("action_completion_rate is unmeasured when no actions exist", () => {
       const interviews = [
         makeInterview({ actions_total: 0, actions_completed: 0 }),
       ];
       const r = computeReturnInterviewQuality(baseInput({ interviews }));
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
     });
 
     it("calculates information_sharing_rate correctly", () => {
@@ -997,14 +997,14 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
       expect(r.total_interviews).toBe(3);
     });
 
-    it("all rates are 0 when no interviews exist (but total_children > 0)", () => {
+    it("leaves every rate unmeasured when no interviews exist (but total_children > 0)", () => {
       const r = computeReturnInterviewQuality(baseInput({ interviews: [] }));
-      expect(r.completion_rate).toBe(0);
-      expect(r.independence_rate).toBe(0);
-      expect(r.child_voice_rate).toBe(0);
-      expect(r.exploitation_screening_rate).toBe(0);
-      expect(r.action_completion_rate).toBe(0);
-      expect(r.information_sharing_rate).toBe(0);
+      expect(r.completion_rate).toBeNull();
+      expect(r.independence_rate).toBeNull();
+      expect(r.child_voice_rate).toBeNull();
+      expect(r.exploitation_screening_rate).toBeNull();
+      expect(r.action_completion_rate).toBeNull();
+      expect(r.information_sharing_rate).toBeNull();
     });
   });
 
@@ -1687,7 +1687,7 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
       expect(r.information_sharing_rate).toBe(100);
     });
 
-    it("correctly handles 0% rates for a single worst-case interview", () => {
+    it("a single worst-case interview scores 0% on five rates, and leaves action_completion_rate unmeasured (0 actions of 0)", () => {
       const interviews = [
         makeInterview({
           interview_status: "pending",
@@ -1707,7 +1707,7 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
       expect(r.independence_rate).toBe(0);
       expect(r.child_voice_rate).toBe(0);
       expect(r.exploitation_screening_rate).toBe(0);
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
       expect(r.information_sharing_rate).toBe(0);
     });
 

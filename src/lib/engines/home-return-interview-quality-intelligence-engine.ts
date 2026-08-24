@@ -5,6 +5,8 @@
 // CHR 2015 Reg 12: "The protection of children standard." SCCIF: Safeguarding.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ReturnInterviewRecordInput {
@@ -67,10 +69,6 @@ export interface ReturnInterviewQualityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -113,24 +111,24 @@ export function computeReturnInterviewQuality(
   const total = interviews.length;
 
   const completed = interviews.filter(i => i.interview_status === "completed").length;
-  const completionRate = pct(completed, total);
+  const completionRate = rate(completed, total);
 
   const independent = interviews.filter(i => i.independent_of_home).length;
-  const independenceRate = pct(independent, total);
+  const independenceRate = rate(independent, total);
 
   const withVoice = interviews.filter(i => i.has_child_voice).length;
-  const childVoiceRate = pct(withVoice, total);
+  const childVoiceRate = rate(withVoice, total);
 
   // Exploitation screening: interviews where exploitation is flagged or risks identified
   const withExploitationScreening = interviews.filter(i => i.exploitation_concerns || i.risks_identified_count > 0).length;
-  const exploitationScreeningRate = pct(withExploitationScreening, total);
+  const exploitationScreeningRate = rate(withExploitationScreening, total);
 
   const totalActions = interviews.reduce((s, i) => s + i.actions_total, 0);
   const completedActions = interviews.reduce((s, i) => s + i.actions_completed, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const withSharing = interviews.filter(i => i.shared_with_count > 0).length;
-  const sharingRate = pct(withSharing, total);
+  const sharingRate = rate(withSharing, total);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -139,27 +137,27 @@ export function computeReturnInterviewQuality(
   if (total === 0) {
     score -= 3;
   } else {
-    if (completionRate >= 90) score += 6;
-    else if (completionRate >= 70) score += 2;
-    else if (completionRate < 50) score -= 5;
+    if (meets(completionRate, 90)) score += 6;
+    else if (meets(completionRate, 70)) score += 2;
+    else if (below(completionRate, 50)) score -= 5;
   }
 
   // Modifier 2: Independence rate (independent person conducts interview)
   if (total === 0) {
     // no adjustment
   } else {
-    if (independenceRate >= 80) score += 5;
-    else if (independenceRate >= 50) score += 2;
-    else if (independenceRate < 30) score -= 5;
+    if (meets(independenceRate, 80)) score += 5;
+    else if (meets(independenceRate, 50)) score += 2;
+    else if (below(independenceRate, 30)) score -= 5;
   }
 
   // Modifier 3: Child voice captured
   if (total === 0) {
     score -= 1;
   } else {
-    if (childVoiceRate >= 90) score += 5;
-    else if (childVoiceRate >= 70) score += 2;
-    else if (childVoiceRate < 50) score -= 4;
+    if (meets(childVoiceRate, 90)) score += 5;
+    else if (meets(childVoiceRate, 70)) score += 2;
+    else if (below(childVoiceRate, 50)) score -= 4;
   }
 
   // Modifier 4: Action completion
@@ -168,29 +166,29 @@ export function computeReturnInterviewQuality(
   } else if (totalActions === 0) {
     // no interviews
   } else {
-    if (actionCompletionRate >= 85) score += 5;
-    else if (actionCompletionRate >= 60) score += 2;
-    else if (actionCompletionRate < 40) score -= 5;
+    if (meets(actionCompletionRate, 85)) score += 5;
+    else if (meets(actionCompletionRate, 60)) score += 2;
+    else if (below(actionCompletionRate, 40)) score -= 5;
   }
 
   // Modifier 5: Information sharing
   if (total === 0) {
     score -= 1;
   } else {
-    if (sharingRate >= 80) score += 4;
-    else if (sharingRate >= 50) score += 1;
-    else if (sharingRate < 30) score -= 4;
+    if (meets(sharingRate, 80)) score += 4;
+    else if (meets(sharingRate, 50)) score += 1;
+    else if (below(sharingRate, 30)) score -= 4;
   }
 
   // Modifier 6: Push/pull factor analysis depth
   const withFactors = interviews.filter(i => i.has_push_factors || i.has_pull_factors).length;
-  const factorRate = pct(withFactors, total);
+  const factorRate = rate(withFactors, total);
   if (total === 0) {
     score -= 2;
   } else {
-    if (factorRate >= 80) score += 5;
-    else if (factorRate >= 50) score += 2;
-    else if (factorRate < 30) score -= 3;
+    if (meets(factorRate, 80)) score += 5;
+    else if (meets(factorRate, 50)) score += 2;
+    else if (below(factorRate, 30)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -217,21 +215,21 @@ export function computeReturnInterviewQuality(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (completionRate >= 90 && total > 0) strengths.push("Return interviews are completed for virtually all missing episodes");
-  if (independenceRate >= 80 && total > 0) strengths.push("Interviews are conducted by independent persons — children can speak freely");
-  if (childVoiceRate >= 90 && total > 0) strengths.push("Children's voices are consistently captured in return interviews");
-  if (actionCompletionRate >= 85 && totalActions > 0) strengths.push("Actions from return interviews are followed through effectively");
-  if (sharingRate >= 80 && total > 0) strengths.push("Information is shared with relevant professionals after every interview");
-  if (factorRate >= 80 && total > 0) strengths.push("Push and pull factors are thoroughly analysed to understand why children go missing");
+  if (meets(completionRate, 90) && total > 0) strengths.push("Return interviews are completed for virtually all missing episodes");
+  if (meets(independenceRate, 80) && total > 0) strengths.push("Interviews are conducted by independent persons — children can speak freely");
+  if (meets(childVoiceRate, 90) && total > 0) strengths.push("Children's voices are consistently captured in return interviews");
+  if (meets(actionCompletionRate, 85) && totalActions > 0) strengths.push("Actions from return interviews are followed through effectively");
+  if (meets(sharingRate, 80) && total > 0) strengths.push("Information is shared with relevant professionals after every interview");
+  if (meets(factorRate, 80) && total > 0) strengths.push("Push and pull factors are thoroughly analysed to understand why children go missing");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No return interviews recorded — statutory safeguarding requirement is not being met");
-  if (completionRate < 50 && total > 0) concerns.push("Most return interviews are not completed — children are not being heard after missing episodes");
-  if (independenceRate < 30 && total > 0) concerns.push("Return interviews lack independence — children may not feel safe to disclose");
-  if (childVoiceRate < 50 && total > 0) concerns.push("Children's views are missing from most return interviews");
-  if (actionCompletionRate < 40 && totalActions > 0) concerns.push("Actions from return interviews are not being completed — learning is lost");
-  if (sharingRate < 30 && total > 0) concerns.push("Interview findings are rarely shared with partners — safeguarding intelligence is siloed");
+  if (below(completionRate, 50) && total > 0) concerns.push("Most return interviews are not completed — children are not being heard after missing episodes");
+  if (below(independenceRate, 30) && total > 0) concerns.push("Return interviews lack independence — children may not feel safe to disclose");
+  if (below(childVoiceRate, 50) && total > 0) concerns.push("Children's views are missing from most return interviews");
+  if (below(actionCompletionRate, 40) && totalActions > 0) concerns.push("Actions from return interviews are not being completed — learning is lost");
+  if (below(sharingRate, 30) && total > 0) concerns.push("Interview findings are rarely shared with partners — safeguarding intelligence is siloed");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: ReturnInterviewQualityResult["recommendations"] = [];
@@ -239,19 +237,19 @@ export function computeReturnInterviewQuality(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Implement return home interviews for all missing episodes as a statutory requirement", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (completionRate < 70 && total > 0) {
+  if (below(completionRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure return interviews are offered and completed within 72 hours of every return", urgency: "immediate", regulatory_ref: "SCCIF Safeguarding" });
   }
-  if (independenceRate < 50 && total > 0) {
+  if (below(independenceRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Commission independent return interviewers to ensure children can speak freely", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (childVoiceRate < 70 && total > 0) {
+  if (below(childVoiceRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Strengthen child voice capture in return interviews using creative engagement tools", urgency: "soon", regulatory_ref: "SCCIF Voice of Child" });
   }
-  if (actionCompletionRate < 60 && totalActions > 0) {
+  if (below(actionCompletionRate, 60) && totalActions > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Track and complete all actions arising from return interviews to close the learning loop", urgency: "soon", regulatory_ref: "SCCIF Safeguarding" });
   }
-  if (sharingRate < 50 && total > 0) {
+  if (below(sharingRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Share return interview findings with social workers and police as standard practice", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
@@ -260,19 +258,19 @@ export function computeReturnInterviewQuality(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: ReturnInterviewQualityResult["insights"] = [];
 
-  if (completionRate >= 90 && independenceRate >= 80 && childVoiceRate >= 90 && total >= 5) {
+  if (meets(completionRate, 90) && meets(independenceRate, 80) && meets(childVoiceRate, 90) && total >= 5) {
     insights.push({ text: "Return interview practice is exemplary — children are heard, protected and understood after every missing episode", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No return interviews means the home cannot demonstrate it understands why children go missing — a critical regulatory gap", severity: "critical" });
   }
-  if (independenceRate < 30 && total > 0) {
+  if (below(independenceRate, 30) && total > 0) {
     insights.push({ text: "Without independent interviewers, children may not disclose exploitation, abuse or peer pressure", severity: "warning" });
   }
-  if (childVoiceRate >= 90 && total > 0) {
+  if (meets(childVoiceRate, 90) && total > 0) {
     insights.push({ text: "Strong child voice capture means the home truly understands what drives missing behaviour", severity: "positive" });
   }
-  if (actionCompletionRate >= 85 && totalActions > 0) {
+  if (meets(actionCompletionRate, 85) && totalActions > 0) {
     insights.push({ text: "Actions from return interviews are completed — the home learns and adapts from every incident", severity: "positive" });
   }
 

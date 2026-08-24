@@ -7,6 +7,8 @@
 // SCCIF: Impact of leaders and managers.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SocialWorkerContactRecordInput {
@@ -76,10 +78,6 @@ export interface SocialWorkerContactResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -121,25 +119,25 @@ export function computeSocialWorkerContact(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = contacts.length;
   const uniqueChildren = new Set(contacts.map(c => c.child_id)).size;
-  const childrenWithContactRate = pct(uniqueChildren, total_children);
+  const childrenWithContactRate = rate(uniqueChildren, total_children);
 
   const homeInitiated = contacts.filter(c => c.initiated_by === "home").length;
-  const homeInitiatedRate = pct(homeInitiated, total);
+  const homeInitiatedRate = rate(homeInitiated, total);
 
   const childAware = contacts.filter(c => c.child_aware).length;
-  const childAwarenessRate = pct(childAware, total);
+  const childAwarenessRate = rate(childAware, total);
 
   const followUpRequired = contacts.filter(c => c.follow_up_required).length;
   const followUpWithDate = contacts.filter(c => c.follow_up_required && c.has_follow_up_date).length;
-  const followUpComplianceRate = pct(followUpWithDate, followUpRequired);
+  const followUpComplianceRate = rate(followUpWithDate, followUpRequired);
 
   const totalActions = contacts.reduce((s, c) => s + c.action_item_count, 0);
   const completedActions = contacts.reduce((s, c) => s + c.action_completed_count, 0);
   const overdueActions = contacts.reduce((s, c) => s + c.action_overdue_count, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const withDecisions = contacts.filter(c => c.has_key_decisions).length;
-  const decisionDocumentationRate = pct(withDecisions, total);
+  const decisionDocumentationRate = rate(withDecisions, total);
 
   const urgentContacts = contacts.filter(c => c.urgency === "urgent" || c.urgency === "emergency").length;
   const lacReviews = contacts.filter(c => c.contact_type === "lac_review").length;
@@ -152,27 +150,27 @@ export function computeSocialWorkerContact(
   if (total === 0) {
     score -= 3;
   } else {
-    if (childrenWithContactRate >= 90) score += 6;
-    else if (childrenWithContactRate >= 60) score += 2;
-    else if (childrenWithContactRate < 30) score -= 5;
+    if (meets(childrenWithContactRate, 90)) score += 6;
+    else if (meets(childrenWithContactRate, 60)) score += 2;
+    else if (below(childrenWithContactRate, 30)) score -= 5;
   }
 
   // Modifier 2: Home-initiated proactive contact
   if (total === 0) {
     score -= 1;
   } else {
-    if (homeInitiatedRate >= 50) score += 5;
-    else if (homeInitiatedRate >= 30) score += 2;
-    else if (homeInitiatedRate < 15) score -= 5;
+    if (meets(homeInitiatedRate, 50)) score += 5;
+    else if (meets(homeInitiatedRate, 30)) score += 2;
+    else if (below(homeInitiatedRate, 15)) score -= 5;
   }
 
   // Modifier 3: Child awareness of SW contacts
   if (total === 0) {
     score -= 1;
   } else {
-    if (childAwarenessRate >= 80) score += 5;
-    else if (childAwarenessRate >= 50) score += 2;
-    else if (childAwarenessRate < 25) score -= 4;
+    if (meets(childAwarenessRate, 80)) score += 5;
+    else if (meets(childAwarenessRate, 50)) score += 2;
+    else if (below(childAwarenessRate, 25)) score -= 4;
   }
 
   // Modifier 4: Follow-up compliance
@@ -180,9 +178,9 @@ export function computeSocialWorkerContact(
     // no adjustment
   } else {
     if (followUpRequired === 0 && total > 0) score += 2;
-    else if (followUpComplianceRate >= 90) score += 5;
-    else if (followUpComplianceRate >= 60) score += 2;
-    else if (followUpComplianceRate < 30) score -= 4;
+    else if (meets(followUpComplianceRate, 90)) score += 5;
+    else if (meets(followUpComplianceRate, 60)) score += 2;
+    else if (below(followUpComplianceRate, 30)) score -= 4;
   }
 
   // Modifier 5: Action completion
@@ -190,18 +188,18 @@ export function computeSocialWorkerContact(
     score -= 1;
   } else {
     if (totalActions === 0 && total > 0) score += 2;
-    else if (actionCompletionRate >= 80) score += 4;
-    else if (actionCompletionRate >= 50) score += 1;
-    else if (actionCompletionRate < 25) score -= 4;
+    else if (meets(actionCompletionRate, 80)) score += 4;
+    else if (meets(actionCompletionRate, 50)) score += 1;
+    else if (below(actionCompletionRate, 25)) score -= 4;
   }
 
   // Modifier 6: Decision documentation
   if (total === 0) {
     score -= 2;
   } else {
-    if (decisionDocumentationRate >= 60) score += 5;
-    else if (decisionDocumentationRate >= 30) score += 2;
-    else if (decisionDocumentationRate < 10) score -= 3;
+    if (meets(decisionDocumentationRate, 60)) score += 5;
+    else if (meets(decisionDocumentationRate, 30)) score += 2;
+    else if (below(decisionDocumentationRate, 10)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -212,34 +210,34 @@ export function computeSocialWorkerContact(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childrenWithContactRate >= 90 && total > 0)
+  if (meets(childrenWithContactRate, 90) && total > 0)
     strengths.push("Social worker contact covers virtually all children — the home maintains strong placing authority relationships");
-  if (homeInitiatedRate >= 50 && total > 0)
+  if (meets(homeInitiatedRate, 50) && total > 0)
     strengths.push("The home proactively initiates contact with social workers — demonstrating engaged partnership working");
-  if (childAwarenessRate >= 80 && total > 0)
+  if (meets(childAwarenessRate, 80) && total > 0)
     strengths.push("Children are routinely informed about social worker contact — transparency supports trust and participation");
-  if (followUpComplianceRate >= 90 && followUpRequired > 0)
+  if (meets(followUpComplianceRate, 90) && followUpRequired > 0)
     strengths.push("Follow-up actions from SW contacts are consistently completed — the home is reliable and responsive");
-  if (actionCompletionRate >= 80 && totalActions > 0)
+  if (meets(actionCompletionRate, 80) && totalActions > 0)
     strengths.push("Action items from social worker contacts are completed at a high rate — commitments are honoured");
-  if (decisionDocumentationRate >= 60 && total > 0)
+  if (meets(decisionDocumentationRate, 60) && total > 0)
     strengths.push("Key decisions from SW contacts are documented — the home maintains a clear audit trail");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No social worker contact records — the home cannot demonstrate Reg 5 engagement with placing authorities");
-  if (childrenWithContactRate < 50 && total > 0)
+  if (below(childrenWithContactRate, 50) && total > 0)
     concerns.push("Many children have no recorded social worker contact — placing authority relationships may be fragmented");
-  if (homeInitiatedRate < 15 && total > 0)
+  if (below(homeInitiatedRate, 15) && total > 0)
     concerns.push("The home rarely initiates contact with social workers — relying on social workers to drive communication");
-  if (childAwarenessRate < 25 && total > 0)
+  if (below(childAwarenessRate, 25) && total > 0)
     concerns.push("Children are rarely informed about social worker contact — this undermines participation and transparency");
-  if (followUpComplianceRate < 30 && followUpRequired > 0)
+  if (below(followUpComplianceRate, 30) && followUpRequired > 0)
     concerns.push("Follow-ups from SW contacts are not being actioned — critical commitments may be falling through");
   if (overdueActions > 0)
     concerns.push(`${overdueActions} action${overdueActions > 1 ? "s" : ""} from social worker contacts ${overdueActions > 1 ? "are" : "is"} overdue — promises to placing authorities are not being met`);
-  if (decisionDocumentationRate < 10 && total > 0)
+  if (below(decisionDocumentationRate, 10) && total > 0)
     concerns.push("Decisions from social worker contacts are rarely documented — there is no audit trail of agreed actions");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -248,26 +246,26 @@ export function computeSocialWorkerContact(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Establish structured social worker contact recording for every child with scheduled review cycles", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
-  if (childrenWithContactRate < 60 && total > 0)
+  if (below(childrenWithContactRate, 60) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure every child has recent social worker contact — no child should go without placing authority engagement", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
-  if (homeInitiatedRate < 30 && total > 0)
+  if (below(homeInitiatedRate, 30) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Increase home-initiated contact with social workers to demonstrate proactive partnership", urgency: "soon", regulatory_ref: "SCCIF Leaders" });
-  if (childAwarenessRate < 50 && total > 0)
+  if (below(childAwarenessRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Inform children when their social worker makes contact and capture their views about discussions", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   if (overdueActions > 0)
     recommendations.push({ rank: ++rank, recommendation: "Clear all overdue action items from social worker contacts and implement a tracking system", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
-  if (decisionDocumentationRate < 30 && total > 0)
+  if (below(decisionDocumentationRate, 30) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Document key decisions and outcomes from every social worker contact for audit purposes", urgency: "planned", regulatory_ref: "SCCIF Leaders" });
 
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: SocialWorkerContactResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No social worker contact records means Ofsted cannot verify placing authority engagement — a key leadership indicator", severity: "critical" });
-  if (total > 0 && homeInitiatedRate >= 50 && childAwarenessRate >= 80)
+  if (total > 0 && meets(homeInitiatedRate, 50) && meets(childAwarenessRate, 80))
     insights.push({ text: "Proactive contact with strong child transparency demonstrates outstanding placing authority partnership", severity: "positive" });
   if (urgentContacts > 0 && total > 0)
     insights.push({ text: `${urgentContacts} urgent/emergency contact${urgentContacts > 1 ? "s" : ""} recorded — the home is responsive to escalating situations`, severity: "warning" });
-  if (faceToFace > 0 && total > 0 && pct(faceToFace, total) >= 30)
+  if (faceToFace > 0 && total > 0 && meets(rate(faceToFace, total), 30))
     insights.push({ text: "Strong face-to-face contact ratio shows the home values direct relationship-building with social workers", severity: "positive" });
   if (lacReviews > 0)
     insights.push({ text: `${lacReviews} LAC review${lacReviews > 1 ? "s" : ""} documented — the home actively participates in statutory review processes`, severity: "positive" });

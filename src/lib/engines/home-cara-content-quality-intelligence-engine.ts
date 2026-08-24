@@ -83,10 +83,6 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function toRating(score: number): CaraContentRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -172,8 +168,8 @@ export function computeCaraContentQuality(
   const approvedArtifacts = artifacts.filter(a => a.status === "approved" || a.status === "committed");
   const rejectedArtifacts = artifacts.filter(a => a.status === "rejected");
 
-  const approvalRate = pct(approvedArtifacts.length, submittedArtifacts.length);
-  const rejectionRate = pct(rejectedArtifacts.length, submittedArtifacts.length);
+  const approvalRate = rate(approvedArtifacts.length, submittedArtifacts.length);
+  const rejectionRate = rate(rejectedArtifacts.length, submittedArtifacts.length);
 
   // Average quality score across all artifacts
   const avgQuality = totalArtifacts === 0
@@ -203,11 +199,11 @@ export function computeCaraContentQuality(
 
   // Safeguarding flagged rate
   const safeguardingFlagged = artifacts.filter(a => a.safeguarding_level !== "none");
-  const safeguardingFlaggedRate = pct(safeguardingFlagged.length, totalArtifacts);
+  const safeguardingFlaggedRate = rate(safeguardingFlagged.length, totalArtifacts);
 
   // Framework usage rate
   const withFramework = artifacts.filter(a => a.framework !== null && a.framework !== "none");
-  const frameworkUsageRate = pct(withFramework.length, totalArtifacts);
+  const frameworkUsageRate = rate(withFramework.length, totalArtifacts);
 
   // Framework diversity (distinct frameworks, excluding null/"none")
   const uniqueFrameworks = new Set(
@@ -223,13 +219,13 @@ export function computeCaraContentQuality(
 
   // Evidence sourced rate
   const evidenceSourced = artifacts.filter(a => a.source_ids_count > 0);
-  const evidenceSourcedRate = pct(evidenceSourced.length, totalArtifacts);
+  const evidenceSourcedRate = rate(evidenceSourced.length, totalArtifacts);
 
   // Child coverage rate
   const childrenWithArtifact = new Set(
     artifacts.map(a => a.child_id).filter((id): id is string => id !== null),
   );
-  const childCoverageRate = pct(childrenWithArtifact.size, total_children);
+  const childCoverageRate = rate(childrenWithArtifact.size, total_children);
 
   // ── Scoring: Base 52 + modifiers ──────────────────────────────────────
 

@@ -88,10 +88,6 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function toRating(score: number): CareEventQualityRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -162,20 +158,20 @@ export function computeHomeCareEventQuality(
   // ── Compute Metrics ───────────────────────────────────────────────────
 
   const withContent = events.filter(e => e.has_content);
-  const recordingQualityRate = pct(withContent.length, events.length);
+  const recordingQualityRate = rate(withContent.length, events.length);
 
   const verified = events.filter(e => e.is_verified);
-  const verificationRate = pct(verified.length, events.length);
+  const verificationRate = rate(verified.length, events.length);
 
   const totalRoutes = events.reduce((sum, e) => sum + e.route_count, 0);
   const totalRoutesCompleted = events.reduce((sum, e) => sum + e.routes_completed, 0);
-  const routingCompletionRate = pct(totalRoutesCompleted, totalRoutes);
+  const routingCompletionRate = rate(totalRoutesCompleted, totalRoutes);
 
   const withAuditTrail = events.filter(e => e.audit_trail_count >= 2);
-  const auditTrailRate = pct(withAuditTrail.length, events.length);
+  const auditTrailRate = rate(withAuditTrail.length, events.length);
 
   const withReturnNote = events.filter(e => e.has_return_note);
-  const returnRate = pct(withReturnNote.length, events.length);
+  const returnRate = rate(withReturnNote.length, events.length);
 
   const uniqueChildren = new Set(events.map(e => e.child_id));
   const uniqueChildrenCovered = uniqueChildren.size;

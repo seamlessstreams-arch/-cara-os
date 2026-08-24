@@ -68,10 +68,6 @@ export interface AdvocacyVoiceResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -114,20 +110,20 @@ export function computeAdvocacyIndependentVoice(
   const total = records.length;
 
   const active = records.filter(r => r.status === "active" || r.status === "completed").length;
-  const activeRate = pct(active, total);
+  const activeRate = rate(active, total);
 
   const uniqueChildren = new Set(records.map(r => r.child_id)).size;
-  const childrenWithAdvocacyRate = pct(uniqueChildren, total_children);
+  const childrenWithAdvocacyRate = rate(uniqueChildren, total_children);
 
   const independent = records.filter(r => r.advocacy_type === "independent" || r.advocacy_type === "legal").length;
-  const independentRate = pct(independent, total);
+  const independentRate = rate(independent, total);
 
   const withChildVoice = records.filter(r => r.has_child_view).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   const totalPrivateSessions = records.reduce((sum, r) => sum + r.private_session_count, 0);
   const totalVisits = records.reduce((sum, r) => sum + r.visit_count, 0);
-  const privateSessionRate = pct(totalPrivateSessions, totalVisits);
+  const privateSessionRate = rate(totalPrivateSessions, totalVisits);
 
   const uniqueTypes = new Set(records.map(r => r.advocacy_type)).size;
 

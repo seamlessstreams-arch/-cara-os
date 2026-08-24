@@ -34,6 +34,7 @@ import type {
   CarePlan,
 } from "@/types/extended";
 import type { Incident, Supervision, TrainingRecord } from "@/types";
+import { rate } from "@/lib/metrics/rate";
 
 // ── Vocabulary ───────────────────────────────────────────────────────────────
 
@@ -117,11 +118,6 @@ function isPast(dateIso: string | undefined | null, now: string): boolean {
   const n = Date.parse(now);
   if (Number.isNaN(t) || Number.isNaN(n)) return false;
   return t < n;
-}
-
-function pct(part: number, whole: number): number {
-  if (whole <= 0) return 0;
-  return Math.round((part / whole) * 100);
 }
 
 const byChild = <T extends { child_id: string }>(rows: T[], id: string): T[] =>
@@ -229,7 +225,7 @@ function buildExperiencesProgress(input: InspectionReadinessInput): SccifArea {
 // ── Area 2: Help & protection ────────────────────────────────────────────────
 
 function buildProtection(input: InspectionReadinessInput): SccifArea {
-  const incidentsWithDebriefRate = pct(
+  const incidentsWithDebriefRate = rate(
     input.children.filter(
       (c) => byChild(input.incidents, c.id).length > 0 && byChild(input.debriefRecords, c.id).length > 0,
     ).length,
@@ -328,7 +324,7 @@ function buildLeadership(input: InspectionReadinessInput): SccifArea {
   const completedSup = input.supervisions.filter((s) => s.status === "completed").length;
   const mandatoryTraining = input.trainingRecords.filter((t) => t.is_mandatory);
   const compliantTraining = mandatoryTraining.filter((t) => t.status === "compliant").length;
-  const trainingRate = pct(compliantTraining, mandatoryTraining.length);
+  const trainingRate = rate(compliantTraining, mandatoryTraining.length);
 
   const evidence: EvidenceItem[] = [
     { label: "Supervisions completed", count: completedSup, detail: "Recorded staff supervision supporting reflective practice." },

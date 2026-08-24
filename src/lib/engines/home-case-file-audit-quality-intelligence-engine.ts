@@ -91,10 +91,6 @@ function toRating(score: number): CaseFileAuditRating {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeCaseFileAuditQuality(
@@ -123,14 +119,14 @@ export function computeCaseFileAuditQuality(
   // ── Case File Audit Metrics ─────────────────────────────────────────
   const audits = case_file_audits;
   const childrenAudited = new Set(audits.map(a => a.child_id)).size;
-  const coverageRate = pct(childrenAudited, total_children);
+  const coverageRate = rate(childrenAudited, total_children);
   const greenCount = audits.filter(a => a.overall_rag === "green").length;
-  const greenRate = audits.length > 0 ? pct(greenCount, audits.length) : 0;
+  const greenRate = audits.length > 0 ? rate(greenCount, audits.length) : 0;
   const avgScore = audits.length > 0
     ? Math.round((audits.reduce((sum, a) => sum + (a.overall_score ?? 0), 0) / audits.length) * 10) / 10
     : null;
   const childContribCount = audits.filter(a => a.child_contributed).length;
-  const childContribRate = audits.length > 0 ? pct(childContribCount, audits.length) : 0;
+  const childContribRate = audits.length > 0 ? rate(childContribCount, audits.length) : 0;
 
   // ── Handover Audit Metrics ──────────────────────────────────────────
   const avgHandoverScore = handover_audits.length > 0
@@ -139,11 +135,11 @@ export function computeCaseFileAuditQuality(
 
   // ── Policy Review Metrics ───────────────────────────────────────────
   const currentPolicies = policy_reviews.filter(p => p.is_current).length;
-  const policyCurrencyRate = policy_reviews.length > 0 ? pct(currentPolicies, policy_reviews.length) : 0;
+  const policyCurrencyRate = policy_reviews.length > 0 ? rate(currentPolicies, policy_reviews.length) : 0;
 
   // ── Ofsted Engagement Metrics ───────────────────────────────────────
   const completedEngagements = ofsted_engagement.filter(e => e.completed).length;
-  const ofstedCompletedRate = ofsted_engagement.length > 0 ? pct(completedEngagements, ofsted_engagement.length) : 0;
+  const ofstedCompletedRate = ofsted_engagement.length > 0 ? rate(completedEngagements, ofsted_engagement.length) : 0;
 
   // ── Scoring ───────────────────────────────────────────────────────────
   // Base 52, 6 modifiers, max 52+5+7+4+4+5+5 = 82
