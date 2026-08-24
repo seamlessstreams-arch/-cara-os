@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -153,7 +154,7 @@ export function HomeFireSafetyIntelligenceCard() {
                   (d.results.satisfactory_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.results.satisfactory_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.results.satisfactory_rate}%
+                  {formatRate(d.results.satisfactory_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Satisfactory</p>
@@ -198,7 +199,7 @@ export function HomeFireSafetyIntelligenceCard() {
                 <p>Within target: <span className={cn("font-medium",
                   (d.evacuation.target_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.evacuation.target_compliance_rate}%</span></p>
-                <p>All present: <span className="font-medium text-slate-600">{d.participation.all_present_rate}%</span></p>
+                <p>All present: <span className="font-medium text-slate-600">{formatRate(d.participation.all_present_rate)}</span></p>
               </div>
             </div>
           </div>

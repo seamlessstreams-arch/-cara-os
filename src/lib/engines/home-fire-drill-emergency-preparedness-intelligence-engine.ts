@@ -5,6 +5,8 @@
 // CHR 2015 Reg 25: "Premises." SCCIF: Safety.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FireDrillRecordInput {
@@ -39,12 +41,16 @@ export interface FireDrillPreparednessResult {
   drill_score: number;
   headline: string;
   total_drills: number;
-  satisfactory_rate: number;
-  all_present_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  satisfactory_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  all_present_rate: number | null;
   average_evacuation_time: number;
   drill_type_variety: number;
-  issues_addressed_rate: number;
-  failed_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issues_addressed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  failed_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -57,10 +63,6 @@ export interface FireDrillPreparednessResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -104,10 +106,10 @@ export function computeFireDrillPreparedness(
   const total = drills.length;
 
   const satisfactory = drills.filter(d => d.result === "satisfactory").length;
-  const satisfactoryRate = pct(satisfactory, total);
+  const satisfactoryRate = rate(satisfactory, total);
 
   const allPresent = drills.filter(d => d.all_present).length;
-  const allPresentRate = pct(allPresent, total);
+  const allPresentRate = rate(allPresent, total);
 
   const withEvacTime = drills.filter(d => d.evacuation_time_seconds !== null && d.evacuation_time_seconds > 0);
   const avgEvacTime = withEvacTime.length > 0
@@ -118,10 +120,10 @@ export function computeFireDrillPreparedness(
 
   const withIssues = drills.filter(d => d.has_issues);
   const withActions = withIssues.filter(d => d.has_actions).length;
-  const issuesAddressedRate = pct(withActions, withIssues.length);
+  const issuesAddressedRate = rate(withActions, withIssues.length);
 
   const failed = drills.filter(d => d.result === "failed" || d.result === "not_completed").length;
-  const failedRate = pct(failed, total);
+  const failedRate = rate(failed, total);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -135,18 +137,18 @@ export function computeFireDrillPreparedness(
   if (total === 0) {
     // already penalised
   } else {
-    if (satisfactoryRate >= 90) score += 6;
-    else if (satisfactoryRate >= 70) score += 2;
-    else if (satisfactoryRate < 50) score -= 5;
+    if (meets(satisfactoryRate, 90)) score += 6;
+    else if (meets(satisfactoryRate, 70)) score += 2;
+    else if (below(satisfactoryRate, 50)) score -= 5;
   }
 
   // Modifier 3: All present rate (participation)
   if (total === 0) {
     // no adjustment
   } else {
-    if (allPresentRate >= 90) score += 5;
-    else if (allPresentRate >= 70) score += 2;
-    else if (allPresentRate < 50) score -= 4;
+    if (meets(allPresentRate, 90)) score += 5;
+    else if (meets(allPresentRate, 70)) score += 2;
+    else if (below(allPresentRate, 50)) score -= 4;
   }
 
   // Modifier 4: Evacuation time (under 3 min = 180s is good, under 2 min = 120s is outstanding)
@@ -166,9 +168,9 @@ export function computeFireDrillPreparedness(
   } else if (withIssues.length === 0 && total > 0) {
     score += 2; // no issues is positive
   } else {
-    if (issuesAddressedRate >= 90) score += 4;
-    else if (issuesAddressedRate >= 60) score += 1;
-    else if (issuesAddressedRate < 40) score -= 4;
+    if (meets(issuesAddressedRate, 90)) score += 4;
+    else if (meets(issuesAddressedRate, 60)) score += 1;
+    else if (below(issuesAddressedRate, 40)) score -= 4;
   }
 
   // Modifier 6: Drill type variety
@@ -205,8 +207,8 @@ export function computeFireDrillPreparedness(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (total >= 6) strengths.push("Regular drill frequency demonstrates ongoing commitment to emergency preparedness");
-  if (satisfactoryRate >= 90 && total > 0) strengths.push("Virtually all drills are satisfactory — the home is well-prepared for emergencies");
-  if (allPresentRate >= 90 && total > 0) strengths.push("Full participation in drills ensures everyone knows what to do in an emergency");
+  if (meets(satisfactoryRate, 90) && total > 0) strengths.push("Virtually all drills are satisfactory — the home is well-prepared for emergencies");
+  if (meets(allPresentRate, 90) && total > 0) strengths.push("Full participation in drills ensures everyone knows what to do in an emergency");
   if (avgEvacTime > 0 && avgEvacTime <= 120 && total > 0) strengths.push("Evacuation times are under 2 minutes — swift and efficient emergency response");
   if (uniqueTypes >= 4 && total > 0) strengths.push("Variety of drill types shows comprehensive emergency scenario planning");
   if (withIssues.length === 0 && total > 0) strengths.push("No issues identified in any drill — excellent operational readiness");
@@ -214,9 +216,9 @@ export function computeFireDrillPreparedness(
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No fire drills or emergency exercises recorded — the home is not testing its emergency procedures");
-  if (satisfactoryRate < 50 && total > 0) concerns.push("Most drills are not satisfactory — emergency response capability is unreliable");
-  if (failedRate >= 30 && total > 0) concerns.push(`${failedRate}% of drills failed or were not completed — serious safety concern`);
-  if (allPresentRate < 50 && total > 0) concerns.push("Participation in drills is poor — not everyone will know what to do in an emergency");
+  if (below(satisfactoryRate, 50) && total > 0) concerns.push("Most drills are not satisfactory — emergency response capability is unreliable");
+  if (meets(failedRate, 30) && total > 0) concerns.push(`${formatRate(failedRate)} of drills failed or were not completed — serious safety concern`);
+  if (below(allPresentRate, 50) && total > 0) concerns.push("Participation in drills is poor — not everyone will know what to do in an emergency");
   if (avgEvacTime > 300 && total > 0) concerns.push("Average evacuation time exceeds 5 minutes — dangerously slow emergency response");
   if (uniqueTypes <= 1 && total > 0) concerns.push("Only one type of drill is practised — the home is unprepared for varied emergency scenarios");
 
@@ -229,16 +231,16 @@ export function computeFireDrillPreparedness(
   if (total > 0 && total < 3) {
     recs.push({ rank: recs.length + 1, recommendation: "Increase drill frequency to at least quarterly for all emergency scenarios", urgency: "soon", regulatory_ref: "SCCIF Safety" });
   }
-  if (satisfactoryRate < 70 && total > 0) {
+  if (below(satisfactoryRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Address root causes of unsatisfactory drill outcomes through targeted training", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (allPresentRate < 70 && total > 0) {
+  if (below(allPresentRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure all children and staff participate in every scheduled drill", urgency: "soon", regulatory_ref: "SCCIF Safety" });
   }
   if (uniqueTypes < 2 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Diversify emergency exercises to include lockdown, evacuation and flood scenarios", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (issuesAddressedRate < 60 && withIssues.length > 0) {
+  if (below(issuesAddressedRate, 60) && withIssues.length > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Follow up on all issues identified during drills with documented corrective actions", urgency: "soon", regulatory_ref: "SCCIF Safety" });
   }
 
@@ -247,13 +249,13 @@ export function computeFireDrillPreparedness(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: FireDrillPreparednessResult["insights"] = [];
 
-  if (satisfactoryRate >= 90 && allPresentRate >= 90 && total >= 6) {
+  if (meets(satisfactoryRate, 90) && meets(allPresentRate, 90) && total >= 6) {
     insights.push({ text: "Emergency preparedness is exemplary — the home can demonstrate effective crisis response to Ofsted", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No drill records means the home cannot evidence fire safety compliance — an immediate regulatory concern", severity: "critical" });
   }
-  if (failedRate >= 30 && total > 0) {
+  if (meets(failedRate, 30) && total > 0) {
     insights.push({ text: "High drill failure rate means the home may not be safe in a real emergency — urgent action needed", severity: "critical" });
   }
   if (avgEvacTime > 0 && avgEvacTime <= 120 && total > 0) {

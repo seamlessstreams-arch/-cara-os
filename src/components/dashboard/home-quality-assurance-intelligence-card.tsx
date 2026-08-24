@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -155,7 +156,7 @@ export function HomeQualityAssuranceIntelligenceCard() {
                   (d.action_plan.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.action_plan.completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.action_plan.completion_rate}%
+                  {formatRate(d.action_plan.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions</p>

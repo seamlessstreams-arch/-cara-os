@@ -93,12 +93,12 @@ describe("zero recognitions", () => {
     expect(r.total_recognitions).toBe(0);
   });
 
-  it("reports all rates as 0 with zero recognitions", () => {
+  it("reports every rate as unmeasured with zero recognitions", () => {
     const r = computeStaffRecognitionMorale(baseInput());
     expect(r.staff_recognised_rate).toBe(0);
-    expect(r.child_involvement_rate).toBe(0);
-    expect(r.public_celebration_rate).toBe(0);
-    expect(r.impact_documented_rate).toBe(0);
+    expect(r.child_involvement_rate).toBeNull();
+    expect(r.public_celebration_rate).toBeNull();
+    expect(r.impact_documented_rate).toBeNull();
     expect(r.recognition_type_variety).toBe(0);
   });
 });

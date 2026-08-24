@@ -6,6 +6,8 @@
 // SCCIF: "The home is safe. Fire precautions are adequate."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FireDrillInput {
@@ -107,10 +109,6 @@ export interface HomeFireSafetyResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -229,9 +227,9 @@ export function computeHomeFireSafety(
 
   const results: ResultProfile = {
     ...resultCounts,
-    satisfactory_rate: pct(resultCounts.satisfactory, fire_drills.length),
+    satisfactory_rate: rate(resultCounts.satisfactory, fire_drills.length),
     issues_actioned: issuesActioned.length,
-    issue_response_rate: pct(issuesActioned.length, withIssues.length),
+    issue_response_rate: rate(issuesActioned.length, withIssues.length),
   };
 
   // ── Evacuation Profile ────────────────────────────────────────────────
@@ -250,7 +248,7 @@ export function computeHomeFireSafety(
     fastest_evacuation: evacuationTimes.length > 0 ? Math.min(...evacuationTimes) : null,
     slowest_evacuation: evacuationTimes.length > 0 ? Math.max(...evacuationTimes) : null,
     within_target: withinTarget.length,
-    target_compliance_rate: pct(withinTarget.length, evacuationTimes.length),
+    target_compliance_rate: rate(withinTarget.length, evacuationTimes.length),
   };
 
   // ── Participation Profile ─────────────────────────────────────────────
@@ -267,7 +265,7 @@ export function computeHomeFireSafety(
 
   const participation: ParticipationProfile = {
     drills_all_present: allPresent.length,
-    all_present_rate: pct(allPresent.length, participationDrills.length),
+    all_present_rate: rate(allPresent.length, participationDrills.length),
     avg_children_per_drill:
       childCounts.length > 0
         ? Math.round((childCounts.reduce((s, n) => s + n, 0) / childCounts.length) * 10) / 10

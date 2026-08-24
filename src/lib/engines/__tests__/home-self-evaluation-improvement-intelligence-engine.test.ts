@@ -461,7 +461,7 @@ describe("Modifier 2 — Action completion", () => {
     const r = computeSelfEvaluationImprovement(actionInput(0, 0));
     // totalActions=0 && total>0 → +2
     expect(r.evaluation_score).toBe(78);
-    expect(r.action_completion_rate).toBe(0);
+    expect(r.action_completion_rate).toBeNull();
   });
 
   it("100% action completion → +6 (score 82)", () => {
@@ -899,11 +899,11 @@ describe("Metric calculations", () => {
     expect(r.action_completion_rate).toBe(70);
   });
 
-  it("action_completion_rate: pct(0,0) = 0 when no actions", () => {
+  it("action_completion_rate is unmeasured when there are no actions", () => {
     const r = computeSelfEvaluationImprovement(baseInput({
       areas: [makeArea({ id: "a1", actions_total: 0, actions_completed: 0 })],
     }));
-    expect(r.action_completion_rate).toBe(0);
+    expect(r.action_completion_rate).toBeNull();
   });
 
   it("action_completion_rate: pct(1,3) = 33", () => {
@@ -924,9 +924,9 @@ describe("Metric calculations", () => {
     expect(r.evidence_coverage_rate).toBe(67);
   });
 
-  it("evidence_coverage_rate: 0 when no areas", () => {
+  it("evidence_coverage_rate is unmeasured when there are no areas", () => {
     const r = computeSelfEvaluationImprovement(baseInput({ areas: [] }));
-    expect(r.evidence_coverage_rate).toBe(0);
+    expect(r.evidence_coverage_rate).toBeNull();
   });
 
   it("areas_with_development_plans: counts correctly", () => {
@@ -952,7 +952,7 @@ describe("Metric calculations", () => {
     expect(r.average_strengths_per_area).toBe(2.3);
   });
 
-  it("average_strengths_per_area: 0 when no areas", () => {
+  it("average_strengths_per_area is unmeasured when there are no areas", () => {
     const r = computeSelfEvaluationImprovement(baseInput({ areas: [] }));
     expect(r.average_strengths_per_area).toBeNull();;
   });

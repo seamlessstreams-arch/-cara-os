@@ -5,6 +5,8 @@
 // CHR 2015 Reg 32 (Fitness of Workers). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface VacancyInput {
@@ -71,10 +73,12 @@ export interface ChecksProfile {
   in_progress_count: number;
   not_started_count: number;
   overdue_count: number;
-  verification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  verification_rate: number | null;
   concern_count: number;
   override_count: number;
-  dbs_verified_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbs_verified_rate: number | null;
 }
 
 export interface ReferenceProfile {
@@ -83,14 +87,16 @@ export interface ReferenceProfile {
   satisfactory_count: number;
   safeguarding_ref_count: number;
   gap_flag_count: number;
-  verification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  verification_rate: number | null;
 }
 
 export interface ComplianceProfile {
   compliant_candidates: number;
   in_progress_candidates: number;
   non_compliant_candidates: number;
-  compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  compliance_rate: number | null;
   high_risk_count: number;
 }
 
@@ -131,10 +137,6 @@ function toRating(score: number): RecruitmentRating {
   if (score >= 65) return "good";
   if (score >= 45) return "adequate";
   return "inadequate";
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -185,12 +187,12 @@ export function computeHomeSaferRecruitment(
   const concernChecks = checks.filter(c => c.concern_flag);
   const overrideChecks = checks.filter(c => c.override_used);
 
-  const verificationRate = pct(verifiedChecks.length, requiredChecks.length);
+  const verificationRate = rate(verifiedChecks.length, requiredChecks.length);
 
   // DBS-specific verification
   const dbsChecks = requiredChecks.filter(c => c.check_type === "enhanced_dbs");
   const dbsVerified = dbsChecks.filter(c => c.status === "verified");
-  const dbsVerifiedRate = pct(dbsVerified.length, dbsChecks.length);
+  const dbsVerifiedRate = rate(dbsVerified.length, dbsChecks.length);
 
   const checksProfile: ChecksProfile = {
     total_checks: requiredChecks.length,
@@ -209,7 +211,7 @@ export function computeHomeSaferRecruitment(
   const satisfactoryRefs = references.filter(r => r.is_satisfactory === true);
   const safeguardingRefs = references.filter(r => r.is_safeguarding_reference);
   const gapFlagged = references.filter(r => r.gap_in_employment);
-  const refVerificationRate = pct(verifiedRefs.length, references.length);
+  const refVerificationRate = rate(verifiedRefs.length, references.length);
 
   const referenceProfile: ReferenceProfile = {
     total_references: references.length,
@@ -225,7 +227,7 @@ export function computeHomeSaferRecruitment(
   const inProgressCompliance = candidates.filter(c => c.compliance_status === "in_progress");
   const nonCompliant = candidates.filter(c => c.compliance_status === "non_compliant");
   const highRisk = candidates.filter(c => c.risk_level === "high");
-  const complianceRate = pct(compliantCandidates.length, candidates.length);
+  const complianceRate = rate(compliantCandidates.length, candidates.length);
 
   const complianceProfile: ComplianceProfile = {
     compliant_candidates: compliantCandidates.length,
@@ -241,9 +243,9 @@ export function computeHomeSaferRecruitment(
 
   // 1. Check verification rate (±5)
   if (requiredChecks.length > 0) {
-    if (verificationRate >= 80) score += 5;
-    else if (verificationRate >= 50) score += 2;
-    else if (verificationRate >= 30) score -= 1;
+    if (meets(verificationRate, 80)) score += 5;
+    else if (meets(verificationRate, 50)) score += 2;
+    else if (meets(verificationRate, 30)) score -= 1;
     else score -= 4;
   } else {
     score += 1; // No checks needed = no risk
@@ -261,21 +263,21 @@ export function computeHomeSaferRecruitment(
   // 3. DBS verification (±3)
   if (dbsChecks.length > 0) {
     if (dbsVerifiedRate === 100) score += 3;
-    else if (dbsVerifiedRate >= 50) score += 1;
+    else if (meets(dbsVerifiedRate, 50)) score += 1;
     else score -= 2;
   }
 
   // 4. Reference verification (±4)
   if (references.length > 0) {
-    if (refVerificationRate >= 80) score += 4;
-    else if (refVerificationRate >= 50) score += 1;
+    if (meets(refVerificationRate, 80)) score += 4;
+    else if (meets(refVerificationRate, 50)) score += 1;
     else score -= 2;
   }
 
   // 5. Compliance rate (±3)
   if (candidates.length > 0) {
-    if (complianceRate >= 80) score += 3;
-    else if (complianceRate >= 50) score += 1;
+    if (meets(complianceRate, 80)) score += 3;
+    else if (meets(complianceRate, 50)) score += 1;
     else score -= 2;
   }
 
@@ -308,10 +310,10 @@ export function computeHomeSaferRecruitment(
 
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (verificationRate >= 80 && requiredChecks.length > 0) strengths.push(`${verificationRate}% pre-employment check verification — robust safer recruitment compliance.`);
+  if (meets(verificationRate, 80) && requiredChecks.length > 0) strengths.push(`${formatRate(verificationRate)} pre-employment check verification — robust safer recruitment compliance.`);
   if (overdueChecks.length === 0 && requiredChecks.length > 0) strengths.push("No overdue pre-employment checks — all checks progressing within timescales.");
   if (dbsVerifiedRate === 100 && dbsChecks.length > 0) strengths.push("All DBS checks verified — enhanced DBS compliance is complete.");
-  if (refVerificationRate >= 80 && references.length > 0) strengths.push(`${refVerificationRate}% reference verification — thorough reference checking.`);
+  if (meets(refVerificationRate, 80) && references.length > 0) strengths.push(`${formatRate(refVerificationRate)} reference verification — thorough reference checking.`);
   if (concernChecks.length === 0 && requiredChecks.length > 0) strengths.push("No concern flags on pre-employment checks — clean recruitment pipeline.");
   if (overrideChecks.length === 0 && requiredChecks.length > 0) strengths.push("No check overrides used — recruitment process followed without shortcuts.");
   if (highRisk.length === 0 && candidates.length > 0) strengths.push("No high-risk candidates — recruitment pipeline presents low safeguarding risk.");
@@ -324,7 +326,7 @@ export function computeHomeSaferRecruitment(
   if (overrideChecks.length > 0) concerns.push(`${overrideChecks.length} check override${overrideChecks.length > 1 ? "s" : ""} used — deviations from standard process require robust justification.`);
   if (highRisk.length > 0) concerns.push(`${highRisk.length} high-risk candidate${highRisk.length > 1 ? "s" : ""} in pipeline — enhanced scrutiny required.`);
   if (nonCompliant.length > 0) concerns.push(`${nonCompliant.length} candidate${nonCompliant.length > 1 ? "s" : ""} non-compliant — must not start until all required checks are verified.`);
-  if (verificationRate < 50 && requiredChecks.length > 0) concerns.push(`Only ${verificationRate}% of required checks verified — significant recruitment compliance gap.`);
+  if (below(verificationRate, 50) && requiredChecks.length > 0) concerns.push(`Only ${formatRate(verificationRate)} of required checks verified — significant recruitment compliance gap.`);
 
   // ── Recommendations ───────────────────────────────────────────────
   const recs: RecruitmentRecommendation[] = [];
@@ -349,8 +351,8 @@ export function computeHomeSaferRecruitment(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: RecruitmentInsight[] = [];
 
-  if (verificationRate >= 80 && overdueChecks.length === 0 && concernChecks.length === 0) {
-    insights.push({ text: `Safer recruitment practice is exemplary — ${verificationRate}% verification, no overdue checks, and no concerns flagged. Ofsted will see a home that takes workforce safety seriously, with a systematic approach to ensuring every person working with children has been thoroughly vetted.`, severity: "positive" });
+  if (meets(verificationRate, 80) && overdueChecks.length === 0 && concernChecks.length === 0) {
+    insights.push({ text: `Safer recruitment practice is exemplary — ${formatRate(verificationRate)} verification, no overdue checks, and no concerns flagged. Ofsted will see a home that takes workforce safety seriously, with a systematic approach to ensuring every person working with children has been thoroughly vetted.`, severity: "positive" });
   }
   if (overdueChecks.length > 0) {
     insights.push({ text: `${overdueChecks.length} pre-employment check${overdueChecks.length > 1 ? "s are" : " is"} overdue. Under Regulation 32, no person may work at the home until all required checks are satisfactorily completed. Ofsted will treat overdue checks as a serious leadership failure.`, severity: "critical" });
@@ -368,7 +370,7 @@ export function computeHomeSaferRecruitment(
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding safer recruitment — ${verificationRate}% check verification, no overdue checks, ${candidates.length} candidates tracked.`;
+    headline = `Outstanding safer recruitment — ${formatRate(verificationRate)} check verification, no overdue checks, ${candidates.length} candidates tracked.`;
   } else if (rating === "good") {
     headline = `Good recruitment compliance — most checks verified with minor gaps in the pipeline.`;
   } else if (rating === "adequate") {

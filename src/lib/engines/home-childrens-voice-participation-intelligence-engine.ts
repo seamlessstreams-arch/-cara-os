@@ -9,6 +9,8 @@
 // life of the home.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface ChildrensMeetingInput {
@@ -67,10 +69,13 @@ export interface ChildrensVoiceResult {
   voice_score: number;
   headline: string;
   meeting_attendance_rate: number;
-  feedback_response_rate: number;
-  child_friendly_policy_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedback_response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_friendly_policy_rate: number | null;
   expert_participation_count: number;
-  positive_feedback_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_feedback_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -83,10 +88,6 @@ export interface ChildrensVoiceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -132,7 +133,7 @@ export function computeChildrensVoiceParticipation(
         );
 
   // Child chairing rate
-  const childChairingRate = pct(
+  const childChairingRate = rate(
     meetings.filter((m) => m.child_chaired).length,
     meetings.length,
   );
@@ -141,19 +142,19 @@ export function computeChildrensVoiceParticipation(
   const respondedFeedback = feedback.filter(
     (f) => f.staff_informed && f.action_taken,
   ).length;
-  const feedbackResponseRate = pct(respondedFeedback, feedback.length);
+  const feedbackResponseRate = rate(respondedFeedback, feedback.length);
 
   // Positive feedback rate
   const positiveFeedback = feedback.filter(
     (f) => f.sentiment === "positive",
   ).length;
-  const positiveFeedbackRate = pct(positiveFeedback, feedback.length);
+  const positiveFeedbackRate = rate(positiveFeedback, feedback.length);
 
   // Policy accessibility rate: shared_with_children AND child_accessible_format
   const accessiblePolicies = policies.filter(
     (p) => p.shared_with_children && p.child_accessible_format,
   ).length;
-  const childFriendlyPolicyRate = pct(accessiblePolicies, policies.length);
+  const childFriendlyPolicyRate = rate(accessiblePolicies, policies.length);
 
   // Expert participation: unique children who chose to participate
   const expertChildIds = new Set(
@@ -187,11 +188,11 @@ export function computeChildrensVoiceParticipation(
   // Mod 2: Child chairing rate
   if (meetings.length === 0) {
     score += 0;
-  } else if (childChairingRate >= 50) {
+  } else if (meets(childChairingRate, 50)) {
     score += 5;
-  } else if (childChairingRate >= 25) {
+  } else if (meets(childChairingRate, 25)) {
     score += 2;
-  } else if (childChairingRate >= 10) {
+  } else if (meets(childChairingRate, 10)) {
     score += 0;
   } else {
     score -= 4;
@@ -200,11 +201,11 @@ export function computeChildrensVoiceParticipation(
   // Mod 3: Feedback response rate
   if (feedback.length === 0) {
     score += 0;
-  } else if (feedbackResponseRate >= 85) {
+  } else if (meets(feedbackResponseRate, 85)) {
     score += 6;
-  } else if (feedbackResponseRate >= 60) {
+  } else if (meets(feedbackResponseRate, 60)) {
     score += 3;
-  } else if (feedbackResponseRate >= 40) {
+  } else if (meets(feedbackResponseRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -213,11 +214,11 @@ export function computeChildrensVoiceParticipation(
   // Mod 4: Positive feedback rate
   if (feedback.length === 0) {
     score += 0;
-  } else if (positiveFeedbackRate >= 80) {
+  } else if (meets(positiveFeedbackRate, 80)) {
     score += 5;
-  } else if (positiveFeedbackRate >= 60) {
+  } else if (meets(positiveFeedbackRate, 60)) {
     score += 2;
-  } else if (positiveFeedbackRate >= 40) {
+  } else if (meets(positiveFeedbackRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -226,11 +227,11 @@ export function computeChildrensVoiceParticipation(
   // Mod 5: Policy accessibility rate
   if (policies.length === 0) {
     score += 0;
-  } else if (childFriendlyPolicyRate >= 80) {
+  } else if (meets(childFriendlyPolicyRate, 80)) {
     score += 5;
-  } else if (childFriendlyPolicyRate >= 50) {
+  } else if (meets(childFriendlyPolicyRate, 50)) {
     score += 2;
-  } else if (childFriendlyPolicyRate >= 30) {
+  } else if (meets(childFriendlyPolicyRate, 30)) {
     score += 0;
   } else {
     score -= 4;
@@ -282,21 +283,21 @@ export function computeChildrensVoiceParticipation(
     strengths.push(
       `Strong meeting attendance — ${meetingAttendanceRate}% average attendance across ${meetings.length} meeting${meetings.length > 1 ? "s" : ""}.`,
     );
-  if (childChairingRate >= 50 && meetings.length > 0)
+  if (meets(childChairingRate, 50) && meetings.length > 0)
     strengths.push(
-      `Children actively chairing meetings — ${childChairingRate}% of meetings child-chaired.`,
+      `Children actively chairing meetings — ${formatRate(childChairingRate)} of meetings child-chaired.`,
     );
-  if (feedbackResponseRate >= 85 && feedback.length > 0)
+  if (meets(feedbackResponseRate, 85) && feedback.length > 0)
     strengths.push(
-      `Excellent feedback response — ${feedbackResponseRate}% of children's feedback informed to staff and acted upon.`,
+      `Excellent feedback response — ${formatRate(feedbackResponseRate)} of children's feedback informed to staff and acted upon.`,
     );
-  if (positiveFeedbackRate >= 80 && feedback.length > 0)
+  if (meets(positiveFeedbackRate, 80) && feedback.length > 0)
     strengths.push(
-      `High positive sentiment — ${positiveFeedbackRate}% of feedback is positive.`,
+      `High positive sentiment — ${formatRate(positiveFeedbackRate)} of feedback is positive.`,
     );
-  if (childFriendlyPolicyRate >= 80 && policies.length > 0)
+  if (meets(childFriendlyPolicyRate, 80) && policies.length > 0)
     strengths.push(
-      `Child-friendly policies — ${childFriendlyPolicyRate}% of policies shared in accessible formats.`,
+      `Child-friendly policies — ${formatRate(childFriendlyPolicyRate)} of policies shared in accessible formats.`,
     );
   if (expertParticipationRate >= 50 && expert_entries.length > 0)
     strengths.push(
@@ -314,21 +315,21 @@ export function computeChildrensVoiceParticipation(
     concerns.push(
       `Low meeting attendance — only ${meetingAttendanceRate}% average, many children's voices may be missing.`,
     );
-  if (childChairingRate < 10 && meetings.length > 0)
+  if (below(childChairingRate, 10) && meetings.length > 0)
     concerns.push(
-      `Minimal child chairing — only ${childChairingRate}% of meetings chaired by children.`,
+      `Minimal child chairing — only ${formatRate(childChairingRate)} of meetings chaired by children.`,
     );
-  if (feedbackResponseRate < 40 && feedback.length > 0)
+  if (below(feedbackResponseRate, 40) && feedback.length > 0)
     concerns.push(
-      `Poor feedback response — only ${feedbackResponseRate}% of feedback both informed to staff and acted upon.`,
+      `Poor feedback response — only ${formatRate(feedbackResponseRate)} of feedback both informed to staff and acted upon.`,
     );
-  if (positiveFeedbackRate < 40 && feedback.length > 0)
+  if (below(positiveFeedbackRate, 40) && feedback.length > 0)
     concerns.push(
-      `Low positive sentiment — only ${positiveFeedbackRate}% of feedback is positive, indicating potential dissatisfaction.`,
+      `Low positive sentiment — only ${formatRate(positiveFeedbackRate)} of feedback is positive, indicating potential dissatisfaction.`,
     );
-  if (childFriendlyPolicyRate < 30 && policies.length > 0)
+  if (below(childFriendlyPolicyRate, 30) && policies.length > 0)
     concerns.push(
-      `Policies not child-accessible — only ${childFriendlyPolicyRate}% shared in child-friendly formats.`,
+      `Policies not child-accessible — only ${formatRate(childFriendlyPolicyRate)} shared in child-friendly formats.`,
     );
   if (expert_entries.length === 0 && total_children > 0)
     concerns.push(
@@ -373,7 +374,7 @@ export function computeChildrensVoiceParticipation(
     });
   }
 
-  if (feedbackResponseRate < 40 && feedback.length > 0) {
+  if (below(feedbackResponseRate, 40) && feedback.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -383,7 +384,7 @@ export function computeChildrensVoiceParticipation(
     });
   }
 
-  if (childFriendlyPolicyRate < 30 && policies.length > 0) {
+  if (below(childFriendlyPolicyRate, 30) && policies.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -403,7 +404,7 @@ export function computeChildrensVoiceParticipation(
     });
   }
 
-  if (childChairingRate < 10 && meetings.length > 0) {
+  if (below(childChairingRate, 10) && meetings.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -413,7 +414,7 @@ export function computeChildrensVoiceParticipation(
     });
   }
 
-  if (positiveFeedbackRate < 40 && feedback.length > 0) {
+  if (below(positiveFeedbackRate, 40) && feedback.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -428,9 +429,9 @@ export function computeChildrensVoiceParticipation(
 
   if (
     meetingAttendanceRate >= 80 &&
-    feedbackResponseRate >= 85 &&
-    positiveFeedbackRate >= 80 &&
-    childFriendlyPolicyRate >= 80 &&
+    meets(feedbackResponseRate, 85) &&
+    meets(positiveFeedbackRate, 80) &&
+    meets(childFriendlyPolicyRate, 80) &&
     expertParticipationRate >= 50
   )
     insights.push({
@@ -438,16 +439,16 @@ export function computeChildrensVoiceParticipation(
       severity: "positive",
     });
 
-  if (meetings.length > 0 && childChairingRate >= 50 && meetingAttendanceRate >= 80)
+  if (meetings.length > 0 && meets(childChairingRate, 50) && meetingAttendanceRate >= 80)
     insights.push({
-      text: `Cara detects strong child-led governance — ${childChairingRate}% of meetings child-chaired with ${meetingAttendanceRate}% attendance.`,
+      text: `Cara detects strong child-led governance — ${formatRate(childChairingRate)} of meetings child-chaired with ${meetingAttendanceRate}% attendance.`,
       severity: "positive",
     });
 
   if (
     feedback.length > 0 &&
-    positiveFeedbackRate < 40 &&
-    feedbackResponseRate < 40
+    below(positiveFeedbackRate, 40) &&
+    below(feedbackResponseRate, 40)
   )
     insights.push({
       text: "Cara flags a dual concern — both low positive sentiment and poor feedback response suggest children feel unheard.",
@@ -474,11 +475,11 @@ export function computeChildrensVoiceParticipation(
 
   if (
     feedback.length >= 5 &&
-    positiveFeedbackRate >= 80 &&
-    feedbackResponseRate >= 85
+    meets(positiveFeedbackRate, 80) &&
+    meets(feedbackResponseRate, 85)
   )
     insights.push({
-      text: `Strong feedback loop — ${positiveFeedbackRate}% positive sentiment with ${feedbackResponseRate}% response rate across ${feedback.length} feedback entries.`,
+      text: `Strong feedback loop — ${formatRate(positiveFeedbackRate)} positive sentiment with ${formatRate(feedbackResponseRate)} response rate across ${feedback.length} feedback entries.`,
       severity: "positive",
     });
 

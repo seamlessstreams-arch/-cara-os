@@ -6,6 +6,8 @@
 // CHR 2015 Reg 36 (Record Keeping). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChronologyEntryInput {
@@ -106,10 +108,6 @@ function toRating(score: number): ChronologyRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -183,7 +181,7 @@ export function computeHomeChronology(
   const coverageProfile: CoverageProfile = {
     children_with_entries: childrenWithEntries,
     children_without_entries: childrenWithout,
-    coverage_rate: pct(childrenWithEntries, total_children),
+    coverage_rate: rate(childrenWithEntries, total_children),
     avg_entries_per_child: avgEntries,
     min_entries: minEntries,
     max_entries: maxEntries,
@@ -196,10 +194,10 @@ export function computeHomeChronology(
   const criticalWithIncident = critical.filter(e => e.has_linked_incident);
 
   const qualityProfile: QualityProfile = {
-    description_rate: pct(withDesc.length, entries.length),
-    time_recording_rate: pct(withTime.length, entries.length),
-    incident_linked_rate: pct(withIncident.length, entries.length),
-    critical_with_incident_rate: pct(criticalWithIncident.length, critical.length),
+    description_rate: rate(withDesc.length, entries.length),
+    time_recording_rate: rate(withTime.length, entries.length),
+    incident_linked_rate: rate(withIncident.length, entries.length),
+    critical_with_incident_rate: rate(criticalWithIncident.length, critical.length),
   };
 
   // ── Timeliness Profile ─────────────────────────────────────────────

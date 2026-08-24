@@ -700,7 +700,7 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
       const result = computeChildrensVoiceParticipation(
         baseInput({ feedback: [] }),
       );
-      expect(result.positive_feedback_rate).toBe(0);
+      expect(result.positive_feedback_rate).toBeNull();
     });
   });
 
@@ -798,7 +798,7 @@ describe("Home Children's Voice & Participation Intelligence Engine", () => {
       const result = computeChildrensVoiceParticipation(
         baseInput({ policies: [] }),
       );
-      expect(result.child_friendly_policy_rate).toBe(0);
+      expect(result.child_friendly_policy_rate).toBeNull();
       // mod5: +0 (was +5, drop 5) → 82 - 5 = 77
       expect(result.voice_score).toBe(77);
     });

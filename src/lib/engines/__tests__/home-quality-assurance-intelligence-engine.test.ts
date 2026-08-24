@@ -299,7 +299,7 @@ describe("Action plan profile", () => {
       audits: [makeAudit({ date: daysAgo(30), actions: [] })],
     }));
     expect(r.action_plan.total_actions).toBe(0);
-    expect(r.action_plan.completion_rate).toBe(0);
+    expect(r.action_plan.completion_rate).toBeNull();
   });
 });
 

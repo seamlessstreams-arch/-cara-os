@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -141,7 +142,7 @@ export function HomeReg44IntelligenceCard() {
                   (d.recommendation_profile.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.recommendation_profile.completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.recommendation_profile.completion_rate}%
+                  {formatRate(d.recommendation_profile.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Recs Done</p>

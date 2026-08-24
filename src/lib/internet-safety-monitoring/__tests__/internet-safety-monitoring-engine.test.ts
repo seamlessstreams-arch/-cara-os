@@ -15,7 +15,6 @@ import {
   evaluateInternetPolicy,
   evaluateStaffInternetReadiness,
   buildChildInternetProfiles,
-  pct,
   getRating,
   generateStrengths,
   generateAreasForImprovement,
@@ -80,31 +79,6 @@ const makeTraining = (
   reportingProcedures: true,
   ageAppropriateAccess: true,
   ...overrides,
-});
-
-// ── pct() helper ─────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
 });
 
 // ── getRating() ──────────────────────────────────────────────────────────────

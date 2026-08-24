@@ -5,7 +5,7 @@
 // Pure deterministic engine. CHR 2015 Reg 7/10/33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 export interface ChildWellbeingSnapshot {
   child_id: string;
@@ -55,8 +55,6 @@ export interface HomeChildWellbeingCompositeResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
-
 function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[] } {
   let score = 0;
   let max = 0;
@@ -64,10 +62,10 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
 
   // Health (0-20)
   max += 20;
-  const healthRate = pct(c.health_appointments_attended, c.health_appointments_total);
+  const healthRate = rate(c.health_appointments_attended, c.health_appointments_total);
   let healthScore = 0;
   if (c.health_appointments_total > 0) {
-    healthScore += healthRate >= 90 ? 8 : healthRate >= 70 ? 5 : healthRate >= 50 ? 3 : 0;
+    healthScore += meets(healthRate, 90) ? 8 : meets(healthRate, 70) ? 5 : meets(healthRate, 50) ? 3 : 0;
   } else {
     healthScore += 4; // neutral if no appointments
   }
@@ -88,10 +86,10 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
     mhScore += 4; // neutral
   }
   if (c.therapeutic_sessions_offered > 0) {
-    const attendRate = pct(c.therapeutic_sessions_attended, c.therapeutic_sessions_offered);
-    if (attendRate >= 80) mhScore += 8;
-    else if (attendRate >= 60) mhScore += 5;
-    else if (attendRate >= 40) mhScore += 2;
+    const attendRate = rate(c.therapeutic_sessions_attended, c.therapeutic_sessions_offered);
+    if (meets(attendRate, 80)) mhScore += 8;
+    else if (meets(attendRate, 60)) mhScore += 5;
+    else if (meets(attendRate, 40)) mhScore += 2;
     else { mhScore += 0; risks.push("mental_health"); }
   } else if (!c.mental_health_referral_active) {
     mhScore += 6; // neutral — no referral needed
@@ -107,10 +105,10 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
   let behScore = 10; // start neutral
   const totalBeh = c.positive_behaviour_count + c.concerning_behaviour_count;
   if (totalBeh > 0) {
-    const posRate = pct(c.positive_behaviour_count, totalBeh);
-    if (posRate >= 80) behScore += 6;
-    else if (posRate >= 60) behScore += 3;
-    else if (posRate < 40) { behScore -= 4; risks.push("behaviour"); }
+    const posRate = rate(c.positive_behaviour_count, totalBeh);
+    if (meets(posRate, 80)) behScore += 6;
+    else if (meets(posRate, 60)) behScore += 3;
+    else if (below(posRate, 40)) { behScore -= 4; risks.push("behaviour"); }
   }
   if (c.restraint_count === 0) behScore += 4;
   else if (c.restraint_count <= 2) behScore += 1;
@@ -170,7 +168,10 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
   else if (c.family_contact_frequency === "none") { risks.push("social"); }
   score += Math.min(socScore, 5);
 
-  return { score: pct(score, max), risks: [...new Set(risks)] };
+  // `max` is a fixed scale, not a population count — every component above adds
+  // to it unconditionally, so it is never 0 and this is a normalisation rather
+  // than a rate over an empty denominator.
+  return { score: Math.round((score / max) * 100), risks: [...new Set(risks)] };
 }
 
 export function computeHomeChildWellbeingComposite(input: HomeChildWellbeingCompositeInput): HomeChildWellbeingCompositeResult {
@@ -192,10 +193,10 @@ export function computeHomeChildWellbeingComposite(input: HomeChildWellbeingComp
     return { child_id: c.child_id, overall_score: score, domains_at_risk: risks };
   });
 
-  const flourishing = scored.filter(s => s.overall_score >= 80).length;
-  const stable = scored.filter(s => s.overall_score >= 60 && s.overall_score < 80).length;
-  const struggling = scored.filter(s => s.overall_score >= 40 && s.overall_score < 60).length;
-  const crisis = scored.filter(s => s.overall_score < 40).length;
+  const flourishing = scored.filter(s => meets(s.overall_score, 80)).length;
+  const stable = scored.filter(s => meets(s.overall_score, 60) && below(s.overall_score, 80)).length;
+  const struggling = scored.filter(s => meets(s.overall_score, 40) && below(s.overall_score, 60)).length;
+  const crisis = scored.filter(s => below(s.overall_score, 40)).length;
 
   // ── Domain scores ────────────────────────────────────────────────────────
   const domainNames = ["health", "mental_health", "behaviour", "sleep", "nutrition", "education", "social"];
@@ -228,7 +229,7 @@ export function computeHomeChildWellbeingComposite(input: HomeChildWellbeingComp
   // ── Recommendations ──────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
-  const crisisChildren = scored.filter(s => s.overall_score < 40);
+  const crisisChildren = scored.filter(s => below(s.overall_score, 40));
   crisisChildren.forEach(c => {
     recommendations.push({ rank: ++rank, recommendation: `Urgent wellbeing review for child ${c.child_id} (${c.overall_score}%) — risks in ${c.domains_at_risk.join(", ")}.`, urgency: "immediate", regulatory_ref: "Reg 34" });
   });

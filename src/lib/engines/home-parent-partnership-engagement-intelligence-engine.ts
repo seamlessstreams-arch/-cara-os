@@ -5,6 +5,8 @@
 // CHR 2015 Reg 7: "The children's wishes and feelings standard." SCCIF: Family.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ParentContactInput {
@@ -39,10 +41,14 @@ export interface ParentPartnershipResult {
   partnership_score: number;
   headline: string;
   total_contacts: number;
-  positive_engagement_rate: number;
-  children_with_contact_rate: number;
-  sw_informed_rate: number;
-  positive_outcome_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_engagement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_contact_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sw_informed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_outcome_rate: number | null;
   contact_type_variety: number;
   relationship_variety: number;
   strengths: string[];
@@ -57,10 +63,6 @@ export interface ParentPartnershipResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -104,16 +106,16 @@ export function computeParentPartnershipEngagement(
   const total = contacts.length;
 
   const positive = contacts.filter(c => c.engagement_level === "positive").length;
-  const positiveEngagementRate = pct(positive, total);
+  const positiveEngagementRate = rate(positive, total);
 
   const uniqueChildren = new Set(contacts.map(c => c.child_id)).size;
-  const childrenContactRate = pct(uniqueChildren, total_children);
+  const childrenContactRate = rate(uniqueChildren, total_children);
 
   const withSW = contacts.filter(c => c.sw_informed).length;
-  const swInformedRate = pct(withSW, total);
+  const swInformedRate = rate(withSW, total);
 
   const withPositiveOutcomes = contacts.filter(c => c.positive_outcomes_count > 0).length;
-  const positiveOutcomeRate = pct(withPositiveOutcomes, total);
+  const positiveOutcomeRate = rate(withPositiveOutcomes, total);
 
   const uniqueContactTypes = new Set(contacts.map(c => c.contact_type)).size;
   const uniqueRelationships = new Set(contacts.map(c => c.relationship_type)).size;
@@ -125,36 +127,36 @@ export function computeParentPartnershipEngagement(
   if (total === 0) {
     score -= 3;
   } else {
-    if (positiveEngagementRate >= 70) score += 5;
-    else if (positiveEngagementRate >= 40) score += 2;
-    else if (positiveEngagementRate < 20) score -= 5;
+    if (meets(positiveEngagementRate, 70)) score += 5;
+    else if (meets(positiveEngagementRate, 40)) score += 2;
+    else if (below(positiveEngagementRate, 20)) score -= 5;
   }
 
   // Modifier 2: Children with contact (coverage)
   if (total === 0) {
     // no adjustment
   } else {
-    if (childrenContactRate >= 90) score += 6;
-    else if (childrenContactRate >= 60) score += 2;
-    else if (childrenContactRate < 40) score -= 5;
+    if (meets(childrenContactRate, 90)) score += 6;
+    else if (meets(childrenContactRate, 60)) score += 2;
+    else if (below(childrenContactRate, 40)) score -= 5;
   }
 
   // Modifier 3: Social worker informed rate
   if (total === 0) {
     score -= 1;
   } else {
-    if (swInformedRate >= 80) score += 5;
-    else if (swInformedRate >= 50) score += 2;
-    else if (swInformedRate < 30) score -= 4;
+    if (meets(swInformedRate, 80)) score += 5;
+    else if (meets(swInformedRate, 50)) score += 2;
+    else if (below(swInformedRate, 30)) score -= 4;
   }
 
   // Modifier 4: Positive outcomes documented
   if (total === 0) {
     // no adjustment
   } else {
-    if (positiveOutcomeRate >= 70) score += 5;
-    else if (positiveOutcomeRate >= 40) score += 2;
-    else if (positiveOutcomeRate < 20) score -= 4;
+    if (meets(positiveOutcomeRate, 70)) score += 5;
+    else if (meets(positiveOutcomeRate, 40)) score += 2;
+    else if (below(positiveOutcomeRate, 20)) score -= 4;
   }
 
   // Modifier 5: Contact type variety
@@ -199,20 +201,20 @@ export function computeParentPartnershipEngagement(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (positiveEngagementRate >= 70 && total > 0) strengths.push("Family engagement is overwhelmingly positive — relationships are constructive and supportive");
-  if (childrenContactRate >= 90 && total > 0) strengths.push("All children maintain meaningful family connections through regular contact");
-  if (swInformedRate >= 80 && total > 0) strengths.push("Social workers are consistently informed about family contact — strong multi-agency communication");
-  if (positiveOutcomeRate >= 70 && total > 0) strengths.push("Family contacts regularly produce positive outcomes for children");
+  if (meets(positiveEngagementRate, 70) && total > 0) strengths.push("Family engagement is overwhelmingly positive — relationships are constructive and supportive");
+  if (meets(childrenContactRate, 90) && total > 0) strengths.push("All children maintain meaningful family connections through regular contact");
+  if (meets(swInformedRate, 80) && total > 0) strengths.push("Social workers are consistently informed about family contact — strong multi-agency communication");
+  if (meets(positiveOutcomeRate, 70) && total > 0) strengths.push("Family contacts regularly produce positive outcomes for children");
   if (uniqueContactTypes >= 4 && total > 0) strengths.push("Diverse contact methods are used — phone, visits, video calls and meetings");
   if (uniqueRelationships >= 3 && total > 0) strengths.push("Children maintain connections across a broad family network — not just parents");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No family contact records — children may be isolated from their families");
-  if (positiveEngagementRate < 20 && total > 0) concerns.push("Very few family contacts are positive — relationships are strained or difficult");
-  if (childrenContactRate < 40 && total > 0) concerns.push("Most children have no recorded family contact — connections are not being maintained");
-  if (swInformedRate < 30 && total > 0) concerns.push("Social workers are rarely informed about family contact — safeguarding oversight is weak");
-  if (positiveOutcomeRate < 20 && total > 0) concerns.push("Family contacts rarely produce positive outcomes — intervention and support are needed");
+  if (below(positiveEngagementRate, 20) && total > 0) concerns.push("Very few family contacts are positive — relationships are strained or difficult");
+  if (below(childrenContactRate, 40) && total > 0) concerns.push("Most children have no recorded family contact — connections are not being maintained");
+  if (below(swInformedRate, 30) && total > 0) concerns.push("Social workers are rarely informed about family contact — safeguarding oversight is weak");
+  if (below(positiveOutcomeRate, 20) && total > 0) concerns.push("Family contacts rarely produce positive outcomes — intervention and support are needed");
   if (uniqueRelationships <= 1 && total > 0) concerns.push("Contact is limited to one relationship type — broader family connections should be explored");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -221,13 +223,13 @@ export function computeParentPartnershipEngagement(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Develop a family contact and partnership plan for every child", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (childrenContactRate < 60 && total > 0) {
+  if (below(childrenContactRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Extend family contact support to all children including those with complex family dynamics", urgency: "soon", regulatory_ref: "SCCIF Family" });
   }
-  if (positiveEngagementRate < 40 && total > 0) {
+  if (below(positiveEngagementRate, 40) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement family mediation and relationship-building strategies to improve engagement quality", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (swInformedRate < 50 && total > 0) {
+  if (below(swInformedRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure social workers are informed of all family contacts as standard practice", urgency: "immediate", regulatory_ref: "SCCIF Safeguarding" });
   }
   if (uniqueContactTypes < 2 && total > 0) {
@@ -242,16 +244,16 @@ export function computeParentPartnershipEngagement(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: ParentPartnershipResult["insights"] = [];
 
-  if (positiveEngagementRate >= 70 && childrenContactRate >= 90 && swInformedRate >= 80 && total >= 10) {
+  if (meets(positiveEngagementRate, 70) && meets(childrenContactRate, 90) && meets(swInformedRate, 80) && total >= 10) {
     insights.push({ text: "Family partnership is exemplary — children are connected, families are supported and professionals are informed", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No family contact records means Ofsted cannot verify how children's family relationships are supported", severity: "critical" });
   }
-  if (positiveEngagementRate < 20 && total > 0) {
+  if (below(positiveEngagementRate, 20) && total > 0) {
     insights.push({ text: "Predominantly negative family engagement suggests children may be distressed by contact — review care plans", severity: "warning" });
   }
-  if (childrenContactRate >= 90 && total > 0) {
+  if (meets(childrenContactRate, 90) && total > 0) {
     insights.push({ text: "Every child has family contact — the home prioritises maintaining connections that matter to children", severity: "positive" });
   }
   if (uniqueRelationships >= 3 && total > 0) {

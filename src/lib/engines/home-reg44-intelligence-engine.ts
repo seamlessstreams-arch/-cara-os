@@ -6,6 +6,8 @@
 // CHR 2015 Reg 44. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface Reg44RecInput {
@@ -138,10 +140,6 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeReg44(
@@ -200,7 +198,7 @@ export function computeHomeReg44(
   const inProgressRecs = allRecs.filter(r => r.status === "in_progress").length;
   const outstandingRecs = allRecs.filter(r => r.status === "outstanding").length;
   const highPriorityOutstanding = allRecs.filter(r => r.priority === "high" && r.status === "outstanding").length;
-  const recCompletionRate = pct(completedRecs, allRecs.length);
+  const recCompletionRate = rate(completedRecs, allRecs.length);
 
   const recProfile: RecommendationProfile = {
     total_recommendations: allRecs.length,
@@ -219,7 +217,7 @@ export function computeHomeReg44(
     (a.priority === "high" || a.priority === "critical") &&
     (a.status === "overdue" || (a.status !== "completed" && a.due_date < today))
   ).length;
-  const actionCompletionRate = pct(completedActions, action_records.length);
+  const actionCompletionRate = rate(completedActions, action_records.length);
 
   const actionProfile: ActionPlanProfile = {
     total_actions: action_records.length,
@@ -235,19 +233,15 @@ export function computeHomeReg44(
     ? Math.round((visits.reduce((a, v) => a + v.duration_hours, 0) / visits.length) * 10) / 10
     : null;
 
-  const childSpokenPcts = visits.map(v =>
-    v.total_children > 0 ? pct(v.children_spoken_count, v.total_children) : 0,
-  );
-  const avgChildSpoken = childSpokenPcts.length > 0
-    ? Math.round(childSpokenPcts.reduce((a, b) => a + b, 0) / childSpokenPcts.length)
-    : null;
+  const childSpokenPcts = visits.map(v => rate(v.children_spoken_count, v.total_children));
+  const avgChildSpoken = meanOf(childSpokenPcts);
 
   const avgRecordsReviewed = visits.length > 0
     ? Math.round((visits.reduce((a, v) => a + v.records_reviewed_count, 0) / visits.length) * 10) / 10
     : null;
 
   const sentToOfsted = visits.filter(v => v.report_sent_to_ofsted).length;
-  const ofstedRate = pct(sentToOfsted, visits.length);
+  const ofstedRate = rate(sentToOfsted, visits.length);
 
   const childVoiceEvery = visits.every(v => v.children_spoken_count > 0);
 
@@ -285,8 +279,8 @@ export function computeHomeReg44(
 
   // 3. Recommendation completion (±5)
   if (allRecs.length > 0) {
-    if (recCompletionRate >= 80) score += 5;
-    else if (recCompletionRate >= 60) score += 2;
+    if (meets(recCompletionRate, 80)) score += 5;
+    else if (meets(recCompletionRate, 60)) score += 2;
     else score -= 3;
   }
 
@@ -303,7 +297,7 @@ export function computeHomeReg44(
 
   // 6. Ofsted notification rate (±3)
   if (ofstedRate === 100) score += 3;
-  else if (ofstedRate >= 80) score += 1;
+  else if (meets(ofstedRate, 80)) score += 1;
   else score -= 3;
 
   // 7. Child voice capture (±3)
@@ -327,7 +321,7 @@ export function computeHomeReg44(
   const strengths: string[] = [];
   if (monthlyCompliance) strengths.push("Monthly Reg 44 visits achieved — statutory requirement met consistently.");
   if (largestGap <= 35) strengths.push(`No gap exceeds ${largestGap} days — visit schedule is well-maintained.`);
-  if (recCompletionRate >= 80 && allRecs.length > 0) strengths.push(`${recCompletionRate}% of visitor recommendations completed — demonstrates responsive management.`);
+  if (meets(recCompletionRate, 80) && allRecs.length > 0) strengths.push(`${formatRate(recCompletionRate)} of visitor recommendations completed — demonstrates responsive management.`);
   if (ofstedRate === 100) strengths.push("All visit reports sent to Ofsted — notification compliance is exemplary.");
   if (childVoiceEvery) strengths.push("Children spoken to at every visit — their voice is central to independent monitoring.");
   if (overdueActions === 0 && action_records.length > 0) strengths.push("No overdue actions from Reg 44 visits — action plan management is thorough.");
@@ -340,7 +334,7 @@ export function computeHomeReg44(
   if (largestGap > 45) concerns.push(`Largest gap between visits is ${largestGap} days — visits should occur at least monthly.`);
   if (highPriorityOutstanding > 0) concerns.push(`${highPriorityOutstanding} high-priority recommendation${highPriorityOutstanding > 1 ? "s" : ""} outstanding — these require urgent attention.`);
   if (overdueHighCritical > 0) concerns.push(`${overdueHighCritical} high/critical action${overdueHighCritical > 1 ? "s" : ""} overdue — management must respond promptly to visitor findings.`);
-  if (ofstedRate < 100) concerns.push(`Ofsted notification rate is ${ofstedRate}% — all Reg 44 reports must be sent to Ofsted.`);
+  if (below(ofstedRate, 100)) concerns.push(`Ofsted notification rate is ${formatRate(ofstedRate)} — all Reg 44 reports must be sent to Ofsted.`);
   if (!childVoiceEvery) concerns.push("Children not spoken to at every visit — the child's voice must be central to independent monitoring.");
   if (carriedForward > 0) concerns.push(`${carriedForward} action${carriedForward > 1 ? "s" : ""} carried forward from previous visits — recurring issues indicate insufficient management response.`);
   if (judgementTrend === "declining") concerns.push("Visitor judgements show a declining trend — quality of care requires attention.");
@@ -358,7 +352,7 @@ export function computeHomeReg44(
   if (overdueHighCritical > 0) {
     recs.push({ rank: rank++, recommendation: `Complete ${overdueHighCritical} overdue high/critical action${overdueHighCritical > 1 ? "s" : ""} from Reg 44 action plans.`, urgency: "immediate", regulatory_ref: "Reg 44" });
   }
-  if (ofstedRate < 100) {
+  if (below(ofstedRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Ensure all Reg 44 reports are sent to Ofsted within the required timeframe.", urgency: "soon", regulatory_ref: "Reg 44" });
   }
   if (!childVoiceEvery) {
@@ -377,19 +371,19 @@ export function computeHomeReg44(
   if (judgementTrend === "declining") {
     insights.push({ text: "Visitor judgements are declining. Ofsted will view worsening independent assessments as evidence that management is not addressing identified issues.", severity: "warning" });
   }
-  if (monthlyCompliance && recCompletionRate >= 80 && ofstedRate === 100) {
-    insights.push({ text: `Monthly visits achieved with ${recCompletionRate}% recommendation completion and full Ofsted notification. This demonstrates strong governance and responsiveness to independent monitoring — a hallmark of outstanding leadership.`, severity: "positive" });
+  if (monthlyCompliance && meets(recCompletionRate, 80) && ofstedRate === 100) {
+    insights.push({ text: `Monthly visits achieved with ${formatRate(recCompletionRate)} recommendation completion and full Ofsted notification. This demonstrates strong governance and responsiveness to independent monitoring — a hallmark of outstanding leadership.`, severity: "positive" });
   }
   if (childVoiceEvery && (avgChildSpoken ?? 0) >= 80) {
-    insights.push({ text: `Children spoken to at every visit with ${avgChildSpoken}% average engagement. The child's voice is embedded in the independent monitoring process — Ofsted's key expectation.`, severity: "positive" });
+    insights.push({ text: `Children spoken to at every visit with ${formatRate(avgChildSpoken)} average engagement. The child's voice is embedded in the independent monitoring process — Ofsted's key expectation.`, severity: "positive" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding Reg 44 compliance — ${visits12m.length} visits in 12 months with ${recCompletionRate}% recommendation completion.`;
+    headline = `Outstanding Reg 44 compliance — ${visits12m.length} visits in 12 months with ${formatRate(recCompletionRate)} recommendation completion.`;
   } else if (rating === "good") {
-    headline = `Good Reg 44 compliance — consistent visiting with ${recCompletionRate}% recommendation completion.`;
+    headline = `Good Reg 44 compliance — consistent visiting with ${formatRate(recCompletionRate)} recommendation completion.`;
   } else if (rating === "adequate") {
     headline = "Adequate Reg 44 compliance — gaps in visit frequency, recommendation follow-up, or Ofsted notification need addressing.";
   } else {

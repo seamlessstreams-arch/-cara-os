@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -138,7 +139,7 @@ export function HomeChronologyIntelligenceCard() {
                   d.coverage_profile.coverage_rate === 100 ? "text-[--cs-success]" :
                   (d.coverage_profile.coverage_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.coverage_profile.coverage_rate}%
+                  {formatRate(d.coverage_profile.coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Coverage</p>

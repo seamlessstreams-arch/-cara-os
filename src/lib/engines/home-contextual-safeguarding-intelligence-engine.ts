@@ -5,6 +5,8 @@
 // CHR 2015 Reg 12: "The protection of children standard." SCCIF: Safeguarding.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ContextualRiskInput {
@@ -43,9 +45,12 @@ export interface ContextualSafeguardingResult {
   total_risks: number;
   active_risks: number;
   high_risk_count: number;
-  protective_actions_rate: number;
-  multi_agency_rate: number;
-  resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  protective_actions_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multi_agency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolution_rate: number | null;
   review_overdue_count: number;
   strengths: string[];
   concerns: string[];
@@ -59,10 +64,6 @@ export interface ContextualSafeguardingResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -109,13 +110,13 @@ export function computeContextualSafeguarding(
   const highRiskCount = risks.filter(r => r.risk_level === "high" || r.risk_level === "very_high").length;
 
   const withProtective = risks.filter(r => r.protective_actions_count > 0).length;
-  const protectiveRate = pct(withProtective, total);
+  const protectiveRate = rate(withProtective, total);
 
   const withMultiAgency = risks.filter(r => r.multi_agency_actions_count > 0).length;
-  const multiAgencyRate = pct(withMultiAgency, total);
+  const multiAgencyRate = rate(withMultiAgency, total);
 
   const resolved = risks.filter(r => r.status === "resolved").length;
-  const resolutionRate = pct(resolved, total);
+  const resolutionRate = rate(resolved, total);
 
   const overdue = risks.filter(r => r.needs_review).length;
 
@@ -131,26 +132,26 @@ export function computeContextualSafeguarding(
   if (total === 0) {
     // no adjustment
   } else {
-    if (protectiveRate >= 90) score += 6;
-    else if (protectiveRate >= 70) score += 2;
-    else if (protectiveRate < 50) score -= 5;
+    if (meets(protectiveRate, 90)) score += 6;
+    else if (meets(protectiveRate, 70)) score += 2;
+    else if (below(protectiveRate, 50)) score -= 5;
   }
 
   // Modifier 3: Multi-agency engagement
   if (total === 0) {
     score -= 1;
   } else {
-    if (multiAgencyRate >= 80) score += 5;
-    else if (multiAgencyRate >= 50) score += 2;
-    else if (multiAgencyRate < 30) score -= 4;
+    if (meets(multiAgencyRate, 80)) score += 5;
+    else if (meets(multiAgencyRate, 50)) score += 2;
+    else if (below(multiAgencyRate, 30)) score -= 4;
   }
 
   // Modifier 4: Resolution rate
   if (total === 0) {
     // no adjustment
   } else {
-    if (resolutionRate >= 60) score += 5;
-    else if (resolutionRate >= 30) score += 2;
+    if (meets(resolutionRate, 60)) score += 5;
+    else if (meets(resolutionRate, 30)) score += 2;
     else if (resolutionRate === 0 && total > 2) score -= 5;
   }
 
@@ -170,10 +171,10 @@ export function computeContextualSafeguarding(
     const highWithProtective = risks.filter(r =>
       (r.risk_level === "high" || r.risk_level === "very_high") && r.protective_actions_count > 0
     ).length;
-    const highProtectedRate = pct(highWithProtective, highRiskCount);
+    const highProtectedRate = rate(highWithProtective, highRiskCount);
     if (highRiskCount === 0) score += 5;
-    else if (highProtectedRate >= 90) score += 3;
-    else if (highProtectedRate >= 70) score += 1;
+    else if (meets(highProtectedRate, 90)) score += 3;
+    else if (meets(highProtectedRate, 70)) score += 1;
     else score -= 5;
   }
 
@@ -202,17 +203,17 @@ export function computeContextualSafeguarding(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (total >= 5) strengths.push("Comprehensive contextual risk mapping shows the home is actively scanning the environment");
-  if (protectiveRate >= 90 && total > 0) strengths.push("Protective actions are in place for virtually all identified contextual risks");
-  if (multiAgencyRate >= 80 && total > 0) strengths.push("Strong multi-agency engagement ensures risks are tackled collaboratively");
-  if (resolutionRate >= 60 && total > 0) strengths.push("Good resolution rate shows contextual risks are being effectively managed down");
+  if (meets(protectiveRate, 90) && total > 0) strengths.push("Protective actions are in place for virtually all identified contextual risks");
+  if (meets(multiAgencyRate, 80) && total > 0) strengths.push("Strong multi-agency engagement ensures risks are tackled collaboratively");
+  if (meets(resolutionRate, 60) && total > 0) strengths.push("Good resolution rate shows contextual risks are being effectively managed down");
   if (overdue === 0 && total > 0) strengths.push("All contextual risk reviews are up to date — oversight is current");
   if (highRiskCount === 0 && total > 0) strengths.push("No high or very high contextual risks identified — children's environments are safe");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No contextual safeguarding risks assessed — the home may be unaware of environmental threats");
-  if (protectiveRate < 50 && total > 0) concerns.push("Most contextual risks lack protective actions — children are exposed without mitigation");
-  if (multiAgencyRate < 30 && total > 0) concerns.push("Multi-agency engagement is absent from most contextual risks — the home is working in isolation");
+  if (below(protectiveRate, 50) && total > 0) concerns.push("Most contextual risks lack protective actions — children are exposed without mitigation");
+  if (below(multiAgencyRate, 30) && total > 0) concerns.push("Multi-agency engagement is absent from most contextual risks — the home is working in isolation");
   if (overdue >= 3) concerns.push(`${overdue} contextual risk reviews are overdue — risks may have escalated unnoticed`);
   if (highRiskCount >= 3 && total > 0) concerns.push(`${highRiskCount} high or very high contextual risks identified — significant environmental threats to children`);
   if (resolutionRate === 0 && total > 2) concerns.push("No contextual risks have been resolved — intervention is not achieving outcomes");
@@ -223,10 +224,10 @@ export function computeContextualSafeguarding(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Conduct a contextual safeguarding mapping exercise covering locations, peers and online spaces", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (protectiveRate < 70 && total > 0) {
+  if (below(protectiveRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Develop protective action plans for all identified contextual risks", urgency: "immediate", regulatory_ref: "SCCIF Safeguarding" });
   }
-  if (multiAgencyRate < 50 && total > 0) {
+  if (below(multiAgencyRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Strengthen multi-agency partnerships to address contextual risks collaboratively", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
   if (overdue >= 2) {
@@ -235,7 +236,7 @@ export function computeContextualSafeguarding(
   if (highRiskCount >= 2 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Escalate high-risk contextual concerns to senior management and relevant agencies", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (resolutionRate < 30 && total > 2) {
+  if (below(resolutionRate, 30) && total > 2) {
     recs.push({ rank: recs.length + 1, recommendation: "Review intervention strategies to improve contextual risk resolution outcomes", urgency: "soon", regulatory_ref: "SCCIF Safeguarding" });
   }
 
@@ -244,7 +245,7 @@ export function computeContextualSafeguarding(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: ContextualSafeguardingResult["insights"] = [];
 
-  if (protectiveRate >= 90 && multiAgencyRate >= 80 && overdue === 0 && total >= 3) {
+  if (meets(protectiveRate, 90) && meets(multiAgencyRate, 80) && overdue === 0 && total >= 3) {
     insights.push({ text: "Contextual safeguarding is exemplary — risks are mapped, managed and reviewed through active partnership working", severity: "positive" });
   }
   if (total === 0) {
@@ -253,10 +254,10 @@ export function computeContextualSafeguarding(
   if (highRiskCount >= 3) {
     insights.push({ text: "Multiple high-risk contextual threats require immediate strategic response — escalate to RI and relevant agencies", severity: "critical" });
   }
-  if (multiAgencyRate >= 80 && total > 0) {
+  if (meets(multiAgencyRate, 80) && total > 0) {
     insights.push({ text: "Strong multi-agency engagement means risks are shared and addressed collectively — children are better protected", severity: "positive" });
   }
-  if (resolutionRate >= 60 && total > 0) {
+  if (meets(resolutionRate, 60) && total > 0) {
     insights.push({ text: "Healthy resolution rate shows interventions are working — risks are being actively managed down over time", severity: "positive" });
   }
 

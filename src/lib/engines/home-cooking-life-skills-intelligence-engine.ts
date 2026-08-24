@@ -5,6 +5,8 @@
 // CHR 2015 Reg 9: "Promoting good health and well-being." SCCIF: Independence.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CookingRecordInput {
@@ -40,12 +42,17 @@ export interface CookingLifeSkillsResult {
   cooking_score: number;
   headline: string;
   total_records: number;
-  independence_rate: number;
-  hygiene_certificate_rate: number;
-  child_voice_rate: number;
-  recipe_success_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygiene_certificate_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recipe_success_rate: number | null;
   category_variety: number;
-  children_engaged_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_engaged_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -58,10 +65,6 @@ export interface CookingLifeSkillsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -107,22 +110,22 @@ export function computeCookingLifeSkills(
   const independent = records.filter(r =>
     r.competency_level === "did_independently" || r.competency_level === "can_teach_others"
   ).length;
-  const independenceRate = pct(independent, total);
+  const independenceRate = rate(independent, total);
 
   const withHygiene = records.filter(r => r.hygiene_certificate).length;
-  const hygieneCertRate = pct(withHygiene, total);
+  const hygieneCertRate = rate(withHygiene, total);
 
   const withVoice = records.filter(r => r.has_child_voice).length;
-  const childVoiceRate = pct(withVoice, total);
+  const childVoiceRate = rate(withVoice, total);
 
   const totalRecipes = records.reduce((s, r) => s + r.recipes_attempted_count, 0);
   const goodRecipes = records.reduce((s, r) => s + r.recipes_good_or_better_count, 0);
-  const recipeSuccessRate = pct(goodRecipes, totalRecipes);
+  const recipeSuccessRate = rate(goodRecipes, totalRecipes);
 
   const uniqueCategories = new Set(records.map(r => r.category)).size;
 
   const uniqueChildren = new Set(records.map(r => r.child_id)).size;
-  const childrenEngagedRate = pct(uniqueChildren, total_children);
+  const childrenEngagedRate = rate(uniqueChildren, total_children);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -131,27 +134,27 @@ export function computeCookingLifeSkills(
   if (total === 0) {
     score -= 3;
   } else {
-    if (independenceRate >= 60) score += 5;
-    else if (independenceRate >= 30) score += 2;
-    else if (independenceRate < 15) score -= 5;
+    if (meets(independenceRate, 60)) score += 5;
+    else if (meets(independenceRate, 30)) score += 2;
+    else if (below(independenceRate, 15)) score -= 5;
   }
 
   // Modifier 2: Children engaged (coverage)
   if (total === 0) {
     // already penalised
   } else {
-    if (childrenEngagedRate >= 90) score += 6;
-    else if (childrenEngagedRate >= 60) score += 2;
-    else if (childrenEngagedRate < 40) score -= 5;
+    if (meets(childrenEngagedRate, 90)) score += 6;
+    else if (meets(childrenEngagedRate, 60)) score += 2;
+    else if (below(childrenEngagedRate, 40)) score -= 5;
   }
 
   // Modifier 3: Child voice
   if (total === 0) {
     // no adjustment
   } else {
-    if (childVoiceRate >= 80) score += 5;
-    else if (childVoiceRate >= 50) score += 2;
-    else if (childVoiceRate < 30) score -= 4;
+    if (meets(childVoiceRate, 80)) score += 5;
+    else if (meets(childVoiceRate, 50)) score += 2;
+    else if (below(childVoiceRate, 30)) score -= 4;
   }
 
   // Modifier 4: Recipe success rate
@@ -160,9 +163,9 @@ export function computeCookingLifeSkills(
   } else if (totalRecipes === 0) {
     // no records
   } else {
-    if (recipeSuccessRate >= 80) score += 5;
-    else if (recipeSuccessRate >= 50) score += 2;
-    else if (recipeSuccessRate < 30) score -= 5;
+    if (meets(recipeSuccessRate, 80)) score += 5;
+    else if (meets(recipeSuccessRate, 50)) score += 2;
+    else if (below(recipeSuccessRate, 30)) score -= 5;
   }
 
   // Modifier 5: Category variety (breadth of skills)
@@ -178,8 +181,8 @@ export function computeCookingLifeSkills(
   if (total === 0) {
     score -= 2;
   } else {
-    if (hygieneCertRate >= 50) score += 5;
-    else if (hygieneCertRate >= 20) score += 2;
+    if (meets(hygieneCertRate, 50)) score += 5;
+    else if (meets(hygieneCertRate, 20)) score += 2;
     else if (hygieneCertRate === 0) score -= 3;
   }
 
@@ -207,19 +210,19 @@ export function computeCookingLifeSkills(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (independenceRate >= 60 && total > 0) strengths.push("Strong independence progression — children are cooking confidently on their own");
-  if (childrenEngagedRate >= 90 && total > 0) strengths.push("All children are engaged in cooking skills development");
-  if (childVoiceRate >= 80 && total > 0) strengths.push("Children's views and preferences are central to cooking activities");
-  if (recipeSuccessRate >= 80 && totalRecipes > 0) strengths.push("High recipe success rate shows effective teaching and growing confidence");
+  if (meets(independenceRate, 60) && total > 0) strengths.push("Strong independence progression — children are cooking confidently on their own");
+  if (meets(childrenEngagedRate, 90) && total > 0) strengths.push("All children are engaged in cooking skills development");
+  if (meets(childVoiceRate, 80) && total > 0) strengths.push("Children's views and preferences are central to cooking activities");
+  if (meets(recipeSuccessRate, 80) && totalRecipes > 0) strengths.push("High recipe success rate shows effective teaching and growing confidence");
   if (uniqueCategories >= 6 && total > 0) strengths.push("Broad range of cooking categories covered — from knife skills to cultural cooking");
-  if (hygieneCertRate >= 50 && total > 0) strengths.push("Good uptake of food hygiene certification — embedding safety knowledge");
+  if (meets(hygieneCertRate, 50) && total > 0) strengths.push("Good uptake of food hygiene certification — embedding safety knowledge");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No cooking or life skills records — children are not being taught essential independence skills");
-  if (independenceRate < 15 && total > 0) concerns.push("Very few children can cook independently — progression is too slow");
-  if (childrenEngagedRate < 40 && total > 0) concerns.push("Most children are not engaged in cooking activities — opportunity to build skills is being missed");
-  if (childVoiceRate < 30 && total > 0) concerns.push("Children's voice is largely absent from cooking activities");
+  if (below(independenceRate, 15) && total > 0) concerns.push("Very few children can cook independently — progression is too slow");
+  if (below(childrenEngagedRate, 40) && total > 0) concerns.push("Most children are not engaged in cooking activities — opportunity to build skills is being missed");
+  if (below(childVoiceRate, 30) && total > 0) concerns.push("Children's voice is largely absent from cooking activities");
   if (hygieneCertRate === 0 && total > 0) concerns.push("No children have food hygiene certification — basic safety knowledge is not evidenced");
   if (uniqueCategories <= 1 && total > 0) concerns.push("Cooking skills are limited to a single category — programme lacks breadth");
 
@@ -229,19 +232,19 @@ export function computeCookingLifeSkills(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Establish a structured cooking and life skills programme for all children", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (childrenEngagedRate < 60 && total > 0) {
+  if (below(childrenEngagedRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Extend cooking programme to include all children with age-appropriate activities", urgency: "soon", regulatory_ref: "SCCIF Independence" });
   }
-  if (independenceRate < 30 && total > 0) {
+  if (below(independenceRate, 30) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Focus on progression pathways to move children from assisted to independent cooking", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (childVoiceRate < 50 && total > 0) {
+  if (below(childVoiceRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Capture children's views and meal preferences as part of every cooking session", urgency: "planned", regulatory_ref: "SCCIF Voice of Child" });
   }
   if (uniqueCategories < 3 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Broaden the cooking curriculum to include budgeting, cultural cooking, and allergen awareness", urgency: "planned", regulatory_ref: "SCCIF Independence" });
   }
-  if (hygieneCertRate < 20 && total > 0) {
+  if (below(hygieneCertRate, 20) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Introduce basic food hygiene certification for all children as a life skill milestone", urgency: "planned", regulatory_ref: "CHR 2015 Reg 9" });
   }
 
@@ -250,19 +253,19 @@ export function computeCookingLifeSkills(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: CookingLifeSkillsResult["insights"] = [];
 
-  if (independenceRate >= 60 && childrenEngagedRate >= 90 && uniqueCategories >= 6) {
+  if (meets(independenceRate, 60) && meets(childrenEngagedRate, 90) && uniqueCategories >= 6) {
     insights.push({ text: "Exemplary life skills programme — children are gaining real-world independence through cooking", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "Without cooking skills evidence, Ofsted will question how children are being prepared for adulthood", severity: "critical" });
   }
-  if (independenceRate < 15 && total > 0) {
+  if (below(independenceRate, 15) && total > 0) {
     insights.push({ text: "Low independence in cooking suggests over-reliance on staff — children need supported opportunities to lead", severity: "warning" });
   }
-  if (childVoiceRate >= 80 && total > 0) {
+  if (meets(childVoiceRate, 80) && total > 0) {
     insights.push({ text: "Children's voices drive the cooking programme — meals reflect their culture, preferences and identity", severity: "positive" });
   }
-  if (hygieneCertRate >= 50 && total > 0) {
+  if (meets(hygieneCertRate, 50) && total > 0) {
     insights.push({ text: "Hygiene certification shows children understand food safety — a tangible achievement they can be proud of", severity: "positive" });
   }
 

@@ -532,10 +532,6 @@ const ALLOWED = new Map([
     "plannedEndingRate — 0 placements ended ⇒ no endings to plan against, vacuously complete (inverse-frequency)",
   ],
   [
-    "src/lib/engines/home-policy-compliance-intelligence-engine.ts:active:1",
-    "divide-by-zero fallback for currencyRate divisor (`active.length > 0 ? active.length : 1`) — 1 is a divisor floor",
-  ],
-  [
     "src/lib/engines/home-staff-reflective-practice-intelligence-engine.ts:shadowings:1",
     "0 shadowings in the period ⇒ vacuously 1 on the reflective-practice sub-score (inverse-frequency; matches the sibling `if (X.length === 0) return 1` pattern that's ALLOWED elsewhere)",
   ],

@@ -574,7 +574,7 @@ describe("computeHomePremisesSafety", () => {
         buildings: [makeBuilding()],
       }));
       expect(r.check_profile.total_checks).toBe(0);
-      expect(r.check_profile.pass_rate).toBe(0);
+      expect(r.check_profile.pass_rate).toBeNull();
     });
 
     it("handles empty vehicle checks gracefully", () => {

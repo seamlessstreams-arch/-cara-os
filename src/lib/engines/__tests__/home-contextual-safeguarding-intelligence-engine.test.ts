@@ -105,9 +105,9 @@ describe("computeContextualSafeguarding", () => {
       expect(r.total_risks).toBe(0);
       expect(r.active_risks).toBe(0);
       expect(r.high_risk_count).toBe(0);
-      expect(r.protective_actions_rate).toBe(0);
-      expect(r.multi_agency_rate).toBe(0);
-      expect(r.resolution_rate).toBe(0);
+      expect(r.protective_actions_rate).toBeNull();
+      expect(r.multi_agency_rate).toBeNull();
+      expect(r.resolution_rate).toBeNull();
       expect(r.review_overdue_count).toBe(0);
     });
 
@@ -901,11 +901,11 @@ describe("computeContextualSafeguarding", () => {
       expect(r.review_overdue_count).toBe(3);
     });
 
-    it("returns 0 for all rates when no risks exist", () => {
+    it("leaves every rate unmeasured when no risks exist", () => {
       const r = computeContextualSafeguarding(baseInput({ risks: [] }));
-      expect(r.protective_actions_rate).toBe(0);
-      expect(r.multi_agency_rate).toBe(0);
-      expect(r.resolution_rate).toBe(0);
+      expect(r.protective_actions_rate).toBeNull();
+      expect(r.multi_agency_rate).toBeNull();
+      expect(r.resolution_rate).toBeNull();
     });
   });
 

@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { above, below, formatRate, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — SCCIF SELF-EVALUATION INTELLIGENCE ENGINE
 //
@@ -40,11 +41,14 @@ export interface SCCIFIntelligenceInput {
 export interface SCCIFOverview {
   status: string; // draft, in_review, final
   total_evidence: number;
-  coverage_rate: number; // percentage of judgment areas with evidence
-  strength_ratio: number; // overall strengths / (strengths + developments) %
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverage_rate: number | null; // percentage of judgment areas with evidence
+  /** null when the population is empty — nothing measured, not 0%. */
+  strength_ratio: number | null; // overall strengths / (strengths + developments) %
   total_areas: number;
   areas_with_evidence: number;
-  inspection_readiness_score: number; // 0-100 weighted score
+  /** null when the population is empty — nothing measured, not 0%. */
+  inspection_readiness_score: number | null; // 0-100 weighted score
 }
 
 export interface JudgmentSummary {
@@ -54,7 +58,8 @@ export interface JudgmentSummary {
   strengths_count: number;
   developments_count: number;
   evidence_count: number;
-  strength_ratio: number; // strengths / (strengths + developments) %
+  /** null when an area records neither strengths nor developments. */
+  strength_ratio: number | null; // strengths / (strengths + developments) %
 }
 
 export interface ActionTracker {
@@ -62,7 +67,8 @@ export interface ActionTracker {
   completed: number;
   in_progress: number;
   overdue: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
 }
 
 export interface SCCIFAlert {
@@ -112,12 +118,6 @@ export function isOverdue(action: SelfEvaluationActionInput, today: string): boo
   return action.target_date < today;
 }
 
-/** Computes a percentage, returning 0 when denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIntelligenceResult {
@@ -138,7 +138,7 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
       strengths_count: strengthsCount,
       developments_count: developmentsCount,
       evidence_count: evidenceCount,
-      strength_ratio: pct(strengthsCount, total),
+      strength_ratio: rate(strengthsCount, total),
     };
   });
 
@@ -160,12 +160,12 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   // Areas with evidence = areas that have at least one evidence item
   const areasWithEvidence = areas.filter((a) => a.evidence.length > 0);
   const totalJudgmentAreas = SCCIF_JUDGMENT_AREAS.length;
-  const coverage_rate = pct(areasWithEvidence.length, totalJudgmentAreas);
+  const coverage_rate = rate(areasWithEvidence.length, totalJudgmentAreas);
 
   // ── Strength Ratio (overall) ────────────────────────────────────────────
   const totalStrengths = areas.reduce((s, a) => s + a.strengths.length, 0);
   const totalDevelopments = areas.reduce((s, a) => s + a.areas_for_development.length, 0);
-  const overallStrengthRatio = pct(totalStrengths, totalStrengths + totalDevelopments);
+  const overallStrengthRatio = rate(totalStrengths, totalStrengths + totalDevelopments);
 
   // ── Total Evidence ──────────────────────────────────────────────────────
   const totalEvidence = areas.reduce((s, a) => s + a.evidence.length, 0);
@@ -181,7 +181,7 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
     completed: completedActions.length,
     in_progress: inProgressActions.length,
     overdue: overdueActions.length,
-    completion_rate: pct(completedActions.length, allActions.length),
+    completion_rate: rate(completedActions.length, allActions.length),
   };
 
   // ── Inspection Readiness Score (weighted 0-100) ─────────────────────────
@@ -201,31 +201,35 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   };
   const avgGradeScore = areas.length > 0
     ? areas.reduce((s, a) => s + (gradeScores[a.self_grade] ?? 0), 0) / areas.length
-    : 0;
+    : null;
 
   // Evidence depth: how rich is the evidence? Score based on average evidence items
   // Heuristic: 5+ evidence items per area = 100, scale linearly
-  const avgEvidencePerArea = areas.length > 0
-    ? totalEvidence / areas.length
-    : 0;
-  const evidenceDepthScore = Math.min(100, Math.round((avgEvidencePerArea / 5) * 100));
+  const avgEvidencePerArea = areas.length > 0 ? totalEvidence / areas.length : null;
+  const evidenceDepthScore =
+    avgEvidencePerArea === null
+      ? null
+      : Math.min(100, Math.round((avgEvidencePerArea / 5) * 100));
 
-  const inspection_readiness_score = Math.round(
-    (coverage_rate * 0.25) +
-    (overallStrengthRatio * 0.20) +
-    (avgGradeScore * 0.30) +
-    (action_tracker.completion_rate * 0.15) +
-    (evidenceDepthScore * 0.10)
-  );
+  // weightedMeanOf renormalises over what IS measured, so an area with no
+  // evidence recorded is left out of the readiness score rather than scored
+  // zero on it — the gap is reported separately, which is what Ofsted asks.
+  const inspection_readiness_score = weightedMeanOf([
+    { score: coverage_rate, weight: 25 },
+    { score: overallStrengthRatio, weight: 20 },
+    { score: avgGradeScore, weight: 30 },
+    { score: action_tracker.completion_rate, weight: 15 },
+    { score: evidenceDepthScore, weight: 10 },
+  ]);
 
   // ── Status Determination ────────────────────────────────────────────────
   // draft: < 3 areas filled, or coverage < 67%
   // in_review: all 3 areas covered but actions still open
   // final: all 3 areas covered, no overdue actions, coverage 100%
   let status: string;
-  if (areas.length < 3 || coverage_rate < 67) {
+  if (areas.length < 3 || below(coverage_rate, 67)) {
     status = "draft";
-  } else if (overdueActions.length > 0 || action_tracker.completion_rate < 100) {
+  } else if (overdueActions.length > 0 || below(action_tracker.completion_rate, 100)) {
     status = "in_review";
   } else {
     status = "final";
@@ -266,10 +270,10 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   }
 
   // High: Coverage rate below 50%
-  if (coverage_rate < 50) {
+  if (below(coverage_rate, 50)) {
     alerts.push({
       severity: "high",
-      message: `Evidence coverage is only ${coverage_rate}% — below the 50% threshold.`,
+      message: `Evidence coverage is only ${formatRate(coverage_rate)} — below the 50% threshold.`,
     });
   }
 
@@ -292,7 +296,7 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   // Low: Strength ratio below 60% in any area
   for (const summary of judgment_summaries) {
     const total = summary.strengths_count + summary.developments_count;
-    if (total > 0 && summary.strength_ratio < 60) {
+    if (total > 0 && below(summary.strength_ratio, 60)) {
       alerts.push({
         severity: "low",
         message: `${summary.area_label} strength ratio is ${summary.strength_ratio}% — below 60%.`,
@@ -314,10 +318,10 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   }
 
   // Warning: Low evidence coverage (< 70%)
-  if (coverage_rate < 70) {
+  if (below(coverage_rate, 70)) {
     insights.push({
       severity: "warning",
-      text: `Evidence coverage at ${coverage_rate}% — consider completing self-evaluation for all SCCIF judgment areas.`,
+      text: `Evidence coverage at ${formatRate(coverage_rate)} — consider completing self-evaluation for all SCCIF judgment areas.`,
     });
   }
 
@@ -341,10 +345,10 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   }
 
   // Positive: Coverage rate 90%+ with strength ratio 65%+
-  if (coverage_rate >= 90 && overallStrengthRatio >= 65) {
+  if (meets(coverage_rate, 90) && meets(overallStrengthRatio, 65)) {
     insights.push({
       severity: "positive",
-      text: `Excellent evidence coverage (${coverage_rate}%) with strong strength ratio (${overallStrengthRatio}%) — well-prepared for inspection.`,
+      text: `Excellent evidence coverage (${formatRate(coverage_rate)}) with strong strength ratio (${formatRate(overallStrengthRatio)}) — well-prepared for inspection.`,
     });
   }
 

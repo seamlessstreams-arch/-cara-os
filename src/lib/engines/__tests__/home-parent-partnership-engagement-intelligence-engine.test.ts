@@ -129,12 +129,12 @@ describe("zero contacts with children present", () => {
     });
   });
 
-  it("reports all metric rates as 0 with zero contacts", () => {
+  it("reports every metric rate as unmeasured with zero contacts", () => {
     const result = computeParentPartnershipEngagement(baseInput({ contacts: [] }));
-    expect(result.positive_engagement_rate).toBe(0);
+    expect(result.positive_engagement_rate).toBeNull();
     expect(result.children_with_contact_rate).toBe(0);
-    expect(result.sw_informed_rate).toBe(0);
-    expect(result.positive_outcome_rate).toBe(0);
+    expect(result.sw_informed_rate).toBeNull();
+    expect(result.positive_outcome_rate).toBeNull();
     expect(result.contact_type_variety).toBe(0);
     expect(result.relationship_variety).toBe(0);
   });
@@ -1444,12 +1444,12 @@ describe("metrics computation", () => {
     expect(result.relationship_variety).toBe(2);
   });
 
-  it("pct helper returns 0 when denominator is 0", () => {
+  it("a rate is unmeasured when its denominator is 0", () => {
     // Zero contacts → all rates are 0
     const result = computeParentPartnershipEngagement(baseInput({ contacts: [] }));
-    expect(result.positive_engagement_rate).toBe(0);
-    expect(result.sw_informed_rate).toBe(0);
-    expect(result.positive_outcome_rate).toBe(0);
+    expect(result.positive_engagement_rate).toBeNull();
+    expect(result.sw_informed_rate).toBeNull();
+    expect(result.positive_outcome_rate).toBeNull();
   });
 });
 

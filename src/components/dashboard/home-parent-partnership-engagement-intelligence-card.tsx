@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,16 +78,16 @@ export function HomeParentPartnershipEngagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_contacts > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_contacts}</p>
               <p className="text-[9px] text-muted-foreground">Contacts</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_engagement_rate >= 70 ? "bg-green-50" : d.positive_engagement_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_engagement_rate >= 70 ? "text-[--cs-success]" : d.positive_engagement_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_engagement_rate, 70) ? "bg-green-50" : meets(d.positive_engagement_rate, 40) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_engagement_rate, 70) ? "text-[--cs-success]" : meets(d.positive_engagement_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_with_contact_rate >= 90 ? "bg-green-50" : d.children_with_contact_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_with_contact_rate >= 90 ? "text-[--cs-success]" : d.children_with_contact_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_with_contact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.children_with_contact_rate, 90) ? "bg-green-50" : meets(d.children_with_contact_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_with_contact_rate, 90) ? "text-[--cs-success]" : meets(d.children_with_contact_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_with_contact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sw_informed_rate >= 80 ? "bg-green-50" : d.sw_informed_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sw_informed_rate >= 80 ? "text-[--cs-success]" : d.sw_informed_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sw_informed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sw_informed_rate, 80) ? "bg-green-50" : meets(d.sw_informed_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sw_informed_rate, 80) ? "text-[--cs-success]" : meets(d.sw_informed_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sw_informed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">SW Told</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.contact_type_variety >= 4 ? "bg-green-50" : d.contact_type_variety >= 2 ? "bg-amber-50" : "bg-red-50")}>
