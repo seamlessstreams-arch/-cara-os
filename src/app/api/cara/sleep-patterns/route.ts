@@ -134,7 +134,9 @@ function buildDemoNights(childId: string): SleepNight[] {
   const nights: SleepNight[] = [];
 
   for (let i = 0; i < 21; i++) {
-    const date = new Date(2026, 4, 1 + i).toISOString().slice(0, 10);
+    // Date.UTC, not new Date(y, m, d): local midnight sliced to ISO lands on
+      // the previous day under BST — every night here was dated one day early.
+      const date = new Date(Date.UTC(2026, 4, 1 + i)).toISOString().slice(0, 10);
 
     if (isJordan) {
       // Jordan: disrupted sleep, improving trend with melatonin

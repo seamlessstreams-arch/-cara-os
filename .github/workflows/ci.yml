@@ -135,6 +135,9 @@ jobs:
       - name: Literal-interpolation guard (no un-interpolated ${…} in quoted strings)
         run: node scripts/check-literal-interpolation.js
 
+      - name: Local-date-ctor guard (no new Date(y, m, d) — that is local midnight)
+        run: node scripts/check-local-date-ctor.js
+
       - name: Fabricated-score guard (an empty population must not score as compliant)
         run: node scripts/check-fabricated-scores.js
 
