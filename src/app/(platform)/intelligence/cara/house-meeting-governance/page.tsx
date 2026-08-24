@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import type {
   HouseMeetingGovernanceResult,
   HouseMeetingRating,
@@ -110,7 +111,7 @@ export default function HouseMeetingGovernancePage() {
           { label: "Total meetings", value: d.total_meetings },
           { label: "Avg agenda items", value: (d.average_agenda_items ?? 0).toFixed(1) },
           { label: "Avg duration", value: (d.average_duration ?? 0) > 0 ? `${d.average_duration}min` : "—" },
-          { label: "Action completion", value: `${d.action_completion_rate}%`, alert: (d.action_completion_rate ?? 0) < 70 },
+          { label: "Action completion", value: `${formatRate(d.action_completion_rate)}`, alert: (d.action_completion_rate ?? 0) < 70 },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
             <p className="text-xs text-slate-500">{m.label}</p>

@@ -150,16 +150,16 @@ export function computeHomeDelegatedAuthority(
         : "No delegated authority records found.",
       status_profile: {
         total_items: 0, granted: 0, not_granted: 0, partial: 0, pending: 0,
-        granted_rate: 0,
+        granted_rate: null,
       },
       category_coverage: {
         total_possible_categories: ALL_CATEGORIES.length,
-        categories_addressed: 0, coverage_rate: 0,
+        categories_addressed: 0, coverage_rate: null,
         category_distribution: {}, gaps: [...ALL_CATEGORIES],
       },
       child_coverage: {
         children_with_authority: 0, total_children: 0,
-        coverage_rate: 0, items_per_child: {}, children_without_authority: 0,
+        coverage_rate: null, items_per_child: {}, children_without_authority: 0,
       },
       review_profile: {
         total_authorities: 0, reviews_overdue: 0, reviews_due_soon: 0,

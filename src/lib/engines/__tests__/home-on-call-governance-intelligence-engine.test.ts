@@ -73,7 +73,7 @@ describe("insufficient data", () => {
     const r = computeHomeOnCallGovernance(baseInput({ on_call_shifts: [] }));
     expect(r.coverage.total_shifts).toBe(0);
     expect(r.response.total_calls).toBe(0);
-    expect(r.quality.feedback_rate).toBe(0);
+    expect(r.quality.feedback_rate).toBeNull();
     expect(r.workload.critical_incidents_total).toBe(0);
   });
 });

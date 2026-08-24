@@ -89,10 +89,12 @@ export interface LocalitySafeguardingResult {
   headline: string;
   total_risks: number;
   mitigation_effectiveness: number;
-  review_currency_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  review_currency_rate: number | null;
   screening_coverage: number;
   high_risk_count: number;
-  safety_plan_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safety_plan_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: LocalitySafeguardingRecommendation[];
@@ -136,10 +138,10 @@ export function computeLocalitySafeguarding(
       headline: "No children placed — locality safeguarding data not available.",
       total_risks: risks.length,
       mitigation_effectiveness: 0,
-      review_currency_rate: 0,
+      review_currency_rate: null,
       screening_coverage: 0,
       high_risk_count: 0,
-      safety_plan_rate: 0,
+      safety_plan_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -163,10 +165,10 @@ export function computeLocalitySafeguarding(
       headline: "No community risks identified — locality risk profile is clear with no active concerns.",
       total_risks: 0,
       mitigation_effectiveness: 0,
-      review_currency_rate: 0,
+      review_currency_rate: null,
       screening_coverage: 0,
       high_risk_count: 0,
-      safety_plan_rate: 0,
+      safety_plan_rate: null,
       strengths: ["No identified locality risks, exploitation screenings, or missing episodes — the community risk profile is currently clear."],
       concerns: [],
       recommendations: [{ rank: 1, recommendation: "Maintain proactive locality risk mapping — conduct regular environmental scans to ensure emerging risks are identified early, even when the current profile is clear.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 34" }],

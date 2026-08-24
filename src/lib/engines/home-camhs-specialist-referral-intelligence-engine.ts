@@ -75,7 +75,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
       camhs_rating: "insufficient_data", camhs_score: 0,
       headline: "No children in placement — CAMHS & specialist referral pathways cannot be assessed.",
       active_referrals: 0, children_waiting: 0, average_wait_days: 0,
-      appointment_attendance_rate: 0, emergency_response_rate: 0, specialist_coverage_rate: 0,
+      appointment_attendance_rate: null, emergency_response_rate: null, specialist_coverage_rate: null,
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }

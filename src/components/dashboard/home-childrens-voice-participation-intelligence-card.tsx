@@ -74,8 +74,8 @@ export function HomeChildrensVoiceParticipationIntelligenceCard() {
         {d.voice_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.voice_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.meeting_attendance_rate >= 80 ? "bg-green-50" : d.meeting_attendance_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.meeting_attendance_rate >= 80 ? "text-[--cs-success]" : d.meeting_attendance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meeting_attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.meeting_attendance_rate, 80) ? "bg-green-50" : meets(d.meeting_attendance_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.meeting_attendance_rate, 80) ? "text-[--cs-success]" : meets(d.meeting_attendance_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.meeting_attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attendance</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.feedback_response_rate, 90) ? "bg-green-50" : meets(d.feedback_response_rate, 60) ? "bg-amber-50" : "bg-red-50")}>

@@ -163,9 +163,9 @@ export function computeHomeStaffLifecycle(
       headline:
         "No staff lifecycle data available for analysis.",
       induction: { total_records: 0, completed_count: 0, overdue_count: 0, avg_task_completion: 0 },
-      sickness: { total_episodes_90d: 0, total_days_90d: 0, absence_rate: 0, active_episodes: 0 },
-      exit_interviews: { total_exits: 0, completed_count: 0, avg_rating: 0, would_recommend_rate: 0 },
-      recognition: { total_events_90d: 0, events_per_staff: 0, child_nomination_rate: 0, public_celebration_rate: 0 },
+      sickness: { total_episodes_90d: 0, total_days_90d: 0, absence_rate: null, active_episodes: 0 },
+      exit_interviews: { total_exits: 0, completed_count: 0, avg_rating: 0, would_recommend_rate: null },
+      recognition: { total_events_90d: 0, events_per_staff: 0, child_nomination_rate: null, public_celebration_rate: null },
       strengths: [],
       concerns: [],
       recommendations: [],

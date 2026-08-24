@@ -68,7 +68,8 @@ export interface ChildrensVoiceResult {
   voice_rating: ChildrensVoiceRating;
   voice_score: number;
   headline: string;
-  meeting_attendance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meeting_attendance_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   feedback_response_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -103,11 +104,11 @@ export function computeChildrensVoiceParticipation(
       voice_score: 0,
       headline:
         "No children recorded — children's voice and participation cannot be assessed.",
-      meeting_attendance_rate: 0,
-      feedback_response_rate: 0,
-      child_friendly_policy_rate: 0,
+      meeting_attendance_rate: null,
+      feedback_response_rate: null,
+      child_friendly_policy_rate: null,
       expert_participation_count: 0,
-      positive_feedback_rate: 0,
+      positive_feedback_rate: null,
       strengths: [],
       concerns: [
         "No children recorded — compliance with Reg 7 (children's wishes) and Reg 5 (engaging with children) cannot be verified.",

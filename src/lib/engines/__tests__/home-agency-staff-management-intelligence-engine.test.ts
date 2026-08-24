@@ -95,13 +95,13 @@ describe("computeAgencyStaffManagement", () => {
       expect(r.insights).toEqual([]);
     });
 
-    it("returns zero for all metrics", () => {
+    it("leaves every rate unmeasured", () => {
       const r = computeAgencyStaffManagement(baseInput({ shifts: [] }));
       expect(r.total_agency_shifts).toBe(0);
-      expect(r.vetting_compliance_rate).toBe(0);
-      expect(r.induction_completion_rate).toBe(0);
-      expect(r.positive_feedback_rate).toBe(0);
-      expect(r.safeguarding_briefing_rate).toBe(0);
+      expect(r.vetting_compliance_rate).toBeNull();
+      expect(r.induction_completion_rate).toBeNull();
+      expect(r.positive_feedback_rate).toBeNull();
+      expect(r.safeguarding_briefing_rate).toBeNull();
       expect(r.concerns_flagged).toBe(0);
     });
   });

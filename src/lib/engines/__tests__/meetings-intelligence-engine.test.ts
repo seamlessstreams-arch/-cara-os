@@ -68,7 +68,7 @@ describe("Meetings Intelligence Engine", () => {
     it("returns safe defaults when no meetings provided", () => {
       const result = run([]);
       expect(result.overview.total_meetings).toBe(0);
-      expect(result.overview.avg_attendance_rate).toBe(0);
+      expect(result.overview.avg_attendance_rate).toBeNull();
       expect(result.overview.children_never_attended).toBe(3);
       expect(result.type_breakdown).toHaveLength(0);
       expect(result.child_participation).toHaveLength(0);

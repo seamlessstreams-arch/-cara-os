@@ -47,12 +47,12 @@ describe("Insufficient data", () => {
     expect(r.headline).toBe("No data available for house meeting analysis");
   });
 
-  it("returns all zero metrics when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeHouseMeetingGovernance(baseInput({ total_children: 0 }));
     expect(r.total_meetings).toBe(0);
-    expect(r.child_attendance_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.child_feedback_rate).toBe(0);
+    expect(r.child_attendance_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.child_feedback_rate).toBeNull();
     expect(r.average_agenda_items).toBe(0);
     expect(r.average_duration).toBe(0);
   });
@@ -89,8 +89,8 @@ describe("Zero meetings", () => {
     expect(r.child_attendance_rate).toBeNull();
     expect(r.action_completion_rate).toBeNull();
     expect(r.child_feedback_rate).toBeNull();
-    expect(r.average_agenda_items).toBeNull();;
-    expect(r.average_duration).toBeNull();;
+    expect(r.average_agenda_items).toBeNull();
+    expect(r.average_duration).toBeNull();
   });
 });
 

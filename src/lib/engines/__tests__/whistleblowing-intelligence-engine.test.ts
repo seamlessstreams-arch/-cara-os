@@ -131,8 +131,8 @@ describe("Whistleblowing Intelligence Engine", () => {
       expect(result.overview.avg_resolution_days).toBe(0);
       expect(result.overview.external_referral_count).toBe(0);
       expect(result.overview.anonymous_count).toBe(0);
-      expect(result.overview.protection_measures_rate).toBe(0);
-      expect(result.overview.lessons_recorded_rate).toBe(0);
+      expect(result.overview.protection_measures_rate).toBeNull();
+      expect(result.overview.lessons_recorded_rate).toBeNull();
       expect(result.category_breakdown).toHaveLength(0);
       expect(result.open_cases).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
@@ -191,12 +191,12 @@ describe("Whistleblowing Intelligence Engine", () => {
       expect(result.overview.lessons_recorded_rate).toBe(75);
     });
 
-    it("handles 0 avg resolution days when no cases have date_closed", () => {
+    it("avg_resolution_days is unmeasured when no cases have date_closed", () => {
       const reports = [
         makeReport({ status: "investigating", date_closed: null }),
       ];
       const result = run(reports);
-      expect(result.overview.avg_resolution_days).toBeNull();;
+      expect(result.overview.avg_resolution_days).toBeNull();
     });
 
     it("excludes empty-string external referrals from count", () => {
@@ -607,7 +607,7 @@ describe("Whistleblowing Intelligence Engine", () => {
       const result = run(reports);
       expect(result.overview.open_reports).toBe(3);
       expect(result.overview.resolved_reports).toBe(0);
-      expect(result.overview.avg_resolution_days).toBeNull();;
+      expect(result.overview.avg_resolution_days).toBeNull();
       expect(result.open_cases).toHaveLength(3);
     });
 

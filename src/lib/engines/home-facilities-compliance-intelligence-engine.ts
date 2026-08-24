@@ -64,15 +64,19 @@ export type FacilitiesRating =
 
 export interface FireProfile {
   total_checks: number;
-  pass_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pass_rate: number | null;
   overdue_inspections: number;
-  compliant_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  compliant_rate: number | null;
 }
 
 export interface WaterProfile {
   total_checks: number;
-  compliance_rate: number;
-  action_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
   overdue_checks: number;
 }
 
@@ -152,11 +156,11 @@ const HEADLINES: Record<FacilitiesRating, string> = {
 // ── Empty profiles ──────────────────────────────────────────────────────────
 
 function emptyFire(): FireProfile {
-  return { total_checks: 0, pass_rate: 0, overdue_inspections: 0, compliant_rate: 0 };
+  return { total_checks: 0, pass_rate: null, overdue_inspections: 0, compliant_rate: null };
 }
 
 function emptyWater(): WaterProfile {
-  return { total_checks: 0, compliance_rate: 0, action_completion_rate: 0, overdue_checks: 0 };
+  return { total_checks: 0, compliance_rate: null, action_completion_rate: null, overdue_checks: 0 };
 }
 
 function emptyWindows(): WindowProfile {

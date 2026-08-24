@@ -121,9 +121,9 @@ export function computePossessionsIntelligence(input: {
       overview: {
         total_items: 0,
         items_with_photos: 0,
-        photo_compliance_rate: 0,
+        photo_compliance_rate: null,
         items_insured: 0,
-        insurance_rate: 0,
+        insurance_rate: null,
         missing_items: 0,
         damaged_items: 0,
         total_value_estimate: 0,

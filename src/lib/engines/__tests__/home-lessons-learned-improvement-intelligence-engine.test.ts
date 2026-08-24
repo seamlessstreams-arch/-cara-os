@@ -127,7 +127,7 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
       expect(r.lessons_score).toBe(0);
     });
 
-    it("returns zero for all rates when total_staff is 0", () => {
+    it("leaves every rate unmeasured when total_staff is 0", () => {
       const r = computeLessonsLearnedImprovement({
         today: TODAY,
         total_staff: 0,
@@ -135,9 +135,9 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
         objectives: [],
         audits: [],
       });
-      expect(r.embedded_rate).toBe(0);
-      expect(r.staff_briefing_rate).toBe(0);
-      expect(r.objective_completion_rate).toBe(0);
+      expect(r.embedded_rate).toBeNull();
+      expect(r.staff_briefing_rate).toBeNull();
+      expect(r.objective_completion_rate).toBeNull();
       expect(r.overdue_objectives).toBe(0);
       expect(r.average_audit_score).toBe(0);
     });

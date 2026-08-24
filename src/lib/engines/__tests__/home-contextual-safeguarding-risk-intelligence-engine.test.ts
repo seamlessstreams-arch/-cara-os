@@ -51,16 +51,16 @@ describe("Insufficient data guard", () => {
     expect(r.safeguarding_score).toBe(0);
   });
 
-  it("returns zero for every metric when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeContextualSafeguarding(baseInput({ total_children: 0 }));
     expect(r.total_risks).toBe(0);
     expect(r.active_risk_count).toBe(0);
     expect(r.high_risk_count).toBe(0);
     expect(r.context_diversity).toBe(0);
-    expect(r.protective_action_rate).toBe(0);
-    expect(r.multi_agency_rate).toBe(0);
-    expect(r.community_mapping_rate).toBe(0);
-    expect(r.review_compliance_rate).toBe(0);
+    expect(r.protective_action_rate).toBeNull();
+    expect(r.multi_agency_rate).toBeNull();
+    expect(r.community_mapping_rate).toBeNull();
+    expect(r.review_compliance_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {

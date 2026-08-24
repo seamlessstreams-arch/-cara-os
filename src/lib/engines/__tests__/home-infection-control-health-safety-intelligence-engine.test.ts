@@ -99,10 +99,10 @@ describe("insufficient data", () => {
   it("populates all metrics with zeros for insufficient data", () => {
     const r = computeHomeInfectionControlHealthSafety(baseInput({ total_children: 0 }));
     expect(r.active_infections).toBe(0);
-    expect(r.mar_accuracy_rate).toBe(0);
-    expect(r.med_training_rate).toBe(0);
+    expect(r.mar_accuracy_rate).toBeNull();
+    expect(r.med_training_rate).toBeNull();
     expect(r.first_aid_coverage).toBe(0);
-    expect(r.infection_resolution_rate).toBe(0);
+    expect(r.infection_resolution_rate).toBeNull();
     expect(r.strengths).toHaveLength(0);
     expect(r.concerns).toHaveLength(0);
     expect(r.recommendations).toHaveLength(0);

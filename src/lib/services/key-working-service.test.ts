@@ -14,12 +14,12 @@ describe("key-working-service", () => {
   // -- computeKeyWorkCompliance --------------------------------------------------
 
   describe("computeKeyWorkCompliance", () => {
-    it("returns zeroes for empty data", () => {
+    it("compliance_percentage is unmeasured for empty data", () => {
       const result = computeKeyWorkCompliance([], [], NOW);
       expect(result.total_children).toBe(0);
       expect(result.children_on_track).toBe(0);
       expect(result.children_behind).toBe(0);
-      expect(result.compliance_percentage).toBeNull();;
+      expect(result.compliance_percentage).toBeNull();
       expect(result.by_child).toHaveLength(0);
     });
 

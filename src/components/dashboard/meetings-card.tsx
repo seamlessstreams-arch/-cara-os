@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,7 @@ export function MeetingsCard() {
               "text-lg font-bold tabular-nums",
               (o.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.action_completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.action_completion_rate}%
+              {formatRate(o.action_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Actions Done</p>
           </div>

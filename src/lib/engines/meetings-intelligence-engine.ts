@@ -124,9 +124,9 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
   if (meetings.length === 0) {
     return {
       overview: {
-        total_meetings: 0, meetings_last_30_days: 0, avg_attendance_rate: 0,
+        total_meetings: 0, meetings_last_30_days: 0, avg_attendance_rate: null,
         total_actions: 0, actions_completed: 0, actions_overdue: 0,
-        action_completion_rate: 0, avg_duration_minutes: 0,
+        action_completion_rate: null, avg_duration_minutes: 0,
         children_never_attended: children.length,
       },
       type_breakdown: [],

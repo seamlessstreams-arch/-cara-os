@@ -144,7 +144,7 @@ export function computeHomeOnCallGovernance(
         : "No on-call shifts recorded.",
       coverage: {
         total_shifts: 0, shifts_last_14_days: 0, shifts_last_30_days: 0,
-        unique_on_call_staff: 0, has_backup_rate: 0, role_distribution: {},
+        unique_on_call_staff: 0, has_backup_rate: null, role_distribution: {},
       },
       response: {
         total_calls: 0, critical_calls: 0, routine_calls: 0,
@@ -152,7 +152,7 @@ export function computeHomeOnCallGovernance(
         calls_per_shift: 0,
       },
       quality: {
-        shifts_with_feedback: 0, shifts_with_review_notes: 0, feedback_rate: 0,
+        shifts_with_feedback: 0, shifts_with_review_notes: 0, feedback_rate: null,
       },
       workload: {
         critical_incidents_total: 0, routine_total: 0, advisory_total: 0,
