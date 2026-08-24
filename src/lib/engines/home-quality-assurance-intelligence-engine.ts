@@ -5,6 +5,8 @@
 // CHR 2015 Reg 35. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface QAActionInput {
@@ -101,10 +103,6 @@ function toRating(score: number): QARating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeQA(
@@ -157,7 +155,7 @@ export function computeHomeQA(
   const completed = allActions.filter(a => a.status === "completed").length;
   const overdue = allActions.filter(a => a.status === "overdue").length;
   const inProgress = allActions.filter(a => a.status === "in_progress").length;
-  const completionRate = pct(completed, allActions.length);
+  const completionRate = rate(completed, allActions.length);
 
   const actionProfile: ActionPlanProfile = {
     total_actions: allActions.length,
@@ -205,8 +203,8 @@ export function computeHomeQA(
 
   // 3. Action completion rate (±4)
   if (allActions.length > 0) {
-    if (completionRate >= 80) score += 4;
-    else if (completionRate >= 60) score += 2;
+    if (meets(completionRate, 80)) score += 4;
+    else if (meets(completionRate, 60)) score += 2;
     else score -= 3;
   } else {
     score += 1; // no actions needed
@@ -245,7 +243,7 @@ export function computeHomeQA(
   const strengths: string[] = [];
   if (recent.length >= 6) strengths.push(`${recent.length} audits completed in 12 months — comprehensive quality assurance programme.`);
   if (avgScore >= 3.5) strengths.push(`Average audit score ${avgScore}/4 — consistently high-quality practice.`);
-  if (completionRate >= 80 && allActions.length > 0) strengths.push(`${completionRate}% of audit actions completed — improvement actions are followed through.`);
+  if (meets(completionRate, 80) && allActions.length > 0) strengths.push(`${formatRate(completionRate)} of audit actions completed — improvement actions are followed through.`);
   if (overdue === 0 && allActions.length > 0) strengths.push("No overdue audit actions — governance is responsive and timely.");
   if (uniqueScopes >= 5) strengths.push(`${uniqueScopes} different audit scopes — comprehensive coverage of practice areas.`);
   if (excellent >= 2) strengths.push(`${excellent} audits rated excellent — evidence of outstanding practice in key areas.`);
@@ -255,7 +253,7 @@ export function computeHomeQA(
   const concerns: string[] = [];
   if (recent.length < 4) concerns.push(`Only ${recent.length} audit${recent.length === 1 ? "" : "s"} in 12 months — Ofsted expects regular quality assurance.`);
   if (avgScore < 2.5) concerns.push(`Average audit score ${avgScore}/4 — quality needs significant improvement.`);
-  if (completionRate < 60 && allActions.length > 0) concerns.push(`Only ${completionRate}% of audit actions completed — improvement actions are not being followed through.`);
+  if (below(completionRate, 60) && allActions.length > 0) concerns.push(`Only ${formatRate(completionRate)} of audit actions completed — improvement actions are not being followed through.`);
   if (overdue > 2) concerns.push(`${overdue} audit actions overdue — governance is not responsive.`);
   if (inadequate > 0) concerns.push(`${inadequate} audit${inadequate > 1 ? "s" : ""} rated inadequate — urgent improvement needed.`);
   if (uniqueScopes < 3 && recent.length >= 2) concerns.push(`Only ${uniqueScopes} audit scope${uniqueScopes === 1 ? "" : "s"} covered — audits should cover safeguarding, recording, health, care planning, and more.`);
@@ -273,7 +271,7 @@ export function computeHomeQA(
   if (recent.length < 4) {
     recs.push({ rank: rank++, recommendation: "Increase audit frequency to at least quarterly — cover key areas systematically.", urgency: "soon", regulatory_ref: "Reg 35" });
   }
-  if (completionRate < 60 && allActions.length > 0) {
+  if (below(completionRate, 60) && allActions.length > 0) {
     recs.push({ rank: rank++, recommendation: "Improve action plan follow-through — track completion in supervision and team meetings.", urgency: "soon", regulatory_ref: "Reg 35" });
   }
 
@@ -283,8 +281,8 @@ export function computeHomeQA(
   if (inadequate > 0) {
     insights.push({ text: `${inadequate} audit${inadequate > 1 ? "s" : ""} rated inadequate. Ofsted will expect to see that the home identified this through self-assessment and has taken immediate action. This is a serious governance concern if not addressed.`, severity: "critical" });
   }
-  if (avgScore >= 3.5 && completionRate >= 80 && recent.length >= 4) {
-    insights.push({ text: `Average score ${avgScore}/4 with ${completionRate}% action completion across ${recent.length} audits. This evidences an outstanding quality assurance culture — systematic monitoring with demonstrable improvement. Ofsted will see this as strong leadership.`, severity: "positive" });
+  if (avgScore >= 3.5 && meets(completionRate, 80) && recent.length >= 4) {
+    insights.push({ text: `Average score ${avgScore}/4 with ${formatRate(completionRate)} action completion across ${recent.length} audits. This evidences an outstanding quality assurance culture — systematic monitoring with demonstrable improvement. Ofsted will see this as strong leadership.`, severity: "positive" });
   }
   if (overdue > 2) {
     insights.push({ text: `${overdue} audit actions overdue. Ofsted will check whether the home identifies areas for improvement AND follows through — overdue actions suggest a gap between identifying issues and resolving them.`, severity: "warning" });
@@ -296,9 +294,9 @@ export function computeHomeQA(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding quality assurance — ${recent.length} audits with ${avgScore}/4 average score and ${completionRate}% action completion.`;
+    headline = `Outstanding quality assurance — ${recent.length} audits with ${avgScore}/4 average score and ${formatRate(completionRate)} action completion.`;
   } else if (rating === "good") {
-    headline = `Good quality assurance — regular audits with ${completionRate}% action follow-through.`;
+    headline = `Good quality assurance — regular audits with ${formatRate(completionRate)} action follow-through.`;
   } else if (rating === "adequate") {
     headline = "Adequate quality assurance — gaps in audit frequency, action completion, or coverage need addressing.";
   } else {

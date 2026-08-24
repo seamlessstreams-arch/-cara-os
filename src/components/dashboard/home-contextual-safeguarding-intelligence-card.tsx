@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -77,16 +78,16 @@ export function HomeContextualSafeguardingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.active_risks === 0 ? "text-[--cs-success]" : d.active_risks <= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.active_risks}</p>
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.protective_actions_rate >= 90 ? "bg-green-50" : d.protective_actions_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.protective_actions_rate >= 90 ? "text-[--cs-success]" : d.protective_actions_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.protective_actions_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.protective_actions_rate, 90) ? "bg-green-50" : meets(d.protective_actions_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.protective_actions_rate, 90) ? "text-[--cs-success]" : meets(d.protective_actions_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.protective_actions_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Protected</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.multi_agency_rate >= 80 ? "bg-green-50" : d.multi_agency_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.multi_agency_rate >= 80 ? "text-[--cs-success]" : d.multi_agency_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.multi_agency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.multi_agency_rate, 80) ? "bg-green-50" : meets(d.multi_agency_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.multi_agency_rate, 80) ? "text-[--cs-success]" : meets(d.multi_agency_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.multi_agency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Multi-Agency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.resolution_rate >= 60 ? "bg-green-50" : d.resolution_rate >= 30 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.resolution_rate >= 60 ? "text-[--cs-success]" : d.resolution_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.resolution_rate, 60) ? "bg-green-50" : meets(d.resolution_rate, 30) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.resolution_rate, 60) ? "text-[--cs-success]" : meets(d.resolution_rate, 30) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.review_overdue_count === 0 ? "bg-green-50" : d.review_overdue_count <= 1 ? "bg-amber-50" : "bg-red-50")}>

@@ -6,6 +6,8 @@
 // oversight items are being acknowledged and acted upon promptly.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface NotificationInput {
@@ -58,10 +60,6 @@ export interface NotificationResponsivenessResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -154,8 +152,8 @@ export function computeNotificationResponsiveness(
   const urgentHighRead = urgentHighNotifications.filter((n) => n.read);
   const urgentHighUnread = urgentHighNotifications.filter((n) => !n.read);
 
-  const readRate = pct(readNotifications.length, total);
-  const urgentReadRate = pct(urgentHighRead.length, urgentHighNotifications.length);
+  const readRate = rate(readNotifications.length, total);
+  const urgentReadRate = rate(urgentHighRead.length, urgentHighNotifications.length);
   const unreadCount = unreadNotifications.length;
   const urgentUnreadCount = urgentHighUnread.length;
 
@@ -176,7 +174,7 @@ export function computeNotificationResponsiveness(
 
   // ── Staff coverage ────────────────────────────────────────────────────
   const distinctRecipients = new Set(notifications.map((n) => n.recipient_id));
-  const staffCoverageRate = pct(distinctRecipients.size, total_staff);
+  const staffCoverageRate = rate(distinctRecipients.size, total_staff);
 
   // ── Type diversity ────────────────────────────────────────────────────
   const distinctTypes = new Set(notifications.map((n) => n.type));
@@ -193,12 +191,12 @@ export function computeNotificationResponsiveness(
   let score = 52;
 
   // Read rate bonus
-  if (readRate >= 95) score += 6;
-  else if (readRate >= 85) score += 3;
+  if (meets(readRate, 95)) score += 6;
+  else if (meets(readRate, 85)) score += 3;
 
   // Urgent read rate bonus
-  if (urgentReadRate >= 100) score += 6;
-  else if (urgentReadRate >= 90) score += 3;
+  if (meets(urgentReadRate, 100)) score += 6;
+  else if (meets(urgentReadRate, 90)) score += 3;
 
   // Average response hours bonus
   if ((averageResponseHours ?? 0) <= 2) score += 4;
@@ -212,8 +210,8 @@ export function computeNotificationResponsiveness(
   if (unreadCount === 0) score += 4;
 
   // Staff coverage bonus
-  if (staffCoverageRate >= 80) score += 2;
-  else if (staffCoverageRate >= 50) score += 1;
+  if (meets(staffCoverageRate, 80)) score += 2;
+  else if (meets(staffCoverageRate, 50)) score += 1;
 
   // Type diversity bonus
   if (typeDiversity >= 4) score += 2;
@@ -227,25 +225,25 @@ export function computeNotificationResponsiveness(
   else if (oldestUnreadHours > 24) score -= 3;
 
   // Penalty: low read rate
-  if (readRate < 50) score -= 5;
+  if (below(readRate, 50)) score -= 5;
 
   // Penalty: low urgent read rate
-  if (urgentReadRate < 70) score -= 5;
+  if (below(urgentReadRate, 70)) score -= 5;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (readRate >= 95) strengths.push(`${readRate}% of notifications read — staff are highly engaged with the platform.`);
-  else if (readRate >= 85) strengths.push(`${readRate}% read rate shows good staff engagement with notifications.`);
+  if (meets(readRate, 95)) strengths.push(`${formatRate(readRate)} of notifications read — staff are highly engaged with the platform.`);
+  else if (meets(readRate, 85)) strengths.push(`${formatRate(readRate)} read rate shows good staff engagement with notifications.`);
   if (urgentReadRate === 100 && urgentHighNotifications.length > 0) strengths.push("All urgent and high-priority notifications have been read — safeguarding alerts are being acknowledged.");
-  else if (urgentReadRate >= 90 && urgentHighNotifications.length > 0) strengths.push(`${urgentReadRate}% of urgent/high-priority notifications read — strong responsiveness to critical alerts.`);
+  else if (meets(urgentReadRate, 90) && urgentHighNotifications.length > 0) strengths.push(`${formatRate(urgentReadRate)} of urgent/high-priority notifications read — strong responsiveness to critical alerts.`);
   if ((averageResponseHours ?? 0) <= 2 && readWithTimes.length > 0) strengths.push(`Average response time of ${(averageResponseHours ?? 0)} hours — notifications are being actioned promptly.`);
   else if ((averageResponseHours ?? 0) <= 6 && readWithTimes.length > 0) strengths.push(`Average response time of ${(averageResponseHours ?? 0)} hours — reasonable turnaround on notifications.`);
   if ((urgentResponseHours ?? 0) <= 1 && urgentHighReadWithTimes.length > 0) strengths.push(`Urgent notifications responded to in ${(urgentResponseHours ?? 0)} hours on average — excellent prioritisation.`);
   if (unreadCount === 0) strengths.push("Zero unread notifications — all items have been acknowledged.");
-  if (staffCoverageRate >= 80) strengths.push(`${staffCoverageRate}% staff coverage — the majority of the team are using the platform.`);
+  if (meets(staffCoverageRate, 80)) strengths.push(`${formatRate(staffCoverageRate)} staff coverage — the majority of the team are using the platform.`);
   if (typeDiversity >= 4) strengths.push(`Notifications span ${typeDiversity} different types — the platform is being used across care domains.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -253,9 +251,9 @@ export function computeNotificationResponsiveness(
   if (urgentUnreadCount > 0) concerns.push(`${urgentUnreadCount} urgent/high-priority notification${urgentUnreadCount > 1 ? "s" : ""} unread — these may include safeguarding or incident alerts requiring immediate attention.`);
   if (oldestUnreadHours > 48) concerns.push(`Oldest unread notification is ${oldestUnreadHours} hours old — notifications older than 48 hours suggest items are being missed.`);
   else if (oldestUnreadHours > 24) concerns.push(`Oldest unread notification is ${oldestUnreadHours} hours old — exceeds the 24-hour best-practice threshold.`);
-  if (readRate < 50) concerns.push(`Only ${readRate}% of notifications have been read — more than half are being ignored or missed.`);
-  if (urgentReadRate < 70 && urgentHighNotifications.length > 0) concerns.push(`Only ${urgentReadRate}% of urgent/high-priority notifications read — critical alerts may be going unacknowledged.`);
-  if (staffCoverageRate < 50 && total_staff > 0) concerns.push(`Only ${staffCoverageRate}% of staff have notifications — limited platform engagement across the team.`);
+  if (below(readRate, 50)) concerns.push(`Only ${formatRate(readRate)} of notifications have been read — more than half are being ignored or missed.`);
+  if (below(urgentReadRate, 70) && urgentHighNotifications.length > 0) concerns.push(`Only ${formatRate(urgentReadRate)} of urgent/high-priority notifications read — critical alerts may be going unacknowledged.`);
+  if (below(staffCoverageRate, 50) && total_staff > 0) concerns.push(`Only ${formatRate(staffCoverageRate)} of staff have notifications — limited platform engagement across the team.`);
   if ((averageResponseHours ?? 0) > 24 && readWithTimes.length > 0) concerns.push(`Average response time is ${(averageResponseHours ?? 0)} hours — significantly above the recommended 6-hour threshold.`);
   if ((urgentResponseHours ?? 0) > 6 && urgentHighReadWithTimes.length > 0) concerns.push(`Urgent notification response time averages ${(urgentResponseHours ?? 0)} hours — this should be under 1 hour.`);
 
@@ -286,7 +284,7 @@ export function computeNotificationResponsiveness(
       regulatory_ref: "Reg 13",
     });
   }
-  if (readRate < 50) {
+  if (below(readRate, 50)) {
     recs.push({
       rank: rank++,
       recommendation: "Implement a daily notification review protocol — fewer than half of notifications are being read.",
@@ -294,7 +292,7 @@ export function computeNotificationResponsiveness(
       regulatory_ref: "Reg 13",
     });
   }
-  if (urgentReadRate < 70 && urgentHighNotifications.length > 0) {
+  if (below(urgentReadRate, 70) && urgentHighNotifications.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Ensure all urgent and high-priority notifications are acknowledged within 1 hour — these relate to safeguarding and compliance.",
@@ -302,7 +300,7 @@ export function computeNotificationResponsiveness(
       regulatory_ref: "Reg 12",
     });
   }
-  if (staffCoverageRate < 50 && total_staff > 0) {
+  if (below(staffCoverageRate, 50) && total_staff > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Increase staff platform adoption — fewer than half the team are receiving notifications.",
@@ -344,20 +342,20 @@ export function computeNotificationResponsiveness(
       severity: "warning",
     });
   }
-  if (readRate < 50) {
+  if (below(readRate, 50)) {
     insights.push({
-      text: `Only ${readRate}% of notifications have been read. This indicates a systemic engagement issue that needs leadership attention.`,
+      text: `Only ${formatRate(readRate)} of notifications have been read. This indicates a systemic engagement issue that needs leadership attention.`,
       severity: "critical",
     });
   }
-  if (readRate >= 95 && unreadCount === 0) {
+  if (meets(readRate, 95) && unreadCount === 0) {
     insights.push({
       text: "All notifications have been read — this demonstrates excellent staff engagement and responsive oversight.",
       severity: "positive",
     });
-  } else if (readRate >= 95) {
+  } else if (meets(readRate, 95)) {
     insights.push({
-      text: `${readRate}% read rate demonstrates strong staff engagement with the platform. This is evidence of responsive management practice.`,
+      text: `${formatRate(readRate)} read rate demonstrates strong staff engagement with the platform. This is evidence of responsive management practice.`,
       severity: "positive",
     });
   }
@@ -373,15 +371,15 @@ export function computeNotificationResponsiveness(
       severity: "positive",
     });
   }
-  if (staffCoverageRate >= 80 && total_staff > 1) {
+  if (meets(staffCoverageRate, 80) && total_staff > 1) {
     insights.push({
-      text: `${staffCoverageRate}% of staff are actively receiving notifications, indicating broad platform adoption across the team.`,
+      text: `${formatRate(staffCoverageRate)} of staff are actively receiving notifications, indicating broad platform adoption across the team.`,
       severity: "positive",
     });
   }
-  if (staffCoverageRate < 30 && total_staff > 1) {
+  if (below(staffCoverageRate, 30) && total_staff > 1) {
     insights.push({
-      text: `Only ${staffCoverageRate}% of staff are receiving notifications. This may indicate that key team members are not using the platform.`,
+      text: `Only ${formatRate(staffCoverageRate)} of staff are receiving notifications. This may indicate that key team members are not using the platform.`,
       severity: "warning",
     });
   }
@@ -395,9 +393,9 @@ export function computeNotificationResponsiveness(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding notification responsiveness — ${readRate}% read rate with ${averageResponseHours}h average response time.`;
+    headline = `Outstanding notification responsiveness — ${formatRate(readRate)} read rate with ${averageResponseHours}h average response time.`;
   } else if (rating === "good") {
-    headline = `Good notification responsiveness — ${readRate}% read rate across ${total} notifications.`;
+    headline = `Good notification responsiveness — ${formatRate(readRate)} read rate across ${total} notifications.`;
   } else if (rating === "adequate") {
     headline = `Adequate notification responsiveness — improvements needed in read rates or response times.`;
   } else {

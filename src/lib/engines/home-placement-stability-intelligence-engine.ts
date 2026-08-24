@@ -6,6 +6,8 @@
 // lives" / "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PlacementChildInput {
@@ -115,10 +117,6 @@ function toRating(score: number): PlacementStabilityRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -198,7 +196,7 @@ export function computeHomePlacementStability(
     e => e.risk_level === "high" || e.risk_level === "critical",
   ).length;
   const withReturnInterview = episodes.filter(e => e.return_interview_completed).length;
-  const returnInterviewRate = pct(withReturnInterview, totalEpisodes);
+  const returnInterviewRate = rate(withReturnInterview, totalEpisodes);
   const csRiskCount = episodes.filter(e => e.contextual_safeguarding_risk).length;
 
   const missingProfile: MissingProfile = {
@@ -215,7 +213,7 @@ export function computeHomePlacementStability(
   const childrenWithMissingSet = new Set(episodes.map(e => e.child_id));
   const childrenWithEvents = new Set([...childrenWithIncidentsSet, ...childrenWithMissingSet]);
   const childrenNoEvents = children.filter(c => !childrenWithEvents.has(c.child_id)).length;
-  const stabilityRate = pct(childrenNoEvents, children.length);
+  const stabilityRate = rate(childrenNoEvents, children.length);
   const avgRiskFlags = Math.round(
     (children.reduce((s, c) => s + c.risk_flag_count, 0) / children.length) * 10,
   ) / 10;
@@ -260,16 +258,16 @@ export function computeHomePlacementStability(
 
   // 6. Return interview completion (±3)
   if (totalEpisodes > 0) {
-    if (returnInterviewRate >= 90) score += 3;
-    else if (returnInterviewRate >= 70) score += 1;
+    if (meets(returnInterviewRate, 90)) score += 3;
+    else if (meets(returnInterviewRate, 70)) score += 1;
     else score -= 2;
   } else {
     score += 3; // No episodes — best possible state
   }
 
   // 7. Stability rate (±3)
-  if (stabilityRate >= 80) score += 3;
-  else if (stabilityRate >= 50) score += 1;
+  if (meets(stabilityRate, 80)) score += 3;
+  else if (meets(stabilityRate, 50)) score += 1;
   else score -= 2;
 
   // 8. Risk flags (±3)
@@ -285,8 +283,8 @@ export function computeHomePlacementStability(
   if (avgTenure >= 180) strengths.push(`Average placement tenure is ${avgTenure} days — children are settled and stable.`);
   if (totalIncidents === 0) strengths.push("No incidents recorded in the review period — a calm and stable home environment.");
   if (totalEpisodes === 0) strengths.push("No missing from care episodes — children feel safe and want to be here.");
-  if (stabilityRate >= 80) strengths.push(`${stabilityRate}% of children have had no incidents or missing episodes — strong placement stability.`);
-  if (returnInterviewRate >= 90 && totalEpisodes > 0) strengths.push(`${returnInterviewRate}% return interview completion — proper safeguarding response.`);
+  if (meets(stabilityRate, 80)) strengths.push(`${formatRate(stabilityRate)} of children have had no incidents or missing episodes — strong placement stability.`);
+  if (meets(returnInterviewRate, 90) && totalEpisodes > 0) strengths.push(`${formatRate(returnInterviewRate)} return interview completion — proper safeguarding response.`);
   if (avgRiskFlags <= 1) strengths.push("Low average risk flags — manageable risk profile across placements.");
 
   // ── Concerns ──────────────────────────────────────────────────
@@ -295,8 +293,8 @@ export function computeHomePlacementStability(
   if (highSeverity > 1) concerns.push(`${highSeverity} high/critical severity incidents recorded — escalation patterns need investigation.`);
   if (totalEpisodes > 3) concerns.push(`${totalEpisodes} missing from care episodes — frequency indicates significant placement instability.`);
   if (highRiskEpisodes > 1) concerns.push(`${highRiskEpisodes} high-risk missing episodes — safeguarding risks require urgent review.`);
-  if (totalEpisodes > 0 && returnInterviewRate < 70) concerns.push(`Only ${returnInterviewRate}% of return interviews completed — safeguarding response is inadequate.`);
-  if (stabilityRate < 50) concerns.push(`Only ${stabilityRate}% of children have had no incidents or missing episodes — placement stability is fragile.`);
+  if (totalEpisodes > 0 && below(returnInterviewRate, 70)) concerns.push(`Only ${formatRate(returnInterviewRate)} of return interviews completed — safeguarding response is inadequate.`);
+  if (below(stabilityRate, 50)) concerns.push(`Only ${formatRate(stabilityRate)} of children have had no incidents or missing episodes — placement stability is fragile.`);
 
   // ── Recommendations ───────────────────────────────────────────
   const recs: StabilityRecommendation[] = [];
@@ -305,13 +303,13 @@ export function computeHomePlacementStability(
   if (highSeverity > 1) {
     recs.push({ rank: rank++, recommendation: `${highSeverity} high-severity incidents recorded — convene a multi-agency review to identify patterns and de-escalation strategies.`, urgency: "immediate", regulatory_ref: "Reg 36" });
   }
-  if (totalEpisodes > 0 && returnInterviewRate < 70) {
-    recs.push({ rank: rank++, recommendation: `Return interview completion is only ${returnInterviewRate}% — every missing episode must have a return interview within 72 hours.`, urgency: "immediate", regulatory_ref: "Reg 44" });
+  if (totalEpisodes > 0 && below(returnInterviewRate, 70)) {
+    recs.push({ rank: rank++, recommendation: `Return interview completion is only ${formatRate(returnInterviewRate)} — every missing episode must have a return interview within 72 hours.`, urgency: "immediate", regulatory_ref: "Reg 44" });
   }
   if (totalEpisodes > 3) {
     recs.push({ rank: rank++, recommendation: "Review missing from care patterns — look for common triggers, times, and locations across episodes.", urgency: "soon", regulatory_ref: "Reg 44" });
   }
-  if (stabilityRate < 50) {
+  if (below(stabilityRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Multiple children are experiencing incidents or going missing — review care plans, staffing patterns, and environmental triggers.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
 

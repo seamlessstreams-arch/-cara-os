@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,21 +123,21 @@ export function SCCIFEvaluationCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.coverage_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(o.coverage_rate, 90) ? "bg-green-50" : "bg-amber-50",
           )}>
-            <p className={cn("text-lg font-bold tabular-nums", o.coverage_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.coverage_rate}%
+            <p className={cn("text-lg font-bold tabular-nums", meets(o.coverage_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.coverage_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.inspection_readiness_score >= 75 ? "bg-green-50" : o.inspection_readiness_score >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.inspection_readiness_score, 75) ? "bg-green-50" : meets(o.inspection_readiness_score, 50) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.inspection_readiness_score >= 75 ? "text-[--cs-success]"
-                : o.inspection_readiness_score >= 50 ? "text-[--cs-warning]"
+              meets(o.inspection_readiness_score, 75) ? "text-[--cs-success]"
+                : meets(o.inspection_readiness_score, 50) ? "text-[--cs-warning]"
                 : "text-[--cs-risk]",
             )}>
               {o.inspection_readiness_score}
@@ -206,11 +207,11 @@ export function SCCIFEvaluationCard() {
             <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
               <div
                 className="h-full rounded-full bg-brand transition-all"
-                style={{ width: `${intel.action_tracker.completion_rate}%` }}
+                style={{ width: `${formatRate(intel.action_tracker.completion_rate)}` }}
               />
             </div>
             <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
-              {intel.action_tracker.completion_rate}%
+              {formatRate(intel.action_tracker.completion_rate)}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
@@ -253,20 +254,20 @@ export function SCCIFEvaluationCard() {
               <div
                 className={cn(
                   "h-full rounded-full",
-                  o.inspection_readiness_score >= 75 ? "bg-green-500"
-                    : o.inspection_readiness_score >= 50 ? "bg-amber-500"
+                  meets(o.inspection_readiness_score, 75) ? "bg-green-500"
+                    : meets(o.inspection_readiness_score, 50) ? "bg-amber-500"
                     : "bg-red-500",
                 )}
-                style={{ width: `${o.inspection_readiness_score}%` }}
+                style={{ width: `${formatRate(o.inspection_readiness_score)}` }}
               />
             </div>
             <span className={cn(
               "text-sm font-bold tabular-nums",
-              o.inspection_readiness_score >= 75 ? "text-[--cs-success]"
-                : o.inspection_readiness_score >= 50 ? "text-[--cs-warning]"
+              meets(o.inspection_readiness_score, 75) ? "text-[--cs-success]"
+                : meets(o.inspection_readiness_score, 50) ? "text-[--cs-warning]"
                 : "text-[--cs-risk]",
             )}>
-              {o.inspection_readiness_score}%
+              {formatRate(o.inspection_readiness_score)}
             </span>
           </div>
         </div>

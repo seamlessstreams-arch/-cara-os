@@ -122,14 +122,15 @@ describe("computeNotificationResponsiveness", () => {
   describe("score computation — base score", () => {
     it("base score starts at 52", () => {
       // 1 normal notification, read, 1h response, no urgent notifs
-      // urgentReadRate = pct(0,0) = 0, urgentResponseHours = 0
+      // urgentReadRate is null — there were no urgent notifications to read, so
+      // there is no rate to report and below() is false, which is why the -5
+      // low-urgent-read penalty no longer fires on a home with no urgent traffic.
       // Bonuses: readRate100(+6), avg<=2(+4), urgResp<=1(+4), unread0(+4), cov10%(+0), div1(+0)
-      // Penalties: urgReadRate 0 < 70 (-5) — fires unconditionally, no guard on urgent length
-      // Total: 52 + 6 + 4 + 4 + 4 - 5 = 65
+      // Total: 52 + 6 + 4 + 4 + 4 = 70
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "n-1", read: true, read_at: "2025-03-15T09:00:00Z", created_at: "2025-03-15T08:00:00Z" })],
       }));
-      expect(r.responsiveness_score).toBe(65);
+      expect(r.responsiveness_score).toBe(70);
     });
   });
 
@@ -446,7 +447,7 @@ describe("computeNotificationResponsiveness", () => {
       expect(r.urgent_read_rate).toBe(60);
     });
 
-    it("no urgentReadRate penalty when urgentReadRate < 70 but 0 urgent notifications", () => {
+    it("no urgentReadRate penalty when there are 0 urgent notifications", () => {
       // With no urgent notifications, urgentReadRate = pct(0,0) = 0 but urgentHighNotifications.length=0
       // The penalty code: if (urgentReadRate < 70) score -= 5 — this fires unconditionally!
       // Wait, let me re-read the code... Line 233: if (urgentReadRate < 70) score -= 5
@@ -455,16 +456,15 @@ describe("computeNotificationResponsiveness", () => {
       // This means a single normal notification: 52 + 6(read100) + 4(avg<=2) + 4(urgResp<=1) + 4(unread0) - 5(urgReadRate0<70) = 65
       // Hmm wait let me recalculate the earlier test...
       // Actually: urgentReadRate = pct(0, 0) = 0. 0 < 70 is true. But the PENALTY check is:
-      // Line 233: if (urgentReadRate < 70) score -= 5;
-      // There's no guard. But the CONCERN check (line 257) does have a guard: urgentHighNotifications.length > 0
-      // So the penalty fires unconditionally. Let me verify this with the single-notification test above.
-      // urgentReadRate = pct(0,0) = 0. 0 < 70 is true. The penalty fires unconditionally (no guard on length).
-      // So with no urgent notifs: 52 + 6(read100) + 4(avg<=2) + 4(urgResp<=1) + 4(unread0) - 5(urgRead<70) = 65
+      // `if (below(urgentReadRate, 70)) score -= 5;` needs no length guard of its
+      // own: with no urgent notifications urgentReadRate is null, and below() is
+      // false for null, so silence is neither a pass nor a breach.
+      // 52 + 6(read100) + 4(avg<=2) + 4(urgResp<=1) + 4(unread0) = 70
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "nup-1", priority: "normal", read: true, read_at: "2025-03-15T09:00:00Z", created_at: "2025-03-15T08:00:00Z" })],
       }));
-      expect(r.urgent_read_rate).toBe(0);
-      expect(r.responsiveness_score).toBe(65);
+      expect(r.urgent_read_rate).toBeNull();
+      expect(r.responsiveness_score).toBe(70);
     });
 
     it("penalties can stack (urgent unread + oldest > 48 + readRate < 50 + urgentReadRate < 70)", () => {
@@ -565,14 +565,15 @@ describe("computeNotificationResponsiveness", () => {
       expect(r.responsiveness_rating).toBe("inadequate");
     });
 
-    it("score exactly 65 => good", () => {
-      // Need to engineer exactly 65
-      // Use a scenario: 1 normal notification, read, 2h response => readRate100(+6), avg<=2(+4), urgResp<=1(+4), unread0(+4), urgRead<70(-5), div1(+0), cov10%(+0)
-      // 52 + 6 + 4 + 4 + 4 - 5 = 65
+    it("a fully-read home with no urgent traffic scores 70 => good", () => {
+      // 1 normal notification, read, 2h response => readRate100(+6), avg<=2(+4), urgResp<=1(+4), unread0(+4), div1(+0), cov10%(+0)
+      // 52 + 6 + 4 + 4 + 4 = 70. This used to land on exactly 65 only because the
+      // low-urgent-read penalty fired against a fabricated 0% on a home that had
+      // no urgent notifications at all.
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "rt65-1", read: true, created_at: "2025-03-15T08:00:00Z", read_at: "2025-03-15T10:00:00Z" })],
       }));
-      expect(r.responsiveness_score).toBe(65);
+      expect(r.responsiveness_score).toBe(70);
       expect(r.responsiveness_rating).toBe("good");
     });
 
@@ -742,11 +743,11 @@ describe("computeNotificationResponsiveness", () => {
         expect(r.urgent_read_rate).toBe(0);
       });
 
-      it("0 when no urgent notifications at all (pct 0/0 = 0)", () => {
+      it("is unmeasured when there are no urgent notifications at all", () => {
         const r = computeNotificationResponsiveness(baseInput({
           notifications: [makeNotification({ id: "urr00-1", priority: "normal", read: true })],
         }));
-        expect(r.urgent_read_rate).toBe(0);
+        expect(r.urgent_read_rate).toBeNull();
       });
 
       it("includes high priority in calculation", () => {
@@ -779,11 +780,11 @@ describe("computeNotificationResponsiveness", () => {
         expect(r.average_response_hours).toBe(3); // (2+4)/2
       });
 
-      it("is 0 when no notifications have read_at", () => {
+      it("is unmeasured when no notifications have read_at", () => {
         const r = computeNotificationResponsiveness(baseInput({
           notifications: [makeNotification({ id: "arh0-1", read: true, read_at: null })],
         }));
-        expect(r.average_response_hours).toBeNull();;
+        expect(r.average_response_hours).toBeNull();
       });
 
       it("excludes unread from average", () => {
@@ -816,11 +817,11 @@ describe("computeNotificationResponsiveness", () => {
         expect(r.urgent_response_hours).toBe(1);
       });
 
-      it("is 0 when no urgent notifications read", () => {
+      it("is unmeasured when no urgent notifications were read", () => {
         const r = computeNotificationResponsiveness(baseInput({
           notifications: [makeNotification({ id: "urgh0-1", priority: "urgent", read: false, read_at: null, created_at: "2025-03-15T08:00:00Z" })],
         }));
-        expect(r.urgent_response_hours).toBeNull();;
+        expect(r.urgent_response_hours).toBeNull();
       });
 
       it("averages across multiple urgent read", () => {
@@ -1541,9 +1542,9 @@ describe("computeNotificationResponsiveness", () => {
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "ec5-1", priority: "low", read: true })],
       }));
-      expect(r.urgent_read_rate).toBe(0);
+      expect(r.urgent_read_rate).toBeNull();
       expect(r.urgent_unread_count).toBe(0);
-      expect(r.urgent_response_hours).toBeNull();;
+      expect(r.urgent_response_hours).toBeNull();
     });
 
     it("score clamps to 0 (never negative)", () => {
@@ -1782,11 +1783,11 @@ describe("computeNotificationResponsiveness", () => {
       expect(r.read_rate).toBe(67);
     });
 
-    it("pct(0, 0) = 0", () => {
+    it("an empty denominator is unmeasured, not 0", () => {
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "hfp0-1", priority: "normal", read: true })],
       }));
-      expect(r.urgent_read_rate).toBe(0);
+      expect(r.urgent_read_rate).toBeNull();
     });
 
     it("hoursBetween rounds to 1 decimal: 30 minutes = 0.5h", () => {
@@ -2088,13 +2089,13 @@ describe("computeNotificationResponsiveness", () => {
   // ── 17. Staff Coverage Edge Cases ─────────────────────────────────────────
 
   describe("staff coverage edge cases", () => {
-    it("staffCoverageRate is 0 when total_staff is 0 (with notifications)", () => {
+    it("staffCoverageRate is unmeasured when total_staff is 0", () => {
       // total_staff = 0 but notifications exist (bypasses special case since notifications.length > 0)
       const r = computeNotificationResponsiveness(baseInput({
         total_staff: 0,
         notifications: [makeNotification({ id: "sce-1", read: true })],
       }));
-      expect(r.staff_coverage_rate).toBe(0); // pct(1, 0) = 0
+      expect(r.staff_coverage_rate).toBeNull(); // pct(1, 0) = 0
     });
 
     it("staffCoverageRate can be very high with few staff", () => {

@@ -7,6 +7,8 @@
 // competent, and up-to-date.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CompetencyInput {
@@ -84,11 +86,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 function toRating(score: number): StaffCompetencyRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -129,7 +126,7 @@ export function computeStaffCompetencyTraining(
   const totalCompetencies = competencies.length;
   const assessedCount = competencies.filter(c => c.assessed).length;
   const staffAssessedRate = totalCompetencies > 0
-    ? pct(assessedCount, totalCompetencies)
+    ? rate(assessedCount, totalCompetencies)
     : null;
 
   // ── Metric 2: Competent or above rate ─────────────────────────────────
@@ -138,7 +135,7 @@ export function computeStaffCompetencyTraining(
     c.level === "competent" || c.level === "proficient" || c.level === "expert"
   ).length;
   const competentOrAboveRate = assessedCompetencies.length > 0
-    ? pct(competentOrAboveCount, assessedCompetencies.length)
+    ? rate(competentOrAboveCount, assessedCompetencies.length)
     : null;
 
   // ── Metric 3: Training compliance ─────────────────────────────────────
@@ -147,7 +144,7 @@ export function computeStaffCompetencyTraining(
   const atRiskRows = training_matrix.filter(t => t.overall_compliance === "at_risk").length;
   const nonCompliantRows = training_matrix.filter(t => t.overall_compliance === "non_compliant").length;
   const trainingComplianceRate = totalMatrixRows > 0
-    ? pct(compliantRows, totalMatrixRows)
+    ? rate(compliantRows, totalMatrixRows)
     : null;
 
   const totalExpiredCourses = training_matrix.reduce((sum, t) => sum + t.expired_count, 0);
@@ -158,7 +155,7 @@ export function computeStaffCompetencyTraining(
   const completedCpd = cpd_records.filter(c => c.status === "completed").length;
   const overdueCpd = cpd_records.filter(c => c.status === "overdue").length;
   const cpdEngagementRate = totalCpd > 0
-    ? pct(completedCpd, totalCpd)
+    ? rate(completedCpd, totalCpd)
     : null;
 
   const totalCpdHours = cpd_records.reduce((sum, c) => sum + c.cpd_hours, 0);

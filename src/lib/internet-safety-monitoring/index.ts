@@ -9,7 +9,6 @@ export {
   evaluateInternetPolicy,
   evaluateStaffInternetReadiness,
   buildChildInternetProfiles,
-  pct,
   getRating,
   generateStrengths,
   generateAreasForImprovement,

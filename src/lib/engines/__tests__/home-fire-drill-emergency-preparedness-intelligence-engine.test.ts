@@ -82,14 +82,14 @@ describe("Zero drills with active children", () => {
     expect(r.total_drills).toBe(0);
   });
 
-  it("sets all rates to 0 when no drills", () => {
+  it("leaves every rate unmeasured when no drills", () => {
     const r = computeFireDrillPreparedness(baseInput());
-    expect(r.satisfactory_rate).toBe(0);
-    expect(r.all_present_rate).toBe(0);
+    expect(r.satisfactory_rate).toBeNull();
+    expect(r.all_present_rate).toBeNull();
     expect(r.average_evacuation_time).toBe(0);
     expect(r.drill_type_variety).toBe(0);
-    expect(r.issues_addressed_rate).toBe(0);
-    expect(r.failed_rate).toBe(0);
+    expect(r.issues_addressed_rate).toBeNull();
+    expect(r.failed_rate).toBeNull();
   });
 
   it("generates the inadequate headline", () => {
@@ -409,7 +409,7 @@ describe("Modifier 5 — Issues addressed rate", () => {
   it("no issues + drills present → +2", () => {
     const drills = [makeDrill({ has_issues: false })];
     const r = computeFireDrillPreparedness(baseInput({ drills }));
-    expect(r.issues_addressed_rate).toBe(0);
+    expect(r.issues_addressed_rate).toBeNull();
     // noIssues branch → +2
     // 52 +0 +6 +5 +5 +2(noIssues) -3 = 67
     expect(r.drill_score).toBe(67);
@@ -794,10 +794,10 @@ describe("Metrics computation", () => {
     expect(r.average_evacuation_time).toBe(101);
   });
 
-  it("issues_addressed_rate is 0 when no drills have issues", () => {
+  it("issues_addressed_rate is unmeasured when no drills have issues", () => {
     const drills = [makeDrill({ has_issues: false })];
     const r = computeFireDrillPreparedness(baseInput({ drills }));
-    expect(r.issues_addressed_rate).toBe(0);
+    expect(r.issues_addressed_rate).toBeNull();
   });
 });
 
@@ -1457,7 +1457,7 @@ describe("Edge cases", () => {
     const drills = [makeDrill({ has_issues: false, has_actions: true })];
     const r = computeFireDrillPreparedness(baseInput({ drills }));
     // withIssues = 0 → noIssues branch → +2
-    expect(r.issues_addressed_rate).toBe(0);
+    expect(r.issues_addressed_rate).toBeNull();
     // 52 +0 +6 +5 +5 +2 -3 = 67
     expect(r.drill_score).toBe(67);
   });

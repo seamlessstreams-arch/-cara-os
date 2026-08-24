@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -132,10 +133,10 @@ export function HomeSaferRecruitmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.checks_profile.verification_rate >= 80 ? "text-[--cs-success]" :
-                  d.checks_profile.verification_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.checks_profile.verification_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.checks_profile.verification_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.checks_profile.verification_rate}%
+                  {formatRate(d.checks_profile.verification_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Checks Verified</p>
@@ -146,10 +147,10 @@ export function HomeSaferRecruitmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.reference_profile.verification_rate >= 80 ? "text-[--cs-success]" :
-                  d.reference_profile.verification_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.reference_profile.verification_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.reference_profile.verification_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.reference_profile.verification_rate}%
+                  {formatRate(d.reference_profile.verification_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Refs Verified</p>
@@ -160,10 +161,10 @@ export function HomeSaferRecruitmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <UserCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.compliance_profile.compliance_rate >= 80 ? "text-[--cs-success]" :
-                  d.compliance_profile.compliance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.compliance_profile.compliance_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.compliance_profile.compliance_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.compliance_profile.compliance_rate}%
+                  {formatRate(d.compliance_profile.compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Compliant</p>
@@ -191,8 +192,8 @@ export function HomeSaferRecruitmentIntelligenceCard() {
                 )}
                 <p>DBS rate: <span className={cn("font-medium",
                   d.checks_profile.dbs_verified_rate === 100 ? "text-[--cs-success]" :
-                  d.checks_profile.dbs_verified_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.checks_profile.dbs_verified_rate}%</span></p>
+                  meets(d.checks_profile.dbs_verified_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                )}>{formatRate(d.checks_profile.dbs_verified_rate)}</span></p>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -196,9 +197,9 @@ export function HomePremisesSafetyIntelligenceCard() {
                   <p>Overdue: <span className="font-medium text-red-600">{d.maintenance_profile.overdue_count}</span></p>
                 )}
                 <p>Completion: <span className={cn("font-medium",
-                  d.maintenance_profile.completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.maintenance_profile.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.maintenance_profile.completion_rate}%</span></p>
+                  meets(d.maintenance_profile.completion_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.maintenance_profile.completion_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                )}>{formatRate(d.maintenance_profile.completion_rate)}</span></p>
               </div>
             </div>
           </div>

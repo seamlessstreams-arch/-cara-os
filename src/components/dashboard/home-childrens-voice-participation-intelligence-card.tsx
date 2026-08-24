@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,16 +78,16 @@ export function HomeChildrensVoiceParticipationIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.meeting_attendance_rate >= 80 ? "text-[--cs-success]" : d.meeting_attendance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meeting_attendance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Attendance</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.feedback_response_rate >= 90 ? "bg-green-50" : d.feedback_response_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.feedback_response_rate >= 90 ? "text-[--cs-success]" : d.feedback_response_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.feedback_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.feedback_response_rate, 90) ? "bg-green-50" : meets(d.feedback_response_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.feedback_response_rate, 90) ? "text-[--cs-success]" : meets(d.feedback_response_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.feedback_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Responded</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_feedback_rate >= 80 ? "bg-green-50" : d.positive_feedback_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_feedback_rate >= 80 ? "text-[--cs-success]" : d.positive_feedback_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_feedback_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_feedback_rate, 80) ? "bg-green-50" : meets(d.positive_feedback_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_feedback_rate, 80) ? "text-[--cs-success]" : meets(d.positive_feedback_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_feedback_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_friendly_policy_rate >= 80 ? "bg-green-50" : d.child_friendly_policy_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_friendly_policy_rate >= 80 ? "text-[--cs-success]" : d.child_friendly_policy_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_friendly_policy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_friendly_policy_rate, 80) ? "bg-green-50" : meets(d.child_friendly_policy_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_friendly_policy_rate, 80) ? "text-[--cs-success]" : meets(d.child_friendly_policy_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_friendly_policy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Accessible</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.expert_participation_count >= 3 ? "bg-green-50" : d.expert_participation_count >= 1 ? "bg-amber-50" : "bg-red-50")}>

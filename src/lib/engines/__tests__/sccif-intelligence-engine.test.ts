@@ -9,7 +9,6 @@ import {
   computeSCCIFIntelligence,
   daysBetween,
   isOverdue,
-  pct,
   AREA_LABELS,
   type SelfEvaluationAreaInput,
   type SelfEvaluationActionInput,
@@ -89,32 +88,14 @@ describe("isOverdue", () => {
   });
 });
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-});
-
 // ── Empty Input ──────────────────────────────────────────────────────────────
 
 describe("computeSCCIFIntelligence — empty input", () => {
-  it("returns zero overview values with no areas", () => {
+  it("returns zero counts and unmeasured rates with no areas", () => {
     const result = computeSCCIFIntelligence({ areas: [], today: TODAY });
     expect(result.overview.total_evidence).toBe(0);
     expect(result.overview.coverage_rate).toBe(0);
-    expect(result.overview.strength_ratio).toBe(0);
+    expect(result.overview.strength_ratio).toBeNull();
     expect(result.overview.total_areas).toBe(0);
     expect(result.overview.areas_with_evidence).toBe(0);
     expect(result.overview.inspection_readiness_score).toBe(0);
@@ -138,12 +119,12 @@ describe("computeSCCIFIntelligence — empty input", () => {
     expect(result.evidence_gaps).toContain("Leadership & Management");
   });
 
-  it("returns zero action tracker", () => {
+  it("returns zero action counts and an unmeasured completion rate", () => {
     const result = computeSCCIFIntelligence({ areas: [], today: TODAY });
     expect(result.action_tracker.total_actions).toBe(0);
     expect(result.action_tracker.completed).toBe(0);
     expect(result.action_tracker.overdue).toBe(0);
-    expect(result.action_tracker.completion_rate).toBe(0);
+    expect(result.action_tracker.completion_rate).toBeNull();
   });
 
   it("produces no alerts except evidence gaps and coverage", () => {
@@ -569,10 +550,10 @@ describe("computeSCCIFIntelligence — action tracker", () => {
     expect(result.action_tracker.completion_rate).toBe(50);
   });
 
-  it("returns 0 completion rate when no actions", () => {
+  it("leaves the completion rate unmeasured when there are no actions", () => {
     const areas = [makeArea({ actions: [] })];
     const result = computeSCCIFIntelligence({ areas, today: TODAY });
-    expect(result.action_tracker.completion_rate).toBe(0);
+    expect(result.action_tracker.completion_rate).toBeNull();
     expect(result.action_tracker.total_actions).toBe(0);
   });
 
@@ -645,10 +626,10 @@ describe("computeSCCIFIntelligence — coverage calculations", () => {
 // ── Strength Ratio Edge Cases ────────────────────────────────────────────────
 
 describe("computeSCCIFIntelligence — strength ratio edge cases", () => {
-  it("returns 0% when no strengths and no developments across all areas", () => {
+  it("leaves the strength ratio unmeasured when no strengths and no developments across all areas", () => {
     const areas = [makeArea({ strengths: [], areas_for_development: [] })];
     const result = computeSCCIFIntelligence({ areas, today: TODAY });
-    expect(result.overview.strength_ratio).toBe(0);
+    expect(result.overview.strength_ratio).toBeNull();
   });
 
   it("returns 100% when all strengths and no developments", () => {
@@ -672,10 +653,10 @@ describe("computeSCCIFIntelligence — strength ratio edge cases", () => {
     expect(result.overview.strength_ratio).toBe(50);
   });
 
-  it("per-area strength ratio is 0 when no entries", () => {
+  it("per-area strength ratio is unmeasured when there are no entries", () => {
     const areas = [makeArea({ strengths: [], areas_for_development: [] })];
     const result = computeSCCIFIntelligence({ areas, today: TODAY });
-    expect(result.judgment_summaries[0].strength_ratio).toBe(0);
+    expect(result.judgment_summaries[0].strength_ratio).toBeNull();
   });
 });
 
@@ -794,7 +775,7 @@ describe("computeSCCIFIntelligence — inspection readiness score", () => {
     const goodResult = computeSCCIFIntelligence(makeGradedInput("good"));
     const outstandingResult = computeSCCIFIntelligence(makeGradedInput("outstanding"));
     expect(outstandingResult.overview.inspection_readiness_score).toBeGreaterThan(
-      goodResult.overview.inspection_readiness_score
+      goodResult.overview.inspection_readiness_score!
     );
   });
 });

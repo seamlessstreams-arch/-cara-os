@@ -5,6 +5,8 @@
 // CHR 2015 Reg 45: "Review of quality of care." SCCIF: Quality & improvement.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SelfEvaluationAreaInput {
@@ -56,10 +58,6 @@ export interface SelfEvaluationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -103,14 +101,14 @@ export function computeSelfEvaluationImprovement(
   const goodOrOutstanding = areas.filter(a =>
     a.self_grade === "outstanding" || a.self_grade === "good"
   ).length;
-  const goodRate = pct(goodOrOutstanding, total);
+  const goodRate = rate(goodOrOutstanding, total);
 
   const totalActions = areas.reduce((s, a) => s + a.actions_total, 0);
   const completedActions = areas.reduce((s, a) => s + a.actions_completed, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const withEvidence = areas.filter(a => a.evidence_count > 0).length;
-  const evidenceCoverageRate = pct(withEvidence, total);
+  const evidenceCoverageRate = rate(withEvidence, total);
 
   const withDevAreas = areas.filter(a => a.development_areas_count > 0).length;
 
@@ -124,9 +122,9 @@ export function computeSelfEvaluationImprovement(
   if (total === 0) {
     score -= 5;
   } else {
-    if (goodRate >= 80) score += 5;
-    else if (goodRate >= 60) score += 2;
-    else if (goodRate < 40) score -= 5;
+    if (meets(goodRate, 80)) score += 5;
+    else if (meets(goodRate, 60)) score += 2;
+    else if (below(goodRate, 40)) score -= 5;
   }
 
   // Modifier 2: Action completion rate
@@ -135,18 +133,18 @@ export function computeSelfEvaluationImprovement(
   } else if (totalActions === 0) {
     // no areas at all
   } else {
-    if (actionCompletionRate >= 90) score += 6;
-    else if (actionCompletionRate >= 70) score += 2;
-    else if (actionCompletionRate < 50) score -= 5;
+    if (meets(actionCompletionRate, 90)) score += 6;
+    else if (meets(actionCompletionRate, 70)) score += 2;
+    else if (below(actionCompletionRate, 50)) score -= 5;
   }
 
   // Modifier 3: Evidence coverage
   if (total === 0) {
     // already penalised
   } else {
-    if (evidenceCoverageRate >= 90) score += 5;
-    else if (evidenceCoverageRate >= 70) score += 2;
-    else if (evidenceCoverageRate < 50) score -= 4;
+    if (meets(evidenceCoverageRate, 90)) score += 5;
+    else if (meets(evidenceCoverageRate, 70)) score += 2;
+    else if (below(evidenceCoverageRate, 50)) score -= 4;
   }
 
   // Modifier 4: Development areas identified (honest self-reflection)
@@ -196,9 +194,9 @@ export function computeSelfEvaluationImprovement(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (goodRate >= 80 && total > 0) strengths.push("Self-evaluation consistently rates the home as good or outstanding across key areas");
-  if (actionCompletionRate >= 90 && totalActions > 0) strengths.push("Improvement actions are completed promptly — self-evaluation drives real change");
-  if (evidenceCoverageRate >= 90 && total > 0) strengths.push("Every evaluated area is supported by documented evidence");
+  if (meets(goodRate, 80) && total > 0) strengths.push("Self-evaluation consistently rates the home as good or outstanding across key areas");
+  if (meets(actionCompletionRate, 90) && totalActions > 0) strengths.push("Improvement actions are completed promptly — self-evaluation drives real change");
+  if (meets(evidenceCoverageRate, 90) && total > 0) strengths.push("Every evaluated area is supported by documented evidence");
   if (withDevAreas >= total && total > 0) strengths.push("All areas include honest identification of development needs — a mature improvement culture");
   if ((avgStrengths ?? 0) >= 5 && total > 0) strengths.push("Strengths are richly documented with detailed examples of good practice");
   if (total >= 5) strengths.push("Comprehensive self-evaluation covers all key domains of children's home practice");
@@ -206,9 +204,9 @@ export function computeSelfEvaluationImprovement(
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No self-evaluation recorded — the home has no framework for continuous improvement");
-  if (goodRate < 40 && total > 0) concerns.push("Majority of self-evaluated areas are below good — significant quality concerns");
-  if (actionCompletionRate < 50 && totalActions > 0) concerns.push("Improvement actions are not being completed — self-evaluation lacks follow-through");
-  if (evidenceCoverageRate < 50 && total > 0) concerns.push("Most evaluated areas lack evidence — self-grades cannot be substantiated");
+  if (below(goodRate, 40) && total > 0) concerns.push("Majority of self-evaluated areas are below good — significant quality concerns");
+  if (below(actionCompletionRate, 50) && totalActions > 0) concerns.push("Improvement actions are not being completed — self-evaluation lacks follow-through");
+  if (below(evidenceCoverageRate, 50) && total > 0) concerns.push("Most evaluated areas lack evidence — self-grades cannot be substantiated");
   if (withDevAreas === 0 && total > 0) concerns.push("No development areas identified — this suggests complacency rather than genuine reflection");
   if ((avgStrengths ?? 0) < 1 && total > 0) concerns.push("Strengths are poorly documented — good practice is not being captured");
 
@@ -218,16 +216,16 @@ export function computeSelfEvaluationImprovement(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Develop a comprehensive self-evaluation framework covering all SCCIF domains", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 45" });
   }
-  if (actionCompletionRate < 70 && totalActions > 0) {
+  if (below(actionCompletionRate, 70) && totalActions > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement tracking to ensure all self-evaluation actions are completed within timescales", urgency: "soon", regulatory_ref: "SCCIF Quality" });
   }
-  if (evidenceCoverageRate < 70 && total > 0) {
+  if (below(evidenceCoverageRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure every self-evaluated area is supported by specific, verifiable evidence", urgency: "soon", regulatory_ref: "CHR 2015 Reg 45" });
   }
   if (withDevAreas < Math.ceil(total * 0.5) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Conduct honest reflection to identify development areas in every domain", urgency: "soon", regulatory_ref: "SCCIF Quality" });
   }
-  if (goodRate < 60 && total > 0) {
+  if (below(goodRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Develop targeted improvement plans for areas self-graded below good", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 45" });
   }
   if (total > 0 && total < 3) {
@@ -239,19 +237,19 @@ export function computeSelfEvaluationImprovement(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: SelfEvaluationResult["insights"] = [];
 
-  if (goodRate >= 80 && actionCompletionRate >= 90 && evidenceCoverageRate >= 90 && total >= 3) {
+  if (meets(goodRate, 80) && meets(actionCompletionRate, 90) && meets(evidenceCoverageRate, 90) && total >= 3) {
     insights.push({ text: "Self-evaluation is exemplary — rigorous, evidence-based and drives tangible improvement across the home", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No self-evaluation means Ofsted cannot see continuous improvement — this is a significant regulatory gap", severity: "critical" });
   }
-  if (actionCompletionRate < 50 && totalActions > 0) {
+  if (below(actionCompletionRate, 50) && totalActions > 0) {
     insights.push({ text: "Self-evaluation without action completion is a paper exercise — it must drive actual change", severity: "warning" });
   }
   if (withDevAreas >= total && total > 0) {
     insights.push({ text: "Honest self-reflection across all areas shows maturity — the home knows its strengths and its gaps", severity: "positive" });
   }
-  if (goodRate < 40 && total > 0) {
+  if (below(goodRate, 40) && total > 0) {
     insights.push({ text: "Low self-grades suggest the home is struggling across multiple domains — strategic intervention needed", severity: "warning" });
   }
 

@@ -5,6 +5,8 @@
 // CHR 2015 Reg 25. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface BuildingInput {
@@ -70,7 +72,8 @@ export interface CheckProfile {
   total_checks: number;
   completed_count: number;
   overdue_count: number;
-  pass_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pass_rate: number | null;
   fail_count: number;
 }
 
@@ -88,7 +91,8 @@ export interface MaintenanceProfile {
   open_count: number;
   overdue_count: number;
   urgent_open_count: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
 }
 
 export interface PremisesInsight {
@@ -128,10 +132,6 @@ function toRating(score: number): PremisesRating {
   if (score >= 65) return "good";
   if (score >= 45) return "adequate";
   return "inadequate";
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ export function computeHomePremisesSafety(
   const overdueChecks = building_checks.filter(c => c.status === "overdue");
   const passChecks = completedChecks.filter(c => c.result === "pass");
   const failChecks = completedChecks.filter(c => c.result === "fail");
-  const passRate = pct(passChecks.length, completedChecks.length);
+  const passRate = rate(passChecks.length, completedChecks.length);
 
   const checkProfile: CheckProfile = {
     total_checks: building_checks.length,
@@ -232,7 +232,7 @@ export function computeHomePremisesSafety(
   const urgentOpen = openItems.filter(m => m.priority === "urgent");
   const dueItems = maintenance.filter(m => m.due_date <= today);
   const completedDue = dueItems.filter(m => m.status === "completed").length;
-  const completionRate = pct(completedDue, dueItems.length);
+  const completionRate = rate(completedDue, dueItems.length);
 
   const maintenanceProfile: MaintenanceProfile = {
     total_items: maintenance.length,
@@ -262,8 +262,8 @@ export function computeHomePremisesSafety(
 
   // 3. Building check pass rate (±3)
   if (completedChecks.length > 0) {
-    if (passRate >= 80) score += 3;
-    else if (passRate >= 60) score += 1;
+    if (meets(passRate, 80)) score += 3;
+    else if (meets(passRate, 60)) score += 1;
     else score -= 2;
   }
 
@@ -297,8 +297,8 @@ export function computeHomePremisesSafety(
 
   // 8. Maintenance completion (±3)
   if (dueItems.length > 0) {
-    if (completionRate >= 80) score += 3;
-    else if (completionRate >= 50) score += 1;
+    if (meets(completionRate, 80)) score += 3;
+    else if (meets(completionRate, 50)) score += 1;
     else score -= 1;
   } else if (maintenance.length > 0) {
     score += 1; // all future items, none overdue
@@ -311,7 +311,7 @@ export function computeHomePremisesSafety(
   const strengths: string[] = [];
   if (allCertsCurrent && buildings.length > 0) strengths.push("All building certifications current — gas, electrical, and fire risk assessment up to date.");
   if (overdueChecks.length === 0 && building_checks.length > 0) strengths.push("No overdue premises checks — systematic monitoring programme in place.");
-  if (passRate >= 80 && completedChecks.length > 0) strengths.push(`${passRate}% premises check pass rate — building is well-maintained.`);
+  if (meets(passRate, 80) && completedChecks.length > 0) strengths.push(`${formatRate(passRate)} premises check pass rate — building is well-maintained.`);
   if (allVehiclesCompliant && vehicles.length > 0) strengths.push("All vehicles fully compliant — MOT, insurance, and tax current.");
   if (vFailCount === 0 && vAdvisoryCount === 0 && vehicle_checks.length > 0) strengths.push("All vehicle checks passed — fleet in good condition.");
   if (overdueMaintenanceItems.length === 0 && maintenance.length > 0) strengths.push("No overdue maintenance items — responsive maintenance programme.");
@@ -371,7 +371,7 @@ export function computeHomePremisesSafety(
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding premises safety — all certifications current, ${passRate}% check pass rate, and no overdue maintenance.`;
+    headline = `Outstanding premises safety — all certifications current, ${formatRate(passRate)} check pass rate, and no overdue maintenance.`;
   } else if (rating === "good") {
     headline = `Good premises management — certifications maintained with minor areas for improvement.`;
   } else if (rating === "adequate") {

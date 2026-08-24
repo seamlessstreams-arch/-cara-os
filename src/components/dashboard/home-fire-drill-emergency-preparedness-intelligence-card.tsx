@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,12 +78,12 @@ export function HomeFireDrillEmergencyPreparednessIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_drills > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_drills}</p>
               <p className="text-[9px] text-muted-foreground">Drills</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.satisfactory_rate >= 90 ? "bg-green-50" : d.satisfactory_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.satisfactory_rate >= 90 ? "text-[--cs-success]" : d.satisfactory_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.satisfactory_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.satisfactory_rate, 90) ? "bg-green-50" : meets(d.satisfactory_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.satisfactory_rate, 90) ? "text-[--cs-success]" : meets(d.satisfactory_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.satisfactory_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Pass Rate</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.all_present_rate >= 90 ? "bg-green-50" : d.all_present_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.all_present_rate >= 90 ? "text-[--cs-success]" : d.all_present_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.all_present_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.all_present_rate, 90) ? "bg-green-50" : meets(d.all_present_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.all_present_rate, 90) ? "text-[--cs-success]" : meets(d.all_present_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.all_present_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Present</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.average_evacuation_time > 0 && d.average_evacuation_time <= 120 ? "bg-green-50" : d.average_evacuation_time <= 180 ? "bg-amber-50" : "bg-red-50")}>
@@ -93,8 +94,8 @@ export function HomeFireDrillEmergencyPreparednessIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.drill_type_variety >= 4 ? "text-[--cs-success]" : d.drill_type_variety >= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.drill_type_variety}</p>
               <p className="text-[9px] text-muted-foreground">Types</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.failed_rate === 0 ? "bg-green-50" : d.failed_rate <= 10 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.failed_rate === 0 ? "text-[--cs-success]" : d.failed_rate <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.failed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.failed_rate === 0 ? "bg-green-50" : (d.failed_rate !== null && d.failed_rate <= 10) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.failed_rate === 0 ? "text-[--cs-success]" : (d.failed_rate !== null && d.failed_rate <= 10) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.failed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Failed</p>
             </div>
           </div>

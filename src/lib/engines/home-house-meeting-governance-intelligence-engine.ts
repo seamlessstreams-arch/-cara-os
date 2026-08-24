@@ -5,6 +5,8 @@
 // CHR 2015 Reg 7: "Children's wishes and feelings." SCCIF: "Voice of child."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface HouseMeetingInput {
@@ -59,10 +61,6 @@ export interface HouseMeetingGovernanceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -105,14 +103,14 @@ export function computeHouseMeetingGovernance(
 
   const totalPresent = meetings.reduce((s, m) => s + m.children_present_count, 0);
   const totalPossible = meetings.reduce((s, m) => s + m.children_present_count + m.children_absent_count, 0);
-  const childAttendanceRate = pct(totalPresent, totalPossible);
+  const childAttendanceRate = rate(totalPresent, totalPossible);
 
   const totalPrevActions = meetings.reduce((s, m) => s + m.previous_actions_total, 0);
   const completedPrevActions = meetings.reduce((s, m) => s + m.previous_actions_completed, 0);
-  const actionCompletionRate = pct(completedPrevActions, totalPrevActions);
+  const actionCompletionRate = rate(completedPrevActions, totalPrevActions);
 
   const withChildFeedback = meetings.filter(m => m.child_feedback_count > 0).length;
-  const childFeedbackRate = pct(withChildFeedback, total);
+  const childFeedbackRate = rate(withChildFeedback, total);
 
   const totalAgendaItems = meetings.reduce((s, m) => s + m.agenda_items_count, 0);
   const avgAgendaItems = total > 0 ? Math.round((totalAgendaItems / total) * 10) / 10 : null;
@@ -132,9 +130,9 @@ export function computeHouseMeetingGovernance(
   if (total === 0) {
     // already penalised
   } else {
-    if (childAttendanceRate >= 85) score += 6;
-    else if (childAttendanceRate >= 65) score += 2;
-    else if (childAttendanceRate < 40) score -= 5;
+    if (meets(childAttendanceRate, 85)) score += 6;
+    else if (meets(childAttendanceRate, 65)) score += 2;
+    else if (below(childAttendanceRate, 40)) score -= 5;
   }
 
   // Modifier 3: Action completion from previous meetings
@@ -143,18 +141,18 @@ export function computeHouseMeetingGovernance(
   } else if (totalPrevActions === 0) {
     // no meetings
   } else {
-    if (actionCompletionRate >= 90) score += 5;
-    else if (actionCompletionRate >= 70) score += 2;
-    else if (actionCompletionRate < 50) score -= 4;
+    if (meets(actionCompletionRate, 90)) score += 5;
+    else if (meets(actionCompletionRate, 70)) score += 2;
+    else if (below(actionCompletionRate, 50)) score -= 4;
   }
 
   // Modifier 4: Child feedback captured
   if (total === 0) {
     // no adjustment
   } else {
-    if (childFeedbackRate >= 90) score += 5;
-    else if (childFeedbackRate >= 60) score += 2;
-    else if (childFeedbackRate < 40) score -= 5;
+    if (meets(childFeedbackRate, 90)) score += 5;
+    else if (meets(childFeedbackRate, 60)) score += 2;
+    else if (below(childFeedbackRate, 40)) score -= 5;
   }
 
   // Modifier 5: Agenda breadth (more items = richer discussions)
@@ -200,18 +198,18 @@ export function computeHouseMeetingGovernance(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (total >= 4) strengths.push("Regular meeting schedule ensures children have consistent opportunities to share views");
-  if (childAttendanceRate >= 85 && total > 0) strengths.push("High child attendance demonstrates meaningful engagement — children want to participate");
-  if (actionCompletionRate >= 90 && totalPrevActions > 0) strengths.push("Actions from meetings are completed reliably — children see their input makes a difference");
-  if (childFeedbackRate >= 90 && total > 0) strengths.push("Children's feedback is routinely captured and recorded at every meeting");
+  if (meets(childAttendanceRate, 85) && total > 0) strengths.push("High child attendance demonstrates meaningful engagement — children want to participate");
+  if (meets(actionCompletionRate, 90) && totalPrevActions > 0) strengths.push("Actions from meetings are completed reliably — children see their input makes a difference");
+  if (meets(childFeedbackRate, 90) && total > 0) strengths.push("Children's feedback is routinely captured and recorded at every meeting");
   if ((avgAgendaItems ?? 0) >= 3 && total > 0) strengths.push("Meetings cover a broad range of topics — children influence many aspects of home life");
   if ((avgDuration ?? 0) >= 30 && total > 0) strengths.push("Meetings are given adequate time for meaningful discussion and child participation");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No house meetings recorded — children have no formal mechanism to influence their home");
-  if (childAttendanceRate < 40 && total > 0) concerns.push("Low child attendance suggests meetings are not engaging or accessible to children");
-  if (actionCompletionRate < 50 && totalPrevActions > 0) concerns.push("Actions from meetings are not followed through — children's requests are ignored in practice");
-  if (childFeedbackRate < 40 && total > 0) concerns.push("Children's feedback is rarely captured in meeting records");
+  if (below(childAttendanceRate, 40) && total > 0) concerns.push("Low child attendance suggests meetings are not engaging or accessible to children");
+  if (below(actionCompletionRate, 50) && totalPrevActions > 0) concerns.push("Actions from meetings are not followed through — children's requests are ignored in practice");
+  if (below(childFeedbackRate, 40) && total > 0) concerns.push("Children's feedback is rarely captured in meeting records");
   if ((avgAgendaItems ?? 0) < 1 && total > 0) concerns.push("Meetings have minimal agenda items — discussions lack substance");
   if ((avgDuration ?? 0) < 10 && total > 0) concerns.push("Meetings are too brief for meaningful participation — they appear tokenistic");
 
@@ -221,13 +219,13 @@ export function computeHouseMeetingGovernance(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Establish weekly house meetings to give children a regular voice in home governance", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (childAttendanceRate < 65 && total > 0) {
+  if (below(childAttendanceRate, 65) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review meeting format to make it more engaging and accessible for all children", urgency: "soon", regulatory_ref: "SCCIF Voice of Child" });
   }
-  if (actionCompletionRate < 70 && totalPrevActions > 0) {
+  if (below(actionCompletionRate, 70) && totalPrevActions > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement visible action tracking so children can see their requests being acted upon", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (childFeedbackRate < 60 && total > 0) {
+  if (below(childFeedbackRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Record children's individual feedback at each meeting as evidence of their voice", urgency: "planned", regulatory_ref: "SCCIF Voice of Child" });
   }
   if ((avgDuration ?? 0) < 20 && total > 0) {
@@ -242,16 +240,16 @@ export function computeHouseMeetingGovernance(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: HouseMeetingGovernanceResult["insights"] = [];
 
-  if (childAttendanceRate >= 85 && actionCompletionRate >= 90 && total >= 4) {
+  if (meets(childAttendanceRate, 85) && meets(actionCompletionRate, 90) && total >= 4) {
     insights.push({ text: "Children genuinely shape their home through well-run meetings — exemplary participation practice", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "Without house meetings, Ofsted cannot see evidence of children influencing their care environment", severity: "critical" });
   }
-  if (actionCompletionRate < 50 && totalPrevActions > 0) {
+  if (below(actionCompletionRate, 50) && totalPrevActions > 0) {
     insights.push({ text: "Unfulfilled meeting actions erode children's trust — they learn their voice doesn't matter", severity: "warning" });
   }
-  if (childFeedbackRate >= 90 && childAttendanceRate >= 85 && total > 0) {
+  if (meets(childFeedbackRate, 90) && meets(childAttendanceRate, 85) && total > 0) {
     insights.push({ text: "Children attend, contribute and see their feedback recorded — this is authentic participation", severity: "positive" });
   }
   if ((avgDuration ?? 0) < 10 && total > 0) {

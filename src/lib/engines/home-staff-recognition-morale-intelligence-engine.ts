@@ -5,6 +5,8 @@
 // CHR 2015 Reg 33: "Fitness of workers." SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffRecognitionInput {
@@ -40,10 +42,14 @@ export interface StaffRecognitionMoraleResult {
   recognition_score: number;
   headline: string;
   total_recognitions: number;
-  staff_recognised_rate: number;
-  child_involvement_rate: number;
-  public_celebration_rate: number;
-  impact_documented_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_recognised_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_involvement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  public_celebration_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impact_documented_rate: number | null;
   recognition_type_variety: number;
   strengths: string[];
   concerns: string[];
@@ -57,10 +63,6 @@ export interface StaffRecognitionMoraleResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -103,16 +105,16 @@ export function computeStaffRecognitionMorale(
   const total = recognitions.length;
 
   const uniqueStaff = new Set(recognitions.map(r => r.staff_member)).size;
-  const staffRecognisedRate = pct(uniqueStaff, total_staff);
+  const staffRecognisedRate = rate(uniqueStaff, total_staff);
 
   const childInvolved = recognitions.filter(r => r.child_contributed_nomination).length;
-  const childInvolvementRate = pct(childInvolved, total);
+  const childInvolvementRate = rate(childInvolved, total);
 
   const publicCelebrations = recognitions.filter(r => r.public_celebration).length;
-  const publicCelebrationRate = pct(publicCelebrations, total);
+  const publicCelebrationRate = rate(publicCelebrations, total);
 
   const impactDocumented = recognitions.filter(r => r.has_impact_description).length;
-  const impactDocumentedRate = pct(impactDocumented, total);
+  const impactDocumentedRate = rate(impactDocumented, total);
 
   const uniqueTypes = new Set(recognitions.map(r => r.recognition_type)).size;
 
@@ -130,17 +132,17 @@ export function computeStaffRecognitionMorale(
   if (total === 0) {
     // already penalised
   } else {
-    if (staffRecognisedRate >= 80) score += 6;
-    else if (staffRecognisedRate >= 50) score += 2;
-    else if (staffRecognisedRate < 30) score -= 5;
+    if (meets(staffRecognisedRate, 80)) score += 6;
+    else if (meets(staffRecognisedRate, 50)) score += 2;
+    else if (below(staffRecognisedRate, 30)) score -= 5;
   }
 
   // Modifier 3: Child involvement in nominations
   if (total === 0) {
     score -= 1;
   } else {
-    if (childInvolvementRate >= 30) score += 5;
-    else if (childInvolvementRate >= 15) score += 2;
+    if (meets(childInvolvementRate, 30)) score += 5;
+    else if (meets(childInvolvementRate, 15)) score += 2;
     else if (childInvolvementRate === 0) score -= 4;
   }
 
@@ -148,8 +150,8 @@ export function computeStaffRecognitionMorale(
   if (total === 0) {
     // no adjustment
   } else {
-    if (publicCelebrationRate >= 50) score += 5;
-    else if (publicCelebrationRate >= 25) score += 2;
+    if (meets(publicCelebrationRate, 50)) score += 5;
+    else if (meets(publicCelebrationRate, 25)) score += 2;
     else if (publicCelebrationRate === 0) score -= 5;
   }
 
@@ -157,9 +159,9 @@ export function computeStaffRecognitionMorale(
   if (total === 0) {
     // no adjustment
   } else {
-    if (impactDocumentedRate >= 80) score += 4;
-    else if (impactDocumentedRate >= 50) score += 1;
-    else if (impactDocumentedRate < 30) score -= 4;
+    if (meets(impactDocumentedRate, 80)) score += 4;
+    else if (meets(impactDocumentedRate, 50)) score += 1;
+    else if (below(impactDocumentedRate, 30)) score -= 4;
   }
 
   // Modifier 6: Recognition type variety
@@ -196,19 +198,19 @@ export function computeStaffRecognitionMorale(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (recsPerStaff >= 2 && total > 0) strengths.push("High frequency of recognition indicates a culture that values and celebrates staff contributions");
-  if (staffRecognisedRate >= 80 && total > 0) strengths.push("Recognition is distributed across the team — all staff feel seen and valued");
-  if (childInvolvementRate >= 30 && total > 0) strengths.push("Children actively contribute to recognising staff — a powerful indicator of positive relationships");
-  if (publicCelebrationRate >= 50 && total > 0) strengths.push("Recognition is publicly celebrated — reinforcing positive practice across the team");
-  if (impactDocumentedRate >= 80 && total > 0) strengths.push("Impact of recognised practice is well documented — linking recognition to outcomes");
+  if (meets(staffRecognisedRate, 80) && total > 0) strengths.push("Recognition is distributed across the team — all staff feel seen and valued");
+  if (meets(childInvolvementRate, 30) && total > 0) strengths.push("Children actively contribute to recognising staff — a powerful indicator of positive relationships");
+  if (meets(publicCelebrationRate, 50) && total > 0) strengths.push("Recognition is publicly celebrated — reinforcing positive practice across the team");
+  if (meets(impactDocumentedRate, 80) && total > 0) strengths.push("Impact of recognised practice is well documented — linking recognition to outcomes");
   if (uniqueTypes >= 5 && total > 0) strengths.push("Wide variety of recognition types shows appreciation for diverse contributions");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No staff recognition recorded — this risks disengagement and poor retention");
-  if (staffRecognisedRate < 30 && total > 0) concerns.push("Recognition is concentrated on a few staff — most of the team feel unrecognised");
+  if (below(staffRecognisedRate, 30) && total > 0) concerns.push("Recognition is concentrated on a few staff — most of the team feel unrecognised");
   if (childInvolvementRate === 0 && total > 0) concerns.push("Children are not involved in recognising staff — a missed opportunity for relationship building");
   if (publicCelebrationRate === 0 && total > 0) concerns.push("Recognition is never publicly celebrated — good practice is invisible to the wider team");
-  if (impactDocumentedRate < 30 && total > 0) concerns.push("Impact of recognised practice is poorly documented — recognition lacks substance");
+  if (below(impactDocumentedRate, 30) && total > 0) concerns.push("Impact of recognised practice is poorly documented — recognition lacks substance");
   if (uniqueTypes <= 1 && total > 0) concerns.push("Recognition is limited to a single type — it does not reflect the breadth of staff contributions");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -217,19 +219,19 @@ export function computeStaffRecognitionMorale(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Implement a structured staff recognition programme to boost morale and retention", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (staffRecognisedRate < 50 && total > 0) {
+  if (below(staffRecognisedRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure recognition is equitably distributed across all team members", urgency: "soon", regulatory_ref: "SCCIF Well-led" });
   }
   if (childInvolvementRate === 0 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Invite children to nominate staff for recognition — strengthening voice and relationships", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (publicCelebrationRate < 25 && total > 0) {
+  if (below(publicCelebrationRate, 25) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Increase visibility of recognition through team meetings, noticeboards or newsletters", urgency: "planned", regulatory_ref: "SCCIF Well-led" });
   }
   if (uniqueTypes < 3 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Diversify recognition categories to celebrate different types of contribution", urgency: "planned", regulatory_ref: "SCCIF Staff Development" });
   }
-  if (impactDocumentedRate < 50 && total > 0) {
+  if (below(impactDocumentedRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Document the impact of recognised practice to build evidence of care quality", urgency: "planned", regulatory_ref: "CHR 2015 Reg 33" });
   }
 
@@ -238,19 +240,19 @@ export function computeStaffRecognitionMorale(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: StaffRecognitionMoraleResult["insights"] = [];
 
-  if (recsPerStaff >= 2 && staffRecognisedRate >= 80 && childInvolvementRate >= 30) {
+  if (recsPerStaff >= 2 && meets(staffRecognisedRate, 80) && meets(childInvolvementRate, 30)) {
     insights.push({ text: "A vibrant recognition culture — staff are frequently celebrated with children's voices central to the process", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No recognition programme risks staff burnout and turnover — homes that celebrate their teams retain them", severity: "critical" });
   }
-  if (staffRecognisedRate < 30 && total > 0) {
+  if (below(staffRecognisedRate, 30) && total > 0) {
     insights.push({ text: "Recognition clustering around a few staff can breed resentment — ensure all contributions are valued equally", severity: "warning" });
   }
-  if (childInvolvementRate >= 30 && total > 0) {
+  if (meets(childInvolvementRate, 30) && total > 0) {
     insights.push({ text: "Children recognising staff builds trust and shows inspectors that relationships are genuinely reciprocal", severity: "positive" });
   }
-  if (publicCelebrationRate >= 50 && total > 0) {
+  if (meets(publicCelebrationRate, 50) && total > 0) {
     insights.push({ text: "Public celebration normalises excellence — it raises the bar for the whole team", severity: "positive" });
   }
 

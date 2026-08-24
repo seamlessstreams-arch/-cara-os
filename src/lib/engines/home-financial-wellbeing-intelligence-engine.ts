@@ -6,6 +6,8 @@
 // CHR 2015 Reg 7, Reg 8. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FinancialTransactionInput {
@@ -109,10 +111,6 @@ function toRating(score: number): FinancialRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeFinancial(
@@ -160,7 +158,7 @@ export function computeHomeFinancial(
   }
   const childrenReceiving = childAllowanceCounts.size;
   const regularChildren = [...childAllowanceCounts.values()].filter(c => c >= 8).length;
-  const regularityRate = pct(regularChildren, childCount);
+  const regularityRate = rate(regularChildren, childCount);
   const totalAllowances90d = allowanceTxns.reduce((a, t) => a + t.amount, 0);
   const weeksInWindow = 90 / 7;
   const avgWeeklyPerChild = childrenReceiving > 0
@@ -177,8 +175,8 @@ export function computeHomeFinancial(
   // ── Spending Profile ──────────────────────────────────────────────
   const spendingTxns = recent.filter(t => t.type === "spending");
   const totalSpending = spendingTxns.reduce((a, t) => a + t.amount, 0);
-  const receiptRate = pct(spendingTxns.filter(t => t.receipt_held).length, spendingTxns.length);
-  const approvalRate = pct(recent.filter(t => t.has_approval).length, recent.length);
+  const receiptRate = rate(spendingTxns.filter(t => t.receipt_held).length, spendingTxns.length);
+  const approvalRate = rate(recent.filter(t => t.has_approval).length, recent.length);
   const spendingCategories = new Set(spendingTxns.map(t => t.category));
   const spendingChildCount = new Set(spendingTxns.map(t => t.child_id)).size;
   const avgSpendPerChild = spendingChildCount > 0
@@ -196,7 +194,7 @@ export function computeHomeFinancial(
   // ── Savings Profile ───────────────────────────────────────────────
   const savingsDeposits = recent.filter(t => t.type === "savings_deposit");
   const childrenSaving = new Set(savingsDeposits.map(t => t.child_id)).size;
-  const savingsParticipation = pct(childrenSaving, childCount);
+  const savingsParticipation = rate(childrenSaving, childCount);
   const totalDeposits = savingsDeposits.reduce((a, t) => a + t.amount, 0);
 
   const savingsProfile: SavingsProfile = {
@@ -233,8 +231,8 @@ export function computeHomeFinancial(
 
   // 1. Allowance regularity (±5)
   if (allowanceTxns.length > 0) {
-    if (regularityRate >= 80) score += 5;
-    else if (regularityRate >= 50) score += 2;
+    if (meets(regularityRate, 80)) score += 5;
+    else if (meets(regularityRate, 50)) score += 2;
     else score -= 3;
   } else if (recent.length > 0) {
     // Has other transactions but no allowances — children spending without recorded income
@@ -246,8 +244,8 @@ export function computeHomeFinancial(
 
   // 2. Receipt compliance (±4)
   if (spendingTxns.length > 0) {
-    if (receiptRate >= 80) score += 4;
-    else if (receiptRate >= 60) score += 2;
+    if (meets(receiptRate, 80)) score += 4;
+    else if (meets(receiptRate, 60)) score += 2;
     else score -= 3;
   } else {
     score += 1; // no spending to receipt
@@ -255,15 +253,15 @@ export function computeHomeFinancial(
 
   // 3. Approval documentation (±3)
   if (recent.length > 0) {
-    if (approvalRate >= 90) score += 3;
-    else if (approvalRate >= 70) score += 1;
+    if (meets(approvalRate, 90)) score += 3;
+    else if (meets(approvalRate, 70)) score += 1;
     else score -= 2;
   }
 
   // 4. Savings engagement (±4)
   if (childCount > 0) {
-    if (savingsParticipation >= 60) score += 4;
-    else if (savingsParticipation >= 30) score += 2;
+    if (meets(savingsParticipation, 60)) score += 4;
+    else if (meets(savingsParticipation, 30)) score += 2;
     else if (savingsDeposits.length > 0) score += 1;
     else score -= 2;
   }
@@ -305,23 +303,23 @@ export function computeHomeFinancial(
 
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (regularityRate >= 80 && childrenReceiving > 0) strengths.push(`${childrenReceiving} children receiving regular pocket money — consistent financial entitlement.`);
-  if (receiptRate >= 80 && spendingTxns.length > 0) strengths.push(`${receiptRate}% receipt compliance — transparent financial management.`);
-  if (savingsParticipation >= 60) strengths.push(`${childrenSaving} of ${childCount} children actively saving — strong financial literacy culture.`);
-  if (approvalRate >= 90 && recent.length > 0) strengths.push(`${approvalRate}% of transactions approved — robust financial governance.`);
+  if (meets(regularityRate, 80) && childrenReceiving > 0) strengths.push(`${childrenReceiving} children receiving regular pocket money — consistent financial entitlement.`);
+  if (meets(receiptRate, 80) && spendingTxns.length > 0) strengths.push(`${formatRate(receiptRate)} receipt compliance — transparent financial management.`);
+  if (meets(savingsParticipation, 60)) strengths.push(`${childrenSaving} of ${childCount} children actively saving — strong financial literacy culture.`);
+  if (meets(approvalRate, 90) && recent.length > 0) strengths.push(`${formatRate(approvalRate)} of transactions approved — robust financial governance.`);
   if (spendingCategories.size >= 4) strengths.push(`Spending across ${spendingCategories.size} categories — children accessing a range of activities and purchases.`);
   if (avgUtilization >= 40 && avgUtilization <= 100 && clothing_allowances.length > 0) strengths.push(`Clothing budget ${avgUtilization}% utilised — appropriate clothing provision for all children.`);
   if (overPace === 0 && clothing_allowances.length > 0) strengths.push("All children within clothing budget — responsible budget management.");
 
   // ── Concerns ──────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (regularityRate < 50 && allowanceTxns.length > 0) concerns.push(`Only ${regularityRate}% of children receiving regular pocket money — inconsistent allowance payments.`);
+  if (below(regularityRate, 50) && allowanceTxns.length > 0) concerns.push(`Only ${formatRate(regularityRate)} of children receiving regular pocket money — inconsistent allowance payments.`);
   if (allowanceTxns.length === 0 && recent.length > 0) concerns.push("No pocket money allowance records in 90 days — children may not be receiving their financial entitlement.");
-  if (receiptRate < 60 && spendingTxns.length > 0) concerns.push(`Only ${receiptRate}% of spending has receipts — financial accountability gap.`);
+  if (below(receiptRate, 60) && spendingTxns.length > 0) concerns.push(`Only ${formatRate(receiptRate)} of spending has receipts — financial accountability gap.`);
   if (savingsParticipation === 0 && childCount > 0 && recent.length > 0) concerns.push("No children have savings activity — opportunity to build financial independence skills.");
   if (overPace > 0) concerns.push(`${overPace} child${overPace > 1 ? "ren" : ""} exceeding clothing budget pace — overspending risk.`);
   if (underUtil > 0) concerns.push(`${underUtil} child${underUtil > 1 ? "ren" : ""} using less than 30% of clothing budget — may indicate unmet clothing needs.`);
-  if (approvalRate < 70 && recent.length > 0) concerns.push(`Only ${approvalRate}% of transactions have approval — financial governance weakness.`);
+  if (below(approvalRate, 70) && recent.length > 0) concerns.push(`Only ${formatRate(approvalRate)} of transactions have approval — financial governance weakness.`);
 
   // ── Recommendations ───────────────────────────────────────────────
   const recs: FinancialRecommendation[] = [];
@@ -330,30 +328,30 @@ export function computeHomeFinancial(
   if (allowanceTxns.length === 0 && recent.length > 0) {
     recs.push({ rank: rank++, recommendation: "Establish a regular pocket money payment schedule for all children — this is a basic entitlement.", urgency: "immediate", regulatory_ref: "Reg 7" });
   }
-  if (receiptRate < 60 && spendingTxns.length > 0) {
+  if (below(receiptRate, 60) && spendingTxns.length > 0) {
     recs.push({ rank: rank++, recommendation: "Improve receipt collection for children's spending — maintain audit trail for financial transparency.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
-  if (savingsParticipation < 30 && childCount > 0 && recent.length > 0) {
+  if (below(savingsParticipation, 30) && childCount > 0 && recent.length > 0) {
     recs.push({ rank: rank++, recommendation: "Encourage all children to participate in savings — consider matched savings scheme or savings goals.", urgency: "planned", regulatory_ref: "Reg 7" });
   }
   if (overPace > 1) {
     recs.push({ rank: rank++, recommendation: "Review clothing budget monitoring — some children are overspending. Discuss budgeting with them as a learning opportunity.", urgency: "soon", regulatory_ref: "Reg 8" });
   }
-  if (regularityRate < 50 && allowanceTxns.length > 0) {
+  if (below(regularityRate, 50) && allowanceTxns.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure all children receive pocket money on a consistent weekly schedule — record all payments.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
 
   // ── Insights ──────────────────────────────────────────────────────
   const insights: FinancialInsight[] = [];
 
-  if (savingsParticipation >= 60 && receiptRate >= 80 && regularityRate >= 80) {
-    insights.push({ text: `${savingsParticipation}% savings participation with ${receiptRate}% receipt compliance and regular allowances. This evidences an outstanding approach to financial wellbeing — children are learning real money management skills. Ofsted will see this as strong preparation for independence.`, severity: "positive" });
+  if (meets(savingsParticipation, 60) && meets(receiptRate, 80) && meets(regularityRate, 80)) {
+    insights.push({ text: `${formatRate(savingsParticipation)} savings participation with ${formatRate(receiptRate)} receipt compliance and regular allowances. This evidences an outstanding approach to financial wellbeing — children are learning real money management skills. Ofsted will see this as strong preparation for independence.`, severity: "positive" });
   }
   if (savingsParticipation === 0 && childCount > 0 && recent.length > 0) {
     insights.push({ text: "No children are currently saving. Financial literacy is a key independence skill — Ofsted inspectors may ask how children are being supported to manage money and save for their futures.", severity: "warning" });
   }
-  if (receiptRate < 50 && spendingTxns.length >= 5) {
-    insights.push({ text: `Only ${receiptRate}% of spending transactions have receipts. Ofsted expects transparent financial management of children's money. Poor receipt compliance may raise governance concerns at inspection.`, severity: "warning" });
+  if (below(receiptRate, 50) && spendingTxns.length >= 5) {
+    insights.push({ text: `Only ${formatRate(receiptRate)} of spending transactions have receipts. Ofsted expects transparent financial management of children's money. Poor receipt compliance may raise governance concerns at inspection.`, severity: "warning" });
   }
   if (overPace > 0) {
     insights.push({ text: `${overPace} child${overPace > 1 ? "ren" : ""} spending above clothing budget pace. While this may reflect genuine need, Ofsted expects careful budgeting. This is also an opportunity to involve children in budgeting conversations.`, severity: "warning" });
@@ -371,9 +369,9 @@ export function computeHomeFinancial(
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding financial wellbeing — regular allowances, ${receiptRate}% receipt compliance, and ${savingsParticipation}% savings participation.`;
+    headline = `Outstanding financial wellbeing — regular allowances, ${formatRate(receiptRate)} receipt compliance, and ${formatRate(savingsParticipation)} savings participation.`;
   } else if (rating === "good") {
-    headline = `Good financial management — children's money managed transparently with ${savingsParticipation}% savings engagement.`;
+    headline = `Good financial management — children's money managed transparently with ${formatRate(savingsParticipation)} savings engagement.`;
   } else if (rating === "adequate") {
     headline = "Adequate financial wellbeing — gaps in receipt compliance, savings engagement, or allowance regularity need addressing.";
   } else {

@@ -623,7 +623,7 @@ describe("Home Reg 44 Intelligence Engine", () => {
     it("all visits with 0 total_children handles divide by zero", () => {
       const visits = [makeVisit({ total_children: 0, children_spoken_count: 0 })];
       const r = computeHomeReg44(baseInput({ visits, action_records: [] }));
-      expect(r.quality_profile.avg_children_spoken_pct).toBe(0);
+      expect(r.quality_profile.avg_children_spoken_pct).toBeNull();
     });
   });
 });

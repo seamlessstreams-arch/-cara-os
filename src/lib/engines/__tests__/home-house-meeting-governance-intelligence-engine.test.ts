@@ -84,11 +84,11 @@ describe("Zero meetings", () => {
     expect(r.total_meetings).toBe(0);
   });
 
-  it("reports all rate metrics as 0", () => {
+  it("reports every rate metric as unmeasured", () => {
     const r = computeHouseMeetingGovernance(baseInput());
-    expect(r.child_attendance_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.child_feedback_rate).toBe(0);
+    expect(r.child_attendance_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.child_feedback_rate).toBeNull();
     expect(r.average_agenda_items).toBeNull();;
     expect(r.average_duration).toBeNull();;
   });
@@ -775,11 +775,11 @@ describe("Edge cases", () => {
     expect(r.child_attendance_rate).toBe(0);
   });
 
-  it("handles 0 children present and 0 absent (attendance pct is 0)", () => {
+  it("handles 0 children present and 0 absent (attendance is unmeasured)", () => {
     const meetings = [makeMeeting({ children_present_count: 0, children_absent_count: 0 })];
     const r = computeHouseMeetingGovernance(baseInput({ meetings }));
     // pct(0, 0) = 0 => <40 => -5
-    expect(r.child_attendance_rate).toBe(0);
+    expect(r.child_attendance_rate).toBeNull();
   });
 
   it("handles 0 agenda items in a meeting", () => {

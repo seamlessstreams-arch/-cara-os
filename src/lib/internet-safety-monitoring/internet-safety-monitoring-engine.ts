@@ -30,7 +30,7 @@
 // No AI. No external calls. No randomness. No Date.now(). Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { rate, rateOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
 
 // ── Type Unions ──────────────────────────────────────────────────────────────
 
@@ -148,7 +148,8 @@ export interface ChildInternetProfile {
   childName: string;
   totalIncidents: number;
   highRiskIncidents: number;
-  supportedRate: number; // percentage 0-100
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportedRate: number | null; // percentage 0-100
   overallScore: number; // 0-10
 }
 
@@ -195,11 +196,6 @@ export interface InternetSafetyMonitoringResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -433,7 +429,7 @@ export function buildChildInternetProfiles(
       (i) => i.severity === "high" || i.severity === "critical",
     ).length;
     const supported = data.incidents.filter((i) => i.childSupported).length;
-    const supportedRate = pct(supported, total);
+    const supportedRate = rate(supported, total);
 
     // Overall score 0-10: starts at 10, lose points for incidents and severity
     // Deduct 1 per incident (capped so we don't go below 0)
@@ -443,7 +439,7 @@ export function buildChildInternetProfiles(
     childScore -= Math.min(total, 5); // max -5 for volume
     childScore -= Math.min(highRisk, 3); // max -3 for severity
     if (total > 0 && supportedRate === 100) childScore += 2;
-    else if (total > 0 && supportedRate >= 50) childScore += 1;
+    else if (total > 0 && meets(supportedRate, 50)) childScore += 1;
     childScore = Math.max(0, Math.min(10, childScore));
 
     profiles.push({
@@ -601,33 +597,33 @@ export function generateAreasForImprovement(
   }
 
   if (incidents.length > 0) {
-    const actionRate = pct(
+    const actionRate = rate(
       incidents.filter((i) => i.actionTaken).length,
       incidents.length,
     );
-    if (actionRate < 80) {
+    if (below(actionRate, 80)) {
       areas.push(
-        `Only ${actionRate}% of incidents had action taken — all online safety incidents must receive a documented response`,
+        `Only ${formatRate(actionRate)} of incidents had action taken — all online safety incidents must receive a documented response`,
       );
     }
 
-    const timelyRate = pct(
+    const timelyRate = rate(
       incidents.filter((i) => i.recordedTimely).length,
       incidents.length,
     );
-    if (timelyRate < 80) {
+    if (below(timelyRate, 80)) {
       areas.push(
-        `Recording timeliness is at ${timelyRate}% — incidents should be recorded within 24 hours`,
+        `Recording timeliness is at ${formatRate(timelyRate)} — incidents should be recorded within 24 hours`,
       );
     }
 
-    const lessonsRate = pct(
+    const lessonsRate = rate(
       incidents.filter((i) => i.lessonsApplied).length,
       incidents.length,
     );
-    if (lessonsRate < 60) {
+    if (below(lessonsRate, 60)) {
       areas.push(
-        `Lessons learned are applied in only ${lessonsRate}% of incidents — embed reflective practice after every incident`,
+        `Lessons learned are applied in only ${formatRate(lessonsRate)} of incidents — embed reflective practice after every incident`,
       );
     }
   }
@@ -674,7 +670,7 @@ export function generateActions(
 
   // Medium: unsupported children
   const unsupportedChildren = childProfiles.filter(
-    (p) => p.totalIncidents > 0 && p.supportedRate < 100,
+    (p) => p.totalIncidents > 0 && below(p.supportedRate, 100),
   );
   for (const child of unsupportedChildren) {
     actions.push(

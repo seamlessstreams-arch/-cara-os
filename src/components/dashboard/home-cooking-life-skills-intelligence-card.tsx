@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,20 +75,20 @@ export function HomeCookingLifeSkillsIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_records > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_records}</p>
               <p className="text-[9px] text-muted-foreground">Records</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.independence_rate >= 60 ? "bg-green-50" : d.independence_rate >= 30 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.independence_rate >= 60 ? "text-[--cs-success]" : d.independence_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.independence_rate, 60) ? "bg-green-50" : meets(d.independence_rate, 30) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.independence_rate, 60) ? "text-[--cs-success]" : meets(d.independence_rate, 30) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Independent</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_engaged_rate >= 90 ? "bg-green-50" : d.children_engaged_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_engaged_rate >= 90 ? "text-[--cs-success]" : d.children_engaged_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_engaged_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.children_engaged_rate, 90) ? "bg-green-50" : meets(d.children_engaged_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_engaged_rate, 90) ? "text-[--cs-success]" : meets(d.children_engaged_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_engaged_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 80 ? "bg-green-50" : d.child_voice_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 80 ? "text-[--cs-success]" : d.child_voice_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 80) ? "bg-green-50" : meets(d.child_voice_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 80) ? "text-[--cs-success]" : meets(d.child_voice_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.recipe_success_rate >= 80 ? "bg-green-50" : d.recipe_success_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.recipe_success_rate >= 80 ? "text-[--cs-success]" : d.recipe_success_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.recipe_success_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.recipe_success_rate, 80) ? "bg-green-50" : meets(d.recipe_success_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.recipe_success_rate, 80) ? "text-[--cs-success]" : meets(d.recipe_success_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.recipe_success_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Success</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.category_variety >= 6 ? "bg-green-50" : d.category_variety >= 3 ? "bg-amber-50" : "bg-red-50")}>

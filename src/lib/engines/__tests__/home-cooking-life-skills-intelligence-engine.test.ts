@@ -100,13 +100,13 @@ describe("Zero records (total_children > 0, no records)", () => {
     expect(result.headline).toBe("Cooking skills programme exists but needs broader coverage and deeper progression");
   });
 
-  it("returns total_records 0 and zeroed metrics", () => {
+  it("returns total_records 0 and leaves the rates unmeasured", () => {
     const result = computeCookingLifeSkills(baseInput({ total_children: 6, records: [] }));
     expect(result.total_records).toBe(0);
-    expect(result.independence_rate).toBe(0);
-    expect(result.hygiene_certificate_rate).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
-    expect(result.recipe_success_rate).toBe(0);
+    expect(result.independence_rate).toBeNull();
+    expect(result.hygiene_certificate_rate).toBeNull();
+    expect(result.child_voice_rate).toBeNull();
+    expect(result.recipe_success_rate).toBeNull();
     expect(result.category_variety).toBe(0);
     expect(result.children_engaged_rate).toBe(0);
   });
@@ -629,14 +629,14 @@ describe("Recipe success modifier", () => {
   it("0 recipes attempted with records => -1, score=76", () => {
     // totalRecipes=0, total>0 => -1. 52 + 5 + 6 + 5 + (-1) + 4 + 5 = 76
     const result = computeCookingLifeSkills(baseInput({ records: makeRecipeRecords(0, 0) }));
-    expect(result.recipe_success_rate).toBe(0);
+    expect(result.recipe_success_rate).toBeNull();
     expect(result.cooking_score).toBe(76);
   });
 
   it("0 recipes attempted with no records => no adj (already tested in zero records)", () => {
     // This is covered by the zero records test (score=46). Confirm:
     const result = computeCookingLifeSkills(baseInput({ records: [] }));
-    expect(result.recipe_success_rate).toBe(0);
+    expect(result.recipe_success_rate).toBeNull();
     expect(result.cooking_score).toBe(46);
   });
 
@@ -1647,7 +1647,7 @@ describe("Edge cases", () => {
     expect(result.independence_rate).toBe(10); // pct(1,10)=10 <15 => -5
     expect(result.children_engaged_rate).toBe(67); // pct(4,6)=67 >= 60 => +2
     expect(result.child_voice_rate).toBe(40); // pct(4,10)=40 >= 30 <50 => 0
-    expect(result.recipe_success_rate).toBe(0); // 0 attempted with records => -1
+    expect(result.recipe_success_rate).toBeNull(); // 0 attempted with records => -1
     expect(result.category_variety).toBe(2); // 2 cats, not >=3, not <=1 => 0
     expect(result.hygiene_certificate_rate).toBe(0); // ===0 => -3
     // 52 - 5 + 2 + 0 - 1 + 0 - 3 = 45

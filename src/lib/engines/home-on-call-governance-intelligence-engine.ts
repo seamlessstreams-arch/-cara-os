@@ -5,6 +5,8 @@
 // SCCIF: "The home has robust on-call and emergency arrangements."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface OnCallCallInput {
@@ -107,10 +109,6 @@ export interface HomeOnCallGovernanceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -193,7 +191,7 @@ export function computeHomeOnCallGovernance(
     shifts_last_14_days: last14.length,
     shifts_last_30_days: last30.length,
     unique_on_call_staff: uniqueStaff.size,
-    has_backup_rate: pct(withBackup.length, on_call_shifts.length),
+    has_backup_rate: rate(withBackup.length, on_call_shifts.length),
     role_distribution: roleDistribution,
   };
 
@@ -228,7 +226,7 @@ export function computeHomeOnCallGovernance(
   const quality: QualityProfile = {
     shifts_with_feedback: withFeedback.length,
     shifts_with_review_notes: withNotes.length,
-    feedback_rate: pct(withFeedback.length, completedShifts.length),
+    feedback_rate: rate(withFeedback.length, completedShifts.length),
   };
 
   // ── Workload Profile ──────────────────────────────────────────────────
@@ -273,12 +271,12 @@ export function computeHomeOnCallGovernance(
   const callsWithOutcome = allCalls.filter(
     (c) => c.outcome && c.outcome.trim().length > 0,
   ).length;
-  const outcomeRate = pct(callsWithOutcome, allCalls.length);
+  const outcomeRate = rate(callsWithOutcome, allCalls.length);
   const mod4 =
     allCalls.length === 0 ? 0 :
-    outcomeRate >= 90 ? 4 :
-    outcomeRate >= 70 ? 2 :
-    outcomeRate >= 50 ? 0 : -3;
+    meets(outcomeRate, 90) ? 4 :
+    meets(outcomeRate, 70) ? 2 :
+    meets(outcomeRate, 50) ? 0 : -3;
   score += mod4;
 
   // mod5: Feedback quality (±3)
@@ -325,7 +323,7 @@ export function computeHomeOnCallGovernance(
   const strengths: string[] = [];
   if ((coverage.has_backup_rate ?? 0) >= 90) strengths.push(`${(coverage.has_backup_rate ?? 0)}% of on-call shifts have designated backup — excellent resilience.`);
   if (coverage.unique_on_call_staff >= 2) strengths.push(`${coverage.unique_on_call_staff} different staff members share on-call duties — good distribution.`);
-  if (outcomeRate >= 90 && allCalls.length > 0) strengths.push("All on-call responses are documented with clear outcomes.");
+  if (meets(outcomeRate, 90) && allCalls.length > 0) strengths.push("All on-call responses are documented with clear outcomes.");
   if ((quality.feedback_rate ?? 0) >= 80 && completedShifts.length > 0) strengths.push(`${(quality.feedback_rate ?? 0)}% of shifts have post-shift feedback — reflective practice.`);
   if (response.critical_calls > 0 && criticalNotEscalated === 0) strengths.push("All critical incidents were appropriately escalated.");
   if (rolesUsed >= 2) strengths.push("Both first-line and second-line on-call roles are covered.");
@@ -423,7 +421,7 @@ export function computeHomeOnCallGovernance(
   }
   if (workload.quiet_shifts >= on_call_shifts.length / 2 && on_call_shifts.length >= 3) {
     insights.push({
-      text: `${pct(workload.quiet_shifts, on_call_shifts.length)}% of on-call shifts had no calls — the home generally runs smoothly out of hours.`,
+      text: `${rate(workload.quiet_shifts, on_call_shifts.length)}% of on-call shifts had no calls — the home generally runs smoothly out of hours.`,
       severity: "positive",
     });
   }

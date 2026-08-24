@@ -338,7 +338,7 @@ describe("computeHomeFinancial", () => {
       const r = computeHomeFinancial(baseInput({
         transactions: weeklyAllowances("child_1", 3),
       }));
-      expect(r.spending_profile.receipt_rate).toBe(0);
+      expect(r.spending_profile.receipt_rate).toBeNull();
       expect(r.spending_profile.total_spending_90d).toBe(0);
     });
   });
