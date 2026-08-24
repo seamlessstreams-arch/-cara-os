@@ -564,7 +564,9 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       const r = computeAromatherapyWellbeingTherapies(
         baseInput({ calming_technique_records: nCalming(3) }),
       );
-      expect(r.therapy_quality_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.therapy_quality_rate).toBeNull();
+      expect(r.therapy_quality_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 

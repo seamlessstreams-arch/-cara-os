@@ -283,21 +283,27 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     const r = run({
       inhaler_technique_records: [makeInhaler()],
     });
-    expect(r.action_plan_coverage_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.action_plan_coverage_rate).toBeNull();
+    expect(r.action_plan_coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("inhaler technique rate is 0 when no inhaler records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
-    expect(r.inhaler_technique_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.inhaler_technique_rate).toBeNull();
+    expect(r.inhaler_technique_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("trigger management rate is 0 when no trigger records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
-    expect(r.trigger_management_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.trigger_management_rate).toBeNull();
+    expect(r.trigger_management_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("peak flow monitoring rate is 0 when no peak flow records", () => {
@@ -311,7 +317,9 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
-    expect(r.emergency_preparedness_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.emergency_preparedness_rate).toBeNull();
+    expect(r.emergency_preparedness_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("child self-management rate is 0 when no self-management-relevant records", () => {
@@ -1185,9 +1193,12 @@ describe("Bonus 4 — peak flow monitoring rate", () => {
         makePeakFlow({ zone: "amber", technique_correct: false, recorded_in_diary: false, child_performed_independently: false }),
       ],
     });
-    // technique=1/2=50, diary=1/2=50, green=1/2=50, actionTaken=pct(0,0)=0
-    // composite = (50+50+50+0)/4 = 38
-    expect(r.peak_flow_monitoring_rate).toBe(38);
+    // technique=1/2=50, diary=1/2=50, green=1/2=50, actionTaken UNMEASURED
+    // (no episodes required action, so pct(0,0) is null, not 0).
+    // This comment used to read "actionTaken=pct(0,0)=0, composite =
+    // (50+50+50+0)/4 = 38" — the fabricated zero pulling the composite down a
+    // quarter. meanOf averages the three components that exist: 50.
+    expect(r.peak_flow_monitoring_rate).toBe(50);
     expect(r.respiratory_score).toBe(52);
   });
 });
@@ -1881,9 +1892,9 @@ describe("peak_flow_monitoring_rate composite", () => {
         makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, action_required: false }),
       ],
     });
-    // technique=100, diary=100, green=100, actionTaken=pct(0,0)=0
-    // composite = (100+100+100+0)/4 = 75
-    expect(r.peak_flow_monitoring_rate).toBe(75);
+    // technique=100, diary=100, green=100, actionTaken UNMEASURED.
+    // Was "actionTaken=pct(0,0)=0, composite = (100+100+100+0)/4 = 75".
+    expect(r.peak_flow_monitoring_rate).toBe(100);
   });
 });
 

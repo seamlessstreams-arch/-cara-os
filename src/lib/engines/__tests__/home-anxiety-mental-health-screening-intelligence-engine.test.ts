@@ -298,7 +298,9 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
         total_children: 2,
         wellbeing_checkin_records: checkinsForChildren(2),
       }));
-      expect(r.screening_completion_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.screening_completion_rate).toBeNull();
+      expect(r.screening_completion_rate).not.toBe(0); // 0% is a claim; nothing was measured
       expect(r.total_screenings).toBe(0);
     });
 

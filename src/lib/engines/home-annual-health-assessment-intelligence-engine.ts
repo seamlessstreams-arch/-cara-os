@@ -8,6 +8,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface AnnualHealthAssessmentRecordInput {
   id: string;
   child_id: string;
@@ -44,12 +46,18 @@ export interface AnnualHealthAssessmentResult {
   assessment_score: number;
   headline: string;
   total_assessments: number;
-  children_assessed_rate: number;
-  deadline_compliance_rate: number;
-  immunisation_rate: number;
-  dental_optical_rate: number;
-  child_contribution_rate: number;
-  report_sharing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_assessed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deadline_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  immunisation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dental_optical_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_contribution_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  report_sharing_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -63,8 +71,9 @@ export interface AnnualHealthAssessmentResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -133,54 +142,54 @@ export function computeAnnualHealthAssessment(
   if (total === 0) {
     score -= 3;
   } else {
-    if (childrenAssessedRate >= 90) score += 6;
-    else if (childrenAssessedRate >= 60) score += 2;
-    else if (childrenAssessedRate < 40) score -= 5;
+    if (meets(childrenAssessedRate, 90)) score += 6;
+    else if (meets(childrenAssessedRate, 60)) score += 2;
+    else if (below(childrenAssessedRate, 40)) score -= 5;
   }
 
   // Modifier 2: Deadline compliance
   if (total === 0) {
     // no adjustment
   } else {
-    if (deadlineComplianceRate >= 90) score += 5;
-    else if (deadlineComplianceRate >= 70) score += 2;
-    else if (deadlineComplianceRate < 50) score -= 5;
+    if (meets(deadlineComplianceRate, 90)) score += 5;
+    else if (meets(deadlineComplianceRate, 70)) score += 2;
+    else if (below(deadlineComplianceRate, 50)) score -= 5;
   }
 
   // Modifier 3: Immunisation up-to-date rate
   if (total === 0) {
     score -= 1;
   } else {
-    if (immunisationRate >= 90) score += 5;
-    else if (immunisationRate >= 70) score += 2;
-    else if (immunisationRate < 50) score -= 4;
+    if (meets(immunisationRate, 90)) score += 5;
+    else if (meets(immunisationRate, 70)) score += 2;
+    else if (below(immunisationRate, 50)) score -= 4;
   }
 
   // Modifier 4: Dental & optical checks
   if (total === 0) {
     // no adjustment
   } else {
-    if (dentalOpticalRate >= 85) score += 5;
-    else if (dentalOpticalRate >= 60) score += 2;
-    else if (dentalOpticalRate < 40) score -= 4;
+    if (meets(dentalOpticalRate, 85)) score += 5;
+    else if (meets(dentalOpticalRate, 60)) score += 2;
+    else if (below(dentalOpticalRate, 40)) score -= 4;
   }
 
   // Modifier 5: Child contribution
   if (total === 0) {
     score -= 1;
   } else {
-    if (childContributionRate >= 80) score += 4;
-    else if (childContributionRate >= 50) score += 1;
-    else if (childContributionRate < 30) score -= 4;
+    if (meets(childContributionRate, 80)) score += 4;
+    else if (meets(childContributionRate, 50)) score += 1;
+    else if (below(childContributionRate, 30)) score -= 4;
   }
 
   // Modifier 6: Report sharing with professionals
   if (total === 0) {
     score -= 2;
   } else {
-    if (reportSharingRate >= 85) score += 5;
-    else if (reportSharingRate >= 60) score += 2;
-    else if (reportSharingRate < 40) score -= 3;
+    if (meets(reportSharingRate, 85)) score += 5;
+    else if (meets(reportSharingRate, 60)) score += 2;
+    else if (below(reportSharingRate, 40)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -207,21 +216,21 @@ export function computeAnnualHealthAssessment(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childrenAssessedRate >= 90 && total > 0) strengths.push("All children have completed annual health assessments — comprehensive health monitoring");
-  if (deadlineComplianceRate >= 90 && total > 0) strengths.push("Assessments are consistently completed within statutory deadlines");
-  if (immunisationRate >= 90 && total > 0) strengths.push("Immunisations are up to date for nearly all children");
-  if (dentalOpticalRate >= 85 && total > 0) strengths.push("Dental and optical checks are well-maintained across all children");
-  if (childContributionRate >= 80 && total > 0) strengths.push("Children actively contribute to their own health assessments");
-  if (reportSharingRate >= 85 && total > 0) strengths.push("Health assessment reports are consistently shared with relevant professionals");
+  if (meets(childrenAssessedRate, 90) && total > 0) strengths.push("All children have completed annual health assessments — comprehensive health monitoring");
+  if (meets(deadlineComplianceRate, 90) && total > 0) strengths.push("Assessments are consistently completed within statutory deadlines");
+  if (meets(immunisationRate, 90) && total > 0) strengths.push("Immunisations are up to date for nearly all children");
+  if (meets(dentalOpticalRate, 85) && total > 0) strengths.push("Dental and optical checks are well-maintained across all children");
+  if (meets(childContributionRate, 80) && total > 0) strengths.push("Children actively contribute to their own health assessments");
+  if (meets(reportSharingRate, 85) && total > 0) strengths.push("Health assessment reports are consistently shared with relevant professionals");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No annual health assessments recorded — statutory health monitoring is absent");
-  if (childrenAssessedRate < 40 && total > 0) concerns.push("Most children have not had an annual health assessment — coverage is critically low");
-  if (deadlineComplianceRate < 50 && total > 0) concerns.push("Most assessments are completed late — children's health needs are not being met promptly");
-  if (immunisationRate < 50 && total > 0) concerns.push("Many children have out-of-date immunisations — this is a significant health risk");
-  if (childContributionRate < 30 && total > 0) concerns.push("Children rarely contribute to their health assessments — their views are missing");
-  if (reportSharingRate < 40 && total > 0) concerns.push("Assessment reports are not being shared with professionals — coordination is poor");
+  if (below(childrenAssessedRate, 40) && total > 0) concerns.push("Most children have not had an annual health assessment — coverage is critically low");
+  if (below(deadlineComplianceRate, 50) && total > 0) concerns.push("Most assessments are completed late — children's health needs are not being met promptly");
+  if (below(immunisationRate, 50) && total > 0) concerns.push("Many children have out-of-date immunisations — this is a significant health risk");
+  if (below(childContributionRate, 30) && total > 0) concerns.push("Children rarely contribute to their health assessments — their views are missing");
+  if (below(reportSharingRate, 40) && total > 0) concerns.push("Assessment reports are not being shared with professionals — coordination is poor");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: AnnualHealthAssessmentResult["recommendations"] = [];
@@ -229,19 +238,19 @@ export function computeAnnualHealthAssessment(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Schedule annual health assessments for every child and establish tracking to ensure none are missed", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 10" });
   }
-  if (childrenAssessedRate < 60 && total > 0) {
+  if (below(childrenAssessedRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Prioritise scheduling assessments for children who have not yet been assessed this year", urgency: "immediate", regulatory_ref: "SCCIF Health" });
   }
-  if (deadlineComplianceRate < 70 && total > 0) {
+  if (below(deadlineComplianceRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement a health assessment tracking system with advance reminders to improve deadline compliance", urgency: "soon", regulatory_ref: "CHR 2015 Reg 10" });
   }
-  if (immunisationRate < 70 && total > 0) {
+  if (below(immunisationRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Work with health professionals to bring immunisation records up to date for all children", urgency: "soon", regulatory_ref: "SCCIF Health" });
   }
-  if (childContributionRate < 50 && total > 0) {
+  if (below(childContributionRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure each child has opportunity to express their views and contribute to their health assessment", urgency: "planned", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (reportSharingRate < 60 && total > 0) {
+  if (below(reportSharingRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Share all health assessment reports with social workers, GPs and relevant professionals as standard", urgency: "planned", regulatory_ref: "SCCIF Health" });
   }
 
@@ -250,19 +259,19 @@ export function computeAnnualHealthAssessment(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: AnnualHealthAssessmentResult["insights"] = [];
 
-  if (childrenAssessedRate >= 90 && deadlineComplianceRate >= 90 && immunisationRate >= 90 && total >= 10) {
+  if (meets(childrenAssessedRate, 90) && meets(deadlineComplianceRate, 90) && meets(immunisationRate, 90) && total >= 10) {
     insights.push({ text: "Health assessment practice is exemplary — all children receive timely, comprehensive health reviews", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No health assessment records means Ofsted cannot verify that children's health needs are being monitored", severity: "critical" });
   }
-  if (immunisationRate < 50 && total > 0) {
+  if (below(immunisationRate, 50) && total > 0) {
     insights.push({ text: "Low immunisation compliance puts children at risk of preventable diseases — urgent action needed", severity: "warning" });
   }
-  if (childrenAssessedRate >= 90 && total > 0) {
+  if (meets(childrenAssessedRate, 90) && total > 0) {
     insights.push({ text: "Comprehensive assessment coverage demonstrates the home takes children's health seriously", severity: "positive" });
   }
-  if (deadlineComplianceRate >= 90 && total > 0) {
+  if (meets(deadlineComplianceRate, 90) && total > 0) {
     insights.push({ text: "Excellent deadline compliance means no child waits too long for health review", severity: "positive" });
   }
 

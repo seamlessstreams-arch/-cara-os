@@ -14,7 +14,7 @@
 //             earlyInterventionRecords
 // ==============================================================================
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types -------------------------------------------------------------
 
@@ -147,12 +147,18 @@ export interface AnxietyMentalHealthResult {
   mental_health_score: number;
   headline: string;
   total_screenings: number;
-  screening_completion_rate: number;
-  anxiety_assessment_rate: number;
-  camhs_referral_rate: number;
-  wellbeing_checkin_rate: number;
-  early_intervention_rate: number;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  screening_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  anxiety_assessment_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  camhs_referral_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeing_checkin_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  early_intervention_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   // Null on empty — no measurable assessments/interventions ⇒ no improvement
   // signal. "0" reads as "we tried and it didn't work", null reads as "unmeasured".
   assessment_improvement_avg: number | null;
@@ -165,8 +171,9 @@ export interface AnxietyMentalHealthResult {
 
 // -- Helpers -----------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -534,54 +541,54 @@ export function computeAnxietyMentalHealthScreening(
   let score = 52;
 
   // --- Bonus 1: screeningCompletionRate (>=95: +4, >=80: +2) ---
-  if (screeningCompletionRate >= 95) score += 4;
-  else if (screeningCompletionRate >= 80) score += 2;
+  if (meets(screeningCompletionRate, 95)) score += 4;
+  else if (meets(screeningCompletionRate, 80)) score += 2;
 
   // --- Bonus 2: anxietyAssessmentRate (>=90: +4, >=70: +2) ---
-  if (anxietyAssessmentRate >= 90) score += 4;
-  else if (anxietyAssessmentRate >= 70) score += 2;
+  if (meets(anxietyAssessmentRate, 90)) score += 4;
+  else if (meets(anxietyAssessmentRate, 70)) score += 2;
 
   // --- Bonus 3: wellbeingCheckinRate (>=95: +4, >=80: +2) ---
-  if (wellbeingCheckinRate >= 95) score += 4;
-  else if (wellbeingCheckinRate >= 80) score += 2;
+  if (meets(wellbeingCheckinRate, 95)) score += 4;
+  else if (meets(wellbeingCheckinRate, 80)) score += 2;
 
   // --- Bonus 4: interventionEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (interventionEffectivenessRate >= 90) score += 4;
-  else if (interventionEffectivenessRate >= 70) score += 2;
+  if (meets(interventionEffectivenessRate, 90)) score += 4;
+  else if (meets(interventionEffectivenessRate, 70)) score += 2;
 
   // --- Bonus 5: followUpCompletionRate (>=95: +3, >=80: +1) ---
-  if (followUpCompletionRate >= 95) score += 3;
-  else if (followUpCompletionRate >= 80) score += 1;
+  if (meets(followUpCompletionRate, 95)) score += 3;
+  else if (meets(followUpCompletionRate, 80)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: concernsActionedRate (>=95: +3, >=80: +1) ---
-  if (concernsActionedRate >= 95) score += 3;
-  else if (concernsActionedRate >= 80) score += 1;
+  if (meets(concernsActionedRate, 95)) score += 3;
+  else if (meets(concernsActionedRate, 80)) score += 1;
 
   // --- Bonus 8: sessionCompletionRate (>=90: +2, >=70: +1) ---
-  if (sessionCompletionRate >= 90) score += 2;
-  else if (sessionCompletionRate >= 70) score += 1;
+  if (meets(sessionCompletionRate, 90)) score += 2;
+  else if (meets(sessionCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: screeningReviewComplianceRate (>=100: +1, >=80: +1) ---
-  if (screeningReviewComplianceRate >= 100) score += 1;
-  else if (screeningReviewComplianceRate >= 80) score += 1;
+  if (meets(screeningReviewComplianceRate, 100)) score += 1;
+  else if (meets(screeningReviewComplianceRate, 80)) score += 1;
 
   // ---- Penalties (guarded by array.length > 0) ----
 
   // screeningCoverageRate < 50 -> -5
-  if (screeningCoverageRate < 50 && screening_records.length > 0) score -= 5;
+  if (below(screeningCoverageRate, 50) && screening_records.length > 0) score -= 5;
 
   // anxietyAssessmentRate < 40 -> -5
-  if (anxietyAssessmentRate < 40 && anxiety_assessment_records.length > 0) score -= 5;
+  if (below(anxietyAssessmentRate, 40) && anxiety_assessment_records.length > 0) score -= 5;
 
   // wellbeingCheckinRate < 50 -> -4
-  if (wellbeingCheckinRate < 50 && wellbeing_checkin_records.length > 0) score -= 4;
+  if (below(wellbeingCheckinRate, 50) && wellbeing_checkin_records.length > 0) score -= 4;
 
   // interventionEffectivenessRate < 40 -> -4
-  if (interventionEffectivenessRate < 40 && early_intervention_records.length > 0) score -= 4;
+  if (below(interventionEffectivenessRate, 40) && early_intervention_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -593,153 +600,153 @@ export function computeAnxietyMentalHealthScreening(
 
   const strengths: string[] = [];
 
-  if (screeningCompletionRate >= 95 && totalScreenings > 0) {
+  if (meets(screeningCompletionRate, 95) && totalScreenings > 0) {
     strengths.push(
       `${screeningCompletionRate}% screening completion rate -- the home demonstrates exemplary commitment to completing mental health screenings for all children.`,
     );
-  } else if (screeningCompletionRate >= 80 && totalScreenings > 0) {
+  } else if (meets(screeningCompletionRate, 80) && totalScreenings > 0) {
     strengths.push(
       `${screeningCompletionRate}% screening completion -- strong adherence to mental health screening protocols across the home.`,
     );
   }
 
-  if (screeningCoverageRate >= 100 && total_children > 0) {
+  if (meets(screeningCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has been screened for mental health needs -- the home ensures no child's emotional wellbeing goes unassessed.",
     );
-  } else if (screeningCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(screeningCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${screeningCoverageRate}% of children have been screened -- good coverage in identifying children's mental health needs.`,
     );
   }
 
-  if (anxietyAssessmentRate >= 90 && total_children > 0) {
+  if (meets(anxietyAssessmentRate, 90) && total_children > 0) {
     strengths.push(
       `${anxietyAssessmentRate}% of children have received anxiety assessments -- the home proactively identifies and monitors anxiety levels across the cohort.`,
     );
-  } else if (anxietyAssessmentRate >= 70 && total_children > 0) {
+  } else if (meets(anxietyAssessmentRate, 70) && total_children > 0) {
     strengths.push(
       `${anxietyAssessmentRate}% anxiety assessment coverage -- the majority of children's anxiety levels are being formally assessed and tracked.`,
     );
   }
 
-  if (wellbeingCheckinRate >= 95 && total_children > 0) {
+  if (meets(wellbeingCheckinRate, 95) && total_children > 0) {
     strengths.push(
       `${wellbeingCheckinRate}% of children receiving wellbeing check-ins -- the home maintains comprehensive emotional monitoring, ensuring every child's wellbeing is regularly reviewed.`,
     );
-  } else if (wellbeingCheckinRate >= 80 && total_children > 0) {
+  } else if (meets(wellbeingCheckinRate, 80) && total_children > 0) {
     strengths.push(
       `${wellbeingCheckinRate}% wellbeing check-in coverage -- strong routine monitoring of children's emotional health.`,
     );
   }
 
-  if (interventionEffectivenessRate >= 90 && totalInterventions > 0) {
+  if (meets(interventionEffectivenessRate, 90) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of early interventions showing improvement -- interventions are highly effective in supporting children's mental health recovery.`,
     );
-  } else if (interventionEffectivenessRate >= 70 && totalInterventions > 0) {
+  } else if (meets(interventionEffectivenessRate, 70) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of early interventions showing improvement -- the majority of mental health interventions are achieving positive outcomes for children.`,
     );
   }
 
-  if (followUpCompletionRate >= 95 && screeningsRequiringFollowUp > 0) {
+  if (meets(followUpCompletionRate, 95) && screeningsRequiringFollowUp > 0) {
     strengths.push(
       `${followUpCompletionRate}% of screening follow-ups completed -- the home consistently acts on screening results, ensuring children identified as needing support receive it promptly.`,
     );
-  } else if (followUpCompletionRate >= 80 && screeningsRequiringFollowUp > 0) {
+  } else if (meets(followUpCompletionRate, 80) && screeningsRequiringFollowUp > 0) {
     strengths.push(
       `${followUpCompletionRate}% screening follow-up completion -- the home generally acts on screening findings to provide appropriate support.`,
     );
   }
 
-  if (childEngagementRate >= 90 && totalEngagementOpportunities > 0) {
+  if (meets(childEngagementRate, 90) && totalEngagementOpportunities > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement across mental health activities -- children are actively participating in their own mental health care, reflecting a child-centred approach.`,
     );
-  } else if (childEngagementRate >= 70 && totalEngagementOpportunities > 0) {
+  } else if (meets(childEngagementRate, 70) && totalEngagementOpportunities > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement rate -- good levels of children's participation in mental health screening and support activities.`,
     );
   }
 
-  if (concernsActionedRate >= 95 && checkinsWithConcerns > 0) {
+  if (meets(concernsActionedRate, 95) && checkinsWithConcerns > 0) {
     strengths.push(
       `${concernsActionedRate}% of concerns raised in wellbeing check-ins have been actioned -- the home responds swiftly and comprehensively when children express distress or worry.`,
     );
-  } else if (concernsActionedRate >= 80 && checkinsWithConcerns > 0) {
+  } else if (meets(concernsActionedRate, 80) && checkinsWithConcerns > 0) {
     strengths.push(
       `${concernsActionedRate}% of raised concerns actioned -- the home responds to the majority of children's expressed worries and distress.`,
     );
   }
 
-  if (referralAcceptanceRate >= 90 && totalReferrals > 0) {
+  if (meets(referralAcceptanceRate, 90) && totalReferrals > 0) {
     strengths.push(
       `${referralAcceptanceRate}% CAMHS referral acceptance rate -- the home makes well-evidenced, appropriate referrals to specialist mental health services.`,
     );
-  } else if (referralAcceptanceRate >= 70 && totalReferrals > 0) {
+  } else if (meets(referralAcceptanceRate, 70) && totalReferrals > 0) {
     strengths.push(
       `${referralAcceptanceRate}% referral acceptance -- the home generally submits appropriate CAMHS referrals that meet the threshold for specialist services.`,
     );
   }
 
-  if (attendanceSupportRate >= 90 && totalReferrals > 0) {
+  if (meets(attendanceSupportRate, 90) && totalReferrals > 0) {
     strengths.push(
       `${attendanceSupportRate}% home-supported CAMHS attendance -- the home actively facilitates children's engagement with specialist mental health services.`,
     );
-  } else if (attendanceSupportRate >= 70 && totalReferrals > 0) {
+  } else if (meets(attendanceSupportRate, 70) && totalReferrals > 0) {
     strengths.push(
       `${attendanceSupportRate}% supported attendance at CAMHS appointments -- the home generally ensures children can access their specialist appointments.`,
     );
   }
 
-  if (assessmentImprovementRate >= 80 && totalAssessments > 0) {
+  if (meets(assessmentImprovementRate, 80) && totalAssessments > 0) {
     strengths.push(
       `${assessmentImprovementRate}% of anxiety assessments showing improvement -- the home's mental health support is delivering measurable reductions in children's anxiety.`,
     );
-  } else if (assessmentImprovementRate >= 60 && totalAssessments > 0) {
+  } else if (meets(assessmentImprovementRate, 60) && totalAssessments > 0) {
     strengths.push(
       `${assessmentImprovementRate}% of assessments showing improvement -- the majority of children are experiencing reductions in their anxiety levels over time.`,
     );
   }
 
-  if (actionPlanRate >= 90 && totalAssessments > 0) {
+  if (meets(actionPlanRate, 90) && totalAssessments > 0) {
     strengths.push(
       `${actionPlanRate}% of anxiety assessments result in action plans -- the home systematically translates assessment findings into structured support for each child.`,
     );
-  } else if (actionPlanRate >= 70 && totalAssessments > 0) {
+  } else if (meets(actionPlanRate, 70) && totalAssessments > 0) {
     strengths.push(
       `${actionPlanRate}% action plan creation rate -- the home generally produces care plans following anxiety assessments.`,
     );
   }
 
-  if (checkinDocumentationRate >= 90 && totalCheckins > 0) {
+  if (meets(checkinDocumentationRate, 90) && totalCheckins > 0) {
     strengths.push(
       `${checkinDocumentationRate}% of wellbeing check-ins have documented notes -- strong recording practice supports evidence of ongoing emotional health monitoring.`,
     );
   }
 
-  if (sessionCompletionRate >= 90 && sessionsPlannedTotal > 0) {
+  if (meets(sessionCompletionRate, 90) && sessionsPlannedTotal > 0) {
     strengths.push(
       `${sessionCompletionRate}% of planned intervention sessions completed -- the home reliably delivers the mental health support it has committed to.`,
     );
-  } else if (sessionCompletionRate >= 70 && sessionsPlannedTotal > 0) {
+  } else if (meets(sessionCompletionRate, 70) && sessionsPlannedTotal > 0) {
     strengths.push(
       `${sessionCompletionRate}% intervention session completion -- the home generally follows through on planned mental health interventions.`,
     );
   }
 
-  if (professionalInvolvementRate >= 80 && totalInterventions > 0) {
+  if (meets(professionalInvolvementRate, 80) && totalInterventions > 0) {
     strengths.push(
       `${professionalInvolvementRate}% of interventions involve professional input -- the home draws on specialist mental health expertise to support children effectively.`,
     );
   }
 
-  if (screeningReviewComplianceRate >= 100 && totalScreenings > 0) {
+  if (meets(screeningReviewComplianceRate, 100) && totalScreenings > 0) {
     strengths.push(
       "All screening reviews are up to date -- the home ensures mental health assessments remain current and reflective of children's evolving needs.",
     );
-  } else if (screeningReviewComplianceRate >= 80 && totalScreenings > 0) {
+  } else if (meets(screeningReviewComplianceRate, 80) && totalScreenings > 0) {
     strengths.push(
       `${screeningReviewComplianceRate}% screening review compliance -- strong adherence to review timescales for mental health screenings.`,
     );
@@ -757,81 +764,81 @@ export function computeAnxietyMentalHealthScreening(
 
   const concerns: string[] = [];
 
-  if (screeningCoverageRate < 50 && total_children > 0) {
+  if (below(screeningCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${screeningCoverageRate}% of children have been screened for mental health needs -- the majority of children's emotional wellbeing has not been formally assessed, preventing early identification of anxiety and mental health difficulties.`,
     );
-  } else if (screeningCoverageRate < 80 && screeningCoverageRate >= 50 && total_children > 0) {
+  } else if (below(screeningCoverageRate, 80) && meets(screeningCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Screening coverage at ${screeningCoverageRate}% -- some children's mental health needs remain unassessed, which may result in undetected anxiety or emotional difficulties.`,
     );
   }
 
-  if (screeningCompletionRate < 50 && totalScreenings > 0) {
+  if (below(screeningCompletionRate, 50) && totalScreenings > 0) {
     concerns.push(
       `Only ${screeningCompletionRate}% of screenings completed -- the majority of initiated mental health screenings are not being finished, severely undermining the home's ability to identify children's needs.`,
     );
-  } else if (screeningCompletionRate < 80 && screeningCompletionRate >= 50 && totalScreenings > 0) {
+  } else if (below(screeningCompletionRate, 80) && meets(screeningCompletionRate, 50) && totalScreenings > 0) {
     concerns.push(
       `Screening completion rate at ${screeningCompletionRate}% -- incomplete screenings mean some children's mental health needs may not be fully identified.`,
     );
   }
 
-  if (anxietyAssessmentRate < 40 && total_children > 0 && totalAssessments > 0) {
+  if (below(anxietyAssessmentRate, 40) && total_children > 0 && totalAssessments > 0) {
     concerns.push(
       `Only ${anxietyAssessmentRate}% of children have received anxiety assessments -- the majority of children's anxiety levels are unmonitored, meaning early signs of escalation may be missed.`,
     );
-  } else if (anxietyAssessmentRate < 70 && anxietyAssessmentRate >= 40 && total_children > 0) {
+  } else if (below(anxietyAssessmentRate, 70) && meets(anxietyAssessmentRate, 40) && total_children > 0) {
     concerns.push(
       `Anxiety assessment coverage at ${anxietyAssessmentRate}% -- not all children have had formal anxiety assessments, leaving potential gaps in understanding individual mental health needs.`,
     );
   }
 
-  if (wellbeingCheckinRate < 50 && total_children > 0 && totalCheckins > 0) {
+  if (below(wellbeingCheckinRate, 50) && total_children > 0 && totalCheckins > 0) {
     concerns.push(
       `Only ${wellbeingCheckinRate}% of children receiving wellbeing check-ins -- the majority of children's day-to-day emotional health is not being routinely monitored.`,
     );
-  } else if (wellbeingCheckinRate < 80 && wellbeingCheckinRate >= 50 && total_children > 0) {
+  } else if (below(wellbeingCheckinRate, 80) && meets(wellbeingCheckinRate, 50) && total_children > 0) {
     concerns.push(
       `Wellbeing check-in coverage at ${wellbeingCheckinRate}% -- some children are not receiving regular emotional health monitoring, creating gaps in the home's understanding of their wellbeing.`,
     );
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Only ${interventionEffectivenessRate}% of early interventions showing improvement -- the majority of mental health interventions are not achieving their intended outcomes, suggesting a need for fundamental review of the home's therapeutic approach.`,
     );
-  } else if (interventionEffectivenessRate < 70 && interventionEffectivenessRate >= 40 && totalInterventions > 0) {
+  } else if (below(interventionEffectivenessRate, 70) && meets(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Intervention effectiveness at ${interventionEffectivenessRate}% -- not all mental health interventions are achieving positive outcomes. Review is needed to ensure interventions are appropriately matched to individual children's needs.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && screeningsRequiringFollowUp > 0) {
+  if (below(followUpCompletionRate, 50) && screeningsRequiringFollowUp > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of screening follow-ups completed -- children identified as needing further assessment or support are not receiving it, creating a dangerous gap between identification and action.`,
     );
-  } else if (followUpCompletionRate < 80 && followUpCompletionRate >= 50 && screeningsRequiringFollowUp > 0) {
+  } else if (below(followUpCompletionRate, 80) && meets(followUpCompletionRate, 50) && screeningsRequiringFollowUp > 0) {
     concerns.push(
       `Follow-up completion at ${followUpCompletionRate}% -- not all children flagged during screening are receiving timely follow-up, delaying access to support.`,
     );
   }
 
-  if (concernsActionedRate < 50 && checkinsWithConcerns > 0) {
+  if (below(concernsActionedRate, 50) && checkinsWithConcerns > 0) {
     concerns.push(
       `Only ${concernsActionedRate}% of concerns raised in wellbeing check-ins have been actioned -- children are reporting worries that the home is not responding to, undermining trust and the value of the check-in process.`,
     );
-  } else if (concernsActionedRate < 80 && concernsActionedRate >= 50 && checkinsWithConcerns > 0) {
+  } else if (below(concernsActionedRate, 80) && meets(concernsActionedRate, 50) && checkinsWithConcerns > 0) {
     concerns.push(
       `Concerns actioned rate at ${concernsActionedRate}% -- some children's expressed worries are not being followed up, which may discourage them from sharing in future.`,
     );
   }
 
-  if (childEngagementRate < 50 && totalEngagementOpportunities > 0) {
+  if (below(childEngagementRate, 50) && totalEngagementOpportunities > 0) {
     concerns.push(
       `Child engagement at only ${childEngagementRate}% across mental health activities -- most children are not actively participating in their own mental health care, which limits the effectiveness of support.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50 && totalEngagementOpportunities > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50) && totalEngagementOpportunities > 0) {
     concerns.push(
       `Child engagement rate at ${childEngagementRate}% -- a significant proportion of children are not fully engaged with their mental health screening and support.`,
     );
@@ -867,7 +874,7 @@ export function computeAnxietyMentalHealthScreening(
     );
   }
 
-  if (referralAcceptanceRate < 50 && totalReferrals > 0) {
+  if (below(referralAcceptanceRate, 50) && totalReferrals > 0) {
     concerns.push(
       `Only ${referralAcceptanceRate}% of CAMHS referrals accepted -- low acceptance rates may indicate referrals are not meeting thresholds, documentation is insufficient, or there are barriers to accessing specialist services.`,
     );
@@ -879,19 +886,19 @@ export function computeAnxietyMentalHealthScreening(
     );
   }
 
-  if (sessionCompletionRate < 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     concerns.push(
       `Only ${sessionCompletionRate}% of planned intervention sessions completed -- the home is not delivering the mental health support it has committed to, potentially leaving children's needs unmet.`,
     );
   }
 
-  if (checkinDocumentationRate < 70 && totalCheckins > 0) {
+  if (below(checkinDocumentationRate, 70) && totalCheckins > 0) {
     concerns.push(
       `Wellbeing check-in documentation at only ${checkinDocumentationRate}% -- poor recording makes it difficult to evidence the quality of emotional health monitoring.`,
     );
   }
 
-  if (actionPlanRate < 50 && totalAssessments > 0) {
+  if (below(actionPlanRate, 50) && totalAssessments > 0) {
     concerns.push(
       `Only ${actionPlanRate}% of anxiety assessments result in action plans -- assessments without structured follow-up plans fail to translate findings into practical support for children.`,
     );
@@ -910,7 +917,7 @@ export function computeAnxietyMentalHealthScreening(
   const recommendations: AnxietyMentalHealthRecommendation[] = [];
   let rank = 0;
 
-  if (screeningCoverageRate < 50 && total_children > 0) {
+  if (below(screeningCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -920,7 +927,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (followUpCompletionRate < 50 && screeningsRequiringFollowUp > 0) {
+  if (below(followUpCompletionRate, 50) && screeningsRequiringFollowUp > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -930,7 +937,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (anxietyAssessmentRate < 40 && total_children > 0 && totalAssessments > 0) {
+  if (below(anxietyAssessmentRate, 40) && total_children > 0 && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -940,7 +947,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (wellbeingCheckinRate < 50 && total_children > 0 && totalCheckins > 0) {
+  if (below(wellbeingCheckinRate, 50) && total_children > 0 && totalCheckins > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,7 +957,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,7 +967,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (concernsActionedRate < 50 && checkinsWithConcerns > 0) {
+  if (below(concernsActionedRate, 50) && checkinsWithConcerns > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1021,8 +1028,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    screeningCoverageRate >= 50 &&
-    screeningCoverageRate < 80 &&
+    meets(screeningCoverageRate, 50) &&
+    below(screeningCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1035,8 +1042,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    anxietyAssessmentRate >= 40 &&
-    anxietyAssessmentRate < 70 &&
+    meets(anxietyAssessmentRate, 40) &&
+    below(anxietyAssessmentRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1049,8 +1056,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    wellbeingCheckinRate >= 50 &&
-    wellbeingCheckinRate < 80 &&
+    meets(wellbeingCheckinRate, 50) &&
+    below(wellbeingCheckinRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1063,8 +1070,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     recommendations.push({
@@ -1076,7 +1083,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && sessionsPlannedTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1086,7 +1093,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (referralAcceptanceRate < 50 && totalReferrals > 0) {
+  if (below(referralAcceptanceRate, 50) && totalReferrals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1096,7 +1103,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (actionPlanRate < 70 && totalAssessments > 0) {
+  if (below(actionPlanRate, 70) && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1106,7 +1113,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (assessmentChildInvolvementRate < 70 && totalAssessments > 0) {
+  if (below(assessmentChildInvolvementRate, 70) && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1116,7 +1123,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (checkinDocumentationRate < 70 && totalCheckins > 0) {
+  if (below(checkinDocumentationRate, 70) && totalCheckins > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1126,7 +1133,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (professionalInvolvementRate < 50 && totalInterventions > 0) {
+  if (below(professionalInvolvementRate, 50) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1137,8 +1144,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     totalEngagementOpportunities > 0
   ) {
     recommendations.push({
@@ -1151,8 +1158,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    concernsActionedRate >= 50 &&
-    concernsActionedRate < 80 &&
+    meets(concernsActionedRate, 50) &&
+    below(concernsActionedRate, 80) &&
     checkinsWithConcerns > 0
   ) {
     recommendations.push({
@@ -1172,35 +1179,35 @@ export function computeAnxietyMentalHealthScreening(
 
   // -- Critical insights --
 
-  if (screeningCoverageRate < 50 && total_children > 0) {
+  if (below(screeningCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${screeningCoverageRate}% of children have been screened for mental health needs. Without formal screening, the home cannot identify children who may be experiencing anxiety, depression, or other emotional difficulties. Ofsted expects evidence that children's mental health is actively assessed and monitored under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (anxietyAssessmentRate < 40 && total_children > 0 && totalAssessments > 0) {
+  if (below(anxietyAssessmentRate, 40) && total_children > 0 && totalAssessments > 0) {
     insights.push({
       text: `Only ${anxietyAssessmentRate}% of children have received anxiety assessments. Looked-after children are disproportionately affected by anxiety, and without formal assessment using validated tools, the home cannot evidence that it understands or is responding to children's anxiety needs.`,
       severity: "critical",
     });
   }
 
-  if (wellbeingCheckinRate < 50 && total_children > 0 && totalCheckins > 0) {
+  if (below(wellbeingCheckinRate, 50) && total_children > 0 && totalCheckins > 0) {
     insights.push({
       text: `Only ${wellbeingCheckinRate}% of children receive regular wellbeing check-ins. Without routine emotional health monitoring, the home cannot detect changes in children's mental state early enough to intervene before difficulties escalate.`,
       severity: "critical",
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     insights.push({
       text: `Only ${interventionEffectivenessRate}% of early interventions showing improvement. When most interventions are not working, this indicates a systemic issue -- interventions may not be appropriately matched to children's needs, professionally informed, or consistently delivered. A fundamental review with specialist input is needed.`,
       severity: "critical",
     });
   }
 
-  if (followUpCompletionRate < 50 && screeningsRequiringFollowUp > 0) {
+  if (below(followUpCompletionRate, 50) && screeningsRequiringFollowUp > 0) {
     insights.push({
       text: `Only ${followUpCompletionRate}% of screening follow-ups completed. This is a critical safety gap -- children have been identified as needing further assessment or support, but the home has failed to act. This means known risks are not being managed and children may deteriorate without intervention.`,
       severity: "critical",
@@ -1225,8 +1232,8 @@ export function computeAnxietyMentalHealthScreening(
   // -- Warning insights --
 
   if (
-    screeningCoverageRate >= 50 &&
-    screeningCoverageRate < 80 &&
+    meets(screeningCoverageRate, 50) &&
+    below(screeningCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1236,8 +1243,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    anxietyAssessmentRate >= 40 &&
-    anxietyAssessmentRate < 70 &&
+    meets(anxietyAssessmentRate, 40) &&
+    below(anxietyAssessmentRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -1247,8 +1254,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1258,8 +1265,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     totalEngagementOpportunities > 0
   ) {
     insights.push({
@@ -1269,8 +1276,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    concernsActionedRate >= 50 &&
-    concernsActionedRate < 80 &&
+    meets(concernsActionedRate, 50) &&
+    below(concernsActionedRate, 80) &&
     checkinsWithConcerns > 0
   ) {
     insights.push({
@@ -1300,7 +1307,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionCompletionRate >= 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && meets(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     insights.push({
       text: `Session completion at ${sessionCompletionRate}% -- planned sessions are not being consistently delivered. Gaps in planned support may reduce the cumulative benefit of mental health interventions for children.`,
       severity: "warning",
@@ -1309,7 +1316,7 @@ export function computeAnxietyMentalHealthScreening(
 
   if (moderateAssessments > 0 && totalAssessments > 0) {
     const moderatePct = pct(moderateAssessments, totalAssessments);
-    if (moderatePct >= 30) {
+    if (meets(moderatePct, 30)) {
       insights.push({
         text: `${moderateAssessments} child${moderateAssessments !== 1 ? "ren" : ""} assessed with moderate anxiety (${moderatePct}% of assessments). Moderate anxiety can escalate to severe without appropriate intervention. Ensure these children have active support plans and regular monitoring.`,
         severity: "warning",
@@ -1372,8 +1379,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    screeningCoverageRate >= 100 &&
-    screeningCompletionRate >= 95 &&
+    meets(screeningCoverageRate, 100) &&
+    meets(screeningCompletionRate, 95) &&
     total_children > 0 &&
     totalScreenings > 0
   ) {
@@ -1384,8 +1391,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    anxietyAssessmentRate >= 90 &&
-    assessmentImprovementRate >= 80 &&
+    meets(anxietyAssessmentRate, 90) &&
+    meets(assessmentImprovementRate, 80) &&
     total_children > 0 &&
     totalAssessments > 0
   ) {
@@ -1396,8 +1403,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    wellbeingCheckinRate >= 95 &&
-    concernsActionedRate >= 95 &&
+    meets(wellbeingCheckinRate, 95) &&
+    meets(concernsActionedRate, 95) &&
     total_children > 0 &&
     checkinsWithConcerns > 0
   ) {
@@ -1408,8 +1415,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    interventionEffectivenessRate >= 90 &&
-    childReportedImprovementRate >= 80 &&
+    meets(interventionEffectivenessRate, 90) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1419,7 +1426,7 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    followUpCompletionRate >= 95 &&
+    meets(followUpCompletionRate, 95) &&
     screeningsRequiringFollowUp > 0
   ) {
     insights.push({
@@ -1429,7 +1436,7 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    childEngagementRate >= 90 &&
+    meets(childEngagementRate, 90) &&
     totalEngagementOpportunities > 0
   ) {
     insights.push({
@@ -1439,8 +1446,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    sessionCompletionRate >= 90 &&
-    professionalInvolvementRate >= 80 &&
+    meets(sessionCompletionRate, 90) &&
+    meets(professionalInvolvementRate, 80) &&
     sessionsPlannedTotal > 0 &&
     totalInterventions > 0
   ) {
@@ -1451,8 +1458,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    staffReportedImprovementRate >= 80 &&
-    childReportedImprovementRate >= 80 &&
+    meets(staffReportedImprovementRate, 80) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1462,8 +1469,8 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    attendanceSupportRate >= 90 &&
-    camhsChildEngagementRate >= 90 &&
+    meets(attendanceSupportRate, 90) &&
+    meets(camhsChildEngagementRate, 90) &&
     totalReferrals > 0
   ) {
     insights.push({
@@ -1473,7 +1480,7 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (
-    referralOutcomeRate >= 80 &&
+    meets(referralOutcomeRate, 80) &&
     totalReferrals > 0
   ) {
     insights.push({

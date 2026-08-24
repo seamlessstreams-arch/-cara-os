@@ -17,7 +17,7 @@
 //             emergencyResponseRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -150,16 +150,22 @@ export interface AllergyManagementFoodSafetyResult {
   headline: string;
   total_plans: number;
   children_with_allergies: number;
-  allergy_plan_rate: number;
-  allergen_awareness_rate: number;
-  epipen_check_rate: number;
-  food_labelling_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergy_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergen_awareness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epipen_check_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  food_labelling_rate: number | null;
   // fab-0: null when no drills/plans have been recorded (see check-fabricated-scores.js).
   emergency_response_rate: number | null;
-  child_awareness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_awareness_rate: number | null;
   // fab-0: null when no allergy plans exist to average quality across.
   plan_quality_avg: number | null;
-  training_currency_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  training_currency_rate: number | null;
   allergy_plan_records: AllergyPlanInput[];
   allergen_awareness_records: AllergenAwarenessInput[];
   epipen_check_records: EpipenCheckInput[];
@@ -173,8 +179,9 @@ export interface AllergyManagementFoodSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -531,7 +538,7 @@ export function computeAllergyManagementFoodSafety(
 
   // Emergency response composite rate — null when no drills recorded.
   const emergencyResponseRate: number | null = totalDrills > 0
-    ? Math.round((correctProcedureRate + epipenAdminRate + emergencyCallRate) / 3)
+    ? meanOf([correctProcedureRate, epipenAdminRate, emergencyCallRate])
     : null;
 
   // Response time analysis — null when no response times recorded.
@@ -549,20 +556,20 @@ export function computeAllergyManagementFoodSafety(
   let score = 52;
 
   // --- Bonus 1: allergyPlanRate (>=100: +5, >=80: +3) ---
-  if (allergyPlanRate >= 100) score += 5;
-  else if (allergyPlanRate >= 80) score += 3;
+  if (meets(allergyPlanRate, 100)) score += 5;
+  else if (meets(allergyPlanRate, 80)) score += 3;
 
   // --- Bonus 2: allergenAwarenessRate (>=100: +5, >=80: +3) ---
-  if (allergenAwarenessRate >= 100) score += 5;
-  else if (allergenAwarenessRate >= 80) score += 3;
+  if (meets(allergenAwarenessRate, 100)) score += 5;
+  else if (meets(allergenAwarenessRate, 80)) score += 3;
 
   // --- Bonus 3: epipenCheckRate (>=100: +5, >=80: +3) ---
-  if (epipenCheckRate >= 100) score += 5;
-  else if (epipenCheckRate >= 80) score += 3;
+  if (meets(epipenCheckRate, 100)) score += 5;
+  else if (meets(epipenCheckRate, 80)) score += 3;
 
   // --- Bonus 4: foodLabellingRate (>=95: +4, >=80: +2) ---
-  if (foodLabellingRate >= 95) score += 4;
-  else if (foodLabellingRate >= 80) score += 2;
+  if (meets(foodLabellingRate, 95)) score += 4;
+  else if (meets(foodLabellingRate, 80)) score += 2;
 
   // --- Bonus 5: emergencyResponseRate (>=90: +5, >=70: +3) ---
   if (meets(emergencyResponseRate, 90)) score += 5;
@@ -573,19 +580,19 @@ export function computeAllergyManagementFoodSafety(
   else if (meets(planQualityAvg, 70)) score += 1;
 
   // --- Bonus 7: childAwarenessRate (>=90: +2, >=70: +1) ---
-  if (childAwarenessRate >= 90) score += 2;
-  else if (childAwarenessRate >= 70) score += 1;
+  if (meets(childAwarenessRate, 90)) score += 2;
+  else if (meets(childAwarenessRate, 70)) score += 1;
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // allergyPlanRate < 50 → -6
-  if (allergyPlanRate < 50 && children_with_allergies > 0) score -= 6;
+  if (below(allergyPlanRate, 50) && children_with_allergies > 0) score -= 6;
 
   // allergenAwarenessRate < 50 → -5
-  if (allergenAwarenessRate < 50 && total_staff > 0) score -= 5;
+  if (below(allergenAwarenessRate, 50) && total_staff > 0) score -= 5;
 
   // epipenCheckRate < 50 → -5
-  if (epipenCheckRate < 50 && totalEpipenChecks > 0) score -= 5;
+  if (below(epipenCheckRate, 50) && totalEpipenChecks > 0) score -= 5;
 
   // emergencyResponseRate < 40 → -5
   if (below(emergencyResponseRate, 40) && totalDrills > 0) score -= 5;
@@ -598,41 +605,41 @@ export function computeAllergyManagementFoodSafety(
 
   const strengths: string[] = [];
 
-  if (allergyPlanRate >= 100 && children_with_allergies > 0) {
+  if (meets(allergyPlanRate, 100) && children_with_allergies > 0) {
     strengths.push(
       "Every child with a known allergy has a documented allergy plan — the home demonstrates comprehensive identification and management of children's allergy needs.",
     );
-  } else if (allergyPlanRate >= 80 && children_with_allergies > 0) {
+  } else if (meets(allergyPlanRate, 80) && children_with_allergies > 0) {
     strengths.push(
       `${allergyPlanRate}% of children with allergies have documented plans — strong allergy plan coverage ensuring most children's needs are formally managed.`,
     );
   }
 
-  if (allergenAwarenessRate >= 100 && total_staff > 0) {
+  if (meets(allergenAwarenessRate, 100) && total_staff > 0) {
     strengths.push(
       "Every member of staff has completed allergen awareness training — the entire workforce is equipped to recognise and respond to allergy risks.",
     );
-  } else if (allergenAwarenessRate >= 80 && total_staff > 0) {
+  } else if (meets(allergenAwarenessRate, 80) && total_staff > 0) {
     strengths.push(
       `${allergenAwarenessRate}% of staff have allergen awareness training — strong training coverage across the team.`,
     );
   }
 
-  if (epipenCheckRate >= 100 && totalEpipenChecks > 0) {
+  if (meets(epipenCheckRate, 100) && totalEpipenChecks > 0) {
     strengths.push(
       "All epipens are in-date, accessible, and their locations are known to staff — the home ensures emergency medication is always ready for use.",
     );
-  } else if (epipenCheckRate >= 80 && totalEpipenChecks > 0) {
+  } else if (meets(epipenCheckRate, 80) && totalEpipenChecks > 0) {
     strengths.push(
       `${epipenCheckRate}% of epipens are fully compliant (in-date, accessible, staff-aware) — strong emergency medication management.`,
     );
   }
 
-  if (foodLabellingRate >= 95 && totalItemsChecked > 0) {
+  if (meets(foodLabellingRate, 95) && totalItemsChecked > 0) {
     strengths.push(
       `${foodLabellingRate}% food labelling compliance — near-perfect labelling ensures children with allergies can identify safe foods and staff can verify allergen content.`,
     );
-  } else if (foodLabellingRate >= 80 && totalItemsChecked > 0) {
+  } else if (meets(foodLabellingRate, 80) && totalItemsChecked > 0) {
     strengths.push(
       `${foodLabellingRate}% food labelling compliance — good standard of food labelling supporting safe allergen management in the kitchen and dining areas.`,
     );
@@ -648,11 +655,11 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (childAwarenessRate >= 90 && totalPlans > 0) {
+  if (meets(childAwarenessRate, 90) && totalPlans > 0) {
     strengths.push(
       `${childAwarenessRate}% of allergy plans have been shared with the child — children are actively informed about their own allergies, empowering them to participate in their own safety.`,
     );
-  } else if (childAwarenessRate >= 70 && totalPlans > 0) {
+  } else if (meets(childAwarenessRate, 70) && totalPlans > 0) {
     strengths.push(
       `${childAwarenessRate}% of allergy plans shared with the child — good practice in involving children in understanding their allergy management.`,
     );
@@ -668,87 +675,87 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (trainingCurrencyRate >= 100 && totalTrainingRecords > 0) {
+  if (meets(trainingCurrencyRate, 100) && totalTrainingRecords > 0) {
     strengths.push(
       "All allergen awareness training records are current — no expired training across the staff team ensures continuous competence in allergy management.",
     );
-  } else if (trainingCurrencyRate >= 80 && totalTrainingRecords > 0) {
+  } else if (meets(trainingCurrencyRate, 80) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingCurrencyRate}% of allergen awareness training is current — the majority of staff have up-to-date training.`,
     );
   }
 
-  if (planReviewComplianceRate >= 100 && totalPlans > 0) {
+  if (meets(planReviewComplianceRate, 100) && totalPlans > 0) {
     strengths.push(
       "All allergy plan reviews are up to date — the home ensures plans remain current and reflective of children's evolving needs.",
     );
-  } else if (planReviewComplianceRate >= 80 && totalPlans > 0) {
+  } else if (meets(planReviewComplianceRate, 80) && totalPlans > 0) {
     strengths.push(
       `${planReviewComplianceRate}% of allergy plan reviews are on schedule — strong compliance with review timescales.`,
     );
   }
 
-  if (crossContamRate >= 100 && totalPlans > 0) {
+  if (meets(crossContamRate, 100) && totalPlans > 0) {
     strengths.push(
       "Cross-contamination measures are documented in every allergy plan — the home demonstrates thorough attention to preventing accidental allergen exposure.",
     );
   }
 
-  if (kitchenAccessRate >= 100 && totalPlans > 0) {
+  if (meets(kitchenAccessRate, 100) && totalPlans > 0) {
     strengths.push(
       "All allergy plans are accessible in the kitchen — staff preparing food have immediate access to children's allergy information.",
     );
   }
 
-  if (covers14Rate >= 100 && totalTrainingRecords > 0) {
+  if (meets(covers14Rate, 100) && totalTrainingRecords > 0) {
     strengths.push(
       "All training records cover the 14 regulated allergens — staff have comprehensive knowledge of all major allergen groups.",
     );
   }
 
-  if (practicalRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(practicalRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${practicalRate}% of training includes a practical component — staff can demonstrate allergy management skills, not just theoretical knowledge.`,
     );
   }
 
-  if (spareAvailableRate >= 100 && totalEpipenChecks > 0) {
+  if (meets(spareAvailableRate, 100) && totalEpipenChecks > 0) {
     strengths.push(
       "Spare epipens are available for every child — the home has contingency medication in case of device failure or multiple dosing requirement.",
     );
   }
 
-  if (debriefRate >= 100 && totalDrills > 0) {
+  if (meets(debriefRate, 100) && totalDrills > 0) {
     strengths.push(
       "Every emergency response drill includes a debrief — the home uses drills as genuine learning opportunities to continuously improve response capability.",
     );
   }
 
-  if (correctiveActionRate >= 100 && totalCorrectiveRequired > 0) {
+  if (meets(correctiveActionRate, 100) && totalCorrectiveRequired > 0) {
     strengths.push(
       "All corrective actions from food labelling audits have been completed — the home responds effectively to identified food safety issues.",
     );
   }
 
-  if (separateStorageRate >= 100 && totalFoodAudits > 0) {
+  if (meets(separateStorageRate, 100) && totalFoodAudits > 0) {
     strengths.push(
       "Separate storage for allergens is confirmed in all food audits — the home maintains clear physical separation to prevent cross-contamination.",
     );
   }
 
-  if (menuAllergenRate >= 100 && totalFoodAudits > 0) {
+  if (meets(menuAllergenRate, 100) && totalFoodAudits > 0) {
     strengths.push(
       "Menu allergen information is available at every audit point — children and staff can readily identify allergen content in all planned meals.",
     );
   }
 
-  if (riskAssessmentRate >= 100 && totalPlans > 0) {
+  if (meets(riskAssessmentRate, 100) && totalPlans > 0) {
     strengths.push(
       "Every allergy plan includes a completed risk assessment — the home systematically evaluates and mitigates allergy-related risks for each child.",
     );
   }
 
-  if (drillAttendanceRate >= 90 && totalParticipantsExpected > 0) {
+  if (meets(drillAttendanceRate, 90) && totalParticipantsExpected > 0) {
     strengths.push(
       `${drillAttendanceRate}% drill attendance — strong staff participation ensures the team collectively develops confidence in emergency allergy response.`,
     );
@@ -758,41 +765,41 @@ export function computeAllergyManagementFoodSafety(
 
   const concerns: string[] = [];
 
-  if (allergyPlanRate < 50 && children_with_allergies > 0) {
+  if (below(allergyPlanRate, 50) && children_with_allergies > 0) {
     concerns.push(
       `Only ${allergyPlanRate}% of children with allergies have documented plans — the majority of children with known allergies do not have formal management plans, creating a serious safeguarding risk.`,
     );
-  } else if (allergyPlanRate < 80 && allergyPlanRate >= 50 && children_with_allergies > 0) {
+  } else if (below(allergyPlanRate, 80) && meets(allergyPlanRate, 50) && children_with_allergies > 0) {
     concerns.push(
       `Allergy plan coverage at ${allergyPlanRate}% — some children with known allergies do not have documented management plans, potentially leaving them unprotected.`,
     );
   }
 
-  if (allergenAwarenessRate < 50 && total_staff > 0) {
+  if (below(allergenAwarenessRate, 50) && total_staff > 0) {
     concerns.push(
       `Only ${allergenAwarenessRate}% of staff have allergen awareness training — the majority of the workforce lacks documented training in recognising and managing allergic reactions.`,
     );
-  } else if (allergenAwarenessRate < 80 && allergenAwarenessRate >= 50 && total_staff > 0) {
+  } else if (below(allergenAwarenessRate, 80) && meets(allergenAwarenessRate, 50) && total_staff > 0) {
     concerns.push(
       `Allergen awareness training at ${allergenAwarenessRate}% — some staff members lack documented allergen training, creating gaps in the team's ability to manage allergy risks safely.`,
     );
   }
 
-  if (epipenCheckRate < 50 && totalEpipenChecks > 0) {
+  if (below(epipenCheckRate, 50) && totalEpipenChecks > 0) {
     concerns.push(
       `Only ${epipenCheckRate}% of epipens are fully compliant — the majority of emergency auto-injectors are not confirmed as in-date, accessible, and staff-aware, which could be fatal in an emergency.`,
     );
-  } else if (epipenCheckRate < 80 && epipenCheckRate >= 50 && totalEpipenChecks > 0) {
+  } else if (below(epipenCheckRate, 80) && meets(epipenCheckRate, 50) && totalEpipenChecks > 0) {
     concerns.push(
       `Epipen compliance at ${epipenCheckRate}% — some emergency auto-injectors have gaps in date, accessibility, or staff awareness checks.`,
     );
   }
 
-  if (foodLabellingRate < 70 && totalItemsChecked > 0) {
+  if (below(foodLabellingRate, 70) && totalItemsChecked > 0) {
     concerns.push(
       `Food labelling compliance at only ${foodLabellingRate}% — significant numbers of food items are not correctly labelled, creating a risk of accidental allergen exposure during meal preparation and serving.`,
     );
-  } else if (foodLabellingRate < 80 && foodLabellingRate >= 70 && totalItemsChecked > 0) {
+  } else if (below(foodLabellingRate, 80) && meets(foodLabellingRate, 70) && totalItemsChecked > 0) {
     concerns.push(
       `Food labelling compliance at ${foodLabellingRate}% — some food items lack correct labelling, which could contribute to allergen management errors.`,
     );
@@ -808,11 +815,11 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (childAwarenessRate < 50 && totalPlans > 0) {
+  if (below(childAwarenessRate, 50) && totalPlans > 0) {
     concerns.push(
       `Only ${childAwarenessRate}% of allergy plans have been shared with the child — most children with allergies are not being actively informed about their own allergy management, limiting their ability to self-protect.`,
     );
-  } else if (childAwarenessRate < 70 && childAwarenessRate >= 50 && totalPlans > 0) {
+  } else if (below(childAwarenessRate, 70) && meets(childAwarenessRate, 50) && totalPlans > 0) {
     concerns.push(
       `Child allergy awareness at ${childAwarenessRate}% — a significant proportion of children have not been formally involved in understanding their own allergy plans.`,
     );
@@ -854,31 +861,31 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (crossContamControlRate < 70 && totalFoodAudits > 0) {
+  if (below(crossContamControlRate, 70) && totalFoodAudits > 0) {
     concerns.push(
       `Cross-contamination controls confirmed in only ${crossContamControlRate}% of food audits — inadequate cross-contamination prevention creates a direct risk of accidental allergen exposure.`,
     );
   }
 
-  if (planStaffShareRate < 70 && totalPlans > 0) {
+  if (below(planStaffShareRate, 70) && totalPlans > 0) {
     concerns.push(
       `Only ${planStaffShareRate}% of allergy plans shared with staff — staff who are unaware of children's allergies cannot safeguard them during meals, activities, or outings.`,
     );
   }
 
-  if (kitchenAccessRate < 70 && totalPlans > 0) {
+  if (below(kitchenAccessRate, 70) && totalPlans > 0) {
     concerns.push(
       `Only ${kitchenAccessRate}% of allergy plans are accessible in the kitchen — food preparation staff may not have the information they need to prevent allergen contamination.`,
     );
   }
 
-  if (correctiveActionRate < 70 && totalCorrectiveRequired > 0) {
+  if (below(correctiveActionRate, 70) && totalCorrectiveRequired > 0) {
     concerns.push(
       `Only ${correctiveActionRate}% of food labelling corrective actions completed — outstanding corrective actions indicate unresolved food safety issues.`,
     );
   }
 
-  if (drillAttendanceRate < 60 && totalParticipantsExpected > 0) {
+  if (below(drillAttendanceRate, 60) && totalParticipantsExpected > 0) {
     concerns.push(
       `Emergency drill attendance at only ${drillAttendanceRate}% — low participation means a significant portion of the team has not practised allergy emergency response.`,
     );
@@ -889,7 +896,7 @@ export function computeAllergyManagementFoodSafety(
   const recommendations: AllergyManagementRecommendation[] = [];
   let rank = 0;
 
-  if (allergyPlanRate < 50 && children_with_allergies > 0) {
+  if (below(allergyPlanRate, 50) && children_with_allergies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +926,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (allergenAwarenessRate < 50 && total_staff > 0) {
+  if (below(allergenAwarenessRate, 50) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +936,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (epipenCheckRate < 50 && totalEpipenChecks > 0) {
+  if (below(epipenCheckRate, 50) && totalEpipenChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +956,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (crossContamControlRate < 70 && totalFoodAudits > 0) {
+  if (below(crossContamControlRate, 70) && totalFoodAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -959,7 +966,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (planStaffShareRate < 70 && totalPlans > 0) {
+  if (below(planStaffShareRate, 70) && totalPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -969,7 +976,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (foodLabellingRate < 70 && totalItemsChecked > 0) {
+  if (below(foodLabellingRate, 70) && totalItemsChecked > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1000,8 +1007,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    allergyPlanRate >= 50 &&
-    allergyPlanRate < 80 &&
+    meets(allergyPlanRate, 50) &&
+    below(allergyPlanRate, 80) &&
     children_with_allergies > 0
   ) {
     recommendations.push({
@@ -1014,8 +1021,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    allergenAwarenessRate >= 50 &&
-    allergenAwarenessRate < 80 &&
+    meets(allergenAwarenessRate, 50) &&
+    below(allergenAwarenessRate, 80) &&
     total_staff > 0
   ) {
     recommendations.push({
@@ -1028,8 +1035,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    epipenCheckRate >= 50 &&
-    epipenCheckRate < 80 &&
+    meets(epipenCheckRate, 50) &&
+    below(epipenCheckRate, 80) &&
     totalEpipenChecks > 0
   ) {
     recommendations.push({
@@ -1056,7 +1063,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (childAwarenessRate < 70 && totalPlans > 0) {
+  if (below(childAwarenessRate, 70) && totalPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1067,8 +1074,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    foodLabellingRate >= 70 &&
-    foodLabellingRate < 95 &&
+    meets(foodLabellingRate, 70) &&
+    below(foodLabellingRate, 95) &&
     totalItemsChecked > 0
   ) {
     recommendations.push({
@@ -1080,7 +1087,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (correctiveActionRate < 80 && totalCorrectiveRequired > 0) {
+  if (below(correctiveActionRate, 80) && totalCorrectiveRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1090,7 +1097,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (covers14Rate < 80 && totalTrainingRecords > 0) {
+  if (below(covers14Rate, 80) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1100,7 +1107,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (practicalRate < 70 && totalTrainingRecords > 0) {
+  if (below(practicalRate, 70) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1110,7 +1117,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (travelKitRate < 80 && totalEpipenChecks > 0) {
+  if (below(travelKitRate, 80) && totalEpipenChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1120,7 +1127,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (lessonsDocRate < 70 && totalDrills > 0) {
+  if (below(lessonsDocRate, 70) && totalDrills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1130,7 +1137,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (photoOnPlanRate < 70 && totalPlans > 0) {
+  if (below(photoOnPlanRate, 70) && totalPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1146,7 +1153,7 @@ export function computeAllergyManagementFoodSafety(
 
   // -- Critical insights --
 
-  if (allergyPlanRate < 50 && children_with_allergies > 0) {
+  if (below(allergyPlanRate, 50) && children_with_allergies > 0) {
     insights.push({
       text: `Only ${allergyPlanRate}% of children with known allergies have documented plans. Without formal allergy management plans, the home cannot demonstrate that it has identified, assessed, and mitigated each child's allergy risks. Ofsted considers allergy management a fundamental safeguarding obligation under Reg 14, and the absence of plans for the majority of allergic children represents a serious regulatory concern.`,
       severity: "critical",
@@ -1167,14 +1174,14 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (allergenAwarenessRate < 50 && total_staff > 0) {
+  if (below(allergenAwarenessRate, 50) && total_staff > 0) {
     insights.push({
       text: `Only ${allergenAwarenessRate}% of staff have allergen awareness training. Staff who have not been trained in recognising allergic reactions, understanding cross-contamination risks, and administering emergency medication cannot safely care for children with allergies. This training gap represents a serious competence concern under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (epipenCheckRate < 50 && totalEpipenChecks > 0) {
+  if (below(epipenCheckRate, 50) && totalEpipenChecks > 0) {
     insights.push({
       text: `Only ${epipenCheckRate}% of epipens are fully compliant. For an epipen to be effective in an emergency, it must be in-date, physically accessible within seconds, and its location must be known to all staff on shift. Non-compliant auto-injectors create a direct, life-threatening risk.`,
       severity: "critical",
@@ -1188,7 +1195,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (crossContamControlRate < 50 && totalFoodAudits > 0) {
+  if (below(crossContamControlRate, 50) && totalFoodAudits > 0) {
     insights.push({
       text: `Cross-contamination controls confirmed in only ${crossContamControlRate}% of food audits. Cross-contamination is one of the most common causes of accidental allergen exposure — without consistent controls in every food handling area, children with allergies are at risk of exposure through shared surfaces, utensils, or storage.`,
       severity: "critical",
@@ -1198,8 +1205,8 @@ export function computeAllergyManagementFoodSafety(
   // -- Warning insights --
 
   if (
-    allergyPlanRate >= 50 &&
-    allergyPlanRate < 80 &&
+    meets(allergyPlanRate, 50) &&
+    below(allergyPlanRate, 80) &&
     children_with_allergies > 0
   ) {
     insights.push({
@@ -1209,8 +1216,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    allergenAwarenessRate >= 50 &&
-    allergenAwarenessRate < 80 &&
+    meets(allergenAwarenessRate, 50) &&
+    below(allergenAwarenessRate, 80) &&
     total_staff > 0
   ) {
     insights.push({
@@ -1220,8 +1227,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    epipenCheckRate >= 50 &&
-    epipenCheckRate < 80 &&
+    meets(epipenCheckRate, 50) &&
+    below(epipenCheckRate, 80) &&
     totalEpipenChecks > 0
   ) {
     insights.push({
@@ -1243,8 +1250,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    foodLabellingRate >= 70 &&
-    foodLabellingRate < 95 &&
+    meets(foodLabellingRate, 70) &&
+    below(foodLabellingRate, 95) &&
     totalItemsChecked > 0
   ) {
     insights.push({
@@ -1254,8 +1261,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    childAwarenessRate >= 50 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 50) &&
+    below(childAwarenessRate, 70) &&
     totalPlans > 0
   ) {
     insights.push({
@@ -1298,8 +1305,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    correctiveActionRate >= 50 &&
-    correctiveActionRate < 80 &&
+    meets(correctiveActionRate, 50) &&
+    below(correctiveActionRate, 80) &&
     totalCorrectiveRequired > 0
   ) {
     insights.push({
@@ -1308,7 +1315,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (covers14Rate < 80 && covers14Rate >= 50 && totalTrainingRecords > 0) {
+  if (below(covers14Rate, 80) && meets(covers14Rate, 50) && totalTrainingRecords > 0) {
     insights.push({
       text: `Only ${covers14Rate}% of training records confirm coverage of all 14 regulated allergens. Staff who are not trained on all allergen groups may not recognise less common allergens such as lupin, molluscs, or celery in food items.`,
       severity: "warning",
@@ -1318,7 +1325,7 @@ export function computeAllergyManagementFoodSafety(
   // Severity distribution analysis
   if (highRiskPlans > 0 && totalPlans > 0) {
     const highRiskPct = pct(highRiskPlans, totalPlans);
-    if (highRiskPct >= 50) {
+    if (meets(highRiskPct, 50)) {
       insights.push({
         text: `${highRiskPct}% of allergy plans relate to severe or life-threatening allergies (${lifeThreatPlans} life-threatening, ${severePlans} severe). The high proportion of serious allergies demands exceptional vigilance in plan quality, epipen readiness, and staff training. Any failure in management could have catastrophic consequences.`,
         severity: "warning",
@@ -1374,7 +1381,7 @@ export function computeAllergyManagementFoodSafety(
   if (
     totalPlans > 0 &&
     planQualityAvg !== null &&
-    allergyPlanRate >= 100 &&
+    meets(allergyPlanRate, 100) &&
     planQualityAvg >= 90 &&
     children_with_allergies > 0
   ) {
@@ -1385,8 +1392,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    allergenAwarenessRate >= 100 &&
-    trainingCurrencyRate >= 100 &&
+    meets(allergenAwarenessRate, 100) &&
+    meets(trainingCurrencyRate, 100) &&
     total_staff > 0 &&
     totalTrainingRecords > 0
   ) {
@@ -1397,8 +1404,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    epipenCheckRate >= 100 &&
-    spareAvailableRate >= 100 &&
+    meets(epipenCheckRate, 100) &&
+    meets(spareAvailableRate, 100) &&
     totalEpipenChecks > 0
   ) {
     insights.push({
@@ -1408,9 +1415,9 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    foodLabellingRate >= 95 &&
-    crossContamControlRate >= 100 &&
-    separateStorageRate >= 100 &&
+    meets(foodLabellingRate, 95) &&
+    meets(crossContamControlRate, 100) &&
+    meets(separateStorageRate, 100) &&
     totalItemsChecked > 0 &&
     totalFoodAudits > 0
   ) {
@@ -1424,7 +1431,7 @@ export function computeAllergyManagementFoodSafety(
     totalDrills > 0 &&
     emergencyResponseRate !== null &&
     emergencyResponseRate >= 90 &&
-    debriefRate >= 100
+    meets(debriefRate, 100)
   ) {
     insights.push({
       text: `${emergencyResponseRate}% emergency response accuracy with 100% debrief completion — staff demonstrate excellent allergy emergency skills and the home uses drills as genuine learning opportunities, continuously improving its readiness for real incidents.`,
@@ -1433,7 +1440,7 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    childAwarenessRate >= 90 &&
+    meets(childAwarenessRate, 90) &&
     totalPlans > 0
   ) {
     insights.push({
@@ -1443,8 +1450,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    riskAssessmentRate >= 100 &&
-    crossContamRate >= 100 &&
+    meets(riskAssessmentRate, 100) &&
+    meets(crossContamRate, 100) &&
     totalPlans > 0
   ) {
     insights.push({
@@ -1454,8 +1461,8 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    practicalRate >= 90 &&
-    assessmentPassRate >= 90 &&
+    meets(practicalRate, 90) &&
+    meets(assessmentPassRate, 90) &&
     totalTrainingRecords > 0
   ) {
     insights.push({
@@ -1465,7 +1472,7 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    improvementActionRate >= 100 &&
+    meets(improvementActionRate, 100) &&
     totalImprovementsIdentified > 0
   ) {
     insights.push({
@@ -1475,7 +1482,7 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
-    correctiveActionRate >= 100 &&
+    meets(correctiveActionRate, 100) &&
     totalCorrectiveRequired > 0
   ) {
     insights.push({

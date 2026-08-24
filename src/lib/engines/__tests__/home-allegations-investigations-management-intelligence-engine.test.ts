@@ -1689,7 +1689,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
 
     it("returns 0 when no allegations (pct(0,0)=0)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ allegation_records: [] }));
-      expect(r.allegation_recording_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.allegation_recording_rate).toBeNull();
+      expect(r.allegation_recording_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -1709,7 +1711,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
 
     it("returns 0 when no lado records (pct(0,0)=0)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ lado_referral_records: [] }));
-      expect(r.lado_referral_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.lado_referral_rate).toBeNull();
+      expect(r.lado_referral_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -1734,7 +1738,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
 
     it("returns 0 when no investigation records (pct(0,0)=0)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ investigation_records: [] }));
-      expect(r.investigation_completion_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.investigation_completion_rate).toBeNull();
+      expect(r.investigation_completion_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -1754,7 +1760,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
 
     it("returns 0 when no outcome records (pct(0,0)=0)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ outcome_records: [] }));
-      expect(r.outcome_documentation_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.outcome_documentation_rate).toBeNull();
+      expect(r.outcome_documentation_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -1774,7 +1782,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
 
     it("returns 0 when no safeguarding records (pct(0,0)=0)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ safeguarding_response_records: [] }));
-      expect(r.safeguarding_response_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.safeguarding_response_rate).toBeNull();
+      expect(r.safeguarding_response_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
   });
 
@@ -2916,7 +2926,9 @@ describe("computeAllegationsInvestigationsManagement", () => {
       });
       expect(r.allegations_rating).toBeDefined();
       expect(r.total_allegations).toBe(10);
-      expect(r.lado_referral_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.lado_referral_rate).toBeNull();
+      expect(r.lado_referral_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("child_id null does not count as repeat", () => {

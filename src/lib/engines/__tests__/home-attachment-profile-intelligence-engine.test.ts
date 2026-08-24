@@ -428,7 +428,9 @@ describe("Modifier 3: Behaviour analysis depth", () => {
     const result = computeAttachmentProfile(
       baseInput({ total_children: 5, profiles }),
     );
-    expect(result.behaviour_analysis_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.behaviour_analysis_rate).toBeNull();
+    expect(result.behaviour_analysis_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("requires both need and response counts > 0 for full analysis", () => {
@@ -863,7 +865,9 @@ describe("Relationship quality metrics", () => {
     const result = computeAttachmentProfile(
       baseInput({ total_children: 5, profiles }),
     );
-    expect(result.strong_relationship_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.strong_relationship_rate).toBeNull();
+    expect(result.strong_relationship_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("aggregates relationships across all profiles", () => {
@@ -2573,7 +2577,9 @@ describe("Edge cases", () => {
     const result = computeAttachmentProfile(
       baseInput({ total_children: 5, profiles }),
     );
-    expect(result.strong_relationship_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.strong_relationship_rate).toBeNull();
+    expect(result.strong_relationship_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("handles very large behaviour counts", () => {
@@ -3198,7 +3204,9 @@ describe("pct helper behaviour (via rate outputs)", () => {
     const result = computeAttachmentProfile(
       baseInput({ total_children: 5, profiles }),
     );
-    expect(result.strong_relationship_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(result.strong_relationship_rate).toBeNull();
+    expect(result.strong_relationship_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("100% exactly when n equals d", () => {
