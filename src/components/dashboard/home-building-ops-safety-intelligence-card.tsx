@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -78,7 +79,7 @@ export function HomeBuildingOpsSafetyIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">Overdue Drills</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.grab_bags.complete_rate >= 90 ? "text-[--cs-success]" : d.grab_bags.complete_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.grab_bags.total > 0 ? `${d.grab_bags.complete_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.grab_bags.complete_rate, 90) ? "text-[--cs-success]" : meets(d.grab_bags.complete_rate, 50) ? "text-blue-600" : "text-[--cs-risk]")}>{d.grab_bags.total > 0 ? `${d.grab_bags.complete_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Grab Bags</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
@@ -86,7 +87,7 @@ export function HomeBuildingOpsSafetyIntelligenceCard() {
               <p className="text-[10px] text-muted-foreground">High Fire Risk</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.secure_storage.verified_rate >= 90 ? "text-[--cs-success]" : d.secure_storage.verified_rate >= 60 ? "text-blue-600" : "text-[--cs-risk]")}>{d.secure_storage.total > 0 ? `${d.secure_storage.verified_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.secure_storage.verified_rate, 90) ? "text-[--cs-success]" : meets(d.secure_storage.verified_rate, 60) ? "text-blue-600" : "text-[--cs-risk]")}>{d.secure_storage.total > 0 ? `${d.secure_storage.verified_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Storage OK</p>
             </div>
           </div>

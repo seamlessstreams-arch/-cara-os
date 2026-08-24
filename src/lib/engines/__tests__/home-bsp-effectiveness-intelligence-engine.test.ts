@@ -514,7 +514,9 @@ describe("Home BSP Effectiveness Intelligence Engine", () => {
       ];
       const r = computeHomeBSPEffectiveness(baseInput({ plans, behaviour_entries: beh }));
       expect(r.coverage.children_with_concerning_no_bsp).toBe(0);
-      expect(r.coverage.coverage_rate).toBe(0); // pct(0, 0) = 0
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.coverage.coverage_rate).toBeNull();
+      expect(r.coverage.coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured // pct(0, 0) = 0
     });
   });
 

@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { above, below } from "@/lib/metrics/rate";
 
 import {
   computeCaraContentQuality,
@@ -501,7 +502,9 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
         makeArtifact({ id: "a2", status: "draft" }),
       ];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      expect(r.approval_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.approval_rate).toBeNull();
+      expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("rejection_rate is 0 when no artifacts are rejected", () => {
@@ -615,7 +618,9 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
     it("child_coverage_rate is 0 when total_children is 0", () => {
       const arts = [makeArtifact({ child_id: null })];
       const r = computeCaraContentQuality(baseInput({ total_children: 0, artifacts: arts }));
-      expect(r.child_coverage_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.child_coverage_rate).toBeNull();
+      expect(r.child_coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("child_coverage_rate can exceed 100 if more unique children than total_children (defensive)", () => {
@@ -1212,7 +1217,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
         makeArtifact({ id: "a3", safeguarding_level: "none", status: "submitted" }),
       ];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      if (r.safeguarding_flagged_rate > 50 && r.approval_rate < 60) {
+      if (above(r.safeguarding_flagged_rate, 50) && below(r.approval_rate, 60)) {
         expect(r.concerns.some(s => s.includes("safeguarding"))).toBe(true);
       }
     });
@@ -1235,7 +1240,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
         makeArtifact({ id: "a3", source_ids_count: 1 }),
       ];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      if (r.evidence_sourced_rate < 50) {
+      if (below(r.evidence_sourced_rate, 50)) {
         expect(r.concerns.some(s => s.includes("evidence-sourced"))).toBe(true);
       }
     });
@@ -1525,7 +1530,9 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
         artifacts: [makeArtifact({ status: "draft" })],
       }));
       expect(r.total_artifacts).toBe(1);
-      expect(r.approval_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.approval_rate).toBeNull();
+      expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("single rejected artifact", () => {
@@ -1815,19 +1822,25 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
     it("0 denominator returns 0 for approval_rate", () => {
       const arts = [makeArtifact({ status: "draft" })]; // 0 non-draft
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      expect(r.approval_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.approval_rate).toBeNull();
+      expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("0 denominator returns 0 for rejection_rate", () => {
       const arts = [makeArtifact({ status: "draft" })];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      expect(r.rejection_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.rejection_rate).toBeNull();
+      expect(r.rejection_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("0 denominator returns 0 for child_coverage_rate when total_children is 0", () => {
       const arts = [makeArtifact({ child_id: "c1" })];
       const r = computeCaraContentQuality(baseInput({ total_children: 0, artifacts: arts }));
-      expect(r.child_coverage_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.child_coverage_rate).toBeNull();
+      expect(r.child_coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("100% rate when numerator equals denominator", () => {
@@ -1883,8 +1896,12 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
         makeArtifact({ id: `a_${i}`, status: "draft" }),
       );
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
-      expect(r.approval_rate).toBe(0);
-      expect(r.rejection_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.approval_rate).toBeNull();
+      expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.rejection_rate).toBeNull();
+      expect(r.rejection_rate).not.toBe(0); // 0% is a claim; nothing was measured
       expect(r.total_artifacts).toBe(5);
     });
 
@@ -1953,7 +1970,9 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
     it("total_children 0 with artifacts containing child_ids still computes", () => {
       const arts = [makeArtifact({ child_id: "c1" })];
       const r = computeCaraContentQuality(baseInput({ total_children: 0, artifacts: arts }));
-      expect(r.child_coverage_rate).toBe(0); // pct(1, 0) = 0
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.child_coverage_rate).toBeNull();
+      expect(r.child_coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured // pct(1, 0) = 0
     });
   });
 
@@ -2021,8 +2040,12 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       );
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
       expect(r.total_artifacts).toBe(8);
-      expect(r.approval_rate).toBe(0);
-      expect(r.rejection_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.approval_rate).toBeNull();
+      expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.rejection_rate).toBeNull();
+      expect(r.rejection_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("home with diverse safeguarding levels", () => {

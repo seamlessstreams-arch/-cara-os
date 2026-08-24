@@ -7,6 +7,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface CaseFileAuditInput {
   id: string;
   child_id: string;
@@ -88,8 +90,9 @@ function toRating(score: number): CaseFileAuditRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -147,16 +150,16 @@ export function computeCaseFileAuditQuality(
   let score = 52;
 
   // Mod 1: Case file audit coverage (±5)
-  if (coverageRate >= 90) score += 5;
-  else if (coverageRate >= 70) score += 3;
-  else if (coverageRate >= 50) score += 0;
+  if (meets(coverageRate, 90)) score += 5;
+  else if (meets(coverageRate, 70)) score += 3;
+  else if (meets(coverageRate, 50)) score += 0;
   else score -= 5;
 
   // Mod 2: Audit quality (±6, +1 bonus)
   if (audits.length > 0) {
-    if (greenRate >= 80) score += 6;
-    else if (greenRate >= 60) score += 3;
-    else if (greenRate >= 40) score += 0;
+    if (meets(greenRate, 80)) score += 6;
+    else if (meets(greenRate, 60)) score += 3;
+    else if (meets(greenRate, 40)) score += 0;
     else score -= 6;
 
     if ((avgScore ?? 0) >= 85) score += 1;
@@ -164,9 +167,9 @@ export function computeCaseFileAuditQuality(
 
   // Mod 3: Child involvement in audits (±4)
   if (audits.length > 0) {
-    if (childContribRate >= 80) score += 4;
-    else if (childContribRate >= 60) score += 2;
-    else if (childContribRate >= 40) score += 0;
+    if (meets(childContribRate, 80)) score += 4;
+    else if (meets(childContribRate, 60)) score += 2;
+    else if (meets(childContribRate, 40)) score += 0;
     else score -= 4;
   }
 
@@ -180,9 +183,9 @@ export function computeCaseFileAuditQuality(
 
   // Mod 5: Policy currency (±5)
   if (policy_reviews.length > 0) {
-    if (policyCurrencyRate >= 95) score += 5;
-    else if (policyCurrencyRate >= 80) score += 3;
-    else if (policyCurrencyRate >= 60) score += 0;
+    if (meets(policyCurrencyRate, 95)) score += 5;
+    else if (meets(policyCurrencyRate, 80)) score += 3;
+    else if (meets(policyCurrencyRate, 60)) score += 0;
     else score -= 5;
   } else {
     score -= 1;
@@ -190,9 +193,9 @@ export function computeCaseFileAuditQuality(
 
   // Mod 6: Ofsted engagement (±5)
   if (ofsted_engagement.length > 0) {
-    if (ofstedCompletedRate >= 90) score += 5;
-    else if (ofstedCompletedRate >= 70) score += 3;
-    else if (ofstedCompletedRate >= 50) score += 0;
+    if (meets(ofstedCompletedRate, 90)) score += 5;
+    else if (meets(ofstedCompletedRate, 70)) score += 3;
+    else if (meets(ofstedCompletedRate, 50)) score += 0;
     else score -= 5;
   } else {
     score -= 1;
@@ -203,24 +206,24 @@ export function computeCaseFileAuditQuality(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (coverageRate >= 90) strengths.push(`${coverageRate}% of children's case files audited — comprehensive audit coverage.`);
-  if (greenRate >= 80 && audits.length > 0) strengths.push(`${greenRate}% of audits rated green — consistently high case file quality.`);
+  if (meets(coverageRate, 90)) strengths.push(`${coverageRate}% of children's case files audited — comprehensive audit coverage.`);
+  if (meets(greenRate, 80) && audits.length > 0) strengths.push(`${greenRate}% of audits rated green — consistently high case file quality.`);
   if ((avgScore ?? 0) >= 85 && audits.length > 0) strengths.push(`Average audit score ${(avgScore ?? 0)}/100 — case files are well-maintained.`);
-  if (childContribRate >= 80 && audits.length > 0) strengths.push(`${childContribRate}% of audits include child contribution — children's voices are central to the audit process.`);
+  if (meets(childContribRate, 80) && audits.length > 0) strengths.push(`${childContribRate}% of audits include child contribution — children's voices are central to the audit process.`);
   if ((avgHandoverScore ?? 0) >= 85 && handover_audits.length > 0) strengths.push(`Handover audit quality score ${(avgHandoverScore ?? 0)}/100 — strong continuity of care.`);
-  if (policyCurrencyRate >= 95 && policy_reviews.length > 0) strengths.push(`${policyCurrencyRate}% of policies current — robust policy governance.`);
-  if (ofstedCompletedRate >= 90 && ofsted_engagement.length > 0) strengths.push(`${ofstedCompletedRate}% of Ofsted engagement activities completed — excellent inspection preparedness.`);
+  if (meets(policyCurrencyRate, 95) && policy_reviews.length > 0) strengths.push(`${policyCurrencyRate}% of policies current — robust policy governance.`);
+  if (meets(ofstedCompletedRate, 90) && ofsted_engagement.length > 0) strengths.push(`${ofstedCompletedRate}% of Ofsted engagement activities completed — excellent inspection preparedness.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (coverageRate < 50 && audits.length > 0) concerns.push(`Only ${coverageRate}% of children's case files audited — significant gaps in audit coverage.`);
-  if (coverageRate < 50 && audits.length === 0) concerns.push("No case file audits conducted — Ofsted expects regular case file auditing under Reg 40.");
-  if (greenRate < 40 && audits.length > 0) concerns.push(`Only ${greenRate}% of audits rated green — case file quality needs urgent improvement.`);
-  if (childContribRate < 40 && audits.length > 0) concerns.push(`Only ${childContribRate}% of audits include child contribution — children must be involved in reviewing their own records.`);
+  if (below(coverageRate, 50) && audits.length > 0) concerns.push(`Only ${coverageRate}% of children's case files audited — significant gaps in audit coverage.`);
+  if (below(coverageRate, 50) && audits.length === 0) concerns.push("No case file audits conducted — Ofsted expects regular case file auditing under Reg 40.");
+  if (below(greenRate, 40) && audits.length > 0) concerns.push(`Only ${greenRate}% of audits rated green — case file quality needs urgent improvement.`);
+  if (below(childContribRate, 40) && audits.length > 0) concerns.push(`Only ${childContribRate}% of audits include child contribution — children must be involved in reviewing their own records.`);
   if ((avgHandoverScore ?? 0) < 50 && handover_audits.length > 0) concerns.push(`Handover audit quality score ${(avgHandoverScore ?? 0)}/100 — handover quality is inadequate.`);
-  if (policyCurrencyRate < 60 && policy_reviews.length > 0) concerns.push(`Only ${policyCurrencyRate}% of policies current — policy review schedule has lapsed.`);
+  if (below(policyCurrencyRate, 60) && policy_reviews.length > 0) concerns.push(`Only ${policyCurrencyRate}% of policies current — policy review schedule has lapsed.`);
   if (policy_reviews.length === 0) concerns.push("No policy reviews recorded — Ofsted expects policies to be regularly reviewed and current.");
-  if (ofstedCompletedRate < 50 && ofsted_engagement.length > 0) concerns.push(`Only ${ofstedCompletedRate}% of Ofsted engagement activities completed — inspection preparedness is weak.`);
+  if (below(ofstedCompletedRate, 50) && ofsted_engagement.length > 0) concerns.push(`Only ${ofstedCompletedRate}% of Ofsted engagement activities completed — inspection preparedness is weak.`);
   if (ofsted_engagement.length === 0) concerns.push("No Ofsted engagement activities recorded — the home should be actively preparing for inspection.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -230,19 +233,19 @@ export function computeCaseFileAuditQuality(
   if (audits.length === 0) {
     recs.push({ rank: rank++, recommendation: "Implement a regular case file audit programme covering all children in placement.", urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (coverageRate < 50 && audits.length > 0) {
+  if (below(coverageRate, 50) && audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Extend case file audit coverage to ensure all children's files are audited regularly.", urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (greenRate < 40 && audits.length > 0) {
+  if (below(greenRate, 40) && audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Address case file quality issues identified in audits — focus on completeness, accuracy, and child-centred recording.", urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (childContribRate < 40 && audits.length > 0) {
+  if (below(childContribRate, 40) && audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure children contribute to their case file audits — their views on records about them should be sought and recorded.", urgency: "soon", regulatory_ref: "Reg 45" });
   }
   if ((avgHandoverScore ?? 0) < 50 && handover_audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Improve handover audit quality — ensure critical information is transferred accurately between shifts.", urgency: "soon", regulatory_ref: "Reg 40" });
   }
-  if (policy_reviews.length === 0 || policyCurrencyRate < 60) {
+  if (policy_reviews.length === 0 || below(policyCurrencyRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Review and update all policies to ensure they are current and reflect practice.", urgency: "soon", regulatory_ref: "Reg 40" });
   }
   if (ofsted_engagement.length === 0) {
@@ -255,16 +258,16 @@ export function computeCaseFileAuditQuality(
   if (rating === "outstanding") {
     insights.push({ text: `Outstanding quality assurance with ${coverageRate}% audit coverage, ${greenRate}% green-rated audits, and ${ofstedCompletedRate}% Ofsted engagement completion. This demonstrates a home with a systematic, child-centred approach to quality monitoring that Ofsted will view very favourably.`, severity: "positive" });
   }
-  if (greenRate < 40 && audits.length > 0) {
+  if (below(greenRate, 40) && audits.length > 0) {
     insights.push({ text: `Only ${greenRate}% of case file audits rated green. Ofsted expects case files to be complete, accurate, and up to date (Reg 40). Low green rates indicate systemic recording or practice issues that need addressing before inspection.`, severity: "critical" });
   }
-  if (childContribRate < 40 && audits.length > 0) {
+  if (below(childContribRate, 40) && audits.length > 0) {
     insights.push({ text: `Only ${childContribRate}% of audits involve the child. Reg 45 requires that children's views are sought and acted upon. Including children in case file audits demonstrates respect for their rights and improves recording quality.`, severity: "warning" });
   }
   if (audits.length === 0) {
     insights.push({ text: "No case file audits conducted. Without regular auditing, the home cannot evidence that it monitors and improves the quality of care records. Ofsted will expect to see a structured audit programme.", severity: "critical" });
   }
-  if (policyCurrencyRate >= 95 && policy_reviews.length > 0 && ofstedCompletedRate >= 90 && ofsted_engagement.length > 0) {
+  if (meets(policyCurrencyRate, 95) && policy_reviews.length > 0 && meets(ofstedCompletedRate, 90) && ofsted_engagement.length > 0) {
     insights.push({ text: `Policy currency at ${policyCurrencyRate}% with ${ofstedCompletedRate}% Ofsted engagement completion demonstrates strong governance and inspection readiness. The home is well-positioned to evidence continuous improvement.`, severity: "positive" });
   }
   if (policy_reviews.length === 0 && ofsted_engagement.length === 0) {

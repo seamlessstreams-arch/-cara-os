@@ -10,6 +10,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface CaraArtifactInput {
   id: string;
   artifact_type: string; // "keywork_session" | "care_plan" | "risk_assessment" | "daily_summary" | "incident_report" | "review_report" | "direct_work" | "formulation"
@@ -51,17 +53,23 @@ export interface CaraContentQualityResult {
   content_score: number; // 0-100
   headline: string;
   total_artifacts: number;
-  approval_rate: number; // % of submitted artifacts that got approved
-  rejection_rate: number; // % of submitted artifacts that got rejected
+  /** null when the population is empty — nothing measured, not 0%. */
+  approval_rate: number | null; // % of submitted artifacts that got approved
+  /** null when the population is empty — nothing measured, not 0%. */
+  rejection_rate: number | null; // % of submitted artifacts that got rejected
   average_quality_score: number; // avg quality_score across all artifacts
   average_evidence_confidence: number; // avg evidence_confidence_score
   review_turnaround_hours: number; // avg hours from submitted to reviewed
-  safeguarding_flagged_rate: number; // % of artifacts with safeguarding_level != "none"
-  framework_usage_rate: number; // % of artifacts with a framework set (not null/none)
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguarding_flagged_rate: number | null; // % of artifacts with safeguarding_level != "none"
+  /** null when the population is empty — nothing measured, not 0%. */
+  framework_usage_rate: number | null; // % of artifacts with a framework set (not null/none)
   framework_diversity: number; // distinct frameworks used
   artifact_type_diversity: number; // distinct artifact types
-  evidence_sourced_rate: number; // % of artifacts with source_ids_count > 0
-  child_coverage_rate: number; // % of children with at least one artifact
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidence_sourced_rate: number | null; // % of artifacts with source_ids_count > 0
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage_rate: number | null; // % of children with at least one artifact
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref?: string }[];
@@ -74,8 +82,9 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function toRating(score: number): CaraContentRating {
@@ -231,24 +240,24 @@ export function computeCaraContentQuality(
   else if (avgQuality >= 65) score += 3;
 
   // Bonus: approval_rate
-  if (approvalRate >= 90) score += 5;
-  else if (approvalRate >= 75) score += 3;
+  if (meets(approvalRate, 90)) score += 5;
+  else if (meets(approvalRate, 75)) score += 3;
 
   // Bonus: average_evidence_confidence
   if (avgEvidence >= 75) score += 4;
   else if (avgEvidence >= 60) score += 2;
 
   // Bonus: framework_usage_rate
-  if (frameworkUsageRate >= 80) score += 3;
-  else if (frameworkUsageRate >= 50) score += 1;
+  if (meets(frameworkUsageRate, 80)) score += 3;
+  else if (meets(frameworkUsageRate, 50)) score += 1;
 
   // Bonus: evidence_sourced_rate
-  if (evidenceSourcedRate >= 90) score += 3;
-  else if (evidenceSourcedRate >= 70) score += 1;
+  if (meets(evidenceSourcedRate, 90)) score += 3;
+  else if (meets(evidenceSourcedRate, 70)) score += 1;
 
   // Bonus: child_coverage_rate
-  if (childCoverageRate >= 80) score += 3;
-  else if (childCoverageRate >= 50) score += 1;
+  if (meets(childCoverageRate, 80)) score += 3;
+  else if (meets(childCoverageRate, 50)) score += 1;
 
   // Bonus: framework_diversity
   if (frameworkDiversity >= 3) score += 3;
@@ -259,7 +268,7 @@ export function computeCaraContentQuality(
   else if (artifactTypeDiversity >= 2) score += 1;
 
   // Penalty: rejection_rate
-  if (rejectionRate > 30) score -= 5;
+  if (above(rejectionRate, 30)) score -= 5;
 
   // Penalty: average_quality_score
   if (avgQuality < 40) score -= 5;
@@ -268,7 +277,7 @@ export function computeCaraContentQuality(
   if (avgEvidence < 30) score -= 3;
 
   // Penalty: safeguarding concern (high flagged rate + low approval)
-  if (safeguardingFlaggedRate > 50 && approvalRate < 60) score -= 5;
+  if (above(safeguardingFlaggedRate, 50) && below(approvalRate, 60)) score -= 5;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -296,9 +305,9 @@ export function computeCaraContentQuality(
     strengths.push(`Average quality score of ${avgQuality}% — Cara-generated content meets good quality standards.`);
   }
 
-  if (approvalRate >= 90 && submittedArtifacts.length > 0) {
+  if (meets(approvalRate, 90) && submittedArtifacts.length > 0) {
     strengths.push(`${approvalRate}% approval rate — AI-assisted drafts are being approved at an excellent rate.`);
-  } else if (approvalRate >= 75 && submittedArtifacts.length > 0) {
+  } else if (meets(approvalRate, 75) && submittedArtifacts.length > 0) {
     strengths.push(`${approvalRate}% approval rate — most AI-assisted drafts are being approved after review.`);
   }
 
@@ -308,19 +317,19 @@ export function computeCaraContentQuality(
     strengths.push(`Evidence confidence averaging ${avgEvidence}% — Cara content has reasonable evidence backing.`);
   }
 
-  if (frameworkUsageRate >= 80) {
+  if (meets(frameworkUsageRate, 80)) {
     strengths.push(`${frameworkUsageRate}% of artifacts use a therapeutic framework — strong alignment with therapeutic care models.`);
-  } else if (frameworkUsageRate >= 50) {
+  } else if (meets(frameworkUsageRate, 50)) {
     strengths.push(`${frameworkUsageRate}% of artifacts use a therapeutic framework — good integration of care models.`);
   }
 
-  if (evidenceSourcedRate >= 90) {
+  if (meets(evidenceSourcedRate, 90)) {
     strengths.push(`${evidenceSourcedRate}% of artifacts are evidence-sourced — excellent traceability to source records.`);
-  } else if (evidenceSourcedRate >= 70) {
+  } else if (meets(evidenceSourcedRate, 70)) {
     strengths.push(`${evidenceSourcedRate}% of artifacts are evidence-sourced — good traceability to source records.`);
   }
 
-  if (childCoverageRate >= 80) {
+  if (meets(childCoverageRate, 80)) {
     strengths.push(`${childCoverageRate}% child coverage — Cara is being used for most children in the home.`);
   }
 
@@ -346,7 +355,7 @@ export function computeCaraContentQuality(
     concerns.push(`Average quality score of ${avgQuality}% — AI-generated content quality is below the expected good standard.`);
   }
 
-  if (rejectionRate > 30 && submittedArtifacts.length > 0) {
+  if (above(rejectionRate, 30) && submittedArtifacts.length > 0) {
     concerns.push(`${rejectionRate}% rejection rate — a significant proportion of AI-assisted drafts are not meeting review standards.`);
   }
 
@@ -356,19 +365,19 @@ export function computeCaraContentQuality(
     concerns.push(`Evidence confidence averaging ${avgEvidence}% — Cara content evidence backing needs strengthening.`);
   }
 
-  if (safeguardingFlaggedRate > 50 && approvalRate < 60) {
+  if (above(safeguardingFlaggedRate, 50) && below(approvalRate, 60)) {
     concerns.push(`${safeguardingFlaggedRate}% of artifacts flagged for safeguarding but only ${approvalRate}% approved — safeguarding-related AI content is not being adequately validated.`);
   }
 
-  if (frameworkUsageRate < 30) {
+  if (below(frameworkUsageRate, 30)) {
     concerns.push(`Only ${frameworkUsageRate}% of artifacts use a therapeutic framework — AI-generated content is not consistently aligned with the home's therapeutic approach.`);
   }
 
-  if (evidenceSourcedRate < 50) {
+  if (below(evidenceSourcedRate, 50)) {
     concerns.push(`Only ${evidenceSourcedRate}% of artifacts are evidence-sourced — a majority of AI-generated content lacks traceable evidence links.`);
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     concerns.push(`Only ${childCoverageRate}% child coverage — Cara is not being used for most children, creating inconsistent recording quality.`);
   }
 
@@ -397,7 +406,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (rejectionRate > 30 && submittedArtifacts.length > 0) {
+  if (above(rejectionRate, 30) && submittedArtifacts.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Investigate high rejection rate of AI-assisted drafts — review common rejection reasons and refine Cara generation to reduce rework.",
@@ -422,7 +431,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (safeguardingFlaggedRate > 50 && approvalRate < 60) {
+  if (above(safeguardingFlaggedRate, 50) && below(approvalRate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Prioritise review and approval of safeguarding-flagged Cara content — safeguarding records require timely governance to protect children.",
@@ -431,7 +440,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (frameworkUsageRate < 30) {
+  if (below(frameworkUsageRate, 30)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Configure Cara to align with the home's therapeutic frameworks — AI-generated content should consistently reference the care model.",
@@ -440,7 +449,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (evidenceSourcedRate < 50) {
+  if (below(evidenceSourcedRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure Cara draws from evidence sources when generating content — unsourced AI content undermines recording integrity.",
@@ -449,7 +458,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Expand Cara usage to cover all children in the home — inconsistent AI-assisted recording creates uneven care documentation.",
@@ -487,7 +496,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (rejectionRate > 30 && submittedArtifacts.length > 0) {
+  if (above(rejectionRate, 30) && submittedArtifacts.length > 0) {
     insights.push({
       text: `${rejectionRate}% of submitted AI drafts are being rejected — this suggests Cara configuration needs attention to reduce staff rework burden.`,
       severity: "critical",
@@ -501,7 +510,7 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (safeguardingFlaggedRate > 50 && approvalRate < 60) {
+  if (above(safeguardingFlaggedRate, 50) && below(approvalRate, 60)) {
     insights.push({
       text: `High safeguarding flagging (${safeguardingFlaggedRate}%) combined with low approval (${approvalRate}%) indicates safeguarding-related AI content is not being adequately governed.`,
       severity: "critical",
@@ -520,26 +529,26 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (frameworkUsageRate < 30) {
+  if (below(frameworkUsageRate, 30)) {
     insights.push({
       text: `Only ${frameworkUsageRate}% of AI-generated content references a therapeutic framework. Ofsted expects care to be informed by the home's stated model.`,
       severity: "warning",
     });
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Cara is only being used for ${childCoverageRate}% of children — recording quality may be inconsistent across the home.`,
       severity: "warning",
     });
   }
 
-  if (avgQuality >= 80 && approvalRate >= 90 && submittedArtifacts.length > 0) {
+  if (avgQuality >= 80 && meets(approvalRate, 90) && submittedArtifacts.length > 0) {
     insights.push({
       text: `Excellent combination of high quality (${avgQuality}%) and high approval (${approvalRate}%) — Cara is delivering reliable, governance-ready content.`,
       severity: "positive",
     });
-  } else if (avgQuality >= 65 && approvalRate >= 75 && submittedArtifacts.length > 0) {
+  } else if (avgQuality >= 65 && meets(approvalRate, 75) && submittedArtifacts.length > 0) {
     insights.push({
       text: `Good quality (${avgQuality}%) and approval rate (${approvalRate}%) — Cara is performing well as a content generation tool.`,
       severity: "positive",
@@ -553,14 +562,14 @@ export function computeCaraContentQuality(
     });
   }
 
-  if (evidenceSourcedRate >= 90) {
+  if (meets(evidenceSourcedRate, 90)) {
     insights.push({
       text: `${evidenceSourcedRate}% of artifacts are grounded in source evidence — excellent traceability supports inspection readiness.`,
       severity: "positive",
     });
   }
 
-  if (childCoverageRate >= 80 && total_children > 0) {
+  if (meets(childCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `${childCoverageRate}% child coverage — Cara is being used consistently across the home for most children.`,
       severity: "positive",

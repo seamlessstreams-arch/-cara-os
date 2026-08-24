@@ -690,7 +690,9 @@ describe("Home Care Event Quality Intelligence Engine", () => {
         date: "2026-05-20",
       })];
       const r = computeHomeCareEventQuality(baseInput({ events }));
-      expect(r.routing_completion_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.routing_completion_rate).toBeNull();
+      expect(r.routing_completion_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("gives 0 modifier for 60-79% routing completion", () => {
@@ -2010,7 +2012,9 @@ describe("Home Care Event Quality Intelligence Engine", () => {
         date: "2026-05-20",
       })];
       const r = computeHomeCareEventQuality(baseInput({ events }));
-      expect(r.routing_completion_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.routing_completion_rate).toBeNull();
+      expect(r.routing_completion_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("handles events with 0 audit_trail_count", () => {
@@ -2302,7 +2306,9 @@ describe("Home Care Event Quality Intelligence Engine", () => {
     it("returns 0 when denominator is 0 for routing", () => {
       const events = [makeEvent({ route_count: 0, routes_completed: 0, date: "2026-05-20" })];
       const r = computeHomeCareEventQuality(baseInput({ events }));
-      expect(r.routing_completion_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.routing_completion_rate).toBeNull();
+      expect(r.routing_completion_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("rounds to nearest integer", () => {

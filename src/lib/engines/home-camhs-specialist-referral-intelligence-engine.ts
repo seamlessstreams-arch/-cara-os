@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 10/33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface CamhsReferralInput {
   id: string;
   child_id: string;
@@ -62,7 +64,8 @@ export interface CamhsSpecialistResult {
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null { return rate(n, d); }
 
 export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): CamhsSpecialistResult {
   const { total_children, camhs_referrals, emergency_referrals, specialist_contacts } = input;
@@ -107,9 +110,9 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   if (camhs_referrals.length === 0) {
     score += 2; // neutral — no referrals needed
   } else {
-    if (rejected.length === 0 && attendRate >= 90) score += 7;
-    else if (attendRate >= 75) score += 4;
-    else if (attendRate >= 50) score += 0;
+    if (rejected.length === 0 && meets(attendRate, 90)) score += 7;
+    else if (meets(attendRate, 75)) score += 4;
+    else if (meets(attendRate, 50)) score += 0;
     else score -= 7;
   }
 
@@ -122,25 +125,25 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
 
   // Mod 3: Emergency response (±6)
   if (emergency_referrals.length === 0) score += 3; // neutral
-  else if (emergResponseRate >= 100 && emergFollowUpRate >= 90) score += 6;
-  else if (emergResponseRate >= 80) score += 3;
-  else if (emergResponseRate >= 60) score += 0;
+  else if (meets(emergResponseRate, 100) && meets(emergFollowUpRate, 90)) score += 6;
+  else if (meets(emergResponseRate, 80)) score += 3;
+  else if (meets(emergResponseRate, 60)) score += 0;
   else score -= 6;
 
   // Mod 4: Specialist access (±5)
   if (specialist_contacts.length === 0) score += 0; // neutral
-  else if (specialistCoverageRate >= 80 && specAttendRate >= 85) score += 5;
-  else if (specialistCoverageRate >= 60 && specAttendRate >= 70) score += 2;
-  else if (specialistCoverageRate >= 40) score += 0;
+  else if (meets(specialistCoverageRate, 80) && meets(specAttendRate, 85)) score += 5;
+  else if (meets(specialistCoverageRate, 60) && meets(specAttendRate, 70)) score += 2;
+  else if (meets(specialistCoverageRate, 40)) score += 0;
   else score -= 5;
 
   // Mod 5: Outcome recording (±4)
   if (camhs_referrals.length === 0 && specialist_contacts.length === 0) score += 2; // neutral
   else {
     const combinedOutcome = pct(outcomeRecorded + specOutcome, camhs_referrals.length + specialist_contacts.length);
-    if (combinedOutcome >= 90) score += 4;
-    else if (combinedOutcome >= 70) score += 2;
-    else if (combinedOutcome >= 50) score += 0;
+    if (meets(combinedOutcome, 90)) score += 4;
+    else if (meets(combinedOutcome, 70)) score += 2;
+    else if (meets(combinedOutcome, 50)) score += 0;
     else score -= 4;
   }
 
@@ -157,9 +160,9 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   // ── Strengths ───────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (waiting.length === 0 && camhs_referrals.length > 0) strengths.push("No children waiting for CAMHS — all referrals have progressed to active treatment.");
-  if (attendRate >= 90 && allAppts > 0) strengths.push(`${attendRate}% appointment attendance — children consistently engage with therapeutic services.`);
-  if (emergency_referrals.length > 0 && emergResponseRate >= 100) strengths.push("100% of emergency mental health referrals responded to within 24 hours.");
-  if (specialistCoverageRate >= 80 && specialist_contacts.length > 0) strengths.push("Over 80% of children accessing specialist services — comprehensive health pathway.");
+  if (meets(attendRate, 90) && allAppts > 0) strengths.push(`${attendRate}% appointment attendance — children consistently engage with therapeutic services.`);
+  if (emergency_referrals.length > 0 && meets(emergResponseRate, 100)) strengths.push("100% of emergency mental health referrals responded to within 24 hours.");
+  if (meets(specialistCoverageRate, 80) && specialist_contacts.length > 0) strengths.push("Over 80% of children accessing specialist services — comprehensive health pathway.");
   if (rejected.length === 0 && camhs_referrals.length > 0) strengths.push("No CAMHS referrals rejected — referral quality and threshold knowledge is strong.");
 
   // ── Concerns ────────────────────────────────────────────────────────────
@@ -167,16 +170,16 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   if (waiting.length >= 3) concerns.push(`${waiting.length} children waiting for CAMHS services — delay in accessing mental health support.`);
   else if (waiting.length >= 1) concerns.push(`${waiting.length} child(ren) waiting for CAMHS — monitor waiting times closely.`);
   if ((avgWait ?? 0) > 56) concerns.push(`Average CAMHS wait of ${(avgWait ?? 0)} days exceeds 8-week target — children's mental health needs not met promptly.`);
-  if (emergency_referrals.length > 0 && emergResponseRate < 80) concerns.push(`Emergency mental health response at ${emergResponseRate}% — children in crisis must receive immediate support.`);
+  if (emergency_referrals.length > 0 && below(emergResponseRate, 80)) concerns.push(`Emergency mental health response at ${emergResponseRate}% — children in crisis must receive immediate support.`);
   if (rejected.length >= 2) concerns.push(`${rejected.length} CAMHS referrals rejected — consider referral quality or re-referral with additional evidence.`);
-  if (allAppts > 0 && attendRate < 60) concerns.push(`CAMHS attendance at ${attendRate}% — low engagement may reflect barriers or reluctance.`);
+  if (allAppts > 0 && below(attendRate, 60)) concerns.push(`CAMHS attendance at ${attendRate}% — low engagement may reflect barriers or reluctance.`);
 
   // ── Recommendations ─────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
-  if (emergency_referrals.length > 0 && emergResponseRate < 100) recommendations.push({ rank: ++rank, recommendation: "Ensure 100% emergency mental health response within 24 hours — review crisis protocols.", urgency: "immediate", regulatory_ref: "Reg 34" });
+  if (emergency_referrals.length > 0 && below(emergResponseRate, 100)) recommendations.push({ rank: ++rank, recommendation: "Ensure 100% emergency mental health response within 24 hours — review crisis protocols.", urgency: "immediate", regulatory_ref: "Reg 34" });
   if ((avgWait ?? 0) > 56) recommendations.push({ rank: ++rank, recommendation: `Escalate CAMHS waiting list (avg ${(avgWait ?? 0)} days) — consider alternative therapeutic provision.`, urgency: "immediate", regulatory_ref: "Reg 10" });
-  if (allAppts > 0 && attendRate < 70) recommendations.push({ rank: ++rank, recommendation: `Investigate low CAMHS attendance (${attendRate}%) — identify and address barriers to engagement.`, urgency: "soon", regulatory_ref: "Reg 33" });
+  if (allAppts > 0 && below(attendRate, 70)) recommendations.push({ rank: ++rank, recommendation: `Investigate low CAMHS attendance (${attendRate}%) — identify and address barriers to engagement.`, urgency: "soon", regulatory_ref: "Reg 33" });
   if (rejected.length >= 2) recommendations.push({ rank: ++rank, recommendation: `Review ${rejected.length} rejected referrals — strengthen referral evidence or consider alternative services.`, urgency: "soon", regulatory_ref: "Reg 10" });
   if (score < 65) recommendations.push({ rank: ++rank, recommendation: "Develop mental health pathway improvement plan with CAMHS and specialist services.", urgency: "planned", regulatory_ref: "Reg 10" });
 
