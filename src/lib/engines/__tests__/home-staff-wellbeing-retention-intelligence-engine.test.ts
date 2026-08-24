@@ -337,14 +337,14 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
       expect(r.total_exit_interviews).toBe(0);
     });
 
-    it("returns zeroed rates for insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computeStaffWellbeingRetention(baseInput({ total_staff: 0 }));
-      expect(r.sickness_absence_rate).toBe(0);
-      expect(r.wellbeing_survey_completion_rate).toBe(0);
-      expect(r.retention_rate).toBe(0);
-      expect(r.wellbeing_support_uptake_rate).toBe(0);
-      expect(r.exit_interview_completion_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.sickness_absence_rate).toBeNull();
+      expect(r.wellbeing_survey_completion_rate).toBeNull();
+      expect(r.retention_rate).toBeNull();
+      expect(r.wellbeing_support_uptake_rate).toBeNull();
+      expect(r.exit_interview_completion_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1538,7 +1538,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
         expect(r.retention_rate).toBe(0);
       });
 
-      it("is 0 when total_staff is 0", () => {
+      it("retention_rate is unmeasured when total_staff is 0", () => {
         // total_staff=0 with data → goes through main path (not allEmpty)
         const r = computeStaffWellbeingRetention(baseInput({
           total_staff: 0,
@@ -1546,7 +1546,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
             makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" }),
           ],
         }));
-        expect(r.retention_rate).toBeNull();;
+        expect(r.retention_rate).toBeNull();
       });
 
       it("calculates correctly with mixed event types", () => {

@@ -1,3 +1,4 @@
+import { above, below, formatRate, meets } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF SAFETY INTELLIGENCE ENGINE
 // Pure deterministic engine: lone working, debriefs, grievances, risk assessments.
@@ -88,10 +89,12 @@ export interface LoneWorkingProfile {
   due_review: number;
   expired: number;
   unique_staff_covered: number;
-  coverage_rate: number;                 // % of total_staff with lone working record
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverage_rate: number | null;                 // % of total_staff with lone working record
   high_risk_count: number;
   alarms_issued: number;
-  alarm_rate: number;                    // % with personal_alarm_issued
+  /** null when the population is empty — nothing measured, not 0%. */
+  alarm_rate: number | null;                    // % with personal_alarm_issued
 }
 
 export interface DebriefProfile {
@@ -100,11 +103,13 @@ export interface DebriefProfile {
   scheduled: number;
   overdue: number;
   declined: number;
-  completion_rate: number;               // % completed / (completed + overdue)
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;               // % completed / (completed + overdue)
   high_impact_count: number;             // emotional_impact high or significant
   follow_up_needed_count: number;
   with_learning_points: number;
-  learning_rate: number;                 // % with learning_points
+  /** null when the population is empty — nothing measured, not 0%. */
+  learning_rate: number | null;                 // % with learning_points
 }
 
 export interface GrievanceProfile {
@@ -113,14 +118,16 @@ export interface GrievanceProfile {
   withdrawn: number;
   open: number;                          // not resolved/withdrawn
   critical_count: number;
-  resolution_rate: number;               // % resolved / total
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolution_rate: number | null;               // % resolved / total
 }
 
 export interface LWRAProfile {
   total: number;
   approved: number;
   not_approved: number;
-  approval_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  approval_rate: number | null;
   overdue_review: number;
   high_risk_count: number;
 }
@@ -185,20 +192,20 @@ export function computeHomeStaffSafety(
       headline: "No active staff registered.",
       lone_working: {
         total_records: 0, current: 0, due_review: 0, expired: 0,
-        unique_staff_covered: 0, coverage_rate: 0, high_risk_count: 0,
-        alarms_issued: 0, alarm_rate: 0,
+        unique_staff_covered: 0, coverage_rate: null, high_risk_count: 0,
+        alarms_issued: 0, alarm_rate: null,
       },
       debriefs: {
         total: 0, completed: 0, scheduled: 0, overdue: 0, declined: 0,
-        completion_rate: 0, high_impact_count: 0, follow_up_needed_count: 0,
-        with_learning_points: 0, learning_rate: 0,
+        completion_rate: null, high_impact_count: 0, follow_up_needed_count: 0,
+        with_learning_points: 0, learning_rate: null,
       },
       grievance_profile: {
         total: 0, resolved: 0, withdrawn: 0, open: 0,
-        critical_count: 0, resolution_rate: 0,
+        critical_count: 0, resolution_rate: null,
       },
       lwra: {
-        total: 0, approved: 0, not_approved: 0, approval_rate: 0,
+        total: 0, approved: 0, not_approved: 0, approval_rate: null,
         overdue_review: 0, high_risk_count: 0,
       },
       strengths: [],
@@ -293,10 +300,10 @@ export function computeHomeStaffSafety(
   // mod1: Lone working coverage (±5)
   // Staff with lone working records vs total_staff
   const mod1 =
-    lone_working.coverage_rate >= 80 ? 5 :
-    lone_working.coverage_rate >= 60 ? 3 :
-    lone_working.coverage_rate >= 40 ? 0 :
-    lone_working.coverage_rate > 0 ? -3 : -5;
+    meets(lone_working.coverage_rate, 80) ? 5 :
+    meets(lone_working.coverage_rate, 60) ? 3 :
+    meets(lone_working.coverage_rate, 40) ? 0 :
+    above(lone_working.coverage_rate, 0) ? -3 : -5;
   score += mod1;
 
   // mod2: Assessment currency (±4)
@@ -313,18 +320,18 @@ export function computeHomeStaffSafety(
   // personal_alarm_issued rate
   const mod3 =
     lone_working_records.length === 0 ? -1 :
-    lone_working.alarm_rate >= 80 ? 3 :
-    lone_working.alarm_rate >= 60 ? 1 :
-    lone_working.alarm_rate >= 40 ? 0 : -3;
+    meets(lone_working.alarm_rate, 80) ? 3 :
+    meets(lone_working.alarm_rate, 60) ? 1 :
+    meets(lone_working.alarm_rate, 40) ? 0 : -3;
   score += mod3;
 
   // mod4: Debrief completion (±4)
   // completed vs overdue debriefs
   const mod4 =
     debriefRecords.length === 0 ? 0 :
-    debriefProfile.completion_rate >= 90 ? 4 :
-    debriefProfile.completion_rate >= 70 ? 2 :
-    debriefProfile.completion_rate >= 50 ? 0 : -4;
+    meets(debriefProfile.completion_rate, 90) ? 4 :
+    meets(debriefProfile.completion_rate, 70) ? 2 :
+    meets(debriefProfile.completion_rate, 50) ? 0 : -4;
   score += mod4;
 
   // mod5: Emotional support (±3)
@@ -346,27 +353,27 @@ export function computeHomeStaffSafety(
   // resolved vs open
   const mod6 =
     grievances.length === 0 ? 0 :
-    grievance_profile.resolution_rate >= 70 ? 3 :
-    grievance_profile.resolution_rate >= 50 ? 1 :
-    grievance_profile.resolution_rate >= 30 ? 0 : -3;
+    meets(grievance_profile.resolution_rate, 70) ? 3 :
+    meets(grievance_profile.resolution_rate, 50) ? 1 :
+    meets(grievance_profile.resolution_rate, 30) ? 0 : -3;
   score += mod6;
 
   // mod7: LWRA approval rate (±3)
   // approved_to_work_alone rate
   const mod7 =
     risk_assessments.length === 0 ? 0 :
-    lwra.approval_rate >= 80 ? 3 :
-    lwra.approval_rate >= 60 ? 1 :
-    lwra.approval_rate >= 40 ? 0 : -3;
+    meets(lwra.approval_rate, 80) ? 3 :
+    meets(lwra.approval_rate, 60) ? 1 :
+    meets(lwra.approval_rate, 40) ? 0 : -3;
   score += mod7;
 
   // mod8: Learning culture (±3)
   // debriefs with learning_points
   const mod8 =
     debriefRecords.length === 0 ? 0 :
-    debriefProfile.learning_rate >= 80 ? 3 :
-    debriefProfile.learning_rate >= 50 ? 1 :
-    debriefProfile.learning_rate >= 30 ? 0 : -3;
+    meets(debriefProfile.learning_rate, 80) ? 3 :
+    meets(debriefProfile.learning_rate, 50) ? 1 :
+    meets(debriefProfile.learning_rate, 30) ? 0 : -3;
   score += mod8;
 
   // Clamp
@@ -376,24 +383,24 @@ export function computeHomeStaffSafety(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (lone_working.coverage_rate >= 80) strengths.push(`${lone_working.coverage_rate}% of staff have lone working records — excellent coverage.`);
+  if (meets(lone_working.coverage_rate, 80)) strengths.push(`${formatRate(lone_working.coverage_rate)} of staff have lone working records — excellent coverage.`);
   if (lone_working_records.length > 0 && expiredRate === 0) strengths.push("All lone working assessments are current — none expired or due for review.");
-  if (lone_working.alarm_rate >= 80 && lone_working_records.length > 0) strengths.push(`${lone_working.alarm_rate}% of lone workers have been issued personal alarms.`);
-  if (debriefProfile.completion_rate >= 90 && debriefRecords.length > 0) strengths.push(`${debriefProfile.completion_rate}% debrief completion rate — staff are well-supported after incidents.`);
+  if (meets(lone_working.alarm_rate, 80) && lone_working_records.length > 0) strengths.push(`${formatRate(lone_working.alarm_rate)} of lone workers have been issued personal alarms.`);
+  if (meets(debriefProfile.completion_rate, 90) && debriefRecords.length > 0) strengths.push(`${formatRate(debriefProfile.completion_rate)} debrief completion rate — staff are well-supported after incidents.`);
   if (followUpRate >= 80 && dbHighImpact.length > 0) strengths.push("High/significant emotional impact debriefs consistently receive follow-up support.");
-  if (grievance_profile.resolution_rate >= 70 && grievances.length > 0) strengths.push(`${grievance_profile.resolution_rate}% of grievances resolved — effective dispute resolution.`);
-  if (lwra.approval_rate >= 80 && risk_assessments.length > 0) strengths.push(`${lwra.approval_rate}% of staff risk-assessed and approved for lone working.`);
-  if (debriefProfile.learning_rate >= 80 && debriefRecords.length > 0) strengths.push(`${debriefProfile.learning_rate}% of debriefs capture learning points — strong reflective culture.`);
+  if (meets(grievance_profile.resolution_rate, 70) && grievances.length > 0) strengths.push(`${formatRate(grievance_profile.resolution_rate)} of grievances resolved — effective dispute resolution.`);
+  if (meets(lwra.approval_rate, 80) && risk_assessments.length > 0) strengths.push(`${formatRate(lwra.approval_rate)} of staff risk-assessed and approved for lone working.`);
+  if (meets(debriefProfile.learning_rate, 80) && debriefRecords.length > 0) strengths.push(`${formatRate(debriefProfile.learning_rate)} of debriefs capture learning points — strong reflective culture.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (lone_working.coverage_rate < 40 && total_staff > 0) concerns.push(`Only ${lone_working.coverage_rate}% of staff have lone working records — significant safety gaps.`);
+  if (below(lone_working.coverage_rate, 40) && total_staff > 0) concerns.push(`Only ${formatRate(lone_working.coverage_rate)} of staff have lone working records — significant safety gaps.`);
   if (lwExpired.length > 0) concerns.push(`${lwExpired.length} lone working assessment(s) have expired — staff may be working without valid risk controls.`);
-  if (lone_working.alarm_rate < 40 && lone_working_records.length > 0) concerns.push(`Only ${lone_working.alarm_rate}% of lone workers have personal alarms — inadequate safety provision.`);
+  if (below(lone_working.alarm_rate, 40) && lone_working_records.length > 0) concerns.push(`Only ${formatRate(lone_working.alarm_rate)} of lone workers have personal alarms — inadequate safety provision.`);
   if (debriefProfile.overdue > 0) concerns.push(`${debriefProfile.overdue} debrief(s) are overdue — staff not receiving timely post-incident support.`);
   if (dbHighImpact.length > 0 && followUpRate < 40) concerns.push("High-impact debriefs are not being followed up — staff welfare at risk.");
   if (gCritical.length > 0) concerns.push(`${gCritical.length} critical grievance(s) outstanding — requires immediate management attention.`);
-  if (gOpen.length > 0 && grievance_profile.resolution_rate < 50) concerns.push(`Only ${grievance_profile.resolution_rate}% of grievances resolved — poor dispute resolution.`);
+  if (gOpen.length > 0 && below(grievance_profile.resolution_rate, 50)) concerns.push(`Only ${formatRate(grievance_profile.resolution_rate)} of grievances resolved — poor dispute resolution.`);
   if (lwra.overdue_review > 0) concerns.push(`${lwra.overdue_review} lone working risk assessment(s) overdue for review.`);
   if (lone_working.high_risk_count > 0) concerns.push(`${lone_working.high_risk_count} high-risk lone working scenario(s) identified.`);
 
@@ -425,7 +432,7 @@ export function computeHomeStaffSafety(
       regulatory_ref: "Reg 33(4)",
     });
   }
-  if (lone_working.coverage_rate < 60) {
+  if (below(lone_working.coverage_rate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Extend lone working assessments to all staff who may work alone — aim for 100% coverage.",
@@ -433,7 +440,7 @@ export function computeHomeStaffSafety(
       regulatory_ref: "HSW Act 1974 s2",
     });
   }
-  if (lone_working.alarm_rate < 60 && lone_working_records.length > 0) {
+  if (below(lone_working.alarm_rate, 60) && lone_working_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Issue personal alarms to all lone workers to meet health and safety obligations.",
@@ -449,7 +456,7 @@ export function computeHomeStaffSafety(
       regulatory_ref: "Reg 34",
     });
   }
-  if (debriefProfile.learning_rate < 50 && debriefRecords.length >= 3) {
+  if (below(debriefProfile.learning_rate, 50) && debriefRecords.length >= 3) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Embed learning points in all debrief processes to build a reflective learning culture.",
@@ -457,7 +464,7 @@ export function computeHomeStaffSafety(
       regulatory_ref: null,
     });
   }
-  if (grievances.length > 0 && grievance_profile.resolution_rate < 50) {
+  if (grievances.length > 0 && below(grievance_profile.resolution_rate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review grievance handling procedures to improve resolution rates and staff confidence.",
@@ -487,7 +494,7 @@ export function computeHomeStaffSafety(
       severity: "critical",
     });
   }
-  if (lone_working.high_risk_count > 0 && lone_working.alarm_rate < 50) {
+  if (lone_working.high_risk_count > 0 && below(lone_working.alarm_rate, 50)) {
     insights.push({
       text: `High-risk lone working scenarios identified but alarm provision below 50% — safety gap requires attention.`,
       severity: "warning",
@@ -499,19 +506,19 @@ export function computeHomeStaffSafety(
       severity: "positive",
     });
   }
-  if (debriefProfile.learning_rate >= 80 && debriefRecords.length >= 3) {
+  if (meets(debriefProfile.learning_rate, 80) && debriefRecords.length >= 3) {
     insights.push({
-      text: `${debriefProfile.learning_rate}% of debriefs include learning points — strong evidence of reflective practice.`,
+      text: `${formatRate(debriefProfile.learning_rate)} of debriefs include learning points — strong evidence of reflective practice.`,
       severity: "positive",
     });
   }
-  if (lone_working.coverage_rate >= 80 && lwra.approval_rate >= 80) {
+  if (meets(lone_working.coverage_rate, 80) && meets(lwra.approval_rate, 80)) {
     insights.push({
       text: "Comprehensive lone working coverage with high approval rates — robust safety framework in place.",
       severity: "positive",
     });
   }
-  if (grievances.length === 0 && debriefProfile.completion_rate >= 90 && debriefRecords.length > 0) {
+  if (grievances.length === 0 && meets(debriefProfile.completion_rate, 90) && debriefRecords.length > 0) {
     insights.push({
       text: "No grievances and high debrief completion suggest a positive, supportive staff culture.",
       severity: "positive",

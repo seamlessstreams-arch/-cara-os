@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, MessageCircle } from "lucide-react";
@@ -76,24 +77,24 @@ export function HomePostIncidentChildDebriefIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_debriefs > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_debriefs}</p>
               <p className="text-[9px] text-muted-foreground">Debriefs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.timeliness_rate >= 80 ? "bg-green-50" : d.timeliness_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.timeliness_rate >= 80 ? "text-[--cs-success]" : d.timeliness_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.timeliness_rate, 80) ? "bg-green-50" : meets(d.timeliness_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.timeliness_rate, 80) ? "text-[--cs-success]" : meets(d.timeliness_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_readiness_rate >= 85 ? "bg-green-50" : d.child_readiness_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_readiness_rate >= 85 ? "text-[--cs-success]" : d.child_readiness_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_readiness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_readiness_rate, 85) ? "bg-green-50" : meets(d.child_readiness_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_readiness_rate, 85) ? "text-[--cs-success]" : meets(d.child_readiness_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_readiness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ready</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.voice_depth_rate >= 75 ? "bg-green-50" : d.voice_depth_rate >= 45 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.voice_depth_rate >= 75 ? "text-[--cs-success]" : d.voice_depth_rate >= 45 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.voice_depth_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.voice_depth_rate, 75) ? "bg-green-50" : meets(d.voice_depth_rate, 45) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.voice_depth_rate, 75) ? "text-[--cs-success]" : meets(d.voice_depth_rate, 45) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.voice_depth_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Depth</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.restorative_action_rate >= 75 ? "bg-green-50" : d.restorative_action_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.restorative_action_rate >= 75 ? "text-[--cs-success]" : d.restorative_action_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.restorative_action_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.restorative_action_rate, 75) ? "bg-green-50" : meets(d.restorative_action_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.restorative_action_rate, 75) ? "text-[--cs-success]" : meets(d.restorative_action_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.restorative_action_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Restored</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.follow_up_rate >= 80 ? "bg-green-50" : d.follow_up_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_rate >= 80 ? "text-[--cs-success]" : d.follow_up_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.follow_up_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.follow_up_rate, 80) ? "bg-green-50" : meets(d.follow_up_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.follow_up_rate, 80) ? "text-[--cs-success]" : meets(d.follow_up_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.follow_up_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Follow-Up</p>
             </div>
           </div>

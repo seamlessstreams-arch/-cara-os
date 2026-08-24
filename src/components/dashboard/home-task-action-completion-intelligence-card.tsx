@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -70,7 +71,7 @@ export function HomeTaskActionCompletionIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Tasks</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.completion_rate >= 90 ? "bg-green-50" : d.completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.completion_rate >= 90 ? "text-[--cs-success]" : d.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.completion_rate >= 90 ? "text-[--cs-success]" : d.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.overdue_count === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -78,7 +79,7 @@ export function HomeTaskActionCompletionIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Overdue</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.on_time_rate >= 90 ? "bg-green-50" : d.on_time_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.on_time_rate >= 90 ? "text-[--cs-success]" : d.on_time_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.on_time_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.on_time_rate >= 90 ? "text-[--cs-success]" : d.on_time_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.on_time_rate)}</p>
               <p className="text-[9px] text-muted-foreground">On Time</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.incident_follow_through >= 90 ? "bg-green-50" : d.incident_follow_through >= 70 ? "bg-amber-50" : "bg-red-50")}>
@@ -86,7 +87,7 @@ export function HomeTaskActionCompletionIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Incident</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.urgent_completion_rate >= 95 ? "bg-green-50" : d.urgent_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.urgent_completion_rate >= 95 ? "text-[--cs-success]" : d.urgent_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.urgent_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.urgent_completion_rate >= 95 ? "text-[--cs-success]" : d.urgent_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.urgent_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Urgent</p>
             </div>
           </div>

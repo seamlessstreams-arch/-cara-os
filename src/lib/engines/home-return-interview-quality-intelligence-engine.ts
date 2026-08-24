@@ -42,12 +42,18 @@ export interface ReturnInterviewQualityResult {
   interview_score: number;
   headline: string;
   total_interviews: number;
-  completion_rate: number;
-  independence_rate: number;
-  child_voice_rate: number;
-  exploitation_screening_rate: number;
-  action_completion_rate: number;
-  information_sharing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  exploitation_screening_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  information_sharing_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -90,12 +96,12 @@ export function computeReturnInterviewQuality(
       interview_score: 0,
       headline: "No data available for return interview analysis",
       total_interviews: 0,
-      completion_rate: 0,
-      independence_rate: 0,
-      child_voice_rate: 0,
-      exploitation_screening_rate: 0,
-      action_completion_rate: 0,
-      information_sharing_rate: 0,
+      completion_rate: null,
+      independence_rate: null,
+      child_voice_rate: null,
+      exploitation_screening_rate: null,
+      action_completion_rate: null,
+      information_sharing_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

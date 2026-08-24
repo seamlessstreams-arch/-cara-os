@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -150,7 +151,7 @@ export function HomeMedicationManagementIntelligenceCard() {
                   (d.administration.on_time_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.administration.on_time_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.administration.on_time_rate}%
+                  {formatRate(d.administration.on_time_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">On Time</p>

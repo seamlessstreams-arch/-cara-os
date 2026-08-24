@@ -51,12 +51,18 @@ export interface SocialWorkerContactResult {
   contact_score: number;
   headline: string;
   total_contacts: number;
-  children_with_contact_rate: number;
-  home_initiated_rate: number;
-  child_awareness_rate: number;
-  follow_up_compliance_rate: number;
-  action_completion_rate: number;
-  decision_documentation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_contact_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  home_initiated_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_awareness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  decision_documentation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -99,12 +105,12 @@ export function computeSocialWorkerContact(
       contact_score: 0,
       headline: "No data available for social worker contact intelligence analysis",
       total_contacts: 0,
-      children_with_contact_rate: 0,
-      home_initiated_rate: 0,
-      child_awareness_rate: 0,
-      follow_up_compliance_rate: 0,
-      action_completion_rate: 0,
-      decision_documentation_rate: 0,
+      children_with_contact_rate: null,
+      home_initiated_rate: null,
+      child_awareness_rate: null,
+      follow_up_compliance_rate: null,
+      action_completion_rate: null,
+      decision_documentation_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

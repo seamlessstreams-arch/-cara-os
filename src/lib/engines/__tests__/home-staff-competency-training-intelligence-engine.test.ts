@@ -482,10 +482,10 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
         cpd_records: [],
         handbook_records: [],
       }));
-      expect(r.staff_assessed_rate).toBeNull();;
-      expect(r.training_compliance_rate).toBeNull();;
-      expect(r.cpd_engagement_rate).toBeNull();;
-      expect(r.handbook_acknowledgement_rate).toBeNull();;
+      expect(r.staff_assessed_rate).toBeNull();
+      expect(r.training_compliance_rate).toBeNull();
+      expect(r.cpd_engagement_rate).toBeNull();
+      expect(r.handbook_acknowledgement_rate).toBeNull();
     });
   });
 
@@ -816,8 +816,8 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
         total_staff: 1,
         competencies: [],
       }));
-      expect(r.staff_assessed_rate).toBeNull();;
-      expect(r.competent_or_above_rate).toBeNull();;
+      expect(r.staff_assessed_rate).toBeNull();
+      expect(r.competent_or_above_rate).toBeNull();
     });
 
     it("handles empty training matrix gracefully", () => {
@@ -825,7 +825,7 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
         total_staff: 1,
         training_matrix: [],
       }));
-      expect(r.training_compliance_rate).toBeNull();;
+      expect(r.training_compliance_rate).toBeNull();
     });
 
     it("handles empty CPD records gracefully", () => {
@@ -833,7 +833,7 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
         total_staff: 1,
         cpd_records: [],
       }));
-      expect(r.cpd_engagement_rate).toBeNull();;
+      expect(r.cpd_engagement_rate).toBeNull();
     });
 
     it("handles empty handbook records gracefully", () => {
@@ -841,14 +841,14 @@ describe("Home Staff Competency & Training Intelligence Engine", () => {
         total_staff: 1,
         handbook_records: [],
       }));
-      expect(r.handbook_acknowledgement_rate).toBeNull();;
+      expect(r.handbook_acknowledgement_rate).toBeNull();
     });
 
     it("handles handbook with 0 total_staff_required gracefully", () => {
       const r = computeStaffCompetencyTraining(baseInput({
         handbook_records: [makeHandbook({ total_staff_required: 0, acknowledged_count: 0 })],
       }));
-      expect(r.handbook_acknowledgement_rate).toBeNull();;
+      expect(r.handbook_acknowledgement_rate).toBeNull();
     });
 
     it("handles single staff member", () => {

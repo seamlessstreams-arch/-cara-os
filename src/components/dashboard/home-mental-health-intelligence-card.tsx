@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -186,7 +187,7 @@ export function HomeMentalHealthIntelligenceCard() {
                 <p>Flagged: <span className="font-medium text-slate-600">{d.check_ins.flagged_check_ins}</span></p>
                 <p>Follow-up: <span className={cn("font-medium",
                   (d.check_ins.follow_up_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.check_ins.follow_up_rate}%</span></p>
+                )}>{formatRate(d.check_ins.follow_up_rate)}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">

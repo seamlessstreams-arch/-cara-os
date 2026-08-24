@@ -66,17 +66,17 @@ describe("Insufficient data guard (total_children === 0)", () => {
     );
   });
 
-  it("returns all zero metrics for insufficient data", () => {
+  it("leaves every rate unmeasured for insufficient data", () => {
     const result = computeAttachmentProfile(
       baseInput({ total_children: 0, profiles: [] }),
     );
     expect(result.total_profiles).toBe(0);
-    expect(result.children_with_profile_rate).toBe(0);
-    expect(result.active_profile_rate).toBe(0);
-    expect(result.behaviour_analysis_rate).toBe(0);
-    expect(result.strong_relationship_rate).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
-    expect(result.staff_guidance_rate).toBe(0);
+    expect(result.children_with_profile_rate).toBeNull();
+    expect(result.active_profile_rate).toBeNull();
+    expect(result.behaviour_analysis_rate).toBeNull();
+    expect(result.strong_relationship_rate).toBeNull();
+    expect(result.child_voice_rate).toBeNull();
+    expect(result.staff_guidance_rate).toBeNull();
   });
 
   it("returns empty arrays for insufficient data", () => {
@@ -853,7 +853,7 @@ describe("Relationship quality metrics", () => {
     expect(result.strong_relationship_rate).toBe(75);
   });
 
-  it("returns 0 when totalRelationships is 0", () => {
+  it("strong_relationship_rate is unmeasured when totalRelationships is 0", () => {
     const profiles = [
       makeProfile({
         id: "p1",
@@ -3192,7 +3192,7 @@ describe("pct helper behaviour (via rate outputs)", () => {
     expect(result.child_voice_rate).toBe(67);
   });
 
-  it("0/0 returns 0 (division by zero guard)", () => {
+  it("0/0 leaves strong_relationship_rate unmeasured (division by zero guard)", () => {
     const profiles = [
       makeProfile({
         id: "p1",

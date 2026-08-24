@@ -91,12 +91,12 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
     return {
       building_ops_rating: "insufficient_data", building_ops_score: 0,
       headline: "No building and operations safety data available for analysis.",
-      evacuation: { total: 0, drills_current: 0, fire_officer_approved_rate: 0, overdue_drills: 0 },
-      grab_bags: { total: 0, complete_rate: 0, overdue_checks: 0 },
+      evacuation: { total: 0, drills_current: 0, fire_officer_approved_rate: null, overdue_drills: 0 },
+      grab_bags: { total: 0, complete_rate: null, overdue_checks: 0 },
       asbestos: { total: 0, acm_present: 0, poor_condition_count: 0, overdue_inspections: 0 },
-      secure_storage: { total: 0, verified_rate: 0, overdue_checks: 0, flagged_count: 0 },
-      room_searches: { total: 0, child_informed_rate: 0, follow_up_completion_rate: 0, high_distress_count: 0 },
-      fire_risk: { total: 0, high_risk_count: 0, overdue_actions: 0, completed_rate: 0 },
+      secure_storage: { total: 0, verified_rate: null, overdue_checks: 0, flagged_count: 0 },
+      room_searches: { total: 0, child_informed_rate: null, follow_up_completion_rate: null, high_distress_count: 0 },
+      fire_risk: { total: 0, high_risk_count: 0, overdue_actions: 0, completed_rate: null },
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }

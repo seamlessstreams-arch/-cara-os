@@ -173,14 +173,14 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.insights[0].text).toContain("4 staff");
     });
 
-    it("insufficient_data has all rates at 0", () => {
+    it("insufficient_data leaves every rate unmeasured", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput, total_staff: 0 });
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.check_in_compliance_rate).toBe(0);
-      expect(r.safety_protocol_rate).toBe(0);
-      expect(r.communication_device_rate).toBe(0);
-      expect(r.incident_reporting_rate).toBe(0);
-      expect(r.staff_confidence_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.check_in_compliance_rate).toBeNull();
+      expect(r.safety_protocol_rate).toBeNull();
+      expect(r.communication_device_rate).toBeNull();
+      expect(r.incident_reporting_rate).toBeNull();
+      expect(r.staff_confidence_rate).toBeNull();
     });
 
     it("insufficient_data has all counts at 0", () => {
@@ -773,14 +773,14 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.staff_confidence_rate).toBe(100);
     });
 
-    it("returns 0 when total_staff is 0 but records exist", () => {
+    it("staff_confidence_rate is unmeasured when total_staff is 0 but records exist", () => {
       const r = computeStaffLoneWorkingSafety({
         ...baseInput,
         total_staff: 0,
         risk_assessment_records: [makeRiskAssessment()],
       });
       // Not allEmpty so doesn't hit special case; total_staff=0 means confidenceFactors empty
-      expect(r.staff_confidence_rate).toBeNull();;
+      expect(r.staff_confidence_rate).toBeNull();
     });
 
     it("averages partial coverage", () => {

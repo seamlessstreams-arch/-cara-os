@@ -83,12 +83,12 @@ describe("Home Return Interview Quality Intelligence Engine", () => {
     expect(r.interview_score).toBe(0);
     expect(r.headline).toBe("No data available for return interview analysis");
     expect(r.total_interviews).toBe(0);
-    expect(r.completion_rate).toBe(0);
-    expect(r.independence_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
-    expect(r.exploitation_screening_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.information_sharing_rate).toBe(0);
+    expect(r.completion_rate).toBeNull();
+    expect(r.independence_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
+    expect(r.exploitation_screening_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.information_sharing_rate).toBeNull();
     expect(r.strengths).toEqual([]);
     expect(r.concerns).toEqual([]);
     expect(r.recommendations).toEqual([]);

@@ -93,14 +93,14 @@ describe("Insufficient data", () => {
     expect(r.headline).toBe("No data available for social worker contact intelligence analysis");
   });
 
-  it("reports all rates as 0 when insufficient data with 0 children", () => {
+  it("leaves every rate unmeasured for insufficient data with 0 children", () => {
     const r = computeSocialWorkerContact({ today: TODAY, total_children: 0, contacts: [] });
-    expect(r.children_with_contact_rate).toBe(0);
-    expect(r.home_initiated_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
-    expect(r.follow_up_compliance_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.decision_documentation_rate).toBe(0);
+    expect(r.children_with_contact_rate).toBeNull();
+    expect(r.home_initiated_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
+    expect(r.follow_up_compliance_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.decision_documentation_rate).toBeNull();
     expect(r.total_contacts).toBe(0);
   });
 });
