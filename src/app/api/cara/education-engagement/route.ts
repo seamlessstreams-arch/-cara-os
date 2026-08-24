@@ -147,7 +147,11 @@ function buildDemoWeeks(childId: string): EducationWeek[] {
   const weeks: EducationWeek[] = [];
 
   for (let i = 0; i < 12; i++) {
-    const weekStart = new Date(2026, 2, 3 + i * 7).toISOString().slice(0, 10);
+    // Date.UTC, not new Date(y, m, d): the latter builds LOCAL midnight, and
+      // slicing that to ISO gives the PREVIOUS day whenever London is ahead of
+      // UTC. Week 0 (March, GMT) came out right and week 8 (April, BST) came out
+      // a day early — a series that is only sometimes wrong.
+      const weekStart = new Date(Date.UTC(2026, 2, 3 + i * 7)).toISOString().slice(0, 10);
 
     if (isJordan) {
       // Jordan: inconsistent attendance, improving trend
