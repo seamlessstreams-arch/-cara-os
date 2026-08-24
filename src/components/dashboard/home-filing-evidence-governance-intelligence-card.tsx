@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,19 +75,19 @@ export function HomeFilingEvidenceGovernanceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Filed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.verified_rate >= 90 ? "bg-green-50" : d.verified_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.verified_rate >= 90 ? "text-[--cs-success]" : d.verified_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.verified_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.verified_rate >= 90 ? "text-[--cs-success]" : d.verified_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.verified_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Verified</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.description_rate >= 95 ? "bg-green-50" : d.description_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.description_rate >= 95 ? "text-[--cs-success]" : d.description_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.description_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.description_rate >= 95 ? "text-[--cs-success]" : d.description_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.description_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Described</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.significant_event_filing_rate >= 100 ? "bg-green-50" : d.significant_event_filing_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.significant_event_filing_rate >= 100 ? "text-[--cs-success]" : d.significant_event_filing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.significant_event_filing_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.significant_event_filing_rate >= 100 ? "text-[--cs-success]" : d.significant_event_filing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.significant_event_filing_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sig Filed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.linked_rate >= 90 ? "bg-green-50" : d.linked_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.linked_rate >= 90 ? "text-[--cs-success]" : d.linked_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.linked_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.linked_rate >= 90 ? "text-[--cs-success]" : d.linked_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.linked_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Linked</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.category_diversity >= 5 ? "bg-green-50" : d.category_diversity >= 3 ? "bg-amber-50" : "bg-red-50")}>

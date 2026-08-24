@@ -100,14 +100,14 @@ describe("insufficient data", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns zero for all metrics when total_staff is 0", () => {
+  it("leaves completion_rate, follow_up_completion_rate and wellbeing_check_rate unmeasured when total_staff is 0", () => {
     const r = computeStaffDebriefEmotionalSupport(baseInput({ total_staff: 0 }));
     expect(r.total_debriefs).toBe(0);
-    expect(r.completion_rate).toBe(0);
-    expect(r.follow_up_completion_rate).toBe(0);
+    expect(r.completion_rate).toBeNull();
+    expect(r.follow_up_completion_rate).toBeNull();
     expect(r.high_impact_count).toBe(0);
     expect(r.overdue_debriefs).toBe(0);
-    expect(r.wellbeing_check_rate).toBe(0);
+    expect(r.wellbeing_check_rate).toBeNull();
   });
 
   it("sets an appropriate headline for insufficient data", () => {
@@ -394,7 +394,7 @@ describe("mod2: follow-up completion", () => {
     }));
     // mod2: none needed → +3, delta -3 → 82-3 = 79
     const r = computeStaffDebriefEmotionalSupport(baseInput({ debriefs }));
-    expect(r.follow_up_completion_rate).toBe(0); // pct(0,0) = 0
+    expect(r.follow_up_completion_rate).toBeNull(); // pct(0,0) = 0
     expect(r.debrief_score).toBe(79);
   });
 });
@@ -618,7 +618,7 @@ describe("mod6: wellbeing check coverage", () => {
   it("awards -1 when 0 wellbeing checks exist", () => {
     // mod6 delta: -1 - 5 = -6 → 82 - 6 = 76
     const r = computeStaffDebriefEmotionalSupport(baseInput({ wellbeing_checks: [] }));
-    expect(r.wellbeing_check_rate).toBe(0);
+    expect(r.wellbeing_check_rate).toBeNull();
     expect(r.debrief_score).toBe(76);
   });
 });
@@ -689,18 +689,18 @@ describe("metrics computation", () => {
 
   it("returns 0 for completion_rate when no debriefs", () => {
     const r = computeStaffDebriefEmotionalSupport(baseInput({ debriefs: [] }));
-    expect(r.completion_rate).toBe(0);
+    expect(r.completion_rate).toBeNull();
   });
 
   it("returns 0 for follow_up_completion_rate when none need follow-up", () => {
     const debriefs = [makeDebrief({ id: "d1", follow_up_needed: false })];
     const r = computeStaffDebriefEmotionalSupport(baseInput({ debriefs }));
-    expect(r.follow_up_completion_rate).toBe(0);
+    expect(r.follow_up_completion_rate).toBeNull();
   });
 
   it("returns 0 for wellbeing_check_rate when no checks", () => {
     const r = computeStaffDebriefEmotionalSupport(baseInput({ wellbeing_checks: [] }));
-    expect(r.wellbeing_check_rate).toBe(0);
+    expect(r.wellbeing_check_rate).toBeNull();
   });
 });
 
@@ -1124,7 +1124,7 @@ describe("edge cases", () => {
     ];
     const r = computeStaffDebriefEmotionalSupport(baseInput({ debriefs }));
     // Should not count toward follow-up metrics since follow_up_needed is false
-    expect(r.follow_up_completion_rate).toBe(0);
+    expect(r.follow_up_completion_rate).toBeNull();
   });
 
   it("handles mixed emotional impact levels", () => {
@@ -1238,12 +1238,12 @@ describe("score clamping", () => {
 describe("pct helper behaviour (via metrics)", () => {
   it("returns 0 when denominator is 0 (completion_rate with 0 debriefs)", () => {
     const r = computeStaffDebriefEmotionalSupport(baseInput({ debriefs: [] }));
-    expect(r.completion_rate).toBe(0);
+    expect(r.completion_rate).toBeNull();
   });
 
   it("returns 0 when denominator is 0 (wellbeing_check_rate with 0 checks)", () => {
     const r = computeStaffDebriefEmotionalSupport(baseInput({ wellbeing_checks: [] }));
-    expect(r.wellbeing_check_rate).toBe(0);
+    expect(r.wellbeing_check_rate).toBeNull();
   });
 
   it("rounds to nearest integer", () => {

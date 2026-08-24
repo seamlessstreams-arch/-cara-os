@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -76,20 +77,20 @@ export function HomeTraumaTherapyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_sessions > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_sessions}</p>
               <p className="text-[9px] text-muted-foreground">Sessions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.attendance_rate >= 85 ? "bg-green-50" : d.attendance_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.attendance_rate >= 85 ? "text-[--cs-success]" : d.attendance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.attendance_rate, 85) ? "bg-green-50" : meets(d.attendance_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.attendance_rate, 85) ? "text-[--cs-success]" : meets(d.attendance_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attendance</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.mood_improvement_rate >= 70 ? "bg-green-50" : d.mood_improvement_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mood_improvement_rate >= 70 ? "text-[--cs-success]" : d.mood_improvement_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mood_improvement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.mood_improvement_rate, 70) ? "bg-green-50" : meets(d.mood_improvement_rate, 40) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.mood_improvement_rate, 70) ? "text-[--cs-success]" : meets(d.mood_improvement_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mood_improvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mood Up</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.engagement_rate >= 75 ? "bg-green-50" : d.engagement_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.engagement_rate >= 75 ? "text-[--cs-success]" : d.engagement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.engagement_rate, 75) ? "bg-green-50" : meets(d.engagement_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.engagement_rate, 75) ? "text-[--cs-success]" : meets(d.engagement_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 80 ? "bg-green-50" : d.child_voice_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 80 ? "text-[--cs-success]" : d.child_voice_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 80) ? "bg-green-50" : meets(d.child_voice_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 80) ? "text-[--cs-success]" : meets(d.child_voice_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.modality_diversity >= 4 ? "bg-green-50" : d.modality_diversity >= 2 ? "bg-amber-50" : "bg-red-50")}>

@@ -98,8 +98,8 @@ describe("computeOutcomeStarNeeds", () => {
       expect(r.children_assessed).toBe(0);
       expect(r.average_outcome_score).toBe(0);
       expect(r.children_improving).toBe(0);
-      expect(r.needs_addressed_rate).toBe(0);
-      expect(r.kpi_met_rate).toBe(0);
+      expect(r.needs_addressed_rate).toBeNull();
+      expect(r.kpi_met_rate).toBeNull();
     });
 
     it("returns concern, recommendation and critical insight on insufficient data", () => {
@@ -695,14 +695,14 @@ describe("computeOutcomeStarNeeds", () => {
     it("handles no outcome stars with children present", () => {
       const r = computeOutcomeStarNeeds(baseInput({ outcome_stars: [] }));
       expect(r.children_assessed).toBe(0);
-      expect(r.average_outcome_score).toBeNull();;
+      expect(r.average_outcome_score).toBeNull();
       expect(r.children_improving).toBe(0);
       expect(r.outcome_score).toBeGreaterThan(0);
     });
 
     it("handles no needs assessments gracefully", () => {
       const r = computeOutcomeStarNeeds(baseInput({ needs_assessments: [] }));
-      expect(r.needs_addressed_rate).toBe(0);
+      expect(r.needs_addressed_rate).toBeNull();
       // Mod 5 is +0, so score should be base minus needs contribution
       // 81 - 5 = 76 → still good
       expect(r.outcome_score).toBe(76);
@@ -710,7 +710,7 @@ describe("computeOutcomeStarNeeds", () => {
 
     it("handles no KPIs gracefully", () => {
       const r = computeOutcomeStarNeeds(baseInput({ kpis: [] }));
-      expect(r.kpi_met_rate).toBe(0);
+      expect(r.kpi_met_rate).toBeNull();
       // Mod 6 is +1 (no kpis), so score = 81 - 4 + 1 = 78
       expect(r.outcome_score).toBe(78);
     });
@@ -725,7 +725,7 @@ describe("computeOutcomeStarNeeds", () => {
       // So mod 5: 0% < 50 → -5
       // Base without needs mod: 52+6+5+5+4-5 = 67 → wait need to add kpi mod too
       // Full: 52+6+5+5+4-5+4 = 71
-      expect(r.needs_addressed_rate).toBe(0);
+      expect(r.needs_addressed_rate).toBeNull();
     });
 
     it("handles single child with all data", () => {

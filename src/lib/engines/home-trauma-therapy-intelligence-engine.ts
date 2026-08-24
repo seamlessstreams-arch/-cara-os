@@ -7,6 +7,8 @@
 // SCCIF: Health and well-being; Experiences and progress.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface TraumaTherapyRecordInput {
@@ -48,11 +50,16 @@ export interface TraumaTherapyResult {
   therapy_score: number;
   headline: string;
   total_sessions: number;
-  children_in_therapy_rate: number;
-  attendance_rate: number;
-  mood_improvement_rate: number;
-  engagement_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_in_therapy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attendance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mood_improvement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   modality_diversity: number;
   strengths: string[];
   concerns: string[];
@@ -66,10 +73,6 @@ export interface TraumaTherapyResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -96,11 +99,11 @@ export function computeTraumaTherapy(
       therapy_score: 0,
       headline: "No data available for trauma therapy intelligence analysis",
       total_sessions: 0,
-      children_in_therapy_rate: 0,
-      attendance_rate: 0,
-      mood_improvement_rate: 0,
-      engagement_rate: 0,
-      child_voice_rate: 0,
+      children_in_therapy_rate: null,
+      attendance_rate: null,
+      mood_improvement_rate: null,
+      engagement_rate: null,
+      child_voice_rate: null,
       modality_diversity: 0,
       strengths: [],
       concerns: [],
@@ -112,20 +115,20 @@ export function computeTraumaTherapy(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = logs.length;
   const uniqueChildren = new Set(logs.map(l => l.child_id)).size;
-  const childrenInTherapyRate = pct(uniqueChildren, total_children);
+  const childrenInTherapyRate = rate(uniqueChildren, total_children);
 
   const attended = logs.filter(l => l.attended).length;
-  const attendanceRate = pct(attended, total);
+  const attendanceRate = rate(attended, total);
 
   const attendedSessions = logs.filter(l => l.attended);
   const moodImproved = attendedSessions.filter(l => l.post_session_mood > l.pre_session_mood).length;
-  const moodImprovementRate = pct(moodImproved, attendedSessions.length);
+  const moodImprovementRate = rate(moodImproved, attendedSessions.length);
 
   const engaged = attendedSessions.filter(l => l.child_presentation === "engaged" || l.child_presentation === "building_trust").length;
-  const engagementRate = pct(engaged, attendedSessions.length);
+  const engagementRate = rate(engaged, attendedSessions.length);
 
   const withChildVoice = logs.filter(l => l.has_child_voice).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   const uniqueModalities = new Set(logs.map(l => l.modality)).size;
 
@@ -139,18 +142,18 @@ export function computeTraumaTherapy(
   if (total === 0) {
     score -= 3;
   } else {
-    if (childrenInTherapyRate >= 80) score += 6;
-    else if (childrenInTherapyRate >= 50) score += 2;
-    else if (childrenInTherapyRate < 30) score -= 5;
+    if (meets(childrenInTherapyRate, 80)) score += 6;
+    else if (meets(childrenInTherapyRate, 50)) score += 2;
+    else if (below(childrenInTherapyRate, 30)) score -= 5;
   }
 
   // Modifier 2: Attendance rate
   if (total === 0) {
     score -= 1;
   } else {
-    if (attendanceRate >= 85) score += 5;
-    else if (attendanceRate >= 60) score += 2;
-    else if (attendanceRate < 40) score -= 5;
+    if (meets(attendanceRate, 85)) score += 5;
+    else if (meets(attendanceRate, 60)) score += 2;
+    else if (below(attendanceRate, 40)) score -= 5;
   }
 
   // Modifier 3: Mood improvement after sessions
@@ -158,9 +161,9 @@ export function computeTraumaTherapy(
     score -= 1;
   } else {
     if (attendedSessions.length === 0) score -= 1;
-    else if (moodImprovementRate >= 70) score += 5;
-    else if (moodImprovementRate >= 40) score += 2;
-    else if (moodImprovementRate < 20) score -= 4;
+    else if (meets(moodImprovementRate, 70)) score += 5;
+    else if (meets(moodImprovementRate, 40)) score += 2;
+    else if (below(moodImprovementRate, 20)) score -= 4;
   }
 
   // Modifier 4: Child engagement in sessions
@@ -168,18 +171,18 @@ export function computeTraumaTherapy(
     // no adjustment
   } else {
     if (attendedSessions.length === 0) score -= 1;
-    else if (engagementRate >= 75) score += 5;
-    else if (engagementRate >= 50) score += 2;
-    else if (engagementRate < 25) score -= 4;
+    else if (meets(engagementRate, 75)) score += 5;
+    else if (meets(engagementRate, 50)) score += 2;
+    else if (below(engagementRate, 25)) score -= 4;
   }
 
   // Modifier 5: Child voice captured
   if (total === 0) {
     score -= 1;
   } else {
-    if (childVoiceRate >= 80) score += 4;
-    else if (childVoiceRate >= 50) score += 1;
-    else if (childVoiceRate < 20) score -= 4;
+    if (meets(childVoiceRate, 80)) score += 4;
+    else if (meets(childVoiceRate, 50)) score += 1;
+    else if (below(childVoiceRate, 20)) score -= 4;
   }
 
   // Modifier 6: Modality diversity
@@ -199,15 +202,15 @@ export function computeTraumaTherapy(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childrenInTherapyRate >= 80 && total > 0)
+  if (meets(childrenInTherapyRate, 80) && total > 0)
     strengths.push("Most children are engaged in therapeutic support — the home prioritises trauma-informed recovery");
-  if (attendanceRate >= 85 && total > 0)
+  if (meets(attendanceRate, 85) && total > 0)
     strengths.push("Therapy attendance is excellent — children are consistently supported to attend their sessions");
-  if (moodImprovementRate >= 70 && attendedSessions.length > 0)
+  if (meets(moodImprovementRate, 70) && attendedSessions.length > 0)
     strengths.push("Mood improvement after sessions indicates therapy is having a positive emotional impact");
-  if (engagementRate >= 75 && attendedSessions.length > 0)
+  if (meets(engagementRate, 75) && attendedSessions.length > 0)
     strengths.push("Children are actively engaged in their therapeutic sessions — building trust and therapeutic alliance");
-  if (childVoiceRate >= 80 && total > 0)
+  if (meets(childVoiceRate, 80) && total > 0)
     strengths.push("Children's voices are consistently captured in therapy records — their experience shapes the therapeutic journey");
   if (uniqueModalities >= 4 && total > 0)
     strengths.push("Diverse therapy modalities are available — children receive approaches tailored to their individual needs");
@@ -216,15 +219,15 @@ export function computeTraumaTherapy(
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No trauma therapy records — children's therapeutic needs are not being formally addressed");
-  if (childrenInTherapyRate < 50 && total > 0)
+  if (below(childrenInTherapyRate, 50) && total > 0)
     concerns.push("Fewer than half of children are receiving therapy — therapeutic support may not be reaching those who need it");
-  if (attendanceRate < 40 && total > 0)
+  if (below(attendanceRate, 40) && total > 0)
     concerns.push("Therapy attendance is low — sessions are being missed, undermining therapeutic progress");
-  if (moodImprovementRate < 20 && attendedSessions.length > 0)
+  if (below(moodImprovementRate, 20) && attendedSessions.length > 0)
     concerns.push("Mood rarely improves after therapy sessions — the current approach may not be effective for these children");
-  if (engagementRate < 25 && attendedSessions.length > 0)
+  if (below(engagementRate, 25) && attendedSessions.length > 0)
     concerns.push("Children are rarely engaged in sessions — therapeutic alliance may not be forming");
-  if (childVoiceRate < 20 && total > 0)
+  if (below(childVoiceRate, 20) && total > 0)
     concerns.push("Children's voices are rarely captured in therapy records — their therapeutic experience is undocumented");
   if (totalEscalations > 5)
     concerns.push("Multiple escalation flags across therapy sessions suggest unresolved therapeutic risk factors");
@@ -235,30 +238,30 @@ export function computeTraumaTherapy(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Arrange therapeutic assessments for all children and establish regular therapy provision", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 6" });
-  if (attendanceRate < 60 && total > 0)
+  if (below(attendanceRate, 60) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Investigate barriers to therapy attendance and implement support strategies", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 9" });
-  if (moodImprovementRate < 40 && attendedSessions.length > 0)
+  if (below(moodImprovementRate, 40) && attendedSessions.length > 0)
     recommendations.push({ rank: ++rank, recommendation: "Review therapeutic approaches — consider alternative modalities if current methods are not improving outcomes", urgency: "soon", regulatory_ref: "CHR 2015 Reg 6" });
-  if (childVoiceRate < 50 && total > 0)
+  if (below(childVoiceRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure children's views about their therapy are routinely captured and used to shape their therapeutic plan", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
   if (uniqueModalities < 2 && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Explore additional therapy modalities to ensure children have access to approaches suited to their needs", urgency: "planned", regulatory_ref: "CHR 2015 Reg 9" });
-  if (engagementRate < 50 && attendedSessions.length > 0)
+  if (below(engagementRate, 50) && attendedSessions.length > 0)
     recommendations.push({ rank: ++rank, recommendation: "Work with therapists to build therapeutic alliance — consider adjusting session formats or environments", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
 
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: TraumaTherapyResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No therapy records means Ofsted cannot verify how the home supports children's trauma recovery", severity: "critical" });
-  if (total > 0 && moodImprovementRate >= 70 && engagementRate >= 75)
+  if (total > 0 && meets(moodImprovementRate, 70) && meets(engagementRate, 75))
     insights.push({ text: "Strong mood improvement with high engagement indicates therapy is effectively supporting children's emotional recovery", severity: "positive" });
   if (totalEscalations > 3 && total > 0)
     insights.push({ text: "Escalation flags in therapy sessions may indicate unprocessed trauma or mismatched therapeutic approaches", severity: "warning" });
-  if (withRegulationStrategies > 0 && attendedSessions.length > 0 && pct(withRegulationStrategies, attendedSessions.length) >= 70)
+  if (withRegulationStrategies > 0 && attendedSessions.length > 0 && meets(rate(withRegulationStrategies, attendedSessions.length), 70))
     insights.push({ text: "Children are learning and using regulation strategies after sessions — therapy is building practical coping skills", severity: "positive" });
   if (uniqueModalities >= 4 && total > 0)
     insights.push({ text: "Diverse therapeutic modalities demonstrate a personalised approach to each child's trauma journey", severity: "positive" });
-  if (total > 0 && attendanceRate < 50)
+  if (total > 0 && below(attendanceRate, 50))
     insights.push({ text: "Low attendance may signal anxiety about therapy, poor therapeutic match, or practical barriers the home should address", severity: "warning" });
 
   // ── Headline ───────────────────────────────────────────────────────────

@@ -35,6 +35,8 @@
 //   Policy & review:             15  — Online safety policy current
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type OnlineRiskCategory =
@@ -191,10 +193,12 @@ export interface OnlineSafetyPolicy {
 export interface RiskAssessmentResult {
   totalChildren: number;
   childrenWithAssessment: number;
-  assessmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentRate: number | null;
   overdueAssessments: number;
   riskLevelBreakdown: { level: OnlineRiskLevel; count: number }[];
-  deviceAgreementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deviceAgreementRate: number | null;
   averageSafetyMeasures: number;
   childrenAtHighRisk: string[];
 }
@@ -202,7 +206,8 @@ export interface RiskAssessmentResult {
 export interface IncidentAnalysisResult {
   totalIncidents: number;
   averageSeverity: number;
-  resolvedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedRate: number | null;
   ceopReferrals: number;
   policeInvolvement: number;
   typeBreakdown: { incidentType: OnlineIncidentType; count: number }[];
@@ -216,8 +221,10 @@ export interface EducationResult {
   sessionsPerChild: number;
   topicsCovered: number;
   totalTopics: number;
-  topicCoverageRate: number;
-  engagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  topicCoverageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
   topicBreakdown: { topic: EducationTopic; count: number }[];
   childrenWithNoEducation: string[];
 }
@@ -225,7 +232,8 @@ export interface EducationResult {
 export interface StaffTrainingResult {
   totalStaff: number;
   staffTrained: number;
-  trainingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingRate: number | null;
   expiredTraining: number;
   staffMissingTraining: string[];
 }
@@ -335,10 +343,6 @@ export function getEducationTopicLabel(t: EducationTopic): string {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -381,7 +385,7 @@ export function evaluateRiskAssessments(
   }
 
   const childrenWithAssessment = childAssessmentMap.size;
-  const assessmentRate = pct(childrenWithAssessment, totalChildren);
+  const assessmentRate = rate(childrenWithAssessment, totalChildren);
 
   const overdueAssessments = Array.from(childAssessmentMap.values()).filter(
     (a) => a.reviewDueDate < currentDate,
@@ -406,7 +410,7 @@ export function evaluateRiskAssessments(
   const withAgreement = Array.from(childAssessmentMap.values()).filter(
     (a) => a.deviceAgreementSigned,
   ).length;
-  const deviceAgreementRate = pct(withAgreement, childrenWithAssessment);
+  const deviceAgreementRate = rate(withAgreement, childrenWithAssessment);
 
   // Average safety measures
   const totalMeasures = Array.from(childAssessmentMap.values()).reduce(
@@ -468,7 +472,7 @@ export function analyseOnlineIncidents(
         ) / 10;
 
   const resolved = periodIncidents.filter((i) => i.resolved).length;
-  const resolvedRate = pct(resolved, totalIncidents);
+  const resolvedRate = rate(resolved, totalIncidents);
 
   const ceopReferrals = periodIncidents.filter(
     (i) => i.ceopReferral,
@@ -552,11 +556,11 @@ export function evaluateEducation(
   const topicsCoveredSet = new Set(periodSessions.map((s) => s.topic));
   const topicsCovered = topicsCoveredSet.size;
   const totalTopics = ALL_TOPICS.length;
-  const topicCoverageRate = pct(topicsCovered, totalTopics);
+  const topicCoverageRate = rate(topicsCovered, totalTopics);
 
   // Engagement rate
   const engaged = periodSessions.filter((s) => s.childrenEngaged).length;
-  const engagementRate = pct(engaged, totalSessions);
+  const engagementRate = rate(engaged, totalSessions);
 
   // Topic breakdown
   const topicCounts = new Map<EducationTopic, number>();
@@ -600,7 +604,7 @@ export function evaluateStaffTraining(
   const staffTrained = staffIds.filter((id) =>
     staffWithTraining.has(id),
   ).length;
-  const trainingRate = pct(staffTrained, totalStaff);
+  const trainingRate = rate(staffTrained, totalStaff);
 
   const expiredTraining = training.filter(
     (t) => t.expiryDate && t.expiryDate < currentDate,
@@ -760,11 +764,11 @@ export function generateOnlineSafetyIntelligence(
   // 1. Risk assessment coverage (20)
   let riskScore = 0;
   if (riskAssessments.assessmentRate === 100) riskScore += 10;
-  else if (riskAssessments.assessmentRate >= 80) riskScore += 7;
-  else if (riskAssessments.assessmentRate >= 50) riskScore += 4;
+  else if (meets(riskAssessments.assessmentRate, 80)) riskScore += 7;
+  else if (meets(riskAssessments.assessmentRate, 50)) riskScore += 4;
 
-  if (riskAssessments.deviceAgreementRate >= 90) riskScore += 5;
-  else if (riskAssessments.deviceAgreementRate >= 70) riskScore += 3;
+  if (meets(riskAssessments.deviceAgreementRate, 90)) riskScore += 5;
+  else if (meets(riskAssessments.deviceAgreementRate, 70)) riskScore += 3;
 
   if (riskAssessments.averageSafetyMeasures >= 4) riskScore += 5;
   else if (riskAssessments.averageSafetyMeasures >= 2) riskScore += 3;
@@ -775,8 +779,8 @@ export function generateOnlineSafetyIntelligence(
   // 2. Staff training (20)
   let trainingScore = 0;
   if (training.trainingRate === 100) trainingScore += 15;
-  else if (training.trainingRate >= 80) trainingScore += 10;
-  else if (training.trainingRate >= 50) trainingScore += 5;
+  else if (meets(training.trainingRate, 80)) trainingScore += 10;
+  else if (meets(training.trainingRate, 50)) trainingScore += 5;
 
   if (training.expiredTraining === 0) trainingScore += 5;
   else if (training.expiredTraining <= 1) trainingScore += 2;
@@ -794,9 +798,9 @@ export function generateOnlineSafetyIntelligence(
 
   // 4. Education delivery (15)
   let educationScore = 0;
-  if (education.topicCoverageRate >= 75) educationScore += 6;
-  else if (education.topicCoverageRate >= 50) educationScore += 4;
-  else if (education.topicCoverageRate >= 25) educationScore += 2;
+  if (meets(education.topicCoverageRate, 75)) educationScore += 6;
+  else if (meets(education.topicCoverageRate, 50)) educationScore += 4;
+  else if (meets(education.topicCoverageRate, 25)) educationScore += 2;
 
   if (education.childrenWithNoEducation.length === 0) educationScore += 4;
   else if (
@@ -805,8 +809,8 @@ export function generateOnlineSafetyIntelligence(
   )
     educationScore += 2;
 
-  if (education.engagementRate >= 80) educationScore += 3;
-  else if (education.engagementRate >= 60) educationScore += 2;
+  if (meets(education.engagementRate, 80)) educationScore += 3;
+  else if (meets(education.engagementRate, 60)) educationScore += 2;
 
   if (education.sessionsPerChild >= 3) educationScore += 2;
   else if (education.sessionsPerChild >= 1) educationScore += 1;
@@ -816,7 +820,7 @@ export function generateOnlineSafetyIntelligence(
   // 5. Incident management (15)
   let incidentScore = 15; // Start at max, deduct for issues
   if (incidentAnalysis.totalIncidents > 0) {
-    if (incidentAnalysis.resolvedRate < 100) incidentScore -= 3;
+    if (below(incidentAnalysis.resolvedRate, 100)) incidentScore -= 3;
     if (incidentAnalysis.averageSeverity >= 3.5) incidentScore -= 3;
     if (incidentAnalysis.childrenWithMultipleIncidents.length > 0)
       incidentScore -= 2;
@@ -880,7 +884,7 @@ export function generateOnlineSafetyIntelligence(
   if (training.trainingRate === 100) {
     strengths.push("All staff trained in online safety");
   }
-  if (education.topicCoverageRate >= 75) {
+  if (meets(education.topicCoverageRate, 75)) {
     strengths.push(
       `Strong e-safety education coverage — ${education.topicCoverageRate}% of topics delivered`,
     );
@@ -904,7 +908,7 @@ export function generateOnlineSafetyIntelligence(
   }
 
   // Areas for development
-  if (riskAssessments.assessmentRate < 100) {
+  if (below(riskAssessments.assessmentRate, 100)) {
     areasForDevelopment.push(
       `${riskAssessments.totalChildren - riskAssessments.childrenWithAssessment} child${riskAssessments.totalChildren - riskAssessments.childrenWithAssessment !== 1 ? "ren" : ""} lack online safety risk assessments`,
     );
@@ -914,7 +918,7 @@ export function generateOnlineSafetyIntelligence(
       `${education.childrenWithNoEducation.join(", ")} received no e-safety education`,
     );
   }
-  if (training.trainingRate < 100) {
+  if (below(training.trainingRate, 100)) {
     areasForDevelopment.push(
       `Online safety training incomplete — ${training.trainingRate}% staff trained`,
     );

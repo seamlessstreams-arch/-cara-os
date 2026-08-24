@@ -5,7 +5,7 @@
 // CHR 2015 Reg 13 (Leadership & Management). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets, below } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -64,8 +64,10 @@ export interface ReadComplianceProfile {
 }
 
 export interface GovernanceProfile {
-  child_linked_rate: number;         // % of docs linked to a child
-  incident_linked_rate: number;      // % of docs linked to an incident
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_linked_rate: number | null;         // % of docs linked to a child
+  /** null when the population is empty — nothing measured, not 0%. */
+  incident_linked_rate: number | null;      // % of docs linked to an incident
   mandatory_tag_count: number;       // docs tagged as mandatory
   // fab-0: null when there are no mandatory docs requiring read receipts.
   mandatory_read_rate: number | null;
@@ -115,10 +117,6 @@ function toRating(score: number): DocumentRating {
   if (score >= 65) return "good";
   if (score >= 45) return "adequate";
   return "inadequate";
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -193,11 +191,12 @@ export function computeHomeDocumentGovernance(
     const readCount = receipts.length;
     const signedCount = receipts.filter(r => r.has_signed).length;
 
-    const readRate = total_staff > 0 ? pct(readCount, total_staff) : 0;
-    const signRate = total_staff > 0 ? pct(signedCount, total_staff) : 0;
+    const readRate = total_staff > 0 ? rate(readCount, total_staff) : 0;
+    const signRate = total_staff > 0 ? rate(signedCount, total_staff) : 0;
 
-    readRates.push(readRate);
-    signRates.push(signRate);
+    // Guarded by `total_staff > 0` above, so rate() is never null here.
+    readRates.push(readRate!);
+    signRates.push(signRate!);
 
     if (total_staff > 0 && readCount >= total_staff) fullyReadCount++;
     if (readCount === 0) unreadCount++;
@@ -229,7 +228,7 @@ export function computeHomeDocumentGovernance(
   for (const doc of mandatoryDocs) {
     if (doc.requires_read_sign && total_staff > 0) {
       const receipts = read_receipts.filter(r => r.document_id === doc.id);
-      mandatoryReadRates.push(pct(receipts.length, total_staff));
+      mandatoryReadRates.push(rate(receipts.length, total_staff)!); // guarded by total_staff > 0 above
     }
   }
   // fab-0: null when no mandatory docs require read receipts.
@@ -238,8 +237,8 @@ export function computeHomeDocumentGovernance(
     : null;
 
   const governanceProfile: GovernanceProfile = {
-    child_linked_rate: pct(childLinkedCount, documents.length),
-    incident_linked_rate: pct(incidentLinkedCount, documents.length),
+    child_linked_rate: rate(childLinkedCount, documents.length),
+    incident_linked_rate: rate(incidentLinkedCount, documents.length),
     mandatory_tag_count: mandatoryDocs.length,
     mandatory_read_rate: mandatoryReadRate,
   };
@@ -294,15 +293,15 @@ export function computeHomeDocumentGovernance(
   }
 
   // 5. Version control maturity (±3)
-  const multiVersionRate = pct(multiVersion.length, documents.length);
-  if (multiVersionRate >= 50) score += 3;
-  else if (multiVersionRate >= 25) score += 1;
+  const multiVersionRate = rate(multiVersion.length, documents.length);
+  if (meets(multiVersionRate, 50)) score += 3;
+  else if (meets(multiVersionRate, 25)) score += 1;
   else score -= 1;
 
   // 6. Staleness (±3)
-  const staleRate = pct(stale.length, documents.length);
+  const staleRate = rate(stale.length, documents.length);
   if (staleRate === 0) score += 3;
-  else if (staleRate <= 20) score += 1;
+  else if ((staleRate !== null && staleRate <= 20)) score += 1;
   else score -= 2;
 
   // 7. Category diversity (±3)
@@ -330,7 +329,7 @@ export function computeHomeDocumentGovernance(
   if (requireSign.length > 0 && meets(avgReadRate, 80)) strengths.push(`${avgReadRate}% average read rate — staff are reading required documents.`);
   if (requireSign.length > 0 && meets(avgSignRate, 80)) strengths.push(`${avgSignRate}% average sign-off rate — strong evidence of document acknowledgement.`);
   if (mandatoryReadRates.length > 0 && meets(mandatoryReadRate, 80)) strengths.push(`${mandatoryReadRate}% mandatory document read rate — critical documents are being read by staff.`);
-  if (multiVersionRate >= 50) strengths.push(`${multiVersionRate}% of documents have multiple versions — evidence of active review and update.`);
+  if (meets(multiVersionRate, 50)) strengths.push(`${formatRate(multiVersionRate)} of documents have multiple versions — evidence of active review and update.`);
   if (stale.length === 0) strengths.push("No stale documents — all documents updated within the last 6 months.");
   if (categories.size >= 5) strengths.push(`${categories.size} document categories — comprehensive document library covering multiple governance areas.`);
 
@@ -427,7 +426,7 @@ function emptyReadProfile(): ReadComplianceProfile {
 
 function emptyGovernanceProfile(): GovernanceProfile {
   return {
-    child_linked_rate: 0, incident_linked_rate: 0,
+    child_linked_rate: null, incident_linked_rate: null,
     mandatory_tag_count: 0, mandatory_read_rate: null,
   };
 }

@@ -5,6 +5,8 @@
 // CHR 2015 Reg 33: "Fitness of staff." SCCIF: "Staff competency."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PracticeObservationInput {
@@ -39,12 +41,18 @@ export interface PracticeObservationResult {
   observation_score: number;
   headline: string;
   total_observations: number;
-  outstanding_rate: number;
-  meets_standard_rate: number;
-  sign_off_rate: number;
-  development_plan_rate: number;
-  staff_response_rate: number;
-  staff_observed_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outstanding_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meets_standard_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sign_off_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  development_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_observed_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -57,10 +65,6 @@ export interface PracticeObservationResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -87,12 +91,12 @@ export function computePracticeObservationCompetency(
       observation_score: 0,
       headline: "No data available for practice observation analysis",
       total_observations: 0,
-      outstanding_rate: 0,
-      meets_standard_rate: 0,
-      sign_off_rate: 0,
-      development_plan_rate: 0,
-      staff_response_rate: 0,
-      staff_observed_rate: 0,
+      outstanding_rate: null,
+      meets_standard_rate: null,
+      sign_off_rate: null,
+      development_plan_rate: null,
+      staff_response_rate: null,
+      staff_observed_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -104,24 +108,24 @@ export function computePracticeObservationCompetency(
   const total = observations.length;
 
   const outstanding = observations.filter(o => o.outcome === "outstanding").length;
-  const outstandingRate = pct(outstanding, total);
+  const outstandingRate = rate(outstanding, total);
 
   const meetsStandard = observations.filter(o =>
     o.outcome === "outstanding" || o.outcome === "meets_standard"
   ).length;
-  const meetsStandardRate = pct(meetsStandard, total);
+  const meetsStandardRate = rate(meetsStandard, total);
 
   const signedOff = observations.filter(o => o.signed_off_by_staff).length;
-  const signOffRate = pct(signedOff, total);
+  const signOffRate = rate(signedOff, total);
 
   const withDevPlan = observations.filter(o => o.has_linked_development_plan).length;
-  const devPlanRate = pct(withDevPlan, total);
+  const devPlanRate = rate(withDevPlan, total);
 
   const withResponse = observations.filter(o => o.has_staff_response).length;
-  const staffResponseRate = pct(withResponse, total);
+  const staffResponseRate = rate(withResponse, total);
 
   const uniqueStaffObserved = new Set(observations.map(o => o.staff_id)).size;
-  const staffObservedRate = pct(uniqueStaffObserved, total_staff);
+  const staffObservedRate = rate(uniqueStaffObserved, total_staff);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -130,45 +134,45 @@ export function computePracticeObservationCompetency(
   if (total === 0) {
     score -= 3;
   } else {
-    if (meetsStandardRate >= 90) score += 5;
-    else if (meetsStandardRate >= 70) score += 2;
-    else if (meetsStandardRate < 50) score -= 5;
+    if (meets(meetsStandardRate, 90)) score += 5;
+    else if (meets(meetsStandardRate, 70)) score += 2;
+    else if (below(meetsStandardRate, 50)) score -= 5;
   }
 
   // Modifier 2: Staff coverage (% of team observed)
   if (total === 0) {
     // already penalised above
   } else {
-    if (staffObservedRate >= 80) score += 6;
-    else if (staffObservedRate >= 50) score += 2;
-    else if (staffObservedRate < 30) score -= 5;
+    if (meets(staffObservedRate, 80)) score += 6;
+    else if (meets(staffObservedRate, 50)) score += 2;
+    else if (below(staffObservedRate, 30)) score -= 5;
   }
 
   // Modifier 3: Sign-off rate (staff acknowledged)
   if (total === 0) {
     // no adjustment
   } else {
-    if (signOffRate >= 90) score += 5;
-    else if (signOffRate >= 70) score += 2;
-    else if (signOffRate < 50) score -= 4;
+    if (meets(signOffRate, 90)) score += 5;
+    else if (meets(signOffRate, 70)) score += 2;
+    else if (below(signOffRate, 50)) score -= 4;
   }
 
   // Modifier 4: Staff response engagement
   if (total === 0) {
     // no adjustment
   } else {
-    if (staffResponseRate >= 80) score += 5;
-    else if (staffResponseRate >= 50) score += 2;
-    else if (staffResponseRate < 30) score -= 5;
+    if (meets(staffResponseRate, 80)) score += 5;
+    else if (meets(staffResponseRate, 50)) score += 2;
+    else if (below(staffResponseRate, 30)) score -= 5;
   }
 
   // Modifier 5: Development plan linkage
   if (total === 0) {
     score -= 1;
   } else {
-    if (devPlanRate >= 80) score += 4;
-    else if (devPlanRate >= 50) score += 1;
-    else if (devPlanRate < 30) score -= 4;
+    if (meets(devPlanRate, 80)) score += 4;
+    else if (meets(devPlanRate, 50)) score += 1;
+    else if (below(devPlanRate, 30)) score -= 4;
   }
 
   // Modifier 6: Observation frequency (per staff ratio)
@@ -202,21 +206,21 @@ export function computePracticeObservationCompetency(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (meetsStandardRate >= 90 && total > 0) strengths.push("All observed staff meet or exceed practice standards — strong evidence of competency");
-  if (staffObservedRate >= 80 && total > 0) strengths.push("Comprehensive staff coverage ensures no team member's practice goes unobserved");
-  if (signOffRate >= 90 && total > 0) strengths.push("Staff consistently acknowledge and engage with observation feedback");
-  if (staffResponseRate >= 80 && total > 0) strengths.push("Staff actively reflect on observations — demonstrating a learning culture");
-  if (devPlanRate >= 80 && total > 0) strengths.push("Observations are systematically linked to development plans — learning is structured");
-  if (outstandingRate >= 50 && total > 0) strengths.push("High proportion of outstanding practice observed — staff deliver exceptional care");
+  if (meets(meetsStandardRate, 90) && total > 0) strengths.push("All observed staff meet or exceed practice standards — strong evidence of competency");
+  if (meets(staffObservedRate, 80) && total > 0) strengths.push("Comprehensive staff coverage ensures no team member's practice goes unobserved");
+  if (meets(signOffRate, 90) && total > 0) strengths.push("Staff consistently acknowledge and engage with observation feedback");
+  if (meets(staffResponseRate, 80) && total > 0) strengths.push("Staff actively reflect on observations — demonstrating a learning culture");
+  if (meets(devPlanRate, 80) && total > 0) strengths.push("Observations are systematically linked to development plans — learning is structured");
+  if (meets(outstandingRate, 50) && total > 0) strengths.push("High proportion of outstanding practice observed — staff deliver exceptional care");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No practice observations recorded — staff competency cannot be evidenced");
-  if (meetsStandardRate < 50 && total > 0) concerns.push("Majority of observations identify staff not yet meeting expected standards");
-  if (staffObservedRate < 30 && total > 0) concerns.push("Most staff have not been observed — competency assurance has significant gaps");
-  if (signOffRate < 50 && total > 0) concerns.push("Staff are not signing off observations — feedback loop is broken");
-  if (staffResponseRate < 30 && total > 0) concerns.push("Staff rarely respond to observations — reflective practice is absent");
-  if (devPlanRate < 30 && total > 0) concerns.push("Observations are not linked to development plans — learning is not structured");
+  if (below(meetsStandardRate, 50) && total > 0) concerns.push("Majority of observations identify staff not yet meeting expected standards");
+  if (below(staffObservedRate, 30) && total > 0) concerns.push("Most staff have not been observed — competency assurance has significant gaps");
+  if (below(signOffRate, 50) && total > 0) concerns.push("Staff are not signing off observations — feedback loop is broken");
+  if (below(staffResponseRate, 30) && total > 0) concerns.push("Staff rarely respond to observations — reflective practice is absent");
+  if (below(devPlanRate, 30) && total > 0) concerns.push("Observations are not linked to development plans — learning is not structured");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: PracticeObservationResult["recommendations"] = [];
@@ -224,16 +228,16 @@ export function computePracticeObservationCompetency(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Establish a regular practice observation schedule covering all staff", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (staffObservedRate < 50 && total > 0) {
+  if (below(staffObservedRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Extend observation programme to cover all team members within a rolling cycle", urgency: "soon", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (meetsStandardRate < 70 && total > 0) {
+  if (below(meetsStandardRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Provide targeted support for staff whose observations identify development needs", urgency: "immediate", regulatory_ref: "SCCIF Competency" });
   }
-  if (signOffRate < 70 && total > 0) {
+  if (below(signOffRate, 70) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure all observations are formally acknowledged and signed off by staff", urgency: "soon", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (devPlanRate < 50 && total > 0) {
+  if (below(devPlanRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Link observation outcomes to individual development plans for actionable learning", urgency: "planned", regulatory_ref: "SCCIF Staff Development" });
   }
   if (obsPerStaff < 1 && total > 0) {
@@ -245,19 +249,19 @@ export function computePracticeObservationCompetency(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: PracticeObservationResult["insights"] = [];
 
-  if (meetsStandardRate >= 90 && staffObservedRate >= 80 && total > 0) {
+  if (meets(meetsStandardRate, 90) && meets(staffObservedRate, 80) && total > 0) {
     insights.push({ text: "Comprehensive observation programme with consistently high standards — robust competency evidence for Ofsted", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "Without practice observations, the home cannot demonstrate staff are competent — a critical gap for regulators", severity: "critical" });
   }
-  if (meetsStandardRate < 50 && total > 0) {
+  if (below(meetsStandardRate, 50) && total > 0) {
     insights.push({ text: "Low competency rates suggest systemic workforce development needs — consider targeted training investment", severity: "warning" });
   }
-  if (staffResponseRate >= 80 && signOffRate >= 90 && total > 0) {
+  if (meets(staffResponseRate, 80) && meets(signOffRate, 90) && total > 0) {
     insights.push({ text: "Strong staff engagement with observations indicates a genuine learning culture — care quality benefits directly", severity: "positive" });
   }
-  if (outstandingRate >= 50 && total > 0) {
+  if (meets(outstandingRate, 50) && total > 0) {
     insights.push({ text: "Over half of observations rate as outstanding — this team delivers exceptional practice worthy of recognition", severity: "positive" });
   }
 

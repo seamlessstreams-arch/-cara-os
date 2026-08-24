@@ -5,6 +5,8 @@
 // CHR 2015 Reg 25: "Premises: inc. transport arrangements."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface TransportLogInput {
@@ -59,11 +61,16 @@ export interface TransportJourneySafetyResult {
   transport_score: number;
   headline: string;
   total_journeys: number;
-  driver_compliance_rate: number;
-  vehicle_check_rate: number;
-  incident_rate: number;
-  risk_assessment_coverage_rate: number;
-  defect_free_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  driver_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  vehicle_check_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incident_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_assessment_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  defect_free_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -76,10 +83,6 @@ export interface TransportJourneySafetyResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -106,11 +109,11 @@ export function computeTransportJourneySafety(
       transport_score: 0,
       headline: "No data available for transport safety analysis",
       total_journeys: 0,
-      driver_compliance_rate: 0,
-      vehicle_check_rate: 0,
-      incident_rate: 0,
-      risk_assessment_coverage_rate: 0,
-      defect_free_rate: 0,
+      driver_compliance_rate: null,
+      vehicle_check_rate: null,
+      incident_rate: null,
+      risk_assessment_coverage_rate: null,
+      defect_free_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -122,19 +125,19 @@ export function computeTransportJourneySafety(
   const totalJourneys = logs.length;
 
   const driverCompliant = logs.filter(l => l.driver_licence_checked).length;
-  const driverComplianceRate = pct(driverCompliant, totalJourneys);
+  const driverComplianceRate = rate(driverCompliant, totalJourneys);
 
   const vehicleChecked = logs.filter(l => l.vehicle_checked).length;
-  const vehicleCheckRate = pct(vehicleChecked, totalJourneys);
+  const vehicleCheckRate = rate(vehicleChecked, totalJourneys);
 
   const incidents = logs.filter(l => l.incident_during_journey).length;
-  const incidentRate = pct(incidents, totalJourneys);
+  const incidentRate = rate(incidents, totalJourneys);
 
   const withRA = logs.filter(l => l.has_risk_assessment).length;
-  const raCoverageRate = pct(withRA, totalJourneys);
+  const raCoverageRate = rate(withRA, totalJourneys);
 
   const defectFree = vehicle_checks.filter(v => v.defects_found_count === 0).length;
-  const defectFreeRate = pct(defectFree, vehicle_checks.length);
+  const defectFreeRate = rate(defectFree, vehicle_checks.length);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -143,8 +146,8 @@ export function computeTransportJourneySafety(
   if (totalJourneys === 0) {
     score += 1;
   } else {
-    if (driverComplianceRate >= 95) score += 5;
-    else if (driverComplianceRate >= 80) score += 2;
+    if (meets(driverComplianceRate, 95)) score += 5;
+    else if (meets(driverComplianceRate, 80)) score += 2;
     else score -= 5;
   }
 
@@ -152,9 +155,9 @@ export function computeTransportJourneySafety(
   if (totalJourneys === 0) {
     // no adjustment
   } else {
-    if (vehicleCheckRate >= 95) score += 6;
-    else if (vehicleCheckRate >= 80) score += 2;
-    else if (vehicleCheckRate < 60) score -= 5;
+    if (meets(vehicleCheckRate, 95)) score += 6;
+    else if (meets(vehicleCheckRate, 80)) score += 2;
+    else if (below(vehicleCheckRate, 60)) score -= 5;
   }
 
   // Modifier 3: Incident rate (lower is better)
@@ -162,40 +165,40 @@ export function computeTransportJourneySafety(
     score += 2;
   } else {
     if (incidentRate === 0) score += 5;
-    else if (incidentRate <= 5) score += 2;
-    else if (incidentRate > 15) score -= 5;
+    else if ((incidentRate !== null && incidentRate <= 5)) score += 2;
+    else if (above(incidentRate, 15)) score -= 5;
   }
 
   // Modifier 4: Risk assessment coverage
   if (totalJourneys === 0) {
     score -= 1;
   } else {
-    if (raCoverageRate >= 95) score += 5;
-    else if (raCoverageRate >= 80) score += 2;
-    else if (raCoverageRate < 60) score -= 4;
+    if (meets(raCoverageRate, 95)) score += 5;
+    else if (meets(raCoverageRate, 80)) score += 2;
+    else if (below(raCoverageRate, 60)) score -= 4;
   }
 
   // Modifier 5: Vehicle defect-free rate
   if (vehicle_checks.length === 0) {
     score -= 2;
   } else {
-    if (defectFreeRate >= 90) score += 4;
-    else if (defectFreeRate >= 70) score += 1;
-    else if (defectFreeRate < 50) score -= 4;
+    if (meets(defectFreeRate, 90)) score += 4;
+    else if (meets(defectFreeRate, 70)) score += 1;
+    else if (below(defectFreeRate, 50)) score -= 4;
   }
 
   // Modifier 6: Risk assessment quality (signed-off and in-use)
   const activeRAs = risk_assessments.filter(ra => ra.in_use);
   const signedOff = activeRAs.filter(ra => ra.signed_off_by_rm).length;
-  const signedOffRate = pct(signedOff, activeRAs.length);
+  const signedOffRate = rate(signedOff, activeRAs.length);
   const needingReview = risk_assessments.filter(ra => ra.needs_review).length;
 
   if (risk_assessments.length === 0) {
     score -= 2;
   } else {
-    if (signedOffRate >= 90 && needingReview === 0) score += 5;
-    else if (signedOffRate >= 70) score += 2;
-    else if (signedOffRate < 50) score -= 5;
+    if (meets(signedOffRate, 90) && needingReview === 0) score += 5;
+    else if (meets(signedOffRate, 70)) score += 2;
+    else if (below(signedOffRate, 50)) score -= 5;
   }
 
   score = clamp(score, 0, 100);
@@ -222,38 +225,38 @@ export function computeTransportJourneySafety(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (driverComplianceRate >= 95 && totalJourneys > 0) strengths.push("Driver licence checks are completed for all journeys — ensuring legal compliance");
-  if (vehicleCheckRate >= 95 && totalJourneys > 0) strengths.push("Vehicles are systematically checked before every journey");
+  if (meets(driverComplianceRate, 95) && totalJourneys > 0) strengths.push("Driver licence checks are completed for all journeys — ensuring legal compliance");
+  if (meets(vehicleCheckRate, 95) && totalJourneys > 0) strengths.push("Vehicles are systematically checked before every journey");
   if (incidentRate === 0 && totalJourneys > 0) strengths.push("Zero journey incidents recorded — children travel safely");
-  if (raCoverageRate >= 95 && totalJourneys > 0) strengths.push("All journeys have associated risk assessments in place");
-  if (defectFreeRate >= 90 && vehicle_checks.length > 0) strengths.push("Vehicle fleet is maintained to a high standard with minimal defects");
-  if (signedOffRate >= 90 && risk_assessments.length > 0 && needingReview === 0) strengths.push("Transport risk assessments are all signed off and up to date");
+  if (meets(raCoverageRate, 95) && totalJourneys > 0) strengths.push("All journeys have associated risk assessments in place");
+  if (meets(defectFreeRate, 90) && vehicle_checks.length > 0) strengths.push("Vehicle fleet is maintained to a high standard with minimal defects");
+  if (meets(signedOffRate, 90) && risk_assessments.length > 0 && needingReview === 0) strengths.push("Transport risk assessments are all signed off and up to date");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (driverComplianceRate < 80 && totalJourneys > 0) concerns.push(`Driver licence checks not completed for ${100 - driverComplianceRate}% of journeys — legal risk`);
-  if (vehicleCheckRate < 60 && totalJourneys > 0) concerns.push("Vehicles are not being checked before the majority of journeys");
-  if (incidentRate > 15 && totalJourneys > 0) concerns.push(`High incident rate of ${incidentRate}% during journeys — pattern requires investigation`);
-  if (raCoverageRate < 60 && totalJourneys > 0) concerns.push("Most journeys lack an associated risk assessment");
-  if (defectFreeRate < 50 && vehicle_checks.length > 0) concerns.push("Over half of vehicle checks identify defects — fleet maintenance needs urgent attention");
+  if (below(driverComplianceRate, 80) && totalJourneys > 0) concerns.push(`Driver licence checks not completed for ${100 - driverComplianceRate!}% of journeys — legal risk`);
+  if (below(vehicleCheckRate, 60) && totalJourneys > 0) concerns.push("Vehicles are not being checked before the majority of journeys");
+  if (above(incidentRate, 15) && totalJourneys > 0) concerns.push(`High incident rate of ${formatRate(incidentRate)} during journeys — pattern requires investigation`);
+  if (below(raCoverageRate, 60) && totalJourneys > 0) concerns.push("Most journeys lack an associated risk assessment");
+  if (below(defectFreeRate, 50) && vehicle_checks.length > 0) concerns.push("Over half of vehicle checks identify defects — fleet maintenance needs urgent attention");
   if (risk_assessments.length === 0 && totalJourneys > 0) concerns.push("No transport risk assessments in place — children's journey safety is not evidenced");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: TransportJourneySafetyResult["recommendations"] = [];
 
-  if (driverComplianceRate < 80 && totalJourneys > 0) {
+  if (below(driverComplianceRate, 80) && totalJourneys > 0) {
     recs.push({ rank: 1, recommendation: "Implement mandatory driver licence verification before every journey", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (vehicleCheckRate < 80 && totalJourneys > 0) {
+  if (below(vehicleCheckRate, 80) && totalJourneys > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure pre-use vehicle checks are completed and recorded for all journeys", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (raCoverageRate < 80 && totalJourneys > 0) {
+  if (below(raCoverageRate, 80) && totalJourneys > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Develop transport risk assessments for all regular and ad-hoc journey routes", urgency: "soon", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (incidentRate > 10 && totalJourneys > 0) {
+  if (above(incidentRate, 10) && totalJourneys > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review journey incident patterns and implement targeted prevention measures", urgency: "soon", regulatory_ref: "CHR 2015 Reg 25" });
   }
-  if (defectFreeRate < 70 && vehicle_checks.length > 0) {
+  if (below(defectFreeRate, 70) && vehicle_checks.length > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review vehicle maintenance schedule to address recurring defects", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25" });
   }
   if (needingReview > 0) {
@@ -265,19 +268,19 @@ export function computeTransportJourneySafety(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: TransportJourneySafetyResult["insights"] = [];
 
-  if (driverComplianceRate >= 95 && vehicleCheckRate >= 95 && incidentRate === 0 && totalJourneys > 0) {
+  if (meets(driverComplianceRate, 95) && meets(vehicleCheckRate, 95) && incidentRate === 0 && totalJourneys > 0) {
     insights.push({ text: "Transport governance is comprehensive — children's safety during journeys is fully evidenced", severity: "positive" });
   }
-  if (driverComplianceRate < 80 && totalJourneys > 0) {
+  if (below(driverComplianceRate, 80) && totalJourneys > 0) {
     insights.push({ text: "Unchecked drivers present a safeguarding and legal risk — this must be addressed urgently", severity: "critical" });
   }
-  if (incidentRate > 15 && totalJourneys > 0) {
+  if (above(incidentRate, 15) && totalJourneys > 0) {
     insights.push({ text: "Elevated journey incident rate suggests route or behaviour factors need strategic review", severity: "warning" });
   }
   if (risk_assessments.length === 0 && totalJourneys > 0) {
     insights.push({ text: "No transport risk assessments means journey risks are unmanaged — regulators will flag this", severity: "critical" });
   }
-  if (defectFreeRate >= 90 && vehicle_checks.length > 0) {
+  if (meets(defectFreeRate, 90) && vehicle_checks.length > 0) {
     insights.push({ text: "Well-maintained fleet with minimal defects — good evidence of vehicle management", severity: "positive" });
   }
 

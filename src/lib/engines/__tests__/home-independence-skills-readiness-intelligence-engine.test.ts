@@ -138,13 +138,13 @@ describe("insufficient data", () => {
     expect(r.total_records).toBe(0);
     expect(r.children_assessed).toBe(0);
     expect(r.average_readiness).toBe(0);
-    expect(r.child_view_rate).toBe(0);
-    expect(r.evidence_rate).toBe(0);
-    expect(r.next_step_rate).toBe(0);
-    expect(r.skill_progression_rate).toBe(0);
-    expect(r.pathway_plan_rate).toBe(0);
-    expect(r.pathway_child_voice_rate).toBe(0);
-    expect(r.review_currency_rate).toBe(0);
+    expect(r.child_view_rate).toBeNull();
+    expect(r.evidence_rate).toBeNull();
+    expect(r.next_step_rate).toBeNull();
+    expect(r.skill_progression_rate).toBeNull();
+    expect(r.pathway_plan_rate).toBeNull();
+    expect(r.pathway_child_voice_rate).toBeNull();
+    expect(r.review_currency_rate).toBeNull();
     expect(r.category_coverage).toBe(0);
   });
 
@@ -235,7 +235,7 @@ describe("no records or plans with children present", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("returns zero for all metrics", () => {
+  it("leaves child_view_rate and evidence_rate unmeasured with no records or pathway plans", () => {
     const r = computeIndependenceSkillsReadiness({
       today: "2026-05-28",
       total_children: 4,
@@ -245,8 +245,8 @@ describe("no records or plans with children present", () => {
     expect(r.total_records).toBe(0);
     expect(r.children_assessed).toBe(0);
     expect(r.average_readiness).toBe(0);
-    expect(r.child_view_rate).toBe(0);
-    expect(r.evidence_rate).toBe(0);
+    expect(r.child_view_rate).toBeNull();
+    expect(r.evidence_rate).toBeNull();
   });
 
   it("returns empty strengths", () => {
@@ -1542,12 +1542,12 @@ describe("pathway plan metrics", () => {
     expect(r.pathway_child_voice_rate).toBe(50);
   });
 
-  it("0 pathway plans yields 0% pathway_child_voice_rate", () => {
+  it("0 pathway plans leaves pathway_child_voice_rate unmeasured", () => {
     const r = computeIndependenceSkillsReadiness(baseInput({
       pathway_plans: [],
       records: [makeRecord({ id: "rec_1", child_id: "child_1" })],
     }));
-    expect(r.pathway_child_voice_rate).toBe(0);
+    expect(r.pathway_child_voice_rate).toBeNull();
     expect(r.pathway_plan_rate).toBe(0);
   });
 
@@ -1652,13 +1652,13 @@ describe("category coverage computation", () => {
     expect(r.category_coverage).toBe(3);
   });
 
-  it("no skills means 0 coverage", () => {
+  it("no skills leaves category_coverage unmeasured", () => {
     const r = computeIndependenceSkillsReadiness(baseInput({
       records: [
         makeRecord({ id: "rec_1", child_id: "child_1", skills: [] }),
       ],
     }));
-    expect(r.category_coverage).toBeNull();;
+    expect(r.category_coverage).toBeNull();
   });
 
   it("multiple records for same child merge categories", () => {
@@ -2694,9 +2694,9 @@ describe("edge cases", () => {
         makeRecord({ id: "rec_1", child_id: "child_1", skills: [] }),
       ],
     }));
-    expect(r.evidence_rate).toBe(0);
-    expect(r.next_step_rate).toBe(0);
-    expect(r.skill_progression_rate).toBe(0);
+    expect(r.evidence_rate).toBeNull();
+    expect(r.next_step_rate).toBeNull();
+    expect(r.skill_progression_rate).toBeNull();
   });
 
   it("handles pathway plans with no child voice for voice rate calculation", () => {
@@ -2807,15 +2807,15 @@ describe("edge cases", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("pct helper behavior", () => {
-  it("0 / 0 returns 0", () => {
+  it("0 / 0 leaves evidence_rate and next_step_rate unmeasured", () => {
     const r = computeIndependenceSkillsReadiness(baseInput({
       records: [makeRecord({ id: "rec_1", child_id: "child_1", skills: [] })],
       pathway_plans: [],
     }));
     // Evidence rate with 0 skills → pct(0, 0) = 0
-    expect(r.evidence_rate).toBe(0);
-    expect(r.next_step_rate).toBe(0);
-    expect(r.skill_progression_rate).toBe(0);
+    expect(r.evidence_rate).toBeNull();
+    expect(r.next_step_rate).toBeNull();
+    expect(r.skill_progression_rate).toBeNull();
   });
 
   it("rounds to nearest integer", () => {

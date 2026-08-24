@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,23 +71,23 @@ export function HomeWelfareCheckComplianceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Rounds</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.check_completion_rate >= 98 ? "bg-green-50" : d.check_completion_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.check_completion_rate >= 98 ? "text-[--cs-success]" : d.check_completion_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.check_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.check_completion_rate >= 98 ? "text-[--cs-success]" : d.check_completion_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.check_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.building_security_rate >= 98 ? "bg-green-50" : d.building_security_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.building_security_rate >= 98 ? "text-[--cs-success]" : d.building_security_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.building_security_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.building_security_rate >= 98 ? "text-[--cs-success]" : d.building_security_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.building_security_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Secure</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.fire_exit_compliance_rate >= 98 ? "bg-green-50" : d.fire_exit_compliance_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.fire_exit_compliance_rate >= 98 ? "text-[--cs-success]" : d.fire_exit_compliance_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.fire_exit_compliance_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.fire_exit_compliance_rate >= 98 ? "text-[--cs-success]" : d.fire_exit_compliance_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.fire_exit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Fire Exits</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.distress_response_rate >= 95 ? "bg-green-50" : d.distress_response_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.distress_response_rate >= 95 ? "text-[--cs-success]" : d.distress_response_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.distress_response_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.distress_response_rate >= 95 ? "text-[--cs-success]" : d.distress_response_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.distress_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Distress</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.documentation_rate >= 80 ? "bg-green-50" : d.documentation_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.documentation_rate >= 80 ? "text-[--cs-success]" : d.documentation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.documentation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.documentation_rate >= 80 ? "text-[--cs-success]" : d.documentation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.documentation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Documented</p>
             </div>
           </div>

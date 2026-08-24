@@ -5,6 +5,8 @@
 // CHR 2015 Reg 36 (Record Keeping). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CareFormInput {
@@ -105,10 +107,6 @@ function toRating(score: number): RecordingRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   const diff = new Date(b).getTime() - new Date(a).getTime();
   return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
@@ -148,7 +146,7 @@ export function computeHomeRecordingQuality(
   // ── Submission Profile ────────────────────────────────────────────
   const submitted = forms.filter(f => f.submitted_at !== null);
   const drafts = forms.filter(f => f.status === "draft");
-  const submissionRate = pct(submitted.length, forms.length);
+  const submissionRate = rate(submitted.length, forms.length);
   const overdue = forms.filter(f =>
     f.due_date < today && f.status !== "approved"
   );
@@ -166,7 +164,7 @@ export function computeHomeRecordingQuality(
   const pendingReview = forms.filter(f =>
     f.submitted_at !== null && f.reviewed_at === null && f.status !== "draft"
   );
-  const reviewRate = pct(reviewed.length, submitted.length);
+  const reviewRate = rate(reviewed.length, submitted.length);
 
   // Average review days for reviewed forms
   const reviewDays: number[] = [];
@@ -188,7 +186,7 @@ export function computeHomeRecordingQuality(
 
   // ── Approval Profile ──────────────────────────────────────────────
   const approved = forms.filter(f => f.approved_at !== null);
-  const approvalRate = pct(approved.length, reviewed.length);
+  const approvalRate = rate(approved.length, reviewed.length);
 
   const approvalDays: number[] = [];
   for (const f of approved) {
@@ -217,8 +215,8 @@ export function computeHomeRecordingQuality(
   const qualityProfile: QualityProfile = {
     urgent_count: urgent.length,
     high_priority_count: highPriority.length,
-    child_linked_rate: pct(childLinked.length, forms.length),
-    incident_linked_rate: pct(incidentLinked.length, forms.length),
+    child_linked_rate: rate(childLinked.length, forms.length),
+    incident_linked_rate: rate(incidentLinked.length, forms.length),
     form_type_count: formTypes.size,
     urgent_unreviewed_count: urgentUnreviewed.length,
   };
@@ -228,16 +226,16 @@ export function computeHomeRecordingQuality(
   let score = 52;
 
   // 1. Submission rate (±5)
-  if (submissionRate >= 90) score += 5;
-  else if (submissionRate >= 70) score += 2;
-  else if (submissionRate >= 50) score -= 1;
+  if (meets(submissionRate, 90)) score += 5;
+  else if (meets(submissionRate, 70)) score += 2;
+  else if (meets(submissionRate, 50)) score -= 1;
   else score -= 4;
 
   // 2. Review rate (±4)
   if (submitted.length > 0) {
-    if (reviewRate >= 80) score += 4;
-    else if (reviewRate >= 60) score += 1;
-    else if (reviewRate >= 30) score -= 1;
+    if (meets(reviewRate, 80)) score += 4;
+    else if (meets(reviewRate, 60)) score += 1;
+    else if (meets(reviewRate, 30)) score -= 1;
     else score -= 3;
   }
 
@@ -251,8 +249,8 @@ export function computeHomeRecordingQuality(
 
   // 4. Approval rate (±4)
   if (reviewed.length > 0) {
-    if (approvalRate >= 80) score += 4;
-    else if (approvalRate >= 50) score += 1;
+    if (meets(approvalRate, 80)) score += 4;
+    else if (meets(approvalRate, 50)) score += 1;
     else score -= 2;
   }
 
@@ -263,10 +261,10 @@ export function computeHomeRecordingQuality(
   else score -= 2;
 
   // 6. Draft backlog (±3)
-  const draftRate = pct(drafts.length, forms.length);
-  if (draftRate <= 10) score += 3;
-  else if (draftRate <= 25) score += 1;
-  else if (draftRate <= 50) score -= 1;
+  const draftRate = rate(drafts.length, forms.length);
+  if ((draftRate !== null && draftRate <= 10)) score += 3;
+  else if ((draftRate !== null && draftRate <= 25)) score += 1;
+  else if ((draftRate !== null && draftRate <= 50)) score -= 1;
   else score -= 2;
 
   // 7. Urgent handling (±3)
@@ -288,23 +286,23 @@ export function computeHomeRecordingQuality(
 
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (submissionRate >= 90) strengths.push(`${submissionRate}% submission rate — comprehensive recording practice with minimal drafts.`);
-  if (reviewRate >= 80 && submitted.length > 0) strengths.push(`${reviewRate}% review rate — consistent management oversight of recordings.`);
+  if (meets(submissionRate, 90)) strengths.push(`${formatRate(submissionRate)} submission rate — comprehensive recording practice with minimal drafts.`);
+  if (meets(reviewRate, 80) && submitted.length > 0) strengths.push(`${formatRate(reviewRate)} review rate — consistent management oversight of recordings.`);
   if ((avgReviewDays ?? 0) <= 1 && reviewDays.length > 0) strengths.push(`Average review within ${(avgReviewDays ?? 0)} days — rapid management response to submissions.`);
-  if (approvalRate >= 80 && reviewed.length > 0) strengths.push(`${approvalRate}% approval rate — strong quality assurance workflow.`);
+  if (meets(approvalRate, 80) && reviewed.length > 0) strengths.push(`${formatRate(approvalRate)} approval rate — strong quality assurance workflow.`);
   if (overdue.length === 0) strengths.push("No overdue forms — all recording deadlines met.");
   if (urgentUnreviewed.length === 0 && urgent.length > 0) strengths.push("All urgent forms reviewed — critical recordings prioritised appropriately.");
   if (formTypes.size >= 4) strengths.push(`${formTypes.size} form types in use — comprehensive recording across different care domains.`);
 
   // ── Concerns ──────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (drafts.length > 0 && draftRate > 25) concerns.push(`${drafts.length} forms still in draft (${draftRate}%) — incomplete recordings represent a governance gap.`);
+  if (drafts.length > 0 && above(draftRate, 25)) concerns.push(`${drafts.length} forms still in draft (${formatRate(draftRate)}) — incomplete recordings represent a governance gap.`);
   if (overdue.length > 0) concerns.push(`${overdue.length} form${overdue.length > 1 ? "s" : ""} overdue — recording deadlines not being met.`);
-  if (reviewRate < 50 && submitted.length > 0) concerns.push(`Only ${reviewRate}% review rate — most submitted forms lack management oversight.`);
+  if (below(reviewRate, 50) && submitted.length > 0) concerns.push(`Only ${formatRate(reviewRate)} review rate — most submitted forms lack management oversight.`);
   if (pendingReview.length > 0) concerns.push(`${pendingReview.length} form${pendingReview.length > 1 ? "s" : ""} awaiting review — management review backlog.`);
   if (urgentUnreviewed.length > 0) concerns.push(`${urgentUnreviewed.length} urgent form${urgentUnreviewed.length > 1 ? "s" : ""} not yet reviewed — critical recordings need immediate attention.`);
   if ((avgReviewDays ?? 0) > 7 && reviewDays.length > 0) concerns.push(`Average review taking ${(avgReviewDays ?? 0)} days — significant delay in management oversight.`);
-  if (submissionRate < 50) concerns.push("Fewer than half of forms have been submitted — significant recording gap.");
+  if (below(submissionRate, 50)) concerns.push("Fewer than half of forms have been submitted — significant recording gap.");
 
   // ── Recommendations ───────────────────────────────────────────────
   const recs: RecordingRecommendation[] = [];
@@ -316,10 +314,10 @@ export function computeHomeRecordingQuality(
   if (overdue.length > 2) {
     recs.push({ rank: rank++, recommendation: `Clear ${overdue.length} overdue forms — assign responsibility and set completion deadlines within 48 hours.`, urgency: "immediate", regulatory_ref: "Reg 36" });
   }
-  if (reviewRate < 50 && submitted.length > 0) {
+  if (below(reviewRate, 50) && submitted.length > 0) {
     recs.push({ rank: rank++, recommendation: "Implement daily review of submitted forms — management must evidence oversight of all recordings.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
-  if (draftRate > 25) {
+  if (above(draftRate, 25)) {
     recs.push({ rank: rank++, recommendation: `Complete ${drafts.length} draft forms — staff should be supported to finish recordings promptly.`, urgency: "soon", regulatory_ref: "Reg 36" });
   }
   if (formTypes.size < 3) {
@@ -329,26 +327,26 @@ export function computeHomeRecordingQuality(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: RecordingInsight[] = [];
 
-  if (submissionRate >= 90 && reviewRate >= 80 && overdue.length === 0) {
-    insights.push({ text: `Recording quality is exemplary — ${submissionRate}% submitted, ${reviewRate}% reviewed, and no overdue forms. Ofsted will see a home where recording practice is embedded in daily work, with management providing consistent oversight and quality assurance.`, severity: "positive" });
+  if (meets(submissionRate, 90) && meets(reviewRate, 80) && overdue.length === 0) {
+    insights.push({ text: `Recording quality is exemplary — ${formatRate(submissionRate)} submitted, ${formatRate(reviewRate)} reviewed, and no overdue forms. Ofsted will see a home where recording practice is embedded in daily work, with management providing consistent oversight and quality assurance.`, severity: "positive" });
   }
   if (urgentUnreviewed.length > 0) {
     insights.push({ text: `${urgentUnreviewed.length} urgent form${urgentUnreviewed.length > 1 ? "s" : ""} unreviewed. Urgent recordings — safeguarding referrals, serious incidents — require same-day management review. Delays risk key information being missed and undermine the home's safeguarding response.`, severity: "critical" });
   }
-  if (reviewRate < 30 && submitted.length > 0) {
-    insights.push({ text: `Review rate is only ${reviewRate}%. When management does not review recordings, there is no quality check on the accuracy and completeness of what staff document. Ofsted expects evidence that the registered manager maintains active oversight of all significant records.`, severity: "critical" });
+  if (below(reviewRate, 30) && submitted.length > 0) {
+    insights.push({ text: `Review rate is only ${formatRate(reviewRate)}. When management does not review recordings, there is no quality check on the accuracy and completeness of what staff document. Ofsted expects evidence that the registered manager maintains active oversight of all significant records.`, severity: "critical" });
   }
   if (overdue.length > 0 && drafts.length > 0) {
     insights.push({ text: `${overdue.length} overdue and ${drafts.length} draft forms. This combination suggests recording is seen as an administrative burden rather than a safeguarding tool. Children's safety depends on timely, accurate recording — the home needs to reframe recording as a core care activity.`, severity: "warning" });
   }
-  if (formTypes.size >= 4 && submissionRate >= 80) {
-    insights.push({ text: `${formTypes.size} form types in use with ${submissionRate}% submission rate. This shows a well-developed recording culture spanning risk assessments, safeguarding, supervision, and daily care — exactly what Ofsted wants to see in a well-led home.`, severity: "positive" });
+  if (formTypes.size >= 4 && meets(submissionRate, 80)) {
+    insights.push({ text: `${formTypes.size} form types in use with ${formatRate(submissionRate)} submission rate. This shows a well-developed recording culture spanning risk assessments, safeguarding, supervision, and daily care — exactly what Ofsted wants to see in a well-led home.`, severity: "positive" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding recording quality — ${submissionRate}% submitted, ${reviewRate}% reviewed, and ${formTypes.size} form types in use.`;
+    headline = `Outstanding recording quality — ${formatRate(submissionRate)} submitted, ${formatRate(reviewRate)} reviewed, and ${formTypes.size} form types in use.`;
   } else if (rating === "good") {
     headline = `Good recording practice — consistent submissions with minor gaps in review or approval.`;
   } else if (rating === "adequate") {
@@ -375,17 +373,17 @@ export function computeHomeRecordingQuality(
 // ── Empty Profiles ──────────────────────────────────────────────────────────
 
 function emptySubmissionProfile(): SubmissionProfile {
-  return { total_forms: 0, submitted_count: 0, draft_count: 0, submission_rate: 0, overdue_count: 0 };
+  return { total_forms: 0, submitted_count: 0, draft_count: 0, submission_rate: null, overdue_count: 0 };
 }
 
 function emptyReviewProfile(): ReviewProfile {
-  return { pending_review_count: 0, reviewed_count: 0, review_rate: 0, avg_review_days: 0 };
+  return { pending_review_count: 0, reviewed_count: 0, review_rate: null, avg_review_days: 0 };
 }
 
 function emptyApprovalProfile(): ApprovalProfile {
-  return { approved_count: 0, approval_rate: 0, avg_approval_days: 0 };
+  return { approved_count: 0, approval_rate: null, avg_approval_days: 0 };
 }
 
 function emptyQualityProfile(): QualityProfile {
-  return { urgent_count: 0, high_priority_count: 0, child_linked_rate: 0, incident_linked_rate: 0, form_type_count: 0, urgent_unreviewed_count: 0 };
+  return { urgent_count: 0, high_priority_count: 0, child_linked_rate: null, incident_linked_rate: null, form_type_count: 0, urgent_unreviewed_count: 0 };
 }

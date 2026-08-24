@@ -6,6 +6,8 @@
 // NICE Staff Wellbeing: emotional support and reflective debrief after incidents.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface DebriefRecordInput {
@@ -49,11 +51,14 @@ export interface StaffDebriefResult {
   debrief_score: number;
   headline: string;
   total_debriefs: number;
-  completion_rate: number;
-  follow_up_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_completion_rate: number | null;
   high_impact_count: number;
   overdue_debriefs: number;
-  wellbeing_check_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeing_check_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -66,10 +71,6 @@ export interface StaffDebriefResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function ratingFromScore(score: number): StaffDebriefRating {
   if (score >= 80) return "outstanding";
@@ -92,11 +93,11 @@ export function computeStaffDebriefEmotionalSupport(
       debrief_score: 0,
       headline: "No active staff registered — unable to assess debrief and emotional support.",
       total_debriefs: 0,
-      completion_rate: 0,
-      follow_up_completion_rate: 0,
+      completion_rate: null,
+      follow_up_completion_rate: null,
       high_impact_count: 0,
       overdue_debriefs: 0,
-      wellbeing_check_rate: 0,
+      wellbeing_check_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -107,11 +108,11 @@ export function computeStaffDebriefEmotionalSupport(
   // ── Metrics ───────────────────────────────────────────────────────────
   const totalDebriefs = debriefs.length;
   const completedDebriefs = debriefs.filter((d) => d.status === "completed").length;
-  const completionRate = pct(completedDebriefs, totalDebriefs);
+  const completionRate = rate(completedDebriefs, totalDebriefs);
 
   const needingFollowUp = debriefs.filter((d) => d.follow_up_needed);
   const followUpCompleted = needingFollowUp.filter((d) => d.follow_up_completed).length;
-  const followUpCompletionRate = pct(followUpCompleted, needingFollowUp.length);
+  const followUpCompletionRate = rate(followUpCompleted, needingFollowUp.length);
 
   const highImpactCount = debriefs.filter(
     (d) => d.emotional_impact === "high" || d.emotional_impact === "significant",
@@ -120,15 +121,15 @@ export function computeStaffDebriefEmotionalSupport(
   const overdueDebriefs = debriefs.filter((d) => d.status === "overdue").length;
 
   const checksCompleted = wellbeing_checks.filter((c) => c.check_completed).length;
-  const wellbeingCheckRate = pct(checksCompleted, wellbeing_checks.length);
+  const wellbeingCheckRate = rate(checksCompleted, wellbeing_checks.length);
 
   const debriefsWithLearning = debriefs.filter((d) => d.learning_points_count > 0).length;
-  const learningCaptureRate = pct(debriefsWithLearning, totalDebriefs);
+  const learningCaptureRate = rate(debriefsWithLearning, totalDebriefs);
 
   const debriefsWithSupport = debriefs.filter((d) => d.support_offered_count > 0).length;
-  const supportProvisionRate = pct(debriefsWithSupport, totalDebriefs);
+  const supportProvisionRate = rate(debriefsWithSupport, totalDebriefs);
 
-  const overdueRate = pct(overdueDebriefs, totalDebriefs);
+  const overdueRate = rate(overdueDebriefs, totalDebriefs);
 
   // ── Scoring ───────────────────────────────────────────────────────────
   const BASE_SCORE = 52;
@@ -137,11 +138,11 @@ export function computeStaffDebriefEmotionalSupport(
   // mod1: Debrief completion rate (±5)
   if (totalDebriefs === 0) {
     score += 2;
-  } else if (completionRate >= 90) {
+  } else if (meets(completionRate, 90)) {
     score += 5;
-  } else if (completionRate >= 70) {
+  } else if (meets(completionRate, 70)) {
     score += 2;
-  } else if (completionRate >= 40) {
+  } else if (meets(completionRate, 40)) {
     score += 0;
   } else {
     score += -5;
@@ -150,11 +151,11 @@ export function computeStaffDebriefEmotionalSupport(
   // mod2: Follow-up completion (+6/-5)
   if (needingFollowUp.length === 0) {
     score += 3;
-  } else if (followUpCompletionRate >= 90) {
+  } else if (meets(followUpCompletionRate, 90)) {
     score += 6;
-  } else if (followUpCompletionRate >= 70) {
+  } else if (meets(followUpCompletionRate, 70)) {
     score += 3;
-  } else if (followUpCompletionRate >= 40) {
+  } else if (meets(followUpCompletionRate, 40)) {
     score += 0;
   } else {
     score += -5;
@@ -165,9 +166,9 @@ export function computeStaffDebriefEmotionalSupport(
     score += 2;
   } else if (overdueRate === 0) {
     score += 5;
-  } else if (overdueRate < 10) {
+  } else if (below(overdueRate, 10)) {
     score += 2;
-  } else if (overdueRate < 25) {
+  } else if (below(overdueRate, 25)) {
     score += 0;
   } else {
     score += -4;
@@ -176,11 +177,11 @@ export function computeStaffDebriefEmotionalSupport(
   // mod4: Learning capture (+5/-5)
   if (totalDebriefs === 0) {
     score += 0;
-  } else if (learningCaptureRate >= 90) {
+  } else if (meets(learningCaptureRate, 90)) {
     score += 5;
-  } else if (learningCaptureRate >= 70) {
+  } else if (meets(learningCaptureRate, 70)) {
     score += 2;
-  } else if (learningCaptureRate >= 40) {
+  } else if (meets(learningCaptureRate, 40)) {
     score += 0;
   } else {
     score += -5;
@@ -189,11 +190,11 @@ export function computeStaffDebriefEmotionalSupport(
   // mod5: Support provision (+4/-4)
   if (totalDebriefs === 0) {
     score += 0;
-  } else if (supportProvisionRate >= 90) {
+  } else if (meets(supportProvisionRate, 90)) {
     score += 4;
-  } else if (supportProvisionRate >= 70) {
+  } else if (meets(supportProvisionRate, 70)) {
     score += 1;
-  } else if (supportProvisionRate >= 40) {
+  } else if (meets(supportProvisionRate, 40)) {
     score += 0;
   } else {
     score += -4;
@@ -202,11 +203,11 @@ export function computeStaffDebriefEmotionalSupport(
   // mod6: Wellbeing check coverage (+5/-5)
   if (wellbeing_checks.length === 0) {
     score += -1;
-  } else if (wellbeingCheckRate >= 90) {
+  } else if (meets(wellbeingCheckRate, 90)) {
     score += 5;
-  } else if (wellbeingCheckRate >= 70) {
+  } else if (meets(wellbeingCheckRate, 70)) {
     score += 2;
-  } else if (wellbeingCheckRate >= 40) {
+  } else if (meets(wellbeingCheckRate, 40)) {
     score += 0;
   } else {
     score += -5;
@@ -219,23 +220,23 @@ export function computeStaffDebriefEmotionalSupport(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (totalDebriefs > 0 && completionRate >= 90) {
-    strengths.push(`${completionRate}% of debriefs completed — staff receive timely post-event support.`);
+  if (totalDebriefs > 0 && meets(completionRate, 90)) {
+    strengths.push(`${formatRate(completionRate)} of debriefs completed — staff receive timely post-event support.`);
   }
-  if (needingFollowUp.length > 0 && followUpCompletionRate >= 90) {
+  if (needingFollowUp.length > 0 && meets(followUpCompletionRate, 90)) {
     strengths.push("Follow-up actions are being completed consistently after debriefs.");
   }
   if (totalDebriefs > 0 && overdueDebriefs === 0) {
     strengths.push("No overdue debriefs — events are processed promptly.");
   }
-  if (totalDebriefs > 0 && learningCaptureRate >= 90) {
+  if (totalDebriefs > 0 && meets(learningCaptureRate, 90)) {
     strengths.push("Learning points captured in the vast majority of debriefs — strong reflective practice.");
   }
-  if (totalDebriefs > 0 && supportProvisionRate >= 90) {
+  if (totalDebriefs > 0 && meets(supportProvisionRate, 90)) {
     strengths.push("Emotional support offered in almost all debriefs — staff feel cared for.");
   }
-  if (wellbeing_checks.length > 0 && wellbeingCheckRate >= 90) {
-    strengths.push(`${wellbeingCheckRate}% of wellbeing checks completed — comprehensive staff monitoring.`);
+  if (wellbeing_checks.length > 0 && meets(wellbeingCheckRate, 90)) {
+    strengths.push(`${formatRate(wellbeingCheckRate)} of wellbeing checks completed — comprehensive staff monitoring.`);
   }
   if (totalDebriefs > 0 && highImpactCount === 0) {
     strengths.push("No high or significant emotional impact debriefs recorded this period.");
@@ -243,26 +244,26 @@ export function computeStaffDebriefEmotionalSupport(
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (totalDebriefs > 0 && completionRate < 70) {
-    concerns.push(`Only ${completionRate}% of debriefs completed — staff may not be receiving adequate post-event support.`);
+  if (totalDebriefs > 0 && below(completionRate, 70)) {
+    concerns.push(`Only ${formatRate(completionRate)} of debriefs completed — staff may not be receiving adequate post-event support.`);
   }
   if (overdueDebriefs > 0) {
     concerns.push(`${overdueDebriefs} debrief(s) are overdue — timely emotional support is not being provided.`);
   }
-  if (needingFollowUp.length > 0 && followUpCompletionRate < 70) {
-    concerns.push(`Follow-up completion rate is ${followUpCompletionRate}% — commitments made during debriefs are not being honoured.`);
+  if (needingFollowUp.length > 0 && below(followUpCompletionRate, 70)) {
+    concerns.push(`Follow-up completion rate is ${formatRate(followUpCompletionRate)} — commitments made during debriefs are not being honoured.`);
   }
   if (highImpactCount > 0) {
     concerns.push(`${highImpactCount} debrief(s) involved high or significant emotional impact — enhanced support may be needed.`);
   }
-  if (totalDebriefs > 0 && learningCaptureRate < 40) {
+  if (totalDebriefs > 0 && below(learningCaptureRate, 40)) {
     concerns.push("Learning points are not being captured in most debriefs — missed opportunity for organisational improvement.");
   }
-  if (totalDebriefs > 0 && supportProvisionRate < 40) {
+  if (totalDebriefs > 0 && below(supportProvisionRate, 40)) {
     concerns.push("Emotional support is not being offered in the majority of debriefs.");
   }
-  if (wellbeing_checks.length > 0 && wellbeingCheckRate < 40) {
-    concerns.push(`Only ${wellbeingCheckRate}% of wellbeing checks completed — staff wellbeing monitoring has significant gaps.`);
+  if (wellbeing_checks.length > 0 && below(wellbeingCheckRate, 40)) {
+    concerns.push(`Only ${formatRate(wellbeingCheckRate)} of wellbeing checks completed — staff wellbeing monitoring has significant gaps.`);
   }
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -277,7 +278,7 @@ export function computeStaffDebriefEmotionalSupport(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (needingFollowUp.length > 0 && followUpCompletionRate < 70) {
+  if (needingFollowUp.length > 0 && below(followUpCompletionRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Prioritise outstanding follow-up actions from previous debriefs to demonstrate duty of care.",
@@ -293,7 +294,7 @@ export function computeStaffDebriefEmotionalSupport(
       regulatory_ref: "NICE Staff Wellbeing",
     });
   }
-  if (totalDebriefs > 0 && learningCaptureRate < 70) {
+  if (totalDebriefs > 0 && below(learningCaptureRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Embed learning capture into all debrief processes to strengthen organisational learning.",
@@ -301,7 +302,7 @@ export function computeStaffDebriefEmotionalSupport(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (wellbeing_checks.length > 0 && wellbeingCheckRate < 70) {
+  if (wellbeing_checks.length > 0 && below(wellbeingCheckRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Improve wellbeing check completion rates to ensure all staff are monitored after critical events.",

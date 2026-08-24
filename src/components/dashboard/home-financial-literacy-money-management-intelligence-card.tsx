@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PiggyBank } from "lucide-react";
@@ -81,16 +82,16 @@ export function HomeFinancialLiteracyMoneyManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_bank_accounts > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_bank_accounts}</p>
               <p className="text-[9px] text-muted-foreground">Bank A/C</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.receipt_compliance_rate >= 90 ? "bg-green-50" : d.receipt_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.receipt_compliance_rate >= 90 ? "text-[--cs-success]" : d.receipt_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.receipt_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.receipt_compliance_rate, 90) ? "bg-green-50" : meets(d.receipt_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.receipt_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.receipt_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.receipt_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Receipts</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.savings_engagement_rate >= 70 ? "bg-green-50" : d.savings_engagement_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.savings_engagement_rate >= 70 ? "text-[--cs-success]" : d.savings_engagement_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.savings_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.savings_engagement_rate, 70) ? "bg-green-50" : meets(d.savings_engagement_rate, 40) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.savings_engagement_rate, 70) ? "text-[--cs-success]" : meets(d.savings_engagement_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.savings_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Savings</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.charity_access_rate >= 50 ? "bg-green-50" : d.charity_access_rate >= 25 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.charity_access_rate >= 50 ? "text-[--cs-success]" : d.charity_access_rate >= 25 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.charity_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.charity_access_rate, 50) ? "bg-green-50" : meets(d.charity_access_rate, 25) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.charity_access_rate, 50) ? "text-[--cs-success]" : meets(d.charity_access_rate, 25) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.charity_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Grants</p>
             </div>
           </div>

@@ -98,13 +98,13 @@ describe("computeHomeSensoryTherapeuticEnvironment", () => {
       expect(r.sensory_score).toBe(0);
     });
 
-    it("returns zero metrics on insufficient data", () => {
+    it("leaves sensory_beneficial_rate, equipment_condition_rate and activity_enjoyment_rate unmeasured on insufficient data", () => {
       const r = computeHomeSensoryTherapeuticEnvironment(baseInput({ total_children: 0 }));
       expect(r.children_using_sensory_room).toBe(0);
-      expect(r.sensory_beneficial_rate).toBe(0);
-      expect(r.equipment_condition_rate).toBe(0);
+      expect(r.sensory_beneficial_rate).toBeNull();
+      expect(r.equipment_condition_rate).toBeNull();
       expect(r.children_physically_active).toBe(0);
-      expect(r.activity_enjoyment_rate).toBe(0);
+      expect(r.activity_enjoyment_rate).toBeNull();
     });
   });
 

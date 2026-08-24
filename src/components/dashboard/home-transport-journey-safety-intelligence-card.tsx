@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,20 +78,20 @@ export function HomeTransportJourneySafetyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_journeys > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_journeys}</p>
               <p className="text-[9px] text-muted-foreground">Journeys</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.driver_compliance_rate >= 90 ? "bg-green-50" : d.driver_compliance_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.driver_compliance_rate >= 90 ? "text-[--cs-success]" : d.driver_compliance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.driver_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.driver_compliance_rate, 90) ? "bg-green-50" : meets(d.driver_compliance_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.driver_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.driver_compliance_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.driver_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Drivers</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.vehicle_check_rate >= 90 ? "bg-green-50" : d.vehicle_check_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.vehicle_check_rate >= 90 ? "text-[--cs-success]" : d.vehicle_check_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.vehicle_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.vehicle_check_rate, 90) ? "bg-green-50" : meets(d.vehicle_check_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.vehicle_check_rate, 90) ? "text-[--cs-success]" : meets(d.vehicle_check_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.vehicle_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Checks</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.incident_rate === 0 ? "bg-green-50" : d.incident_rate <= 10 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_rate === 0 ? "text-[--cs-success]" : d.incident_rate <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.incident_rate === 0 ? "bg-green-50" : (d.incident_rate !== null && d.incident_rate <= 10) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.incident_rate === 0 ? "text-[--cs-success]" : (d.incident_rate !== null && d.incident_rate <= 10) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.incident_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Incidents</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.defect_free_rate >= 90 ? "bg-green-50" : d.defect_free_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.defect_free_rate >= 90 ? "text-[--cs-success]" : d.defect_free_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.defect_free_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.defect_free_rate, 90) ? "bg-green-50" : meets(d.defect_free_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.defect_free_rate, 90) ? "text-[--cs-success]" : meets(d.defect_free_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.defect_free_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Defect-Free</p>
             </div>
           </div>

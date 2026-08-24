@@ -68,14 +68,14 @@ describe("computeNightHandoverQuality", () => {
       expect(r.headline).toBe("No data available for night handover analysis");
     });
 
-    it("returns all zeroed metrics", () => {
+    it("leaves every rate unmeasured when there are no children", () => {
       const r = computeNightHandoverQuality(baseInput({ total_children: 0 }));
       expect(r.total_handovers).toBe(0);
-      expect(r.risk_briefing_rate).toBe(0);
-      expect(r.medication_compliance_rate).toBe(0);
-      expect(r.morning_completion_rate).toBe(0);
-      expect(r.night_events_documented_rate).toBe(0);
-      expect(r.children_notes_rate).toBe(0);
+      expect(r.risk_briefing_rate).toBeNull();
+      expect(r.medication_compliance_rate).toBeNull();
+      expect(r.morning_completion_rate).toBeNull();
+      expect(r.night_events_documented_rate).toBeNull();
+      expect(r.children_notes_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -131,13 +131,13 @@ describe("computeNightHandoverQuality", () => {
       expect(r.total_handovers).toBe(0);
     });
 
-    it("returns zero rates", () => {
+    it("leaves every rate unmeasured when there are no handovers", () => {
       const r = computeNightHandoverQuality(baseInput({ handovers: [] }));
-      expect(r.risk_briefing_rate).toBe(0);
-      expect(r.medication_compliance_rate).toBe(0);
-      expect(r.morning_completion_rate).toBe(0);
-      expect(r.night_events_documented_rate).toBe(0);
-      expect(r.children_notes_rate).toBe(0);
+      expect(r.risk_briefing_rate).toBeNull();
+      expect(r.medication_compliance_rate).toBeNull();
+      expect(r.morning_completion_rate).toBeNull();
+      expect(r.night_events_documented_rate).toBeNull();
+      expect(r.children_notes_rate).toBeNull();
     });
 
     it("generates concern about no handovers", () => {
@@ -780,7 +780,7 @@ describe("computeNightHandoverQuality", () => {
         }),
       );
       const r = computeNightHandoverQuality(baseInput({ handovers }));
-      expect(r.medication_compliance_rate).toBe(0);
+      expect(r.medication_compliance_rate).toBeNull();
       expect(r.handover_score).toBe(76);
     });
 
@@ -1138,22 +1138,22 @@ describe("computeNightHandoverQuality", () => {
       expect(r.children_notes_rate).toBe(67); // 2/3 = 67%
     });
 
-    it("returns 0 for all rates when no handovers", () => {
+    it("leaves every rate unmeasured when there are no handovers", () => {
       const r = computeNightHandoverQuality(baseInput({ handovers: [] }));
-      expect(r.risk_briefing_rate).toBe(0);
-      expect(r.medication_compliance_rate).toBe(0);
-      expect(r.morning_completion_rate).toBe(0);
-      expect(r.night_events_documented_rate).toBe(0);
-      expect(r.children_notes_rate).toBe(0);
+      expect(r.risk_briefing_rate).toBeNull();
+      expect(r.medication_compliance_rate).toBeNull();
+      expect(r.morning_completion_rate).toBeNull();
+      expect(r.night_events_documented_rate).toBeNull();
+      expect(r.children_notes_rate).toBeNull();
     });
 
-    it("medication_compliance_rate is 0 when no medication given (denominator is 0)", () => {
+    it("medication_compliance_rate is unmeasured when no medication given", () => {
       const handovers = [
         makeHandover({ id: "h1", medication_given: false }),
         makeHandover({ id: "h2", medication_given: false }),
       ];
       const r = computeNightHandoverQuality(baseInput({ handovers }));
-      expect(r.medication_compliance_rate).toBe(0);
+      expect(r.medication_compliance_rate).toBeNull();
     });
   });
 

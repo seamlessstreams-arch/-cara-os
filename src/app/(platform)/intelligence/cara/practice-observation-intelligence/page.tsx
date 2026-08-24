@@ -40,7 +40,18 @@ const INSIGHT_BORDER: Record<string, string> = {
   positive: "border-green-300 bg-green-50 text-green-800",
 };
 
-function RateBar({ label, rate, alertBelow }: { label: string; rate: number; alertBelow?: number }) {
+function RateBar({ label, rate, alertBelow }: { label: string; rate: number | null; alertBelow?: number }) {
+  if (rate === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-600">{label}</span>
+          <span className="font-semibold text-slate-400">—</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100" />
+      </div>
+    );
+  }
   const alert = alertBelow !== undefined && rate < alertBelow;
   const barColor = rate >= 90 ? "bg-green-400" : rate >= 70 ? "bg-blue-400" : rate >= 50 ? "bg-amber-400" : "bg-red-400";
   return (

@@ -82,18 +82,18 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
       expect(r.impact_score).toBe(0);
     });
 
-    it("returns all rates as 0 for insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computePlacementImpactAssessment({
         today: "2025-06-15",
         total_children: 0,
         assessments: [],
       });
-      expect(r.decision_documented_rate).toBe(0);
-      expect(r.child_view_capture_rate).toBe(0);
-      expect(r.mitigation_rate).toBe(0);
-      expect(r.compatibility_positive_rate).toBe(0);
-      expect(r.safeguarding_coverage_rate).toBe(0);
-      expect(r.review_scheduled_rate).toBe(0);
+      expect(r.decision_documented_rate).toBeNull();
+      expect(r.child_view_capture_rate).toBeNull();
+      expect(r.mitigation_rate).toBeNull();
+      expect(r.compatibility_positive_rate).toBeNull();
+      expect(r.safeguarding_coverage_rate).toBeNull();
+      expect(r.review_scheduled_rate).toBeNull();
     });
   });
 
@@ -731,7 +731,7 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
       // safeguard: 2/2=100% → +4
       // review: 2/2=100% → +5
       // 52+6+2+2+5+4+5 = 76
-      expect(r.child_view_capture_rate).toBe(0);
+      expect(r.child_view_capture_rate).toBeNull();
       expect(r.impact_score).toBe(76);
     });
 
@@ -1968,7 +1968,7 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
       expect(r.impact_score).toBe(76);
     });
 
-    it("childViewCaptureRate is 0 when totalImpacts is 0", () => {
+    it("childViewCaptureRate is unmeasured when totalImpacts is 0", () => {
       const assessments = [
         makeAssessment("a1", {
           impact_on_existing_count: 0,
@@ -1977,8 +1977,8 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
         }),
       ];
       const r = computePlacementImpactAssessment(baseInput({ assessments }));
-      expect(r.child_view_capture_rate).toBe(0);
-      expect(r.mitigation_rate).toBe(0);
+      expect(r.child_view_capture_rate).toBeNull();
+      expect(r.mitigation_rate).toBeNull();
     });
 
     it("totalImpacts=0 strength conditions not met (totalImpacts must be >0 for child view strength)", () => {
@@ -2020,7 +2020,7 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
       expect(r.impact_score).toBe(75);
     });
 
-    it("compatibilityPositiveRate is 0 when totalCompatFactors is 0", () => {
+    it("compatibilityPositiveRate is unmeasured when totalCompatFactors is 0", () => {
       const assessments = [
         makeAssessment("a1", {
           compatibility_factor_count: 0,
@@ -2028,7 +2028,7 @@ describe("Home Placement Impact Assessment Intelligence Engine", () => {
         }),
       ];
       const r = computePlacementImpactAssessment(baseInput({ assessments }));
-      expect(r.compatibility_positive_rate).toBe(0);
+      expect(r.compatibility_positive_rate).toBeNull();
     });
 
     it("no compatibility strength when totalCompatFactors is 0", () => {

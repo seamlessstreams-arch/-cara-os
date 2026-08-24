@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flower2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -73,20 +74,20 @@ export function HomeSensoryTherapeuticEnvironmentIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_using_sensory_room > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_using_sensory_room}</p>
               <p className="text-[9px] text-muted-foreground">Sensory</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sensory_beneficial_rate >= 85 ? "bg-green-50" : d.sensory_beneficial_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sensory_beneficial_rate >= 85 ? "text-[--cs-success]" : d.sensory_beneficial_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sensory_beneficial_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sensory_beneficial_rate, 85) ? "bg-green-50" : meets(d.sensory_beneficial_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sensory_beneficial_rate, 85) ? "text-[--cs-success]" : meets(d.sensory_beneficial_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sensory_beneficial_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Beneficial</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.equipment_condition_rate >= 85 ? "bg-green-50" : d.equipment_condition_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.equipment_condition_rate >= 85 ? "text-[--cs-success]" : d.equipment_condition_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.equipment_condition_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.equipment_condition_rate, 85) ? "bg-green-50" : meets(d.equipment_condition_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.equipment_condition_rate, 85) ? "text-[--cs-success]" : meets(d.equipment_condition_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.equipment_condition_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equipment</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.children_physically_active > 0 ? "bg-green-50" : "bg-amber-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.children_physically_active > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_physically_active}</p>
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.activity_enjoyment_rate >= 85 ? "bg-green-50" : d.activity_enjoyment_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.activity_enjoyment_rate >= 85 ? "text-[--cs-success]" : d.activity_enjoyment_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.activity_enjoyment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.activity_enjoyment_rate, 85) ? "bg-green-50" : meets(d.activity_enjoyment_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.activity_enjoyment_rate, 85) ? "text-[--cs-success]" : meets(d.activity_enjoyment_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.activity_enjoyment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Enjoyment</p>
             </div>
           </div>

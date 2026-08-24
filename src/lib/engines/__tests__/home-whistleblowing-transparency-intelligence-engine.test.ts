@@ -88,7 +88,7 @@ describe("Insufficient data", () => {
     expect(r.whistleblowing_score).toBe(0);
   });
 
-  it("returns 0 for all metrics when no staff", () => {
+  it("leaves every rate unmeasured when there is no staff", () => {
     const r = computeWhistleblowingTransparency({
       today: TODAY,
       total_staff: 0,
@@ -97,9 +97,9 @@ describe("Insufficient data", () => {
     });
     expect(r.total_concerns).toBe(0);
     expect(r.open_concerns).toBe(0);
-    expect(r.resolution_rate).toBe(0);
-    expect(r.lessons_learned_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.resolution_rate).toBeNull();
+    expect(r.lessons_learned_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 
   it("includes a concern about no staff data", () => {
@@ -581,7 +581,7 @@ describe("Modifier 2: Lessons learned", () => {
   it("awards +3 when 0 records", () => {
     const input = baseInput({ records: [] });
     const r = computeWhistleblowingTransparency(input);
-    expect(r.lessons_learned_rate).toBe(0);
+    expect(r.lessons_learned_rate).toBeNull();
     expect(r.total_concerns).toBe(0);
   });
 });
@@ -886,9 +886,9 @@ describe("Metrics calculations", () => {
       culture: [],
     };
     const r = computeWhistleblowingTransparency(input);
-    expect(r.resolution_rate).toBe(0);
-    expect(r.lessons_learned_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.resolution_rate).toBeNull();
+    expect(r.lessons_learned_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 });
 
@@ -1418,7 +1418,7 @@ describe("Edge cases", () => {
     };
     const r = computeWhistleblowingTransparency(input);
     // All culture-based rates will be 0 (pct(0, 0) = 0)
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.staff_confidence_rate).toBeNull();
   });
 
   it("handles all records with closed_no_action status", () => {
@@ -1490,9 +1490,9 @@ describe("Edge cases", () => {
       culture: [],
     };
     const r = computeWhistleblowingTransparency(input);
-    expect(r.resolution_rate).toBe(0);
-    expect(r.lessons_learned_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.resolution_rate).toBeNull();
+    expect(r.lessons_learned_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 });
 

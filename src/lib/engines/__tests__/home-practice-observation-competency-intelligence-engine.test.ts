@@ -59,14 +59,14 @@ describe("Insufficient data (total_staff = 0)", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns zero rates when total_staff is 0", () => {
+  it("leaves every rate unmeasured when total_staff is 0", () => {
     const r = computePracticeObservationCompetency(baseInput({ total_staff: 0 }));
-    expect(r.outstanding_rate).toBe(0);
-    expect(r.meets_standard_rate).toBe(0);
-    expect(r.sign_off_rate).toBe(0);
-    expect(r.development_plan_rate).toBe(0);
-    expect(r.staff_response_rate).toBe(0);
-    expect(r.staff_observed_rate).toBe(0);
+    expect(r.outstanding_rate).toBeNull();
+    expect(r.meets_standard_rate).toBeNull();
+    expect(r.sign_off_rate).toBeNull();
+    expect(r.development_plan_rate).toBeNull();
+    expect(r.staff_response_rate).toBeNull();
+    expect(r.staff_observed_rate).toBeNull();
   });
 
   it("returns insufficient_data even when observations are provided with 0 staff", () => {
@@ -94,13 +94,13 @@ describe("Zero observations", () => {
     expect(r.total_observations).toBe(0);
   });
 
-  it("reports zero rates across the board", () => {
+  it("leaves every rate unmeasured with 0 observations, except staff_observed_rate which is a genuine 0", () => {
     const r = computePracticeObservationCompetency(baseInput());
-    expect(r.outstanding_rate).toBe(0);
-    expect(r.meets_standard_rate).toBe(0);
-    expect(r.sign_off_rate).toBe(0);
-    expect(r.development_plan_rate).toBe(0);
-    expect(r.staff_response_rate).toBe(0);
+    expect(r.outstanding_rate).toBeNull();
+    expect(r.meets_standard_rate).toBeNull();
+    expect(r.sign_off_rate).toBeNull();
+    expect(r.development_plan_rate).toBeNull();
+    expect(r.staff_response_rate).toBeNull();
     expect(r.staff_observed_rate).toBe(0);
   });
 });
@@ -1262,13 +1262,13 @@ describe("Score derivation verification", () => {
 // ── pct helper implicit tests ───────────────────────────────────────────────
 
 describe("Rate calculations", () => {
-  it("pct returns 0 when denominator is 0 (via 0 observations)", () => {
+  it("every rate is unmeasured with 0 observations, except staff_observed_rate which is a genuine 0", () => {
     const r = computePracticeObservationCompetency(baseInput());
-    expect(r.outstanding_rate).toBe(0);
-    expect(r.meets_standard_rate).toBe(0);
-    expect(r.sign_off_rate).toBe(0);
-    expect(r.development_plan_rate).toBe(0);
-    expect(r.staff_response_rate).toBe(0);
+    expect(r.outstanding_rate).toBeNull();
+    expect(r.meets_standard_rate).toBeNull();
+    expect(r.sign_off_rate).toBeNull();
+    expect(r.development_plan_rate).toBeNull();
+    expect(r.staff_response_rate).toBeNull();
     // staff_observed_rate: pct(0, 8) = 0
     expect(r.staff_observed_rate).toBe(0);
   });

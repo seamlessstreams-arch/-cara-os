@@ -88,12 +88,12 @@ describe("insufficient data", () => {
     expect(r.safety_score).toBe(0);
   });
 
-  it("returns zero for all metrics when total_staff is 0", () => {
+  it("leaves every rate unmeasured when total_staff is 0", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ total_staff: 0 }));
     expect(r.staff_with_assessments).toBe(0);
-    expect(r.alarm_coverage_rate).toBe(0);
-    expect(r.check_in_compliance_rate).toBe(0);
-    expect(r.training_validity_rate).toBe(0);
+    expect(r.alarm_coverage_rate).toBeNull();
+    expect(r.check_in_compliance_rate).toBeNull();
+    expect(r.training_validity_rate).toBeNull();
     expect(r.high_risk_staff).toBe(0);
   });
 
@@ -268,9 +268,9 @@ describe("metrics: alarm_coverage_rate", () => {
     expect(r.alarm_coverage_rate).toBe(0);
   });
 
-  it("returns 0 when no records exist", () => {
+  it("alarm_coverage_rate is unmeasured when no records exist", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
-    expect(r.alarm_coverage_rate).toBe(0);
+    expect(r.alarm_coverage_rate).toBeNull();
   });
 });
 
@@ -298,9 +298,9 @@ describe("metrics: check_in_compliance_rate", () => {
     expect(r.check_in_compliance_rate).toBe(0);
   });
 
-  it("returns 0 when no records exist", () => {
+  it("check_in_compliance_rate is unmeasured when no records exist", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
-    expect(r.check_in_compliance_rate).toBe(0);
+    expect(r.check_in_compliance_rate).toBeNull();
   });
 });
 
@@ -324,17 +324,17 @@ describe("metrics: training_validity_rate", () => {
     expect(r.training_validity_rate).toBe(100);
   });
 
-  it("returns 0 when no assessments exist", () => {
+  it("training_validity_rate is unmeasured when no assessments exist", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ assessments: [] }));
-    expect(r.training_validity_rate).toBe(0);
+    expect(r.training_validity_rate).toBeNull();
   });
 
-  it("returns 0 when training_total_count is 0 for all assessments", () => {
+  it("training_validity_rate is unmeasured when training_total_count is 0 for all assessments", () => {
     const assessments = [
       makeAssessment({ id: "a_0", staff_id: "s0", training_valid_count: 0, training_total_count: 0 }),
     ];
     const r = computeLoneWorkingStaffSafety(baseInput({ assessments }));
-    expect(r.training_validity_rate).toBe(0);
+    expect(r.training_validity_rate).toBeNull();
   });
 });
 
@@ -470,11 +470,11 @@ describe("mod2: alarm coverage", () => {
     expect(r.alarm_coverage_rate).toBe(38);
   });
 
-  it("awards 0 when no records exist", () => {
+  it("alarm_coverage_rate is unmeasured when no records exist", () => {
     const withoutRecords = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
     // When no records: mod2=0 instead of +6, but also mod1 changes, etc.
     // Just verify the engine doesn't crash
-    expect(withoutRecords.alarm_coverage_rate).toBe(0);
+    expect(withoutRecords.alarm_coverage_rate).toBeNull();
   });
 });
 
@@ -516,9 +516,9 @@ describe("mod3: check-in compliance", () => {
     expect(r.check_in_compliance_rate).toBe(38);
   });
 
-  it("awards 0 when no records exist", () => {
+  it("check_in_compliance_rate is unmeasured when no records exist", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
-    expect(r.check_in_compliance_rate).toBe(0);
+    expect(r.check_in_compliance_rate).toBeNull();
   });
 });
 
@@ -1120,10 +1120,10 @@ describe("edge cases", () => {
     expect(r.safety_score).toBeGreaterThan(0);
   });
 
-  it("pct returns 0 when denominator is 0", () => {
+  it("every rate is unmeasured when its denominator is 0", () => {
     const r = computeLoneWorkingStaffSafety(baseInput({ records: [] }));
-    expect(r.alarm_coverage_rate).toBe(0);
-    expect(r.check_in_compliance_rate).toBe(0);
+    expect(r.alarm_coverage_rate).toBeNull();
+    expect(r.check_in_compliance_rate).toBeNull();
   });
 
   it("score with all modifiers at maximum equals 82", () => {

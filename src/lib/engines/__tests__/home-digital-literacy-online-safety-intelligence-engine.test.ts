@@ -125,13 +125,13 @@ describe("Home Digital Literacy & Online Safety Intelligence Engine", () => {
       expect(r.headline).toContain("No children");
     });
 
-    it("returns zeroed metrics when no children", () => {
+    it("leaves every rate unmeasured when there are no children", () => {
       const r = computeDigitalLiteracyOnlineSafety(baseInput({ total_children: 0 }));
       expect(r.children_with_digital_plans).toBe(0);
-      expect(r.digital_skill_coverage_rate).toBe(0);
-      expect(r.parental_controls_rate).toBe(0);
-      expect(r.rse_digital_coverage_rate).toBe(0);
-      expect(r.exploitation_risk_assessed_rate).toBe(0);
+      expect(r.digital_skill_coverage_rate).toBeNull();
+      expect(r.parental_controls_rate).toBeNull();
+      expect(r.rse_digital_coverage_rate).toBeNull();
+      expect(r.exploitation_risk_assessed_rate).toBeNull();
     });
 
     it("returns empty strengths and non-empty concerns when no children", () => {
@@ -1072,7 +1072,7 @@ describe("Home Digital Literacy & Online Safety Intelligence Engine", () => {
       expect(r.digital_rating).not.toBe("insufficient_data");
       expect(r.children_with_digital_plans).toBe(0);
       expect(r.digital_skill_coverage_rate).toBe(0);
-      expect(r.parental_controls_rate).toBe(0);
+      expect(r.parental_controls_rate).toBeNull();
       expect(r.rse_digital_coverage_rate).toBe(0);
     });
 

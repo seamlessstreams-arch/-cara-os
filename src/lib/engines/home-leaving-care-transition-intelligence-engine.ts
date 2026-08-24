@@ -8,6 +8,8 @@
 // SCCIF: "Children are well prepared for adulthood."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface TransitionGoalInput {
@@ -79,10 +81,14 @@ export interface LeavingCareResult {
   leaving_care_score: number;
   headline: string;
   children_with_pathway_plans: number;
-  goal_achievement_rate: number;
-  aspiration_recording_rate: number;
-  travel_readiness_rate: number;
-  financial_readiness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goal_achievement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  aspiration_recording_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  travel_readiness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  financial_readiness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -90,10 +96,6 @@ export interface LeavingCareResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function ratingFromScore(score: number): LeavingCareRating {
   if (score >= 80) return "outstanding";
@@ -123,10 +125,10 @@ export function computeLeavingCareTransition(
       leaving_care_score: 0,
       headline: "No children registered — unable to assess leaving care readiness.",
       children_with_pathway_plans: 0,
-      goal_achievement_rate: 0,
-      aspiration_recording_rate: 0,
-      travel_readiness_rate: 0,
-      financial_readiness_rate: 0,
+      goal_achievement_rate: null,
+      aspiration_recording_rate: null,
+      travel_readiness_rate: null,
+      financial_readiness_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -145,56 +147,56 @@ export function computeLeavingCareTransition(
   const childrenWithActivePlans = new Set(
     activePlans.map((p) => p.child_id),
   ).size;
-  const pathwayCoverageRate = pct(childrenWithActivePlans, total_children);
+  const pathwayCoverageRate = rate(childrenWithActivePlans, total_children);
 
   const mod1 =
-    pathwayCoverageRate >= 80 ? 5 :
-    pathwayCoverageRate >= 50 ? 2 :
-    pathwayCoverageRate >= 30 ? 0 : -5;
+    meets(pathwayCoverageRate, 80) ? 5 :
+    meets(pathwayCoverageRate, 50) ? 2 :
+    meets(pathwayCoverageRate, 30) ? 0 : -5;
 
   // ── Metric: Goal achievement (Mod 2) ─────────────────────────────────
   const achievedOrOnTrack = transition_goals.filter(
     (g) => g.status === "achieved" || g.status === "on_track",
   ).length;
-  const goalAchievementRate = pct(achievedOrOnTrack, transition_goals.length);
+  const goalAchievementRate = rate(achievedOrOnTrack, transition_goals.length);
 
   const mod2 =
-    goalAchievementRate >= 75 ? 6 :
-    goalAchievementRate >= 50 ? 3 :
-    goalAchievementRate >= 30 ? 0 : -5;
+    meets(goalAchievementRate, 75) ? 6 :
+    meets(goalAchievementRate, 50) ? 3 :
+    meets(goalAchievementRate, 30) ? 0 : -5;
 
   // ── Metric: Aspiration engagement (Mod 3) ─────────────────────────────
   const engagedAspirations = aspirations.filter(
     (a) => a.child_chose && a.has_steps_taken,
   ).length;
-  const aspirationEngagementRate = pct(engagedAspirations, aspirations.length);
+  const aspirationEngagementRate = rate(engagedAspirations, aspirations.length);
 
   const mod3 =
-    aspirationEngagementRate >= 80 ? 5 :
-    aspirationEngagementRate >= 50 ? 2 :
-    aspirationEngagementRate >= 30 ? 0 : -5;
+    meets(aspirationEngagementRate, 80) ? 5 :
+    meets(aspirationEngagementRate, 50) ? 2 :
+    meets(aspirationEngagementRate, 30) ? 0 : -5;
 
   // ── Metric: Travel readiness (Mod 4) ──────────────────────────────────
   const travelReady = independent_travel.filter(
     (t) => t.routes_mastered >= 2 && t.has_safety_plan,
   ).length;
-  const travelReadinessRate = pct(travelReady, independent_travel.length);
+  const travelReadinessRate = rate(travelReady, independent_travel.length);
 
   const mod4 =
-    travelReadinessRate >= 70 ? 5 :
-    travelReadinessRate >= 40 ? 2 :
-    travelReadinessRate >= 20 ? 0 : -4;
+    meets(travelReadinessRate, 70) ? 5 :
+    meets(travelReadinessRate, 40) ? 2 :
+    meets(travelReadinessRate, 20) ? 0 : -4;
 
   // ── Metric: Financial readiness (Mod 5) ───────────────────────────────
   const financiallyReady = leaving_care_packages.filter(
     (p) => p.savings_on_track && p.financial_literacy_progressing,
   ).length;
-  const financialReadinessRate = pct(financiallyReady, leaving_care_packages.length);
+  const financialReadinessRate = rate(financiallyReady, leaving_care_packages.length);
 
   const mod5 =
-    financialReadinessRate >= 70 ? 4 :
-    financialReadinessRate >= 40 ? 1 :
-    financialReadinessRate >= 20 ? 0 : -4;
+    meets(financialReadinessRate, 70) ? 4 :
+    meets(financialReadinessRate, 40) ? 1 :
+    meets(financialReadinessRate, 20) ? 0 : -4;
 
   // ── Metric: Pathway plan quality (Mod 6) ──────────────────────────────
   const qualityPlans = activePlans.filter(
@@ -204,12 +206,12 @@ export function computeLeavingCareTransition(
       p.has_eet_plan &&
       p.last_review_within_6_months,
   ).length;
-  const planQualityRate = pct(qualityPlans, activePlans.length);
+  const planQualityRate = rate(qualityPlans, activePlans.length);
 
   const mod6 =
-    planQualityRate >= 80 ? 5 :
-    planQualityRate >= 50 ? 2 :
-    planQualityRate >= 30 ? 0 : -5;
+    meets(planQualityRate, 80) ? 5 :
+    meets(planQualityRate, 50) ? 2 :
+    meets(planQualityRate, 30) ? 0 : -5;
 
   // ── Score calculation ─────────────────────────────────────────────────
   const BASE_SCORE = 52;
@@ -219,52 +221,52 @@ export function computeLeavingCareTransition(
   const leaving_care_rating = ratingFromScore(score);
 
   // ── Derived metrics for output ────────────────────────────────────────
-  const aspirationRecordingRate = pct(aspirations.length, total_children);
+  const aspirationRecordingRate = rate(aspirations.length, total_children);
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (goalAchievementRate >= 75)
+  if (meets(goalAchievementRate, 75))
     strengths.push(
-      `${goalAchievementRate}% of transition goals are achieved or on track — excellent progress towards independence.`,
+      `${formatRate(goalAchievementRate)} of transition goals are achieved or on track — excellent progress towards independence.`,
     );
 
-  if (aspirationEngagementRate >= 80)
+  if (meets(aspirationEngagementRate, 80))
     strengths.push(
-      `${aspirationEngagementRate}% of aspirations are child-chosen with steps taken — strong voice and engagement under Reg 5.`,
+      `${formatRate(aspirationEngagementRate)} of aspirations are child-chosen with steps taken — strong voice and engagement under Reg 5.`,
     );
 
-  if (travelReadinessRate >= 70)
+  if (meets(travelReadinessRate, 70))
     strengths.push(
-      `${travelReadinessRate}% of children with travel records demonstrate independent travel readiness with safety plans.`,
+      `${formatRate(travelReadinessRate)} of children with travel records demonstrate independent travel readiness with safety plans.`,
     );
 
-  if (pathwayCoverageRate >= 80)
+  if (meets(pathwayCoverageRate, 80))
     strengths.push(
       `${childrenWithActivePlans} of ${total_children} children have active pathway plans — comprehensive leaving care coverage.`,
     );
 
-  if (planQualityRate >= 80)
+  if (meets(planQualityRate, 80))
     strengths.push(
       "Pathway plans are high quality with personal advisors, accommodation plans, EET plans, and recent reviews.",
     );
 
-  if (financialReadinessRate >= 70)
+  if (meets(financialReadinessRate, 70))
     strengths.push(
-      `${financialReadinessRate}% of leaving care packages show savings on track with financial literacy progressing.`,
+      `${formatRate(financialReadinessRate)} of leaving care packages show savings on track with financial literacy progressing.`,
     );
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (pathwayCoverageRate < 50)
+  if (below(pathwayCoverageRate, 50))
     concerns.push(
       `Only ${childrenWithActivePlans} of ${total_children} children have active pathway plans — Leaving Care Act 2000 requires plans for all eligible children.`,
     );
 
-  if (financialReadinessRate < 40)
+  if (below(financialReadinessRate, 40))
     concerns.push(
-      `Financial readiness is low at ${financialReadinessRate}% — children may not be financially prepared for independence.`,
+      `Financial readiness is low at ${formatRate(financialReadinessRate)} — children may not be financially prepared for independence.`,
     );
 
   if (aspirations.length === 0)
@@ -272,17 +274,17 @@ export function computeLeavingCareTransition(
       "No aspirations recorded for any child — Reg 5 requires meaningful engagement with children about their futures.",
     );
 
-  if (goalAchievementRate < 30 && transition_goals.length > 0)
+  if (below(goalAchievementRate, 30) && transition_goals.length > 0)
     concerns.push(
-      `Only ${goalAchievementRate}% of transition goals are achieved or on track — risk of children being unprepared for adulthood.`,
+      `Only ${formatRate(goalAchievementRate)} of transition goals are achieved or on track — risk of children being unprepared for adulthood.`,
     );
 
-  if (travelReadinessRate < 20 && independent_travel.length > 0)
+  if (below(travelReadinessRate, 20) && independent_travel.length > 0)
     concerns.push(
-      `Travel readiness is critically low at ${travelReadinessRate}% — children may lack independent mobility skills.`,
+      `Travel readiness is critically low at ${formatRate(travelReadinessRate)} — children may lack independent mobility skills.`,
     );
 
-  if (planQualityRate < 30 && activePlans.length > 0)
+  if (below(planQualityRate, 30) && activePlans.length > 0)
     concerns.push(
       "Active pathway plans lack key components (personal advisor, accommodation, EET, or recent review).",
     );
@@ -291,7 +293,7 @@ export function computeLeavingCareTransition(
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 1;
 
-  if (pathwayCoverageRate < 80)
+  if (below(pathwayCoverageRate, 80))
     recommendations.push({
       rank: rank++,
       recommendation: `Ensure all eligible children have active pathway plans — currently ${childrenWithActivePlans} of ${total_children} covered.`,
@@ -299,7 +301,7 @@ export function computeLeavingCareTransition(
       regulatory_ref: "Leaving Care Act 2000",
     });
 
-  if (aspirations.length === 0 || aspirationEngagementRate < 50)
+  if (aspirations.length === 0 || below(aspirationEngagementRate, 50))
     recommendations.push({
       rank: rank++,
       recommendation: "Record child-chosen aspirations with concrete steps for each young person to evidence Reg 5 engagement.",
@@ -307,7 +309,7 @@ export function computeLeavingCareTransition(
       regulatory_ref: "CHR 2015 Reg 5",
     });
 
-  if (financialReadinessRate < 40)
+  if (below(financialReadinessRate, 40))
     recommendations.push({
       rank: rank++,
       recommendation: "Review leaving care financial packages — ensure savings plans and financial literacy programmes are in place.",
@@ -315,7 +317,7 @@ export function computeLeavingCareTransition(
       regulatory_ref: "Leaving Care Act 2000",
     });
 
-  if (travelReadinessRate < 40 && independent_travel.length > 0)
+  if (below(travelReadinessRate, 40) && independent_travel.length > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Increase independent travel training — focus on route mastery and safety plans for each child.",
@@ -323,7 +325,7 @@ export function computeLeavingCareTransition(
       regulatory_ref: null,
     });
 
-  if (planQualityRate < 50 && activePlans.length > 0)
+  if (below(planQualityRate, 50) && activePlans.length > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Improve pathway plan quality — ensure each plan has a personal advisor, accommodation plan, EET plan, and recent review.",
@@ -331,7 +333,7 @@ export function computeLeavingCareTransition(
       regulatory_ref: "Leaving Care Act 2000",
     });
 
-  if (goalAchievementRate < 50 && transition_goals.length > 0)
+  if (below(goalAchievementRate, 50) && transition_goals.length > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Accelerate transition goal progress — review at-risk and stalled goals with keyworkers.",
@@ -342,9 +344,9 @@ export function computeLeavingCareTransition(
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: { text: string; severity: string }[] = [];
 
-  if (pathwayCoverageRate < 30)
+  if (below(pathwayCoverageRate, 30))
     insights.push({
-      text: `Only ${pathwayCoverageRate}% of children have active pathway plans. Ofsted will view this as a significant gap in leaving care preparation — the Leaving Care Act 2000 requires plans for all eligible young people.`,
+      text: `Only ${formatRate(pathwayCoverageRate)} of children have active pathway plans. Ofsted will view this as a significant gap in leaving care preparation — the Leaving Care Act 2000 requires plans for all eligible young people.`,
       severity: "critical",
     });
 
@@ -354,37 +356,37 @@ export function computeLeavingCareTransition(
       severity: "critical",
     });
 
-  if (financialReadinessRate < 20 && leaving_care_packages.length > 0)
+  if (below(financialReadinessRate, 20) && leaving_care_packages.length > 0)
     insights.push({
-      text: `Financial readiness is at ${financialReadinessRate}%. Without savings plans and financial literacy, young people face heightened risk of financial hardship after leaving care.`,
+      text: `Financial readiness is at ${formatRate(financialReadinessRate)}. Without savings plans and financial literacy, young people face heightened risk of financial hardship after leaving care.`,
       severity: "critical",
     });
 
-  if (goalAchievementRate < 30 && transition_goals.length > 0)
+  if (below(goalAchievementRate, 30) && transition_goals.length > 0)
     insights.push({
-      text: `Only ${goalAchievementRate}% of transition goals are on track or achieved. A pattern of unmet goals suggests systemic barriers to independence preparation.`,
+      text: `Only ${formatRate(goalAchievementRate)} of transition goals are on track or achieved. A pattern of unmet goals suggests systemic barriers to independence preparation.`,
       severity: "warning",
     });
 
-  if (travelReadinessRate < 40 && independent_travel.length > 0)
+  if (below(travelReadinessRate, 40) && independent_travel.length > 0)
     insights.push({
-      text: `Travel readiness is ${travelReadinessRate}%. Independent mobility is foundational to employment, education, and social participation after care.`,
+      text: `Travel readiness is ${formatRate(travelReadinessRate)}. Independent mobility is foundational to employment, education, and social participation after care.`,
       severity: "warning",
     });
 
-  if (goalAchievementRate >= 75)
+  if (meets(goalAchievementRate, 75))
     insights.push({
-      text: `${goalAchievementRate}% of transition goals are achieved or on track — this demonstrates strong, evidence-based preparation for adulthood.`,
+      text: `${formatRate(goalAchievementRate)} of transition goals are achieved or on track — this demonstrates strong, evidence-based preparation for adulthood.`,
       severity: "positive",
     });
 
-  if (aspirationEngagementRate >= 80)
+  if (meets(aspirationEngagementRate, 80))
     insights.push({
-      text: `${aspirationEngagementRate}% of aspirations are child-chosen with steps taken — children's voices are central to planning, as required by Reg 5.`,
+      text: `${formatRate(aspirationEngagementRate)} of aspirations are child-chosen with steps taken — children's voices are central to planning, as required by Reg 5.`,
       severity: "positive",
     });
 
-  if (pathwayCoverageRate >= 80 && planQualityRate >= 80)
+  if (meets(pathwayCoverageRate, 80) && meets(planQualityRate, 80))
     insights.push({
       text: "Pathway plan coverage and quality are both strong. This provides Ofsted with clear evidence of planned, purposeful transitions.",
       severity: "positive",
@@ -393,9 +395,9 @@ export function computeLeavingCareTransition(
   // ── Headline ──────────────────────────────────────────────────────────
   const headline =
     leaving_care_rating === "outstanding"
-      ? `Excellent leaving care preparation: ${goalAchievementRate}% goals on track, ${childrenWithActivePlans} of ${total_children} with pathway plans.`
+      ? `Excellent leaving care preparation: ${formatRate(goalAchievementRate)} goals on track, ${childrenWithActivePlans} of ${total_children} with pathway plans.`
       : leaving_care_rating === "good"
-        ? `Good transition planning with ${goalAchievementRate}% goal achievement and ${childrenWithActivePlans} active pathway plans.`
+        ? `Good transition planning with ${formatRate(goalAchievementRate)} goal achievement and ${childrenWithActivePlans} active pathway plans.`
         : leaving_care_rating === "adequate"
           ? `Leaving care preparation in place but ${concerns.length > 0 ? concerns.length + " concern(s) identified" : "needs strengthening"}.`
           : `Leaving care preparation requires urgent attention — ${concerns.length} concern(s) across transition planning.`;
