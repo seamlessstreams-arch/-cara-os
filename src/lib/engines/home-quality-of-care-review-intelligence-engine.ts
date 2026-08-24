@@ -5,6 +5,8 @@
 // CHR 2015 Reg 45/46: Quality of care reviews. SCCIF: Quality & improvement.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface QocReviewInput {
@@ -41,11 +43,16 @@ export interface QualityOfCareReviewResult {
   qoc_score: number;
   headline: string;
   total_reviews: number;
-  good_or_outstanding_rate: number;
-  action_completion_rate: number;
-  children_feedback_rate: number;
-  staff_feedback_rate: number;
-  domain_quality_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  good_or_outstanding_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_feedback_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_feedback_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  domain_quality_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -58,10 +65,6 @@ export interface QualityOfCareReviewResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -106,21 +109,21 @@ export function computeQualityOfCareReview(
   const goodOrOutstanding = reviews.filter(r =>
     r.overall_rating === "outstanding" || r.overall_rating === "good"
   ).length;
-  const goodRate = pct(goodOrOutstanding, totalReviews);
+  const goodRate = rate(goodOrOutstanding, totalReviews);
 
   const totalActions = reviews.reduce((sum, r) => sum + r.actions_total, 0);
   const completedActions = reviews.reduce((sum, r) => sum + r.actions_completed, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const withChildFeedback = reviews.filter(r => r.has_children_feedback).length;
-  const childFeedbackRate = pct(withChildFeedback, totalReviews);
+  const childFeedbackRate = rate(withChildFeedback, totalReviews);
 
   const withStaffFeedback = reviews.filter(r => r.has_staff_feedback).length;
-  const staffFeedbackRate = pct(withStaffFeedback, totalReviews);
+  const staffFeedbackRate = rate(withStaffFeedback, totalReviews);
 
   const totalDomains = reviews.reduce((sum, r) => sum + r.domains_count, 0);
   const goodDomains = reviews.reduce((sum, r) => sum + r.domains_good_or_outstanding, 0);
-  const domainQualityRate = pct(goodDomains, totalDomains);
+  const domainQualityRate = rate(goodDomains, totalDomains);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -129,9 +132,9 @@ export function computeQualityOfCareReview(
   if (totalReviews === 0) {
     score -= 3;
   } else {
-    if (goodRate >= 90) score += 5;
-    else if (goodRate >= 70) score += 2;
-    else if (goodRate < 50) score -= 5;
+    if (meets(goodRate, 90)) score += 5;
+    else if (meets(goodRate, 70)) score += 2;
+    else if (below(goodRate, 50)) score -= 5;
   }
 
   // Modifier 2: Action completion rate
@@ -140,36 +143,36 @@ export function computeQualityOfCareReview(
   } else if (totalActions === 0) {
     // no reviews → no adjustment
   } else {
-    if (actionCompletionRate >= 90) score += 6;
-    else if (actionCompletionRate >= 70) score += 2;
-    else if (actionCompletionRate < 50) score -= 5;
+    if (meets(actionCompletionRate, 90)) score += 6;
+    else if (meets(actionCompletionRate, 70)) score += 2;
+    else if (below(actionCompletionRate, 50)) score -= 5;
   }
 
   // Modifier 3: Children's feedback included
   if (totalReviews === 0) {
     // no adjustment
   } else {
-    if (childFeedbackRate >= 90) score += 5;
-    else if (childFeedbackRate >= 70) score += 2;
-    else if (childFeedbackRate < 50) score -= 4;
+    if (meets(childFeedbackRate, 90)) score += 5;
+    else if (meets(childFeedbackRate, 70)) score += 2;
+    else if (below(childFeedbackRate, 50)) score -= 4;
   }
 
   // Modifier 4: Staff feedback included
   if (totalReviews === 0) {
     // no adjustment
   } else {
-    if (staffFeedbackRate >= 90) score += 5;
-    else if (staffFeedbackRate >= 70) score += 2;
-    else if (staffFeedbackRate < 50) score -= 5;
+    if (meets(staffFeedbackRate, 90)) score += 5;
+    else if (meets(staffFeedbackRate, 70)) score += 2;
+    else if (below(staffFeedbackRate, 50)) score -= 5;
   }
 
   // Modifier 5: Domain quality rate
   if (totalDomains === 0) {
     score -= 1;
   } else {
-    if (domainQualityRate >= 90) score += 4;
-    else if (domainQualityRate >= 70) score += 1;
-    else if (domainQualityRate < 50) score -= 4;
+    if (meets(domainQualityRate, 90)) score += 4;
+    else if (meets(domainQualityRate, 70)) score += 1;
+    else if (below(domainQualityRate, 50)) score -= 4;
   }
 
   // Modifier 6: Review frequency (reviews per quarter-equivalent)
@@ -201,21 +204,21 @@ export function computeQualityOfCareReview(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (goodRate >= 90 && totalReviews > 0) strengths.push("Quality reviews consistently rate the home as good or outstanding");
-  if (actionCompletionRate >= 90 && totalActions > 0) strengths.push("Excellent action completion rate — improvements are implemented promptly");
-  if (childFeedbackRate >= 90 && totalReviews > 0) strengths.push("Children's feedback is systematically included in quality reviews");
-  if (staffFeedbackRate >= 90 && totalReviews > 0) strengths.push("Staff feedback is consistently gathered as part of the review process");
-  if (domainQualityRate >= 90 && totalDomains > 0) strengths.push("Domain assessments show high quality across all reviewed areas");
+  if (meets(goodRate, 90) && totalReviews > 0) strengths.push("Quality reviews consistently rate the home as good or outstanding");
+  if (meets(actionCompletionRate, 90) && totalActions > 0) strengths.push("Excellent action completion rate — improvements are implemented promptly");
+  if (meets(childFeedbackRate, 90) && totalReviews > 0) strengths.push("Children's feedback is systematically included in quality reviews");
+  if (meets(staffFeedbackRate, 90) && totalReviews > 0) strengths.push("Staff feedback is consistently gathered as part of the review process");
+  if (meets(domainQualityRate, 90) && totalDomains > 0) strengths.push("Domain assessments show high quality across all reviewed areas");
   if (totalReviews >= 4) strengths.push("Regular review schedule with strong frequency of quality assessments");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (totalReviews === 0) concerns.push("No quality of care reviews have been conducted — regulatory compliance at risk");
-  if (goodRate < 50 && totalReviews > 0) concerns.push("Majority of quality reviews are not rated good or outstanding");
-  if (actionCompletionRate < 50 && totalActions > 0) concerns.push("Poor action completion rate — improvements identified are not being implemented");
-  if (childFeedbackRate < 50 && totalReviews > 0) concerns.push("Children's voices are missing from quality review processes");
-  if (staffFeedbackRate < 50 && totalReviews > 0) concerns.push("Staff feedback is not routinely included in quality reviews");
-  if (domainQualityRate < 50 && totalDomains > 0) concerns.push("Domain assessments show widespread areas requiring improvement");
+  if (below(goodRate, 50) && totalReviews > 0) concerns.push("Majority of quality reviews are not rated good or outstanding");
+  if (below(actionCompletionRate, 50) && totalActions > 0) concerns.push("Poor action completion rate — improvements identified are not being implemented");
+  if (below(childFeedbackRate, 50) && totalReviews > 0) concerns.push("Children's voices are missing from quality review processes");
+  if (below(staffFeedbackRate, 50) && totalReviews > 0) concerns.push("Staff feedback is not routinely included in quality reviews");
+  if (below(domainQualityRate, 50) && totalDomains > 0) concerns.push("Domain assessments show widespread areas requiring improvement");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: QualityOfCareReviewResult["recommendations"] = [];
@@ -223,19 +226,19 @@ export function computeQualityOfCareReview(
   if (totalReviews === 0) {
     recs.push({ rank: 1, recommendation: "Establish a regular quality of care review schedule as required under Regulation 45", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 45" });
   }
-  if (actionCompletionRate < 70 && totalActions > 0) {
+  if (below(actionCompletionRate, 70) && totalActions > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement action tracking system to ensure review findings are acted upon", urgency: "soon", regulatory_ref: "CHR 2015 Reg 46" });
   }
-  if (childFeedbackRate < 70 && totalReviews > 0) {
+  if (below(childFeedbackRate, 70) && totalReviews > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure children's views are systematically gathered for every quality review", urgency: "soon", regulatory_ref: "SCCIF Quality" });
   }
-  if (staffFeedbackRate < 70 && totalReviews > 0) {
+  if (below(staffFeedbackRate, 70) && totalReviews > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Include staff consultation as a standard element of all quality reviews", urgency: "planned", regulatory_ref: "SCCIF Quality" });
   }
-  if (goodRate < 70 && totalReviews > 0) {
+  if (below(goodRate, 70) && totalReviews > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Develop targeted improvement plan to address areas rated below good", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 45" });
   }
-  if (domainQualityRate < 70 && totalDomains > 0) {
+  if (below(domainQualityRate, 70) && totalDomains > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Address domain-level weaknesses identified in quality assessments", urgency: "soon", regulatory_ref: "CHR 2015 Reg 46" });
   }
 
@@ -244,19 +247,19 @@ export function computeQualityOfCareReview(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: QualityOfCareReviewResult["insights"] = [];
 
-  if (goodRate >= 90 && actionCompletionRate >= 90 && totalReviews > 0) {
+  if (meets(goodRate, 90) && meets(actionCompletionRate, 90) && totalReviews > 0) {
     insights.push({ text: "Quality review framework is mature and effective — high ratings combined with strong action follow-through", severity: "positive" });
   }
   if (totalReviews === 0) {
     insights.push({ text: "Absence of quality reviews means the home cannot demonstrate continuous improvement to regulators", severity: "critical" });
   }
-  if (actionCompletionRate < 50 && totalActions > 0) {
+  if (below(actionCompletionRate, 50) && totalActions > 0) {
     insights.push({ text: "Low action completion undermines the purpose of quality reviews — a review without follow-through adds no value", severity: "critical" });
   }
-  if (childFeedbackRate >= 90 && staffFeedbackRate >= 90 && totalReviews > 0) {
+  if (meets(childFeedbackRate, 90) && meets(staffFeedbackRate, 90) && totalReviews > 0) {
     insights.push({ text: "Inclusive review process — both children and staff voices inform quality improvement", severity: "positive" });
   }
-  if (goodRate < 50 && totalReviews > 0) {
+  if (below(goodRate, 50) && totalReviews > 0) {
     insights.push({ text: "Persistent low ratings in quality reviews suggest systemic issues requiring strategic intervention", severity: "warning" });
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -77,16 +78,16 @@ export function HomeConsentRightsLiteracyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.expired_consents === 0 ? "text-[--cs-success]" : d.expired_consents <= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.expired_consents}</p>
               <p className="text-[9px] text-muted-foreground">Expired</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.rights_knowledge_rate >= 85 ? "bg-green-50" : d.rights_knowledge_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.rights_knowledge_rate >= 85 ? "text-[--cs-success]" : d.rights_knowledge_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.rights_knowledge_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.rights_knowledge_rate, 85) ? "bg-green-50" : meets(d.rights_knowledge_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.rights_knowledge_rate, 85) ? "text-[--cs-success]" : meets(d.rights_knowledge_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.rights_knowledge_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Rights Known</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.children_rights_assessed > 0 ? "bg-green-50" : "bg-amber-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.children_rights_assessed > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_rights_assessed}</p>
               <p className="text-[9px] text-muted-foreground">Assessed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.pr_documentation_rate >= 85 ? "bg-green-50" : d.pr_documentation_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pr_documentation_rate >= 85 ? "text-[--cs-success]" : d.pr_documentation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pr_documentation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pr_documentation_rate, 85) ? "bg-green-50" : meets(d.pr_documentation_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pr_documentation_rate, 85) ? "text-[--cs-success]" : meets(d.pr_documentation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pr_documentation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">PR Docs</p>
             </div>
           </div>

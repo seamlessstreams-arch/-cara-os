@@ -8,6 +8,8 @@
 // Children's Homes Quality Standards Reg 9 (positive relationships).
 // ==============================================================================
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface SanctionRewardRecordInput {
@@ -59,11 +61,16 @@ export interface SanctionRewardBalanceResult {
   records_last_90_days: number;
   reward_count: number;
   sanction_count: number;
-  reward_ratio: number;           // pct rewards of total
-  proportionality_rate: number;
-  child_voice_rate: number;
-  context_documentation_rate: number;
-  outcome_tracking_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reward_ratio: number | null;           // pct rewards of total
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  context_documentation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcome_tracking_rate: number | null;
   unique_children: number;
   reward_type_variety: number;    // distinct reward types used
   strengths: string[];
@@ -73,10 +80,6 @@ export interface SanctionRewardBalanceResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -172,23 +175,23 @@ export function computeSanctionRewardBalance(
   const sanctions = r90d.filter(r => r.direction === "sanction");
   const rewardCount = rewards.length;
   const sanctionCount = sanctions.length;
-  const rewardRatio = pct(rewardCount, total);
+  const rewardRatio = rate(rewardCount, total);
 
   // Proportionality rate
   const proportionateCount = r90d.filter(r => r.proportionate).length;
-  const proportionalityRate = pct(proportionateCount, total);
+  const proportionalityRate = rate(proportionateCount, total);
 
   // Child voice rate
   const childVoiceCount = r90d.filter(r => r.has_child_response).length;
-  const childVoiceRate = pct(childVoiceCount, total);
+  const childVoiceRate = rate(childVoiceCount, total);
 
   // Context documentation rate (has_context AND has_description)
   const contextDocCount = r90d.filter(r => r.has_context && r.has_description).length;
-  const contextDocRate = pct(contextDocCount, total);
+  const contextDocRate = rate(contextDocCount, total);
 
   // Outcome tracking rate
   const outcomeCount = r90d.filter(r => r.has_outcome).length;
-  const outcomeRate = pct(outcomeCount, total);
+  const outcomeRate = rate(outcomeCount, total);
 
   // Unique children
   const uniqueChildIds = new Set(r90d.map(r => r.child_id));
@@ -227,26 +230,26 @@ export function computeSanctionRewardBalance(
   let score = 52;
 
   // Modifier 1: Reward-to-sanction ratio
-  if (rewardRatio >= 70) score += 6;
-  else if (rewardRatio >= 55) score += 3;
-  else if (rewardRatio < 40) score -= 5;
+  if (meets(rewardRatio, 70)) score += 6;
+  else if (meets(rewardRatio, 55)) score += 3;
+  else if (below(rewardRatio, 40)) score -= 5;
   // All sanctions no rewards -> additional -3
   if (rewardCount === 0 && sanctionCount > 0) score -= 3;
 
   // Modifier 2: Proportionality compliance
-  if (proportionalityRate >= 98) score += 5;
-  else if (proportionalityRate >= 85) score += 2;
-  else if (proportionalityRate < 70) score -= 5;
+  if (meets(proportionalityRate, 98)) score += 5;
+  else if (meets(proportionalityRate, 85)) score += 2;
+  else if (below(proportionalityRate, 70)) score -= 5;
 
   // Modifier 3: Child voice
-  if (childVoiceRate >= 90) score += 5;
-  else if (childVoiceRate >= 70) score += 2;
-  else if (childVoiceRate < 50) score -= 4;
+  if (meets(childVoiceRate, 90)) score += 5;
+  else if (meets(childVoiceRate, 70)) score += 2;
+  else if (below(childVoiceRate, 50)) score -= 4;
 
   // Modifier 4: Context documentation
-  if (contextDocRate >= 90) score += 5;
-  else if (contextDocRate >= 70) score += 2;
-  else if (contextDocRate < 50) score -= 4;
+  if (meets(contextDocRate, 90)) score += 5;
+  else if (meets(contextDocRate, 70)) score += 2;
+  else if (below(contextDocRate, 50)) score -= 4;
 
   // Modifier 5: Equity across children
   const totalSanctions = sanctionCount;
@@ -265,9 +268,9 @@ export function computeSanctionRewardBalance(
   }
 
   // Modifier 6: Outcome tracking & quality
-  if (outcomeRate >= 85 && rewardTypeVariety >= 3) score += 5;
-  else if (outcomeRate >= 70) score += 2;
-  else if (outcomeRate < 50) score -= 3;
+  if (meets(outcomeRate, 85) && rewardTypeVariety >= 3) score += 5;
+  else if (meets(outcomeRate, 70)) score += 2;
+  else if (below(outcomeRate, 50)) score -= 3;
 
   // -- Additional penalties ---------------------------------------------------
 
@@ -283,27 +286,27 @@ export function computeSanctionRewardBalance(
   // -- Strengths --------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (rewardRatio >= 70 && total > 0) {
+  if (meets(rewardRatio, 70) && total > 0) {
     strengths.push(
-      `${rewardRatio}% of records are rewards — the home maintains a strongly positive reinforcement culture.`,
+      `${formatRate(rewardRatio)} of records are rewards — the home maintains a strongly positive reinforcement culture.`,
     );
   }
 
-  if (proportionalityRate >= 98 && total > 0) {
+  if (meets(proportionalityRate, 98) && total > 0) {
     strengths.push(
-      `${proportionalityRate}% proportionality rate — all sanctions and rewards are assessed as proportionate.`,
+      `${formatRate(proportionalityRate)} proportionality rate — all sanctions and rewards are assessed as proportionate.`,
     );
   }
 
-  if (childVoiceRate >= 90 && total > 0) {
+  if (meets(childVoiceRate, 90) && total > 0) {
     strengths.push(
-      `Child's voice captured in ${childVoiceRate}% of records — children are actively included in the process.`,
+      `Child's voice captured in ${formatRate(childVoiceRate)} of records — children are actively included in the process.`,
     );
   }
 
-  if (contextDocRate >= 90 && total > 0) {
+  if (meets(contextDocRate, 90) && total > 0) {
     strengths.push(
-      `Context documentation at ${contextDocRate}% — excellent recording of circumstances and descriptions.`,
+      `Context documentation at ${formatRate(contextDocRate)} — excellent recording of circumstances and descriptions.`,
     );
   }
 
@@ -313,9 +316,9 @@ export function computeSanctionRewardBalance(
     );
   }
 
-  if (outcomeRate >= 85 && total > 0) {
+  if (meets(outcomeRate, 85) && total > 0) {
     strengths.push(
-      `Outcome tracking at ${outcomeRate}% — the impact of sanctions and rewards is consistently recorded.`,
+      `Outcome tracking at ${formatRate(outcomeRate)} — the impact of sanctions and rewards is consistently recorded.`,
     );
   }
 
@@ -350,9 +353,9 @@ export function computeSanctionRewardBalance(
     );
   }
 
-  if (rewardRatio < 40 && total > 0) {
+  if (below(rewardRatio, 40) && total > 0) {
     concerns.push(
-      `Reward ratio at only ${rewardRatio}% — the home's approach is sanction-heavy, undermining positive relationships.`,
+      `Reward ratio at only ${formatRate(rewardRatio)} — the home's approach is sanction-heavy, undermining positive relationships.`,
     );
   }
 
@@ -362,27 +365,27 @@ export function computeSanctionRewardBalance(
     );
   }
 
-  if (proportionalityRate < 70 && total > 0) {
+  if (below(proportionalityRate, 70) && total > 0) {
     concerns.push(
-      `Proportionality rate at ${proportionalityRate}% — a significant number of sanctions or rewards are not assessed as proportionate.`,
+      `Proportionality rate at ${formatRate(proportionalityRate)} — a significant number of sanctions or rewards are not assessed as proportionate.`,
     );
   }
 
-  if (childVoiceRate < 50 && total > 0) {
+  if (below(childVoiceRate, 50) && total > 0) {
     concerns.push(
-      `Child voice captured in only ${childVoiceRate}% of records — children are not being adequately heard in the sanction and reward process.`,
+      `Child voice captured in only ${formatRate(childVoiceRate)} of records — children are not being adequately heard in the sanction and reward process.`,
     );
   }
 
-  if (contextDocRate < 50 && total > 0) {
+  if (below(contextDocRate, 50) && total > 0) {
     concerns.push(
-      `Context documentation at only ${contextDocRate}% — poor recording of the circumstances surrounding sanctions and rewards.`,
+      `Context documentation at only ${formatRate(contextDocRate)} — poor recording of the circumstances surrounding sanctions and rewards.`,
     );
   }
 
-  if (outcomeRate < 50 && total > 0) {
+  if (below(outcomeRate, 50) && total > 0) {
     concerns.push(
-      `Outcome tracking at only ${outcomeRate}% — the impact and effectiveness of sanctions and rewards is not being monitored.`,
+      `Outcome tracking at only ${formatRate(outcomeRate)} — the impact and effectiveness of sanctions and rewards is not being monitored.`,
     );
   }
 
@@ -432,46 +435,46 @@ export function computeSanctionRewardBalance(
     });
   }
 
-  if (rewardRatio < 40 && rewardCount > 0 && total > 0) {
+  if (below(rewardRatio, 40) && rewardCount > 0 && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Increase the use of rewards relative to sanctions — current reward ratio of ${rewardRatio}% indicates an over-reliance on punitive measures.`,
+      recommendation: `Increase the use of rewards relative to sanctions — current reward ratio of ${formatRate(rewardRatio)} indicates an over-reliance on punitive measures.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 19",
     });
   }
 
-  if (proportionalityRate < 70 && total > 0) {
+  if (below(proportionalityRate, 70) && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Review proportionality of all sanctions and rewards — ${proportionalityRate}% compliance requires staff training on appropriate, child-centred responses.`,
+      recommendation: `Review proportionality of all sanctions and rewards — ${formatRate(proportionalityRate)} compliance requires staff training on appropriate, child-centred responses.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
 
-  if (childVoiceRate < 50 && total > 0) {
+  if (below(childVoiceRate, 50) && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Ensure children's views are captured in every sanction and reward record — current rate of ${childVoiceRate}% denies children their right to be heard.`,
+      recommendation: `Ensure children's views are captured in every sanction and reward record — current rate of ${formatRate(childVoiceRate)} denies children their right to be heard.`,
       urgency: "soon",
       regulatory_ref: "Quality Standards Reg 9",
     });
   }
 
-  if (contextDocRate < 50 && total > 0) {
+  if (below(contextDocRate, 50) && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Improve context documentation for all sanction and reward records — only ${contextDocRate}% currently have adequate context and description.`,
+      recommendation: `Improve context documentation for all sanction and reward records — only ${formatRate(contextDocRate)} currently have adequate context and description.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
 
-  if (outcomeRate < 50 && total > 0) {
+  if (below(outcomeRate, 50) && total > 0) {
     recommendations.push({
       rank: ++rank,
-      recommendation: `Implement outcome tracking for all sanctions and rewards — only ${outcomeRate}% of records capture the outcome, making it impossible to assess effectiveness.`,
+      recommendation: `Implement outcome tracking for all sanctions and rewards — only ${formatRate(outcomeRate)} of records capture the outcome, making it impossible to assess effectiveness.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 19",
     });
@@ -529,38 +532,38 @@ export function computeSanctionRewardBalance(
     });
   }
 
-  if (proportionalityRate < 70 && total > 0) {
+  if (below(proportionalityRate, 70) && total > 0) {
     insights.push({
-      text: `Proportionality compliance at ${proportionalityRate}% — a significant proportion of consequences are not proportionate, undermining children's trust and sense of fairness.`,
+      text: `Proportionality compliance at ${formatRate(proportionalityRate)} — a significant proportion of consequences are not proportionate, undermining children's trust and sense of fairness.`,
       severity: "critical",
     });
   }
 
   // Warning insights
-  if (rewardRatio < 55 && rewardRatio >= 40 && total > 0) {
+  if (below(rewardRatio, 55) && meets(rewardRatio, 40) && total > 0) {
     insights.push({
-      text: `Reward ratio at ${rewardRatio}% — while not critically low, the balance should shift further towards positive reinforcement. Best practice targets at least 70% rewards.`,
+      text: `Reward ratio at ${formatRate(rewardRatio)} — while not critically low, the balance should shift further towards positive reinforcement. Best practice targets at least 70% rewards.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceRate >= 50 && childVoiceRate < 70 && total > 0) {
+  if (meets(childVoiceRate, 50) && below(childVoiceRate, 70) && total > 0) {
     insights.push({
-      text: `Child voice captured in ${childVoiceRate}% of records — improving but not yet meeting the standard where children are consistently heard in decisions affecting them.`,
+      text: `Child voice captured in ${formatRate(childVoiceRate)} of records — improving but not yet meeting the standard where children are consistently heard in decisions affecting them.`,
       severity: "warning",
     });
   }
 
-  if (contextDocRate >= 50 && contextDocRate < 70 && total > 0) {
+  if (meets(contextDocRate, 50) && below(contextDocRate, 70) && total > 0) {
     insights.push({
-      text: `Context documentation at ${contextDocRate}% — some records lack sufficient context, which may compromise the ability to learn from and review decisions.`,
+      text: `Context documentation at ${formatRate(contextDocRate)} — some records lack sufficient context, which may compromise the ability to learn from and review decisions.`,
       severity: "warning",
     });
   }
 
-  if (outcomeRate >= 50 && outcomeRate < 70 && total > 0) {
+  if (meets(outcomeRate, 50) && below(outcomeRate, 70) && total > 0) {
     insights.push({
-      text: `Outcome tracking at ${outcomeRate}% — the home tracks some outcomes but inconsistently, making it harder to evaluate which approaches work best for each child.`,
+      text: `Outcome tracking at ${formatRate(outcomeRate)} — the home tracks some outcomes but inconsistently, making it harder to evaluate which approaches work best for each child.`,
       severity: "warning",
     });
   }
@@ -580,37 +583,37 @@ export function computeSanctionRewardBalance(
     });
   }
 
-  if (rewardRatio >= 70 && total > 0) {
+  if (meets(rewardRatio, 70) && total > 0) {
     insights.push({
-      text: `${rewardRatio}% reward ratio demonstrates a genuinely positive behaviour management culture. Ofsted will view this as strong evidence of child-centred practice under Reg 19.`,
+      text: `${formatRate(rewardRatio)} reward ratio demonstrates a genuinely positive behaviour management culture. Ofsted will view this as strong evidence of child-centred practice under Reg 19.`,
       severity: "positive",
     });
   }
 
-  if (proportionalityRate >= 98 && total > 0) {
+  if (meets(proportionalityRate, 98) && total > 0) {
     insights.push({
-      text: `${proportionalityRate}% proportionality rate — sanctions and rewards are consistently fair and appropriate, building children's trust and sense of justice.`,
+      text: `${formatRate(proportionalityRate)} proportionality rate — sanctions and rewards are consistently fair and appropriate, building children's trust and sense of justice.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceRate >= 90 && total > 0) {
+  if (meets(childVoiceRate, 90) && total > 0) {
     insights.push({
-      text: `Child voice rate of ${childVoiceRate}% — children are meaningfully involved in the sanction and reward process, supporting their participation rights under Reg 9.`,
+      text: `Child voice rate of ${formatRate(childVoiceRate)} — children are meaningfully involved in the sanction and reward process, supporting their participation rights under Reg 9.`,
       severity: "positive",
     });
   }
 
-  if (contextDocRate >= 90 && total > 0) {
+  if (meets(contextDocRate, 90) && total > 0) {
     insights.push({
-      text: `Excellent context documentation at ${contextDocRate}% — every decision is well-evidenced, supporting robust governance and learning.`,
+      text: `Excellent context documentation at ${formatRate(contextDocRate)} — every decision is well-evidenced, supporting robust governance and learning.`,
       severity: "positive",
     });
   }
 
-  if (outcomeRate >= 85 && rewardTypeVariety >= 3 && total > 0) {
+  if (meets(outcomeRate, 85) && rewardTypeVariety >= 3 && total > 0) {
     insights.push({
-      text: `Strong outcome tracking (${outcomeRate}%) combined with ${rewardTypeVariety} reward types — the home can evidence the effectiveness of its behaviour management approach.`,
+      text: `Strong outcome tracking (${formatRate(outcomeRate)}) combined with ${rewardTypeVariety} reward types — the home can evidence the effectiveness of its behaviour management approach.`,
       severity: "positive",
     });
   }
@@ -619,7 +622,7 @@ export function computeSanctionRewardBalance(
   let headline: string;
 
   if (reward_rating === "outstanding") {
-    headline = `Outstanding sanction and reward balance — ${rewardRatio}% reward ratio, ${proportionalityRate}% proportionality, ${childVoiceRate}% child voice across ${total} records.`;
+    headline = `Outstanding sanction and reward balance — ${formatRate(rewardRatio)} reward ratio, ${formatRate(proportionalityRate)} proportionality, ${formatRate(childVoiceRate)} child voice across ${total} records.`;
   } else if (reward_rating === "good") {
     headline = `Good sanction and reward balance — ${rewardCount} reward${rewardCount !== 1 ? "s" : ""} and ${sanctionCount} sanction${sanctionCount !== 1 ? "s" : ""} recorded${concerns.length > 0 ? `, ${concerns.length} area${concerns.length !== 1 ? "s" : ""} for improvement` : ""}.`;
   } else if (reward_rating === "adequate") {

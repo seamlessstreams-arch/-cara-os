@@ -777,11 +777,11 @@ describe("computeDiversityInclusionEquality", () => {
       expect(r.identity_affirmation_rate).toBe(33); // 1/3
     });
 
-    it("identity_affirmation_rate is 0 when no records", () => {
+    it("identity_affirmation_rate is unmeasured when no records", () => {
       const r = computeDiversityInclusionEquality(baseInput({
         lgbtq_records: [],
       }));
-      expect(r.identity_affirmation_rate).toBe(0);
+      expect(r.identity_affirmation_rate).toBeNull();
     });
 
     it("diversity_events_completed counts only completed", () => {
@@ -818,9 +818,9 @@ describe("computeDiversityInclusionEquality", () => {
       expect(r.hate_resolution_rate).toBe(50);
     });
 
-    it("hate_resolution_rate is 0 when no incidents", () => {
+    it("hate_resolution_rate is unmeasured when no incidents", () => {
       const r = computeDiversityInclusionEquality(baseInput());
-      expect(r.hate_resolution_rate).toBe(0);
+      expect(r.hate_resolution_rate).toBeNull();
     });
   });
 

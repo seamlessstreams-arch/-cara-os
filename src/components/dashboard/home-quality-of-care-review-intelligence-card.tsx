@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
@@ -77,20 +78,20 @@ export function HomeQualityOfCareReviewIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_reviews > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_reviews}</p>
               <p className="text-[9px] text-muted-foreground">Reviews</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.good_or_outstanding_rate >= 90 ? "bg-green-50" : d.good_or_outstanding_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.good_or_outstanding_rate >= 90 ? "text-[--cs-success]" : d.good_or_outstanding_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.good_or_outstanding_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.good_or_outstanding_rate, 90) ? "bg-green-50" : meets(d.good_or_outstanding_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.good_or_outstanding_rate, 90) ? "text-[--cs-success]" : meets(d.good_or_outstanding_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.good_or_outstanding_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Good+</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_completion_rate, 90) ? "bg-green-50" : meets(d.action_completion_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_completion_rate, 90) ? "text-[--cs-success]" : meets(d.action_completion_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_feedback_rate >= 90 ? "bg-green-50" : d.children_feedback_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_feedback_rate >= 90 ? "text-[--cs-success]" : d.children_feedback_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_feedback_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.children_feedback_rate, 90) ? "bg-green-50" : meets(d.children_feedback_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_feedback_rate, 90) ? "text-[--cs-success]" : meets(d.children_feedback_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_feedback_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Voice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.domain_quality_rate >= 90 ? "bg-green-50" : d.domain_quality_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.domain_quality_rate >= 90 ? "text-[--cs-success]" : d.domain_quality_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.domain_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.domain_quality_rate, 90) ? "bg-green-50" : meets(d.domain_quality_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.domain_quality_rate, 90) ? "text-[--cs-success]" : meets(d.domain_quality_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.domain_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Domains</p>
             </div>
           </div>

@@ -7,6 +7,8 @@
 // discrimination.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface LgbtqSupportInput {
@@ -70,10 +72,12 @@ export interface DiversityInclusionResult {
   diversity_score: number;
   headline: string;
   children_with_cultural_plans: number;
-  identity_affirmation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identity_affirmation_rate: number | null;
   diversity_events_completed: number;
   hate_incidents_total: number;
-  hate_resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hate_resolution_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -86,10 +90,6 @@ export interface DiversityInclusionResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -125,17 +125,17 @@ export function computeDiversityInclusionEquality(
   // ── Metrics ──────────────────────────────────────────────────────────
   const uniquePlanChildIds = new Set(cultural_plans.map((p) => p.child_id));
   const children_with_cultural_plans = uniquePlanChildIds.size;
-  const culturalPlanCoverage = pct(children_with_cultural_plans, total_children);
+  const culturalPlanCoverage = rate(children_with_cultural_plans, total_children);
 
   const lgbtqAffirmed = lgbtq_records.filter(
     (r) => r.pronouns_used_consistently && r.preferred_name_used_consistently,
   ).length;
-  const identity_affirmation_rate = pct(lgbtqAffirmed, lgbtq_records.length);
+  const identity_affirmation_rate = rate(lgbtqAffirmed, lgbtq_records.length);
 
   const diversity_events_completed = diversity_events.filter(
     (e) => e.status === "completed",
   ).length;
-  const eventCompletionRate = pct(
+  const eventCompletionRate = rate(
     diversity_events_completed,
     diversity_events.length,
   );
@@ -144,15 +144,15 @@ export function computeDiversityInclusionEquality(
   const hateResolved = hate_incidents.filter(
     (h) => h.status === "resolved" || h.status === "closed",
   ).length;
-  const hate_resolution_rate = pct(hateResolved, hate_incidents_total);
+  const hate_resolution_rate = rate(hateResolved, hate_incidents_total);
 
   const childLedPlans = cultural_plans.filter((p) => p.child_led).length;
-  const childLedRate = pct(childLedPlans, cultural_plans.length);
+  const childLedRate = rate(childLedPlans, cultural_plans.length);
 
   const hateWithLearningsAndPrevention = hate_incidents.filter(
     (h) => h.learnings_documented && h.prevention_measures_count > 0,
   ).length;
-  const preventionLearningRate = pct(
+  const preventionLearningRate = rate(
     hateWithLearningsAndPrevention,
     hate_incidents_total,
   );
@@ -164,18 +164,18 @@ export function computeDiversityInclusionEquality(
   let score = 55;
 
   // ── Mod 1: Cultural plan coverage (±5) ──────────────────────────────
-  if (culturalPlanCoverage >= 80) score += 5;
-  else if (culturalPlanCoverage >= 50) score += 2;
-  else if (culturalPlanCoverage >= 20) score += 0;
+  if (meets(culturalPlanCoverage, 80)) score += 5;
+  else if (meets(culturalPlanCoverage, 50)) score += 2;
+  else if (meets(culturalPlanCoverage, 20)) score += 0;
   else score -= 5;
 
   // ── Mod 2: Identity affirmation (±6/+3 neutral) ────────────────────
   if (lgbtq_records.length === 0) {
     score += 3;
   } else {
-    if (identity_affirmation_rate >= 90) score += 6;
-    else if (identity_affirmation_rate >= 70) score += 3;
-    else if (identity_affirmation_rate >= 40) score += 0;
+    if (meets(identity_affirmation_rate, 90)) score += 6;
+    else if (meets(identity_affirmation_rate, 70)) score += 3;
+    else if (meets(identity_affirmation_rate, 40)) score += 0;
     else score -= 5;
   }
 
@@ -183,9 +183,9 @@ export function computeDiversityInclusionEquality(
   if (diversity_events.length === 0) {
     score -= 1;
   } else {
-    if (eventCompletionRate >= 80) score += 5;
-    else if (eventCompletionRate >= 60) score += 2;
-    else if (eventCompletionRate >= 30) score += 0;
+    if (meets(eventCompletionRate, 80)) score += 5;
+    else if (meets(eventCompletionRate, 60)) score += 2;
+    else if (meets(eventCompletionRate, 30)) score += 0;
     else score -= 4;
   }
 
@@ -193,8 +193,8 @@ export function computeDiversityInclusionEquality(
   if (hate_incidents_total === 0) {
     score += 5;
   } else {
-    if (hate_resolution_rate >= 90) score += 3;
-    else if (hate_resolution_rate >= 60) score += 0;
+    if (meets(hate_resolution_rate, 90)) score += 3;
+    else if (meets(hate_resolution_rate, 60)) score += 0;
     else score -= 5;
   }
 
@@ -202,9 +202,9 @@ export function computeDiversityInclusionEquality(
   if (cultural_plans.length === 0) {
     score -= 1;
   } else {
-    if (childLedRate >= 80) score += 4;
-    else if (childLedRate >= 50) score += 1;
-    else if (childLedRate >= 20) score += 0;
+    if (meets(childLedRate, 80)) score += 4;
+    else if (meets(childLedRate, 50)) score += 1;
+    else if (meets(childLedRate, 20)) score += 0;
     else score -= 4;
   }
 
@@ -212,9 +212,9 @@ export function computeDiversityInclusionEquality(
   if (hate_incidents_total === 0) {
     score += 2;
   } else {
-    if (preventionLearningRate >= 90) score += 5;
-    else if (preventionLearningRate >= 70) score += 2;
-    else if (preventionLearningRate >= 40) score += 0;
+    if (meets(preventionLearningRate, 90)) score += 5;
+    else if (meets(preventionLearningRate, 70)) score += 2;
+    else if (meets(preventionLearningRate, 40)) score += 0;
     else score -= 5;
   }
 
@@ -239,14 +239,14 @@ export function computeDiversityInclusionEquality(
   let rank = 0;
 
   // ── Strengths ────────────────────────────────────────────────────────
-  if (culturalPlanCoverage >= 80) {
+  if (meets(culturalPlanCoverage, 80)) {
     strengths.push(
-      `Excellent cultural plan coverage — ${culturalPlanCoverage}% of children have cultural plans in place.`,
+      `Excellent cultural plan coverage — ${formatRate(culturalPlanCoverage)} of children have cultural plans in place.`,
     );
   }
-  if (identity_affirmation_rate >= 90 && lgbtq_records.length > 0) {
+  if (meets(identity_affirmation_rate, 90) && lgbtq_records.length > 0) {
     strengths.push(
-      `Outstanding identity affirmation — ${identity_affirmation_rate}% of LGBTQ+ young people have consistent pronoun and name use.`,
+      `Outstanding identity affirmation — ${formatRate(identity_affirmation_rate)} of LGBTQ+ young people have consistent pronoun and name use.`,
     );
   }
   if (hate_incidents_total === 0) {
@@ -286,9 +286,9 @@ export function computeDiversityInclusionEquality(
       `${unresolvedHate.length} hate incident(s) remain unresolved — immediate action required to safeguard children.`,
     );
   }
-  if (culturalPlanCoverage < 30) {
+  if (below(culturalPlanCoverage, 30)) {
     concerns.push(
-      `Low cultural plan coverage — only ${culturalPlanCoverage}% of children have cultural plans.`,
+      `Low cultural plan coverage — only ${formatRate(culturalPlanCoverage)} of children have cultural plans.`,
     );
   }
   const lgbtqInconsistent = lgbtq_records.filter(
@@ -324,7 +324,7 @@ export function computeDiversityInclusionEquality(
       regulatory_ref: "Equality Act 2010",
     });
   }
-  if (culturalPlanCoverage < 30) {
+  if (below(culturalPlanCoverage, 30)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -368,7 +368,7 @@ export function computeDiversityInclusionEquality(
   if (
     hate_incidents_total === 0 &&
     diversity_events.length > 0 &&
-    eventCompletionRate >= 80
+    meets(eventCompletionRate, 80)
   ) {
     insights.push({
       text: "Zero hate incidents combined with strong diversity event engagement indicates an inclusive, culturally aware home environment.",
@@ -385,10 +385,10 @@ export function computeDiversityInclusionEquality(
 
   if (
     diversity_events.length > 0 &&
-    eventCompletionRate < 30
+    below(eventCompletionRate, 30)
   ) {
     insights.push({
-      text: `Only ${eventCompletionRate}% of diversity events completed — low participation may indicate disengagement or planning issues.`,
+      text: `Only ${formatRate(eventCompletionRate)} of diversity events completed — low participation may indicate disengagement or planning issues.`,
       severity: "warning",
     });
   }

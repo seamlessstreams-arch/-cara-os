@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 5/44.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StakeholderFeedbackInput {
@@ -49,10 +51,14 @@ export interface StakeholderEngagementResult {
   stakeholder_score: number;
   headline: string;
   total_feedback_items: number;
-  positive_sentiment_rate: number;
-  response_rate: number;
-  parent_engagement_rate: number;
-  community_sentiment_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_sentiment_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parent_engagement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  community_sentiment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -60,10 +66,6 @@ export interface StakeholderEngagementResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -98,25 +100,25 @@ export function computeStakeholderEngagementFeedback(
 
   // Stakeholder positive sentiment
   const positiveStakeholder = stakeholder_feedback.filter(f => f.sentiment === "positive").length;
-  const posRate = pct(positiveStakeholder, stakeholder_feedback.length);
+  const posRate = rate(positiveStakeholder, stakeholder_feedback.length);
 
   // Response rate across stakeholder feedback
   const respondedStakeholder = stakeholder_feedback.filter(f => f.responded_to).length;
-  const responseRate = pct(respondedStakeholder, stakeholder_feedback.length);
+  const responseRate = rate(respondedStakeholder, stakeholder_feedback.length);
 
   // Parent partnership quality
   const strongOrDeveloping = parent_partnerships.filter(
     p => p.engagement_quality === "strong" || p.engagement_quality === "developing",
   ).length;
-  const parentEngagementRate = pct(strongOrDeveloping, parent_partnerships.length);
+  const parentEngagementRate = rate(strongOrDeveloping, parent_partnerships.length);
 
   // Parent views sought
   const viewsSought = parent_partnerships.filter(p => p.views_sought).length;
-  const viewsRate = pct(viewsSought, parent_partnerships.length);
+  const viewsRate = rate(viewsSought, parent_partnerships.length);
 
   // Community positive sentiment
   const positiveCommunity = community_feedback.filter(f => f.sentiment === "positive").length;
-  const comPosRate = pct(positiveCommunity, community_feedback.length);
+  const comPosRate = rate(positiveCommunity, community_feedback.length);
 
   // ═══════════════════════════════════════════════════════════════════════
   // SCORING — base 52 + 6 modifiers (max +30) -> max 82, clamp 0-100
@@ -132,25 +134,25 @@ export function computeStakeholderEngagementFeedback(
 
   // ── Mod 2: Positive sentiment (+-6) ────────────────────────────────
   if (stakeholder_feedback.length > 0) {
-    if (posRate >= 80) score += 6;
-    else if (posRate >= 60) score += 3;
-    else if (posRate >= 40) score += 0;
+    if (meets(posRate, 80)) score += 6;
+    else if (meets(posRate, 60)) score += 3;
+    else if (meets(posRate, 40)) score += 0;
     else score -= 6;
   }
 
   // ── Mod 3: Response rate (+-5) ─────────────────────────────────────
   if (stakeholder_feedback.length > 0) {
-    if (responseRate >= 90) score += 5;
-    else if (responseRate >= 75) score += 3;
-    else if (responseRate >= 50) score += 0;
+    if (meets(responseRate, 90)) score += 5;
+    else if (meets(responseRate, 75)) score += 3;
+    else if (meets(responseRate, 50)) score += 0;
     else score -= 5;
   }
 
   // ── Mod 4: Parent partnership quality (+-6) ────────────────────────
   if (parent_partnerships.length > 0) {
-    if (parentEngagementRate >= 80) score += 6;
-    else if (parentEngagementRate >= 60) score += 3;
-    else if (parentEngagementRate >= 40) score += 0;
+    if (meets(parentEngagementRate, 80)) score += 6;
+    else if (meets(parentEngagementRate, 60)) score += 3;
+    else if (meets(parentEngagementRate, 40)) score += 0;
     else score -= 6;
   } else {
     score -= 1;
@@ -158,17 +160,17 @@ export function computeStakeholderEngagementFeedback(
 
   // ── Mod 5: Parent views sought (+-4) ──────────────────────────────
   if (parent_partnerships.length > 0) {
-    if (viewsRate >= 90) score += 4;
-    else if (viewsRate >= 70) score += 2;
-    else if (viewsRate >= 50) score += 0;
+    if (meets(viewsRate, 90)) score += 4;
+    else if (meets(viewsRate, 70)) score += 2;
+    else if (meets(viewsRate, 50)) score += 0;
     else score -= 4;
   }
 
   // ── Mod 6: Community sentiment (+-5) ──────────────────────────────
   if (community_feedback.length > 0) {
-    if (comPosRate >= 80) score += 5;
-    else if (comPosRate >= 60) score += 3;
-    else if (comPosRate >= 40) score += 0;
+    if (meets(comPosRate, 80)) score += 5;
+    else if (meets(comPosRate, 60)) score += 3;
+    else if (meets(comPosRate, 40)) score += 0;
     else score -= 5;
   }
 
@@ -193,48 +195,48 @@ export function computeStakeholderEngagementFeedback(
   let rank = 0;
 
   // ── Strengths ───────────────────────────────────────────────────────
-  if (stakeholder_feedback.length > 0 && posRate >= 80) {
-    strengths.push(`Excellent stakeholder sentiment — ${posRate}% of feedback is positive, reflecting strong confidence in the home's care.`);
+  if (stakeholder_feedback.length > 0 && meets(posRate, 80)) {
+    strengths.push(`Excellent stakeholder sentiment — ${formatRate(posRate)} of feedback is positive, reflecting strong confidence in the home's care.`);
   }
-  if (stakeholder_feedback.length > 0 && responseRate >= 90) {
-    strengths.push(`Outstanding response rate — ${responseRate}% of stakeholder feedback has been responded to, demonstrating accountability.`);
+  if (stakeholder_feedback.length > 0 && meets(responseRate, 90)) {
+    strengths.push(`Outstanding response rate — ${formatRate(responseRate)} of stakeholder feedback has been responded to, demonstrating accountability.`);
   }
-  if (parent_partnerships.length > 0 && parentEngagementRate >= 80) {
-    strengths.push(`Strong parent partnerships — ${parentEngagementRate}% rated as strong or developing engagement quality.`);
+  if (parent_partnerships.length > 0 && meets(parentEngagementRate, 80)) {
+    strengths.push(`Strong parent partnerships — ${formatRate(parentEngagementRate)} rated as strong or developing engagement quality.`);
   }
-  if (parent_partnerships.length > 0 && viewsRate >= 90) {
-    strengths.push(`Parent views are actively sought — ${viewsRate}% of partnerships have documented views sought from parents.`);
+  if (parent_partnerships.length > 0 && meets(viewsRate, 90)) {
+    strengths.push(`Parent views are actively sought — ${formatRate(viewsRate)} of partnerships have documented views sought from parents.`);
   }
-  if (community_feedback.length > 0 && comPosRate >= 80) {
-    strengths.push(`Positive community relations — ${comPosRate}% of community feedback is positive, indicating good neighbourhood integration.`);
+  if (community_feedback.length > 0 && meets(comPosRate, 80)) {
+    strengths.push(`Positive community relations — ${formatRate(comPosRate)} of community feedback is positive, indicating good neighbourhood integration.`);
   }
   if (totalFeedback >= 10) {
     strengths.push(`Robust feedback volume — ${totalFeedback} items of stakeholder and community feedback captured.`);
   }
 
   // ── Concerns ────────────────────────────────────────────────────────
-  if (stakeholder_feedback.length > 0 && posRate < 40) {
-    concerns.push(`Low positive sentiment — only ${posRate}% of stakeholder feedback is positive. Significant dissatisfaction among stakeholders.`);
+  if (stakeholder_feedback.length > 0 && below(posRate, 40)) {
+    concerns.push(`Low positive sentiment — only ${formatRate(posRate)} of stakeholder feedback is positive. Significant dissatisfaction among stakeholders.`);
     recommendations.push({ rank: ++rank, recommendation: "Review negative stakeholder feedback themes and develop an action plan to address recurring concerns.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
   }
-  if (stakeholder_feedback.length > 0 && responseRate < 50) {
-    concerns.push(`Poor response rate — only ${responseRate}% of stakeholder feedback has been responded to. Feedback must be acknowledged and actioned.`);
+  if (stakeholder_feedback.length > 0 && below(responseRate, 50)) {
+    concerns.push(`Poor response rate — only ${formatRate(responseRate)} of stakeholder feedback has been responded to. Feedback must be acknowledged and actioned.`);
     recommendations.push({ rank: ++rank, recommendation: "Implement a feedback response tracking system to ensure all stakeholder feedback receives a timely response.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5" });
   }
-  if (parent_partnerships.length > 0 && parentEngagementRate < 40) {
-    concerns.push(`Weak parent partnerships — only ${parentEngagementRate}% rated as strong or developing. Limited engagement undermines children's family connections.`);
+  if (parent_partnerships.length > 0 && below(parentEngagementRate, 40)) {
+    concerns.push(`Weak parent partnerships — only ${formatRate(parentEngagementRate)} rated as strong or developing. Limited engagement undermines children's family connections.`);
     recommendations.push({ rank: ++rank, recommendation: "Develop a parent engagement strategy to strengthen partnership working with families.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 44" });
   }
   if (parent_partnerships.length === 0) {
     concerns.push("No parent partnership records — the home cannot evidence family engagement or partnership working.");
     recommendations.push({ rank: ++rank, recommendation: "Establish parent partnership records for all children to track family engagement quality.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 44" });
   }
-  if (parent_partnerships.length > 0 && viewsRate < 50) {
-    concerns.push(`Parent views under-represented — only ${viewsRate}% of partnerships have views sought from parents. Parents must be consulted.`);
+  if (parent_partnerships.length > 0 && below(viewsRate, 50)) {
+    concerns.push(`Parent views under-represented — only ${formatRate(viewsRate)} of partnerships have views sought from parents. Parents must be consulted.`);
     recommendations.push({ rank: ++rank, recommendation: "Ensure parent views are actively sought and recorded across all parent partnerships.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 44" });
   }
-  if (community_feedback.length > 0 && comPosRate < 40) {
-    concerns.push(`Negative community sentiment — only ${comPosRate}% of community feedback is positive. Neighbourhood relations need attention.`);
+  if (community_feedback.length > 0 && below(comPosRate, 40)) {
+    concerns.push(`Negative community sentiment — only ${formatRate(comPosRate)} of community feedback is positive. Neighbourhood relations need attention.`);
     recommendations.push({ rank: ++rank, recommendation: "Engage with the local community to understand and address concerns about the home.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 44" });
   }
   if (community_feedback.length === 0) {
@@ -253,14 +255,14 @@ export function computeStakeholderEngagementFeedback(
   if (stakeholder_rating === "inadequate") {
     insights.push({ text: `Stakeholder engagement is inadequate (${score}%). Significant gaps in feedback response, parent partnership quality, or community relations. This is a regulatory concern under CHR 2015 Reg 5/44.`, severity: "critical" });
   }
-  if (stakeholder_feedback.length > 0 && posRate >= 80 && responseRate >= 90) {
+  if (stakeholder_feedback.length > 0 && meets(posRate, 80) && meets(responseRate, 90)) {
     insights.push({ text: "The home demonstrates a responsive feedback culture — high positive sentiment combined with near-complete response rates indicates stakeholders feel heard and valued.", severity: "positive" });
   }
-  if (parent_partnerships.length > 0 && parentEngagementRate >= 80 && viewsRate >= 90) {
+  if (parent_partnerships.length > 0 && meets(parentEngagementRate, 80) && meets(viewsRate, 90)) {
     insights.push({ text: "Parent partnership working is exemplary — strong engagement quality with views actively sought demonstrates child-centred family practice that Ofsted would view favourably.", severity: "positive" });
   }
-  if (community_feedback.length > 0 && comPosRate >= 80) {
-    insights.push({ text: `Community sentiment is ${comPosRate}% positive — the home is well-integrated into its local area, supporting children's sense of belonging and normality.`, severity: "positive" });
+  if (community_feedback.length > 0 && meets(comPosRate, 80)) {
+    insights.push({ text: `Community sentiment is ${formatRate(comPosRate)} positive — the home is well-integrated into its local area, supporting children's sense of belonging and normality.`, severity: "positive" });
   }
 
   // ── Headline ─────────────────────────────────────────────────────────

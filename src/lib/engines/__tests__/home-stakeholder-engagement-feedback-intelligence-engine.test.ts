@@ -248,10 +248,10 @@ describe("computeStakeholderEngagementFeedback", () => {
       expect(r.stakeholder_score).toBeLessThan(82);
     });
 
-    it("+0 when no stakeholder feedback", () => {
+    it("positive_sentiment_rate is unmeasured when there is no stakeholder feedback", () => {
       const withoutFb = computeStakeholderEngagementFeedback(baseInput({ stakeholder_feedback: [] }));
       // Without feedback, mod2 contributes +0 rather than +6; other mods also shift
-      expect(withoutFb.positive_sentiment_rate).toBe(0);
+      expect(withoutFb.positive_sentiment_rate).toBeNull();
     });
   });
 
@@ -293,7 +293,7 @@ describe("computeStakeholderEngagementFeedback", () => {
     it("-1 when no partnerships exist", () => {
       const withoutPP = computeStakeholderEngagementFeedback(baseInput({ parent_partnerships: [] }));
       // Without partnerships: mod4 = -1, mod5 = +0 vs with limited: mod4 depends on rate
-      expect(withoutPP.parent_engagement_rate).toBe(0);
+      expect(withoutPP.parent_engagement_rate).toBeNull();
     });
   });
 
@@ -332,9 +332,9 @@ describe("computeStakeholderEngagementFeedback", () => {
       expect(r.stakeholder_score).toBeLessThan(82);
     });
 
-    it("+0 when no community feedback", () => {
+    it("community_sentiment_rate is unmeasured when there is no community feedback", () => {
       const r = computeStakeholderEngagementFeedback(baseInput({ community_feedback: [] }));
-      expect(r.community_sentiment_rate).toBe(0);
+      expect(r.community_sentiment_rate).toBeNull();
     });
   });
 

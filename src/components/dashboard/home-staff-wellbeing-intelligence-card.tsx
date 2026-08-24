@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -148,10 +149,10 @@ export function HomeStaffWellbeingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.coverage.coverage_rate >= 80 ? "text-[--cs-success]" :
-                  d.coverage.coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.coverage.coverage_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.coverage.coverage_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.coverage.coverage_rate}%
+                  {formatRate(d.coverage.coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Coverage</p>

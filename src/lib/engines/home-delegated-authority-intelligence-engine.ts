@@ -6,6 +6,8 @@
 // SCCIF: "Staff understand what decisions they can make day to day."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface DelegatedAuthorityItemInput {
@@ -103,10 +105,6 @@ export interface HomeDelegatedAuthorityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -187,7 +185,7 @@ export function computeHomeDelegatedAuthority(
   const status_profile: StatusProfile = {
     total_items: allItems.length,
     ...statusCounts,
-    granted_rate: pct(statusCounts.granted, allItems.length),
+    granted_rate: rate(statusCounts.granted, allItems.length),
   };
 
   // ── Category Coverage Profile ─────────────────────────────────────────
@@ -204,7 +202,7 @@ export function computeHomeDelegatedAuthority(
   const category_coverage: CategoryCoverageProfile = {
     total_possible_categories: ALL_CATEGORIES.length,
     categories_addressed: categoriesAddressed.length,
-    coverage_rate: pct(categoriesAddressed.length, ALL_CATEGORIES.length),
+    coverage_rate: rate(categoriesAddressed.length, ALL_CATEGORIES.length),
     category_distribution: categoryDistribution,
     gaps,
   };
@@ -219,7 +217,7 @@ export function computeHomeDelegatedAuthority(
   const child_coverage: ChildCoverageProfile = {
     children_with_authority: childrenWithAuthority,
     total_children,
-    coverage_rate: pct(childrenWithAuthority, total_children),
+    coverage_rate: rate(childrenWithAuthority, total_children),
     items_per_child: itemsPerChild,
     children_without_authority: Math.max(0, total_children - childrenWithAuthority),
   };
@@ -282,19 +280,19 @@ export function computeHomeDelegatedAuthority(
   score += mod3;
 
   // mod4: Pending items (±3)
-  const pendingRate = pct(statusCounts.pending, allItems.length);
+  const pendingRate = rate(statusCounts.pending, allItems.length);
   const mod4 =
     pendingRate === 0 ? 3 :
-    pendingRate <= 10 ? 1 :
-    pendingRate <= 25 ? -1 : -3;
+    (pendingRate !== null && pendingRate <= 10) ? 1 :
+    (pendingRate !== null && pendingRate <= 25) ? -1 : -3;
   score += mod4;
 
   // mod5: Review compliance (±4)
-  const overdueRate = pct(reviewsOverdue.length, delegated_authorities.length);
+  const overdueRate = rate(reviewsOverdue.length, delegated_authorities.length);
   const mod5 =
     overdueRate === 0 ? 4 :
-    overdueRate <= 25 ? 1 :
-    overdueRate <= 50 ? -1 : -4;
+    (overdueRate !== null && overdueRate <= 25) ? 1 :
+    (overdueRate !== null && overdueRate <= 50) ? -1 : -4;
   score += mod5;
 
   // mod6: Review freshness (±3)
@@ -322,11 +320,11 @@ export function computeHomeDelegatedAuthority(
   const withConditions = allItems.filter(
     (item) => item.conditions && item.conditions.trim().length > 0,
   );
-  const conditionsRate = pct(withConditions.length, allItems.length);
+  const conditionsRate = rate(withConditions.length, allItems.length);
   const mod8 =
-    conditionsRate >= 80 ? 4 :
-    conditionsRate >= 60 ? 2 :
-    conditionsRate >= 40 ? 0 : -3;
+    meets(conditionsRate, 80) ? 4 :
+    meets(conditionsRate, 60) ? 2 :
+    meets(conditionsRate, 40) ? 0 : -3;
   score += mod8;
 
   // Clamp
@@ -342,8 +340,8 @@ export function computeHomeDelegatedAuthority(
     strengths.push(`${category_coverage.categories_addressed} of ${ALL_CATEGORIES.length} authority categories addressed — comprehensive coverage.`);
   if ((status_profile.granted_rate ?? 0) >= 70)
     strengths.push(`${status_profile.granted_rate}% of authority items are granted — staff have clear day-to-day decision-making power.`);
-  if (conditionsRate >= 80)
-    strengths.push(`${conditionsRate}% of authority items have documented conditions — clear boundaries.`);
+  if (meets(conditionsRate, 80))
+    strengths.push(`${formatRate(conditionsRate)} of authority items have documented conditions — clear boundaries.`);
   if (overdueRate === 0 && delegated_authorities.length > 0)
     strengths.push("All delegated authority reviews are up to date.");
   if ((avgItemsPerChild ?? 0) >= 8)
@@ -433,7 +431,7 @@ export function computeHomeDelegatedAuthority(
       severity: "warning",
     });
 
-  if ((avgItemsPerChild ?? 0) >= 8 && conditionsRate >= 80)
+  if ((avgItemsPerChild ?? 0) >= 8 && meets(conditionsRate, 80))
     insights.push({
       text: `Comprehensive delegated authority with clear conditions demonstrates that the home understands and applies Reg 22 effectively — a strong indicator for Ofsted.`,
       severity: "positive",

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,20 +78,20 @@ export function HomeStakeholderEngagementFeedbackIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_feedback_items > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_feedback_items}</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_sentiment_rate >= 80 ? "bg-green-50" : d.positive_sentiment_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_sentiment_rate >= 80 ? "text-[--cs-success]" : d.positive_sentiment_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_sentiment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_sentiment_rate, 80) ? "bg-green-50" : meets(d.positive_sentiment_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_sentiment_rate, 80) ? "text-[--cs-success]" : meets(d.positive_sentiment_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_sentiment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.response_rate >= 90 ? "bg-green-50" : d.response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.response_rate >= 90 ? "text-[--cs-success]" : d.response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.response_rate, 90) ? "bg-green-50" : meets(d.response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.response_rate, 90) ? "text-[--cs-success]" : meets(d.response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Responded</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.parent_engagement_rate >= 80 ? "bg-green-50" : d.parent_engagement_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.parent_engagement_rate >= 80 ? "text-[--cs-success]" : d.parent_engagement_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.parent_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.parent_engagement_rate, 80) ? "bg-green-50" : meets(d.parent_engagement_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.parent_engagement_rate, 80) ? "text-[--cs-success]" : meets(d.parent_engagement_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.parent_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Parents</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.community_sentiment_rate >= 80 ? "bg-green-50" : d.community_sentiment_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.community_sentiment_rate >= 80 ? "text-[--cs-success]" : d.community_sentiment_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.community_sentiment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.community_sentiment_rate, 80) ? "bg-green-50" : meets(d.community_sentiment_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.community_sentiment_rate, 80) ? "text-[--cs-success]" : meets(d.community_sentiment_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.community_sentiment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Community</p>
             </div>
           </div>

@@ -84,13 +84,13 @@ describe("computeManagementWalkroundOversight", () => {
       expect(r.total_walkrounds).toBe(0);
     });
 
-    it("sets all rates to 0 when there are no walkrounds", () => {
+    it("leaves every rate unmeasured when there are no walkrounds", () => {
       const r = computeManagementWalkroundOversight(baseInput());
-      expect(r.positive_observation_rate).toBe(0);
-      expect(r.environmental_pass_rate).toBe(0);
-      expect(r.child_interaction_rate).toBe(0);
-      expect(r.follow_up_completion_rate).toBe(0);
-      expect(r.unannounced_rate).toBe(0);
+      expect(r.positive_observation_rate).toBeNull();
+      expect(r.environmental_pass_rate).toBeNull();
+      expect(r.child_interaction_rate).toBeNull();
+      expect(r.follow_up_completion_rate).toBeNull();
+      expect(r.unannounced_rate).toBeNull();
     });
 
     it("generates the no-walkrounds concern", () => {
@@ -394,7 +394,7 @@ describe("computeManagementWalkroundOversight", () => {
           ],
         }),
       );
-      expect(r.positive_observation_rate).toBe(0);
+      expect(r.positive_observation_rate).toBeNull();
       // Confirm the -1 penalty: isolate by comparing to a walkround with obs
       // 0 obs → -1 vs 70%+ → +6, delta should be 7
     });
@@ -402,7 +402,7 @@ describe("computeManagementWalkroundOversight", () => {
     it("0 observations with 0 walkrounds → 0 adjustment", () => {
       const r = computeManagementWalkroundOversight(baseInput());
       // No walkrounds: totalObs=0, total=0 → no adjustment (else if totalObs===0 branch)
-      expect(r.positive_observation_rate).toBe(0);
+      expect(r.positive_observation_rate).toBeNull();
     });
   });
 
@@ -446,12 +446,12 @@ describe("computeManagementWalkroundOversight", () => {
           ],
         }),
       );
-      expect(r.environmental_pass_rate).toBe(0);
+      expect(r.environmental_pass_rate).toBeNull();
     });
 
     it("0 env checks with 0 walkrounds → 0 adjustment", () => {
       const r = computeManagementWalkroundOversight(baseInput());
-      expect(r.environmental_pass_rate).toBe(0);
+      expect(r.environmental_pass_rate).toBeNull();
     });
   });
 
@@ -490,7 +490,7 @@ describe("computeManagementWalkroundOversight", () => {
 
     it("0 walkrounds → no change", () => {
       const r = computeManagementWalkroundOversight(baseInput());
-      expect(r.child_interaction_rate).toBe(0);
+      expect(r.child_interaction_rate).toBeNull();
     });
   });
 
@@ -524,7 +524,7 @@ describe("computeManagementWalkroundOversight", () => {
 
     it("0 follow-ups with walkrounds → +2", () => {
       const r = computeManagementWalkroundOversight(followUpInput(0, 0));
-      expect(r.follow_up_completion_rate).toBe(0);
+      expect(r.follow_up_completion_rate).toBeNull();
     });
 
     it("0 follow-ups with 0 walkrounds → -1", () => {
@@ -565,7 +565,7 @@ describe("computeManagementWalkroundOversight", () => {
     it("0 walkrounds → -2", () => {
       const r = computeManagementWalkroundOversight(baseInput());
       // total=0 → score -= 2
-      expect(r.unannounced_rate).toBe(0);
+      expect(r.unannounced_rate).toBeNull();
     });
   });
 

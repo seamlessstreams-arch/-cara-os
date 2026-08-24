@@ -350,21 +350,21 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.hygiene_pass_rate).toBe(67);
     });
 
-    it("returns 0 when all checks are n_a", () => {
+    it("hygiene_pass_rate is unmeasured when all checks are n_a", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({
         hygiene_checks: [
           makeHygieneCheck({ compliance: "n_a" }),
           makeHygieneCheck({ compliance: "n_a" }),
         ],
       }));
-      expect(r.hygiene_pass_rate).toBe(0);
+      expect(r.hygiene_pass_rate).toBeNull();
     });
 
-    it("returns 0 when no checks exist", () => {
+    it("hygiene_pass_rate is unmeasured when no checks exist", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({
         hygiene_checks: [],
       }));
-      expect(r.hygiene_pass_rate).toBe(0);
+      expect(r.hygiene_pass_rate).toBeNull();
     });
 
     it("100% when all non-n_a checks pass", () => {
@@ -391,9 +391,9 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.budget_adherence_rate).toBe(67);
     });
 
-    it("returns 0 when no budgets", () => {
+    it("budget_adherence_rate is unmeasured when no budgets", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({ budgets: [] }));
-      expect(r.budget_adherence_rate).toBe(0);
+      expect(r.budget_adherence_rate).toBeNull();
     });
 
     it("100% when all within budget", () => {
@@ -413,9 +413,9 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.scratch_cooking_rate).toBe(70);
     });
 
-    it("returns 0 when no budgets", () => {
+    it("scratch_cooking_rate is unmeasured when no budgets", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({ budgets: [] }));
-      expect(r.scratch_cooking_rate).toBeNull();;
+      expect(r.scratch_cooking_rate).toBeNull();
     });
 
     it("rounds to nearest integer", () => {
@@ -442,9 +442,9 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.dietary_compliance_rate).toBe(67);
     });
 
-    it("returns 0 when no plans", () => {
+    it("dietary_compliance_rate is unmeasured when no plans", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({ meal_plans: [] }));
-      expect(r.dietary_compliance_rate).toBe(0);
+      expect(r.dietary_compliance_rate).toBeNull();
     });
 
     it("100% when all compliant", () => {
@@ -465,9 +465,9 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.cultural_inclusion_rate).toBe(67);
     });
 
-    it("returns 0 when no budgets", () => {
+    it("cultural_inclusion_rate is unmeasured when no budgets", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({ budgets: [] }));
-      expect(r.cultural_inclusion_rate).toBe(0);
+      expect(r.cultural_inclusion_rate).toBeNull();
     });
   });
 
@@ -1374,7 +1374,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
           makeHygieneCheck({ compliance: "n_a" }),
         ],
       }));
-      expect(r.hygiene_pass_rate).toBe(0);
+      expect(r.hygiene_pass_rate).toBeNull();
       expect(r.food_rating).not.toBe("insufficient_data");
     });
 
@@ -1387,16 +1387,16 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.food_rating).toBe("outstanding");
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("every rate is unmeasured when its denominator is 0", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({
         hygiene_checks: [],
         budgets: [],
         meal_plans: [],
       }));
-      expect(r.hygiene_pass_rate).toBe(0);
-      expect(r.budget_adherence_rate).toBe(0);
-      expect(r.dietary_compliance_rate).toBe(0);
-      expect(r.cultural_inclusion_rate).toBe(0);
+      expect(r.hygiene_pass_rate).toBeNull();
+      expect(r.budget_adherence_rate).toBeNull();
+      expect(r.dietary_compliance_rate).toBeNull();
+      expect(r.cultural_inclusion_rate).toBeNull();
     });
   });
 

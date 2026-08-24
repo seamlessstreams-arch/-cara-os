@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 12/31.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface InfectionRecordInput {
@@ -66,10 +68,14 @@ export interface InfectionControlResult {
   infection_score: number;
   headline: string;
   active_infections: number;
-  mar_accuracy_rate: number;
-  med_training_rate: number;
-  first_aid_coverage: number;
-  infection_resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mar_accuracy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  med_training_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  first_aid_coverage: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  infection_resolution_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -77,10 +83,6 @@ export interface InfectionControlResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 // ── Engine ──────────────────────────────────────────────────────────────────
 
@@ -111,17 +113,17 @@ export function computeHomeInfectionControlHealthSafety(
   const activeInfections = infections.filter(i => i.status === "active").length;
   const resolvedInfections = infections.filter(i => i.status === "resolved").length;
   const infectionResolutionRate = infections.length > 0
-    ? pct(resolvedInfections, infections.length)
+    ? rate(resolvedInfections, infections.length)
     : 0;
 
   // ── MAR metrics ───────────────────────────────────────────────────────
   const marCorrect = mar_entries.filter(m => m.administered_correctly && !m.missed).length;
   const marAccuracyRate = mar_entries.length > 0
-    ? pct(marCorrect, mar_entries.length)
+    ? rate(marCorrect, mar_entries.length)
     : 0;
   const marMissed = mar_entries.filter(m => m.missed).length;
   const marMissRate = mar_entries.length > 0
-    ? pct(marMissed, mar_entries.length)
+    ? rate(marMissed, mar_entries.length)
     : 0;
 
   // ── Med training metrics ──────────────────────────────────────────────
@@ -129,13 +131,13 @@ export function computeHomeInfectionControlHealthSafety(
     t => t.completed && t.expiry_date >= today,
   ).length;
   const medTrainingRate = total_staff > 0
-    ? pct(validTraining, total_staff)
+    ? rate(validTraining, total_staff)
     : 0;
 
   // ── First aid metrics ─────────────────────────────────────────────────
   const currentAiders = first_aiders.filter(a => a.is_current).length;
   const firstAidCoverage = total_staff > 0
-    ? pct(currentAiders, total_staff)
+    ? rate(currentAiders, total_staff)
     : 0;
 
   // ── Severe infection metrics ──────────────────────────────────────────
@@ -150,9 +152,9 @@ export function computeHomeInfectionControlHealthSafety(
     score += 5;
   } else if (infections.every(i => i.status === "resolved")) {
     score += 4;
-  } else if (infectionResolutionRate >= 80) {
+  } else if (meets(infectionResolutionRate, 80)) {
     score += 2;
-  } else if (infectionResolutionRate >= 60) {
+  } else if (meets(infectionResolutionRate, 60)) {
     score += 0;
   } else {
     score -= 5;
@@ -161,11 +163,11 @@ export function computeHomeInfectionControlHealthSafety(
   // Mod 2: MAR accuracy (+-6)
   if (mar_entries.length === 0) {
     score += 2;
-  } else if (marAccuracyRate >= 98) {
+  } else if (meets(marAccuracyRate, 98)) {
     score += 6;
-  } else if (marAccuracyRate >= 95) {
+  } else if (meets(marAccuracyRate, 95)) {
     score += 3;
-  } else if (marAccuracyRate >= 90) {
+  } else if (meets(marAccuracyRate, 90)) {
     score += 0;
   } else {
     score -= 6;
@@ -174,33 +176,33 @@ export function computeHomeInfectionControlHealthSafety(
   // Mod 3: Missed medication (+-5)
   if (mar_entries.length === 0) {
     score += 2;
-  } else if (marMissRate <= 2) {
+  } else if ((marMissRate !== null && marMissRate <= 2)) {
     score += 5;
-  } else if (marMissRate <= 5) {
+  } else if ((marMissRate !== null && marMissRate <= 5)) {
     score += 2;
-  } else if (marMissRate <= 10) {
+  } else if ((marMissRate !== null && marMissRate <= 10)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // Mod 4: Med training compliance (+-5)
-  if (medTrainingRate >= 90) {
+  if (meets(medTrainingRate, 90)) {
     score += 5;
-  } else if (medTrainingRate >= 75) {
+  } else if (meets(medTrainingRate, 75)) {
     score += 3;
-  } else if (medTrainingRate >= 50) {
+  } else if (meets(medTrainingRate, 50)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // Mod 5: First aid coverage (+-5)
-  if (firstAidCoverage >= 50) {
+  if (meets(firstAidCoverage, 50)) {
     score += 5;
-  } else if (firstAidCoverage >= 33) {
+  } else if (meets(firstAidCoverage, 33)) {
     score += 3;
-  } else if (firstAidCoverage >= 20) {
+  } else if (meets(firstAidCoverage, 20)) {
     score += 0;
   } else {
     score -= 5;
@@ -241,22 +243,22 @@ export function computeHomeInfectionControlHealthSafety(
   if (infections.length > 0 && infectionResolutionRate === 100) {
     strengths.push("All recorded infections have been resolved — effective infection management.");
   }
-  if (infections.length > 0 && infectionResolutionRate >= 80 && infectionResolutionRate < 100) {
+  if (infections.length > 0 && meets(infectionResolutionRate, 80) && below(infectionResolutionRate, 100)) {
     strengths.push(`Infection resolution rate at ${infectionResolutionRate}% — strong infection management practice.`);
   }
-  if (mar_entries.length > 0 && marAccuracyRate >= 98) {
+  if (mar_entries.length > 0 && meets(marAccuracyRate, 98)) {
     strengths.push(`MAR accuracy rate at ${marAccuracyRate}% — medication administration is exemplary.`);
   }
-  if (mar_entries.length > 0 && marAccuracyRate >= 95 && marAccuracyRate < 98) {
+  if (mar_entries.length > 0 && meets(marAccuracyRate, 95) && below(marAccuracyRate, 98)) {
     strengths.push(`MAR accuracy rate at ${marAccuracyRate}% — medication administration is consistently reliable.`);
   }
-  if (mar_entries.length > 0 && marMissRate <= 2) {
+  if (mar_entries.length > 0 && (marMissRate !== null && marMissRate <= 2)) {
     strengths.push(`Missed medication rate at ${marMissRate}% — children receive their medications on schedule.`);
   }
-  if (medTrainingRate >= 90) {
+  if (meets(medTrainingRate, 90)) {
     strengths.push(`Medication training compliance at ${medTrainingRate}% — staff are well trained in medication administration.`);
   }
-  if (firstAidCoverage >= 50) {
+  if (meets(firstAidCoverage, 50)) {
     strengths.push(`First aid coverage at ${firstAidCoverage}% of staff — strong first aid readiness across the team.`);
   }
   if (severeInfections.length === 0 && infections.length > 0) {
@@ -270,19 +272,19 @@ export function computeHomeInfectionControlHealthSafety(
   if (activeInfections > 0) {
     concerns.push(`${activeInfections} active infection${activeInfections > 1 ? "s" : ""} — ongoing infection control measures must be maintained.`);
   }
-  if (infections.length > 0 && infectionResolutionRate < 60) {
+  if (infections.length > 0 && below(infectionResolutionRate, 60)) {
     concerns.push(`Infection resolution rate at ${infectionResolutionRate}% — too many infections remain unresolved.`);
   }
-  if (mar_entries.length > 0 && marAccuracyRate < 90) {
+  if (mar_entries.length > 0 && below(marAccuracyRate, 90)) {
     concerns.push(`MAR accuracy rate at ${marAccuracyRate}% — medication administration errors are too frequent.`);
   }
-  if (mar_entries.length > 0 && marMissRate > 10) {
+  if (mar_entries.length > 0 && above(marMissRate, 10)) {
     concerns.push(`Missed medication rate at ${marMissRate}% — children are not receiving medications as prescribed.`);
   }
-  if (medTrainingRate < 50) {
+  if (below(medTrainingRate, 50)) {
     concerns.push(`Medication training compliance at ${medTrainingRate}% — more than half of staff lack current training.`);
   }
-  if (firstAidCoverage < 20) {
+  if (below(firstAidCoverage, 20)) {
     concerns.push(`First aid coverage at ${firstAidCoverage}% — critically low first aid capacity across the staff team.`);
   }
   if (severeInfections.length > 0 && !severeInfections.every(i => i.gp_consulted && i.control_measures_applied)) {
@@ -303,35 +305,35 @@ export function computeHomeInfectionControlHealthSafety(
       regulatory_ref: "Reg 12",
     });
   }
-  if (mar_entries.length > 0 && marAccuracyRate < 95) {
+  if (mar_entries.length > 0 && below(marAccuracyRate, 95)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Conduct a medication administration audit and provide refresher training to staff with errors.",
-      urgency: marAccuracyRate < 90 ? "immediate" : "soon",
+      urgency: below(marAccuracyRate, 90) ? "immediate" : "soon",
       regulatory_ref: "Reg 12",
     });
   }
-  if (mar_entries.length > 0 && marMissRate > 5) {
+  if (mar_entries.length > 0 && above(marMissRate, 5)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Investigate reasons for missed medications and implement systems to prevent recurrence.",
-      urgency: marMissRate > 10 ? "immediate" : "soon",
+      urgency: above(marMissRate, 10) ? "immediate" : "soon",
       regulatory_ref: "Reg 12",
     });
   }
-  if (medTrainingRate < 75) {
+  if (below(medTrainingRate, 75)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Schedule medication training for untrained or expired staff to meet compliance requirements.",
-      urgency: medTrainingRate < 50 ? "immediate" : "soon",
+      urgency: below(medTrainingRate, 50) ? "immediate" : "soon",
       regulatory_ref: "Reg 31",
     });
   }
-  if (firstAidCoverage < 33) {
+  if (below(firstAidCoverage, 33)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Enrol additional staff on first aid courses to ensure adequate coverage across all shifts.",
-      urgency: firstAidCoverage < 20 ? "immediate" : "soon",
+      urgency: below(firstAidCoverage, 20) ? "immediate" : "soon",
       regulatory_ref: "Reg 31",
     });
   }
@@ -353,7 +355,7 @@ export function computeHomeInfectionControlHealthSafety(
   }
 
   // Insights
-  if (infections.length === 0 && mar_entries.length > 0 && marAccuracyRate >= 98 && medTrainingRate >= 90 && firstAidCoverage >= 50) {
+  if (infections.length === 0 && mar_entries.length > 0 && meets(marAccuracyRate, 98) && meets(medTrainingRate, 90) && meets(firstAidCoverage, 50)) {
     insights.push({
       text: "Infection control, medication administration, training, and first aid are all at exemplary levels. This demonstrates an embedded culture of health and safety that Ofsted will recognise as outstanding practice under Reg 12.",
       severity: "positive",
@@ -371,37 +373,37 @@ export function computeHomeInfectionControlHealthSafety(
       severity: "critical",
     });
   }
-  if (mar_entries.length > 0 && marAccuracyRate < 90) {
+  if (mar_entries.length > 0 && below(marAccuracyRate, 90)) {
     insights.push({
       text: `MAR accuracy at ${marAccuracyRate}% falls below the expected standard. Medication errors can have serious consequences for children. Ofsted will examine whether systemic issues in medication management have been addressed under Reg 12.`,
       severity: "critical",
     });
   }
-  if (mar_entries.length > 0 && marMissRate > 10) {
+  if (mar_entries.length > 0 && above(marMissRate, 10)) {
     insights.push({
       text: `Missed medication rate at ${marMissRate}% is significantly above acceptable levels. Children may not be receiving prescribed treatment, which could impact their health and wellbeing. This will be a regulatory concern under Reg 12.`,
       severity: "critical",
     });
   }
-  if (medTrainingRate < 50) {
+  if (below(medTrainingRate, 50)) {
     insights.push({
       text: `Only ${medTrainingRate}% of staff have current medication training. Under Reg 31, staff must be suitably trained. Gaps in training increase the risk of medication errors and may indicate wider workforce development issues.`,
       severity: "critical",
     });
   }
-  if (firstAidCoverage < 20) {
+  if (below(firstAidCoverage, 20)) {
     insights.push({
       text: `First aid coverage at ${firstAidCoverage}% means the home may lack a qualified first aider on every shift. Under Reg 31, staff should be equipped to respond to medical emergencies. Low coverage is a health and safety risk.`,
       severity: "critical",
     });
   }
-  if (mar_entries.length > 0 && marAccuracyRate >= 98 && marMissRate <= 2) {
+  if (mar_entries.length > 0 && meets(marAccuracyRate, 98) && (marMissRate !== null && marMissRate <= 2)) {
     insights.push({
       text: `Medication administration is exemplary — ${marAccuracyRate}% accuracy with only ${marMissRate}% missed. Children are receiving their prescribed medications consistently and correctly. This is a hallmark of outstanding health care practice.`,
       severity: "positive",
     });
   }
-  if (medTrainingRate >= 90 && firstAidCoverage >= 50) {
+  if (meets(medTrainingRate, 90) && meets(firstAidCoverage, 50)) {
     insights.push({
       text: `Strong training compliance (${medTrainingRate}%) combined with high first aid coverage (${firstAidCoverage}%) demonstrates a well-prepared staff team. The home is well positioned to respond to health emergencies.`,
       severity: "positive",

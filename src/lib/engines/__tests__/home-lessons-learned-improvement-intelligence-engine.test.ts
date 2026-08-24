@@ -561,7 +561,7 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
     it("+0 when 0 lessons (no penalty for briefing)", () => {
       // Already tested in mod1 0-lessons test
       const r = computeLessonsLearnedImprovement(baseInput({ lessons: [] }));
-      expect(r.staff_briefing_rate).toBe(0);
+      expect(r.staff_briefing_rate).toBeNull();
     });
   });
 
@@ -630,7 +630,7 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
       const r = computeLessonsLearnedImprovement(baseInput({
         objectives: [],
       }));
-      expect(r.objective_completion_rate).toBe(0);
+      expect(r.objective_completion_rate).toBeNull();
       expect(r.lessons_score).toBe(75);
     });
   });
@@ -901,24 +901,24 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
       expect(r.average_audit_score).toBe(80); // (80+90+70)/3
     });
 
-    it("average_audit_score is 0 when no audits", () => {
+    it("average_audit_score is unmeasured when no audits", () => {
       const r = computeLessonsLearnedImprovement(baseInput({ audits: [] }));
-      expect(r.average_audit_score).toBeNull();;
+      expect(r.average_audit_score).toBeNull();
     });
 
-    it("embedded_rate is 0 when no lessons", () => {
+    it("embedded_rate is unmeasured when no lessons", () => {
       const r = computeLessonsLearnedImprovement(baseInput({ lessons: [] }));
-      expect(r.embedded_rate).toBe(0);
+      expect(r.embedded_rate).toBeNull();
     });
 
-    it("staff_briefing_rate is 0 when no lessons", () => {
+    it("staff_briefing_rate is unmeasured when no lessons", () => {
       const r = computeLessonsLearnedImprovement(baseInput({ lessons: [] }));
-      expect(r.staff_briefing_rate).toBe(0);
+      expect(r.staff_briefing_rate).toBeNull();
     });
 
-    it("objective_completion_rate is 0 when no objectives", () => {
+    it("objective_completion_rate is unmeasured when no objectives", () => {
       const r = computeLessonsLearnedImprovement(baseInput({ objectives: [] }));
-      expect(r.objective_completion_rate).toBe(0);
+      expect(r.objective_completion_rate).toBeNull();
     });
   });
 

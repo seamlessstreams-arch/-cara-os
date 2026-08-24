@@ -6,6 +6,8 @@
 // SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface WalkroundInput {
@@ -44,11 +46,16 @@ export interface ManagementWalkroundResult {
   walkround_score: number;
   headline: string;
   total_walkrounds: number;
-  positive_observation_rate: number;
-  environmental_pass_rate: number;
-  child_interaction_rate: number;
-  follow_up_completion_rate: number;
-  unannounced_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_observation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmental_pass_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_interaction_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  unannounced_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -61,10 +68,6 @@ export interface ManagementWalkroundResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -108,21 +111,21 @@ export function computeManagementWalkroundOversight(
 
   const totalPositive = walkrounds.reduce((s, w) => s + w.positive_observations_count, 0);
   const totalObs = totalPositive + walkrounds.reduce((s, w) => s + w.improvements_count, 0);
-  const positiveObsRate = pct(totalPositive, totalObs);
+  const positiveObsRate = rate(totalPositive, totalObs);
 
   const envGood = walkrounds.reduce((s, w) => s + w.environmental_checks_good, 0);
   const envTotal = walkrounds.reduce((s, w) => s + w.environmental_checks_total, 0);
-  const envPassRate = pct(envGood, envTotal);
+  const envPassRate = rate(envGood, envTotal);
 
   const withChildInteraction = walkrounds.filter(w => w.child_interactions_count > 0).length;
-  const childInteractionRate = pct(withChildInteraction, total);
+  const childInteractionRate = rate(withChildInteraction, total);
 
   const totalFollowUp = walkrounds.reduce((s, w) => s + w.follow_up_actions_count, 0);
   const completedFollowUp = walkrounds.reduce((s, w) => s + w.follow_up_actions_completed, 0);
-  const followUpRate = pct(completedFollowUp, totalFollowUp);
+  const followUpRate = rate(completedFollowUp, totalFollowUp);
 
   const unannounced = walkrounds.filter(w => w.walkround_type === "unannounced").length;
-  const unannouncedRate = pct(unannounced, total);
+  const unannouncedRate = rate(unannounced, total);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -138,9 +141,9 @@ export function computeManagementWalkroundOversight(
   } else if (totalObs === 0) {
     // no walkrounds, no adjustment
   } else {
-    if (positiveObsRate >= 70) score += 6;
-    else if (positiveObsRate >= 50) score += 2;
-    else if (positiveObsRate < 30) score -= 5;
+    if (meets(positiveObsRate, 70)) score += 6;
+    else if (meets(positiveObsRate, 50)) score += 2;
+    else if (below(positiveObsRate, 30)) score -= 5;
   }
 
   // Modifier 3: Environmental pass rate
@@ -149,18 +152,18 @@ export function computeManagementWalkroundOversight(
   } else if (envTotal === 0) {
     // no data
   } else {
-    if (envPassRate >= 90) score += 5;
-    else if (envPassRate >= 70) score += 2;
-    else if (envPassRate < 50) score -= 4;
+    if (meets(envPassRate, 90)) score += 5;
+    else if (meets(envPassRate, 70)) score += 2;
+    else if (below(envPassRate, 50)) score -= 4;
   }
 
   // Modifier 4: Child interaction during walkrounds
   if (total === 0) {
     // no adjustment
   } else {
-    if (childInteractionRate >= 80) score += 5;
-    else if (childInteractionRate >= 50) score += 2;
-    else if (childInteractionRate < 30) score -= 5;
+    if (meets(childInteractionRate, 80)) score += 5;
+    else if (meets(childInteractionRate, 50)) score += 2;
+    else if (below(childInteractionRate, 30)) score -= 5;
   }
 
   // Modifier 5: Follow-up action completion
@@ -169,17 +172,17 @@ export function computeManagementWalkroundOversight(
   } else if (totalFollowUp === 0) {
     score -= 1;
   } else {
-    if (followUpRate >= 90) score += 4;
-    else if (followUpRate >= 70) score += 1;
-    else if (followUpRate < 50) score -= 4;
+    if (meets(followUpRate, 90)) score += 4;
+    else if (meets(followUpRate, 70)) score += 1;
+    else if (below(followUpRate, 50)) score -= 4;
   }
 
   // Modifier 6: Unannounced walkrounds (demonstrates proactive oversight)
   if (total === 0) {
     score -= 2;
   } else {
-    if (unannouncedRate >= 30) score += 5;
-    else if (unannouncedRate >= 15) score += 2;
+    if (meets(unannouncedRate, 30)) score += 5;
+    else if (meets(unannouncedRate, 15)) score += 2;
     else if (unannouncedRate === 0) score -= 3;
   }
 
@@ -208,19 +211,19 @@ export function computeManagementWalkroundOversight(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (total >= 8) strengths.push("High frequency of management walkrounds demonstrates active oversight");
-  if (positiveObsRate >= 70 && totalObs > 0) strengths.push("Walkrounds consistently identify and celebrate positive practice");
-  if (envPassRate >= 90 && envTotal > 0) strengths.push("Environmental standards are maintained to a high level across the home");
-  if (childInteractionRate >= 80 && total > 0) strengths.push("Managers routinely engage with children during walkrounds — voice of child is central");
-  if (followUpRate >= 90 && totalFollowUp > 0) strengths.push("Follow-up actions from walkrounds are completed promptly and effectively");
-  if (unannouncedRate >= 30 && total > 0) strengths.push("Regular unannounced walkrounds demonstrate proactive, authentic oversight");
+  if (meets(positiveObsRate, 70) && totalObs > 0) strengths.push("Walkrounds consistently identify and celebrate positive practice");
+  if (meets(envPassRate, 90) && envTotal > 0) strengths.push("Environmental standards are maintained to a high level across the home");
+  if (meets(childInteractionRate, 80) && total > 0) strengths.push("Managers routinely engage with children during walkrounds — voice of child is central");
+  if (meets(followUpRate, 90) && totalFollowUp > 0) strengths.push("Follow-up actions from walkrounds are completed promptly and effectively");
+  if (meets(unannouncedRate, 30) && total > 0) strengths.push("Regular unannounced walkrounds demonstrate proactive, authentic oversight");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No management walkrounds recorded — this is a significant governance gap");
-  if (positiveObsRate < 30 && totalObs > 0) concerns.push("Walkrounds are overly focused on deficits — positive practice is not being recognised");
-  if (envPassRate < 50 && envTotal > 0) concerns.push("Environmental checks reveal widespread issues requiring urgent attention");
-  if (childInteractionRate < 30 && total > 0) concerns.push("Children are rarely engaged during walkrounds — their experience is not being directly observed");
-  if (followUpRate < 50 && totalFollowUp > 0) concerns.push("Walkround follow-up actions are not being completed — oversight has no teeth");
+  if (below(positiveObsRate, 30) && totalObs > 0) concerns.push("Walkrounds are overly focused on deficits — positive practice is not being recognised");
+  if (below(envPassRate, 50) && envTotal > 0) concerns.push("Environmental checks reveal widespread issues requiring urgent attention");
+  if (below(childInteractionRate, 30) && total > 0) concerns.push("Children are rarely engaged during walkrounds — their experience is not being directly observed");
+  if (below(followUpRate, 50) && totalFollowUp > 0) concerns.push("Walkround follow-up actions are not being completed — oversight has no teeth");
   if (unannouncedRate === 0 && total > 0) concerns.push("No unannounced walkrounds — Ofsted expects managers to see unscripted, authentic practice");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -232,16 +235,16 @@ export function computeManagementWalkroundOversight(
   if (total > 0 && total < 4) {
     recs.push({ rank: recs.length + 1, recommendation: "Increase walkround frequency to provide more consistent management visibility", urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
   }
-  if (childInteractionRate < 50 && total > 0) {
+  if (below(childInteractionRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure walkrounds include meaningful engagement with children about their experience", urgency: "soon", regulatory_ref: "SCCIF Voice of Child" });
   }
-  if (followUpRate < 70 && totalFollowUp > 0) {
+  if (below(followUpRate, 70) && totalFollowUp > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Strengthen tracking of walkround follow-up actions to completion", urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
   }
   if (unannouncedRate === 0 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Introduce regular unannounced walkrounds to observe authentic everyday practice", urgency: "planned", regulatory_ref: "SCCIF Leadership" });
   }
-  if (envPassRate < 70 && envTotal > 0) {
+  if (below(envPassRate, 70) && envTotal > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Address environmental issues identified in walkrounds to maintain safe premises", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25" });
   }
 
@@ -250,19 +253,19 @@ export function computeManagementWalkroundOversight(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: ManagementWalkroundResult["insights"] = [];
 
-  if (total >= 8 && positiveObsRate >= 70 && childInteractionRate >= 80) {
+  if (total >= 8 && meets(positiveObsRate, 70) && meets(childInteractionRate, 80)) {
     insights.push({ text: "Management oversight is exemplary — walkrounds are frequent, balanced, and child-focused", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No walkrounds recorded suggests management is disconnected from day-to-day practice — regulators will flag this", severity: "critical" });
   }
-  if (followUpRate < 50 && totalFollowUp > 0) {
+  if (below(followUpRate, 50) && totalFollowUp > 0) {
     insights.push({ text: "Walkrounds without follow-through are performative — actions must be tracked to completion", severity: "warning" });
   }
-  if (childInteractionRate >= 80 && total > 0) {
+  if (meets(childInteractionRate, 80) && total > 0) {
     insights.push({ text: "High child engagement during walkrounds means managers hear directly how care feels — strong evidence for inspectors", severity: "positive" });
   }
-  if (unannouncedRate >= 30 && total > 0) {
+  if (meets(unannouncedRate, 30) && total > 0) {
     insights.push({ text: "Unannounced walkrounds show a culture of transparency — staff expect and welcome oversight", severity: "positive" });
   }
 

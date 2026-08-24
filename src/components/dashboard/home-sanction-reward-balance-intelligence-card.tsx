@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,15 +75,15 @@ export function HomeSanctionRewardBalanceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Sanctions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.reward_ratio >= 70 ? "bg-green-50" : d.reward_ratio >= 55 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reward_ratio >= 70 ? "text-[--cs-success]" : d.reward_ratio >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reward_ratio}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.reward_ratio >= 70 ? "text-[--cs-success]" : d.reward_ratio >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reward_ratio)}</p>
               <p className="text-[9px] text-muted-foreground">Ratio</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.proportionality_rate >= 98 ? "bg-green-50" : d.proportionality_rate >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.proportionality_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.proportionality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Proport.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.unique_children > 0 ? "bg-blue-50" : "bg-slate-50")}>

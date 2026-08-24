@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldPlus } from "lucide-react";
@@ -74,20 +75,20 @@ export function HomeInfectionControlHealthSafetyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.active_infections === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.active_infections}</p>
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.mar_accuracy_rate >= 95 ? "bg-green-50" : d.mar_accuracy_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mar_accuracy_rate >= 95 ? "text-[--cs-success]" : d.mar_accuracy_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mar_accuracy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.mar_accuracy_rate, 95) ? "bg-green-50" : meets(d.mar_accuracy_rate, 90) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.mar_accuracy_rate, 95) ? "text-[--cs-success]" : meets(d.mar_accuracy_rate, 90) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mar_accuracy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">MAR Accuracy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.med_training_rate >= 90 ? "bg-green-50" : d.med_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.med_training_rate >= 90 ? "text-[--cs-success]" : d.med_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.med_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.med_training_rate, 90) ? "bg-green-50" : meets(d.med_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.med_training_rate, 90) ? "text-[--cs-success]" : meets(d.med_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.med_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Med Trained</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.first_aid_coverage >= 50 ? "bg-green-50" : d.first_aid_coverage >= 30 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.first_aid_coverage >= 50 ? "text-[--cs-success]" : d.first_aid_coverage >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.first_aid_coverage}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.first_aid_coverage, 50) ? "bg-green-50" : meets(d.first_aid_coverage, 30) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.first_aid_coverage, 50) ? "text-[--cs-success]" : meets(d.first_aid_coverage, 30) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.first_aid_coverage)}</p>
               <p className="text-[9px] text-muted-foreground">First Aid</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.infection_resolution_rate >= 90 ? "bg-green-50" : d.infection_resolution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.infection_resolution_rate >= 90 ? "text-[--cs-success]" : d.infection_resolution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.infection_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.infection_resolution_rate, 90) ? "bg-green-50" : meets(d.infection_resolution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.infection_resolution_rate, 90) ? "text-[--cs-success]" : meets(d.infection_resolution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.infection_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
           </div>

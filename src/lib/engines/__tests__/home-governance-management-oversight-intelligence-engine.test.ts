@@ -714,7 +714,7 @@ describe("computeGovernanceManagementOversight", () => {
       expect(r.commissioning_satisfaction_rate).toBe(100);
     });
 
-    it("returns 0 for rates when no data provided", () => {
+    it("leaves every rate unmeasured when no data provided", () => {
       const r = computeGovernanceManagementOversight({
         today: TODAY,
         total_children: 4,
@@ -724,8 +724,8 @@ describe("computeGovernanceManagementOversight", () => {
         operational_meetings: [],
         commissioning_feedback: [],
       });
-      expect(r.operational_meeting_rate).toBe(0);
-      expect(r.commissioning_satisfaction_rate).toBe(0);
+      expect(r.operational_meeting_rate).toBeNull();
+      expect(r.commissioning_satisfaction_rate).toBeNull();
     });
 
     it("returns 0 ops rate when no ops meetings have decisions and actions", () => {
@@ -748,11 +748,11 @@ describe("computeGovernanceManagementOversight", () => {
       expect(r.operational_meeting_rate).toBe(0);
     });
 
-    it("returns 0 commissioning satisfaction when no feedback items exist", () => {
+    it("commissioning_satisfaction_rate is unmeasured when no feedback items exist", () => {
       const r = computeGovernanceManagementOversight(baseInput({
         commissioning_feedback: [],
       }));
-      expect(r.commissioning_satisfaction_rate).toBe(0);
+      expect(r.commissioning_satisfaction_rate).toBeNull();
     });
 
     it("counts rating 5 as satisfied for commissioning", () => {

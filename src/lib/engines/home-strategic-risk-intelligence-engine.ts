@@ -4,6 +4,8 @@
 // Pure deterministic engine. CHR 2015 Reg 35/40.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 export interface DailyRiskBriefingInput {
   id: string; date: string; shift_type: string;
   child_risks_count: number; home_alerts_count: number;
@@ -69,7 +71,6 @@ export interface HomeStrategicRiskResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStrategicRiskResult {
@@ -92,7 +93,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   const recent7 = daily_risk_briefings.filter(b => b.date && daysBetween(b.date, today) <= 7 && daysBetween(b.date, today) >= 0).length;
   const avgChildRisks = daily_risk_briefings.length > 0 ? Math.round(daily_risk_briefings.reduce((s, b) => s + b.child_risks_count, 0) / daily_risk_briefings.length) : null;
   // Coverage: assume 2 briefings per day (day + night) for 7 days = 14 expected
-  const coverageRate = pct(recent7, 14);
+  const coverageRate = rate(recent7, 14);
   const briefings: BriefingSummary = { total: daily_risk_briefings.length, recent_7_days: recent7, avg_child_risks: avgChildRisks, coverage_rate: coverageRate };
 
   const critCount = risk_register_entries.filter(r => r.risk_level === "critical").length;
@@ -103,7 +104,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
     total: risk_register_entries.length,
     critical_count: critCount, high_count: highCount,
     overdue_reviews: regOverdue,
-    mitigated_rate: pct(regMitigated, risk_register_entries.length),
+    mitigated_rate: rate(regMitigated, risk_register_entries.length),
   };
 
   const boardLevel = strategic_risks.filter(s => s.board_level).length;
@@ -116,8 +117,8 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   const planOverdue = risk_management_plans.filter(p => p.review_date && daysBetween(p.review_date, today) > 0).length;
   const plans: PlanSummary = {
     total: risk_management_plans.length,
-    active_rate: pct(planActive, risk_management_plans.length),
-    child_views_rate: pct(planViews, risk_management_plans.length),
+    active_rate: rate(planActive, risk_management_plans.length),
+    child_views_rate: rate(planViews, risk_management_plans.length),
     overdue_reviews: planOverdue,
   };
 
@@ -215,10 +216,10 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   const totalOverdue = regOverdue + planOverdue;
   const totalReviewable = risk_register_entries.length + risk_management_plans.length;
   if (totalReviewable > 0) {
-    const overdueRate = pct(totalOverdue, totalReviewable);
+    const overdueRate = rate(totalOverdue, totalReviewable);
     if (overdueRate === 0) mod8 = 3;
-    else if (overdueRate <= 15) mod8 = 1;
-    else if (overdueRate >= 50) mod8 = -3;
+    else if ((overdueRate !== null && overdueRate <= 15)) mod8 = 1;
+    else if (meets(overdueRate, 50)) mod8 = -3;
     else mod8 = -1;
   }
   score += mod8;

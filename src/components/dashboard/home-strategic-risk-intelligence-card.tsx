@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,7 +71,7 @@ export function HomeStrategicRiskIntelligenceCard() {
         {d.strategic_risk_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.briefings.coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.briefings.coverage_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.briefings.total > 0 ? `${d.briefings.coverage_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.briefings.coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.briefings.coverage_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.briefings.total > 0 ? `${formatRate(d.briefings.coverage_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Briefing Cover</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">

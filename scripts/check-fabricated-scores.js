@@ -327,10 +327,6 @@ const ALLOWED = new Map([
     "catch-up rate on missed immunisations — 0 missed ⇒ vacuously caught up (inverse-frequency)",
   ],
   [
-    "src/lib/engines/home-meeting-governance-intelligence-engine.ts:total:100",
-    "per-meeting attendance rate — 0 attendees expected ⇒ vacuous (0/0)",
-  ],
-  [
     "src/lib/engines/home-night-care-quality-intelligence-engine.ts:totalNightChecks:1",
     "cascading divide-by-zero fallback for the expectedChecks divisor (`total_children && uniqueCheckDates ? ... : totalNightChecks > 0 ? totalNightChecks : 1`); the innermost `: 1` is a divisor floor, not a score (regex-tightening 2026-07-29 re-attributed from :uniqueCheckDates:1 to the correct innermost fallback denominator)",
   ],

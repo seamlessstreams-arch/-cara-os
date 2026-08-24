@@ -7,6 +7,8 @@
 // SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface WalkroundInput {
@@ -87,8 +89,10 @@ export interface GovernanceOversightResult {
   total_walkrounds: number;
   total_governance_meetings: number;
   total_board_reports: number;
-  operational_meeting_rate: number;
-  commissioning_satisfaction_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  operational_meeting_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  commissioning_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -106,10 +110,6 @@ function toRating(score: number): GovernanceRating {
   if (score >= 65) return "good";
   if (score >= 45) return "adequate";
   return "inadequate";
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -160,25 +160,25 @@ export function computeGovernanceManagementOversight(
   const engagedGovMeetings = governance_meetings.filter(
     m => m.regulatory_topics_discussed && m.children_discussed_count > 0,
   ).length;
-  const govEngagementPct = pct(engagedGovMeetings, totalGovMeetings);
+  const govEngagementPct = rate(engagedGovMeetings, totalGovMeetings);
 
   // Board responsiveness: reports where board_response_received
   const respondedReports = board_reports.filter(r => r.board_response_received).length;
-  const boardResponsePct = pct(respondedReports, totalBoardReports);
+  const boardResponsePct = rate(respondedReports, totalBoardReports);
 
   // Operational meeting effectiveness: meetings with key_decisions_count > 0 AND actions_agreed_count > 0
   const effectiveOpsMeetings = operational_meetings.filter(
     m => m.key_decisions_count > 0 && m.actions_agreed_count > 0,
   ).length;
-  const opsEffectivenessPct = pct(effectiveOpsMeetings, totalOpsMeetings);
+  const opsEffectivenessPct = rate(effectiveOpsMeetings, totalOpsMeetings);
 
   // Commissioning satisfaction: feedback with overall_rating >= 4
   const satisfiedComm = commissioning_feedback.filter(f => f.overall_rating >= 4).length;
-  const commSatisfactionPct = pct(satisfiedComm, totalCommFeedback);
+  const commSatisfactionPct = rate(satisfiedComm, totalCommFeedback);
 
   // Risk governance: governance meetings with risk_items_count > 0
   const riskGovMeetings = governance_meetings.filter(m => m.risk_items_count > 0).length;
-  const riskGovPct = pct(riskGovMeetings, totalGovMeetings);
+  const riskGovPct = rate(riskGovMeetings, totalGovMeetings);
 
   // ── Scoring ───────────────────────────────────────────────────────
   let score = 52;
@@ -195,44 +195,44 @@ export function computeGovernanceManagementOversight(
   }
 
   // Mod 2: Governance meeting engagement
-  if (govEngagementPct >= 80) {
+  if (meets(govEngagementPct, 80)) {
     score += 6;
-  } else if (govEngagementPct >= 50) {
+  } else if (meets(govEngagementPct, 50)) {
     score += 3;
-  } else if (govEngagementPct >= 30) {
+  } else if (meets(govEngagementPct, 30)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // Mod 3: Board reporting & responsiveness
-  if (boardResponsePct >= 80) {
+  if (meets(boardResponsePct, 80)) {
     score += 5;
-  } else if (boardResponsePct >= 50) {
+  } else if (meets(boardResponsePct, 50)) {
     score += 2;
-  } else if (boardResponsePct >= 30) {
+  } else if (meets(boardResponsePct, 30)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // Mod 4: Operational meeting effectiveness
-  if (opsEffectivenessPct >= 80) {
+  if (meets(opsEffectivenessPct, 80)) {
     score += 5;
-  } else if (opsEffectivenessPct >= 50) {
+  } else if (meets(opsEffectivenessPct, 50)) {
     score += 2;
-  } else if (opsEffectivenessPct >= 30) {
+  } else if (meets(opsEffectivenessPct, 30)) {
     score += 0;
   } else {
     score -= 4;
   }
 
   // Mod 5: Commissioning satisfaction
-  if (commSatisfactionPct >= 80) {
+  if (meets(commSatisfactionPct, 80)) {
     score += 5;
-  } else if (commSatisfactionPct >= 50) {
+  } else if (meets(commSatisfactionPct, 50)) {
     score += 2;
-  } else if (commSatisfactionPct >= 30) {
+  } else if (meets(commSatisfactionPct, 30)) {
     score += 0;
   } else {
     score -= 5;
@@ -241,11 +241,11 @@ export function computeGovernanceManagementOversight(
   // Mod 6: Risk governance
   if (totalGovMeetings === 0) {
     score -= 1;
-  } else if (riskGovPct >= 70) {
+  } else if (meets(riskGovPct, 70)) {
     score += 4;
-  } else if (riskGovPct >= 40) {
+  } else if (meets(riskGovPct, 40)) {
     score += 1;
-  } else if (riskGovPct >= 20) {
+  } else if (meets(riskGovPct, 20)) {
     score += 0;
   } else {
     score -= 4;
@@ -260,20 +260,20 @@ export function computeGovernanceManagementOversight(
   if (totalWalkrounds >= 4 && avgChildInteractions >= 2) {
     strengths.push(`${totalWalkrounds} management walkrounds completed with meaningful child engagement (avg ${Math.round(avgChildInteractions * 10) / 10} interactions per walkround).`);
   }
-  if (boardResponsePct >= 80 && totalBoardReports > 0) {
-    strengths.push(`${boardResponsePct}% of board reports received a response — strong governance accountability loop.`);
+  if (meets(boardResponsePct, 80) && totalBoardReports > 0) {
+    strengths.push(`${formatRate(boardResponsePct)} of board reports received a response — strong governance accountability loop.`);
   }
-  if (opsEffectivenessPct >= 80 && totalOpsMeetings > 0) {
-    strengths.push(`${opsEffectivenessPct}% of operational meetings resulted in clear decisions and actions — effective management oversight.`);
+  if (meets(opsEffectivenessPct, 80) && totalOpsMeetings > 0) {
+    strengths.push(`${formatRate(opsEffectivenessPct)} of operational meetings resulted in clear decisions and actions — effective management oversight.`);
   }
-  if (govEngagementPct >= 80 && totalGovMeetings > 0) {
-    strengths.push(`${govEngagementPct}% of governance meetings addressed regulatory topics and discussed individual children — child-centred governance.`);
+  if (meets(govEngagementPct, 80) && totalGovMeetings > 0) {
+    strengths.push(`${formatRate(govEngagementPct)} of governance meetings addressed regulatory topics and discussed individual children — child-centred governance.`);
   }
-  if (commSatisfactionPct >= 80 && totalCommFeedback > 0) {
-    strengths.push(`${commSatisfactionPct}% commissioning satisfaction rate — external stakeholders view the home positively.`);
+  if (meets(commSatisfactionPct, 80) && totalCommFeedback > 0) {
+    strengths.push(`${formatRate(commSatisfactionPct)} commissioning satisfaction rate — external stakeholders view the home positively.`);
   }
-  if (riskGovPct >= 70 && totalGovMeetings > 0) {
-    strengths.push(`${riskGovPct}% of governance meetings actively addressed risk items — proactive risk management culture.`);
+  if (meets(riskGovPct, 70) && totalGovMeetings > 0) {
+    strengths.push(`${formatRate(riskGovPct)} of governance meetings actively addressed risk items — proactive risk management culture.`);
   }
 
   // ── Concerns ──────────────────────────────────────────────────────
@@ -282,20 +282,20 @@ export function computeGovernanceManagementOversight(
   if (totalWalkrounds < 2) {
     concerns.push(`Only ${totalWalkrounds} management walkround(s) recorded — managers should be visibly present and actively monitoring the home.`);
   }
-  if (totalBoardReports > 0 && boardResponsePct < 30) {
-    concerns.push(`Only ${boardResponsePct}% of board reports received a response — governance structures are not providing accountability.`);
+  if (totalBoardReports > 0 && below(boardResponsePct, 30)) {
+    concerns.push(`Only ${formatRate(boardResponsePct)} of board reports received a response — governance structures are not providing accountability.`);
   }
-  if (totalCommFeedback > 0 && commSatisfactionPct < 30) {
-    concerns.push(`Only ${commSatisfactionPct}% commissioning satisfaction — external stakeholder confidence is critically low.`);
+  if (totalCommFeedback > 0 && below(commSatisfactionPct, 30)) {
+    concerns.push(`Only ${formatRate(commSatisfactionPct)} commissioning satisfaction — external stakeholder confidence is critically low.`);
   }
-  if (totalGovMeetings > 0 && govEngagementPct < 30) {
-    concerns.push(`Only ${govEngagementPct}% of governance meetings discussed both regulatory topics and children — governance may be detached from practice.`);
+  if (totalGovMeetings > 0 && below(govEngagementPct, 30)) {
+    concerns.push(`Only ${formatRate(govEngagementPct)} of governance meetings discussed both regulatory topics and children — governance may be detached from practice.`);
   }
-  if (totalOpsMeetings > 0 && opsEffectivenessPct < 30) {
-    concerns.push(`Only ${opsEffectivenessPct}% of operational meetings produced decisions and actions — meetings may lack purpose or follow-through.`);
+  if (totalOpsMeetings > 0 && below(opsEffectivenessPct, 30)) {
+    concerns.push(`Only ${formatRate(opsEffectivenessPct)} of operational meetings produced decisions and actions — meetings may lack purpose or follow-through.`);
   }
-  if (totalGovMeetings > 0 && riskGovPct < 20) {
-    concerns.push(`Only ${riskGovPct}% of governance meetings addressed risk items — risk may not be adequately overseen at governance level.`);
+  if (totalGovMeetings > 0 && below(riskGovPct, 20)) {
+    concerns.push(`Only ${formatRate(riskGovPct)} of governance meetings addressed risk items — risk may not be adequately overseen at governance level.`);
   }
 
   // ── Recommendations ───────────────────────────────────────────────
@@ -310,34 +310,34 @@ export function computeGovernanceManagementOversight(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (totalBoardReports > 0 && boardResponsePct < 50) {
+  if (totalBoardReports > 0 && below(boardResponsePct, 50)) {
     recs.push({
       rank: rank++,
-      recommendation: `Improve board engagement with submitted reports — only ${boardResponsePct}% received a response. Governance bodies must demonstrate active scrutiny.`,
+      recommendation: `Improve board engagement with submitted reports — only ${formatRate(boardResponsePct)} received a response. Governance bodies must demonstrate active scrutiny.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 45",
     });
   }
-  if (totalGovMeetings > 0 && govEngagementPct < 50) {
+  if (totalGovMeetings > 0 && below(govEngagementPct, 50)) {
     recs.push({
       rank: rank++,
-      recommendation: `Ensure governance meetings routinely discuss regulatory compliance and individual children — currently only ${govEngagementPct}% of meetings cover both.`,
+      recommendation: `Ensure governance meetings routinely discuss regulatory compliance and individual children — currently only ${formatRate(govEngagementPct)} of meetings cover both.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 45",
     });
   }
-  if (totalOpsMeetings > 0 && opsEffectivenessPct < 50) {
+  if (totalOpsMeetings > 0 && below(opsEffectivenessPct, 50)) {
     recs.push({
       rank: rank++,
-      recommendation: `Strengthen operational meeting outcomes — only ${opsEffectivenessPct}% produce clear decisions and actions. Use structured agendas with action tracking.`,
+      recommendation: `Strengthen operational meeting outcomes — only ${formatRate(opsEffectivenessPct)} produce clear decisions and actions. Use structured agendas with action tracking.`,
       urgency: "planned",
       regulatory_ref: null,
     });
   }
-  if (totalCommFeedback > 0 && commSatisfactionPct < 50) {
+  if (totalCommFeedback > 0 && below(commSatisfactionPct, 50)) {
     recs.push({
       rank: rank++,
-      recommendation: `Address commissioning concerns — only ${commSatisfactionPct}% satisfaction rate. Develop an improvement plan with commissioning partners.`,
+      recommendation: `Address commissioning concerns — only ${formatRate(commSatisfactionPct)} satisfaction rate. Develop an improvement plan with commissioning partners.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 45",
     });
@@ -356,7 +356,7 @@ export function computeGovernanceManagementOversight(
 
   if (rating === "outstanding") {
     insights.push({
-      text: `Governance and management oversight is exemplary. ${totalWalkrounds} walkrounds, ${totalGovMeetings} governance meetings, and ${boardResponsePct}% board responsiveness demonstrate a home where leadership actively monitors quality, holds itself accountable, and drives continuous improvement. Ofsted will see clear evidence of a well-led home under Reg 40 and Reg 45.`,
+      text: `Governance and management oversight is exemplary. ${totalWalkrounds} walkrounds, ${totalGovMeetings} governance meetings, and ${formatRate(boardResponsePct)} board responsiveness demonstrate a home where leadership actively monitors quality, holds itself accountable, and drives continuous improvement. Ofsted will see clear evidence of a well-led home under Reg 40 and Reg 45.`,
       severity: "positive",
     });
   }
@@ -375,23 +375,23 @@ export function computeGovernanceManagementOversight(
     });
   }
 
-  if (totalBoardReports > 0 && boardResponsePct < 30) {
+  if (totalBoardReports > 0 && below(boardResponsePct, 30)) {
     insights.push({
-      text: `Board responsiveness is critically low at ${boardResponsePct}%. When submitted reports go unanswered, governance structures fail to provide the accountability required under Reg 45. This represents a systemic oversight gap that Ofsted will view seriously.`,
+      text: `Board responsiveness is critically low at ${formatRate(boardResponsePct)}. When submitted reports go unanswered, governance structures fail to provide the accountability required under Reg 45. This represents a systemic oversight gap that Ofsted will view seriously.`,
       severity: "critical",
     });
   }
 
-  if (totalGovMeetings > 0 && govEngagementPct < 30) {
+  if (totalGovMeetings > 0 && below(govEngagementPct, 30)) {
     insights.push({
-      text: `Only ${govEngagementPct}% of governance meetings discussed both regulatory topics and individual children. Governance that does not connect regulatory requirements to outcomes for children risks becoming a tick-box exercise rather than meaningful oversight.`,
+      text: `Only ${formatRate(govEngagementPct)} of governance meetings discussed both regulatory topics and individual children. Governance that does not connect regulatory requirements to outcomes for children risks becoming a tick-box exercise rather than meaningful oversight.`,
       severity: "warning",
     });
   }
 
-  if (totalCommFeedback > 0 && commSatisfactionPct < 30) {
+  if (totalCommFeedback > 0 && below(commSatisfactionPct, 30)) {
     insights.push({
-      text: `Commissioning satisfaction is only ${commSatisfactionPct}%. Low external confidence signals potential quality concerns that may lead to reduced referrals or enhanced monitoring from placing authorities.`,
+      text: `Commissioning satisfaction is only ${formatRate(commSatisfactionPct)}. Low external confidence signals potential quality concerns that may lead to reduced referrals or enhanced monitoring from placing authorities.`,
       severity: "warning",
     });
   }
@@ -399,7 +399,7 @@ export function computeGovernanceManagementOversight(
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding governance and management oversight — ${totalWalkrounds} walkrounds, ${totalGovMeetings} governance meetings, ${boardResponsePct}% board responsiveness.`;
+    headline = `Outstanding governance and management oversight — ${totalWalkrounds} walkrounds, ${totalGovMeetings} governance meetings, ${formatRate(boardResponsePct)} board responsiveness.`;
   } else if (rating === "good") {
     headline = `Good governance oversight — active management monitoring with minor gaps in some oversight areas.`;
   } else if (rating === "adequate") {

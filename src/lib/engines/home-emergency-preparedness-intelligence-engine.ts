@@ -6,6 +6,8 @@
 // CHR 2015 Reg 25, 22. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PolicyInput {
@@ -123,10 +125,6 @@ function toRating(score: number): EmergencyRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeEmergencyPreparedness(
@@ -157,11 +155,9 @@ export function computeHomeEmergencyPreparedness(
 
   const ackRates = policies
     .filter(p => p.total_staff_required > 0)
-    .map(p => pct(p.read_acknowledgement_count, p.total_staff_required));
-  const avgAckRate = ackRates.length > 0
-    ? Math.round(ackRates.reduce((a, b) => a + b, 0) / ackRates.length)
-    : null;
-  const fullAckCount = ackRates.filter(r => r >= 100).length;
+    .map(p => rate(p.read_acknowledgement_count, p.total_staff_required));
+  const avgAckRate = meanOf(ackRates);
+  const fullAckCount = ackRates.filter(r => meets(r, 100)).length;
 
   const policyProfile: PolicyComplianceProfile = {
     total_policies: policies.length,
@@ -180,10 +176,10 @@ export function computeHomeEmergencyPreparedness(
   const recentDrills = drills.filter(d => d.date >= cutoff12mStr && d.date <= today);
 
   const satisfactory = recentDrills.filter(d => d.outcome === "satisfactory").length;
-  const satisfactoryRate = pct(satisfactory, recentDrills.length);
+  const satisfactoryRate = rate(satisfactory, recentDrills.length);
 
   const protocolFollowed = recentDrills.filter(d => d.protocol_followed).length;
-  const protocolRate = pct(protocolFollowed, recentDrills.length);
+  const protocolRate = rate(protocolFollowed, recentDrills.length);
 
   const overdueDrills = drills.filter(d => d.next_drill_due < today).length;
 
@@ -228,10 +224,10 @@ export function computeHomeEmergencyPreparedness(
   let score = 52;
 
   // 1. Policy overdue rate (±5)
-  const policyOverdueRate = pct(overduePolicies, policies.length);
+  const policyOverdueRate = rate(overduePolicies, policies.length);
   if (policies.length > 0) {
     if (policyOverdueRate === 0) score += 5;
-    else if (policyOverdueRate <= 20) score += 2;
+    else if ((policyOverdueRate !== null && policyOverdueRate <= 20)) score += 2;
     else score -= 4;
   }
 
@@ -250,15 +246,15 @@ export function computeHomeEmergencyPreparedness(
 
   // 4. Drill satisfactory rate (±3)
   if (recentDrills.length > 0) {
-    if (satisfactoryRate >= 80) score += 3;
-    else if (satisfactoryRate >= 60) score += 1;
+    if (meets(satisfactoryRate, 80)) score += 3;
+    else if (meets(satisfactoryRate, 60)) score += 1;
     else score -= 2;
   }
 
   // 5. Protocol followed rate (±3)
   if (recentDrills.length > 0) {
-    if (protocolRate >= 90) score += 3;
-    else if (protocolRate >= 70) score += 1;
+    if (meets(protocolRate, 90)) score += 3;
+    else if (meets(protocolRate, 70)) score += 1;
     else score -= 2;
   }
 
@@ -273,10 +269,10 @@ export function computeHomeEmergencyPreparedness(
   else if (emergency_plans.length === 0) score -= 2;
 
   // 8. Child considerations in plans (±3)
-  const childConsRate = pct(withChildConsiderations, emergency_plans.length);
+  const childConsRate = rate(withChildConsiderations, emergency_plans.length);
   if (emergency_plans.length > 0) {
-    if (childConsRate >= 80) score += 3;
-    else if (childConsRate >= 50) score += 1;
+    if (meets(childConsRate, 80)) score += 3;
+    else if (meets(childConsRate, 50)) score += 1;
     else score -= 2;
   }
 
@@ -293,10 +289,10 @@ export function computeHomeEmergencyPreparedness(
   if (policyOverdueRate === 0 && policies.length > 0) strengths.push(`All ${policies.length} policies are current — demonstrating proactive governance.`);
   if ((avgAckRate ?? 0) >= 90 && policies.length > 0) strengths.push(`${(avgAckRate ?? 0)}% average staff acknowledgement rate — all staff are informed of current policies.`);
   if (recentDrills.length >= 6) strengths.push(`${recentDrills.length} drills completed in 12 months — comprehensive emergency readiness programme.`);
-  if (satisfactoryRate >= 80 && recentDrills.length > 0) strengths.push(`${satisfactoryRate}% of drills rated satisfactory — staff respond well to emergencies.`);
-  if (protocolRate >= 90 && recentDrills.length > 0) strengths.push(`Protocol followed in ${protocolRate}% of drills — procedures are embedded.`);
+  if (meets(satisfactoryRate, 80) && recentDrills.length > 0) strengths.push(`${formatRate(satisfactoryRate)} of drills rated satisfactory — staff respond well to emergencies.`);
+  if (meets(protocolRate, 90) && recentDrills.length > 0) strengths.push(`Protocol followed in ${formatRate(protocolRate)} of drills — procedures are embedded.`);
   if (overdueDrills === 0 && drills.length > 0) strengths.push("No overdue drills — emergency testing schedule is on track.");
-  if (childConsRate >= 80 && emergency_plans.length > 0) strengths.push(`${withChildConsiderations}/${emergency_plans.length} emergency plans include child-specific considerations — child-centred safety planning.`);
+  if (meets(childConsRate, 80) && emergency_plans.length > 0) strengths.push(`${withChildConsiderations}/${emergency_plans.length} emergency plans include child-specific considerations — child-centred safety planning.`);
   if (uniqueScenarios >= 4) strengths.push(`${uniqueScenarios} different scenario types drilled — comprehensive threat coverage.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -305,9 +301,9 @@ export function computeHomeEmergencyPreparedness(
   if ((avgAckRate ?? 0) < 70 && policies.length > 0) concerns.push(`Average staff acknowledgement rate at ${(avgAckRate ?? 0)}% — policies must be read and understood by all staff.`);
   if (recentDrills.length < 4 && recentDrills.length > 0) concerns.push(`Only ${recentDrills.length} drill${recentDrills.length === 1 ? "" : "s"} completed in 12 months — Ofsted expects regular, varied emergency drills.`);
   if (overdueDrills > 0) concerns.push(`${overdueDrills} drill${overdueDrills > 1 ? "s" : ""} overdue — emergency rehearsal schedule is behind.`);
-  if (satisfactoryRate < 60 && recentDrills.length > 0) concerns.push(`Only ${satisfactoryRate}% of drills rated satisfactory — staff may not respond effectively in a real emergency.`);
+  if (below(satisfactoryRate, 60) && recentDrills.length > 0) concerns.push(`Only ${formatRate(satisfactoryRate)} of drills rated satisfactory — staff may not respond effectively in a real emergency.`);
   if (emergency_plans.length < 2) concerns.push("Fewer than 2 emergency plans — homes should have plans for fire, power failure, flooding, and serious incidents at minimum.");
-  if (childConsRate < 50 && emergency_plans.length > 0) concerns.push("Fewer than half of emergency plans include child-specific considerations — each child's needs must be addressed.");
+  if (below(childConsRate, 50) && emergency_plans.length > 0) concerns.push("Fewer than half of emergency plans include child-specific considerations — each child's needs must be addressed.");
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: EmergencyRecommendation[] = [];
@@ -325,7 +321,7 @@ export function computeHomeEmergencyPreparedness(
   if (recentDrills.length < 4) {
     recs.push({ rank: rank++, recommendation: "Increase drill frequency to at least quarterly — cover fire, medical, missing, and security scenarios.", urgency: "soon", regulatory_ref: "Reg 25" });
   }
-  if (childConsRate < 50 && emergency_plans.length > 0) {
+  if (below(childConsRate, 50) && emergency_plans.length > 0) {
     recs.push({ rank: rank++, recommendation: "Add child-specific considerations to all emergency plans — address individual needs and vulnerabilities.", urgency: "planned", regulatory_ref: "Reg 25" });
   }
 
@@ -335,22 +331,22 @@ export function computeHomeEmergencyPreparedness(
   if (overduePolicies >= 2) {
     insights.push({ text: `${overduePolicies} policies overdue for review. Ofsted inspectors routinely check policy review dates — overdue policies suggest governance gaps and may contribute to a "requires improvement" judgement for leadership.`, severity: "critical" });
   }
-  if (satisfactoryRate >= 80 && recentDrills.length >= 4 && overdueDrills === 0) {
-    insights.push({ text: `${recentDrills.length} drills completed with ${satisfactoryRate}% satisfactory outcomes and no overdue rehearsals. This demonstrates a proactive, well-embedded emergency culture — a key indicator of outstanding safety practice that inspectors actively look for.`, severity: "positive" });
+  if (meets(satisfactoryRate, 80) && recentDrills.length >= 4 && overdueDrills === 0) {
+    insights.push({ text: `${recentDrills.length} drills completed with ${formatRate(satisfactoryRate)} satisfactory outcomes and no overdue rehearsals. This demonstrates a proactive, well-embedded emergency culture — a key indicator of outstanding safety practice that inspectors actively look for.`, severity: "positive" });
   }
   if (overdueDrills >= 2) {
     insights.push({ text: `${overdueDrills} drills overdue. Ofsted expects regular emergency rehearsals to ensure staff can respond effectively. Overdue drills suggest the home may not be adequately prepared for emergencies — this is a Reg 25 concern.`, severity: "warning" });
   }
   if ((avgAckRate ?? 0) >= 90 && policyOverdueRate === 0 && policies.length >= 5) {
-    insights.push({ text: `All ${policies.length} policies current with ${avgAckRate}% staff acknowledgement rate. This evidences outstanding governance — all staff are informed, policies are reviewed on schedule, and the home operates within a clear regulatory framework.`, severity: "positive" });
+    insights.push({ text: `All ${policies.length} policies current with ${formatRate(avgAckRate)} staff acknowledgement rate. This evidences outstanding governance — all staff are informed, policies are reviewed on schedule, and the home operates within a clear regulatory framework.`, severity: "positive" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding emergency preparedness — ${recentDrills.length} drills, all policies current, ${avgAckRate}% staff acknowledgement.`;
+    headline = `Outstanding emergency preparedness — ${recentDrills.length} drills, all policies current, ${formatRate(avgAckRate)} staff acknowledgement.`;
   } else if (rating === "good") {
-    headline = `Good emergency preparedness — solid drill programme with ${satisfactoryRate}% satisfactory outcomes.`;
+    headline = `Good emergency preparedness — solid drill programme with ${formatRate(satisfactoryRate)} satisfactory outcomes.`;
   } else if (rating === "adequate") {
     headline = "Adequate emergency preparedness — gaps in policy reviews, drill frequency, or staff acknowledgement need addressing.";
   } else {

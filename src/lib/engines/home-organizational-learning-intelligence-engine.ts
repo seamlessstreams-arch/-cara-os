@@ -6,6 +6,8 @@
 // SCCIF: "The home demonstrates continuous improvement."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface SeriousIncidentReviewInput {
@@ -115,10 +117,6 @@ export interface HomeOrganizationalLearningResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -157,7 +155,7 @@ export function computeHomeOrganizationalLearning(
   const totalSIRActions = serious_incident_reviews.reduce((sum, r) => sum + r.actions_total, 0);
   const completedSIRActions = serious_incident_reviews.reduce((sum, r) => sum + r.actions_completed, 0);
   const overdueSIRActions = serious_incident_reviews.reduce((sum, r) => sum + r.actions_overdue, 0);
-  const sirActionCompletionRate = pct(completedSIRActions, totalSIRActions);
+  const sirActionCompletionRate = rate(completedSIRActions, totalSIRActions);
   const practiceChangesTotal = serious_incident_reviews.reduce((sum, r) => sum + r.practice_changes_count, 0);
 
   const sirProfile: SIRProfile = {
@@ -179,7 +177,7 @@ export function computeHomeOrganizationalLearning(
   });
 
   const completedDebriefs = debriefs90d.filter(d => d.status === "completed").length;
-  const debriefCompletedRate = pct(completedDebriefs, debriefs90d.length);
+  const debriefCompletedRate = rate(completedDebriefs, debriefs90d.length);
   const highImpactDebriefs = debriefs90d.filter(d => d.impact_level === "high").length;
   const avgRootCauses = debriefs90d.length > 0
     ? Math.round((debriefs90d.reduce((sum, d) => sum + d.root_causes_count, 0) / debriefs90d.length) * 10) / 10
@@ -187,7 +185,7 @@ export function computeHomeOrganizationalLearning(
   const totalTrainingNeeds = debriefs90d.reduce((sum, d) => sum + d.training_needs_count, 0);
   const totalDebriefActions = debriefs90d.reduce((sum, d) => sum + d.actions_agreed_count, 0);
   const completedDebriefActions = debriefs90d.reduce((sum, d) => sum + d.actions_completed, 0);
-  const debriefActionRate = pct(completedDebriefActions, totalDebriefActions);
+  const debriefActionRate = rate(completedDebriefActions, totalDebriefActions);
 
   const debriefProfile: DebriefProfile = {
     total_debriefs_90d: debriefs90d.length,
@@ -211,7 +209,7 @@ export function computeHomeOrganizationalLearning(
   ).length;
   const totalMilestones = service_improvements.reduce((sum, s) => sum + s.milestones_total, 0);
   const achievedMilestones = service_improvements.reduce((sum, s) => sum + s.milestones_achieved, 0);
-  const milestoneRate = pct(achievedMilestones, totalMilestones);
+  const milestoneRate = rate(achievedMilestones, totalMilestones);
 
   const bySource: Record<string, number> = {};
   for (const s of service_improvements) {
@@ -237,9 +235,9 @@ export function computeHomeOrganizationalLearning(
   if (totalSIRActions === 0) {
     score += (serious_incident_reviews.length > 0 ? 2 : 0); // Reviews exist but no actions = slight positive
   } else {
-    if (sirActionCompletionRate >= 90 && overdueSIRActions === 0) score += 5;
-    else if (sirActionCompletionRate >= 70) score += 3;
-    else if (sirActionCompletionRate >= 50) score += 0;
+    if (meets(sirActionCompletionRate, 90) && overdueSIRActions === 0) score += 5;
+    else if (meets(sirActionCompletionRate, 70)) score += 3;
+    else if (meets(sirActionCompletionRate, 50)) score += 0;
     else score -= 5;
   }
 
@@ -247,9 +245,9 @@ export function computeHomeOrganizationalLearning(
   if (debriefs90d.length === 0) {
     score += 1; // No debriefs needed = neutral-positive
   } else {
-    if (debriefCompletedRate >= 90) score += 4;
-    else if (debriefCompletedRate >= 75) score += 2;
-    else if (debriefCompletedRate >= 50) score += 0;
+    if (meets(debriefCompletedRate, 90)) score += 4;
+    else if (meets(debriefCompletedRate, 75)) score += 2;
+    else if (meets(debriefCompletedRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -270,10 +268,10 @@ export function computeHomeOrganizationalLearning(
   if (service_improvements.length === 0) {
     score -= 2;
   } else {
-    const progressRate = pct(implementedCount + embeddedCount, service_improvements.length);
-    if (progressRate >= 60 && redRag === 0) score += 4;
-    else if (progressRate >= 40) score += 2;
-    else if (progressRate >= 20) score += 0;
+    const progressRate = rate(implementedCount + embeddedCount, service_improvements.length);
+    if (meets(progressRate, 60) && redRag === 0) score += 4;
+    else if (meets(progressRate, 40)) score += 2;
+    else if (meets(progressRate, 20)) score += 0;
     else score -= 4;
   }
 
@@ -317,8 +315,8 @@ export function computeHomeOrganizationalLearning(
   let rank = 0;
 
   // Strengths
-  if (sirActionCompletionRate >= 90 && totalSIRActions > 0) strengths.push(`${sirActionCompletionRate}% of serious incident review actions completed — learning is being translated into practice.`);
-  if (debriefCompletedRate >= 90 && debriefs90d.length > 0) strengths.push(`${debriefCompletedRate}% debrief completion rate — strong post-incident reflection culture.`);
+  if (meets(sirActionCompletionRate, 90) && totalSIRActions > 0) strengths.push(`${formatRate(sirActionCompletionRate)} of serious incident review actions completed — learning is being translated into practice.`);
+  if (meets(debriefCompletedRate, 90) && debriefs90d.length > 0) strengths.push(`${formatRate(debriefCompletedRate)} debrief completion rate — strong post-incident reflection culture.`);
   if (totalLessons >= 10) strengths.push(`${totalLessons} lessons learned documented — rich organisational knowledge being captured.`);
   if (implementedCount + embeddedCount >= 3) strengths.push(`${implementedCount + embeddedCount} service improvements implemented/embedded — continuous improvement culture is thriving.`);
   if (practiceChangesTotal >= 3) strengths.push(`${practiceChangesTotal} practice changes arising from reviews — evidence of a learning organisation.`);
@@ -327,7 +325,7 @@ export function computeHomeOrganizationalLearning(
   // Concerns
   if (overdueSIRActions > 0) concerns.push(`${overdueSIRActions} overdue action${overdueSIRActions > 1 ? "s" : ""} from serious incident reviews — learning risks being lost.`);
   if (openReviews >= 3) concerns.push(`${openReviews} open serious incident reviews — backlog may delay learning and practice change.`);
-  if (debriefs90d.length > 0 && debriefCompletedRate < 50) concerns.push(`Only ${debriefCompletedRate}% of debriefs completed — staff may not be processing critical incidents.`);
+  if (debriefs90d.length > 0 && below(debriefCompletedRate, 50)) concerns.push(`Only ${formatRate(debriefCompletedRate)} of debriefs completed — staff may not be processing critical incidents.`);
   if (overdueImprovements > 0) concerns.push(`${overdueImprovements} service improvement${overdueImprovements > 1 ? "s" : ""} overdue — momentum for change is stalling.`);
   if (redRag > 0) concerns.push(`${redRag} service improvement${redRag > 1 ? "s" : ""} at RED RAG rating — high-risk initiatives need escalation.`);
   if (service_improvements.length === 0) concerns.push("No service improvement initiatives recorded — continuous improvement may not be formalised.");
@@ -339,7 +337,7 @@ export function computeHomeOrganizationalLearning(
   if (service_improvements.length === 0) {
     recommendations.push({ rank: ++rank, recommendation: "Establish a service improvement board — formally track improvements from Reg 44/45, audits, children's voice, and staff suggestions.", urgency: "soon", regulatory_ref: "Reg 45" });
   }
-  if (debriefs90d.length > 0 && debriefCompletedRate < 75) {
+  if (debriefs90d.length > 0 && below(debriefCompletedRate, 75)) {
     recommendations.push({ rank: ++rank, recommendation: "Prioritise debrief completion — schedule within 72 hours of critical incidents and protect time for reflection.", urgency: "soon", regulatory_ref: "Reg 34" });
   }
   if (totalLessons < 3 && serious_incident_reviews.length > 0) {
@@ -350,7 +348,7 @@ export function computeHomeOrganizationalLearning(
   }
 
   // Cara Insights
-  if (sirActionCompletionRate >= 90 && debriefCompletedRate >= 90 && implementedCount + embeddedCount >= 3 && totalLessons >= 5) {
+  if (meets(sirActionCompletionRate, 90) && meets(debriefCompletedRate, 90) && implementedCount + embeddedCount >= 3 && totalLessons >= 5) {
     insights.push({ text: "Organisational learning is exemplary. Serious incidents drive real practice change, debriefs embed reflection, and service improvements are systematically tracked. Ofsted will recognise this as a hallmark of outstanding leadership.", severity: "positive" });
   }
   if (overdueSIRActions >= 5) {
@@ -368,7 +366,7 @@ export function computeHomeOrganizationalLearning(
   if (org_learning_rating === "outstanding") {
     headline = `Outstanding organisational learning — ${totalLessons} lessons captured, ${implementedCount + embeddedCount} improvements delivered.`;
   } else if (org_learning_rating === "good") {
-    headline = `Good learning culture — ${sirActionCompletionRate}% SIR actions completed. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
+    headline = `Good learning culture — ${formatRate(sirActionCompletionRate)} SIR actions completed. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
   } else if (org_learning_rating === "adequate") {
     headline = `Organisational learning requires improvement — ${concerns.length} concern${concerns.length !== 1 ? "s" : ""} identified.`;
   } else {

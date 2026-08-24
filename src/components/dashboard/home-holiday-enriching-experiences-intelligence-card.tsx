@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Palmtree } from "lucide-react";
@@ -74,20 +75,20 @@ export function HomeHolidayEnrichingExperiencesIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_holidays > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_holidays}</p>
               <p className="text-[9px] text-muted-foreground">Holidays</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_choice_rate >= 90 ? "bg-green-50" : d.child_choice_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_choice_rate >= 90 ? "text-[--cs-success]" : d.child_choice_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_choice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_choice_rate, 90) ? "bg-green-50" : meets(d.child_choice_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_choice_rate, 90) ? "text-[--cs-success]" : meets(d.child_choice_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_choice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Choice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.photos_documented_rate >= 90 ? "bg-green-50" : d.photos_documented_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.photos_documented_rate >= 90 ? "text-[--cs-success]" : d.photos_documented_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.photos_documented_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.photos_documented_rate, 90) ? "bg-green-50" : meets(d.photos_documented_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.photos_documented_rate, 90) ? "text-[--cs-success]" : meets(d.photos_documented_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.photos_documented_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Photos</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 90) ? "bg-green-50" : meets(d.child_voice_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_anniversary_rate >= 90 ? "bg-green-50" : d.positive_anniversary_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_anniversary_rate >= 90 ? "text-[--cs-success]" : d.positive_anniversary_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_anniversary_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_anniversary_rate, 90) ? "bg-green-50" : meets(d.positive_anniversary_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_anniversary_rate, 90) ? "text-[--cs-success]" : meets(d.positive_anniversary_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_anniversary_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
           </div>

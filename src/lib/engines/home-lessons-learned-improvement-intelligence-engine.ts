@@ -11,6 +11,8 @@
 // improvement and learns from experience."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface LessonInput {
@@ -70,10 +72,6 @@ export interface LessonsLearnedResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeLessonsLearnedImprovement(
@@ -106,13 +104,13 @@ export function computeLessonsLearnedImprovement(
   const embeddedOrMonitoring = lessons.filter(
     (l) => l.status === "embedded" || l.status === "monitoring",
   ).length;
-  const embeddedRate = pct(embeddedOrMonitoring, totalLessons);
+  const embeddedRate = rate(embeddedOrMonitoring, totalLessons);
 
   const briefedCount = lessons.filter((l) => l.staff_briefed).length;
-  const staffBriefingRate = pct(briefedCount, totalLessons);
+  const staffBriefingRate = rate(briefedCount, totalLessons);
 
   const completedObjectives = objectives.filter((o) => o.status === "completed").length;
-  const objectiveCompletionRate = pct(completedObjectives, objectives.length);
+  const objectiveCompletionRate = rate(completedObjectives, objectives.length);
 
   const overdueObjectives = objectives.filter((o) => o.status === "overdue").length;
 
@@ -128,11 +126,11 @@ export function computeLessonsLearnedImprovement(
   // mod1: Lesson embedding rate (embedded+monitoring / total lessons) (±5)
   if (totalLessons === 0) {
     score -= 1;
-  } else if (embeddedRate >= 80) {
+  } else if (meets(embeddedRate, 80)) {
     score += 5;
-  } else if (embeddedRate >= 60) {
+  } else if (meets(embeddedRate, 60)) {
     score += 2;
-  } else if (embeddedRate >= 30) {
+  } else if (meets(embeddedRate, 30)) {
     score += 0;
   } else {
     score -= 5;
@@ -141,11 +139,11 @@ export function computeLessonsLearnedImprovement(
   // mod2: Staff briefing rate (staff_briefed / total lessons) (+6/-5)
   if (totalLessons === 0) {
     score += 0;
-  } else if (staffBriefingRate >= 90) {
+  } else if (meets(staffBriefingRate, 90)) {
     score += 6;
-  } else if (staffBriefingRate >= 70) {
+  } else if (meets(staffBriefingRate, 70)) {
     score += 3;
-  } else if (staffBriefingRate >= 40) {
+  } else if (meets(staffBriefingRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -154,11 +152,11 @@ export function computeLessonsLearnedImprovement(
   // mod3: Objective completion rate (completed / total objectives) (+5/-4)
   if (objectives.length === 0) {
     score += 1;
-  } else if (objectiveCompletionRate >= 80) {
+  } else if (meets(objectiveCompletionRate, 80)) {
     score += 5;
-  } else if (objectiveCompletionRate >= 60) {
+  } else if (meets(objectiveCompletionRate, 60)) {
     score += 2;
-  } else if (objectiveCompletionRate >= 30) {
+  } else if (meets(objectiveCompletionRate, 30)) {
     score += 0;
   } else {
     score -= 4;
@@ -168,12 +166,12 @@ export function computeLessonsLearnedImprovement(
   if (objectives.length === 0) {
     score += 2;
   } else {
-    const overdueRate = pct(overdueObjectives, objectives.length);
+    const overdueRate = rate(overdueObjectives, objectives.length);
     if (overdueRate === 0) {
       score += 5;
-    } else if (overdueRate < 10) {
+    } else if (below(overdueRate, 10)) {
       score += 2;
-    } else if (overdueRate < 25) {
+    } else if (below(overdueRate, 25)) {
       score += 0;
     } else {
       score -= 5;
@@ -186,12 +184,12 @@ export function computeLessonsLearnedImprovement(
   if (audits.length === 0) {
     score += 0;
   } else {
-    const auditActionRate = pct(totalActionsCompleted, totalActionsIdentified);
-    if (auditActionRate >= 90) {
+    const auditActionRate = rate(totalActionsCompleted, totalActionsIdentified);
+    if (meets(auditActionRate, 90)) {
       score += 4;
-    } else if (auditActionRate >= 70) {
+    } else if (meets(auditActionRate, 70)) {
       score += 1;
-    } else if (auditActionRate >= 40) {
+    } else if (meets(auditActionRate, 40)) {
       score += 0;
     } else {
       score -= 4;
@@ -226,17 +224,17 @@ export function computeLessonsLearnedImprovement(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (embeddedRate >= 80 && totalLessons > 0) {
-    strengths.push(`${embeddedRate}% of lessons are embedded or in monitoring — strong evidence of learning being translated into practice.`);
+  if (meets(embeddedRate, 80) && totalLessons > 0) {
+    strengths.push(`${formatRate(embeddedRate)} of lessons are embedded or in monitoring — strong evidence of learning being translated into practice.`);
   }
-  if (staffBriefingRate >= 90 && totalLessons > 0) {
-    strengths.push(`${staffBriefingRate}% staff briefing rate — lessons are being systematically communicated to the team.`);
+  if (meets(staffBriefingRate, 90) && totalLessons > 0) {
+    strengths.push(`${formatRate(staffBriefingRate)} staff briefing rate — lessons are being systematically communicated to the team.`);
   }
   if (overdueObjectives === 0 && objectives.length > 0) {
     strengths.push("No overdue improvement objectives — the home is meeting its improvement timescales.");
   }
-  if (objectiveCompletionRate >= 80 && objectives.length > 0) {
-    strengths.push(`${objectiveCompletionRate}% objective completion rate — improvement goals are being achieved.`);
+  if (meets(objectiveCompletionRate, 80) && objectives.length > 0) {
+    strengths.push(`${formatRate(objectiveCompletionRate)} objective completion rate — improvement goals are being achieved.`);
   }
   if ((averageAuditScore ?? 0) >= 80 && audits.length > 0) {
     strengths.push(`Average audit score of ${averageAuditScore}% — quality assurance outcomes are consistently strong.`);
@@ -256,11 +254,11 @@ export function computeLessonsLearnedImprovement(
   if (highPriorityOverdue.length > 0) {
     concerns.push(`${highPriorityOverdue.length} high-priority improvement objective${highPriorityOverdue.length > 1 ? "s" : ""} overdue — these require immediate management attention.`);
   }
-  if (embeddedRate < 40 && totalLessons > 0) {
-    concerns.push(`Only ${embeddedRate}% of lessons are embedded — learning is being identified but not translating into sustained practice change.`);
+  if (below(embeddedRate, 40) && totalLessons > 0) {
+    concerns.push(`Only ${formatRate(embeddedRate)} of lessons are embedded — learning is being identified but not translating into sustained practice change.`);
   }
-  if (staffBriefingRate < 50 && totalLessons > 0) {
-    concerns.push(`Staff briefing rate is only ${staffBriefingRate}% — lessons are not being consistently shared with the team.`);
+  if (below(staffBriefingRate, 50) && totalLessons > 0) {
+    concerns.push(`Staff briefing rate is only ${formatRate(staffBriefingRate)} — lessons are not being consistently shared with the team.`);
   }
   if ((averageAuditScore ?? 0) < 50 && audits.length > 0) {
     concerns.push(`Average audit score of ${averageAuditScore}% — quality assurance outcomes indicate significant areas for improvement.`);
@@ -281,7 +279,7 @@ export function computeLessonsLearnedImprovement(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (embeddedRate < 40 && totalLessons > 0) {
+  if (below(embeddedRate, 40) && totalLessons > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Strengthen lesson embedding — ensure each lesson has an action plan, named lead, and review date to move from identification to sustained practice change.",
@@ -289,7 +287,7 @@ export function computeLessonsLearnedImprovement(
       regulatory_ref: "SCCIF Quality",
     });
   }
-  if (staffBriefingRate < 50 && totalLessons > 0) {
+  if (below(staffBriefingRate, 50) && totalLessons > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Improve staff briefing processes — use team meetings, handover notes, and supervision to ensure all staff are briefed on lessons learned.",
@@ -342,7 +340,7 @@ export function computeLessonsLearnedImprovement(
   // Positive: high embedding + diverse themes
   if (totalLessons > 0) {
     const uniqueThemes = new Set(lessons.map((l) => l.theme_area)).size;
-    if (embeddedRate >= 80 && uniqueThemes >= 6) {
+    if (meets(embeddedRate, 80) && uniqueThemes >= 6) {
       insights.push({
         text: "Strong learning culture — high embedding rate across diverse theme areas demonstrates that the home systematically learns from experience and translates this into improved practice.",
         severity: "positive",
@@ -375,9 +373,9 @@ export function computeLessonsLearnedImprovement(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (lessons_rating === "outstanding") {
-    headline = `Outstanding lessons learned and improvement culture — ${embeddedRate}% embedding rate across ${totalLessons} lessons with ${objectiveCompletionRate}% objective completion.`;
+    headline = `Outstanding lessons learned and improvement culture — ${formatRate(embeddedRate)} embedding rate across ${totalLessons} lessons with ${formatRate(objectiveCompletionRate)} objective completion.`;
   } else if (lessons_rating === "good") {
-    headline = `Good learning and improvement practice — ${totalLessons} lessons captured with ${embeddedRate}% embedding. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " to strengthen." : ""}`;
+    headline = `Good learning and improvement practice — ${totalLessons} lessons captured with ${formatRate(embeddedRate)} embedding. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " to strengthen." : ""}`;
   } else if (lessons_rating === "adequate") {
     headline = `Lessons learned and improvement requires strengthening — ${concerns.length} concern${concerns.length !== 1 ? "s" : ""} identified across learning and improvement practices.`;
   } else {
