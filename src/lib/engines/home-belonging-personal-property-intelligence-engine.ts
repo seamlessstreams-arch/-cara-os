@@ -72,8 +72,6 @@ export interface BelongingPropertyResult {
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null { return rate(n, d); }
-
 export function computeBelongingPersonalProperty(input: BelongingPropertyInput): BelongingPropertyResult {
   const { total_children, belongings, clothing_trips, hair_appointments, gifts } = input;
 
@@ -89,27 +87,27 @@ export function computeBelongingPersonalProperty(input: BelongingPropertyInput):
 
   // ── Belongings inventory ────────────────────────────────────────────────
   const withInventory = belongings.filter(b => b.inventory_up_to_date).length;
-  const inventoryRate = pct(withInventory, total_children);
+  const inventoryRate = rate(withInventory, total_children);
   const totalLost = belongings.reduce((s, b) => s + b.items_lost_or_damaged, 0);
   const totalReplaced = belongings.reduce((s, b) => s + b.items_replaced, 0);
-  const replaceRate = pct(totalReplaced, totalLost);
+  const replaceRate = rate(totalReplaced, totalLost);
   const lossRate = total_children > 0 ? totalLost / total_children : 0;
 
   // ── Clothing ────────────────────────────────────────────────────────────
   const childrenWithTrips = new Set(clothing_trips.map(c => c.child_id)).size;
-  const clothingCoverageRate = pct(childrenWithTrips, total_children);
+  const clothingCoverageRate = rate(childrenWithTrips, total_children);
   const choiceTrips = clothing_trips.filter(c => c.child_chose).length;
-  const clothingChoiceRate = pct(choiceTrips, clothing_trips.length);
+  const clothingChoiceRate = rate(choiceTrips, clothing_trips.length);
 
   // ── Hair ────────────────────────────────────────────────────────────────
   const culturalMet = hair_appointments.filter(h => h.cultural_needs_met).length;
-  const hairCulturalRate = pct(culturalMet, hair_appointments.length);
+  const hairCulturalRate = rate(culturalMet, hair_appointments.length);
   const prefMet = hair_appointments.filter(h => h.child_preference_met).length;
-  const hairPrefRate = pct(prefMet, hair_appointments.length);
+  const hairPrefRate = rate(prefMet, hair_appointments.length);
 
   // ── Gifts ───────────────────────────────────────────────────────────────
   const personalised = gifts.filter(g => g.child_involved_in_choice && g.age_appropriate).length;
-  const giftPersonalisationRate = pct(personalised, gifts.length);
+  const giftPersonalisationRate = rate(personalised, gifts.length);
 
   // ── Scoring ─────────────────────────────────────────────────────────────
   let score = 52; // base

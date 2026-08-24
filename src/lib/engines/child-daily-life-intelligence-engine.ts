@@ -11,6 +11,8 @@
 // Reg 36 (records). SCCIF: "Quality of care."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type DailyEntryType =
@@ -117,10 +119,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 function avg(nums: number[]): number {
   if (nums.length === 0) return 0;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
@@ -185,7 +183,7 @@ export function computeChildDailyLife(
 
   // ── Recording Frequency ───────────────────────────────────────────────
   const uniqueDays30d = new Set(entries30d.map((e) => e.date));
-  const coverageRate = pct(uniqueDays30d.size, 30);
+  const coverageRate = rate(uniqueDays30d.size, 30);
   const avgPerDay = entries30d.length > 0 ? Math.round((entries30d.length / Math.max(uniqueDays30d.size, 1)) * 10) / 10 : null;
 
   // Trend: compare entries in first 15d vs last 15d of 30d window
@@ -214,7 +212,7 @@ export function computeChildDailyLife(
     typeCounts.set(e.entry_type, (typeCounts.get(e.entry_type) ?? 0) + 1);
   }
   const entry_types: EntryTypeBreakdown[] = [...typeCounts.entries()]
-    .map(([type, count]) => ({ type, count, percentage: pct(count, entries30d.length) }))
+    .map(([type, count]) => ({ type, count, percentage: rate(count, entries30d.length) }))
     .sort((a, b) => b.count - a.count);
 
   // ── Quality ───────────────────────────────────────────────────────────
@@ -253,7 +251,7 @@ export function computeChildDailyLife(
     else if ((avgPerDay ?? 0) >= 2) score += 2;
 
     // Mood recording
-    const moodRate = pct(moods30d.length, entries30d.length);
+    const moodRate = rate(moods30d.length, entries30d.length);
     if ((moodRate ?? 0) >= 80) score += 5;
     else if ((moodRate ?? 0) < 30) score -= 5;
 

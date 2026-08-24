@@ -961,11 +961,11 @@ describe("computePlacementDisruptionPrevention", () => {
       expect(r.disruption_rate).toBe(50);
     });
 
-    it("returns 0 disruption_rate when no placement ends", () => {
+    it("disruption_rate and planned_ending_rate are unmeasured when no placement ends", () => {
       const input = baseInput({ placement_ends: [] });
       const r = computePlacementDisruptionPrevention(input);
-      expect(r.disruption_rate).toBe(0);
-      expect(r.planned_ending_rate).toBe(0);
+      expect(r.disruption_rate).toBeNull();
+      expect(r.planned_ending_rate).toBeNull();
     });
 
     it("calculates average_placement_months correctly", () => {

@@ -65,8 +65,6 @@ export interface CamhsSpecialistResult {
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null { return rate(n, d); }
-
 export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): CamhsSpecialistResult {
   const { total_children, camhs_referrals, emergency_referrals, specialist_contacts } = input;
 
@@ -86,21 +84,21 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const rejected = camhs_referrals.filter(r => r.status === "rejected");
   const allAppts = camhs_referrals.reduce((s, r) => s + r.appointments_offered, 0);
   const allAttended = camhs_referrals.reduce((s, r) => s + r.appointments_attended, 0);
-  const attendRate = pct(allAttended, allAppts);
+  const attendRate = rate(allAttended, allAppts);
   const avgWait = waiting.length > 0 ? Math.round(waiting.reduce((s, r) => s + r.waiting_days, 0) / waiting.length) : null;
   const outcomeRecorded = camhs_referrals.filter(r => r.outcome_recorded).length;
 
   // ── Emergency referrals ─────────────────────────────────────────────────
   const emergResponse = emergency_referrals.filter(e => e.response_within_24h).length;
-  const emergResponseRate = pct(emergResponse, emergency_referrals.length);
+  const emergResponseRate = rate(emergResponse, emergency_referrals.length);
   const emergFollowUp = emergency_referrals.filter(e => e.follow_up_completed).length;
-  const emergFollowUpRate = pct(emergFollowUp, emergency_referrals.length);
+  const emergFollowUpRate = rate(emergFollowUp, emergency_referrals.length);
 
   // ── Specialist contacts ─────────────────────────────────────────────────
   const childrenWithSpecialist = new Set(specialist_contacts.map(c => c.child_id)).size;
-  const specialistCoverageRate = pct(childrenWithSpecialist, total_children);
+  const specialistCoverageRate = rate(childrenWithSpecialist, total_children);
   const specAttended = specialist_contacts.filter(c => c.attended).length;
-  const specAttendRate = pct(specAttended, specialist_contacts.length);
+  const specAttendRate = rate(specAttended, specialist_contacts.length);
   const specOutcome = specialist_contacts.filter(c => c.outcome_recorded).length;
 
   // ── Scoring ─────────────────────────────────────────────────────────────
@@ -140,7 +138,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   // Mod 5: Outcome recording (±4)
   if (camhs_referrals.length === 0 && specialist_contacts.length === 0) score += 2; // neutral
   else {
-    const combinedOutcome = pct(outcomeRecorded + specOutcome, camhs_referrals.length + specialist_contacts.length);
+    const combinedOutcome = rate(outcomeRecorded + specOutcome, camhs_referrals.length + specialist_contacts.length);
     if (meets(combinedOutcome, 90)) score += 4;
     else if (meets(combinedOutcome, 70)) score += 2;
     else if (meets(combinedOutcome, 50)) score += 0;

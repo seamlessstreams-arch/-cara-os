@@ -918,7 +918,7 @@ describe("Modifier 4: Follow-up compliance", () => {
       makeContact({ id: "sw-4", child_id: "c4", follow_up_required: false }),
     ];
     const r = computeSocialWorkerContact({ today: TODAY, total_children: 4, contacts });
-    expect(r.follow_up_compliance_rate).toBe(0); // pct(0, 0) = 0
+    expect(r.follow_up_compliance_rate).toBeNull(); // 0 follow-ups required is an empty population, not a 0% rate
     // 52+6+5+5+2+4+5 = 79
     expect(r.contact_score).toBe(79);
   });
@@ -1020,7 +1020,7 @@ describe("Modifier 5: Action completion", () => {
       makeContact({ id: "sw-4", child_id: "c4", action_item_count: 0, action_completed_count: 0 }),
     ];
     const r = computeSocialWorkerContact({ today: TODAY, total_children: 4, contacts });
-    expect(r.action_completion_rate).toBe(0); // pct(0, 0) = 0
+    expect(r.action_completion_rate).toBeNull(); // 0 actions is an empty population, not a 0% rate
     // 52+6+5+5+5+2+5 = 80
     expect(r.contact_score).toBe(80);
   });
@@ -2115,14 +2115,14 @@ describe("Rate calculations", () => {
     expect(r.decision_documentation_rate).toBe(67); // Math.round(2/3*100) = 67
   });
 
-  it("all rates are 0 when no contacts with children > 0", () => {
+  it("children_with_contact_rate is a genuine 0 with no contacts, but the other five rates are unmeasured", () => {
     const r = computeSocialWorkerContact({ today: TODAY, total_children: 4, contacts: [] });
     expect(r.children_with_contact_rate).toBe(0);
-    expect(r.home_initiated_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
-    expect(r.follow_up_compliance_rate).toBe(0);
-    expect(r.action_completion_rate).toBe(0);
-    expect(r.decision_documentation_rate).toBe(0);
+    expect(r.home_initiated_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
+    expect(r.follow_up_compliance_rate).toBeNull();
+    expect(r.action_completion_rate).toBeNull();
+    expect(r.decision_documentation_rate).toBeNull();
   });
 });
 

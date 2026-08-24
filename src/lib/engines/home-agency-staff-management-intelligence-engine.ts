@@ -94,10 +94,6 @@ export interface AgencyStaffManagementResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -138,30 +134,30 @@ export function computeAgencyStaffManagement(
   // ── Metrics ────────────────────────────────────────────────────────────
   const totalShifts = shifts.length;
   const fullyVetted = shifts.filter(s => s.vetting_status === "fully_vetted").length;
-  const vettingRate = pct(fullyVetted, totalShifts);
+  const vettingRate = rate(fullyVetted, totalShifts);
 
   const inducted = shifts.filter(s => s.induction_completed).length;
-  const inductionCompletionRate = pct(inducted, totalShifts);
+  const inductionCompletionRate = rate(inducted, totalShifts);
 
   const withSafeguarding = shifts.filter(s => s.safeguarding_briefing).length;
-  const safeguardingRate = pct(withSafeguarding, totalShifts);
+  const safeguardingRate = rate(withSafeguarding, totalShifts);
 
   const dbsEnhanced = shifts.filter(s => s.dbs_enhanced).length;
-  const dbsRate = pct(dbsEnhanced, totalShifts);
+  const dbsRate = rate(dbsEnhanced, totalShifts);
 
   const concernsCount = shifts.filter(s => s.has_concerns).length;
-  const concernRate = pct(concernsCount, totalShifts);
+  const concernRate = rate(concernsCount, totalShifts);
 
   // Feedback metrics
   const positiveFeedback = feedback.filter(f =>
     f.overall_verdict === "excellent" || f.overall_verdict === "good"
   ).length;
-  const positiveFeedbackRate = pct(positiveFeedback, feedback.length);
+  const positiveFeedbackRate = rate(positiveFeedback, feedback.length);
 
   // Induction topic coverage
   const totalTopicsCovered = inductions.reduce((sum, ind) => sum + ind.topics_covered_count, 0);
   const totalTopicsTotal = inductions.reduce((sum, ind) => sum + ind.topics_total_count, 0);
-  const topicCoverageRate = pct(totalTopicsCovered, totalTopicsTotal);
+  const topicCoverageRate = rate(totalTopicsCovered, totalTopicsTotal);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;

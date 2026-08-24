@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 32/33.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffReflectionInput {
@@ -85,10 +87,6 @@ export interface ReflectivePracticeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function ratingFromScore(score: number): ReflectivePracticeRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -124,22 +122,22 @@ export function computeHomeStaffReflectivePractice(
   // ── Derived metrics ───────────────────────────────────────────────────
 
   const uniqueStaffReflecting = new Set(reflections.map((r) => r.staff_id)).size;
-  const reflectionRate = pct(uniqueStaffReflecting, total_staff);
+  const reflectionRate = rate(uniqueStaffReflecting, total_staff);
 
   const sharedCount = reflections.filter((r) => r.shared_with_manager).length;
-  const sharedRate = pct(sharedCount, reflections.length);
+  const sharedRate = rate(sharedCount, reflections.length);
 
   const goalCount = reflections.filter((r) => r.has_development_goal).length;
-  const goalRate = pct(goalCount, reflections.length);
+  const goalRate = rate(goalCount, reflections.length);
 
   const incidentLinkedCount = reflections.filter((r) => r.linked_to_incident).length;
-  const incidentLinkedRate = pct(incidentLinkedCount, reflections.length);
+  const incidentLinkedRate = rate(incidentLinkedCount, reflections.length);
 
   const resolvedThemes = supervision_themes.filter((t) => t.status === "resolved").length;
-  const resolvedRate = pct(resolvedThemes, supervision_themes.length);
+  const resolvedRate = rate(resolvedThemes, supervision_themes.length);
 
   const signedOffShadowings = shadowings.filter((s) => s.signed_off).length;
-  const signedOffRate = pct(signedOffShadowings, shadowings.length);
+  const signedOffRate = rate(signedOffShadowings, shadowings.length);
 
   // Meeting attendance: average of (attendees_count / total_staff * 100) across meetings
   const avgAttendRate =
@@ -153,7 +151,7 @@ export function computeHomeStaffReflectivePractice(
   // Action completion: total completed / total previous actions across all meetings
   const totalPrevActions = staff_meetings.reduce((s, m) => s + m.actions_from_previous_total, 0);
   const totalCompActions = staff_meetings.reduce((s, m) => s + m.actions_from_previous_completed, 0);
-  const actionCompRate = pct(totalCompActions, totalPrevActions);
+  const actionCompRate = rate(totalCompActions, totalPrevActions);
 
   // ── Scoring ───────────────────────────────────────────────────────────
 
@@ -162,48 +160,48 @@ export function computeHomeStaffReflectivePractice(
 
   // Mod 1: Reflection engagement (±6)
   const mod1 =
-    reflectionRate >= 80 ? 6 :
-    reflectionRate >= 60 ? 3 :
-    reflectionRate >= 40 ? 0 : -6;
+    meets(reflectionRate, 80) ? 6 :
+    meets(reflectionRate, 60) ? 3 :
+    meets(reflectionRate, 40) ? 0 : -6;
   score += mod1;
 
   // Mod 2: Reflection quality — sharing & development goals (±5)
   const mod2 =
     reflections.length === 0 ? 0 :
-    (sharedRate >= 80 && goalRate >= 80) ? 5 :
-    (sharedRate >= 60 && goalRate >= 60) ? 2 :
-    (sharedRate >= 40 || goalRate >= 40) ? 0 : -5;
+    (meets(sharedRate, 80) && meets(goalRate, 80)) ? 5 :
+    (meets(sharedRate, 60) && meets(goalRate, 60)) ? 2 :
+    (meets(sharedRate, 40) || meets(goalRate, 40)) ? 0 : -5;
   score += mod2;
 
   // Mod 3: Supervision themes management (±5)
   const mod3 =
     supervision_themes.length === 0 ? 2 :
-    resolvedRate >= 80 ? 5 :
-    resolvedRate >= 60 ? 2 :
-    resolvedRate >= 40 ? 0 : -5;
+    meets(resolvedRate, 80) ? 5 :
+    meets(resolvedRate, 60) ? 2 :
+    meets(resolvedRate, 40) ? 0 : -5;
   score += mod3;
 
   // Mod 4: Shadowing completion (±5)
   const mod4 =
     shadowings.length === 0 ? 1 :
-    signedOffRate >= 90 ? 5 :
-    signedOffRate >= 70 ? 3 :
-    signedOffRate >= 50 ? 0 : -5;
+    meets(signedOffRate, 90) ? 5 :
+    meets(signedOffRate, 70) ? 3 :
+    meets(signedOffRate, 50) ? 0 : -5;
   score += mod4;
 
   // Mod 5: Staff meeting attendance & action completion (±5)
   const mod5 =
     staff_meetings.length === 0 ? -2 :
-    (avgAttendRate >= 80 && actionCompRate >= 80) ? 5 :
-    (avgAttendRate >= 60 && actionCompRate >= 60) ? 2 :
-    (avgAttendRate >= 40 || actionCompRate >= 40) ? 0 : -5;
+    (avgAttendRate >= 80 && meets(actionCompRate, 80)) ? 5 :
+    (avgAttendRate >= 60 && meets(actionCompRate, 60)) ? 2 :
+    (avgAttendRate >= 40 || meets(actionCompRate, 40)) ? 0 : -5;
   score += mod5;
 
   // Mod 6: Reflective culture indicators (±4)
   const mod6 =
     reflections.length === 0 ? -1 :
-    (incidentLinkedRate >= 30 && reflectionRate >= 60) ? 4 :
-    incidentLinkedRate >= 15 ? 2 :
+    (meets(incidentLinkedRate, 30) && meets(reflectionRate, 60)) ? 4 :
+    meets(incidentLinkedRate, 15) ? 2 :
     reflections.length > 0 ? 0 : -4;
   score += mod6;
 
@@ -215,32 +213,32 @@ export function computeHomeStaffReflectivePractice(
   // ── Strengths ─────────────────────────────────────────────────────────
 
   const strengths: string[] = [];
-  if (reflectionRate >= 80) {
+  if (meets(reflectionRate, 80)) {
     strengths.push("Over 80% of staff submit reflections — strong reflective culture.");
   }
-  if (sharedRate >= 80 && reflections.length > 0) {
+  if (meets(sharedRate, 80) && reflections.length > 0) {
     strengths.push("Staff consistently share reflections with managers — openness supports development.");
   }
-  if (resolvedRate >= 80 && supervision_themes.length > 0) {
+  if (meets(resolvedRate, 80) && supervision_themes.length > 0) {
     strengths.push("Supervision themes are actively resolved — organisational learning is embedded.");
   }
-  if (signedOffRate >= 90 && shadowings.length > 0) {
+  if (meets(signedOffRate, 90) && shadowings.length > 0) {
     strengths.push("Shadowing sign-off rate over 90% — new staff are properly supported.");
   }
-  if (actionCompRate >= 80 && staff_meetings.length > 0) {
+  if (meets(actionCompRate, 80) && staff_meetings.length > 0) {
     strengths.push("Staff meeting actions completed at over 80% — accountability is strong.");
   }
 
   // ── Concerns ──────────────────────────────────────────────────────────
 
   const concerns: string[] = [];
-  if (reflectionRate < 40) {
+  if (below(reflectionRate, 40)) {
     concerns.push("Under 40% of staff engage in reflection — practice may be unexamined.");
   }
-  if (resolvedRate < 40 && supervision_themes.length >= 3) {
+  if (below(resolvedRate, 40) && supervision_themes.length >= 3) {
     concerns.push("Most supervision themes unresolved — systemic issues are not being addressed.");
   }
-  if (signedOffRate < 50 && shadowings.length >= 2) {
+  if (below(signedOffRate, 50) && shadowings.length >= 2) {
     concerns.push("Under 50% of shadowings signed off — new staff may be working unsupported.");
   }
   if (staff_meetings.length === 0) {
@@ -252,7 +250,7 @@ export function computeHomeStaffReflectivePractice(
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
 
-  if (reflectionRate < 60) {
+  if (below(reflectionRate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Implement structured reflective practice time to increase staff engagement with reflective writing.",
@@ -260,7 +258,7 @@ export function computeHomeStaffReflectivePractice(
       regulatory_ref: "Reg 33",
     });
   }
-  if (resolvedRate < 60 && supervision_themes.length >= 2) {
+  if (below(resolvedRate, 60) && supervision_themes.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Escalate unresolved supervision themes to senior leadership for organisational response.",
@@ -268,7 +266,7 @@ export function computeHomeStaffReflectivePractice(
       regulatory_ref: "Reg 33",
     });
   }
-  if (signedOffRate < 70 && shadowings.length >= 2) {
+  if (below(signedOffRate, 70) && shadowings.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete outstanding shadowing sign-offs to ensure new staff are safe to work independently.",
@@ -301,13 +299,13 @@ export function computeHomeStaffReflectivePractice(
       severity: "critical",
     });
   }
-  if (incidentLinkedRate >= 30 && sharedRate >= 70) {
+  if (meets(incidentLinkedRate, 30) && meets(sharedRate, 70)) {
     insights.push({
       text: "Staff reflect on practice events and share findings with managers — strong learning loop after incidents.",
       severity: "positive",
     });
   }
-  if (supervision_themes.length >= 5 && resolvedRate < 40) {
+  if (supervision_themes.length >= 5 && below(resolvedRate, 40)) {
     insights.push({
       text: "Multiple supervision themes remain unresolved — systemic issues may be accumulating without organisational response.",
       severity: "warning",
@@ -322,7 +320,7 @@ export function computeHomeStaffReflectivePractice(
       : reflective_rating === "good"
         ? `Good reflective practice — ${concerns.length > 0 ? `${concerns.length} area(s) to address` : "consistent engagement"}.`
         : reflective_rating === "adequate"
-          ? `Adequate reflective practice — gaps in ${reflectionRate < 60 ? "engagement" : "quality"} need attention.`
+          ? `Adequate reflective practice — gaps in ${below(reflectionRate, 60) ? "engagement" : "quality"} need attention.`
           : "Reflective practice inadequate — staff development and organisational learning are significantly weak.";
 
   return {

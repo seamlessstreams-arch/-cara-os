@@ -95,10 +95,6 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function toRating(score: number): AutomationROIRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -166,13 +162,13 @@ export function computeAutomationROI(
 
   const completedRoutes = routes.filter(r => r.status === "completed");
   const failedRoutes = routes.filter(r => r.status === "failed");
-  const routeSuccessRate = pct(completedRoutes.length, routes.length);
+  const routeSuccessRate = rate(completedRoutes.length, routes.length);
 
   const eventsWithRoutes = events.filter(e => e.has_routes);
-  const automationCoverage = pct(eventsWithRoutes.length, events.length);
+  const automationCoverage = rate(eventsWithRoutes.length, events.length);
 
   const routesWithError = routes.filter(r => r.has_error);
-  const errorRate = pct(routesWithError.length, routes.length);
+  const errorRate = rate(routesWithError.length, routes.length);
 
   const uniqueRouteTypes = new Set(routes.map(r => r.route_type));
   const routeTypeDiversity = uniqueRouteTypes.size;
@@ -219,7 +215,7 @@ export function computeAutomationROI(
 
   // 6. Retry rate and reliability
   const totalRetries = routes.reduce((sum, r) => sum + r.retry_count, 0);
-  const retryRate = pct(routes.filter(r => r.retry_count > 0).length, routes.length);
+  const retryRate = rate(routes.filter(r => r.retry_count > 0).length, routes.length);
   if (below(retryRate, 5) && routes.length > 0) score += 5;
   else if (below(retryRate, 15)) score += 2;
   else if (above(retryRate, 30)) score -= 4;

@@ -7,6 +7,8 @@
 // "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface DisruptionPlanInput {
@@ -83,10 +85,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function toRating(score: number): DisruptionPreventionRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -143,8 +141,8 @@ export function computePlacementDisruptionPrevention(
     (e) => e.end_reason === "placement_disruption",
   ).length;
   const plannedEndings = totalEndings - disruptionEndings;
-  const plannedEndingRate = pct(plannedEndings, totalEndings);
-  const disruptionRate = pct(disruptionEndings, totalEndings);
+  const plannedEndingRate = rate(plannedEndings, totalEndings);
+  const disruptionRate = rate(disruptionEndings, totalEndings);
 
   // Average placement months
   const averagePlacementMonths =
@@ -165,81 +163,81 @@ export function computePlacementDisruptionPrevention(
   // ── Modifier inputs ──────────────────────────────────────────────
 
   // 1. Plan coverage
-  const planCoveragePct = pct(childrenWithPlans, total_children);
+  const planCoveragePct = rate(childrenWithPlans, total_children);
 
   // 3. Child involvement (aware AND contributed)
   const involvedPlans = disruption_plans.filter(
     (p) => p.child_aware && p.child_contribution_recorded,
   ).length;
-  const childInvolvementPct = pct(involvedPlans, disruption_plans.length);
+  const childInvolvementPct = rate(involvedPlans, disruption_plans.length);
 
   // 4. Stability factor strength
   const strongOrModerate = stability_factors.filter(
     (f) => f.strength === "strong" || f.strength === "moderate",
   ).length;
-  const stabilityStrengthPct = pct(strongOrModerate, stability_factors.length);
+  const stabilityStrengthPct = rate(strongOrModerate, stability_factors.length);
 
   // 5. Professional engagement (plans with professionals_count >= 2)
   const professionalPlans = disruption_plans.filter(
     (p) => p.professionals_count >= 2,
   ).length;
-  const professionalEngagementPct = pct(professionalPlans, disruption_plans.length);
+  const professionalEngagementPct = rate(professionalPlans, disruption_plans.length);
 
   // 6. Review compliance
   const reviewedPlans = disruption_plans.filter((p) => p.reviewed_recently).length;
-  const reviewCompliancePct = pct(reviewedPlans, disruption_plans.length);
+  const reviewCompliancePct = rate(reviewedPlans, disruption_plans.length);
 
   // ── Scoring ──────────────────────────────────────────────────────
   let score = 52;
 
   // 1. Plan coverage (±5)
-  if (planCoveragePct >= 90) score += 5;
-  else if (planCoveragePct >= 60) score += 2;
-  else if (planCoveragePct >= 30) score += 0;
+  if (meets(planCoveragePct, 90)) score += 5;
+  else if (meets(planCoveragePct, 60)) score += 2;
+  else if (meets(planCoveragePct, 30)) score += 0;
   else score -= 5;
 
   // 2. Planned ending rate (+6/-5)
   if (totalEndings === 0) {
     score += 3;
-  } else if (plannedEndingRate >= 90) {
+  } else if (meets(plannedEndingRate, 90)) {
     score += 6;
-  } else if (plannedEndingRate >= 70) {
+  } else if (meets(plannedEndingRate, 70)) {
     score += 3;
-  } else if (plannedEndingRate >= 50) {
+  } else if (meets(plannedEndingRate, 50)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // 3. Child involvement (+5/-4)
-  if (childInvolvementPct >= 90) score += 5;
-  else if (childInvolvementPct >= 60) score += 2;
-  else if (childInvolvementPct >= 30) score += 0;
+  if (meets(childInvolvementPct, 90)) score += 5;
+  else if (meets(childInvolvementPct, 60)) score += 2;
+  else if (meets(childInvolvementPct, 30)) score += 0;
   else score -= 4;
 
   // 4. Stability factor strength (+5/-5)
   if (stability_factors.length === 0) {
     score -= 1;
-  } else if (stabilityStrengthPct >= 80) {
+  } else if (meets(stabilityStrengthPct, 80)) {
     score += 5;
-  } else if (stabilityStrengthPct >= 60) {
+  } else if (meets(stabilityStrengthPct, 60)) {
     score += 2;
-  } else if (stabilityStrengthPct >= 40) {
+  } else if (meets(stabilityStrengthPct, 40)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // 5. Professional engagement (+4/-4)
-  if (professionalEngagementPct >= 80) score += 4;
-  else if (professionalEngagementPct >= 60) score += 1;
-  else if (professionalEngagementPct >= 30) score += 0;
+  if (meets(professionalEngagementPct, 80)) score += 4;
+  else if (meets(professionalEngagementPct, 60)) score += 1;
+  else if (meets(professionalEngagementPct, 30)) score += 0;
   else score -= 4;
 
   // 6. Review compliance (+5/-5)
-  if (reviewCompliancePct >= 90) score += 5;
-  else if (reviewCompliancePct >= 70) score += 2;
-  else if (reviewCompliancePct >= 40) score += 0;
+  if (meets(reviewCompliancePct, 90)) score += 5;
+  else if (meets(reviewCompliancePct, 70)) score += 2;
+  else if (meets(reviewCompliancePct, 40)) score += 0;
   else score -= 5;
 
   // Clamp
@@ -250,22 +248,22 @@ export function computePlacementDisruptionPrevention(
   // ── Strengths ────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (planCoveragePct >= 90) {
+  if (meets(planCoveragePct, 90)) {
     strengths.push("Excellent disruption plan coverage across the home — at least 90% of children have active plans.");
   }
-  if (plannedEndingRate >= 90 && totalEndings > 0) {
+  if (meets(plannedEndingRate, 90) && totalEndings > 0) {
     strengths.push("Over 90% of placement endings were planned, reflecting strong transition management.");
   }
   if (disruptionEndings === 0 && totalEndings > 0) {
     strengths.push("No placement disruptions recorded — all endings were managed and planned.");
   }
-  if (childInvolvementPct >= 90 && disruption_plans.length > 0) {
+  if (meets(childInvolvementPct, 90) && disruption_plans.length > 0) {
     strengths.push("Children are meaningfully involved in their disruption plans with high awareness and recorded contributions.");
   }
   if (stability_factors.length > 0 && stability_factors.every((f) => f.strength === "strong" || f.strength === "moderate")) {
     strengths.push("All stability factors across children are strong or moderate, indicating a well-supported placement environment.");
   }
-  if (reviewCompliancePct >= 90 && disruption_plans.length > 0) {
+  if (meets(reviewCompliancePct, 90) && disruption_plans.length > 0) {
     strengths.push("Disruption plans are consistently reviewed within the required 3-month cycle.");
   }
 
@@ -276,17 +274,17 @@ export function computePlacementDisruptionPrevention(
   if (acuteChildren.length > 0) {
     concerns.push(`${acuteChildren.length} child(ren) at acute risk level requiring immediate multi-agency intervention.`);
   }
-  if (disruptionRate > 20) {
+  if (above(disruptionRate, 20)) {
     concerns.push(`Disruption rate of ${disruptionRate}% exceeds the 20% threshold — placement stability is under significant pressure.`);
   }
-  if (planCoveragePct < 50) {
+  if (below(planCoveragePct, 50)) {
     concerns.push("Fewer than half of children have active disruption prevention plans in place.");
   }
   const absentFactors = stability_factors.filter((f) => f.strength === "absent");
   if (absentFactors.length > 0) {
     concerns.push(`${absentFactors.length} stability factor(s) rated as absent — critical protective elements are missing for some children.`);
   }
-  if (reviewCompliancePct < 50 && disruption_plans.length > 0) {
+  if (below(reviewCompliancePct, 50) && disruption_plans.length > 0) {
     concerns.push("Fewer than half of disruption plans have been reviewed within the required timeframe.");
   }
 
@@ -307,7 +305,7 @@ export function computePlacementDisruptionPrevention(
     });
   }
 
-  if (disruptionRate > 20) {
+  if (above(disruptionRate, 20)) {
     recommendations.push({
       rank: recommendations.length + 1,
       recommendation: "Review all recent placement disruptions to identify systemic causes and implement preventative strategies.",
@@ -316,7 +314,7 @@ export function computePlacementDisruptionPrevention(
     });
   }
 
-  if (planCoveragePct < 50) {
+  if (below(planCoveragePct, 50)) {
     recommendations.push({
       rank: recommendations.length + 1,
       recommendation: "Develop disruption prevention plans for all children without active plans, prioritising those with known risk factors.",
@@ -334,7 +332,7 @@ export function computePlacementDisruptionPrevention(
     });
   }
 
-  if (reviewCompliancePct < 50 && disruption_plans.length > 0) {
+  if (below(reviewCompliancePct, 50) && disruption_plans.length > 0) {
     recommendations.push({
       rank: recommendations.length + 1,
       recommendation: "Establish a review schedule to ensure all disruption plans are reviewed at least quarterly.",
@@ -343,7 +341,7 @@ export function computePlacementDisruptionPrevention(
     });
   }
 
-  if (childInvolvementPct < 60 && disruption_plans.length > 0 && recommendations.length < 5) {
+  if (below(childInvolvementPct, 60) && disruption_plans.length > 0 && recommendations.length < 5) {
     recommendations.push({
       rank: recommendations.length + 1,
       recommendation: "Increase child participation in disruption planning by ensuring all children are informed and their contributions are recorded.",
@@ -352,7 +350,7 @@ export function computePlacementDisruptionPrevention(
     });
   }
 
-  if (professionalEngagementPct < 60 && disruption_plans.length > 0 && recommendations.length < 5) {
+  if (below(professionalEngagementPct, 60) && disruption_plans.length > 0 && recommendations.length < 5) {
     recommendations.push({
       rank: recommendations.length + 1,
       recommendation: "Strengthen multi-agency involvement in disruption plans to ensure at least two professionals are engaged per plan.",

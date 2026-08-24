@@ -72,10 +72,6 @@ export interface AnnualHealthAssessmentResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -118,22 +114,22 @@ export function computeAnnualHealthAssessment(
   const total = assessments.length;
 
   const uniqueChildren = new Set(assessments.map(a => a.child_id)).size;
-  const childrenAssessedRate = pct(uniqueChildren, total_children);
+  const childrenAssessedRate = rate(uniqueChildren, total_children);
 
   const onTime = assessments.filter(a => a.completed_within_deadline).length;
-  const deadlineComplianceRate = pct(onTime, total);
+  const deadlineComplianceRate = rate(onTime, total);
 
   const immunisationsOk = assessments.filter(a => a.immunisations_up_to_date).length;
-  const immunisationRate = pct(immunisationsOk, total);
+  const immunisationRate = rate(immunisationsOk, total);
 
   const dentalOptical = assessments.filter(a => a.dental_check_up_to_date && a.optical_check_up_to_date).length;
-  const dentalOpticalRate = pct(dentalOptical, total);
+  const dentalOpticalRate = rate(dentalOptical, total);
 
   const withChildContribution = assessments.filter(a => a.has_child_contribution).length;
-  const childContributionRate = pct(withChildContribution, total);
+  const childContributionRate = rate(withChildContribution, total);
 
   const withSharing = assessments.filter(a => a.report_shared).length;
-  const reportSharingRate = pct(withSharing, total);
+  const reportSharingRate = rate(withSharing, total);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;

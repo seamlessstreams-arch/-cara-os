@@ -830,19 +830,19 @@ describe("edge cases", () => {
   it("handles empty reflections collection", () => {
     const r = computeHomeStaffReflectivePractice(baseInput({ reflections: [] }));
     expect(r.staff_reflecting).toBe(0);
-    expect(r.reflection_sharing_rate).toBe(0);
+    expect(r.reflection_sharing_rate).toBeNull();
     expect(r.reflective_rating).not.toBe("insufficient_data");
   });
 
   it("handles empty themes collection", () => {
     const r = computeHomeStaffReflectivePractice(baseInput({ supervision_themes: [] }));
-    expect(r.themes_resolved_rate).toBe(0);
+    expect(r.themes_resolved_rate).toBeNull();
     expect(r.reflective_rating).not.toBe("insufficient_data");
   });
 
   it("handles empty shadowings collection", () => {
     const r = computeHomeStaffReflectivePractice(baseInput({ shadowings: [] }));
-    expect(r.shadowing_completion_rate).toBe(0);
+    expect(r.shadowing_completion_rate).toBeNull();
     expect(r.reflective_rating).not.toBe("insufficient_data");
   });
 

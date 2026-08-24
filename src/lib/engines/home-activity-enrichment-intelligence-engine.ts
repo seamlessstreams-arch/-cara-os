@@ -12,6 +12,8 @@
 // SCCIF: "Children enjoy a range of activities and experiences."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildRef {
@@ -128,10 +130,6 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 // fab-0: null when denominator is 0 — "not measured" is not "0%".
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 // fab-0: null on empty — no data to average.
 function avg(values: number[]): number | null {
   return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : null;
@@ -164,8 +162,8 @@ export function computeHomeActivityEnrichment(
     const categories = [...new Set(mine30d.map((a) => a.category))];
     const hasFeedback = mine30d.some((a) => a.yp_feedback && a.yp_feedback.trim().length > 0);
 
-    const participationRate = pct(engaged.length, mine30d.length);
-    const enthusiasmRate = pct(enthusiastic.length, mine30d.length);
+    const participationRate = rate(engaged.length, mine30d.length);
+    const enthusiasmRate = rate(enthusiastic.length, mine30d.length);
 
     // Activity score
     let score = 50;
@@ -236,7 +234,7 @@ export function computeHomeActivityEnrichment(
     .map(([category, count]) => ({
       category,
       count,
-      percentage: pct(count, act30d.length),
+      percentage: rate(count, act30d.length),
     }))
     .sort((a, b) => b.count - a.count);
 
