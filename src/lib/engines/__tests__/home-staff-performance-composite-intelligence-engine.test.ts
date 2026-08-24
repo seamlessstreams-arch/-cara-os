@@ -230,20 +230,20 @@ describe("Home Staff Performance Composite Intelligence Engine", () => {
         expect(r.recommendations[0].regulatory_ref).toBe("CHR 2015 Reg 33");
       });
 
-      it("all numeric fields are 0", () => {
+      it("leaves every rate unmeasured with total_staff 0", () => {
         const r = computeStaffPerformanceComposite(baseInput({ total_staff: 0 }));
         expect(r.total_appraisals).toBe(0);
-        expect(r.appraisal_completion_rate).toBe(0);
+        expect(r.appraisal_completion_rate).toBeNull();
         expect(r.average_competency_score).toBe(0);
         expect(r.total_supervisions).toBe(0);
-        expect(r.supervision_completion_rate).toBe(0);
-        expect(r.safeguarding_discussion_rate).toBe(0);
-        expect(r.action_completion_rate).toBe(0);
-        expect(r.wellbeing_check_rate).toBe(0);
+        expect(r.supervision_completion_rate).toBeNull();
+        expect(r.safeguarding_discussion_rate).toBeNull();
+        expect(r.action_completion_rate).toBeNull();
+        expect(r.wellbeing_check_rate).toBeNull();
         expect(r.total_training).toBe(0);
-        expect(r.training_compliance_rate).toBe(0);
+        expect(r.training_compliance_rate).toBeNull();
         expect(r.expired_mandatory_count).toBe(0);
-        expect(r.objective_achievement_rate).toBe(0);
+        expect(r.objective_achievement_rate).toBeNull();
       });
 
       it("has empty strengths and concerns", () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HandMetal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -74,7 +75,7 @@ export function HomeRestraintPhysicalInterventionIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Restraints</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.de_escalation_rate >= 90 ? "bg-green-50" : d.de_escalation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.de_escalation_rate >= 90 ? "text-[--cs-success]" : d.de_escalation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.de_escalation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.de_escalation_rate >= 90 ? "text-[--cs-success]" : d.de_escalation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.de_escalation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">De-Esc</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.team_teach_compliance_rate >= 95 ? "bg-green-50" : d.team_teach_compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>

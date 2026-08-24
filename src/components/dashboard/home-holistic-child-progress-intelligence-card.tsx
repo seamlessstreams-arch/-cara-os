@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,15 +71,15 @@ export function HomeHolisticChildProgressIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Children</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.outcome_improvement_rate >= 70 ? "bg-green-50" : d.outcome_improvement_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outcome_improvement_rate >= 70 ? "text-[--cs-success]" : d.outcome_improvement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outcome_improvement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.outcome_improvement_rate >= 70 ? "text-[--cs-success]" : d.outcome_improvement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outcome_improvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Improved</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.education_engagement_rate >= 90 ? "bg-green-50" : d.education_engagement_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.education_engagement_rate >= 90 ? "text-[--cs-success]" : d.education_engagement_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.education_engagement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.education_engagement_rate >= 90 ? "text-[--cs-success]" : d.education_engagement_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.education_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.key_work_completion_rate >= 90 ? "bg-green-50" : d.key_work_completion_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.key_work_completion_rate >= 90 ? "text-[--cs-success]" : d.key_work_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.key_work_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.key_work_completion_rate >= 90 ? "text-[--cs-success]" : d.key_work_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_work_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Key Work</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.average_attendance >= 95 ? "bg-green-50" : d.average_attendance >= 85 ? "bg-amber-50" : "bg-red-50")}>

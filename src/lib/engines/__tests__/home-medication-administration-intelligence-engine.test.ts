@@ -110,17 +110,17 @@ describe("computeMedicationAdministration", () => {
       expect(result.insights[0].severity).toBe("warning");
     });
 
-    it("returns all zero metrics when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const result = computeMedicationAdministration(
         baseInput({ total_children: 0, children_on_medication: 0, administrations: [] }),
       );
       expect(result.total_administrations).toBe(0);
-      expect(result.administration_rate).toBe(0);
-      expect(result.on_time_rate).toBe(0);
-      expect(result.refusal_rate).toBe(0);
-      expect(result.witness_rate).toBe(0);
-      expect(result.prn_documentation_rate).toBe(0);
-      expect(result.reason_documented_rate).toBe(0);
+      expect(result.administration_rate).toBeNull();
+      expect(result.on_time_rate).toBeNull();
+      expect(result.refusal_rate).toBeNull();
+      expect(result.witness_rate).toBeNull();
+      expect(result.prn_documentation_rate).toBeNull();
+      expect(result.reason_documented_rate).toBeNull();
       expect(result.children_on_medication).toBe(0);
       expect(result.total_active_medications).toBe(0);
     });

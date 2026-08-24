@@ -302,14 +302,14 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("returns all zero rates for insufficient_data", () => {
+    it("leaves every rate unmeasured for insufficient_data", () => {
       const r = computeKeyWorkerRelationshipQuality(baseInput({ total_children: 0 }));
-      expect(r.allocation_coverage_rate).toBe(0);
-      expect(r.relationship_quality_rate).toBe(0);
-      expect(r.session_regularity_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.continuity_rate).toBe(0);
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.allocation_coverage_rate).toBeNull();
+      expect(r.relationship_quality_rate).toBeNull();
+      expect(r.session_regularity_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.continuity_rate).toBeNull();
+      expect(r.child_voice_rate).toBeNull();
       expect(r.total_children_allocated).toBe(0);
     });
 
@@ -330,13 +330,13 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
       expect(r.avg_overall_quality_score).toBe(0);
     });
 
-    it("returns zero session rates for insufficient_data", () => {
+    it("leaves every session rate unmeasured for insufficient_data", () => {
       const r = computeKeyWorkerRelationshipQuality(baseInput({ total_children: 0 }));
-      expect(r.session_completion_rate).toBe(0);
-      expect(r.session_cancellation_rate).toBe(0);
-      expect(r.backup_key_worker_rate).toBe(0);
-      expect(r.allocation_review_rate).toBe(0);
-      expect(r.child_consulted_allocation_rate).toBe(0);
+      expect(r.session_completion_rate).toBeNull();
+      expect(r.session_cancellation_rate).toBeNull();
+      expect(r.backup_key_worker_rate).toBeNull();
+      expect(r.allocation_review_rate).toBeNull();
+      expect(r.child_consulted_allocation_rate).toBeNull();
     });
   });
 
@@ -376,14 +376,14 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
       expect(r.insights[0].text).toContain("complete absence");
     });
 
-    it("returns all zero rates for inadequate floor", () => {
+    it("leaves every rate unmeasured for the inadequate floor", () => {
       const r = computeKeyWorkerRelationshipQuality(baseInput({ total_children: 5 }));
-      expect(r.allocation_coverage_rate).toBe(0);
-      expect(r.relationship_quality_rate).toBe(0);
-      expect(r.session_regularity_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.continuity_rate).toBe(0);
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.allocation_coverage_rate).toBeNull();
+      expect(r.relationship_quality_rate).toBeNull();
+      expect(r.session_regularity_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.continuity_rate).toBeNull();
+      expect(r.child_voice_rate).toBeNull();
     });
 
     it("works with total_children=1", () => {
@@ -1570,7 +1570,7 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         expect(r.child_voice_rate).toBe(100);
       });
 
-      it("returns 0 when denominator is 0", () => {
+    it("child_voice_rate is unmeasured when its denominator is 0", () => {
         // total_children=0, no allocs, no assess, no sessions
         const r = computeKeyWorkerRelationshipQuality(baseInput({
           total_children: 0,
@@ -1580,7 +1580,7 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
           child_satisfaction_records: [],
           continuity_records: [],
         }));
-        expect(r.child_voice_rate).toBe(0);
+        expect(r.child_voice_rate).toBeNull();
       });
     });
 

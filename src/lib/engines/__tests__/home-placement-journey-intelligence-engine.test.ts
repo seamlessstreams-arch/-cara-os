@@ -277,9 +277,9 @@ describe("computeHomePlacementJourney", () => {
       expect(r.placement_journey_score).toBeGreaterThanOrEqual(0);
       expect(r.placement_journey_score).toBeLessThanOrEqual(100);
     });
-    it("pct returns 0 for zero denom", () => {
+    it("all_complete_rate is unmeasured for a zero denominator", () => {
       const r = computeHomePlacementJourney({ today: TODAY, pre_admission_checklists: [], warm_welcome_packs: [], welcome_tours: [], return_interviews: [], placement_objectives: [], placement_anniversaries: [], total_children: 0 });
-      expect(r.pre_admission.all_complete_rate).toBe(0);
+      expect(r.pre_admission.all_complete_rate).toBeNull();
     });
   });
 });

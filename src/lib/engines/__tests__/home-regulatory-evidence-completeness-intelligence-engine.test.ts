@@ -197,21 +197,21 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
       );
     });
 
-    it("special case returns all zero rates", () => {
+    it("special case leaves every rate unmeasured", () => {
       const result = computeRegulatoryEvidenceCompleteness(
         baseInput({ total_children: 0, total_staff: 0 }),
       );
-      expect(result.filing_verified_rate).toBe(0);
-      expect(result.filing_described_rate).toBe(0);
-      expect(result.document_currency_rate).toBe(0);
-      expect(result.document_signed_rate).toBe(0);
-      expect(result.risk_assessment_currency_rate).toBe(0);
-      expect(result.risk_mitigation_rate).toBe(0);
-      expect(result.incident_report_rate).toBe(0);
-      expect(result.incident_follow_up_rate).toBe(0);
-      expect(result.high_severity_notification_rate).toBe(0);
+      expect(result.filing_verified_rate).toBeNull();
+      expect(result.filing_described_rate).toBeNull();
+      expect(result.document_currency_rate).toBeNull();
+      expect(result.document_signed_rate).toBeNull();
+      expect(result.risk_assessment_currency_rate).toBeNull();
+      expect(result.risk_mitigation_rate).toBeNull();
+      expect(result.incident_report_rate).toBeNull();
+      expect(result.incident_follow_up_rate).toBeNull();
+      expect(result.high_severity_notification_rate).toBeNull();
       expect(result.evidence_category_coverage).toBe(0);
-      expect(result.child_evidence_coverage_rate).toBe(0);
+      expect(result.child_evidence_coverage_rate).toBeNull();
     });
 
     it("special case total_evidence_items is 0", () => {

@@ -79,12 +79,12 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
     return {
       life_story_rating: "insufficient_data", life_story_score: 0,
       headline: "No life story or identity data available for analysis.",
-      life_stories: { total: 0, completed_rate: 0, child_voice_rate: 0, linked_to_book_rate: 0 },
-      passports: { total: 0, child_authored_rate: 0, reviewed_rate: 0, avg_sections: 0 },
-      friendships: { total: 0, avg_friends: 0, high_isolation_count: 0, reviewed_rate: 0 },
-      aspirations: { total: 0, child_chosen_rate: 0, active_steps_rate: 0, overdue_reviews: 0 },
-      lgbtq: { total: 0, pronouns_consistent_rate: 0, affirming_actions_rate: 0, child_voice_rate: 0 },
-      style: { total: 0, child_voice_rate: 0, avg_descriptors: 0 },
+      life_stories: { total: 0, completed_rate: null, child_voice_rate: null, linked_to_book_rate: null },
+      passports: { total: 0, child_authored_rate: null, reviewed_rate: null, avg_sections: 0 },
+      friendships: { total: 0, avg_friends: 0, high_isolation_count: 0, reviewed_rate: null },
+      aspirations: { total: 0, child_chosen_rate: null, active_steps_rate: null, overdue_reviews: 0 },
+      lgbtq: { total: 0, pronouns_consistent_rate: null, affirming_actions_rate: null, child_voice_rate: null },
+      style: { total: 0, child_voice_rate: null, avg_descriptors: 0 },
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }

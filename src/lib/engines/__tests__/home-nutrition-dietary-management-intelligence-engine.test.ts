@@ -158,30 +158,30 @@ describe("computeNutritionDietaryManagement", () => {
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("returns all zero metrics for insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computeNutritionDietaryManagement(baseInput());
       expect(r.total_meal_plans).toBe(0);
       expect(r.total_dietary_requirements).toBe(0);
       expect(r.total_nutrition_assessments).toBe(0);
       expect(r.total_food_hygiene_inspections).toBe(0);
       expect(r.total_special_diets).toBe(0);
-      expect(r.meal_plan_compliance_rate).toBe(0);
-      expect(r.dietary_requirement_coverage_rate).toBe(0);
-      expect(r.nutrition_assessment_rate).toBe(0);
+      expect(r.meal_plan_compliance_rate).toBeNull();
+      expect(r.dietary_requirement_coverage_rate).toBeNull();
+      expect(r.nutrition_assessment_rate).toBeNull();
       expect(r.food_hygiene_score).toBe(0);
-      expect(r.special_diet_adherence_rate).toBe(0);
-      expect(r.child_choice_rate).toBe(0);
-      expect(r.meal_nutritional_guideline_rate).toBe(0);
-      expect(r.allergen_check_rate).toBe(0);
-      expect(r.fresh_ingredient_rate).toBe(0);
-      expect(r.cultural_needs_met_rate).toBe(0);
-      expect(r.staff_food_hygiene_training_rate).toBe(0);
-      expect(r.corrective_action_completion_rate).toBe(0);
-      expect(r.dietary_documentation_rate).toBe(0);
-      expect(r.dietary_staff_informed_rate).toBe(0);
-      expect(r.emergency_plan_rate).toBe(0);
-      expect(r.nutrition_goals_met_rate).toBe(0);
-      expect(r.dietitian_referral_completion_rate).toBe(0);
+      expect(r.special_diet_adherence_rate).toBeNull();
+      expect(r.child_choice_rate).toBeNull();
+      expect(r.meal_nutritional_guideline_rate).toBeNull();
+      expect(r.allergen_check_rate).toBeNull();
+      expect(r.fresh_ingredient_rate).toBeNull();
+      expect(r.cultural_needs_met_rate).toBeNull();
+      expect(r.staff_food_hygiene_training_rate).toBeNull();
+      expect(r.corrective_action_completion_rate).toBeNull();
+      expect(r.dietary_documentation_rate).toBeNull();
+      expect(r.dietary_staff_informed_rate).toBeNull();
+      expect(r.emergency_plan_rate).toBeNull();
+      expect(r.nutrition_goals_met_rate).toBeNull();
+      expect(r.dietitian_referral_completion_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -1640,7 +1640,7 @@ describe("computeNutritionDietaryManagement", () => {
       expect(r.dietary_requirement_coverage_rate).toBe(100);
     });
 
-    it("nutrition_assessment_rate is 0 when total_children is 0 but assessments exist", () => {
+    it("nutrition_assessment_rate is unmeasured when total_children is 0 but assessments exist", () => {
       // Can't actually have 0 children + records without hitting allEmpty guard,
       // but if we have assessments with 0 children it means we have records, so not allEmpty
       // Actually: total_children = 0 + records present => not allEmpty, will compute
@@ -1648,8 +1648,8 @@ describe("computeNutritionDietaryManagement", () => {
         total_children: 0,
         nutrition_assessment_records: [makeNutritionAssessment()],
       }));
-      // nutritionAssessmentRate = total_children > 0 ? pct(...) : 0 => 0
-      expect(r.nutrition_assessment_rate).toBeNull();;
+      // nutritionAssessmentRate = total_children > 0 ? rate(...) : null — unmeasured, not 0%
+      expect(r.nutrition_assessment_rate).toBeNull();
     });
   });
 

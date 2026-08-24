@@ -1348,15 +1348,15 @@ describe("computeHomeMedicationGovernance", () => {
 
   // ── pct helper edge cases ─────────────────────────────────────────────
   describe("pct helper edge cases", () => {
-    it("handles zero denominator gracefully in all profiles", () => {
+    it("leaves every rate unmeasured in all profiles when their denominator is 0", () => {
       // All arrays empty → insufficient data, but profiles have 0 denominators
       const r = computeHomeMedicationGovernance(baseInput());
-      expect(r.audit.pass_rate).toBe(0);
-      expect(r.errors.debrief_rate).toBe(0);
-      expect(r.nearMisses.debrief_rate).toBe(0);
-      expect(r.stock.balanced_rate).toBe(0);
-      expect(r.storage.pass_rate).toBe(0);
-      expect(r.emergencyProtocols.gp_signed_off_rate).toBe(0);
+      expect(r.audit.pass_rate).toBeNull();
+      expect(r.errors.debrief_rate).toBeNull();
+      expect(r.nearMisses.debrief_rate).toBeNull();
+      expect(r.stock.balanced_rate).toBeNull();
+      expect(r.storage.pass_rate).toBeNull();
+      expect(r.emergencyProtocols.gp_signed_off_rate).toBeNull();
     });
   });
 });

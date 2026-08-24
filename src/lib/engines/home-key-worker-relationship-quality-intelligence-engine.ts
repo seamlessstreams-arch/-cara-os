@@ -128,22 +128,33 @@ export interface KeyWorkerRelationshipQualityResult {
   key_worker_score: number;
   headline: string;
   total_children_allocated: number;
-  allocation_coverage_rate: number;
-  relationship_quality_rate: number;
-  session_regularity_rate: number;
-  child_satisfaction_rate: number;
-  continuity_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allocation_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relationship_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  session_regularity_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_satisfaction_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  continuity_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   avg_trust_score: number;
   avg_communication_score: number;
   avg_responsiveness_score: number;
   avg_emotional_attunement_score: number;
   avg_overall_quality_score: number;
-  session_completion_rate: number;
-  session_cancellation_rate: number;
-  backup_key_worker_rate: number;
-  allocation_review_rate: number;
-  child_consulted_allocation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  session_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  session_cancellation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  backup_key_worker_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allocation_review_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_consulted_allocation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: KeyWorkerRecommendation[];
@@ -184,22 +195,22 @@ function emptyResult(
     key_worker_score: score,
     headline,
     total_children_allocated: 0,
-    allocation_coverage_rate: 0,
-    relationship_quality_rate: 0,
-    session_regularity_rate: 0,
-    child_satisfaction_rate: 0,
-    continuity_rate: 0,
-    child_voice_rate: 0,
+    allocation_coverage_rate: null,
+    relationship_quality_rate: null,
+    session_regularity_rate: null,
+    child_satisfaction_rate: null,
+    continuity_rate: null,
+    child_voice_rate: null,
     avg_trust_score: 0,
     avg_communication_score: 0,
     avg_responsiveness_score: 0,
     avg_emotional_attunement_score: 0,
     avg_overall_quality_score: 0,
-    session_completion_rate: 0,
-    session_cancellation_rate: 0,
-    backup_key_worker_rate: 0,
-    allocation_review_rate: 0,
-    child_consulted_allocation_rate: 0,
+    session_completion_rate: null,
+    session_cancellation_rate: null,
+    backup_key_worker_rate: null,
+    allocation_review_rate: null,
+    child_consulted_allocation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],

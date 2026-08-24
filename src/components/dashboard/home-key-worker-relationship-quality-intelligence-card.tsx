@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -66,27 +67,27 @@ export function HomeKeyWorkerRelationshipQualityIntelligenceCard() {
         {d.key_worker_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.allocation_coverage_rate >= 90 ? "bg-green-50" : d.allocation_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.allocation_coverage_rate >= 90 ? "text-[--cs-success]" : d.allocation_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.allocation_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.allocation_coverage_rate >= 90 ? "text-[--cs-success]" : d.allocation_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.allocation_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Allocated</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.relationship_quality_rate >= 90 ? "bg-green-50" : d.relationship_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.relationship_quality_rate >= 90 ? "text-[--cs-success]" : d.relationship_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.relationship_quality_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.relationship_quality_rate >= 90 ? "text-[--cs-success]" : d.relationship_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.relationship_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Quality</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.session_regularity_rate >= 90 ? "bg-green-50" : d.session_regularity_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.session_regularity_rate >= 90 ? "text-[--cs-success]" : d.session_regularity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.session_regularity_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.session_regularity_rate >= 90 ? "text-[--cs-success]" : d.session_regularity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.session_regularity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sessions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisfied</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.continuity_rate >= 90 ? "bg-green-50" : d.continuity_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.continuity_rate >= 90 ? "text-[--cs-success]" : d.continuity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.continuity_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.continuity_rate >= 90 ? "text-[--cs-success]" : d.continuity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.continuity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Continuity</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>

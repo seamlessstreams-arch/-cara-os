@@ -136,17 +136,17 @@ describe("computeHolisticChildProgress", () => {
       expect(r.headline).toContain("Insufficient data");
     });
 
-    it("all metric rates are 0", () => {
+    it("leaves every rate unmeasured with total_children 0", () => {
       const r = computeHolisticChildProgress(baseInput({ total_children: 0 }));
-      expect(r.outcome_improvement_rate).toBe(0);
-      expect(r.outcome_child_voice_rate).toBe(0);
-      expect(r.education_engagement_rate).toBe(0);
+      expect(r.outcome_improvement_rate).toBeNull();
+      expect(r.outcome_child_voice_rate).toBeNull();
+      expect(r.education_engagement_rate).toBeNull();
       expect(r.average_attendance).toBe(0);
-      expect(r.key_work_completion_rate).toBe(0);
-      expect(r.key_work_goal_progress_rate).toBe(0);
+      expect(r.key_work_completion_rate).toBeNull();
+      expect(r.key_work_goal_progress_rate).toBeNull();
       expect(r.independence_readiness_average).toBe(0);
       expect(r.domain_coverage).toBe(0);
-      expect(r.child_voice_composite_rate).toBe(0);
+      expect(r.child_voice_composite_rate).toBeNull();
     });
   });
 
@@ -218,17 +218,17 @@ describe("computeHolisticChildProgress", () => {
       expect(r.headline).toContain("18/100");
     });
 
-    it("all metric rates are 0", () => {
+    it("leaves every rate unmeasured with no records, even though children exist", () => {
       const r = computeHolisticChildProgress(baseInput({ total_children: 4 }));
-      expect(r.outcome_improvement_rate).toBe(0);
-      expect(r.outcome_child_voice_rate).toBe(0);
-      expect(r.education_engagement_rate).toBe(0);
+      expect(r.outcome_improvement_rate).toBeNull();
+      expect(r.outcome_child_voice_rate).toBeNull();
+      expect(r.education_engagement_rate).toBeNull();
       expect(r.average_attendance).toBe(0);
-      expect(r.key_work_completion_rate).toBe(0);
-      expect(r.key_work_goal_progress_rate).toBe(0);
+      expect(r.key_work_completion_rate).toBeNull();
+      expect(r.key_work_goal_progress_rate).toBeNull();
       expect(r.independence_readiness_average).toBe(0);
       expect(r.domain_coverage).toBe(0);
-      expect(r.child_voice_composite_rate).toBe(0);
+      expect(r.child_voice_composite_rate).toBeNull();
     });
   });
 
@@ -1192,9 +1192,9 @@ describe("computeHolisticChildProgress", () => {
       expect(r.child_voice_composite_rate).toBe(50); // avg(100, 0)
     });
 
-    it("returns 0 when no data types have records (handled by special case)", () => {
+    it("child_voice_composite_rate is unmeasured when no data types have records (handled by special case)", () => {
       const r = computeHolisticChildProgress(baseInput({ total_children: 0 }));
-      expect(r.child_voice_composite_rate).toBe(0);
+      expect(r.child_voice_composite_rate).toBeNull();
     });
 
     it("uses has_child_view (not has_child_voice) for independence records", () => {
@@ -2235,17 +2235,17 @@ describe("computeHolisticChildProgress", () => {
       expect(validRatings).toContain(r2.progress_rating);
     });
 
-    it("insufficient_data result has 0 for all metrics", () => {
+    it("insufficient_data result leaves every rate unmeasured", () => {
       const r = computeHolisticChildProgress(baseInput({ total_children: 0 }));
-      expect(r.outcome_improvement_rate).toBe(0);
-      expect(r.outcome_child_voice_rate).toBe(0);
-      expect(r.education_engagement_rate).toBe(0);
+      expect(r.outcome_improvement_rate).toBeNull();
+      expect(r.outcome_child_voice_rate).toBeNull();
+      expect(r.education_engagement_rate).toBeNull();
       expect(r.average_attendance).toBe(0);
-      expect(r.key_work_completion_rate).toBe(0);
-      expect(r.key_work_goal_progress_rate).toBe(0);
+      expect(r.key_work_completion_rate).toBeNull();
+      expect(r.key_work_goal_progress_rate).toBeNull();
       expect(r.independence_readiness_average).toBe(0);
       expect(r.domain_coverage).toBe(0);
-      expect(r.child_voice_composite_rate).toBe(0);
+      expect(r.child_voice_composite_rate).toBeNull();
     });
   });
 

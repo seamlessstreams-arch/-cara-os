@@ -188,17 +188,17 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.recommendations[0].urgency).toBe("planned");
     });
 
-    it("0 artifacts active home has zero for all metric fields", () => {
+    it("leaves every rate unmeasured when there are 0 artifacts", () => {
       const r = computeCaraContentQuality(baseInput({ artifacts: [] }));
-      expect(r.approval_rate).toBe(0);
-      expect(r.rejection_rate).toBe(0);
+      expect(r.approval_rate).toBeNull();
+      expect(r.rejection_rate).toBeNull();
       expect(r.average_quality_score).toBe(0);
       expect(r.average_evidence_confidence).toBe(0);
       expect(r.review_turnaround_hours).toBe(0);
-      expect(r.framework_usage_rate).toBe(0);
+      expect(r.framework_usage_rate).toBeNull();
       expect(r.framework_diversity).toBe(0);
-      expect(r.evidence_sourced_rate).toBe(0);
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.evidence_sourced_rate).toBeNull();
+      expect(r.child_coverage_rate).toBeNull();
     });
   });
 
@@ -496,7 +496,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.rejection_rate).toBe(33);
     });
 
-    it("approval_rate is 0 when all artifacts are drafts", () => {
+    it("approval_rate is unmeasured when all artifacts are drafts", () => {
       const arts = [
         makeArtifact({ id: "a1", status: "draft" }),
         makeArtifact({ id: "a2", status: "draft" }),
@@ -615,7 +615,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.child_coverage_rate).toBe(50); // 2 unique children / 4 total
     });
 
-    it("child_coverage_rate is 0 when total_children is 0", () => {
+    it("child_coverage_rate is unmeasured when total_children is 0", () => {
       const arts = [makeArtifact({ child_id: null })];
       const r = computeCaraContentQuality(baseInput({ total_children: 0, artifacts: arts }));
       // Empty population: this asserted the fab-0 the helper used to return.
@@ -1525,7 +1525,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.average_quality_score).toBe(90);
     });
 
-    it("single draft artifact has 0 approval rate", () => {
+    it("a single draft artifact leaves approval_rate unmeasured", () => {
       const r = computeCaraContentQuality(baseInput({
         artifacts: [makeArtifact({ status: "draft" })],
       }));
@@ -1819,7 +1819,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
   // ── pct Helper ────────────────────────────────────────────────────────
 
   describe("pct helper behavior", () => {
-    it("0 denominator returns 0 for approval_rate", () => {
+    it("0 denominator leaves approval_rate unmeasured", () => {
       const arts = [makeArtifact({ status: "draft" })]; // 0 non-draft
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
       // Empty population: this asserted the fab-0 the helper used to return.
@@ -1827,7 +1827,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.approval_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
-    it("0 denominator returns 0 for rejection_rate", () => {
+    it("0 denominator leaves rejection_rate unmeasured", () => {
       const arts = [makeArtifact({ status: "draft" })];
       const r = computeCaraContentQuality(baseInput({ artifacts: arts }));
       // Empty population: this asserted the fab-0 the helper used to return.
@@ -1835,7 +1835,7 @@ describe("Home Cara Content Quality Intelligence Engine", () => {
       expect(r.rejection_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
-    it("0 denominator returns 0 for child_coverage_rate when total_children is 0", () => {
+    it("0 denominator leaves child_coverage_rate unmeasured when total_children is 0", () => {
       const arts = [makeArtifact({ child_id: "c1" })];
       const r = computeCaraContentQuality(baseInput({ total_children: 0, artifacts: arts }));
       // Empty population: this asserted the fab-0 the helper used to return.

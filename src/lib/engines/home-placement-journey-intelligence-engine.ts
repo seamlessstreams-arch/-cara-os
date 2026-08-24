@@ -52,12 +52,12 @@ export interface HomePlacementJourneyInput {
 
 export type PlacementJourneyRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
-export interface PreAdmissionSummary { total: number; all_complete_rate: number; risk_included_rate: number; child_visited_rate: number; }
-export interface WelcomePackSummary { total: number; child_coverage: number; personalised_rate: number; }
-export interface WelcomeTourSummary { total: number; completed_rate: number; feedback_rate: number; buddy_rate: number; }
-export interface ReturnInterviewSummary { total: number; within_24h_rate: number; child_views_rate: number; action_completion_rate: number; }
-export interface ObjectiveSummary { total: number; on_track_rate: number; overdue_reviews: number; child_involved_rate: number; }
-export interface AnniversarySummary { total: number; celebrated_rate: number; child_voice_rate: number; memory_box_rate: number; }
+export interface PreAdmissionSummary { total: number; all_complete_rate: number | null; risk_included_rate: number | null; child_visited_rate: number | null; }
+export interface WelcomePackSummary { total: number; child_coverage: number; personalised_rate: number | null; }
+export interface WelcomeTourSummary { total: number; completed_rate: number | null; feedback_rate: number | null; buddy_rate: number | null; }
+export interface ReturnInterviewSummary { total: number; within_24h_rate: number | null; child_views_rate: number | null; action_completion_rate: number | null; }
+export interface ObjectiveSummary { total: number; on_track_rate: number | null; overdue_reviews: number; child_involved_rate: number | null; }
+export interface AnniversarySummary { total: number; celebrated_rate: number | null; child_voice_rate: number | null; memory_box_rate: number | null; }
 
 export interface HomePlacementJourneyResult {
   placement_journey_rating: PlacementJourneyRating; placement_journey_score: number; headline: string;
@@ -78,12 +78,12 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
     return {
       placement_journey_rating: "insufficient_data", placement_journey_score: 0,
       headline: "No placement journey data available for analysis.",
-      pre_admission: { total: 0, all_complete_rate: 0, risk_included_rate: 0, child_visited_rate: 0 },
-      welcome_packs: { total: 0, child_coverage: 0, personalised_rate: 0 },
-      welcome_tours: { total: 0, completed_rate: 0, feedback_rate: 0, buddy_rate: 0 },
-      return_interviews: { total: 0, within_24h_rate: 0, child_views_rate: 0, action_completion_rate: 0 },
-      objectives: { total: 0, on_track_rate: 0, overdue_reviews: 0, child_involved_rate: 0 },
-      anniversaries: { total: 0, celebrated_rate: 0, child_voice_rate: 0, memory_box_rate: 0 },
+      pre_admission: { total: 0, all_complete_rate: null, risk_included_rate: null, child_visited_rate: null },
+      welcome_packs: { total: 0, child_coverage: 0, personalised_rate: null },
+      welcome_tours: { total: 0, completed_rate: null, feedback_rate: null, buddy_rate: null },
+      return_interviews: { total: 0, within_24h_rate: null, child_views_rate: null, action_completion_rate: null },
+      objectives: { total: 0, on_track_rate: null, overdue_reviews: 0, child_involved_rate: null },
+      anniversaries: { total: 0, celebrated_rate: null, child_voice_rate: null, memory_box_rate: null },
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }
