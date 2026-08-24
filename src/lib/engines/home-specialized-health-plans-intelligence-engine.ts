@@ -1,3 +1,4 @@
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SPECIALIZED HEALTH PLANS INTELLIGENCE ENGINE
 // Home-level: aggregates ADHD plans, allergy plans, asthma plans, autism plans,
@@ -157,23 +158,31 @@ export interface PlanCoverageProfile {
 export interface ReviewComplianceProfile {
   total_reviewable: number;
   overdue_reviews: number;
-  on_time_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate: number | null;
   oldest_overdue_days: number;
 }
 
 export interface SafetyPreparednessProfile {
-  allergy_staff_trained_rate: number;
-  allergy_school_plan_rate: number;
-  epilepsy_staff_trained_rate: number;
-  epilepsy_school_plan_rate: number;
-  diabetic_school_plan_rate: number;
-  asthma_school_inhaler_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergy_staff_trained_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergy_school_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epilepsy_staff_trained_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epilepsy_school_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  diabetic_school_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  asthma_school_inhaler_rate: number | null;
 }
 
 export interface ChildVoiceProfile {
   total_with_voice: number;
   total_applicable: number;
-  voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voice_rate: number | null;
 }
 
 export interface TherapyProfile {
@@ -181,7 +190,8 @@ export interface TherapyProfile {
   ot_active: number;
   total_goals: number;
   total_exercises: number;
-  report_provision_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  report_provision_rate: number | null;
 }
 
 export interface HomeSpecializedHealthPlansResult {
@@ -237,10 +247,10 @@ export function computeHomeSpecializedHealthPlans(
       health_plans_score: 0,
       headline: "No specialized health plan data available for analysis.",
       plan_coverage: { total_plans: 0, unique_children_covered: 0, child_coverage: 0, plan_types_active: 0 },
-      review_compliance: { total_reviewable: 0, overdue_reviews: 0, on_time_rate: 0, oldest_overdue_days: 0 },
-      safety_preparedness: { allergy_staff_trained_rate: 0, allergy_school_plan_rate: 0, epilepsy_staff_trained_rate: 0, epilepsy_school_plan_rate: 0, diabetic_school_plan_rate: 0, asthma_school_inhaler_rate: 0 },
-      child_voice: { total_with_voice: 0, total_applicable: 0, voice_rate: 0 },
-      therapy: { physio_ot_active: 0, ot_active: 0, total_goals: 0, total_exercises: 0, report_provision_rate: 0 },
+      review_compliance: { total_reviewable: 0, overdue_reviews: 0, on_time_rate: null, oldest_overdue_days: 0 },
+      safety_preparedness: { allergy_staff_trained_rate: null, allergy_school_plan_rate: null, epilepsy_staff_trained_rate: null, epilepsy_school_plan_rate: null, diabetic_school_plan_rate: null, asthma_school_inhaler_rate: null },
+      child_voice: { total_with_voice: 0, total_applicable: 0, voice_rate: null },
+      therapy: { physio_ot_active: 0, ot_active: 0, total_goals: 0, total_exercises: 0, report_provision_rate: null },
       strengths: [],
       concerns: ["No specialized health plan data — individual health needs cannot be assessed."],
       recommendations: [],
@@ -430,9 +440,9 @@ export function computeHomeSpecializedHealthPlans(
     score += 0;
   } else {
     const voiceRate = childVoiceProfile.voice_rate;
-    if (voiceRate >= 90) score += 3;
-    else if (voiceRate >= 70) score += 1;
-    else if (voiceRate >= 50) score += 0;
+    if (meets(voiceRate, 90)) score += 3;
+    else if (meets(voiceRate, 70)) score += 1;
+    else if (meets(voiceRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -528,8 +538,8 @@ export function computeHomeSpecializedHealthPlans(
     strengths.push("All allergy plans have trained staff in place — children protected against anaphylaxis.");
   if (epilepsyStaffTrainedRate >= 100 && epilepsy_plans.length > 0)
     strengths.push("100% of epilepsy plans have trained staff — excellent seizure management readiness.");
-  if (childVoiceProfile.voice_rate >= 90 && voiceApplicable.length > 0)
-    strengths.push(`Strong child voice — ${childVoiceProfile.voice_rate}% of plans reflect children's views.`);
+  if (meets(childVoiceProfile.voice_rate, 90) && voiceApplicable.length > 0)
+    strengths.push(`Strong child voice — ${formatRate(childVoiceProfile.voice_rate)} of plans reflect children's views.`);
   if (planTypesActive >= 5)
     strengths.push(`Comprehensive condition coverage across ${planTypesActive} different plan types.`);
   if (otReportRate >= 100 && occupational_therapy_records.length > 0)
@@ -546,8 +556,8 @@ export function computeHomeSpecializedHealthPlans(
     concerns.push("Not all allergy plans have trained staff — anaphylaxis risk.");
   if (epilepsyStaffTrainedRate < 100 && epilepsy_plans.length > 0)
     concerns.push("Not all epilepsy plans have trained staff — seizure management risk.");
-  if (childVoiceProfile.voice_rate < 50 && voiceApplicable.length > 0)
-    concerns.push(`Child voice rate of only ${childVoiceProfile.voice_rate}% across plans — children's views underrepresented.`);
+  if (below(childVoiceProfile.voice_rate, 50) && voiceApplicable.length > 0)
+    concerns.push(`Child voice rate of only ${formatRate(childVoiceProfile.voice_rate)} across plans — children's views underrepresented.`);
 
   const diabeticFlags = diabetic_care_plans.reduce((s, p) => s + p.flags_for_review_count, 0);
   if (diabeticFlags > 0)
@@ -597,7 +607,7 @@ export function computeHomeSpecializedHealthPlans(
     });
   }
 
-  if (childVoiceProfile.voice_rate < 70 && voiceApplicable.length > 0) {
+  if (below(childVoiceProfile.voice_rate, 70) && voiceApplicable.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Increase child participation in health plan development — ensure every child's voice is captured.",

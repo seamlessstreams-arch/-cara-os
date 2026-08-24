@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -136,10 +137,10 @@ export function HomeSpecializedHealthPlansIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.review_compliance.on_time_rate >= 95 ? "text-[--cs-success]" :
-                  d.review_compliance.on_time_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.review_compliance.on_time_rate, 95) ? "text-[--cs-success]" :
+                  meets(d.review_compliance.on_time_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.review_compliance.total_reviewable > 0 ? `${d.review_compliance.on_time_rate}%` : "—"}
+                  {d.review_compliance.total_reviewable > 0 ? `${formatRate(d.review_compliance.on_time_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Reviews</p>
@@ -150,10 +151,10 @@ export function HomeSpecializedHealthPlansIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <School className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.safety_preparedness.allergy_school_plan_rate >= 100 ? "text-[--cs-success]" :
-                  d.safety_preparedness.allergy_school_plan_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.safety_preparedness.allergy_school_plan_rate, 100) ? "text-[--cs-success]" :
+                  meets(d.safety_preparedness.allergy_school_plan_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.plan_coverage.total_plans > 0 ? `${d.safety_preparedness.allergy_school_plan_rate}%` : "—"}
+                  {d.plan_coverage.total_plans > 0 ? `${formatRate(d.safety_preparedness.allergy_school_plan_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">School</p>
@@ -164,10 +165,10 @@ export function HomeSpecializedHealthPlansIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <User className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.child_voice.voice_rate >= 90 ? "text-[--cs-success]" :
-                  d.child_voice.voice_rate >= 70 ? "text-blue-600" : "text-[--cs-warning]"
+                  meets(d.child_voice.voice_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.child_voice.voice_rate, 70) ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.child_voice.total_applicable > 0 ? `${d.child_voice.voice_rate}%` : "—"}
+                  {d.child_voice.total_applicable > 0 ? `${formatRate(d.child_voice.voice_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Voice</p>

@@ -203,7 +203,7 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.recommendations[4].urgency).toBe("soon");
     });
 
-    it("special-case inadequate has all zero metrics", () => {
+    it("special-case inadequate leaves parent_engagement_rate, social_worker_contact_rate and child_voice_capture_rate unmeasured", () => {
       const r = computeFamilySocialConnectivity({
         today: TODAY, total_children: 1, total_staff: 1,
         family_time_sessions: [], contact_plans: [],
@@ -214,11 +214,11 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.sessions_per_child).toBe(0);
       expect(r.session_quality_avg).toBe(0);
       expect(r.contact_plan_coverage).toBe(0);
-      expect(r.parent_engagement_rate).toBe(0);
-      expect(r.social_worker_contact_rate).toBe(0);
+      expect(r.parent_engagement_rate).toBeNull();
+      expect(r.social_worker_contact_rate).toBeNull();
       expect(r.sibling_contact_compliance).toBe(0);
-      expect(r.child_voice_capture_rate).toBe(0);
-      expect(r.post_contact_distress_rate).toBe(0);
+      expect(r.child_voice_capture_rate).toBeNull();
+      expect(r.post_contact_distress_rate).toBeNull();
     });
 
     it("insufficient_data even with staff > 0 when children=0 and all arrays empty", () => {
@@ -802,14 +802,14 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.sessions_per_child).toBe(1.4);
     });
 
-    it("sessions_per_child = 0 when total_children = 0 (non-special-case)", () => {
+    it("sessions_per_child is unmeasured when total_children = 0 (non-special-case)", () => {
       const r = computeFamilySocialConnectivity({
         today: TODAY, total_children: 0, total_staff: 1,
         family_time_sessions: [makeSession()],
         contact_plans: [], parent_partnership_records: [],
         social_worker_contacts: [], sibling_contact_protocols: [],
       });
-      expect(r.sessions_per_child).toBeNull();;
+      expect(r.sessions_per_child).toBeNull();
     });
 
     it("session_quality_avg rounds to 1 decimal", () => {
@@ -823,9 +823,9 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.session_quality_avg).toBe(4);
     });
 
-    it("session_quality_avg = 0 when no sessions", () => {
+    it("session_quality_avg is unmeasured when there are no sessions", () => {
       const r = computeFamilySocialConnectivity(baseInput({ family_time_sessions: [] }));
-      expect(r.session_quality_avg).toBeNull();;
+      expect(r.session_quality_avg).toBeNull();
     });
 
     it("contact_plan_coverage uses unique children from active plans", () => {
@@ -2010,11 +2010,11 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.sibling_contact_compliance).toBe(0);
     });
 
-    it("pct(0,0)=0 for empty family_time_sessions metrics", () => {
+    it("empty family_time_sessions leaves session_quality_avg unmeasured (other two metrics are genuine zeros)", () => {
       const r = computeFamilySocialConnectivity(baseInput({ family_time_sessions: [] }));
       expect(r.child_voice_capture_rate).toBe(0);
       expect(r.post_contact_distress_rate).toBe(0);
-      expect(r.session_quality_avg).toBeNull();;
+      expect(r.session_quality_avg).toBeNull();
     });
 
     it("score clamped to max 100", () => {

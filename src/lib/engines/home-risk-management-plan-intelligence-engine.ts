@@ -53,13 +53,20 @@ export interface RiskManagementPlanResult {
   rmp_score: number;
   headline: string;
   total_plans: number;
-  children_with_plan_rate: number;
-  active_plan_rate: number;
-  trigger_identification_rate: number;
-  strategy_effectiveness_rate: number;
-  emergency_plan_rate: number;
-  child_voice_rate: number;
-  approval_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  active_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trigger_identification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergency_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  approval_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -102,13 +109,13 @@ export function computeRiskManagementPlan(
       rmp_score: 0,
       headline: "No data available for risk management plan intelligence analysis",
       total_plans: 0,
-      children_with_plan_rate: 0,
-      active_plan_rate: 0,
-      trigger_identification_rate: 0,
-      strategy_effectiveness_rate: 0,
-      emergency_plan_rate: 0,
-      child_voice_rate: 0,
-      approval_rate: 0,
+      children_with_plan_rate: null,
+      active_plan_rate: null,
+      trigger_identification_rate: null,
+      strategy_effectiveness_rate: null,
+      emergency_plan_rate: null,
+      child_voice_rate: null,
+      approval_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

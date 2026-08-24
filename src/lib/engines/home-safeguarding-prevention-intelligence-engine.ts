@@ -89,25 +89,32 @@ export interface HomeSafeguardingPreventionResult {
     total_incidents_90d: number;
     resolved_count: number;
     open_count: number;
-    restorative_rate: number;
-    school_notification_rate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    restorative_rate: number | null;
+    /** null when the population is empty — nothing measured, not 0%. */
+    school_notification_rate: number | null;
   };
   hate_incidents: {
     total_incidents_90d: number;
-    reporting_compliance_rate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    reporting_compliance_rate: number | null;
     prevention_measures_total: number;
   };
   prevent: {
     total_screenings: number;
     child_coverage: number;
-    training_compliance_rate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    training_compliance_rate: number | null;
     high_risk_count: number;
   };
   court: {
     total_records: number;
-    risk_assessment_rate: number;
-    prep_rate: number;
-    support_rate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    risk_assessment_rate: number | null;
+    /** null when the population is empty — nothing measured, not 0%. */
+    prep_rate: number | null;
+    /** null when the population is empty — nothing measured, not 0%. */
+    support_rate: number | null;
   };
   strengths: string[];
   concerns: string[];
@@ -150,10 +157,10 @@ export function computeHomeSafeguardingPrevention(
       safeguarding_rating: "insufficient_data",
       safeguarding_score: 0,
       headline: "No safeguarding prevention data available for analysis.",
-      bullying: { total_incidents_90d: 0, resolved_count: 0, open_count: 0, restorative_rate: 0, school_notification_rate: 0 },
-      hate_incidents: { total_incidents_90d: 0, reporting_compliance_rate: 0, prevention_measures_total: 0 },
-      prevent: { total_screenings: 0, child_coverage: 0, training_compliance_rate: 0, high_risk_count: 0 },
-      court: { total_records: 0, risk_assessment_rate: 0, prep_rate: 0, support_rate: 0 },
+      bullying: { total_incidents_90d: 0, resolved_count: 0, open_count: 0, restorative_rate: null, school_notification_rate: null },
+      hate_incidents: { total_incidents_90d: 0, reporting_compliance_rate: null, prevention_measures_total: 0 },
+      prevent: { total_screenings: 0, child_coverage: 0, training_compliance_rate: null, high_risk_count: 0 },
+      court: { total_records: 0, risk_assessment_rate: null, prep_rate: null, support_rate: null },
       strengths: [],
       concerns: ["No safeguarding prevention data -- protection of children cannot be assessed."],
       recommendations: [],

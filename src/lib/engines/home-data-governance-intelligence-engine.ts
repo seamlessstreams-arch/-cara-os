@@ -96,8 +96,10 @@ export interface BreachProfile {
   near_miss_count: number;
   special_category_count: number;
   ico_reported_count: number;
-  subjects_notified_rate: number;
-  lessons_documented_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  subjects_notified_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessons_documented_rate: number | null;
   by_type: Record<string, number>;
 }
 
@@ -105,7 +107,8 @@ export interface DataProtectionProfile {
   total_records: number;
   overdue_records: number;
   completed_records: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
   retention_reviews: number;
   consent_reviews: number;
   dpias_completed: number;
@@ -114,9 +117,12 @@ export interface DataProtectionProfile {
 export interface CCTVProfile {
   total_accesses: number;
   accesses_90d: number;
-  justified_access_rate: number;
-  authorised_rate: number;
-  witness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  justified_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  authorised_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  witness_rate: number | null;
   by_reason: Record<string, number>;
 }
 
@@ -125,10 +131,14 @@ export interface SARProfile {
   open_requests: number;
   completed_on_time: number;
   overdue_requests: number;
-  on_time_rate: number;
-  identity_verified_rate: number;
-  dpo_consulted_rate: number;
-  extension_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identity_verified_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dpo_consulted_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  extension_rate: number | null;
 }
 
 export interface HomeDataGovernanceResult {
@@ -177,10 +187,10 @@ export function computeHomeDataGovernance(
       data_governance_rating: "insufficient_data",
       data_governance_score: 0,
       headline: "No staff or data governance records — assessment cannot be completed.",
-      breaches: { total_breaches: 0, open_breaches: 0, high_critical_breaches: 0, near_miss_count: 0, special_category_count: 0, ico_reported_count: 0, subjects_notified_rate: 0, lessons_documented_rate: 0, by_type: {} },
-      data_protection: { total_records: 0, overdue_records: 0, completed_records: 0, completion_rate: 0, retention_reviews: 0, consent_reviews: 0, dpias_completed: 0 },
-      cctv: { total_accesses: 0, accesses_90d: 0, justified_access_rate: 0, authorised_rate: 0, witness_rate: 0, by_reason: {} },
-      sars: { total_requests: 0, open_requests: 0, completed_on_time: 0, overdue_requests: 0, on_time_rate: 0, identity_verified_rate: 0, dpo_consulted_rate: 0, extension_rate: 0 },
+      breaches: { total_breaches: 0, open_breaches: 0, high_critical_breaches: 0, near_miss_count: 0, special_category_count: 0, ico_reported_count: 0, subjects_notified_rate: null, lessons_documented_rate: null, by_type: {} },
+      data_protection: { total_records: 0, overdue_records: 0, completed_records: 0, completion_rate: null, retention_reviews: 0, consent_reviews: 0, dpias_completed: 0 },
+      cctv: { total_accesses: 0, accesses_90d: 0, justified_access_rate: null, authorised_rate: null, witness_rate: null, by_reason: {} },
+      sars: { total_requests: 0, open_requests: 0, completed_on_time: 0, overdue_requests: 0, on_time_rate: null, identity_verified_rate: null, dpo_consulted_rate: null, extension_rate: null },
       strengths: [],
       concerns: ["No data governance records available — unable to assess compliance posture."],
       recommendations: [],

@@ -143,18 +143,18 @@ export function computeHomeSleepQuality(
         : "No sleep logs recorded.",
       disturbances: {
         total_disturbances: 0, total_duration_mins: 0, avg_per_night: 0,
-        level_distribution: {}, none_rate: 0, significant_rate: 0,
+        level_distribution: {}, none_rate: null, significant_rate: null,
         children_disturbed: {},
       },
       check_compliance: {
         total_logs: 0, avg_checks_per_night: 0, logs_with_5_plus_checks: 0,
-        check_compliance_rate: 0, building_secure_rate: 0, alarms_set_rate: 0,
+        check_compliance_rate: null, building_secure_rate: null, alarms_set_rate: null,
       },
       handover: {
-        with_handover_notes: 0, with_morning_handover: 0, handover_rate: 0,
+        with_handover_notes: 0, with_morning_handover: 0, handover_rate: null,
       },
       shifts: {
-        waking_nights: 0, sleep_ins: 0, waking_night_rate: 0,
+        waking_nights: 0, sleep_ins: 0, waking_night_rate: null,
         unique_staff: 0, logs_last_7_days: 0, logs_last_14_days: 0,
       },
       strengths: [],

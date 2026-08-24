@@ -55,13 +55,20 @@ export interface SelfHarmSafetyPlanResult {
   plan_score: number;
   headline: string;
   total_plans: number;
-  children_with_plan_rate: number;
-  active_plan_rate: number;
-  co_production_rate: number;
-  warning_sign_coverage_rate: number;
-  coping_strategy_rate: number;
-  contact_network_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  active_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  co_production_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  warning_sign_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coping_strategy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contact_network_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -104,13 +111,13 @@ export function computeSelfHarmSafetyPlan(
       plan_score: 0,
       headline: "No data available for self-harm safety plan intelligence analysis",
       total_plans: 0,
-      children_with_plan_rate: 0,
-      active_plan_rate: 0,
-      co_production_rate: 0,
-      warning_sign_coverage_rate: 0,
-      coping_strategy_rate: 0,
-      contact_network_rate: 0,
-      child_voice_rate: 0,
+      children_with_plan_rate: null,
+      active_plan_rate: null,
+      co_production_rate: null,
+      warning_sign_coverage_rate: null,
+      coping_strategy_rate: null,
+      contact_network_rate: null,
+      child_voice_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

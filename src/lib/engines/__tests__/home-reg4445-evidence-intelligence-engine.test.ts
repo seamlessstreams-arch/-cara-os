@@ -350,9 +350,9 @@ describe("computeHomeReg4445Evidence", () => {
       const r = computeHomeReg4445Evidence(baseInput({ reg44_packs: [makePack({ id: "p1" })] }));
       expect(r.reg44_visits.total_packs).toBe(1);
     });
-    it("pct returns 0 for zero denom", () => {
+    it("visit_completed_rate is unmeasured for a zero denominator", () => {
       const r = computeHomeReg4445Evidence({ today: TODAY, reg44_packs: [], reg44_visit_reports: [], reg44_actions: [], reg45_evidence: [], reg46_reviews: [], annex_a_evidence: [], total_children: 0 });
-      expect(r.reg44_visits.visit_completed_rate).toBe(0);
+      expect(r.reg44_visits.visit_completed_rate).toBeNull();
     });
   });
 });

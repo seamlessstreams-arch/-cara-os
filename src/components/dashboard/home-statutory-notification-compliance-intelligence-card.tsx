@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -74,15 +75,15 @@ export function HomeStatutoryNotificationComplianceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Sent</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.timeliness_rate >= 100 ? "bg-green-50" : d.timeliness_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.timeliness_rate >= 100 ? "text-[--cs-success]" : d.timeliness_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timeliness_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.timeliness_rate >= 100 ? "text-[--cs-success]" : d.timeliness_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">On Time</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.completeness_rate >= 100 ? "bg-green-50" : d.completeness_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.completeness_rate >= 100 ? "text-[--cs-success]" : d.completeness_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.completeness_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.completeness_rate >= 100 ? "text-[--cs-success]" : d.completeness_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.completeness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.follow_up_rate >= 100 ? "bg-green-50" : d.follow_up_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_rate >= 100 ? "text-[--cs-success]" : d.follow_up_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.follow_up_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_rate >= 100 ? "text-[--cs-success]" : d.follow_up_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.follow_up_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Follow-up</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.missed_notifications === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -90,7 +91,7 @@ export function HomeStatutoryNotificationComplianceIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Missed</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.acknowledgement_rate >= 90 ? "bg-green-50" : d.acknowledgement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.acknowledgement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.acknowledgement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ack&apos;d</p>
             </div>
           </div>

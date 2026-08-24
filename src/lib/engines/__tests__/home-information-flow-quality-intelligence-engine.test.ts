@@ -111,20 +111,20 @@ describe("computeInformationFlowQuality", () => {
       expect(result.headline).toContain("Insufficient data");
     });
 
-    it("returns zero for all metric rates on insufficient_data", () => {
+    it("leaves every rate unmeasured on insufficient_data", () => {
       const result = computeInformationFlowQuality(
         baseInput({ total_staff: 0, total_children: 0 }),
       );
-      expect(result.handover_completion_rate).toBe(0);
-      expect(result.handover_content_rate).toBe(0);
-      expect(result.daily_log_coverage_rate).toBe(0);
-      expect(result.daily_log_quality_rate).toBe(0);
-      expect(result.significant_event_handover_rate).toBe(0);
-      expect(result.care_event_verification_rate).toBe(0);
-      expect(result.notification_read_rate).toBe(0);
-      expect(result.urgent_notification_read_rate).toBe(0);
+      expect(result.handover_completion_rate).toBeNull();
+      expect(result.handover_content_rate).toBeNull();
+      expect(result.daily_log_coverage_rate).toBeNull();
+      expect(result.daily_log_quality_rate).toBeNull();
+      expect(result.significant_event_handover_rate).toBeNull();
+      expect(result.care_event_verification_rate).toBeNull();
+      expect(result.notification_read_rate).toBeNull();
+      expect(result.urgent_notification_read_rate).toBeNull();
       expect(result.information_continuity_score).toBe(0);
-      expect(result.staff_engagement_rate).toBe(0);
+      expect(result.staff_engagement_rate).toBeNull();
     });
 
     it("returns one concern for insufficient_data", () => {

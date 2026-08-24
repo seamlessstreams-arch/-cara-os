@@ -62,16 +62,16 @@ describe("insufficient data", () => {
     expect(r.headline).toBe("No data available for self-harm safety plan intelligence analysis");
   });
 
-  it("returns zero for all rate fields when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeSelfHarmSafetyPlan(baseInput({ total_children: 0 }));
     expect(r.total_plans).toBe(0);
-    expect(r.children_with_plan_rate).toBe(0);
-    expect(r.active_plan_rate).toBe(0);
-    expect(r.co_production_rate).toBe(0);
-    expect(r.warning_sign_coverage_rate).toBe(0);
-    expect(r.coping_strategy_rate).toBe(0);
-    expect(r.contact_network_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.children_with_plan_rate).toBeNull();
+    expect(r.active_plan_rate).toBeNull();
+    expect(r.co_production_rate).toBeNull();
+    expect(r.warning_sign_coverage_rate).toBeNull();
+    expect(r.coping_strategy_rate).toBeNull();
+    expect(r.contact_network_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {

@@ -60,15 +60,15 @@ describe("insufficient data guard", () => {
     expect(r.rmp_score).toBe(0);
   });
 
-  it("returns zero for all rate fields when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeRiskManagementPlan(baseInput({ total_children: 0 }));
-    expect(r.children_with_plan_rate).toBe(0);
-    expect(r.active_plan_rate).toBe(0);
-    expect(r.trigger_identification_rate).toBe(0);
-    expect(r.strategy_effectiveness_rate).toBe(0);
-    expect(r.emergency_plan_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
-    expect(r.approval_rate).toBe(0);
+    expect(r.children_with_plan_rate).toBeNull();
+    expect(r.active_plan_rate).toBeNull();
+    expect(r.trigger_identification_rate).toBeNull();
+    expect(r.strategy_effectiveness_rate).toBeNull();
+    expect(r.emergency_plan_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
+    expect(r.approval_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {

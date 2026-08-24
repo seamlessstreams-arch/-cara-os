@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -146,10 +147,10 @@ export function HomeDataGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.cctv.justified_access_rate >= 90 ? "text-[--cs-success]" :
-                  d.cctv.justified_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.cctv.justified_access_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.cctv.justified_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.cctv.total_accesses > 0 ? `${d.cctv.justified_access_rate}%` : "N/A"}
+                  {d.cctv.total_accesses > 0 ? `${formatRate(d.cctv.justified_access_rate)}` : "N/A"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">CCTV Justified</p>
@@ -182,8 +183,8 @@ export function HomeDataGovernanceIntelligenceCard() {
                   d.breaches.high_critical_breaches === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.breaches.high_critical_breaches}</span></p>
                 <p>Lessons: <span className={cn("font-medium",
-                  d.breaches.lessons_documented_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.breaches.lessons_documented_rate}%</span></p>
+                  meets(d.breaches.lessons_documented_rate, 100) ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{formatRate(d.breaches.lessons_documented_rate)}</span></p>
                 <p>Near misses: <span className="font-medium text-slate-600">{d.breaches.near_miss_count}</span></p>
               </div>
             </div>
@@ -192,11 +193,11 @@ export function HomeDataGovernanceIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Total: <span className="font-medium text-slate-600">{d.sars.total_requests}</span></p>
                 <p>On time: <span className={cn("font-medium",
-                  d.sars.on_time_rate >= 100 ? "text-[--cs-success]" :
-                  d.sars.on_time_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.sars.on_time_rate}%</span></p>
-                <p>ID verified: <span className="font-medium text-slate-600">{d.sars.identity_verified_rate}%</span></p>
-                <p>DPO consulted: <span className="font-medium text-slate-600">{d.sars.dpo_consulted_rate}%</span></p>
+                  meets(d.sars.on_time_rate, 100) ? "text-[--cs-success]" :
+                  meets(d.sars.on_time_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                )}>{formatRate(d.sars.on_time_rate)}</span></p>
+                <p>ID verified: <span className="font-medium text-slate-600">{formatRate(d.sars.identity_verified_rate)}</span></p>
+                <p>DPO consulted: <span className="font-medium text-slate-600">{formatRate(d.sars.dpo_consulted_rate)}</span></p>
               </div>
             </div>
           </div>
