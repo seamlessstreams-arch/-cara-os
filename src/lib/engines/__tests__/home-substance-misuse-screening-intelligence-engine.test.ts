@@ -63,14 +63,14 @@ describe("computeSubstanceMisuseScreening", () => {
       expect(r.screening_score).toBe(0);
     });
 
-    it("returns zero for all metric rates when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const r = computeSubstanceMisuseScreening(baseInput({ total_children: 0 }));
-      expect(r.children_screened_rate).toBe(0);
-      expect(r.high_risk_rate).toBe(0);
-      expect(r.harm_reduction_rate).toBe(0);
-      expect(r.professional_support_rate).toBe(0);
-      expect(r.child_insight_rate).toBe(0);
-      expect(r.information_sharing_rate).toBe(0);
+      expect(r.children_screened_rate).toBeNull();
+      expect(r.high_risk_rate).toBeNull();
+      expect(r.harm_reduction_rate).toBeNull();
+      expect(r.professional_support_rate).toBeNull();
+      expect(r.child_insight_rate).toBeNull();
+      expect(r.information_sharing_rate).toBeNull();
     });
 
     it("returns 0 total_screenings when total_children is 0", () => {

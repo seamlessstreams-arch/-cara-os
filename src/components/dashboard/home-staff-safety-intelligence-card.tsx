@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -121,10 +122,10 @@ export function HomeStaffSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.lone_working.coverage_rate >= 80 ? "text-[--cs-success]" :
-                  d.lone_working.coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.lone_working.coverage_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.lone_working.coverage_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.lone_working.coverage_rate}%
+                  {formatRate(d.lone_working.coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">LW Coverage</p>
@@ -135,10 +136,10 @@ export function HomeStaffSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.debriefs.completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.debriefs.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.debriefs.completion_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.debriefs.completion_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.debriefs.completion_rate}%
+                  {formatRate(d.debriefs.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Debrief Rate</p>
@@ -163,10 +164,10 @@ export function HomeStaffSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.lwra.approval_rate >= 80 ? "text-[--cs-success]" :
-                  d.lwra.approval_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.lwra.approval_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.lwra.approval_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.lwra.approval_rate}%
+                  {formatRate(d.lwra.approval_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">LWRA Approved</p>
@@ -188,8 +189,8 @@ export function HomeStaffSafetyIntelligenceCard() {
                   d.lone_working.expired === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.lone_working.expired}</span></p>
                 <p>Alarms: <span className={cn("font-medium",
-                  d.lone_working.alarm_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.lone_working.alarm_rate}%</span></p>
+                  meets(d.lone_working.alarm_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{formatRate(d.lone_working.alarm_rate)}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">
@@ -203,8 +204,8 @@ export function HomeStaffSafetyIntelligenceCard() {
                   d.debriefs.high_impact_count === 0 ? "text-slate-400" : "text-[--cs-warning]"
                 )}>{d.debriefs.high_impact_count}</span></p>
                 <p>Learning: <span className={cn("font-medium",
-                  d.debriefs.learning_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.debriefs.learning_rate}%</span></p>
+                  meets(d.debriefs.learning_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{formatRate(d.debriefs.learning_rate)}</span></p>
               </div>
             </div>
           </div>

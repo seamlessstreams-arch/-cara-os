@@ -84,18 +84,18 @@ describe("guard clauses — insufficient data", () => {
     );
   });
 
-  it("returns zero for all numeric fields when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeSleepNightCare(baseInput({ total_children: 0 }));
     expect(r.total_logs).toBe(0);
     expect(r.waking_night_count).toBe(0);
     expect(r.sleep_in_count).toBe(0);
-    expect(r.check_compliance_rate).toBe(0);
-    expect(r.building_security_rate).toBe(0);
-    expect(r.alarm_compliance_rate).toBe(0);
-    expect(r.disturbance_response_rate).toBe(0);
-    expect(r.quiet_night_rate).toBe(0);
+    expect(r.check_compliance_rate).toBeNull();
+    expect(r.building_security_rate).toBeNull();
+    expect(r.alarm_compliance_rate).toBeNull();
+    expect(r.disturbance_response_rate).toBeNull();
+    expect(r.quiet_night_rate).toBeNull();
     expect(r.significant_disturbance_count).toBe(0);
-    expect(r.handover_quality_rate).toBe(0);
+    expect(r.handover_quality_rate).toBeNull();
     expect(r.average_disturbance_duration).toBe(0);
   });
 
@@ -257,9 +257,9 @@ describe("aggregate metrics — output field accuracy", () => {
     expect(r.average_disturbance_duration).toBe(15);
   });
 
-  it("computes average_disturbance_duration = 0 when no disturbances", () => {
+  it("average_disturbance_duration is unmeasured when there are no disturbances", () => {
     const r = computeSleepNightCare(baseInput());
-    expect(r.average_disturbance_duration).toBeNull();;
+    expect(r.average_disturbance_duration).toBeNull();
   });
 
   it("rounds average_disturbance_duration to 1 decimal place", () => {
@@ -1860,7 +1860,7 @@ describe("edge cases", () => {
     expect(r.quiet_night_rate).toBe(100);
     expect(r.significant_disturbance_count).toBe(0);
     expect(r.disturbance_response_rate).toBe(0); // no disturbances
-    expect(r.average_disturbance_duration).toBeNull();;
+    expect(r.average_disturbance_duration).toBeNull();
   });
 
   it("handles all significant disturbances", () => {

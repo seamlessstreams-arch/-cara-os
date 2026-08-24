@@ -65,14 +65,14 @@ describe("insufficient data guard", () => {
     expect(r.bsp_score).toBe(0);
   });
 
-  it("returns zero for all rates when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeBehaviourSupportPlan(baseInput({ total_children: 0 }));
-    expect(r.children_with_plan_rate).toBe(0);
-    expect(r.active_plan_rate).toBe(0);
-    expect(r.trigger_analysis_rate).toBe(0);
-    expect(r.de_escalation_rate).toBe(0);
-    expect(r.positive_strategy_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.children_with_plan_rate).toBeNull();
+    expect(r.active_plan_rate).toBeNull();
+    expect(r.trigger_analysis_rate).toBeNull();
+    expect(r.de_escalation_rate).toBeNull();
+    expect(r.positive_strategy_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths/concerns/recommendations/insights when total_children is 0", () => {
@@ -2035,7 +2035,7 @@ describe("edge cases", () => {
     expect(r.child_voice_rate).toBe(0);
   });
 
-  it("pct helper returns 0 when denominator is 0", () => {
+  it("active_plan_rate and trigger_analysis_rate are unmeasured when the denominator is 0", () => {
     // This is indirectly tested: when total=0, rates are 0
     const r = computeBehaviourSupportPlan(
       baseInput({ total_children: 5, plans: [] }),

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { meets } from "@/lib/metrics/rate";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Anchor } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -90,7 +90,7 @@ export function HomeAttachmentProfileIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Analysis</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 80) ? "bg-green-50" : meets(d.child_voice_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 80) ? "text-[--cs-success]" : meets(d.child_voice_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 80) ? "text-[--cs-success]" : meets(d.child_voice_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_guidance_rate, 80) ? "bg-green-50" : meets(d.staff_guidance_rate, 50) ? "bg-amber-50" : "bg-red-50")}>

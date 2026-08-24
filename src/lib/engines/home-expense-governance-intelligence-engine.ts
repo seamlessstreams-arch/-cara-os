@@ -138,9 +138,9 @@ export function computeHomeExpenseGovernance(
         pending_amount: 0, unique_approvers: 0,
       },
       compliance: {
-        receipt_rate: 0, child_linked_rate: 0, child_linked_amount: 0,
-        personal_card_rate: 0, house_card_rate: 0,
-        petty_cash_rate: 0, mileage_rate: 0,
+        receipt_rate: null, child_linked_rate: null, child_linked_amount: 0,
+        personal_card_rate: null, house_card_rate: null,
+        petty_cash_rate: null, mileage_rate: null,
       },
       distribution: [],
       strengths: [],

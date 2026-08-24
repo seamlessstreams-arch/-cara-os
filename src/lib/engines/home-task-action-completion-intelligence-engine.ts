@@ -68,11 +68,14 @@ export interface TaskActionCompletionResult {
   task_score: number;
   headline: string;
   total_tasks: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
   overdue_count: number;
-  on_time_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate: number | null;
   incident_follow_through: number;
-  urgent_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  urgent_completion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: TaskActionRecommendation[];
@@ -110,11 +113,11 @@ export function computeTaskActionCompletion(
       task_score: 0,
       headline: "No staff recorded — task action completion data not available.",
       total_tasks: allTasks.length,
-      completion_rate: 0,
+      completion_rate: null,
       overdue_count: 0,
-      on_time_rate: 0,
+      on_time_rate: null,
       incident_follow_through: 0,
-      urgent_completion_rate: 0,
+      urgent_completion_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -137,11 +140,11 @@ export function computeTaskActionCompletion(
       task_score: 72,
       headline: "No tasks or incidents recorded in the last 90 days — no overdue actions, acceptable baseline.",
       total_tasks: allTasks.length,
-      completion_rate: 0,
+      completion_rate: null,
       overdue_count: 0,
-      on_time_rate: 0,
+      on_time_rate: null,
       incident_follow_through: 0,
-      urgent_completion_rate: 0,
+      urgent_completion_rate: null,
       strengths: ["No overdue tasks or outstanding incidents — the home has a clean action slate."],
       concerns: [],
       recommendations: [],

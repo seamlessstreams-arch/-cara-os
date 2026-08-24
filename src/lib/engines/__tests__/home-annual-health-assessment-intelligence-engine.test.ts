@@ -111,16 +111,16 @@ describe("insufficient data", () => {
     expect(r.assessment_score).toBe(0);
   });
 
-  it("returns zero for all metric rates on insufficient data", () => {
+  it("leaves every rate unmeasured on insufficient data", () => {
     const r = computeAnnualHealthAssessment(
       baseInput({ total_children: 0, assessments: [] }),
     );
-    expect(r.children_assessed_rate).toBe(0);
-    expect(r.deadline_compliance_rate).toBe(0);
-    expect(r.immunisation_rate).toBe(0);
-    expect(r.dental_optical_rate).toBe(0);
-    expect(r.child_contribution_rate).toBe(0);
-    expect(r.report_sharing_rate).toBe(0);
+    expect(r.children_assessed_rate).toBeNull();
+    expect(r.deadline_compliance_rate).toBeNull();
+    expect(r.immunisation_rate).toBeNull();
+    expect(r.dental_optical_rate).toBeNull();
+    expect(r.child_contribution_rate).toBeNull();
+    expect(r.report_sharing_rate).toBeNull();
   });
 
   it("returns no-data headline on insufficient data", () => {
@@ -177,7 +177,7 @@ describe("zero records with positive total_children", () => {
     expect(r.total_assessments).toBe(0);
   });
 
-  it("all metric rates are 0", () => {
+  it("leaves every rate unmeasured except children_assessed_rate, which is a genuine 0", () => {
     expect(r.children_assessed_rate).toBe(0);
     // Empty population: this asserted the fab-0 the helper used to return.
     expect(r.deadline_compliance_rate).toBeNull();

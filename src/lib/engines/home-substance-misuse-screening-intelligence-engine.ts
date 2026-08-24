@@ -43,12 +43,18 @@ export interface SubstanceMisuseResult {
   screening_score: number;
   headline: string;
   total_screenings: number;
-  children_screened_rate: number;
-  high_risk_rate: number;
-  harm_reduction_rate: number;
-  professional_support_rate: number;
-  child_insight_rate: number;
-  information_sharing_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_screened_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  high_risk_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  harm_reduction_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professional_support_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_insight_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  information_sharing_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -91,12 +97,12 @@ export function computeSubstanceMisuseScreening(
       screening_score: 0,
       headline: "No data available for substance misuse screening analysis",
       total_screenings: 0,
-      children_screened_rate: 0,
-      high_risk_rate: 0,
-      harm_reduction_rate: 0,
-      professional_support_rate: 0,
-      child_insight_rate: 0,
-      information_sharing_rate: 0,
+      children_screened_rate: null,
+      high_risk_rate: null,
+      harm_reduction_rate: null,
+      professional_support_rate: null,
+      child_insight_rate: null,
+      information_sharing_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

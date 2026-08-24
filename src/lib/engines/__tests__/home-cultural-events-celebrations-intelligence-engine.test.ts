@@ -208,14 +208,14 @@ describe("computeCulturalEventsCelebrations", () => {
   /* ── 1. pct() edge: pct(0,0) = 0 ──────────────────────────────────────── */
 
   describe("pct(0,0) = 0 contract", () => {
-    it("returns 0 rates when arrays are empty but total_children > 0", () => {
+    it("leaves every rate unmeasured when arrays are empty but total_children > 0", () => {
       const r = runEmpty();
-      expect(r.event_participation_rate).toBe(0);
-      expect(r.diversity_celebration_rate).toBe(0);
-      expect(r.heritage_acknowledgement_rate).toBe(0);
-      expect(r.festival_inclusion_rate).toBe(0);
-      expect(r.child_led_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.event_participation_rate).toBeNull();
+      expect(r.diversity_celebration_rate).toBeNull();
+      expect(r.heritage_acknowledgement_rate).toBeNull();
+      expect(r.festival_inclusion_rate).toBeNull();
+      expect(r.child_led_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1363,7 +1363,7 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.child_satisfaction_rate).toBe(50);
     });
 
-    it("diversity_celebration_rate is 0 when total_children is 0", () => {
+    it("diversity_celebration_rate is unmeasured when total_children is 0", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
@@ -1373,10 +1373,10 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [],
         child_led_activity_records: [],
       });
-      expect(r.diversity_celebration_rate).toBeNull();;
+      expect(r.diversity_celebration_rate).toBeNull();
     });
 
-    it("festival_inclusion_rate is 0 when total_children is 0", () => {
+    it("festival_inclusion_rate is unmeasured when total_children is 0", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
@@ -1386,10 +1386,10 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [makeFestivalInclusion("f1")],
         child_led_activity_records: [],
       });
-      expect(r.festival_inclusion_rate).toBeNull();;
+      expect(r.festival_inclusion_rate).toBeNull();
     });
 
-    it("child_led_rate is 0 when total_children is 0", () => {
+    it("child_led_rate is unmeasured when total_children is 0", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
@@ -1399,7 +1399,7 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [],
         child_led_activity_records: [makeChildLedActivity("cla1")],
       });
-      expect(r.child_led_rate).toBeNull();;
+      expect(r.child_led_rate).toBeNull();
     });
   });
 
@@ -2644,9 +2644,9 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.cultural_rating).not.toBe("insufficient_data");
       expect(r.total_cultural_events).toBe(1);
       // Diversity celebration rate, festival inclusion rate, child-led rate = 0 (total_children=0)
-      expect(r.diversity_celebration_rate).toBeNull();;
-      expect(r.festival_inclusion_rate).toBeNull();;
-      expect(r.child_led_rate).toBeNull();;
+      expect(r.diversity_celebration_rate).toBeNull();
+      expect(r.festival_inclusion_rate).toBeNull();
+      expect(r.child_led_rate).toBeNull();
     });
 
     it("duplicate child_ids in different celebrations are de-duplicated for diversity_celebration_rate", () => {

@@ -151,20 +151,20 @@ export function computeHomeTransitionPlanning(
         : "No transition planning goals recorded.",
       goal_status: {
         total_goals: 0, not_started: 0, in_progress: 0, on_track: 0,
-        at_risk: 0, achieved: 0, paused: 0, achievement_rate: 0, active_rate: 0,
+        at_risk: 0, achieved: 0, paused: 0, achievement_rate: null, active_rate: null,
       },
       area_coverage: {
         areas_covered: 0, total_possible_areas: ALL_AREAS.length,
-        coverage_rate: 0, area_distribution: {}, gaps: [...ALL_AREAS],
+        coverage_rate: null, area_distribution: {}, gaps: [...ALL_AREAS],
       },
       child_coverage: {
         children_with_goals: 0, total_children: 0,
-        coverage_rate: 0, goals_per_child: {}, children_without_goals: 0,
+        coverage_rate: null, goals_per_child: {}, children_without_goals: 0,
       },
       progress: {
         avg_percent_complete: 0, goals_overdue: 0, goals_with_reviews: 0,
-        review_rate: 0, reviews_overdue: 0, goals_with_actions: 0,
-        action_coverage_rate: 0,
+        review_rate: null, reviews_overdue: 0, goals_with_actions: 0,
+        action_coverage_rate: null,
       },
       strengths: [],
       concerns: [],

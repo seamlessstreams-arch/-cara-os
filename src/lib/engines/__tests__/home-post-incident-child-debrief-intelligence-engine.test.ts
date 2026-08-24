@@ -56,17 +56,17 @@ describe("computePostIncidentDebrief", () => {
       expect(result.debrief_score).toBe(0);
     });
 
-    it("returns zero for all rates when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const result = computePostIncidentDebrief(
         baseInput({ total_children: 0 }),
       );
-      expect(result.timeliness_rate).toBe(0);
-      expect(result.child_readiness_rate).toBe(0);
-      expect(result.voice_depth_rate).toBe(0);
-      expect(result.restorative_action_rate).toBe(0);
-      expect(result.follow_up_rate).toBe(0);
+      expect(result.timeliness_rate).toBeNull();
+      expect(result.child_readiness_rate).toBeNull();
+      expect(result.voice_depth_rate).toBeNull();
+      expect(result.restorative_action_rate).toBeNull();
+      expect(result.follow_up_rate).toBeNull();
       expect(result.method_diversity).toBe(0);
-      expect(result.children_debriefed_rate).toBe(0);
+      expect(result.children_debriefed_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {

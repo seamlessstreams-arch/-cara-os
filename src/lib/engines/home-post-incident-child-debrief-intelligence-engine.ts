@@ -51,12 +51,18 @@ export interface PostIncidentDebriefResult {
   debrief_score: number;
   headline: string;
   total_debriefs: number;
-  children_debriefed_rate: number;
-  timeliness_rate: number;
-  child_readiness_rate: number;
-  voice_depth_rate: number;
-  restorative_action_rate: number;
-  follow_up_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_debriefed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timeliness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_readiness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voice_depth_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorative_action_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_rate: number | null;
   method_diversity: number;
   strengths: string[];
   concerns: string[];
@@ -100,12 +106,12 @@ export function computePostIncidentDebrief(
       debrief_score: 0,
       headline: "No data available for post-incident debrief intelligence analysis",
       total_debriefs: 0,
-      children_debriefed_rate: 0,
-      timeliness_rate: 0,
-      child_readiness_rate: 0,
-      voice_depth_rate: 0,
-      restorative_action_rate: 0,
-      follow_up_rate: 0,
+      children_debriefed_rate: null,
+      timeliness_rate: null,
+      child_readiness_rate: null,
+      voice_depth_rate: null,
+      restorative_action_rate: null,
+      follow_up_rate: null,
       method_diversity: 0,
       strengths: [],
       concerns: [],

@@ -138,9 +138,9 @@ describe("approval profile", () => {
         makeExpense({ id: "e1", status: "submitted", approved_by: null, approved_at: null }),
       ],
     }));
-    expect(r.approval.avg_approval_days).toBeNull();;
-    expect(r.approval.fastest_approval_days).toBeNull();;
-    expect(r.approval.slowest_approval_days).toBeNull();;
+    expect(r.approval.avg_approval_days).toBeNull();
+    expect(r.approval.fastest_approval_days).toBeNull();
+    expect(r.approval.slowest_approval_days).toBeNull();
   });
 });
 

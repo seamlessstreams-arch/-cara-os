@@ -52,16 +52,16 @@ describe("computeNotificationResponsiveness", () => {
       expect(r.headline).toContain("Insufficient data");
     });
 
-    it("insufficient_data sets all numeric metrics to 0", () => {
+    it("insufficient_data leaves read_rate, urgent_read_rate and staff_coverage_rate unmeasured", () => {
       const r = computeNotificationResponsiveness(baseInput({ total_staff: 0, notifications: [] }));
       expect(r.total_notifications).toBe(0);
-      expect(r.read_rate).toBe(0);
-      expect(r.urgent_read_rate).toBe(0);
+      expect(r.read_rate).toBeNull();
+      expect(r.urgent_read_rate).toBeNull();
       expect(r.average_response_hours).toBe(0);
       expect(r.urgent_response_hours).toBe(0);
       expect(r.unread_count).toBe(0);
       expect(r.urgent_unread_count).toBe(0);
-      expect(r.staff_coverage_rate).toBe(0);
+      expect(r.staff_coverage_rate).toBeNull();
       expect(r.notification_type_diversity).toBe(0);
       expect(r.oldest_unread_hours).toBe(0);
     });
@@ -1604,7 +1604,7 @@ describe("computeNotificationResponsiveness", () => {
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "ec12-1", read: true, read_at: null })],
       }));
-      expect(r.average_response_hours).toBeNull();;
+      expect(r.average_response_hours).toBeNull();
     });
 
     it("all notifications same recipient still counts as 1 for coverage", () => {

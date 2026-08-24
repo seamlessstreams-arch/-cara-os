@@ -153,15 +153,15 @@ function emptyDomain(): DomainProfile {
 }
 
 function emptyProgress(): ProgressProfile {
-  return { improving_count: 0, stable_count: 0, declining_count: 0, improving_rate: 0, declining_rate: 0, avg_current_rating: 0, avg_baseline_rating: 0, avg_progress: 0, achieved_count: 0, on_target_count: 0 };
+  return { improving_count: 0, stable_count: 0, declining_count: 0, improving_rate: null, declining_rate: null, avg_current_rating: 0, avg_baseline_rating: 0, avg_progress: 0, achieved_count: 0, on_target_count: 0 };
 }
 
 function emptyReview(): ReviewProfile {
-  return { total_reviews: 0, reviews_in_window: 0, avg_reviews_per_target: 0, overdue_targets: 0, overdue_rate: 0, yp_participation_rate: 0, reviews_with_barriers: 0, reviews_with_next_steps: 0 };
+  return { total_reviews: 0, reviews_in_window: 0, avg_reviews_per_target: 0, overdue_targets: 0, overdue_rate: null, yp_participation_rate: null, reviews_with_barriers: 0, reviews_with_next_steps: 0 };
 }
 
 function emptyEquity(): EquityProfile {
-  return { children_with_targets: 0, children_without_targets: 0, coverage_rate: 0, avg_targets_per_child: 0, min_targets: 0, max_targets: 0, yp_voice_rate: 0 };
+  return { children_with_targets: 0, children_without_targets: 0, coverage_rate: null, avg_targets_per_child: 0, min_targets: 0, max_targets: 0, yp_voice_rate: null };
 }
 
 // ── Main Function ──────────────────────────────────────────────────────────
