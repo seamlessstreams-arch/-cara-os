@@ -13,6 +13,8 @@
 
 // -- Input Types --------------------------------------------------------------
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface BirthdayPlanRecordInput {
   id: string;
   child_id: string;
@@ -184,8 +186,9 @@ export interface BirthdayCelebrationResult {
 
 // -- Helpers ------------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -447,54 +450,54 @@ export function computeBirthdaySpecialOccasionCelebration(
   let score = 52;
 
   // --- Bonus 1: birthdayPlanningRate (>=90: +4, >=70: +2) ---
-  if (birthdayPlanningRate >= 90) score += 4;
-  else if (birthdayPlanningRate >= 70) score += 2;
+  if (meets(birthdayPlanningRate, 90)) score += 4;
+  else if (meets(birthdayPlanningRate, 70)) score += 2;
 
   // --- Bonus 2: celebrationExecutionRate (>=90: +4, >=70: +2) ---
-  if (celebrationExecutionRate >= 90) score += 4;
-  else if (celebrationExecutionRate >= 70) score += 2;
+  if (meets(celebrationExecutionRate, 90)) score += 4;
+  else if (meets(celebrationExecutionRate, 70)) score += 2;
 
   // --- Bonus 3: giftProvisionRate (>=90: +3, >=70: +1) ---
-  if (giftProvisionRate >= 90) score += 3;
-  else if (giftProvisionRate >= 70) score += 1;
+  if (meets(giftProvisionRate, 90)) score += 3;
+  else if (meets(giftProvisionRate, 70)) score += 1;
 
   // --- Bonus 4: memoryMakingRate (>=90: +3, >=70: +1) ---
-  if (memoryMakingRate >= 90) score += 3;
-  else if (memoryMakingRate >= 70) score += 1;
+  if (meets(memoryMakingRate, 90)) score += 3;
+  else if (meets(memoryMakingRate, 70)) score += 1;
 
   // --- Bonus 5: childSatisfactionRate (>=90: +4, >=70: +2) ---
-  if (childSatisfactionRate >= 90) score += 4;
-  else if (childSatisfactionRate >= 70) score += 2;
+  if (meets(childSatisfactionRate, 90)) score += 4;
+  else if (meets(childSatisfactionRate, 70)) score += 2;
 
   // --- Bonus 6: childChoiceRate (>=80: +3, >=60: +1) ---
-  if (childChoiceRate >= 80) score += 3;
-  else if (childChoiceRate >= 60) score += 1;
+  if (meets(childChoiceRate, 80)) score += 3;
+  else if (meets(childChoiceRate, 60)) score += 1;
 
   // --- Bonus 7: personalisationRate (>=90: +3, >=70: +1) ---
-  if (personalisationRate >= 90) score += 3;
-  else if (personalisationRate >= 70) score += 1;
+  if (meets(personalisationRate, 90)) score += 3;
+  else if (meets(personalisationRate, 70)) score += 1;
 
   // --- Bonus 8: feltSpecialRate (>=90: +2, >=70: +1) ---
-  if (feltSpecialRate >= 90) score += 2;
-  else if (feltSpecialRate >= 70) score += 1;
+  if (meets(feltSpecialRate, 90)) score += 2;
+  else if (meets(feltSpecialRate, 70)) score += 1;
 
   // --- Bonus 9: lifeStoryRate (>=80: +2, >=50: +1) ---
-  if (lifeStoryRate >= 80) score += 2;
-  else if (lifeStoryRate >= 50) score += 1;
+  if (meets(lifeStoryRate, 80)) score += 2;
+  else if (meets(lifeStoryRate, 50)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // birthdayPlanningRate < 50 -> -5
-  if (birthdayPlanningRate < 50 && totalBirthdayPlans > 0) score -= 5;
+  if (below(birthdayPlanningRate, 50) && totalBirthdayPlans > 0) score -= 5;
 
   // celebrationExecutionRate < 50 -> -5
-  if (celebrationExecutionRate < 50 && totalCelebrations > 0) score -= 5;
+  if (below(celebrationExecutionRate, 50) && totalCelebrations > 0) score -= 5;
 
   // giftProvisionRate < 50 -> -4
-  if (giftProvisionRate < 50 && totalGiftRecords > 0) score -= 4;
+  if (below(giftProvisionRate, 50) && totalGiftRecords > 0) score -= 4;
 
   // childSatisfactionRate < 30 -> -4
-  if (childSatisfactionRate < 30 && totalSatisfactionRecords > 0) score -= 4;
+  if (below(childSatisfactionRate, 30) && totalSatisfactionRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -504,63 +507,63 @@ export function computeBirthdaySpecialOccasionCelebration(
 
   const strengths: string[] = [];
 
-  if (birthdayPlanningRate >= 90 && totalBirthdayPlans > 0) {
+  if (meets(birthdayPlanningRate, 90) && totalBirthdayPlans > 0) {
     strengths.push(
       `${birthdayPlanningRate}% of birthdays have personalised plans created -- the home demonstrates consistent commitment to planning every child's birthday celebration.`,
     );
-  } else if (birthdayPlanningRate >= 70 && totalBirthdayPlans > 0) {
+  } else if (meets(birthdayPlanningRate, 70) && totalBirthdayPlans > 0) {
     strengths.push(
       `${birthdayPlanningRate}% birthday planning rate -- most children have a personalised birthday plan in place.`,
     );
   }
 
-  if (childConsultationRate >= 90 && totalBirthdayPlans > 0) {
+  if (meets(childConsultationRate, 90) && totalBirthdayPlans > 0) {
     strengths.push(
       `${childConsultationRate}% of children consulted about their birthday celebrations -- children's voices genuinely shape how their birthdays are celebrated.`,
     );
-  } else if (childConsultationRate >= 70 && totalBirthdayPlans > 0) {
+  } else if (meets(childConsultationRate, 70) && totalBirthdayPlans > 0) {
     strengths.push(
       `${childConsultationRate}% child consultation rate for birthday planning -- good practice in involving children in their own celebrations.`,
     );
   }
 
-  if (childChoiceRate >= 80 && totalChoiceOpportunities > 0) {
+  if (meets(childChoiceRate, 80) && totalChoiceOpportunities > 0) {
     strengths.push(
       `${childChoiceRate}% of celebration choices made by children (theme, guests, food, activity) -- children are empowered to shape their own celebrations.`,
     );
-  } else if (childChoiceRate >= 60 && totalChoiceOpportunities > 0) {
+  } else if (meets(childChoiceRate, 60) && totalChoiceOpportunities > 0) {
     strengths.push(
       `${childChoiceRate}% child choice rate across celebration decisions -- children have meaningful input into their celebration plans.`,
     );
   }
 
-  if (advancePlanningRate >= 80 && totalBirthdayPlans > 0) {
+  if (meets(advancePlanningRate, 80) && totalBirthdayPlans > 0) {
     strengths.push(
       `${advancePlanningRate}% of birthday celebrations planned at least 14 days in advance -- the home demonstrates forethought and commitment to creating special days for children.`,
     );
   }
 
-  if (celebrationExecutionRate >= 90 && totalCelebrations > 0) {
+  if (meets(celebrationExecutionRate, 90) && totalCelebrations > 0) {
     strengths.push(
       `${celebrationExecutionRate}% celebration execution rate -- the home consistently follows through on planned celebrations.`,
     );
-  } else if (celebrationExecutionRate >= 70 && totalCelebrations > 0) {
+  } else if (meets(celebrationExecutionRate, 70) && totalCelebrations > 0) {
     strengths.push(
       `${celebrationExecutionRate}% of planned celebrations executed -- most celebrations are delivered as planned.`,
     );
   }
 
-  if (onDateRate >= 90 && totalCelebrations > 0) {
+  if (meets(onDateRate, 90) && totalCelebrations > 0) {
     strengths.push(
       `${onDateRate}% of celebrations held on the actual date -- children feel valued when their special day is honoured on time.`,
     );
   }
 
-  if (personalisationRate >= 90 && totalCelebrations > 0) {
+  if (meets(personalisationRate, 90) && totalCelebrations > 0) {
     strengths.push(
       `${personalisationRate}% of celebrations personalised to the individual child -- each celebration reflects the child's personality, interests, and wishes.`,
     );
-  } else if (personalisationRate >= 70 && totalCelebrations > 0) {
+  } else if (meets(personalisationRate, 70) && totalCelebrations > 0) {
     strengths.push(
       `${personalisationRate}% personalisation rate -- most celebrations are tailored to the individual child.`,
     );
@@ -572,19 +575,19 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (peerParticipationRate >= 80 && totalCelebrations > 0) {
+  if (meets(peerParticipationRate, 80) && totalCelebrations > 0) {
     strengths.push(
       `Peers participate in ${peerParticipationRate}% of celebrations -- celebrations are social, inclusive occasions that strengthen relationships between children.`,
     );
   }
 
-  if (familyAttendanceRate >= 50 && totalCelebrations > 0) {
+  if (meets(familyAttendanceRate, 50) && totalCelebrations > 0) {
     strengths.push(
       `Family members attend ${familyAttendanceRate}% of celebrations -- the home actively enables family involvement in children's special occasions.`,
     );
   }
 
-  if (decorationsRate >= 90 && cakeRate >= 90 && totalCelebrations > 0) {
+  if (meets(decorationsRate, 90) && meets(cakeRate, 90) && totalCelebrations > 0) {
     strengths.push(
       "Decorations and cake or treats provided for the vast majority of celebrations -- the home invests in creating a festive atmosphere that helps children feel special.",
     );
@@ -596,61 +599,61 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (giftProvisionRate >= 90 && totalGiftRecords > 0) {
+  if (meets(giftProvisionRate, 90) && totalGiftRecords > 0) {
     strengths.push(
       `${giftProvisionRate}% gift provision rate -- every child receives gifts for their celebrations.`,
     );
-  } else if (giftProvisionRate >= 70 && totalGiftRecords > 0) {
+  } else if (meets(giftProvisionRate, 70) && totalGiftRecords > 0) {
     strengths.push(
       `${giftProvisionRate}% gift provision rate -- most children receive gifts for their celebrations.`,
     );
   }
 
-  if (giftPersonalisationRate >= 90 && totalGiftRecords > 0) {
+  if (meets(giftPersonalisationRate, 90) && totalGiftRecords > 0) {
     strengths.push(
       `${giftPersonalisationRate}% of gifts personalised to children's preferences -- gifts reflect genuine knowledge of each child's interests and wishes.`,
     );
-  } else if (giftPersonalisationRate >= 70 && totalGiftRecords > 0) {
+  } else if (meets(giftPersonalisationRate, 70) && totalGiftRecords > 0) {
     strengths.push(
       `${giftPersonalisationRate}% gift personalisation rate -- most gifts are tailored to children's individual preferences.`,
     );
   }
 
-  if (equityRate >= 90 && totalGiftRecords > 0) {
+  if (meets(equityRate, 90) && totalGiftRecords > 0) {
     strengths.push(
       `${equityRate}% of gifts equitable with peers -- children are treated fairly and do not feel disadvantaged compared to their housemates.`,
     );
   }
 
-  if (thoughtfulPresentationRate >= 90 && totalGiftRecords > 0) {
+  if (meets(thoughtfulPresentationRate, 90) && totalGiftRecords > 0) {
     strengths.push(
       `${thoughtfulPresentationRate}% of gifts presented thoughtfully -- the home ensures the moment of giving is as special as the gift itself.`,
     );
   }
 
-  if (positiveReactionRate >= 90 && totalGiftRecords > 0) {
+  if (meets(positiveReactionRate, 90) && totalGiftRecords > 0) {
     strengths.push(
       `${positiveReactionRate}% positive child reactions to gifts -- children genuinely enjoy and value their presents.`,
     );
   }
 
-  if (memoryMakingRate >= 90 && totalMemoryRecords > 0) {
+  if (meets(memoryMakingRate, 90) && totalMemoryRecords > 0) {
     strengths.push(
       `${memoryMakingRate}% of memory-making activities completed -- the home consistently creates lasting memories of celebrations.`,
     );
-  } else if (memoryMakingRate >= 70 && totalMemoryRecords > 0) {
+  } else if (meets(memoryMakingRate, 70) && totalMemoryRecords > 0) {
     strengths.push(
       `${memoryMakingRate}% memory-making completion rate -- most celebrations include activities that create lasting memories.`,
     );
   }
 
-  if (lifeStoryRate >= 80 && totalMemoryRecords > 0) {
+  if (meets(lifeStoryRate, 80) && totalMemoryRecords > 0) {
     strengths.push(
       `${lifeStoryRate}% of celebration memories added to children's life stories -- celebrations contribute to each child's sense of identity and personal history.`,
     );
   }
 
-  if (childCopyRate >= 80 && totalMemoryRecords > 0) {
+  if (meets(childCopyRate, 80) && totalMemoryRecords > 0) {
     strengths.push(
       `${childCopyRate}% of celebration memories available to children as personal copies -- children own their own celebration memories.`,
     );
@@ -662,75 +665,75 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% of children rate their celebration experience 4 or 5 out of 5 -- children feel genuinely celebrated and valued.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSatisfactionRecords > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate with celebrations -- most children are happy with how their special occasions are celebrated.`,
     );
   }
 
-  if (feltSpecialRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(feltSpecialRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${feltSpecialRate}% of children felt special during their celebrations -- the home creates an atmosphere where every child feels uniquely valued.`,
     );
-  } else if (feltSpecialRate >= 70 && totalSatisfactionRecords > 0) {
+  } else if (meets(feltSpecialRate, 70) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${feltSpecialRate}% of children felt special during celebrations -- most children feel their day is about them.`,
     );
   }
 
-  if (feltListenedToRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(feltListenedToRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${feltListenedToRate}% of children felt listened to about their celebration preferences -- children's voices are heard and acted upon.`,
     );
   }
 
-  if (wishMatchRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(wishMatchRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${wishMatchRate}% of celebrations matched children's wishes -- the home delivers on what children ask for.`,
     );
   }
 
-  if (feltEqualRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(feltEqualRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${feltEqualRate}% of children feel treated equally to peers in celebrations -- equity in celebration provision supports children's sense of belonging and fairness.`,
     );
   }
 
-  if (feedbackActionRate >= 80 && totalSatisfactionRecords > 0) {
+  if (meets(feedbackActionRate, 80) && totalSatisfactionRecords > 0) {
     strengths.push(
       `Feedback acted upon for ${feedbackActionRate}% of celebrations -- the home demonstrates a learning culture by responding to children's celebration feedback.`,
     );
   }
 
-  if (specialRequestFulfilmentRate >= 90 && totalSpecialRequests > 0) {
+  if (meets(specialRequestFulfilmentRate, 90) && totalSpecialRequests > 0) {
     strengths.push(
       `${specialRequestFulfilmentRate}% of special birthday requests fulfilled -- the home goes the extra mile to honour children's specific wishes.`,
     );
   }
 
-  if (culturalConsiderationRate >= 90 && totalBirthdayPlans > 0) {
+  if (meets(culturalConsiderationRate, 90) && totalBirthdayPlans > 0) {
     strengths.push(
       `Cultural considerations documented for ${culturalConsiderationRate}% of birthday plans -- the home respects and reflects each child's cultural background in celebrations.`,
     );
   }
 
-  if (familyContactRate >= 80 && totalBirthdayPlans > 0) {
+  if (meets(familyContactRate, 80) && totalBirthdayPlans > 0) {
     strengths.push(
       `Family contact arranged for ${familyContactRate}% of birthday celebrations -- children can share their special day with family even when not living together.`,
     );
   }
 
-  if (safeguardingRate >= 90 && totalCelebrations > 0) {
+  if (meets(safeguardingRate, 90) && totalCelebrations > 0) {
     strengths.push(
       `Safeguarding considered for ${safeguardingRate}% of celebrations -- the home ensures celebrations are safe and well-planned.`,
     );
   }
 
-  if (secureStorageRate >= 90 && totalMemoryRecords > 0) {
+  if (meets(secureStorageRate, 90) && totalMemoryRecords > 0) {
     strengths.push(
       `${secureStorageRate}% of celebration memories stored securely -- children's private celebration records are properly safeguarded.`,
     );
@@ -740,53 +743,53 @@ export function computeBirthdaySpecialOccasionCelebration(
 
   const concerns: string[] = [];
 
-  if (birthdayPlanningRate < 50 && totalBirthdayPlans > 0) {
+  if (below(birthdayPlanningRate, 50) && totalBirthdayPlans > 0) {
     concerns.push(
       `Only ${birthdayPlanningRate}% of birthdays have plans created -- the majority of children do not have a personalised birthday plan, denying them the anticipation and personalisation that makes birthdays special.`,
     );
-  } else if (birthdayPlanningRate < 70 && birthdayPlanningRate >= 50 && totalBirthdayPlans > 0) {
+  } else if (below(birthdayPlanningRate, 70) && meets(birthdayPlanningRate, 50) && totalBirthdayPlans > 0) {
     concerns.push(
       `Birthday planning rate at ${birthdayPlanningRate}% -- some children's birthdays are not being formally planned and personalised.`,
     );
   }
 
-  if (childConsultationRate < 50 && totalBirthdayPlans > 0) {
+  if (below(childConsultationRate, 50) && totalBirthdayPlans > 0) {
     concerns.push(
       `Only ${childConsultationRate}% of children consulted about their birthday celebrations -- children are not being given a voice in how their most personal day is celebrated.`,
     );
-  } else if (childConsultationRate < 70 && childConsultationRate >= 50 && totalBirthdayPlans > 0) {
+  } else if (below(childConsultationRate, 70) && meets(childConsultationRate, 50) && totalBirthdayPlans > 0) {
     concerns.push(
       `Child consultation rate at ${childConsultationRate}% -- not all children are being asked about their birthday preferences.`,
     );
   }
 
-  if (childChoiceRate < 50 && totalChoiceOpportunities > 0) {
+  if (below(childChoiceRate, 50) && totalChoiceOpportunities > 0) {
     concerns.push(
       `Only ${childChoiceRate}% of celebration choices made by children -- children are not being empowered to shape their own celebrations, which undermines their sense of agency and control.`,
     );
   }
 
-  if (celebrationExecutionRate < 50 && totalCelebrations > 0) {
+  if (below(celebrationExecutionRate, 50) && totalCelebrations > 0) {
     concerns.push(
       `Only ${celebrationExecutionRate}% of planned celebrations executed -- the majority of celebrations are not being delivered, meaning children are being let down on their special occasions.`,
     );
-  } else if (celebrationExecutionRate < 70 && celebrationExecutionRate >= 50 && totalCelebrations > 0) {
+  } else if (below(celebrationExecutionRate, 70) && meets(celebrationExecutionRate, 50) && totalCelebrations > 0) {
     concerns.push(
       `Celebration execution rate at ${celebrationExecutionRate}% -- some planned celebrations are not being delivered, which risks disappointing children.`,
     );
   }
 
-  if (onDateRate < 50 && totalCelebrations > 0) {
+  if (below(onDateRate, 50) && totalCelebrations > 0) {
     concerns.push(
       `Only ${onDateRate}% of celebrations held on the actual date -- most children's special days are not being celebrated when they should be.`,
     );
   }
 
-  if (personalisationRate < 50 && totalCelebrations > 0) {
+  if (below(personalisationRate, 50) && totalCelebrations > 0) {
     concerns.push(
       `Only ${personalisationRate}% of celebrations personalised to the individual child -- generic celebrations fail to make children feel individually valued and known.`,
     );
-  } else if (personalisationRate < 70 && personalisationRate >= 50 && totalCelebrations > 0) {
+  } else if (below(personalisationRate, 70) && meets(personalisationRate, 50) && totalCelebrations > 0) {
     concerns.push(
       `Personalisation rate at ${personalisationRate}% -- some celebrations are not tailored to children's individual interests and preferences.`,
     );
@@ -804,95 +807,95 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (giftProvisionRate < 50 && totalGiftRecords > 0) {
+  if (below(giftProvisionRate, 50) && totalGiftRecords > 0) {
     concerns.push(
       `Only ${giftProvisionRate}% gift provision rate -- the majority of children are not receiving gifts for their celebrations, which is a fundamental failure to make children feel valued and cared for.`,
     );
-  } else if (giftProvisionRate < 70 && giftProvisionRate >= 50 && totalGiftRecords > 0) {
+  } else if (below(giftProvisionRate, 70) && meets(giftProvisionRate, 50) && totalGiftRecords > 0) {
     concerns.push(
       `Gift provision at ${giftProvisionRate}% -- some children are not receiving gifts for their special occasions.`,
     );
   }
 
-  if (giftPersonalisationRate < 50 && totalGiftRecords > 0) {
+  if (below(giftPersonalisationRate, 50) && totalGiftRecords > 0) {
     concerns.push(
       `Only ${giftPersonalisationRate}% of gifts personalised -- generic gifts signal that staff do not know or value children's individual interests and preferences.`,
     );
   }
 
-  if (equityRate < 70 && totalGiftRecords > 0) {
+  if (below(equityRate, 70) && totalGiftRecords > 0) {
     concerns.push(
       `Only ${equityRate}% of gifts equitable with peers -- inequitable gift provision creates feelings of unfairness and being less valued among children.`,
     );
   }
 
-  if (budgetAdequacyRate < 50 && totalGiftRecords > 0) {
+  if (below(budgetAdequacyRate, 50) && totalGiftRecords > 0) {
     concerns.push(
       `Only ${budgetAdequacyRate}% of gift budgets considered adequate -- insufficient investment in gifts communicates to children that their celebrations are not a priority.`,
     );
   }
 
-  if (memoryMakingRate < 50 && totalMemoryRecords > 0) {
+  if (below(memoryMakingRate, 50) && totalMemoryRecords > 0) {
     concerns.push(
       `Only ${memoryMakingRate}% of memory-making activities completed -- children are missing out on lasting records of their celebrations that contribute to their sense of identity and personal history.`,
     );
-  } else if (memoryMakingRate < 70 && memoryMakingRate >= 50 && totalMemoryRecords > 0) {
+  } else if (below(memoryMakingRate, 70) && meets(memoryMakingRate, 50) && totalMemoryRecords > 0) {
     concerns.push(
       `Memory-making at ${memoryMakingRate}% -- some celebrations lack activities that create lasting memories for children.`,
     );
   }
 
-  if (lifeStoryRate < 50 && totalMemoryRecords > 0) {
+  if (below(lifeStoryRate, 50) && totalMemoryRecords > 0) {
     concerns.push(
       `Only ${lifeStoryRate}% of celebration memories added to life stories -- children are losing important identity-building moments from their personal narrative.`,
     );
   }
 
-  if (childConsentRate < 70 && totalMemoryRecords > 0) {
+  if (below(childConsentRate, 70) && totalMemoryRecords > 0) {
     concerns.push(
       `Child consent for memory-making activities at only ${childConsentRate}% -- children's privacy and autonomy regarding photographs and recordings must be consistently respected.`,
     );
   }
 
-  if (childSatisfactionRate < 30 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 30) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% of children rate celebrations 4+ out of 5 -- the majority of children are not satisfied with how their special occasions are celebrated.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 30 && totalSatisfactionRecords > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 30) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% -- not all children are happy with their celebrations.`,
     );
   }
 
-  if (feltSpecialRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feltSpecialRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feltSpecialRate}% of children felt special during their celebrations -- the home is failing to create the sense of being uniquely valued that every child deserves on their special day.`,
     );
-  } else if (feltSpecialRate < 70 && feltSpecialRate >= 50 && totalSatisfactionRecords > 0) {
+  } else if (below(feltSpecialRate, 70) && meets(feltSpecialRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feltSpecialRate}% of children felt special -- some children do not feel their celebrations are truly about them.`,
     );
   }
 
-  if (feltListenedToRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feltListenedToRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feltListenedToRate}% of children felt listened to about celebration preferences -- children's wishes are not being adequately sought or honoured.`,
     );
   }
 
-  if (feltEqualRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feltEqualRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feltEqualRate}% of children feel treated equally to peers in celebrations -- perceived inequality in celebration provision undermines children's sense of belonging and fairness.`,
     );
   }
 
-  if (wishMatchRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(wishMatchRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${wishMatchRate}% of celebrations matched children's wishes -- there is a significant gap between what children want and what they receive.`,
     );
   }
 
-  if (feedbackActionRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feedbackActionRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Feedback acted upon for only ${feedbackActionRate}% of celebrations -- children's views about improving celebrations are not being implemented.`,
     );
@@ -927,7 +930,7 @@ export function computeBirthdaySpecialOccasionCelebration(
   const recommendations: BirthdayCelebrationRecommendation[] = [];
   let rank = 0;
 
-  if (birthdayPlanningRate < 50 && totalBirthdayPlans > 0) {
+  if (below(birthdayPlanningRate, 50) && totalBirthdayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -937,7 +940,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (celebrationExecutionRate < 50 && totalCelebrations > 0) {
+  if (below(celebrationExecutionRate, 50) && totalCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -947,7 +950,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (giftProvisionRate < 50 && totalGiftRecords > 0) {
+  if (below(giftProvisionRate, 50) && totalGiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -957,7 +960,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (childSatisfactionRate < 30 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 30) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -967,7 +970,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (childChoiceRate < 50 && totalChoiceOpportunities > 0) {
+  if (below(childChoiceRate, 50) && totalChoiceOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -977,7 +980,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (feltSpecialRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feltSpecialRate, 50) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -987,7 +990,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (personalisationRate < 50 && totalCelebrations > 0) {
+  if (below(personalisationRate, 50) && totalCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -997,7 +1000,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (memoryMakingRate < 50 && totalMemoryRecords > 0) {
+  if (below(memoryMakingRate, 50) && totalMemoryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1007,7 +1010,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (lifeStoryRate < 50 && totalMemoryRecords > 0) {
+  if (below(lifeStoryRate, 50) && totalMemoryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1017,7 +1020,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (equityRate < 70 && totalGiftRecords > 0) {
+  if (below(equityRate, 70) && totalGiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1027,7 +1030,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (feedbackActionRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feedbackActionRate, 50) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1037,7 +1040,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (familyContactRate < 50 && totalBirthdayPlans > 0) {
+  if (below(familyContactRate, 50) && totalBirthdayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1047,7 +1050,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (birthdayPlanningRate >= 50 && birthdayPlanningRate < 70 && totalBirthdayPlans > 0) {
+  if (meets(birthdayPlanningRate, 50) && below(birthdayPlanningRate, 70) && totalBirthdayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1057,7 +1060,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (celebrationExecutionRate >= 50 && celebrationExecutionRate < 70 && totalCelebrations > 0) {
+  if (meets(celebrationExecutionRate, 50) && below(celebrationExecutionRate, 70) && totalCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1067,7 +1070,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (giftProvisionRate >= 50 && giftProvisionRate < 70 && totalGiftRecords > 0) {
+  if (meets(giftProvisionRate, 50) && below(giftProvisionRate, 70) && totalGiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1077,7 +1080,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (childSatisfactionRate >= 30 && childSatisfactionRate < 70 && totalSatisfactionRecords > 0) {
+  if (meets(childSatisfactionRate, 30) && below(childSatisfactionRate, 70) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1133,35 +1136,35 @@ export function computeBirthdaySpecialOccasionCelebration(
 
   // --- Critical insights ---
 
-  if (birthdayPlanningRate < 50 && totalBirthdayPlans > 0) {
+  if (below(birthdayPlanningRate, 50) && totalBirthdayPlans > 0) {
     insights.push({
       text: `Only ${birthdayPlanningRate}% of birthdays have personalised plans. Ofsted will view the absence of birthday planning as evidence that the home does not prioritise making children feel individually valued -- a core expectation of nurturing, personalised care under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (celebrationExecutionRate < 50 && totalCelebrations > 0) {
+  if (below(celebrationExecutionRate, 50) && totalCelebrations > 0) {
     insights.push({
       text: `Only ${celebrationExecutionRate}% of planned celebrations delivered. Failing to follow through on celebrations is deeply damaging to looked-after children who may already have experiences of being let down. Ofsted expects consistent, reliable celebration of milestones under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (giftProvisionRate < 50 && totalGiftRecords > 0) {
+  if (below(giftProvisionRate, 50) && totalGiftRecords > 0) {
     insights.push({
       text: `Only ${giftProvisionRate}% gift provision rate. For looked-after children, receiving gifts on birthdays and special occasions is not a luxury -- it is fundamental to feeling cared for and valued. The absence of gifts sends a powerful message that the child does not matter.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 30 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 30) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% of children rate celebrations positively. When the majority of children are dissatisfied with their celebrations, it signals a systemic failure to create meaningful, personalised experiences. Ofsted inspectors will explore this with children directly.`,
       severity: "critical",
     });
   }
 
-  if (feltSpecialRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feltSpecialRate, 50) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `Only ${feltSpecialRate}% of children felt special during celebrations. For children in care, feeling special on their birthday or celebration is a critical emotional need. When children do not feel special, it reinforces feelings of not being valued or important.`,
       severity: "critical",
@@ -1177,70 +1180,70 @@ export function computeBirthdaySpecialOccasionCelebration(
 
   // --- Warning insights ---
 
-  if (birthdayPlanningRate >= 50 && birthdayPlanningRate < 70 && totalBirthdayPlans > 0) {
+  if (meets(birthdayPlanningRate, 50) && below(birthdayPlanningRate, 70) && totalBirthdayPlans > 0) {
     insights.push({
       text: `Birthday planning at ${birthdayPlanningRate}% -- improving but some children still lack personalised birthday plans. Every child deserves anticipation and personalisation for their birthday.`,
       severity: "warning",
     });
   }
 
-  if (celebrationExecutionRate >= 50 && celebrationExecutionRate < 70 && totalCelebrations > 0) {
+  if (meets(celebrationExecutionRate, 50) && below(celebrationExecutionRate, 70) && totalCelebrations > 0) {
     insights.push({
       text: `Celebration execution at ${celebrationExecutionRate}% -- some celebrations are not being delivered as planned. Even one missed celebration can be deeply disappointing for a child in care.`,
       severity: "warning",
     });
   }
 
-  if (personalisationRate >= 50 && personalisationRate < 70 && totalCelebrations > 0) {
+  if (meets(personalisationRate, 50) && below(personalisationRate, 70) && totalCelebrations > 0) {
     insights.push({
       text: `Personalisation at ${personalisationRate}% -- not all celebrations reflect the individual child. Generic celebrations can feel institutional rather than homely and nurturing.`,
       severity: "warning",
     });
   }
 
-  if (childChoiceRate >= 50 && childChoiceRate < 80 && totalChoiceOpportunities > 0) {
+  if (meets(childChoiceRate, 50) && below(childChoiceRate, 80) && totalChoiceOpportunities > 0) {
     insights.push({
       text: `Child choice rate at ${childChoiceRate}% -- children are not consistently empowered to make decisions about their own celebrations. Increasing choice strengthens children's agency and sense of control.`,
       severity: "warning",
     });
   }
 
-  if (giftProvisionRate >= 50 && giftProvisionRate < 70 && totalGiftRecords > 0) {
+  if (meets(giftProvisionRate, 50) && below(giftProvisionRate, 70) && totalGiftRecords > 0) {
     insights.push({
       text: `Gift provision at ${giftProvisionRate}% -- while improving, some children are still not receiving gifts. Every missed gift is a missed opportunity to show a child they are valued.`,
       severity: "warning",
     });
   }
 
-  if (memoryMakingRate >= 50 && memoryMakingRate < 70 && totalMemoryRecords > 0) {
+  if (meets(memoryMakingRate, 50) && below(memoryMakingRate, 70) && totalMemoryRecords > 0) {
     insights.push({
       text: `Memory-making at ${memoryMakingRate}% -- some celebrations lack lasting memory-making activities. Celebration memories are important for identity development and life story work.`,
       severity: "warning",
     });
   }
 
-  if (childSatisfactionRate >= 30 && childSatisfactionRate < 70 && totalSatisfactionRecords > 0) {
+  if (meets(childSatisfactionRate, 30) && below(childSatisfactionRate, 70) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% -- some children are not happy with their celebrations. Listening to dissatisfied children and acting on their feedback is essential.`,
       severity: "warning",
     });
   }
 
-  if (feltSpecialRate >= 50 && feltSpecialRate < 70 && totalSatisfactionRecords > 0) {
+  if (meets(feltSpecialRate, 50) && below(feltSpecialRate, 70) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `Only ${feltSpecialRate}% of children felt special -- some children do not feel their celebrations are truly about them. Small, personalised touches can make a significant difference.`,
       severity: "warning",
     });
   }
 
-  if (equityRate >= 50 && equityRate < 70 && totalGiftRecords > 0) {
+  if (meets(equityRate, 50) && below(equityRate, 70) && totalGiftRecords > 0) {
     insights.push({
       text: `Gift equity at ${equityRate}% -- some children perceive inequality in how gifts are provided. Looked-after children are particularly sensitive to fairness, as inequity reinforces feelings of being less valued.`,
       severity: "warning",
     });
   }
 
-  if (wouldChangeRate >= 40 && totalSatisfactionRecords > 0) {
+  if (meets(wouldChangeRate, 40) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `${wouldChangeRate}% of children would change something about their celebration -- this level of dissatisfaction suggests systematic improvement is needed to meet children's expectations.`,
       severity: "warning",
@@ -1254,7 +1257,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (familyContactRate >= 30 && familyContactRate < 50 && totalBirthdayPlans > 0) {
+  if (meets(familyContactRate, 30) && below(familyContactRate, 50) && totalBirthdayPlans > 0) {
     insights.push({
       text: `Family contact arranged for only ${familyContactRate}% of birthdays -- many children are unable to share their birthday with family. Where safe, family connection should be facilitated on children's special days.`,
       severity: "warning",
@@ -1281,63 +1284,63 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (birthdayPlanningRate >= 90 && childConsultationRate >= 90 && totalBirthdayPlans > 0) {
+  if (meets(birthdayPlanningRate, 90) && meets(childConsultationRate, 90) && totalBirthdayPlans > 0) {
     insights.push({
       text: `${birthdayPlanningRate}% birthday planning with ${childConsultationRate}% child consultation -- the home plans every birthday with the child at the centre. Ofsted will recognise this as exemplary personalised care.`,
       severity: "positive",
     });
   }
 
-  if (celebrationExecutionRate >= 90 && personalisationRate >= 90 && totalCelebrations > 0) {
+  if (meets(celebrationExecutionRate, 90) && meets(personalisationRate, 90) && totalCelebrations > 0) {
     insights.push({
       text: `${celebrationExecutionRate}% execution with ${personalisationRate}% personalisation -- celebrations are reliably delivered and uniquely tailored to each child. This consistency and attention to individuality creates a home where children feel genuinely known and cherished.`,
       severity: "positive",
     });
   }
 
-  if (giftProvisionRate >= 90 && giftPersonalisationRate >= 90 && totalGiftRecords > 0) {
+  if (meets(giftProvisionRate, 90) && meets(giftPersonalisationRate, 90) && totalGiftRecords > 0) {
     insights.push({
       text: `${giftProvisionRate}% gift provision with ${giftPersonalisationRate}% personalisation -- every child receives thoughtful, personalised gifts. This demonstrates that staff genuinely know each child's interests and invest effort in selecting meaningful presents.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionRate >= 90 && feltSpecialRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(childSatisfactionRate, 90) && meets(feltSpecialRate, 90) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `${childSatisfactionRate}% satisfaction with ${feltSpecialRate}% feeling special -- children overwhelmingly feel valued and celebrated. This is the strongest evidence of nurturing care and will be highlighted positively by Ofsted.`,
       severity: "positive",
     });
   }
 
-  if (memoryMakingRate >= 90 && lifeStoryRate >= 80 && totalMemoryRecords > 0) {
+  if (meets(memoryMakingRate, 90) && meets(lifeStoryRate, 80) && totalMemoryRecords > 0) {
     insights.push({
       text: `${memoryMakingRate}% memory-making with ${lifeStoryRate}% added to life stories -- celebrations are not just experienced but preserved as lasting memories that contribute to each child's identity and personal narrative.`,
       severity: "positive",
     });
   }
 
-  if (childChoiceRate >= 80 && wishMatchRate >= 90 && totalChoiceOpportunities > 0 && totalSatisfactionRecords > 0) {
+  if (meets(childChoiceRate, 80) && meets(wishMatchRate, 90) && totalChoiceOpportunities > 0 && totalSatisfactionRecords > 0) {
     insights.push({
       text: `${childChoiceRate}% child choice with ${wishMatchRate}% wish fulfilment -- children are empowered to shape their celebrations and the home delivers on their wishes. This exemplifies genuine child-centred practice.`,
       severity: "positive",
     });
   }
 
-  if (feedbackActionRate >= 80 && followUpRate >= 80 && totalSatisfactionRecords > 0) {
+  if (meets(feedbackActionRate, 80) && meets(followUpRate, 80) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `${feedbackActionRate}% feedback acted upon with ${followUpRate}% follow-up completed -- the home demonstrates a genuine learning culture by consistently responding to children's celebration feedback. This drives continuous improvement in celebration quality.`,
       severity: "positive",
     });
   }
 
-  if (specialRequestFulfilmentRate >= 90 && totalSpecialRequests > 0) {
+  if (meets(specialRequestFulfilmentRate, 90) && totalSpecialRequests > 0) {
     insights.push({
       text: `${specialRequestFulfilmentRate}% of special birthday requests fulfilled -- the home goes above and beyond to honour children's specific wishes. This level of responsiveness makes children feel truly listened to and valued.`,
       severity: "positive",
     });
   }
 
-  if (familyContactRate >= 80 && familyAttendanceRate >= 50 && totalBirthdayPlans > 0) {
+  if (meets(familyContactRate, 80) && meets(familyAttendanceRate, 50) && totalBirthdayPlans > 0) {
     insights.push({
       text: `Family contact arranged for ${familyContactRate}% of birthdays with ${familyAttendanceRate}% family attendance at celebrations -- the home actively enables children to share their special days with family, maintaining vital connections.`,
       severity: "positive",

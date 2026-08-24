@@ -538,7 +538,9 @@ describe("pct(0,0) = 0 contract", () => {
       total_children: 3,
       celebration_execution_records: [makeCelebration()],
     });
-    expect(r.birthday_planning_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.birthday_planning_rate).toBeNull();
+    expect(r.birthday_planning_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("celebration_execution_rate is 0 when no celebration records", () => {
@@ -546,7 +548,9 @@ describe("pct(0,0) = 0 contract", () => {
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
     });
-    expect(r.celebration_execution_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.celebration_execution_rate).toBeNull();
+    expect(r.celebration_execution_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("gift_provision_rate is 0 when no gift records", () => {
@@ -554,7 +558,9 @@ describe("pct(0,0) = 0 contract", () => {
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
     });
-    expect(r.gift_provision_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.gift_provision_rate).toBeNull();
+    expect(r.gift_provision_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("memory_making_rate is 0 when no memory records", () => {
@@ -562,7 +568,9 @@ describe("pct(0,0) = 0 contract", () => {
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
     });
-    expect(r.memory_making_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.memory_making_rate).toBeNull();
+    expect(r.memory_making_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("child_satisfaction_rate is 0 when no satisfaction records", () => {
@@ -578,7 +586,9 @@ describe("pct(0,0) = 0 contract", () => {
       total_children: 3,
       celebration_execution_records: [makeCelebration()],
     });
-    expect(r.child_choice_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.child_choice_rate).toBeNull();
+    expect(r.child_choice_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 

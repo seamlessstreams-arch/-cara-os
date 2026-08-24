@@ -362,7 +362,9 @@ describe("Fault resolution rate", () => {
 
   it("28 — 0% when zero faults found (0/0)", () => {
     const r = run({ boiler_service_records: [makeBoilerService({ faults_found: 0, faults_resolved: 0 })] });
-    expect(r.fault_resolution_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.fault_resolution_rate).toBeNull();
+    expect(r.fault_resolution_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("29 — 50% when half faults resolved", () => {

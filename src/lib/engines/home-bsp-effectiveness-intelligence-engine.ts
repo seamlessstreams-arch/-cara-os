@@ -9,6 +9,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface BSPPlanInput {
   id: string;
   child_id: string;
@@ -65,10 +67,14 @@ export interface PlanQualityProfile {
   total_inactive: number;
   avg_triggers: number;
   avg_strategies: number;
-  strategy_effectiveness_rate: number;
-  child_voice_rate: number;
-  professional_input_rate: number;
-  safety_plan_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professional_input_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safety_plan_rate: number | null;
   avg_de_escalation_stages: number;
   avg_guidance_points: number;
 }
@@ -84,23 +90,28 @@ export interface BSPBehaviourProfile {
   total_entries: number;
   positive_count: number;
   concerning_count: number;
-  positive_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_rate: number | null;
   high_intensity_count: number;
-  high_intensity_rate: number;
-  strategy_usage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  high_intensity_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_usage_rate: number | null;
 }
 
 export interface BSPRestraintProfile {
   total_restraints: number;
   avg_de_escalation: number;
-  debrief_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debrief_rate: number | null;
 }
 
 export interface BSPCoverageProfile {
   total_children: number;
   children_with_active_bsp: number;
   children_with_concerning_no_bsp: number;
-  coverage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverage_rate: number | null;
 }
 
 export interface BSPRecommendation {
@@ -134,8 +145,9 @@ export interface HomeBSPEffectivenessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function avg(values: number[]): number {
@@ -286,11 +298,11 @@ export function computeHomeBSPEffectiveness(
   // Modifier 1: Strategy effectiveness (±4)
   if (activePlans.length === 0) {
     // no plans → neutral
-  } else if (planQuality.strategy_effectiveness_rate >= 80) {
+  } else if (meets(planQuality.strategy_effectiveness_rate, 80)) {
     bonuses += 4;
-  } else if (planQuality.strategy_effectiveness_rate >= 60) {
+  } else if (meets(planQuality.strategy_effectiveness_rate, 60)) {
     bonuses += 2;
-  } else if (planQuality.strategy_effectiveness_rate >= 40) {
+  } else if (meets(planQuality.strategy_effectiveness_rate, 40)) {
     // +0
   } else {
     bonuses -= 3;
@@ -303,9 +315,9 @@ export function computeHomeBSPEffectiveness(
     const overdueRate = pct(overdueReviews, activePlans.length);
     if (overdueReviews === 0) {
       bonuses += 3;
-    } else if (overdueRate <= 25) {
+    } else if ((overdueRate !== null && overdueRate <= 25)) {
       bonuses += 1;
-    } else if (overdueRate <= 50) {
+    } else if ((overdueRate !== null && overdueRate <= 50)) {
       // +0
     } else {
       bonuses -= 2;
@@ -315,11 +327,11 @@ export function computeHomeBSPEffectiveness(
   // Modifier 3: Child voice (±4)
   if (activePlans.length === 0) {
     // neutral
-  } else if (planQuality.child_voice_rate >= 90) {
+  } else if (meets(planQuality.child_voice_rate, 90)) {
     bonuses += 4;
-  } else if (planQuality.child_voice_rate >= 70) {
+  } else if (meets(planQuality.child_voice_rate, 70)) {
     bonuses += 2;
-  } else if (planQuality.child_voice_rate >= 50) {
+  } else if (meets(planQuality.child_voice_rate, 50)) {
     // +0
   } else {
     bonuses -= 3;
@@ -328,11 +340,11 @@ export function computeHomeBSPEffectiveness(
   // Modifier 4: Professional input (±3)
   if (activePlans.length === 0) {
     // neutral
-  } else if (planQuality.professional_input_rate >= 80) {
+  } else if (meets(planQuality.professional_input_rate, 80)) {
     bonuses += 3;
-  } else if (planQuality.professional_input_rate >= 50) {
+  } else if (meets(planQuality.professional_input_rate, 50)) {
     bonuses += 1;
-  } else if (planQuality.professional_input_rate >= 30) {
+  } else if (meets(planQuality.professional_input_rate, 30)) {
     // +0
   } else {
     bonuses -= 2;
@@ -342,11 +354,11 @@ export function computeHomeBSPEffectiveness(
   if (bspConcerning.length === 0) {
     // no concerning behaviour for BSP children → excellent
     bonuses += 4;
-  } else if (behaviour.strategy_usage_rate >= 80) {
+  } else if (meets(behaviour.strategy_usage_rate, 80)) {
     bonuses += 4;
-  } else if (behaviour.strategy_usage_rate >= 60) {
+  } else if (meets(behaviour.strategy_usage_rate, 60)) {
     bonuses += 2;
-  } else if (behaviour.strategy_usage_rate >= 40) {
+  } else if (meets(behaviour.strategy_usage_rate, 40)) {
     // +0
   } else {
     bonuses -= 3;
@@ -355,11 +367,11 @@ export function computeHomeBSPEffectiveness(
   // Modifier 6: Positive behaviour rate for BSP children (±3)
   if (bspBeh.length === 0) {
     // no data → neutral
-  } else if (behaviour.positive_rate >= 70) {
+  } else if (meets(behaviour.positive_rate, 70)) {
     bonuses += 3;
-  } else if (behaviour.positive_rate >= 50) {
+  } else if (meets(behaviour.positive_rate, 50)) {
     bonuses += 1;
-  } else if (behaviour.positive_rate >= 30) {
+  } else if (meets(behaviour.positive_rate, 30)) {
     // +0
   } else {
     bonuses -= 2;
@@ -368,11 +380,11 @@ export function computeHomeBSPEffectiveness(
   // Modifier 7: Restraint alignment (±4)
   if (bspRestraints.length === 0) {
     bonuses += 4;
-  } else if (restraintProfile.debrief_rate >= 90) {
+  } else if (meets(restraintProfile.debrief_rate, 90)) {
     bonuses += 2;
-  } else if (restraintProfile.debrief_rate >= 60) {
+  } else if (meets(restraintProfile.debrief_rate, 60)) {
     // +0
-  } else if (restraintProfile.debrief_rate >= 40) {
+  } else if (meets(restraintProfile.debrief_rate, 40)) {
     bonuses -= 1;
   } else {
     bonuses -= 3;
@@ -382,11 +394,11 @@ export function computeHomeBSPEffectiveness(
   if (childrenNeedingBSP === 0) {
     // no concerning behaviour → full coverage
     bonuses += 3;
-  } else if (coverageProfile.coverage_rate >= 100) {
+  } else if (meets(coverageProfile.coverage_rate, 100)) {
     bonuses += 3;
-  } else if (coverageProfile.coverage_rate >= 75) {
+  } else if (meets(coverageProfile.coverage_rate, 75)) {
     bonuses += 1;
-  } else if (coverageProfile.coverage_rate >= 50) {
+  } else if (meets(coverageProfile.coverage_rate, 50)) {
     // +0
   } else {
     bonuses -= 2;
@@ -400,11 +412,11 @@ export function computeHomeBSPEffectiveness(
 
   // ── Strengths ────────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (activePlans.length > 0 && planQuality.child_voice_rate >= 90)
+  if (activePlans.length > 0 && meets(planQuality.child_voice_rate, 90))
     strengths.push(
       "Excellent child voice — all BSPs capture the child's own perspective on their behaviour and strategies.",
     );
-  if (activePlans.length > 0 && planQuality.strategy_effectiveness_rate >= 80)
+  if (activePlans.length > 0 && meets(planQuality.strategy_effectiveness_rate, 80))
     strengths.push(
       "High strategy effectiveness — positive strategies within BSPs are rated as effective or highly effective.",
     );
@@ -412,7 +424,7 @@ export function computeHomeBSPEffectiveness(
     strengths.push(
       "All BSP reviews are current — no overdue reviews, demonstrating proactive management oversight.",
     );
-  if (bspConcerning.length > 0 && behaviour.strategy_usage_rate >= 80)
+  if (bspConcerning.length > 0 && meets(behaviour.strategy_usage_rate, 80))
     strengths.push(
       "Staff consistently record strategy use during concerning behaviour, evidencing BSP adherence in practice.",
     );
@@ -420,7 +432,7 @@ export function computeHomeBSPEffectiveness(
     strengths.push(
       "No physical interventions for children with BSPs — plans appear to be reducing restrictive practice effectively.",
     );
-  if (planQuality.safety_plan_rate >= 90 && activePlans.length > 0)
+  if (meets(planQuality.safety_plan_rate, 90) && activePlans.length > 0)
     strengths.push(
       "All BSPs include robust safety plans for high-risk scenarios.",
     );
@@ -441,26 +453,26 @@ export function computeHomeBSPEffectiveness(
     );
   if (
     bspRestraints.length > 0 &&
-    restraintProfile.debrief_rate < 70
+    below(restraintProfile.debrief_rate, 70)
   )
     concerns.push(
       `Child debrief rate following restraint is ${restraintProfile.debrief_rate}% for BSP children — below 70% threshold.`,
     );
   if (
     bspConcerning.length > 0 &&
-    behaviour.strategy_usage_rate < 60
+    below(behaviour.strategy_usage_rate, 60)
   )
     concerns.push(
       `Strategy usage is only ${behaviour.strategy_usage_rate}% during concerning behaviour — BSP strategies may not be embedded in practice.`,
     );
   if (
     bspConcerning.length > 0 &&
-    behaviour.high_intensity_rate > 40
+    above(behaviour.high_intensity_rate, 40)
   )
     concerns.push(
       `${behaviour.high_intensity_rate}% of concerning behaviour for BSP children is high intensity or severe — plans may need strengthening.`,
     );
-  if (planQuality.professional_input_rate < 50 && activePlans.length > 0)
+  if (below(planQuality.professional_input_rate, 50) && activePlans.length > 0)
     concerns.push(
       `Only ${planQuality.professional_input_rate}% of BSPs have professional input — consider requesting specialist guidance.`,
     );
@@ -487,7 +499,7 @@ export function computeHomeBSPEffectiveness(
 
   if (
     bspRestraints.length > 0 &&
-    restraintProfile.debrief_rate < 90
+    below(restraintProfile.debrief_rate, 90)
   )
     recommendations.push({
       rank: ++rank,
@@ -499,7 +511,7 @@ export function computeHomeBSPEffectiveness(
 
   if (
     bspConcerning.length > 0 &&
-    behaviour.strategy_usage_rate < 80
+    below(behaviour.strategy_usage_rate, 80)
   )
     recommendations.push({
       rank: ++rank,
@@ -509,7 +521,7 @@ export function computeHomeBSPEffectiveness(
       regulatory_ref: "Reg 19",
     });
 
-  if (planQuality.professional_input_rate < 80 && activePlans.length > 0)
+  if (below(planQuality.professional_input_rate, 80) && activePlans.length > 0)
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -518,7 +530,7 @@ export function computeHomeBSPEffectiveness(
       regulatory_ref: "Reg 19",
     });
 
-  if (behaviour.positive_rate < 50 && bspBeh.length > 0)
+  if (below(behaviour.positive_rate, 50) && bspBeh.length > 0)
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -533,7 +545,7 @@ export function computeHomeBSPEffectiveness(
   if (
     activePlans.length > 0 &&
     bspConcerning.length > 0 &&
-    behaviour.strategy_usage_rate >= 80
+    meets(behaviour.strategy_usage_rate, 80)
   )
     insights.push({
       text: `Staff are recording BSP strategy use in ${behaviour.strategy_usage_rate}% of concerning entries — this demonstrates strong BSP-to-practice alignment and would evidence Reg 19 compliance to an inspector.`,
@@ -564,7 +576,7 @@ export function computeHomeBSPEffectiveness(
   if (
     activePlans.length > 0 &&
     planQuality.avg_de_escalation_stages >= 3 &&
-    planQuality.safety_plan_rate >= 90
+    meets(planQuality.safety_plan_rate, 90)
   )
     insights.push({
       text: "BSP quality is strong — comprehensive de-escalation staging and safety planning demonstrates a robust, therapeutically informed approach to behaviour management.",
@@ -573,7 +585,7 @@ export function computeHomeBSPEffectiveness(
 
   if (
     bspBeh.length > 0 &&
-    behaviour.positive_rate >= 60
+    meets(behaviour.positive_rate, 60)
   )
     insights.push({
       text: `${behaviour.positive_rate}% of behaviour entries for BSP children are positive — indicating strategies may be working and the therapeutic relationship is intact.`,
@@ -582,7 +594,7 @@ export function computeHomeBSPEffectiveness(
 
   if (
     bspConcerning.length > 0 &&
-    behaviour.high_intensity_rate > 50
+    above(behaviour.high_intensity_rate, 50)
   )
     insights.push({
       text: `Over half of concerning behaviour for BSP children is high intensity or severe. Consider requesting a multi-disciplinary review of BSP strategies and trigger management.`,
@@ -671,7 +683,7 @@ function buildHeadline(
     case "good":
       return `BSPs are working well — ${activePlanCount} active plan${activePlanCount > 1 ? "s" : ""} with good strategy use${cov.children_with_concerning_no_bsp > 0 ? `, though ${cov.children_with_concerning_no_bsp} coverage gap${cov.children_with_concerning_no_bsp > 1 ? "s" : ""} noted` : ""}.`;
     case "adequate":
-      return `BSP effectiveness is adequate — ${activePlanCount} active plan${activePlanCount > 1 ? "s" : ""} but improvements needed in ${beh.strategy_usage_rate < 60 ? "strategy adherence" : "coverage and review currency"}.`;
+      return `BSP effectiveness is adequate — ${activePlanCount} active plan${activePlanCount > 1 ? "s" : ""} but improvements needed in ${below(beh.strategy_usage_rate, 60) ? "strategy adherence" : "coverage and review currency"}.`;
     case "inadequate":
       return `BSP effectiveness is inadequate — significant gaps in ${activePlanCount === 0 ? "BSP coverage" : "plan quality, strategy use, or review currency"} require urgent attention.`;
     default:

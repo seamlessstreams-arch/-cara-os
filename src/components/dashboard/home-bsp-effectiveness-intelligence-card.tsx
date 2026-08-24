@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -135,8 +136,8 @@ export function HomeBSPEffectivenessIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ThumbsUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.behaviour.strategy_usage_rate >= 80 ? "text-[--cs-success]" :
-                  d.behaviour.strategy_usage_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.behaviour.strategy_usage_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.behaviour.strategy_usage_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.behaviour.concerning_count > 0 ? `${d.behaviour.strategy_usage_rate}%` : "—"}
                 </p>
@@ -181,19 +182,19 @@ export function HomeBSPEffectivenessIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Plan Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Effectiveness: <span className={cn("font-medium",
-                  d.plan_quality.strategy_effectiveness_rate >= 80 ? "text-[--cs-success]" :
-                  d.plan_quality.strategy_effectiveness_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.plan_quality.strategy_effectiveness_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.plan_quality.strategy_effectiveness_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.strategy_effectiveness_rate}%` : "N/A"}</span></p>
                 <p>Child voice: <span className={cn("font-medium",
-                  d.plan_quality.child_voice_rate >= 90 ? "text-[--cs-success]" :
-                  d.plan_quality.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.plan_quality.child_voice_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.plan_quality.child_voice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.child_voice_rate}%` : "N/A"}</span></p>
                 <p>Professional input: <span className={cn("font-medium",
-                  d.plan_quality.professional_input_rate >= 80 ? "text-[--cs-success]" :
-                  d.plan_quality.professional_input_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.plan_quality.professional_input_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.plan_quality.professional_input_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.professional_input_rate}%` : "N/A"}</span></p>
                 <p>Safety plan: <span className={cn("font-medium",
-                  d.plan_quality.safety_plan_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  meets(d.plan_quality.safety_plan_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.safety_plan_rate}%` : "N/A"}</span></p>
               </div>
             </div>
@@ -202,12 +203,12 @@ export function HomeBSPEffectivenessIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Entries: <span className="font-medium text-slate-600">{d.behaviour.total_entries}</span></p>
                 <p>Positive: <span className={cn("font-medium",
-                  d.behaviour.positive_rate >= 70 ? "text-[--cs-success]" :
-                  d.behaviour.positive_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.behaviour.positive_rate, 70) ? "text-[--cs-success]" :
+                  meets(d.behaviour.positive_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.behaviour.total_entries > 0 ? `${d.behaviour.positive_rate}%` : "N/A"}</span></p>
                 <p>High intensity: <span className={cn("font-medium",
                   d.behaviour.high_intensity_count === 0 ? "text-[--cs-success]" :
-                  d.behaviour.high_intensity_rate <= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.behaviour.high_intensity_rate !== null && d.behaviour.high_intensity_rate <= 30) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.behaviour.high_intensity_count}</span></p>
                 <p>Overdue reviews: <span className={cn("font-medium",
                   d.currency.overdue_reviews === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"

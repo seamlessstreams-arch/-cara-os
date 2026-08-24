@@ -9,6 +9,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 export interface CareEventRecordInput {
   id: string;
   child_id: string;
@@ -60,11 +62,16 @@ export interface CareEventQualityResult {
   headline: string;
   total_events: number;
   events_last_90_days: number;
-  recording_quality_rate: number;
-  verification_rate: number;
-  routing_completion_rate: number;
-  audit_trail_rate: number;
-  return_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recording_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  verification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  routing_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  audit_trail_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  return_rate: number | null;
   unique_children_covered: number;
   category_diversity: number;
   total_time_saved_minutes: number;
@@ -80,8 +87,9 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function toRating(score: number): CareEventQualityRating {
@@ -185,34 +193,34 @@ export function computeHomeCareEventQuality(
   let score = 52;
 
   // 1. Recording quality (has_content rate)
-  if (recordingQualityRate >= 98) score += 6;
-  else if (recordingQualityRate >= 90) score += 3;
-  else if (recordingQualityRate < 50) score -= 8; // -5 + -3 extra
-  else if (recordingQualityRate < 70) score -= 5;
+  if (meets(recordingQualityRate, 98)) score += 6;
+  else if (meets(recordingQualityRate, 90)) score += 3;
+  else if (below(recordingQualityRate, 50)) score -= 8; // -5 + -3 extra
+  else if (below(recordingQualityRate, 70)) score -= 5;
 
   // 2. Verification compliance (is_verified rate)
-  if (verificationRate >= 95) score += 5;
-  else if (verificationRate >= 80) score += 2;
-  else if (verificationRate < 60) score -= 5;
+  if (meets(verificationRate, 95)) score += 5;
+  else if (meets(verificationRate, 80)) score += 2;
+  else if (below(verificationRate, 60)) score -= 5;
 
   // 3. Routing effectiveness (routes_completed / route_count)
   if (totalRoutes === 0) {
     score -= 1;
   } else {
-    if (routingCompletionRate >= 95) score += 5;
-    else if (routingCompletionRate >= 80) score += 2;
-    else if (routingCompletionRate < 60) score -= 4;
+    if (meets(routingCompletionRate, 95)) score += 5;
+    else if (meets(routingCompletionRate, 80)) score += 2;
+    else if (below(routingCompletionRate, 60)) score -= 4;
   }
 
   // 4. Audit trail completeness (events with audit_trail_count >= 2)
-  if (auditTrailRate >= 90) score += 5;
-  else if (auditTrailRate >= 70) score += 2;
-  else if (auditTrailRate < 50) score -= 4;
+  if (meets(auditTrailRate, 90)) score += 5;
+  else if (meets(auditTrailRate, 70)) score += 2;
+  else if (below(auditTrailRate, 50)) score -= 4;
 
   // 5. Return/correction rate (lower is better)
-  if (returnRate < 5) score += 4;
-  else if (returnRate < 15) score += 2;
-  else if (returnRate > 30) score -= 4;
+  if (below(returnRate, 5)) score += 4;
+  else if (below(returnRate, 15)) score += 2;
+  else if (above(returnRate, 30)) score -= 4;
 
   // 6. Coverage & timeliness
   const goodCoverage = eventsPerChild >= 5;   // at least 5 events per child in 90 days
@@ -230,27 +238,27 @@ export function computeHomeCareEventQuality(
 
   const strengths: string[] = [];
 
-  if (recordingQualityRate >= 98) {
+  if (meets(recordingQualityRate, 98)) {
     strengths.push(`${recordingQualityRate}% of care events have substantive content — exemplary recording practice.`);
-  } else if (recordingQualityRate >= 90) {
+  } else if (meets(recordingQualityRate, 90)) {
     strengths.push(`${recordingQualityRate}% recording quality rate — strong content standards across care events.`);
   }
 
-  if (verificationRate >= 95) {
+  if (meets(verificationRate, 95)) {
     strengths.push(`${verificationRate}% verification rate — management oversight of care events is comprehensive.`);
-  } else if (verificationRate >= 80) {
+  } else if (meets(verificationRate, 80)) {
     strengths.push(`${verificationRate}% verification rate — good management oversight of care event records.`);
   }
 
-  if (totalRoutes > 0 && routingCompletionRate >= 95) {
+  if (totalRoutes > 0 && meets(routingCompletionRate, 95)) {
     strengths.push(`${routingCompletionRate}% routing completion — care events are being processed and linked effectively.`);
   }
 
-  if (auditTrailRate >= 90) {
+  if (meets(auditTrailRate, 90)) {
     strengths.push(`${auditTrailRate}% of events have full audit trails — strong governance and accountability.`);
   }
 
-  if (returnRate < 5 && events.length > 0) {
+  if (below(returnRate, 5) && events.length > 0) {
     strengths.push(`Only ${returnRate}% return rate — staff are recording accurately with minimal corrections needed.`);
   }
 
@@ -266,24 +274,24 @@ export function computeHomeCareEventQuality(
 
   const concerns: string[] = [];
 
-  if (recordingQualityRate < 70) {
+  if (below(recordingQualityRate, 70)) {
     concerns.push(`Only ${recordingQualityRate}% of care events have content — ${events.length - withContent.length} events lack substantive recording, undermining the evidential value of the care record.`);
   }
 
-  if (verificationRate < 60) {
+  if (below(verificationRate, 60)) {
     concerns.push(`Only ${verificationRate}% verification rate — ${events.length - verified.length} care events lack management verification, creating a significant oversight gap.`);
   }
 
-  if (totalRoutes > 0 && routingCompletionRate < 60) {
+  if (totalRoutes > 0 && below(routingCompletionRate, 60)) {
     const failedRoutes = events.reduce((sum, e) => sum + e.routes_failed, 0);
     concerns.push(`Only ${routingCompletionRate}% routing completion with ${failedRoutes} failed routes — care event data is not reaching linked systems reliably.`);
   }
 
-  if (auditTrailRate < 50) {
+  if (below(auditTrailRate, 50)) {
     concerns.push(`Only ${auditTrailRate}% of events have adequate audit trails — ${events.length - withAuditTrail.length} events lack the minimum two audit entries needed for accountability.`);
   }
 
-  if (returnRate > 30) {
+  if (above(returnRate, 30)) {
     concerns.push(`${returnRate}% return rate — nearly a third of care events are being returned for corrections, indicating quality issues in initial recording.`);
   }
 
@@ -305,23 +313,23 @@ export function computeHomeCareEventQuality(
   const recs: CareEventRecommendation[] = [];
   let rank = 1;
 
-  if (recordingQualityRate < 70) {
+  if (below(recordingQualityRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Improve care event content quality — implement recording standards that require substantive descriptions of children's experiences and staff responses.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
-  if (verificationRate < 60) {
+  if (below(verificationRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Establish daily verification workflow — managers must review and verify all care events within 24 hours of recording.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
-  if (totalRoutes > 0 && routingCompletionRate < 60) {
+  if (totalRoutes > 0 && below(routingCompletionRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Investigate and resolve routing failures — care event data must flow to linked records (chronology, risk assessments, LAC reviews) without interruption.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
-  if (auditTrailRate < 50) {
+  if (below(auditTrailRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Ensure audit trail completeness — every care event should have at least two audit entries (creation and verification) to evidence governance.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
-  if (returnRate > 30) {
+  if (above(returnRate, 30)) {
     recs.push({ rank: rank++, recommendation: "Address high return rate through staff training — targeted support on recording standards will reduce corrections and improve first-time quality.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 36" });
   }
 
@@ -341,31 +349,31 @@ export function computeHomeCareEventQuality(
 
   const insights: CareEventInsight[] = [];
 
-  if (recordingQualityRate >= 98 && verificationRate >= 95 && auditTrailRate >= 90 && returnRate < 5) {
+  if (meets(recordingQualityRate, 98) && meets(verificationRate, 95) && meets(auditTrailRate, 90) && below(returnRate, 5)) {
     insights.push({ text: `Care event quality is exemplary — ${recordingQualityRate}% content quality, ${verificationRate}% verified, ${auditTrailRate}% with full audit trails, and only ${returnRate}% returns. Ofsted will see a home where recording practice is embedded, management oversight is consistent, and the care record provides a comprehensive evidence base for every child.`, severity: "positive" });
   }
 
-  if (verificationRate >= 95 && recordingQualityRate >= 90) {
+  if (meets(verificationRate, 95) && meets(recordingQualityRate, 90)) {
     insights.push({ text: `Strong verification and recording quality combination — ${verificationRate}% verified with ${recordingQualityRate}% content quality shows that management is not just signing off events but ensuring substantive content. This evidences active oversight under the SCCIF "Well-led and managed" judgement area.`, severity: "positive" });
   }
 
-  if (goodCoverage && diverse && recordingQualityRate >= 90) {
+  if (goodCoverage && diverse && meets(recordingQualityRate, 90)) {
     insights.push({ text: `Comprehensive coverage across ${categoryDiversity} categories with ${Math.round(eventsPerChild * 10) / 10} events per child demonstrates that staff are recording holistically. This supports the SCCIF "Experiences and progress of children" judgement by evidencing that each child's daily life is documented across all care domains.`, severity: "positive" });
   }
 
-  if (recordingQualityRate < 50) {
+  if (below(recordingQualityRate, 50)) {
     insights.push({ text: `Recording quality is critically low at ${recordingQualityRate}%. More than half of care events lack substantive content. Without meaningful descriptions of children's experiences, the home cannot evidence the quality of care provided. Ofsted will view empty or minimal care events as a failure to maintain adequate records under Reg 36.`, severity: "critical" });
   }
 
-  if (verificationRate < 60) {
+  if (below(verificationRate, 60)) {
     insights.push({ text: `Verification rate of ${verificationRate}% means most care events lack management sign-off. Under Reg 36, the registered manager must ensure records are accurate, complete, and maintained. Unverified care events cannot be relied upon as evidence of care quality and represent a significant governance weakness.`, severity: "critical" });
   }
 
-  if (returnRate > 30) {
+  if (above(returnRate, 30)) {
     insights.push({ text: `${returnRate}% of care events are being returned for corrections. This high return rate suggests staff may need additional training on recording standards, or that the expectations for care event content are unclear. While returns show management oversight is functioning, the volume indicates a systemic quality issue.`, severity: "warning" });
   }
 
-  if (totalRoutes > 0 && routingCompletionRate < 60) {
+  if (totalRoutes > 0 && below(routingCompletionRate, 60)) {
     insights.push({ text: `Only ${routingCompletionRate}% of care event routes completing successfully. When care events fail to route to linked records, critical information may not reach chronologies, risk assessments, or LAC reviews. This fragmentation undermines the duty of care under Reg 12.`, severity: "critical" });
   }
 

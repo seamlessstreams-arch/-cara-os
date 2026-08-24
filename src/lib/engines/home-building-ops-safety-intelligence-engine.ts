@@ -4,6 +4,8 @@
 // Pure deterministic engine. CHR 2015 Reg 25/12.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface EvacuationPlanInput {
   id: string; scenario_type: string;
   last_drill_date: string; next_drill_due: string;
@@ -62,12 +64,12 @@ export interface HomeBuildingOpsSafetyInput {
 
 export type BuildingOpsSafetyRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
-export interface EvacuationSummary { total: number; drills_current: number; fire_officer_approved_rate: number; overdue_drills: number; }
-export interface GrabBagSummary { total: number; complete_rate: number; overdue_checks: number; }
+export interface EvacuationSummary { total: number; drills_current: number; /** null when the population is empty — nothing measured, not 0%. */ fire_officer_approved_rate: number | null; overdue_drills: number; }
+export interface GrabBagSummary { total: number; /** null when the population is empty — nothing measured, not 0%. */ complete_rate: number | null; overdue_checks: number; }
 export interface AsbestosSummary { total: number; acm_present: number; poor_condition_count: number; overdue_inspections: number; }
-export interface SecureStorageSummary { total: number; verified_rate: number; overdue_checks: number; flagged_count: number; }
-export interface RoomSearchSummary { total: number; child_informed_rate: number; follow_up_completion_rate: number; high_distress_count: number; }
-export interface FireRiskSummary { total: number; high_risk_count: number; overdue_actions: number; completed_rate: number; }
+export interface SecureStorageSummary { total: number; /** null when the population is empty — nothing measured, not 0%. */ verified_rate: number | null; overdue_checks: number; flagged_count: number; }
+export interface RoomSearchSummary { total: number; /** null when the population is empty — nothing measured, not 0%. */ child_informed_rate: number | null; /** null when the population is empty — nothing measured, not 0%. */ follow_up_completion_rate: number | null; high_distress_count: number; }
+export interface FireRiskSummary { total: number; high_risk_count: number; overdue_actions: number; completed_rate: number | null; }
 
 export interface HomeBuildingOpsSafetyResult {
   building_ops_rating: BuildingOpsSafetyRating; building_ops_score: number; headline: string;
@@ -78,7 +80,8 @@ export interface HomeBuildingOpsSafetyResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null { return rate(n, d); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput): HomeBuildingOpsSafetyResult {
@@ -155,8 +158,8 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 1: Evacuation preparedness (±5)
   let mod1 = 0;
   if (evacuation_plans.length > 0) {
-    if (overdueDrills === 0 && evacuation.fire_officer_approved_rate >= 80) mod1 = 5;
-    else if (overdueDrills <= 1 && evacuation.fire_officer_approved_rate >= 50) mod1 = 3;
+    if (overdueDrills === 0 && meets(evacuation.fire_officer_approved_rate, 80)) mod1 = 5;
+    else if (overdueDrills <= 1 && meets(evacuation.fire_officer_approved_rate, 50)) mod1 = 3;
     else if (overdueDrills <= 2) mod1 = 1;
     else if (overdueDrills >= 4) mod1 = -5;
     else mod1 = -2;
@@ -168,10 +171,10 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 2: Grab bag readiness (±4)
   let mod2 = 0;
   if (grab_bags.length > 0) {
-    if (grabBagSummary.complete_rate >= 90 && gbOverdue === 0) mod2 = 4;
-    else if (grabBagSummary.complete_rate >= 70) mod2 = 2;
-    else if (grabBagSummary.complete_rate >= 50) mod2 = 0;
-    else if (grabBagSummary.complete_rate < 30) mod2 = -4;
+    if (meets(grabBagSummary.complete_rate, 90) && gbOverdue === 0) mod2 = 4;
+    else if (meets(grabBagSummary.complete_rate, 70)) mod2 = 2;
+    else if (meets(grabBagSummary.complete_rate, 50)) mod2 = 0;
+    else if (below(grabBagSummary.complete_rate, 30)) mod2 = -4;
     else mod2 = -2;
   } else if (total_children >= 2) {
     mod2 = -2;
@@ -192,7 +195,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 4: Fire risk management (±4)
   let mod4 = 0;
   if (fire_risk_items.length > 0) {
-    if (frHigh === 0 && frOverdue === 0 && fireRiskSummary.completed_rate >= 70) mod4 = 4;
+    if (frHigh === 0 && frOverdue === 0 && meets(fireRiskSummary.completed_rate, 70)) mod4 = 4;
     else if (frHigh <= 1 && frOverdue <= 1) mod4 = 2;
     else if (frHigh <= 2) mod4 = 0;
     else if (frHigh >= 4 || frOverdue >= 4) mod4 = -4;
@@ -205,9 +208,9 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 5: Secure storage compliance (±3)
   let mod5 = 0;
   if (secure_storage.length > 0) {
-    if (secureStorageSummary.verified_rate >= 90 && ssFlagged === 0) mod5 = 3;
-    else if (secureStorageSummary.verified_rate >= 70) mod5 = 1;
-    else if (secureStorageSummary.verified_rate < 40 || ssFlagged >= 3) mod5 = -3;
+    if (meets(secureStorageSummary.verified_rate, 90) && ssFlagged === 0) mod5 = 3;
+    else if (meets(secureStorageSummary.verified_rate, 70)) mod5 = 1;
+    else if (below(secureStorageSummary.verified_rate, 40) || ssFlagged >= 3) mod5 = -3;
     else mod5 = 0;
   }
   // No secure storage = neutral
@@ -216,9 +219,9 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 6: Room search practice (±3) — neutral if no searches needed
   let mod6 = 0;
   if (room_searches.length > 0) {
-    if (roomSearchSummary.child_informed_rate >= 90 && roomSearchSummary.follow_up_completion_rate >= 80) mod6 = 3;
-    else if (roomSearchSummary.child_informed_rate >= 70) mod6 = 1;
-    else if (roomSearchSummary.child_informed_rate < 50) mod6 = -3;
+    if (meets(roomSearchSummary.child_informed_rate, 90) && meets(roomSearchSummary.follow_up_completion_rate, 80)) mod6 = 3;
+    else if (meets(roomSearchSummary.child_informed_rate, 70)) mod6 = 1;
+    else if (below(roomSearchSummary.child_informed_rate, 50)) mod6 = -3;
     else mod6 = 0;
   }
   // No room searches = neutral
@@ -229,14 +232,14 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const childConsiderations = evacuation_plans.filter(e => e.child_considerations_count > 0).length;
   const childConsidRate = pct(childConsiderations, evacuation_plans.length);
   if (evacuation_plans.length > 0 && room_searches.length > 0) {
-    if (childConsidRate >= 80 && rsHighDistress === 0) mod7 = 3;
-    else if (childConsidRate >= 60) mod7 = 1;
-    else if (childConsidRate < 30 || rsHighDistress >= 3) mod7 = -3;
+    if (meets(childConsidRate, 80) && rsHighDistress === 0) mod7 = 3;
+    else if (meets(childConsidRate, 60)) mod7 = 1;
+    else if (below(childConsidRate, 30) || rsHighDistress >= 3) mod7 = -3;
     else mod7 = 0;
   } else if (evacuation_plans.length > 0) {
-    if (childConsidRate >= 80) mod7 = 3;
-    else if (childConsidRate >= 60) mod7 = 1;
-    else if (childConsidRate < 30) mod7 = -2;
+    if (meets(childConsidRate, 80)) mod7 = 3;
+    else if (meets(childConsidRate, 60)) mod7 = 1;
+    else if (below(childConsidRate, 30)) mod7 = -2;
     else mod7 = 0;
   }
   score += mod7;
@@ -248,8 +251,8 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   if (totalCheckable > 0) {
     const overdueRate = pct(totalOverdue, totalCheckable);
     if (overdueRate === 0) mod8 = 3;
-    else if (overdueRate <= 15) mod8 = 1;
-    else if (overdueRate >= 50) mod8 = -3;
+    else if ((overdueRate !== null && overdueRate <= 15)) mod8 = 1;
+    else if (meets(overdueRate, 50)) mod8 = -3;
     else mod8 = -1;
   }
   score += mod8;
@@ -262,12 +265,12 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // ── Strengths ────────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (overdueDrills === 0 && evacuation_plans.length > 0) strengths.push("All evacuation drills are current — the home is prepared for emergency situations.");
-  if (evacuation.fire_officer_approved_rate >= 80 && evacuation_plans.length > 0) strengths.push("Evacuation plans approved by fire officer — external validation of fire safety arrangements.");
-  if (grabBagSummary.complete_rate >= 90 && grab_bags.length > 0) strengths.push("Grab bags are fully stocked and current — children's essential items are ready for emergencies.");
+  if (meets(evacuation.fire_officer_approved_rate, 80) && evacuation_plans.length > 0) strengths.push("Evacuation plans approved by fire officer — external validation of fire safety arrangements.");
+  if (meets(grabBagSummary.complete_rate, 90) && grab_bags.length > 0) strengths.push("Grab bags are fully stocked and current — children's essential items are ready for emergencies.");
   if (poorCondition === 0 && asbestos_records.length > 0) strengths.push("All asbestos-containing materials in good or fair condition — no immediate health risks.");
   if (frHigh === 0 && fire_risk_items.length > 0) strengths.push("No high-level fire risks identified — effective fire risk management.");
-  if (secureStorageSummary.verified_rate >= 90 && secure_storage.length > 0) strengths.push("All secure storage verified — hazardous materials and medications properly secured.");
-  if (roomSearchSummary.child_informed_rate >= 90 && room_searches.length > 0) strengths.push("Room searches conducted with excellent child communication — rights-respecting practice.");
+  if (meets(secureStorageSummary.verified_rate, 90) && secure_storage.length > 0) strengths.push("All secure storage verified — hazardous materials and medications properly secured.");
+  if (meets(roomSearchSummary.child_informed_rate, 90) && room_searches.length > 0) strengths.push("Room searches conducted with excellent child communication — rights-respecting practice.");
   if (mod8 >= 3) strengths.push("All safety checks and reviews are current — no overdue inspections or assessments.");
 
   // ── Concerns ─────────────────────────────────────────────────────────────
@@ -277,8 +280,8 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   if (poorCondition >= 2) concerns.push(`${poorCondition} asbestos records show poor/damaged condition — immediate specialist assessment required.`);
   if (frHigh >= 3) concerns.push(`${frHigh} high-level fire risks identified — urgent remediation needed.`);
   if (ssFlagged >= 2) concerns.push(`${ssFlagged} secure storage items flagged — potential access to hazardous materials.`);
-  if (grabBagSummary.complete_rate < 50 && grab_bags.length > 0) concerns.push("Less than half of grab bags are complete — children's emergency essentials may be missing.");
-  if (roomSearchSummary.child_informed_rate < 50 && room_searches.length > 0) concerns.push("Children are not consistently informed before room searches — this undermines trust and dignity.");
+  if (below(grabBagSummary.complete_rate, 50) && grab_bags.length > 0) concerns.push("Less than half of grab bags are complete — children's emergency essentials may be missing.");
+  if (below(roomSearchSummary.child_informed_rate, 50) && room_searches.length > 0) concerns.push("Children are not consistently informed before room searches — this undermines trust and dignity.");
   if (fire_risk_items.length === 0 && total_children >= 1) concerns.push("No fire risk assessment recorded — fire safety compliance cannot be evidenced.");
   if (totalOverdue >= 5) concerns.push(`${totalOverdue} safety checks are overdue across building operations — compliance is lapsing.`);
 
@@ -289,7 +292,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   if (frHigh >= 3) recommendations.push({ rank: ++rank, recommendation: "Implement fire risk remediation plan for all high-risk items.", urgency: "immediate", regulatory_ref: "Reg 25" });
   if (evacuation_plans.length === 0 && total_children >= 1) recommendations.push({ rank: ++rank, recommendation: "Create documented evacuation plans for all emergency scenarios.", urgency: "immediate", regulatory_ref: "Reg 25" });
   if (overdueDrills >= 2) recommendations.push({ rank: ++rank, recommendation: `Schedule ${overdueDrills} overdue evacuation drills as a matter of urgency.`, urgency: "soon", regulatory_ref: "Reg 25" });
-  if (grabBagSummary.complete_rate < 70 && grab_bags.length > 0) recommendations.push({ rank: ++rank, recommendation: "Restock and verify all grab bags to ensure emergency readiness.", urgency: "soon", regulatory_ref: "Reg 25" });
+  if (below(grabBagSummary.complete_rate, 70) && grab_bags.length > 0) recommendations.push({ rank: ++rank, recommendation: "Restock and verify all grab bags to ensure emergency readiness.", urgency: "soon", regulatory_ref: "Reg 25" });
   if (ssFlagged >= 1) recommendations.push({ rank: ++rank, recommendation: `Investigate and resolve ${ssFlagged} flagged secure storage items.`, urgency: "soon", regulatory_ref: "Reg 12" });
   if (fire_risk_items.length === 0 && total_children >= 1) recommendations.push({ rank: ++rank, recommendation: "Conduct and record a comprehensive fire risk assessment.", urgency: "soon", regulatory_ref: "Reg 25" });
   if (totalOverdue >= 3) recommendations.push({ rank: ++rank, recommendation: `Complete ${totalOverdue} overdue safety reviews to restore compliance.`, urgency: "planned", regulatory_ref: "Reg 25" });
@@ -299,8 +302,8 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   if (building_ops_rating === "outstanding") insights.push({ text: "Building and operations safety is outstanding — comprehensive preparedness with current checks and child-centred practice.", severity: "positive" });
   if (building_ops_rating === "inadequate") insights.push({ text: "Building safety falls below acceptable standards — children may be at risk from fire, structural, or environmental hazards.", severity: "critical" });
   if (poorCondition >= 1 && frHigh >= 2) insights.push({ text: "Combined asbestos and fire risk concerns suggest the building environment needs urgent multi-disciplinary safety review.", severity: "critical" });
-  if (evacuation.fire_officer_approved_rate >= 80 && grabBagSummary.complete_rate >= 90 && overdueDrills === 0) insights.push({ text: "Emergency preparedness is exemplary — fire officer approval, current drills, and fully stocked grab bags demonstrate proactive safety culture.", severity: "positive" });
-  if (roomSearchSummary.child_informed_rate >= 90 && rsHighDistress === 0 && room_searches.length > 0) insights.push({ text: "Room search practice is rights-respecting with no high distress — searches conducted with dignity and transparency.", severity: "positive" });
+  if (meets(evacuation.fire_officer_approved_rate, 80) && meets(grabBagSummary.complete_rate, 90) && overdueDrills === 0) insights.push({ text: "Emergency preparedness is exemplary — fire officer approval, current drills, and fully stocked grab bags demonstrate proactive safety culture.", severity: "positive" });
+  if (meets(roomSearchSummary.child_informed_rate, 90) && rsHighDistress === 0 && room_searches.length > 0) insights.push({ text: "Room search practice is rights-respecting with no high distress — searches conducted with dignity and transparency.", severity: "positive" });
 
   // ── Headline ─────────────────────────────────────────────────────────────
   let headline = "";

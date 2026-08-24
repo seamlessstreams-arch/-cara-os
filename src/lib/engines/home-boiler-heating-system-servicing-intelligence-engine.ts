@@ -15,7 +15,7 @@
 //             thermostatRecords, energyRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -168,15 +168,21 @@ export interface BoilerHeatingSystemServicingResult {
   // efficiency / 0% child comfort / 0 boiler condition" would read as a home
   // actively failing Reg 25 (Premises) with freezing children, not
   // "unmeasured". Fab-0 doctrine. Other rates use pct() directly.
-  boiler_servicing_rate: number;
-  heating_check_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boiler_servicing_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  heating_check_rate: number | null;
   radiator_maintenance_rate: number | null;
-  thermostat_calibration_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thermostat_calibration_rate: number | null;
   energy_efficiency_rate: number | null;
   child_comfort_rate: number | null;
-  gas_safety_compliance_rate: number;
-  carbon_monoxide_safety_rate: number;
-  fault_resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  gas_safety_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  carbon_monoxide_safety_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fault_resolution_rate: number | null;
   boiler_condition_score: number | null;
   strengths: string[];
   concerns: string[];
@@ -186,8 +192,9 @@ export interface BoilerHeatingSystemServicingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -363,10 +370,7 @@ export function computeBoilerHeatingSystemServicing(
   );
   const boilerConditionScore: number | null =
     conditionScores.length > 0
-      ? Math.round(
-          conditionScores.reduce((sum, v) => sum + v, 0) /
-            conditionScores.length,
-        )
+      ? meanOf(conditionScores)
       : null;
 
   // Boiler services with notes
@@ -455,7 +459,7 @@ export function computeBoilerHeatingSystemServicing(
   const radiatorInspectionRate = pct(radiatorsNotOverdueInspection, totalRadiators);
   const radiatorMaintenanceRate: number | null =
     totalRadiators > 0
-      ? Math.round((radiatorBleedRate + radiatorInspectionRate) / 2)
+      ? meanOf([radiatorBleedRate, radiatorInspectionRate])
       : null;
 
   // Radiators heating evenly
@@ -590,23 +594,24 @@ export function computeBoilerHeatingSystemServicing(
   const controlsOptimisedRate = pct(controlsOptimised, totalEnergyRecords);
 
   // Composite energy efficiency rate
-  const energyComponentScores: number[] = [];
+  // Components are pushed only when their source has records, so this is a
+  // mean over what is measured — which is meanOf, written out by hand.
+  const energyComponentScores: (number | null)[] = [];
   if (latestEpc) energyComponentScores.push(epcScore);
   if (recordsWithInsulation.length > 0) energyComponentScores.push(insulationRate);
   if (recordsWithInsulation.length > 0) energyComponentScores.push(draughtProofingRate);
   if (totalEnergyRecords > 0) energyComponentScores.push(controlsOptimisedRate);
   const energyEfficiencyRate: number | null =
     energyComponentScores.length > 0
-      ? Math.round(
-          energyComponentScores.reduce((sum, v) => sum + v, 0) /
-            energyComponentScores.length,
-        )
+      ? meanOf(energyComponentScores)
       : null;
 
   // ─── Child comfort rate ───────────────────────────────────────────────
   // Composite: temperature appropriate, all zones heating, even heating,
   // hot water functional, programming correct
-  const comfortComponents: number[] = [];
+  // Components are pushed only when their source has records, so this is a
+  // mean over what is measured — which is meanOf, written out by hand.
+  const comfortComponents: (number | null)[] = [];
   if (totalRadiators > 0) comfortComponents.push(radiatorTemperatureRate);
   if (totalHeatingChecks > 0) comfortComponents.push(zoneHeatingRate);
   if (totalRadiators > 0) comfortComponents.push(evenHeatingRate);
@@ -614,10 +619,7 @@ export function computeBoilerHeatingSystemServicing(
   if (totalThermostats > 0) comfortComponents.push(programmingCorrectRate);
   const childComfortRate: number | null =
     comfortComponents.length > 0
-      ? Math.round(
-          comfortComponents.reduce((sum, v) => sum + v, 0) /
-            comfortComponents.length,
-        )
+      ? meanOf(comfortComponents)
       : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
@@ -625,32 +627,32 @@ export function computeBoilerHeatingSystemServicing(
   let score = 52;
 
   // --- Bonus 1: boilerServicingRate (>=100: +5, >=80: +3) ---
-  if (boilerServicingRate >= 100) score += 5;
-  else if (boilerServicingRate >= 80) score += 3;
+  if (meets(boilerServicingRate, 100)) score += 5;
+  else if (meets(boilerServicingRate, 80)) score += 3;
 
   // --- Bonus 2: heatingCheckRate (>=100: +4, >=80: +2) ---
-  if (heatingCheckRate >= 100) score += 4;
-  else if (heatingCheckRate >= 80) score += 2;
+  if (meets(heatingCheckRate, 100)) score += 4;
+  else if (meets(heatingCheckRate, 80)) score += 2;
 
   // --- Bonus 3: radiatorMaintenanceRate (>=90: +4, >=70: +2) ---
   if (meets(radiatorMaintenanceRate, 90)) score += 4;
   else if (meets(radiatorMaintenanceRate, 70)) score += 2;
 
   // --- Bonus 4: thermostatCalibrationRate (>=100: +4, >=80: +2) ---
-  if (thermostatCalibrationRate >= 100) score += 4;
-  else if (thermostatCalibrationRate >= 80) score += 2;
+  if (meets(thermostatCalibrationRate, 100)) score += 4;
+  else if (meets(thermostatCalibrationRate, 80)) score += 2;
 
   // --- Bonus 5: energyEfficiencyRate (>=80: +4, >=60: +2) ---
   if (meets(energyEfficiencyRate, 80)) score += 4;
   else if (meets(energyEfficiencyRate, 60)) score += 2;
 
   // --- Bonus 6: gasSafetyComplianceRate (>=100: +3, >=80: +1) ---
-  if (gasSafetyComplianceRate >= 100) score += 3;
-  else if (gasSafetyComplianceRate >= 80) score += 1;
+  if (meets(gasSafetyComplianceRate, 100)) score += 3;
+  else if (meets(gasSafetyComplianceRate, 80)) score += 1;
 
   // --- Bonus 7: carbonMonoxideSafetyRate (>=100: +2, >=90: +1) ---
-  if (carbonMonoxideSafetyRate >= 100) score += 2;
-  else if (carbonMonoxideSafetyRate >= 90) score += 1;
+  if (meets(carbonMonoxideSafetyRate, 100)) score += 2;
+  else if (meets(carbonMonoxideSafetyRate, 90)) score += 1;
 
   // --- Bonus 8: childComfortRate (>=90: +2, >=70: +1) ---
   if (meets(childComfortRate, 90)) score += 2;
@@ -661,16 +663,16 @@ export function computeBoilerHeatingSystemServicing(
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // Penalty 1: boilerServicingRate < 50 → -6
-  if (boilerServicingRate < 50 && totalBoilerServices > 0) score -= 6;
+  if (below(boilerServicingRate, 50) && totalBoilerServices > 0) score -= 6;
 
   // Penalty 2: gasSafetyComplianceRate < 50 → -6
-  if (gasSafetyComplianceRate < 50 && totalBoilerServices > 0) score -= 6;
+  if (below(gasSafetyComplianceRate, 50) && totalBoilerServices > 0) score -= 6;
 
   // Penalty 3: below(radiatorMaintenanceRate, 50) → -4
   if (below(radiatorMaintenanceRate, 50) && totalRadiators > 0) score -= 4;
 
   // Penalty 4: thermostatCalibrationRate < 50 → -4
-  if (thermostatCalibrationRate < 50 && totalThermostats > 0) score -= 4;
+  if (below(thermostatCalibrationRate, 50) && totalThermostats > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -680,41 +682,41 @@ export function computeBoilerHeatingSystemServicing(
 
   const strengths: string[] = [];
 
-  if (boilerServicingRate >= 100 && totalBoilerServices > 0) {
+  if (meets(boilerServicingRate, 100) && totalBoilerServices > 0) {
     strengths.push(
       "All boiler services are up to date — the home maintains full compliance with annual servicing requirements, ensuring gas safety and reliable heating for children.",
     );
-  } else if (boilerServicingRate >= 80 && totalBoilerServices > 0) {
+  } else if (meets(boilerServicingRate, 80) && totalBoilerServices > 0) {
     strengths.push(
       `${boilerServicingRate}% boiler servicing compliance — strong maintenance of annual servicing schedules for heating equipment.`,
     );
   }
 
-  if (gasSafetyComplianceRate >= 100 && totalBoilerServices > 0) {
+  if (meets(gasSafetyComplianceRate, 100) && totalBoilerServices > 0) {
     strengths.push(
       "All CP12 gas safety certificates are valid — the home demonstrates full legal compliance with gas safety regulations, a fundamental safety requirement for children's premises.",
     );
-  } else if (gasSafetyComplianceRate >= 80 && totalBoilerServices > 0) {
+  } else if (meets(gasSafetyComplianceRate, 80) && totalBoilerServices > 0) {
     strengths.push(
       `${gasSafetyComplianceRate}% CP12 gas safety compliance — strong evidence of commitment to gas safety standards.`,
     );
   }
 
-  if (carbonMonoxideSafetyRate >= 100 && totalBoilerServices > 0) {
+  if (meets(carbonMonoxideSafetyRate, 100) && totalBoilerServices > 0) {
     strengths.push(
       "All carbon monoxide tests passed — children are protected from the risk of carbon monoxide poisoning through rigorous testing at every service.",
     );
-  } else if (carbonMonoxideSafetyRate >= 90 && totalBoilerServices > 0) {
+  } else if (meets(carbonMonoxideSafetyRate, 90) && totalBoilerServices > 0) {
     strengths.push(
       `${carbonMonoxideSafetyRate}% carbon monoxide test pass rate — the home maintains high standards of CO safety testing.`,
     );
   }
 
-  if (heatingCheckRate >= 100 && totalHeatingChecks > 0) {
+  if (meets(heatingCheckRate, 100) && totalHeatingChecks > 0) {
     strengths.push(
       "All heating system checks are current — the home proactively monitors its heating infrastructure to prevent breakdowns and ensure consistent warmth.",
     );
-  } else if (heatingCheckRate >= 80 && totalHeatingChecks > 0) {
+  } else if (meets(heatingCheckRate, 80) && totalHeatingChecks > 0) {
     strengths.push(
       `${heatingCheckRate}% heating check compliance — the home maintains a strong schedule of heating system inspections.`,
     );
@@ -730,11 +732,11 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (thermostatCalibrationRate >= 100 && totalThermostats > 0) {
+  if (meets(thermostatCalibrationRate, 100) && totalThermostats > 0) {
     strengths.push(
       "All thermostats are calibrated and current — accurate temperature control ensures children's living spaces are maintained at appropriate and comfortable temperatures.",
     );
-  } else if (thermostatCalibrationRate >= 80 && totalThermostats > 0) {
+  } else if (meets(thermostatCalibrationRate, 80) && totalThermostats > 0) {
     strengths.push(
       `${thermostatCalibrationRate}% thermostat calibration compliance — the majority of temperature controls are accurately calibrated.`,
     );
@@ -760,69 +762,69 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (faultResolutionRate >= 100 && totalFaultsFound > 0) {
+  if (meets(faultResolutionRate, 100) && totalFaultsFound > 0) {
     strengths.push(
       "All boiler faults identified during servicing have been resolved — the home demonstrates responsive maintenance, ensuring no outstanding defects affect children's safety or comfort.",
     );
-  } else if (faultResolutionRate >= 80 && totalFaultsFound > 0) {
+  } else if (meets(faultResolutionRate, 80) && totalFaultsFound > 0) {
     strengths.push(
       `${faultResolutionRate}% fault resolution rate — the majority of boiler faults are addressed promptly.`,
     );
   }
 
-  if (gasSafeEngineerRate >= 100 && totalBoilerServices > 0) {
+  if (meets(gasSafeEngineerRate, 100) && totalBoilerServices > 0) {
     strengths.push(
       "All boiler services conducted by Gas Safe registered engineers — the home ensures only qualified professionals service gas appliances, in line with legal requirements.",
     );
   }
 
-  if (childSafetyCoverRate >= 100 && radiatorsInChildAreas > 0) {
+  if (meets(childSafetyCoverRate, 100) && radiatorsInChildAreas > 0) {
     strengths.push(
       "All radiators in children's areas have safety covers fitted — the home protects children from contact burns and radiator-related injuries.",
     );
-  } else if (childSafetyCoverRate >= 80 && radiatorsInChildAreas > 0) {
+  } else if (meets(childSafetyCoverRate, 80) && radiatorsInChildAreas > 0) {
     strengths.push(
       `${childSafetyCoverRate}% of radiators in children's areas have safety covers — good practice in protecting children from burn risks.`,
     );
   }
 
-  if (evenHeatingRate >= 90 && totalRadiators > 0) {
+  if (meets(evenHeatingRate, 90) && totalRadiators > 0) {
     strengths.push(
       `${evenHeatingRate}% of radiators heating evenly — efficient heat distribution ensures consistent warmth throughout the home.`,
     );
   }
 
-  if (leakFreeRate >= 100 && totalHeatingChecks > 0) {
+  if (meets(leakFreeRate, 100) && totalHeatingChecks > 0) {
     strengths.push(
       "No leaks detected in any heating system check — the system maintains full integrity, preventing water damage and ensuring efficient operation.",
     );
   }
 
-  if (batteryHealthRate >= 100 && totalThermostats > 0) {
+  if (meets(batteryHealthRate, 100) && totalThermostats > 0) {
     strengths.push(
       "All thermostat batteries are in good condition or mains-powered — reliable power ensures continuous and accurate temperature control.",
     );
   }
 
-  if (tamperProofRate >= 100 && childAccessibleThermostats > 0) {
+  if (meets(tamperProofRate, 100) && childAccessibleThermostats > 0) {
     strengths.push(
       "All child-accessible thermostats are tamper-proof — children are protected from inadvertently changing temperature settings.",
     );
   }
 
-  if (pipeInsulationRate >= 100 && totalHeatingChecks > 0) {
+  if (meets(pipeInsulationRate, 100) && totalHeatingChecks > 0) {
     strengths.push(
       "All pipe insulation rated adequate — properly insulated pipes improve energy efficiency and reduce heat loss throughout the system.",
     );
   }
 
-  if (flueInspectionRate >= 100 && totalBoilerServices > 0) {
+  if (meets(flueInspectionRate, 100) && totalBoilerServices > 0) {
     strengths.push(
       "All flue inspections passed — safe flue operation is critical for preventing harmful gas emissions within the home.",
     );
   }
 
-  if (boilerDocumentationRate >= 90 && totalBoilerServices > 0) {
+  if (meets(boilerDocumentationRate, 90) && totalBoilerServices > 0) {
     strengths.push(
       `${boilerDocumentationRate}% of boiler services have documented notes — comprehensive recording supports evidence of regulatory compliance and maintenance history.`,
     );
@@ -832,21 +834,21 @@ export function computeBoilerHeatingSystemServicing(
 
   const concerns: string[] = [];
 
-  if (boilerServicingRate < 50 && totalBoilerServices > 0) {
+  if (below(boilerServicingRate, 50) && totalBoilerServices > 0) {
     concerns.push(
       `Only ${boilerServicingRate}% of boiler services are current — the majority of boiler servicing is overdue, creating significant safety risks and legal compliance failures.`,
     );
-  } else if (boilerServicingRate < 80 && boilerServicingRate >= 50 && totalBoilerServices > 0) {
+  } else if (below(boilerServicingRate, 80) && meets(boilerServicingRate, 50) && totalBoilerServices > 0) {
     concerns.push(
       `Boiler servicing compliance at ${boilerServicingRate}% — some boiler services are overdue, which may compromise the safety and reliability of heating equipment.`,
     );
   }
 
-  if (gasSafetyComplianceRate < 50 && totalBoilerServices > 0) {
+  if (below(gasSafetyComplianceRate, 50) && totalBoilerServices > 0) {
     concerns.push(
       `Only ${gasSafetyComplianceRate}% of CP12 gas safety certificates are valid — the home is operating gas appliances without current safety certification, which is a legal requirement and critical safety concern.`,
     );
-  } else if (gasSafetyComplianceRate < 80 && gasSafetyComplianceRate >= 50 && totalBoilerServices > 0) {
+  } else if (below(gasSafetyComplianceRate, 80) && meets(gasSafetyComplianceRate, 50) && totalBoilerServices > 0) {
     concerns.push(
       `CP12 gas safety compliance at ${gasSafetyComplianceRate}% — some gas safety certificates have lapsed, which must be addressed to maintain legal compliance.`,
     );
@@ -858,11 +860,11 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (heatingCheckRate < 50 && totalHeatingChecks > 0) {
+  if (below(heatingCheckRate, 50) && totalHeatingChecks > 0) {
     concerns.push(
       `Only ${heatingCheckRate}% of heating checks are current — the majority of system checks are overdue, increasing the risk of undetected faults and heating failures.`,
     );
-  } else if (heatingCheckRate < 80 && heatingCheckRate >= 50 && totalHeatingChecks > 0) {
+  } else if (below(heatingCheckRate, 80) && meets(heatingCheckRate, 50) && totalHeatingChecks > 0) {
     concerns.push(
       `Heating check compliance at ${heatingCheckRate}% — some checks are overdue, potentially allowing heating issues to go undetected.`,
     );
@@ -878,11 +880,11 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (thermostatCalibrationRate < 50 && totalThermostats > 0) {
+  if (below(thermostatCalibrationRate, 50) && totalThermostats > 0) {
     concerns.push(
       `Only ${thermostatCalibrationRate}% of thermostats have current calibration — inaccurate temperature controls mean children's spaces may not be maintained at safe and comfortable temperatures.`,
     );
-  } else if (thermostatCalibrationRate < 80 && thermostatCalibrationRate >= 50 && totalThermostats > 0) {
+  } else if (below(thermostatCalibrationRate, 80) && meets(thermostatCalibrationRate, 50) && totalThermostats > 0) {
     concerns.push(
       `Thermostat calibration at ${thermostatCalibrationRate}% — some thermostats are overdue for calibration, which may result in inaccurate temperature regulation.`,
     );
@@ -912,7 +914,7 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (childSafetyCoverRate < 80 && radiatorsInChildAreas > 0) {
+  if (below(childSafetyCoverRate, 80) && radiatorsInChildAreas > 0) {
     concerns.push(
       `Only ${childSafetyCoverRate}% of radiators in children's areas have safety covers — exposed hot radiators pose a burn risk to children.`,
     );
@@ -924,7 +926,7 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (faultResolutionRate < 50 && totalFaultsFound > 0) {
+  if (below(faultResolutionRate, 50) && totalFaultsFound > 0) {
     concerns.push(
       `Only ${faultResolutionRate}% of identified boiler faults resolved — unresolved faults may escalate into safety hazards or equipment failures.`,
     );
@@ -942,13 +944,13 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (tamperProofRate < 80 && childAccessibleThermostats > 0) {
+  if (below(tamperProofRate, 80) && childAccessibleThermostats > 0) {
     concerns.push(
       `Only ${tamperProofRate}% of child-accessible thermostats are tamper-proof — children may change temperature settings, creating unsafe heating conditions.`,
     );
   }
 
-  if (evenHeatingRate < 70 && totalRadiators > 0) {
+  if (below(evenHeatingRate, 70) && totalRadiators > 0) {
     concerns.push(
       `Only ${evenHeatingRate}% of radiators heating evenly — uneven heating indicates air locks, sludge build-up, or system balancing issues that need professional attention.`,
     );
@@ -975,7 +977,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (gasSafetyComplianceRate < 50 && totalBoilerServices > 0) {
+  if (below(gasSafetyComplianceRate, 50) && totalBoilerServices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -985,7 +987,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (boilerServicingRate < 50 && totalBoilerServices > 0) {
+  if (below(boilerServicingRate, 50) && totalBoilerServices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1005,7 +1007,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (childSafetyCoverRate < 80 && radiatorsInChildAreas > 0) {
+  if (below(childSafetyCoverRate, 80) && radiatorsInChildAreas > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1035,7 +1037,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (thermostatCalibrationRate < 50 && totalThermostats > 0) {
+  if (below(thermostatCalibrationRate, 50) && totalThermostats > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1056,8 +1058,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    gasSafetyComplianceRate >= 50 &&
-    gasSafetyComplianceRate < 80 &&
+    meets(gasSafetyComplianceRate, 50) &&
+    below(gasSafetyComplianceRate, 80) &&
     totalBoilerServices > 0
   ) {
     recommendations.push({
@@ -1070,8 +1072,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    boilerServicingRate >= 50 &&
-    boilerServicingRate < 80 &&
+    meets(boilerServicingRate, 50) &&
+    below(boilerServicingRate, 80) &&
     totalBoilerServices > 0
   ) {
     recommendations.push({
@@ -1084,7 +1086,7 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    heatingCheckRate < 80 &&
+    below(heatingCheckRate, 80) &&
     totalHeatingChecks > 0
   ) {
     recommendations.push({
@@ -1111,8 +1113,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    thermostatCalibrationRate >= 50 &&
-    thermostatCalibrationRate < 80 &&
+    meets(thermostatCalibrationRate, 50) &&
+    below(thermostatCalibrationRate, 80) &&
     totalThermostats > 0
   ) {
     recommendations.push({
@@ -1124,7 +1126,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (faultResolutionRate < 80 && totalFaultsFound > 0) {
+  if (below(faultResolutionRate, 80) && totalFaultsFound > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1164,7 +1166,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (pipeInsulationRate < 80 && totalHeatingChecks > 0) {
+  if (below(pipeInsulationRate, 80) && totalHeatingChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1174,7 +1176,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (tamperProofRate < 100 && childAccessibleThermostats > 0) {
+  if (below(tamperProofRate, 100) && childAccessibleThermostats > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1186,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (evenHeatingRate < 80 && evenHeatingRate >= 70 && totalRadiators > 0) {
+  if (below(evenHeatingRate, 80) && meets(evenHeatingRate, 70) && totalRadiators > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1207,14 +1209,14 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (gasSafetyComplianceRate < 50 && totalBoilerServices > 0) {
+  if (below(gasSafetyComplianceRate, 50) && totalBoilerServices > 0) {
     insights.push({
       text: `Only ${gasSafetyComplianceRate}% of CP12 gas safety certificates are valid. Operating gas appliances without a current CP12 certificate is a criminal offence under the Gas Safety (Installation and Use) Regulations 1998. This represents a fundamental compliance failure that Ofsted will treat as a serious safeguarding concern under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (boilerServicingRate < 50 && totalBoilerServices > 0) {
+  if (below(boilerServicingRate, 50) && totalBoilerServices > 0) {
     insights.push({
       text: `Only ${boilerServicingRate}% of boiler services are current. Unserviced boilers pose risks including carbon monoxide leaks, gas leaks, and sudden failure. Annual boiler servicing is a core premises safety requirement and Ofsted expects evidence of current servicing at every inspection.`,
       severity: "critical",
@@ -1235,7 +1237,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (thermostatCalibrationRate < 50 && totalThermostats > 0) {
+  if (below(thermostatCalibrationRate, 50) && totalThermostats > 0) {
     insights.push({
       text: `Only ${thermostatCalibrationRate}% of thermostats have current calibration. Without accurate temperature controls, the home cannot ensure children's spaces are maintained at appropriate temperatures. Overheating and underheating both pose welfare risks to children.`,
       severity: "critical",
@@ -1245,8 +1247,8 @@ export function computeBoilerHeatingSystemServicing(
   // -- Warning insights --
 
   if (
-    boilerServicingRate >= 50 &&
-    boilerServicingRate < 80 &&
+    meets(boilerServicingRate, 50) &&
+    below(boilerServicingRate, 80) &&
     totalBoilerServices > 0
   ) {
     insights.push({
@@ -1256,8 +1258,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    gasSafetyComplianceRate >= 50 &&
-    gasSafetyComplianceRate < 80 &&
+    meets(gasSafetyComplianceRate, 50) &&
+    below(gasSafetyComplianceRate, 80) &&
     totalBoilerServices > 0
   ) {
     insights.push({
@@ -1267,8 +1269,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    heatingCheckRate >= 50 &&
-    heatingCheckRate < 80 &&
+    meets(heatingCheckRate, 50) &&
+    below(heatingCheckRate, 80) &&
     totalHeatingChecks > 0
   ) {
     insights.push({
@@ -1289,8 +1291,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    thermostatCalibrationRate >= 50 &&
-    thermostatCalibrationRate < 80 &&
+    meets(thermostatCalibrationRate, 50) &&
+    below(thermostatCalibrationRate, 80) &&
     totalThermostats > 0
   ) {
     insights.push({
@@ -1409,8 +1411,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    gasSafetyComplianceRate >= 100 &&
-    carbonMonoxideSafetyRate >= 100 &&
+    meets(gasSafetyComplianceRate, 100) &&
+    meets(carbonMonoxideSafetyRate, 100) &&
     totalBoilerServices > 0
   ) {
     insights.push({
@@ -1420,8 +1422,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    boilerServicingRate >= 100 &&
-    gasSafeEngineerRate >= 100 &&
+    meets(boilerServicingRate, 100) &&
+    meets(gasSafeEngineerRate, 100) &&
     totalBoilerServices > 0
   ) {
     insights.push({
@@ -1432,7 +1434,7 @@ export function computeBoilerHeatingSystemServicing(
 
   if (
     meets(radiatorMaintenanceRate, 90) &&
-    evenHeatingRate >= 90 &&
+    meets(evenHeatingRate, 90) &&
     totalRadiators > 0
   ) {
     insights.push({
@@ -1442,8 +1444,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    thermostatCalibrationRate >= 100 &&
-    thermostatAccuracyRate >= 90 &&
+    meets(thermostatCalibrationRate, 100) &&
+    meets(thermostatAccuracyRate, 90) &&
     totalThermostats > 0
   ) {
     insights.push({
@@ -1473,7 +1475,7 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    faultResolutionRate >= 100 &&
+    meets(faultResolutionRate, 100) &&
     totalFaultsFound > 0
   ) {
     insights.push({
@@ -1483,9 +1485,9 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    childSafetyCoverRate >= 100 &&
+    meets(childSafetyCoverRate, 100) &&
     radiatorsInChildAreas > 0 &&
-    tamperProofRate >= 100 &&
+    meets(tamperProofRate, 100) &&
     childAccessibleThermostats > 0
   ) {
     insights.push({
@@ -1495,9 +1497,9 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    leakFreeRate >= 100 &&
-    waterPressureRate >= 100 &&
-    pumpFunctionalRate >= 100 &&
+    meets(leakFreeRate, 100) &&
+    meets(waterPressureRate, 100) &&
+    meets(pumpFunctionalRate, 100) &&
     totalHeatingChecks > 0
   ) {
     insights.push({
@@ -1507,8 +1509,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    heatingCheckRate >= 100 &&
-    boilerServicingRate >= 100 &&
+    meets(heatingCheckRate, 100) &&
+    meets(boilerServicingRate, 100) &&
     totalHeatingChecks > 0 &&
     totalBoilerServices > 0
   ) {
