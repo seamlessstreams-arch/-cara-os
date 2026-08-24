@@ -209,3 +209,46 @@ describe("presence-verified clock-in (Phase 5)", () => {
     expect(db.signInVerifications.findByStaff(staff)).toHaveLength(0);
   });
 });
+
+// ── London vs UTC at the date boundary ───────────────────────────────────────
+// shift.date is written with todayStr(), which is londonDateStr(). "Today" was
+// derived by slicing the first ten characters off an ISO instant, which is the
+// UTC date. During BST those disagree between 00:00 and 01:00 London time, and
+// a staff member genuinely on shift was told "You can only access this while on
+// shift. Clock in to restore access."
+//
+// 2026-06-15T23:30:00Z is 00:30 on 2026-06-16 in London — inside that window.
+describe("on-shift lookup at the London/UTC date boundary", () => {
+  const NOW = "2026-06-15T23:30:00.000Z"; // 00:30 BST on 2026-06-16
+  const LONDON_TODAY = "2026-06-16";      // what todayStr() would return
+  const UTC_TODAY = "2026-06-15";         // what slicing the ISO string gives
+  const staff = "staff_boundary_bst";
+
+  it("the two dates really do differ at this instant (else the test proves nothing)", () => {
+    expect(new Date(NOW).toISOString().slice(0, 10)).toBe(UTC_TODAY);
+    expect(LONDON_TODAY).not.toBe(UTC_TODAY);
+  });
+
+  it("counts a staff member on a shift filed under London's today", () => {
+    db.shifts.create({
+      staff_id: staff, date: LONDON_TODAY, shift_type: "waking_night", start_time: "22:00", end_time: "07:00",
+      break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: `${LONDON_TODAY}T00:05:00.000Z`,
+      clock_out_at: null, overtime_minutes: 0, notes: null, status: "in_progress", is_open_shift: false,
+      home_id: "home_oak", created_by: staff, updated_by: staff,
+    });
+    // Before the fix this was false: the shift was filed under 2026-06-16 and
+    // looked up under 2026-06-15, so it was invisible.
+    expect(isStaffOnShift(staff, NOW)).toBe(true);
+  });
+
+  it("still finds an overnight shift that began on London's yesterday", () => {
+    const other = "staff_boundary_overnight";
+    db.shifts.create({
+      staff_id: other, date: "2026-06-15", shift_type: "waking_night", start_time: "22:00", end_time: "07:00",
+      break_minutes: 0, actual_start: null, actual_end: null, clock_in_at: "2026-06-15T21:00:00.000Z",
+      clock_out_at: null, overtime_minutes: 0, notes: null, status: "in_progress", is_open_shift: false,
+      home_id: "home_oak", created_by: other, updated_by: other,
+    });
+    expect(isStaffOnShift(other, NOW)).toBe(true);
+  });
+});
