@@ -175,15 +175,15 @@ describe("Home Statutory Notification Compliance Intelligence Engine", () => {
       expect(r.insights).toEqual([]);
     });
 
-    it("returns zero rates for 0 children", () => {
+    it("leaves every rate unmeasured for 0 children", () => {
       const r = computeStatutoryNotificationCompliance(
         baseInput({ total_children: 0 }),
       );
-      expect(r.timeliness_rate).toBe(0);
-      expect(r.completeness_rate).toBe(0);
-      expect(r.documentation_rate).toBe(0);
-      expect(r.follow_up_rate).toBe(0);
-      expect(r.acknowledgement_rate).toBe(0);
+      expect(r.timeliness_rate).toBeNull();
+      expect(r.completeness_rate).toBeNull();
+      expect(r.documentation_rate).toBeNull();
+      expect(r.follow_up_rate).toBeNull();
+      expect(r.acknowledgement_rate).toBeNull();
       expect(r.total_notifications).toBe(0);
       expect(r.total_notifiable_events).toBe(0);
     });

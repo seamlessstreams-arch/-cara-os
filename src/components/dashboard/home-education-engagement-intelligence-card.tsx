@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -144,7 +145,7 @@ export function HomeEducationEngagementIntelligenceCard() {
                   (d.homework.completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.homework.completion_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.homework.total_sessions_30d > 0 ? `${d.homework.completion_rate}%` : "—"}
+                  {d.homework.total_sessions_30d > 0 ? `${formatRate(d.homework.completion_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Homework</p>

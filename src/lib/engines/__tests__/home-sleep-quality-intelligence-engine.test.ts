@@ -72,7 +72,7 @@ describe("insufficient data", () => {
     const r = computeHomeSleepQuality(baseInput({ sleep_logs: [] }));
     expect(r.disturbances.total_disturbances).toBe(0);
     expect(r.check_compliance.total_logs).toBe(0);
-    expect(r.handover.handover_rate).toBe(0);
+    expect(r.handover.handover_rate).toBeNull();
     expect(r.shifts.waking_nights).toBe(0);
   });
 });

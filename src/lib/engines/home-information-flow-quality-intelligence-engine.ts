@@ -81,16 +81,25 @@ export interface InformationFlowQualityResult {
   flow_rating: InformationFlowRating;
   flow_score: number; // 0-100
   headline: string;
-  handover_completion_rate: number;
-  handover_content_rate: number;
-  daily_log_coverage_rate: number;
-  daily_log_quality_rate: number;
-  significant_event_handover_rate: number;
-  care_event_verification_rate: number;
-  notification_read_rate: number;
-  urgent_notification_read_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handover_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handover_content_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  daily_log_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  daily_log_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  significant_event_handover_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  care_event_verification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notification_read_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  urgent_notification_read_rate: number | null;
   information_continuity_score: number;
-  staff_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -519,16 +528,16 @@ function emptyResult(
     flow_rating: rating,
     flow_score: score,
     headline,
-    handover_completion_rate: 0,
-    handover_content_rate: 0,
-    daily_log_coverage_rate: 0,
-    daily_log_quality_rate: 0,
-    significant_event_handover_rate: 0,
-    care_event_verification_rate: 0,
-    notification_read_rate: 0,
-    urgent_notification_read_rate: 0,
+    handover_completion_rate: null,
+    handover_content_rate: null,
+    daily_log_coverage_rate: null,
+    daily_log_quality_rate: null,
+    significant_event_handover_rate: null,
+    care_event_verification_rate: null,
+    notification_read_rate: null,
+    urgent_notification_read_rate: null,
     information_continuity_score: 0,
-    staff_engagement_rate: 0,
+    staff_engagement_rate: null,
     strengths: [],
     concerns: isInsufficient
       ? ["No data available to assess information flow quality."]

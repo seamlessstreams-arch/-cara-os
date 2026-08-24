@@ -113,12 +113,12 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
     it("has no concerns", () => expect(result.concerns).toHaveLength(0));
     it("has no recommendations", () => expect(result.recommendations).toHaveLength(0));
     it("has no insights", () => expect(result.insights).toHaveLength(0));
-    it("all rates are 0", () => {
-      expect(result.daily_coverage_rate).toBe(0);
-      expect(result.mood_tracking_rate).toBe(0);
-      expect(result.behaviour_documentation_rate).toBe(0);
-      expect(result.de_escalation_rate).toBe(0);
-      expect(result.child_coverage_rate).toBe(0);
+    it("leaves every rate unmeasured", () => {
+      expect(result.daily_coverage_rate).toBeNull();
+      expect(result.mood_tracking_rate).toBeNull();
+      expect(result.behaviour_documentation_rate).toBeNull();
+      expect(result.de_escalation_rate).toBeNull();
+      expect(result.child_coverage_rate).toBeNull();
     });
     it("average_mood_score is 0", () => expect(result.average_mood_score).toBe(0));
     it("high_severity_count is 0", () => expect(result.high_severity_count).toBe(0));
@@ -149,12 +149,12 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
       expect(result.insights).toHaveLength(1);
       expect(result.insights[0].severity).toBe("critical");
     });
-    it("all rates are 0", () => {
-      expect(result.daily_coverage_rate).toBe(0);
-      expect(result.mood_tracking_rate).toBe(0);
-      expect(result.behaviour_documentation_rate).toBe(0);
-      expect(result.de_escalation_rate).toBe(0);
-      expect(result.child_coverage_rate).toBe(0);
+    it("leaves every rate unmeasured", () => {
+      expect(result.daily_coverage_rate).toBeNull();
+      expect(result.mood_tracking_rate).toBeNull();
+      expect(result.behaviour_documentation_rate).toBeNull();
+      expect(result.de_escalation_rate).toBeNull();
+      expect(result.child_coverage_rate).toBeNull();
     });
   });
 
@@ -1017,7 +1017,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
       expect(result.average_mood_score).toBe(7.3);
     });
 
-    it("returns 0 when no logs have mood", () => {
+    it("average_mood_score is unmeasured when no logs have mood", () => {
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1, summaries: [],
         daily_logs: [
@@ -1026,7 +1026,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
         ],
         behaviour_logs: [],
       });
-      expect(result.average_mood_score).toBeNull();;
+      expect(result.average_mood_score).toBeNull();
     });
 
     it("single log mood score is exact", () => {

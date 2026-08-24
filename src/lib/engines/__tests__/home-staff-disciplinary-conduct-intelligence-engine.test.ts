@@ -164,7 +164,7 @@ describe("Insufficient data", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns zero for all metric fields when insufficient_data", () => {
+  it("leaves every rate unmeasured when insufficient_data", () => {
     const r = computeStaffDisciplinaryConductIntelligence({
       today: TODAY,
       total_staff: 0,
@@ -176,11 +176,11 @@ describe("Insufficient data", () => {
     expect(r.gross_misconduct_count).toBe(0);
     expect(r.serious_misconduct_count).toBe(0);
     expect(r.suspended_count).toBe(0);
-    expect(r.lado_referral_rate).toBe(0);
-    expect(r.investigation_completion_rate).toBe(0);
+    expect(r.lado_referral_rate).toBeNull();
+    expect(r.investigation_completion_rate).toBeNull();
     expect(r.average_investigation_days).toBe(0);
-    expect(r.outcome_recording_rate).toBe(0);
-    expect(r.lessons_learned_rate).toBe(0);
+    expect(r.outcome_recording_rate).toBeNull();
+    expect(r.lessons_learned_rate).toBeNull();
   });
 
   it("returns a headline when insufficient_data", () => {
@@ -3178,7 +3178,7 @@ describe("Metric calculations", () => {
     expect(r.average_investigation_days).toBe(20);
   });
 
-  it("returns 0 for average_investigation_days when no completed investigations", () => {
+  it("average_investigation_days is unmeasured when no completed investigations", () => {
     const r = run({
       cases: [
         makeCase({
@@ -3192,7 +3192,7 @@ describe("Metric calculations", () => {
         }),
       ],
     });
-    expect(r.average_investigation_days).toBeNull();;
+    expect(r.average_investigation_days).toBeNull();
   });
 
   it("excludes duration_days of 0 from average calculation", () => {

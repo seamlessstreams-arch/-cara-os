@@ -177,13 +177,13 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.headline).toContain("candidates exist");
     });
 
-    it("returns zero metrics when candidates exist but no audit entries", () => {
+    it("leaves every rate unmeasured when candidates exist but no audit entries", () => {
       const r = computeRecruitmentAuditTrail(
         baseInput({ candidates: [makeCandidate()] }),
       );
-      expect(r.audit_completeness_rate).toBe(0);
-      expect(r.notes_coverage_rate).toBe(0);
-      expect(r.state_tracking_rate).toBe(0);
+      expect(r.audit_completeness_rate).toBeNull();
+      expect(r.notes_coverage_rate).toBeNull();
+      expect(r.state_tracking_rate).toBeNull();
       expect(r.average_audit_depth).toBe(0);
     });
 

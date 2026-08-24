@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -66,23 +67,23 @@ export function HomeInformationFlowQualityIntelligenceCard() {
         {d.flow_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.handover_completion_rate >= 95 ? "bg-green-50" : d.handover_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.handover_completion_rate >= 95 ? "text-[--cs-success]" : d.handover_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handover_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.handover_completion_rate >= 95 ? "text-[--cs-success]" : d.handover_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handover_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Handover</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.daily_log_coverage_rate >= 90 ? "bg-green-50" : d.daily_log_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.daily_log_coverage_rate >= 90 ? "text-[--cs-success]" : d.daily_log_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.daily_log_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.daily_log_coverage_rate >= 90 ? "text-[--cs-success]" : d.daily_log_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.daily_log_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Logs</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.significant_event_handover_rate >= 90 ? "bg-green-50" : d.significant_event_handover_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.significant_event_handover_rate >= 90 ? "text-[--cs-success]" : d.significant_event_handover_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.significant_event_handover_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.significant_event_handover_rate >= 90 ? "text-[--cs-success]" : d.significant_event_handover_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.significant_event_handover_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sig H/O</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.care_event_verification_rate >= 90 ? "bg-green-50" : d.care_event_verification_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.care_event_verification_rate >= 90 ? "text-[--cs-success]" : d.care_event_verification_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.care_event_verification_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.care_event_verification_rate >= 90 ? "text-[--cs-success]" : d.care_event_verification_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.care_event_verification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Verified</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.notification_read_rate >= 90 ? "bg-green-50" : d.notification_read_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.notification_read_rate >= 90 ? "text-[--cs-success]" : d.notification_read_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.notification_read_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.notification_read_rate >= 90 ? "text-[--cs-success]" : d.notification_read_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.notification_read_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Notif Read</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.information_continuity_score >= 80 ? "bg-green-50" : d.information_continuity_score >= 60 ? "bg-amber-50" : "bg-red-50")}>

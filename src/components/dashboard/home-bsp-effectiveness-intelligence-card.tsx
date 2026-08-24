@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { meets } from "@/lib/metrics/rate";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -184,11 +184,11 @@ export function HomeBSPEffectivenessIntelligenceCard() {
                 <p>Effectiveness: <span className={cn("font-medium",
                   meets(d.plan_quality.strategy_effectiveness_rate, 80) ? "text-[--cs-success]" :
                   meets(d.plan_quality.strategy_effectiveness_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.strategy_effectiveness_rate}%` : "N/A"}</span></p>
+                )}>{d.plan_quality.total_active > 0 ? `${formatRate(d.plan_quality.strategy_effectiveness_rate)}` : "N/A"}</span></p>
                 <p>Child voice: <span className={cn("font-medium",
                   meets(d.plan_quality.child_voice_rate, 90) ? "text-[--cs-success]" :
                   meets(d.plan_quality.child_voice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.child_voice_rate}%` : "N/A"}</span></p>
+                )}>{d.plan_quality.total_active > 0 ? `${formatRate(d.plan_quality.child_voice_rate)}` : "N/A"}</span></p>
                 <p>Professional input: <span className={cn("font-medium",
                   meets(d.plan_quality.professional_input_rate, 80) ? "text-[--cs-success]" :
                   meets(d.plan_quality.professional_input_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"

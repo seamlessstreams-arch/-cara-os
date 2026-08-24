@@ -1946,10 +1946,10 @@ describe("Home Sanction & Reward Balance Intelligence Engine", () => {
       expect(r.reward_count).toBe(0);
       expect(r.sanction_count).toBe(0);
       expect(r.reward_ratio).toBe(0);
-      expect(r.proportionality_rate).toBe(0);
-      expect(r.child_voice_rate).toBe(0);
-      expect(r.context_documentation_rate).toBe(0);
-      expect(r.outcome_tracking_rate).toBe(0);
+      expect(r.proportionality_rate).toBeNull();
+      expect(r.child_voice_rate).toBeNull();
+      expect(r.context_documentation_rate).toBeNull();
+      expect(r.outcome_tracking_rate).toBeNull();
       expect(r.unique_children).toBe(0);
       expect(r.reward_type_variety).toBe(0);
     });

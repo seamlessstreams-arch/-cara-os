@@ -7,6 +7,7 @@
 // ==============================================================================
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -132,9 +133,9 @@ export function HomeSafeguardingPreventionIntelligenceCard() {
                 <AlertCircle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.hate_incidents.total_incidents_90d === 0 ? "text-[--cs-success]" :
-                  d.hate_incidents.reporting_compliance_rate >= 80 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.hate_incidents.reporting_compliance_rate, 80) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.hate_incidents.total_incidents_90d > 0 ? `${d.hate_incidents.reporting_compliance_rate}%` : "0"}
+                  {d.hate_incidents.total_incidents_90d > 0 ? `${formatRate(d.hate_incidents.reporting_compliance_rate)}` : "0"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Hate</p>
@@ -160,10 +161,10 @@ export function HomeSafeguardingPreventionIntelligenceCard() {
                 <Scale className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.court.total_records === 0 ? "text-[--cs-success]" :
-                  d.court.prep_rate >= 90 ? "text-[--cs-success]" :
-                  d.court.prep_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.court.prep_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.court.prep_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.court.total_records > 0 ? `${d.court.prep_rate}%` : "--"}
+                  {d.court.total_records > 0 ? `${formatRate(d.court.prep_rate)}` : "--"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Court</p>

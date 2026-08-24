@@ -66,11 +66,16 @@ export interface StatutoryNotificationComplianceResult {
   headline: string;
   total_notifications: number;
   total_notifiable_events: number;
-  timeliness_rate: number;
-  completeness_rate: number;
-  documentation_rate: number;
-  follow_up_rate: number;
-  acknowledgement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timeliness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completeness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acknowledgement_rate: number | null;
   missed_notifications: number;
   strengths: string[];
   concerns: string[];
@@ -125,11 +130,11 @@ export function computeStatutoryNotificationCompliance(
       headline: "No children in placement — statutory notification compliance cannot be assessed.",
       total_notifications: 0,
       total_notifiable_events: 0,
-      timeliness_rate: 0,
-      completeness_rate: 0,
-      documentation_rate: 0,
-      follow_up_rate: 0,
-      acknowledgement_rate: 0,
+      timeliness_rate: null,
+      completeness_rate: null,
+      documentation_rate: null,
+      follow_up_rate: null,
+      acknowledgement_rate: null,
       missed_notifications: 0,
       strengths: [],
       concerns: [],
@@ -154,11 +159,11 @@ export function computeStatutoryNotificationCompliance(
       headline: "No notifiable events or statutory notifications required — stable, safe environment.",
       total_notifications: 0,
       total_notifiable_events: 0,
-      timeliness_rate: 0,
-      completeness_rate: 0,
-      documentation_rate: 0,
-      follow_up_rate: 0,
-      acknowledgement_rate: 0,
+      timeliness_rate: null,
+      completeness_rate: null,
+      documentation_rate: null,
+      follow_up_rate: null,
+      acknowledgement_rate: null,
       missed_notifications: 0,
       strengths: [
         "No notifiable events in the review period — evidence of a safe, well-managed home.",

@@ -155,12 +155,12 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
     return {
       reg4445_rating: "insufficient_data", reg4445_score: 0,
       headline: "No Reg 44/45 evidence data available for analysis.",
-      reg44_visits: { total_packs: 0, visit_completed_rate: 0, report_submitted_rate: 0, avg_areas_covered: 0 },
-      reg44_reports: { total_reports: 0, avg_children_interviewed: 0, child_voice_rate: 0, avg_concerns: 0 },
-      reg44_actions: { total_actions: 0, completed_rate: 0, overdue_count: 0, high_priority_open: 0 },
-      reg45: { total_evidence: 0, strong_evidence_rate: 0, child_voice_rate: 0, overdue_reviews: 0, unique_quality_areas: 0 },
-      reg46: { total_reviews: 0, action_completion_rate: 0, overdue_reviews: 0 },
-      annex_a: { total_standards: 0, evidence_present_rate: 0, evidence_current_rate: 0, gaps_identified: 0 },
+      reg44_visits: { total_packs: 0, visit_completed_rate: null, report_submitted_rate: null, avg_areas_covered: 0 },
+      reg44_reports: { total_reports: 0, avg_children_interviewed: 0, child_voice_rate: null, avg_concerns: 0 },
+      reg44_actions: { total_actions: 0, completed_rate: null, overdue_count: 0, high_priority_open: 0 },
+      reg45: { total_evidence: 0, strong_evidence_rate: null, child_voice_rate: null, overdue_reviews: 0, unique_quality_areas: 0 },
+      reg46: { total_reviews: 0, action_completion_rate: null, overdue_reviews: 0 },
+      annex_a: { total_standards: 0, evidence_present_rate: null, evidence_current_rate: null, gaps_identified: 0 },
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }
