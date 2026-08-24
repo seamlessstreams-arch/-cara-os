@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { seedDay } from "@/lib/seed-date";
 import {
   generateWhistleblowingConcernsIntelligence,
   evaluateReportingCulture,
@@ -26,8 +27,16 @@ import type {
 
 // ── Test Fixtures ──────────────────────────────────────────────────────────
 
-const PERIOD_START = "2026-01-01";
-const PERIOD_END = "2026-05-18";
+// The demo fixture dates float: seedDay(n) is the current London week's
+// Monday plus n days, re-anchored on every module load. A hard-coded period
+// therefore drifts out of alignment with it every Monday — on 2026-08-24 the
+// anchor moved a week and seedDay(-92) went from 2026-05-17 (inside the old
+// window) to 2026-05-24 (outside it), taking three assertions red with it.
+//
+// Anchored to the same offsets, the window keeps exactly the membership it
+// was written for, whatever week it runs in.
+const PERIOD_START = seedDay(-228);
+const PERIOD_END = seedDay(-91);
 
 function makePolicy(overrides?: Partial<WhistleblowingPolicy>): WhistleblowingPolicy {
   return {
@@ -1240,8 +1249,8 @@ describe("getDemoWhistleblowingConcernsData", () => {
       demo.policy,
       demo.culture,
       "home-demo",
-      "2026-01-01",
-      "2026-05-18",
+      PERIOD_START,
+      PERIOD_END,
     );
     expect(result.rating).toBe("outstanding");
     expect(result.overallScore).toBeGreaterThanOrEqual(80);
