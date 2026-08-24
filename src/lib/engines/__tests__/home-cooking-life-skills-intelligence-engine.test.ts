@@ -50,14 +50,14 @@ describe("Insufficient data (total_children=0)", () => {
     expect(result.total_records).toBe(0);
   });
 
-  it("returns all metric rates as 0", () => {
+  it("leaves every rate unmeasured", () => {
     const result = computeCookingLifeSkills(baseInput({ total_children: 0 }));
-    expect(result.independence_rate).toBe(0);
-    expect(result.hygiene_certificate_rate).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
-    expect(result.recipe_success_rate).toBe(0);
+    expect(result.independence_rate).toBeNull();
+    expect(result.hygiene_certificate_rate).toBeNull();
+    expect(result.child_voice_rate).toBeNull();
+    expect(result.recipe_success_rate).toBeNull();
     expect(result.category_variety).toBe(0);
-    expect(result.children_engaged_rate).toBe(0);
+    expect(result.children_engaged_rate).toBeNull();
   });
 
   it("returns empty arrays for qualitative outputs", () => {

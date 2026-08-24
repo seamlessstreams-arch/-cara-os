@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,20 +75,20 @@ export function HomeDailyRoutineCareContinuityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_routines > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_routines}</p>
               <p className="text-[9px] text-muted-foreground">Routines</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.duty_log_completion_rate >= 90 ? "bg-green-50" : d.duty_log_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.duty_log_completion_rate >= 90 ? "text-[--cs-success]" : d.duty_log_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.duty_log_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.duty_log_completion_rate, 90) ? "bg-green-50" : meets(d.duty_log_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.duty_log_completion_rate, 90) ? "text-[--cs-success]" : meets(d.duty_log_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.duty_log_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Duty Logs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.shift_note_quality_rate >= 85 ? "bg-green-50" : d.shift_note_quality_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.shift_note_quality_rate >= 85 ? "text-[--cs-success]" : d.shift_note_quality_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.shift_note_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.shift_note_quality_rate, 85) ? "bg-green-50" : meets(d.shift_note_quality_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.shift_note_quality_rate, 85) ? "text-[--cs-success]" : meets(d.shift_note_quality_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.shift_note_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Note Quality</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cleaning_standard_rate >= 90 ? "bg-green-50" : d.cleaning_standard_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cleaning_standard_rate >= 90 ? "text-[--cs-success]" : d.cleaning_standard_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cleaning_standard_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cleaning_standard_rate, 90) ? "bg-green-50" : meets(d.cleaning_standard_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cleaning_standard_rate, 90) ? "text-[--cs-success]" : meets(d.cleaning_standard_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleaning_standard_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cleaning</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sleep_in_response_rate >= 90 ? "bg-green-50" : d.sleep_in_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sleep_in_response_rate >= 90 ? "text-[--cs-success]" : d.sleep_in_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sleep_in_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sleep_in_response_rate, 90) ? "bg-green-50" : meets(d.sleep_in_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sleep_in_response_rate, 90) ? "text-[--cs-success]" : meets(d.sleep_in_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sleep_in_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sleep-in</p>
             </div>
           </div>

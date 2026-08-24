@@ -1,3 +1,4 @@
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SHIFT PATTERN INTELLIGENCE ENGINE
 // Staffing patterns: coverage, punctuality, overtime, workload fairness.
@@ -50,7 +51,8 @@ export interface CoverageProfile {
   in_progress_shifts: number;
   scheduled_shifts: number;
   open_shifts: number;
-  open_shift_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  open_shift_rate: number | null;
   unique_staff_working: number;
   day_shifts: number;
   sleep_in_shifts: number;
@@ -61,7 +63,8 @@ export interface PunctualityProfile {
   // fab-0: null when no actual-start data.
   avg_delay_minutes: number | null;
   on_time_count: number;
-  on_time_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  on_time_rate: number | null;
   late_count: number;
   early_count: number;
   max_delay_minutes: number | null;
@@ -72,7 +75,8 @@ export interface OvertimeProfile {
   // fab-0: null when no completed shifts.
   avg_overtime_per_shift: number | null;
   shifts_with_overtime: number;
-  overtime_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overtime_rate: number | null;
 }
 
 export interface WorkloadProfile {
@@ -88,7 +92,8 @@ export interface SwapProfile {
   pending_swaps: number;
   approved_swaps: number;
   rejected_swaps: number;
-  resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolution_rate: number | null;
 }
 
 export interface Recommendation {
@@ -158,17 +163,17 @@ export function computeHomeShiftPattern(
       headline: "No shift data available for analysis.",
       coverage: {
         total_shifts: 0, completed_shifts: 0, in_progress_shifts: 0,
-        scheduled_shifts: 0, open_shifts: 0, open_shift_rate: 0,
+        scheduled_shifts: 0, open_shifts: 0, open_shift_rate: null,
         unique_staff_working: 0, day_shifts: 0, sleep_in_shifts: 0,
       },
       punctuality: {
         shifts_with_actual_start: 0, avg_delay_minutes: null,
-        on_time_count: 0, on_time_rate: 0, late_count: 0,
+        on_time_count: 0, on_time_rate: null, late_count: 0,
         early_count: 0, max_delay_minutes: null,
       },
       overtime: {
         total_overtime_minutes: 0, avg_overtime_per_shift: null,
-        shifts_with_overtime: 0, overtime_rate: 0,
+        shifts_with_overtime: 0, overtime_rate: null,
       },
       workload: {
         staff_shift_counts: [], max_shifts_per_staff: null,
@@ -176,7 +181,7 @@ export function computeHomeShiftPattern(
       },
       swaps: {
         total_swaps: 0, pending_swaps: 0, approved_swaps: 0,
-        rejected_swaps: 0, resolution_rate: 0,
+        rejected_swaps: 0, resolution_rate: null,
       },
       strengths: [],
       concerns: [],
@@ -383,8 +388,8 @@ export function computeHomeShiftPattern(
   const strengths: string[] = [];
   if (openShifts.length === 0)
     strengths.push("All shifts filled — no open or uncovered shifts.");
-  if (punctuality.on_time_rate >= 90 && shiftsWithActualStart.length > 0)
-    strengths.push(`${punctuality.on_time_rate}% punctuality rate across ${shiftsWithActualStart.length} recorded starts.`);
+  if (meets(punctuality.on_time_rate, 90) && shiftsWithActualStart.length > 0)
+    strengths.push(`${formatRate(punctuality.on_time_rate)} punctuality rate across ${shiftsWithActualStart.length} recorded starts.`);
   if (totalOvertimeMinutes <= 30 && completedShifts > 0)
     strengths.push("Minimal overtime recorded — healthy workload management.");
   if (uniqueStaff >= total_staff * 0.8)
@@ -402,8 +407,8 @@ export function computeHomeShiftPattern(
   const concerns: string[] = [];
   if (openShifts.length > 0)
     concerns.push(`${openShifts.length} open shift(s) without assigned staff — coverage gap risk.`);
-  if (punctuality.on_time_rate < 50 && shiftsWithActualStart.length > 0)
-    concerns.push(`Only ${punctuality.on_time_rate}% punctuality — systemic lateness affects handovers and children's routines.`);
+  if (below(punctuality.on_time_rate, 50) && shiftsWithActualStart.length > 0)
+    concerns.push(`Only ${formatRate(punctuality.on_time_rate)} punctuality — systemic lateness affects handovers and children's routines.`);
   if (completedShifts > 0 && avgOvertimePerShift !== null && avgOvertimePerShift > 30)
     concerns.push(`Average ${avgOvertimePerShift} minutes overtime per shift — staff wellbeing risk and potential regulatory concern.`);
   if (staffCoverageRate < 40)
@@ -432,11 +437,11 @@ export function computeHomeShiftPattern(
       urgency: "soon",
       regulatory_ref: null,
     });
-  if (punctuality.on_time_rate < 75 && shiftsWithActualStart.length > 0)
+  if (below(punctuality.on_time_rate, 75) && shiftsWithActualStart.length > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Address punctuality patterns — late starts affect shift handovers and children's daily routines.",
-      urgency: punctuality.on_time_rate < 50 ? "immediate" : "soon",
+      urgency: below(punctuality.on_time_rate, 50) ? "immediate" : "soon",
       regulatory_ref: "Reg 33",
     });
   if (completedShifts > 0 && avgOvertimePerShift !== null && avgOvertimePerShift > 15)
@@ -461,9 +466,9 @@ export function computeHomeShiftPattern(
       text: `${openShifts.length} unfilled shifts represent a staffing adequacy risk. Ofsted will expect evidence that the home maintains sufficient numbers of suitably qualified staff at all times (Reg 33).`,
       severity: "critical",
     });
-  if (punctuality.on_time_rate >= 90 && shiftsWithActualStart.length >= 3)
+  if (meets(punctuality.on_time_rate, 90) && shiftsWithActualStart.length >= 3)
     insights.push({
-      text: `${punctuality.on_time_rate}% of staff arrive on time — this supports consistent handovers and stable daily routines for children.`,
+      text: `${formatRate(punctuality.on_time_rate)} of staff arrive on time — this supports consistent handovers and stable daily routines for children.`,
       severity: "positive",
     });
   if (pendingSwaps.length > 0)
@@ -485,7 +490,7 @@ export function computeHomeShiftPattern(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (shift_rating === "outstanding")
-    headline = `Strong shift management: ${shifts.length} shifts tracked, ${openShifts.length === 0 ? "all filled" : openShifts.length + " open"}, ${punctuality.on_time_rate}% punctuality.`;
+    headline = `Strong shift management: ${shifts.length} shifts tracked, ${openShifts.length === 0 ? "all filled" : openShifts.length + " open"}, ${formatRate(punctuality.on_time_rate)} punctuality.`;
   else if (shift_rating === "good")
     headline = `Good shift patterns: ${shifts.length} shifts across ${uniqueStaff} staff. ${concerns.length > 0 ? concerns.length + " minor issues noted." : ""}`;
   else if (shift_rating === "adequate")

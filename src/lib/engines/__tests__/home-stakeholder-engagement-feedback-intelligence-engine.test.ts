@@ -647,15 +647,15 @@ describe("computeStakeholderEngagementFeedback", () => {
       expect(r.parent_engagement_rate).toBe(50);
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("every rate is unmeasured when its denominator is 0", () => {
       const r = computeStakeholderEngagementFeedback({
         today: TODAY, total_children: 0,
         stakeholder_feedback: [], parent_partnerships: [], community_feedback: [],
       });
-      expect(r.positive_sentiment_rate).toBe(0);
-      expect(r.response_rate).toBe(0);
-      expect(r.parent_engagement_rate).toBe(0);
-      expect(r.community_sentiment_rate).toBe(0);
+      expect(r.positive_sentiment_rate).toBeNull();
+      expect(r.response_rate).toBeNull();
+      expect(r.parent_engagement_rate).toBeNull();
+      expect(r.community_sentiment_rate).toBeNull();
     });
   });
 });

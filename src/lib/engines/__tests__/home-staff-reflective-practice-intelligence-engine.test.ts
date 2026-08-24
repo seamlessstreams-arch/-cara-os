@@ -128,10 +128,10 @@ describe("insufficient data", () => {
   it("populates all metrics with zeros on insufficient data", () => {
     const r = computeHomeStaffReflectivePractice(baseInput({ total_staff: 0 }));
     expect(r.staff_reflecting).toBe(0);
-    expect(r.reflection_sharing_rate).toBe(0);
-    expect(r.shadowing_completion_rate).toBe(0);
-    expect(r.meeting_attendance_rate).toBe(0);
-    expect(r.themes_resolved_rate).toBe(0);
+    expect(r.reflection_sharing_rate).toBeNull();
+    expect(r.shadowing_completion_rate).toBeNull();
+    expect(r.meeting_attendance_rate).toBeNull();
+    expect(r.themes_resolved_rate).toBeNull();
     expect(r.strengths).toHaveLength(0);
     expect(r.concerns).toHaveLength(0);
     expect(r.recommendations).toHaveLength(0);

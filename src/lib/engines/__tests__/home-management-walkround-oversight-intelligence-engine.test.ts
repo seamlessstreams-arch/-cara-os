@@ -58,16 +58,16 @@ describe("computeManagementWalkroundOversight", () => {
       expect(r.insights).toEqual([]);
     });
 
-    it("returns insufficient_data with zero rates when total_staff is 0 even if walkrounds provided", () => {
+    it("insufficient_data leaves every rate unmeasured when total_staff is 0 even if walkrounds provided", () => {
       const r = computeManagementWalkroundOversight(
         baseInput({ total_staff: 0, walkrounds: [makeWalkround()] }),
       );
       expect(r.walkround_rating).toBe("insufficient_data");
-      expect(r.positive_observation_rate).toBe(0);
-      expect(r.environmental_pass_rate).toBe(0);
-      expect(r.child_interaction_rate).toBe(0);
-      expect(r.follow_up_completion_rate).toBe(0);
-      expect(r.unannounced_rate).toBe(0);
+      expect(r.positive_observation_rate).toBeNull();
+      expect(r.environmental_pass_rate).toBeNull();
+      expect(r.child_interaction_rate).toBeNull();
+      expect(r.follow_up_completion_rate).toBeNull();
+      expect(r.unannounced_rate).toBeNull();
     });
   });
 

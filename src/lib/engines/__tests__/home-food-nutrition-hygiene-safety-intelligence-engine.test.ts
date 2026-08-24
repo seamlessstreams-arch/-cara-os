@@ -162,7 +162,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
       expect(r.concerns[0]).toContain("No children on roll");
     });
 
-    it("returns zero for all metrics when insufficient data", () => {
+    it("leaves every rate unmeasured for insufficient data", () => {
       const r = computeFoodNutritionHygieneSafety({
         today: "2026-05-27",
         total_children: 0,
@@ -170,11 +170,11 @@ describe("computeFoodNutritionHygieneSafety", () => {
         hygiene_checks: [],
         meal_plans: [],
       });
-      expect(r.hygiene_pass_rate).toBe(0);
-      expect(r.budget_adherence_rate).toBe(0);
-      expect(r.scratch_cooking_rate).toBe(0);
-      expect(r.dietary_compliance_rate).toBe(0);
-      expect(r.cultural_inclusion_rate).toBe(0);
+      expect(r.hygiene_pass_rate).toBeNull();
+      expect(r.budget_adherence_rate).toBeNull();
+      expect(r.scratch_cooking_rate).toBeNull();
+      expect(r.dietary_compliance_rate).toBeNull();
+      expect(r.cultural_inclusion_rate).toBeNull();
     });
   });
 

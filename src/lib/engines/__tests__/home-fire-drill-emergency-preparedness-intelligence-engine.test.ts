@@ -47,12 +47,12 @@ describe("Insufficient data guard", () => {
     expect(r.drill_score).toBe(0);
     expect(r.headline).toBe("No data available for fire drill analysis");
     expect(r.total_drills).toBe(0);
-    expect(r.satisfactory_rate).toBe(0);
-    expect(r.all_present_rate).toBe(0);
+    expect(r.satisfactory_rate).toBeNull();
+    expect(r.all_present_rate).toBeNull();
     expect(r.average_evacuation_time).toBe(0);
     expect(r.drill_type_variety).toBe(0);
-    expect(r.issues_addressed_rate).toBe(0);
-    expect(r.failed_rate).toBe(0);
+    expect(r.issues_addressed_rate).toBeNull();
+    expect(r.failed_rate).toBeNull();
     expect(r.strengths).toEqual([]);
     expect(r.concerns).toEqual([]);
     expect(r.recommendations).toEqual([]);

@@ -59,14 +59,14 @@ describe("Insufficient data", () => {
     expect(res.advocacy_score).toBe(0);
   });
 
-  it("returns zero for all metrics when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const res = computeAdvocacyIndependentVoice(baseInput({ total_children: 0, records: [] }));
     expect(res.total_records).toBe(0);
-    expect(res.active_rate).toBe(0);
-    expect(res.children_with_advocacy_rate).toBe(0);
-    expect(res.independent_rate).toBe(0);
-    expect(res.child_voice_rate).toBe(0);
-    expect(res.private_session_rate).toBe(0);
+    expect(res.active_rate).toBeNull();
+    expect(res.children_with_advocacy_rate).toBeNull();
+    expect(res.independent_rate).toBeNull();
+    expect(res.child_voice_rate).toBeNull();
+    expect(res.private_session_rate).toBeNull();
     expect(res.advocacy_type_variety).toBe(0);
   });
 
@@ -793,7 +793,7 @@ describe("Modifier 5: Private session rate", () => {
     expect(res.private_session_rate).toBe(50);
   });
 
-  it("private rate is 0 when total visits is 0", () => {
+  it("private_session_rate is unmeasured when total visits is 0", () => {
     const records = [
       makeRecord({ visit_count: 0, private_session_count: 0 }),
     ];

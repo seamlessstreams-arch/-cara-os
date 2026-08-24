@@ -69,10 +69,14 @@ export interface ReflectivePracticeResult {
   reflective_score: number;
   headline: string;
   staff_reflecting: number;
-  reflection_sharing_rate: number;
-  shadowing_completion_rate: number;
-  meeting_attendance_rate: number;
-  themes_resolved_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflection_sharing_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  shadowing_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meeting_attendance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  themes_resolved_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -106,10 +110,10 @@ export function computeHomeStaffReflectivePractice(
       reflective_score: 0,
       headline: "No active staff registered.",
       staff_reflecting: 0,
-      reflection_sharing_rate: 0,
-      shadowing_completion_rate: 0,
-      meeting_attendance_rate: 0,
-      themes_resolved_rate: 0,
+      reflection_sharing_rate: null,
+      shadowing_completion_rate: null,
+      meeting_attendance_rate: null,
+      themes_resolved_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],

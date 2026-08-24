@@ -62,19 +62,19 @@ describe("Home Missing Episode Intelligence Engine", () => {
       expect(r.headline).toBe("No children placed — missing episode analysis is not applicable.");
     });
 
-    it("returns all zero metrics when total_children is 0", () => {
+    it("leaves return_interview_rate, return_interview_timeliness_rate, la_notification_rate, contextual_safeguarding_flag_rate and pattern_analysis_rate unmeasured when total_children is 0", () => {
       const r = computeMissingEpisode({ today: "2026-05-15", total_children: 0, episodes: [] });
       expect(r.total_episodes).toBe(0);
       expect(r.unique_children_missing).toBe(0);
       expect(r.episodes_last_90_days).toBe(0);
       expect(r.high_risk_count).toBe(0);
       expect(r.still_missing_count).toBe(0);
-      expect(r.return_interview_rate).toBe(0);
-      expect(r.return_interview_timeliness_rate).toBe(0);
-      expect(r.la_notification_rate).toBe(0);
+      expect(r.return_interview_rate).toBeNull();
+      expect(r.return_interview_timeliness_rate).toBeNull();
+      expect(r.la_notification_rate).toBeNull();
       expect(r.police_report_rate_high_risk).toBe(0);
-      expect(r.contextual_safeguarding_flag_rate).toBe(0);
-      expect(r.pattern_analysis_rate).toBe(0);
+      expect(r.contextual_safeguarding_flag_rate).toBeNull();
+      expect(r.pattern_analysis_rate).toBeNull();
       expect(r.average_duration_hours).toBe(0);
     });
 
