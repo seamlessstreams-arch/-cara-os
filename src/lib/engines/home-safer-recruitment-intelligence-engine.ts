@@ -5,7 +5,7 @@
 // CHR 2015 Reg 32 (Fitness of Workers). SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

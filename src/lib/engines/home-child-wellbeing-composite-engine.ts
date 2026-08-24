@@ -5,7 +5,7 @@
 // Pure deterministic engine. CHR 2015 Reg 7/10/33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 export interface ChildWellbeingSnapshot {
   child_id: string;

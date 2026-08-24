@@ -5,7 +5,7 @@
 // CHR 2015 Reg 9: "Promoting good health and well-being." SCCIF: Independence.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

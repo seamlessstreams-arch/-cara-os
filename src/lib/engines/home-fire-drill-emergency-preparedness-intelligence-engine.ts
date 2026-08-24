@@ -5,7 +5,7 @@
 // CHR 2015 Reg 25: "Premises." SCCIF: Safety.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

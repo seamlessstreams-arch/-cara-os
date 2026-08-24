@@ -6,7 +6,7 @@
 // lives" / "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@
 // CHR 2015 Reg 7: "The children's wishes and feelings standard." SCCIF: Family.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

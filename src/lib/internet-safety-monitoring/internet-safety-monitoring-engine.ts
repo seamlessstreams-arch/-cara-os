@@ -30,7 +30,7 @@
 // No AI. No external calls. No randomness. No Date.now(). Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
 
 // ── Type Unions ──────────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
 // CHR 2015 Reg 44. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

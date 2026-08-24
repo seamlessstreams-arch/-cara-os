@@ -1,5 +1,5 @@
 import { todayStr } from "@/lib/utils";
-import { above, below, formatRate, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — SCCIF SELF-EVALUATION INTELLIGENCE ENGINE
 //

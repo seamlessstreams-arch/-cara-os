@@ -5,7 +5,7 @@
 // CHR 2015 Reg 12: "The protection of children standard." SCCIF: Safeguarding.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

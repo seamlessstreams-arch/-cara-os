@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

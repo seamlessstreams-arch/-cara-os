@@ -5,7 +5,7 @@
 // CHR 2015 Reg 45: "Review of quality of care." SCCIF: Quality & improvement.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 

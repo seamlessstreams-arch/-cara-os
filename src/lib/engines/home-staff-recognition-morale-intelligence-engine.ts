@@ -5,7 +5,7 @@
 // CHR 2015 Reg 33: "Fitness of workers." SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
