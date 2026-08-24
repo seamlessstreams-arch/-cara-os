@@ -1167,7 +1167,9 @@ describe("child satisfaction metrics", () => {
       ],
       accessibility_records: [],
     }));
-    expect(r.child_satisfaction_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.child_satisfaction_rate).toBeNull();
+    expect(r.child_satisfaction_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("100% when all child feedback is positive", () => {
@@ -2384,35 +2386,45 @@ describe("partial data — missing record types", () => {
     const r = computeBathroomShowerFacilities(baseInput({
       hot_water_records: [],
     }));
-    expect(r.hot_water_safety_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.hot_water_safety_rate).toBeNull();
+    expect(r.hot_water_safety_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("zero cleanliness rate when no cleanliness records", () => {
     const r = computeBathroomShowerFacilities(baseInput({
       cleanliness_audit_records: [],
     }));
-    expect(r.cleanliness_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.cleanliness_rate).toBeNull();
+    expect(r.cleanliness_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("zero shower availability rate when no shower records", () => {
     const r = computeBathroomShowerFacilities(baseInput({
       shower_availability_records: [],
     }));
-    expect(r.shower_availability_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.shower_availability_rate).toBeNull();
+    expect(r.shower_availability_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("zero privacy rate when no privacy records", () => {
     const r = computeBathroomShowerFacilities(baseInput({
       privacy_records: [],
     }));
-    expect(r.privacy_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.privacy_rate).toBeNull();
+    expect(r.privacy_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("zero accessibility rate when no accessibility records", () => {
     const r = computeBathroomShowerFacilities(baseInput({
       accessibility_records: [],
     }));
-    expect(r.accessibility_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.accessibility_rate).toBeNull();
+    expect(r.accessibility_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 

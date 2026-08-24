@@ -11,7 +11,7 @@
 //             wheelchairAccessRecords, modificationRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -177,8 +177,9 @@ export interface BathroomAccessibilityAdaptationsResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -331,9 +332,7 @@ export function computeBathroomAccessibilityAdaptations(
   // Composite adaptation_adequacy_rate: installed + meets needs + inspection passed + documented
   const adaptationAdequacyRate: number | null =
     totalAdaptationRecords > 0
-      ? Math.round(
-          (installedRate + adaptationMeetNeedsRate + adaptationInspectionRate + adaptationDocumentedRate) / 4,
-        )
+      ? meanOf([installedRate, adaptationMeetNeedsRate, adaptationInspectionRate, adaptationDocumentedRate])
       : null;
 
   // --- Grab rail metrics ---
@@ -383,9 +382,7 @@ export function computeBathroomAccessibilityAdaptations(
   // Composite grab_rail_rate: installed + securely fixed + correct height + inspection passed
   const grabRailRate: number | null =
     totalGrabRailRecords > 0
-      ? Math.round(
-          (grabRailInstalledRate + securelyFixedRate + correctHeightRate + grabRailInspectionRate) / 4,
-        )
+      ? meanOf([grabRailInstalledRate, securelyFixedRate, correctHeightRate, grabRailInspectionRate])
       : null;
 
   // --- Non-slip surface metrics ---
@@ -423,9 +420,7 @@ export function computeBathroomAccessibilityAdaptations(
   // Composite non_slip_rate: installed + inspection passed + meets standard + resistance tested
   const nonSlipRate: number | null =
     totalNonSlipRecords > 0
-      ? Math.round(
-          (nonSlipInstalledRate + nonSlipInspectionRate + nonSlipStandardRate + slipResistanceTestedRate) / 4,
-        )
+      ? meanOf([nonSlipInstalledRate, nonSlipInspectionRate, nonSlipStandardRate, slipResistanceTestedRate])
       : null;
 
   // --- Wheelchair access metrics ---
@@ -463,9 +458,7 @@ export function computeBathroomAccessibilityAdaptations(
   // Composite wheelchair_access_rate: doorway + turning circle + transfer space + assessment passed
   const wheelchairAccessRate: number | null =
     totalWheelchairRecords > 0
-      ? Math.round(
-          (wheelchairDoorwayRate + turningCircleRate + transferSpaceRate + wheelchairAssessmentRate) / 4,
-        )
+      ? meanOf([wheelchairDoorwayRate, turningCircleRate, transferSpaceRate, wheelchairAssessmentRate])
       : null;
 
   // --- Child modification metrics ---
@@ -498,9 +491,7 @@ export function computeBathroomAccessibilityAdaptations(
   // Composite child_modification_rate: installed + meets needs + child consulted + care plan linked
   const childModificationRate: number | null =
     totalModificationRecords > 0
-      ? Math.round(
-          (modificationInstalledRate + modificationMeetNeedsRate + modificationChildConsultedRate + modificationCarePlanRate) / 4,
-        )
+      ? meanOf([modificationInstalledRate, modificationMeetNeedsRate, modificationChildConsultedRate, modificationCarePlanRate])
       : null;
 
   // --- Satisfaction metrics ---
@@ -647,71 +638,71 @@ export function computeBathroomAccessibilityAdaptations(
     );
   }
 
-  if (adaptationConditionRate >= 90 && totalAdaptationRecords > 0) {
+  if (meets(adaptationConditionRate, 90) && totalAdaptationRecords > 0) {
     strengths.push(
       `${adaptationConditionRate}% of adaptations in excellent or good condition — bathroom adaptations are well-maintained and fit for purpose.`,
     );
   }
 
-  if (grabRailConditionRate >= 90 && totalGrabRailRecords > 0) {
+  if (meets(grabRailConditionRate, 90) && totalGrabRailRecords > 0) {
     strengths.push(
       `${grabRailConditionRate}% of grab rails in excellent or good condition — safety equipment is well-maintained, supporting ongoing safe use of bathrooms.`,
     );
   }
 
-  if (grabRailComplianceRate >= 95 && totalGrabRailRecords > 0) {
+  if (meets(grabRailComplianceRate, 95) && totalGrabRailRecords > 0) {
     strengths.push(
       `${grabRailComplianceRate}% of grab rails compliant with safety standards — exemplary compliance with building and safety regulations.`,
     );
   }
 
-  if (nonSlipStandardRate >= 95 && totalNonSlipRecords > 0) {
+  if (meets(nonSlipStandardRate, 95) && totalNonSlipRecords > 0) {
     strengths.push(
       `${nonSlipStandardRate}% of non-slip surfaces meeting safety standards — comprehensive slip-prevention across all bathroom areas.`,
     );
   }
 
-  if (emergencyPullCordRate >= 90 && totalWheelchairRecords > 0) {
+  if (meets(emergencyPullCordRate, 90) && totalWheelchairRecords > 0) {
     strengths.push(
       `${emergencyPullCordRate}% of wheelchair-accessible bathrooms have emergency pull cords — ensuring safety and emergency response capability for vulnerable users.`,
     );
   }
 
-  if (modificationChildConsultedRate >= 90 && totalModificationRecords > 0) {
+  if (meets(modificationChildConsultedRate, 90) && totalModificationRecords > 0) {
     strengths.push(
       `${modificationChildConsultedRate}% of modifications informed by child consultation — the home consistently involves children in decisions about their bathroom adaptations, evidencing voice of the child.`,
     );
   }
 
-  if (modificationCarePlanRate >= 90 && totalModificationRecords > 0) {
+  if (meets(modificationCarePlanRate, 90) && totalModificationRecords > 0) {
     strengths.push(
       `${modificationCarePlanRate}% of modifications linked to care plans — bathroom adaptations are integrated into individual care planning, demonstrating person-centred practice.`,
     );
   }
 
-  if (childModificationCoverage >= 100 && total_children > 0) {
+  if (meets(childModificationCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has bathroom modifications assessed and in place — the home ensures equitable access and adaptation for all children in its care.",
     );
-  } else if (childModificationCoverage >= 80 && total_children > 0) {
+  } else if (meets(childModificationCoverage, 80) && total_children > 0) {
     strengths.push(
       `${childModificationCoverage}% of children have bathroom modifications in place — strong coverage ensuring most children benefit from personalised bathroom adaptations.`,
     );
   }
 
-  if (adaptationRiskAssessedRate >= 90 && totalAdaptationRecords > 0) {
+  if (meets(adaptationRiskAssessedRate, 90) && totalAdaptationRecords > 0) {
     strengths.push(
       `${adaptationRiskAssessedRate}% of adaptations risk assessed — the home demonstrates thorough risk management of bathroom adaptation equipment.`,
     );
   }
 
-  if (weightTestedRate >= 90 && totalGrabRailRecords > 0) {
+  if (meets(weightTestedRate, 90) && totalGrabRailRecords > 0) {
     strengths.push(
       `${weightTestedRate}% of grab rails weight tested — comprehensive testing regime ensures grab rails are safe for use.`,
     );
   }
 
-  if (floorLevelRate >= 90 && totalWheelchairRecords > 0) {
+  if (meets(floorLevelRate, 90) && totalWheelchairRecords > 0) {
     strengths.push(
       `${floorLevelRate}% of wheelchair-accessible bathrooms have floor-level access — eliminating step hazards and enabling independent access for wheelchair users.`,
     );
@@ -781,67 +772,67 @@ export function computeBathroomAccessibilityAdaptations(
     );
   }
 
-  if (adaptationPoorConditionRate >= 20 && totalAdaptationRecords > 0) {
+  if (meets(adaptationPoorConditionRate, 20) && totalAdaptationRecords > 0) {
     concerns.push(
       `${adaptationPoorConditionRate}% of adaptations in poor or unusable condition — deteriorating bathroom adaptations create safety risks and fail to meet children's needs.`,
     );
   }
 
-  if (grabRailPoorConditionRate >= 20 && totalGrabRailRecords > 0) {
+  if (meets(grabRailPoorConditionRate, 20) && totalGrabRailRecords > 0) {
     concerns.push(
       `${grabRailPoorConditionRate}% of grab rails in poor or unusable condition — deteriorating grab rails create significant fall risks and must be replaced or repaired urgently.`,
     );
   }
 
-  if (nonSlipPoorConditionRate >= 20 && totalNonSlipRecords > 0) {
+  if (meets(nonSlipPoorConditionRate, 20) && totalNonSlipRecords > 0) {
     concerns.push(
       `${nonSlipPoorConditionRate}% of non-slip surfaces in poor or unusable condition — worn or damaged non-slip surfaces increase slip and fall risk.`,
     );
   }
 
-  if (nonSlipReplacementDueRate >= 30 && totalNonSlipRecords > 0) {
+  if (meets(nonSlipReplacementDueRate, 30) && totalNonSlipRecords > 0) {
     concerns.push(
       `${nonSlipReplacementDueRate}% of non-slip surfaces due for replacement — overdue replacements compromise bathroom safety.`,
     );
   }
 
-  if (modificationChildConsultedRate < 50 && totalModificationRecords > 0) {
+  if (below(modificationChildConsultedRate, 50) && totalModificationRecords > 0) {
     concerns.push(
       `Only ${modificationChildConsultedRate}% of modifications informed by child consultation — children are not being adequately involved in decisions about their bathroom adaptations, undermining voice of the child.`,
     );
   }
 
-  if (modificationCarePlanRate < 50 && totalModificationRecords > 0) {
+  if (below(modificationCarePlanRate, 50) && totalModificationRecords > 0) {
     concerns.push(
       `Only ${modificationCarePlanRate}% of modifications linked to care plans — bathroom adaptations are not consistently integrated into individual care planning.`,
     );
   }
 
-  if (emergencyPullCordRate < 50 && totalWheelchairRecords > 0) {
+  if (below(emergencyPullCordRate, 50) && totalWheelchairRecords > 0) {
     concerns.push(
       `Only ${emergencyPullCordRate}% of wheelchair-accessible bathrooms have emergency pull cords — this is a significant safety concern for vulnerable users who may need emergency assistance.`,
     );
   }
 
-  if (childModificationCoverage < 50 && total_children > 0 && totalModificationRecords > 0) {
+  if (below(childModificationCoverage, 50) && total_children > 0 && totalModificationRecords > 0) {
     concerns.push(
       `Only ${childModificationCoverage}% of children have bathroom modifications in place — many children may not have individualised bathroom adaptations.`,
     );
   }
 
-  if (adaptationRiskAssessedRate < 50 && totalAdaptationRecords > 0) {
+  if (below(adaptationRiskAssessedRate, 50) && totalAdaptationRecords > 0) {
     concerns.push(
       `Only ${adaptationRiskAssessedRate}% of adaptations risk assessed — inadequate risk assessment of bathroom adaptation equipment creates unmanaged hazards.`,
     );
   }
 
-  if (weightTestedRate < 50 && totalGrabRailRecords > 0) {
+  if (below(weightTestedRate, 50) && totalGrabRailRecords > 0) {
     concerns.push(
       `Only ${weightTestedRate}% of grab rails weight tested — untested grab rails may fail under load, creating a serious fall risk.`,
     );
   }
 
-  if (modificationPoorConditionRate >= 20 && totalModificationRecords > 0) {
+  if (meets(modificationPoorConditionRate, 20) && totalModificationRecords > 0) {
     concerns.push(
       `${modificationPoorConditionRate}% of child modifications in poor or unusable condition — children's bathroom equipment is not being adequately maintained.`,
     );
@@ -902,7 +893,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (grabRailPoorConditionRate >= 20 && totalGrabRailRecords > 0) {
+  if (meets(grabRailPoorConditionRate, 20) && totalGrabRailRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -912,7 +903,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (emergencyPullCordRate < 50 && totalWheelchairRecords > 0) {
+  if (below(emergencyPullCordRate, 50) && totalWheelchairRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -922,7 +913,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (adaptationRiskAssessedRate < 50 && totalAdaptationRecords > 0) {
+  if (below(adaptationRiskAssessedRate, 50) && totalAdaptationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -932,7 +923,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (weightTestedRate < 50 && totalGrabRailRecords > 0) {
+  if (below(weightTestedRate, 50) && totalGrabRailRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -942,7 +933,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (modificationChildConsultedRate < 50 && totalModificationRecords > 0) {
+  if (below(modificationChildConsultedRate, 50) && totalModificationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -952,7 +943,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (modificationCarePlanRate < 50 && totalModificationRecords > 0) {
+  if (below(modificationCarePlanRate, 50) && totalModificationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +953,7 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (nonSlipReplacementDueRate >= 30 && totalNonSlipRecords > 0) {
+  if (meets(nonSlipReplacementDueRate, 30) && totalNonSlipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1057,8 +1048,8 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    childModificationCoverage < 80 &&
-    childModificationCoverage >= 50 &&
+    below(childModificationCoverage, 80) &&
+    meets(childModificationCoverage, 50) &&
     total_children > 0 &&
     totalModificationRecords > 0
   ) {
@@ -1112,14 +1103,14 @@ export function computeBathroomAccessibilityAdaptations(
     });
   }
 
-  if (grabRailPoorConditionRate >= 30 && totalGrabRailRecords > 0) {
+  if (meets(grabRailPoorConditionRate, 30) && totalGrabRailRecords > 0) {
     insights.push({
       text: `${grabRailPoorConditionRate}% of grab rails in poor or unusable condition. Deteriorating grab rails in wet bathroom environments present an imminent fall hazard. These must be replaced or repaired before a child is injured.`,
       severity: "critical",
     });
   }
 
-  if (nonSlipPoorConditionRate >= 30 && totalNonSlipRecords > 0) {
+  if (meets(nonSlipPoorConditionRate, 30) && totalNonSlipRecords > 0) {
     insights.push({
       text: `${nonSlipPoorConditionRate}% of non-slip surfaces in poor or unusable condition. Worn or damaged non-slip surfaces provide a false sense of security — they must be replaced immediately to maintain slip prevention.`,
       severity: "critical",
@@ -1195,8 +1186,8 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    nonSlipReplacementDueRate >= 20 &&
-    nonSlipReplacementDueRate < 30 &&
+    meets(nonSlipReplacementDueRate, 20) &&
+    below(nonSlipReplacementDueRate, 30) &&
     totalNonSlipRecords > 0
   ) {
     insights.push({
@@ -1206,8 +1197,8 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    adaptationPoorConditionRate >= 10 &&
-    adaptationPoorConditionRate < 20 &&
+    meets(adaptationPoorConditionRate, 10) &&
+    below(adaptationPoorConditionRate, 20) &&
     totalAdaptationRecords > 0
   ) {
     insights.push({
@@ -1217,8 +1208,8 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    modificationChildConsultedRate >= 50 &&
-    modificationChildConsultedRate < 70 &&
+    meets(modificationChildConsultedRate, 50) &&
+    below(modificationChildConsultedRate, 70) &&
     totalModificationRecords > 0
   ) {
     insights.push({
@@ -1228,8 +1219,8 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    modificationCarePlanRate >= 50 &&
-    modificationCarePlanRate < 70 &&
+    meets(modificationCarePlanRate, 50) &&
+    below(modificationCarePlanRate, 70) &&
     totalModificationRecords > 0
   ) {
     insights.push({
@@ -1273,7 +1264,7 @@ export function computeBathroomAccessibilityAdaptations(
 
   if (
     meets(adaptationAdequacyRate, 90) &&
-    adaptationConditionRate >= 90 &&
+    meets(adaptationConditionRate, 90) &&
     totalAdaptationRecords > 0
   ) {
     insights.push({
@@ -1284,7 +1275,7 @@ export function computeBathroomAccessibilityAdaptations(
 
   if (
     meets(grabRailRate, 90) &&
-    grabRailComplianceRate >= 95 &&
+    meets(grabRailComplianceRate, 95) &&
     totalGrabRailRecords > 0
   ) {
     insights.push({
@@ -1295,7 +1286,7 @@ export function computeBathroomAccessibilityAdaptations(
 
   if (
     meets(nonSlipRate, 90) &&
-    nonSlipStandardRate >= 95 &&
+    meets(nonSlipStandardRate, 95) &&
     totalNonSlipRecords > 0
   ) {
     insights.push({
@@ -1306,7 +1297,7 @@ export function computeBathroomAccessibilityAdaptations(
 
   if (
     meets(wheelchairAccessRate, 90) &&
-    emergencyPullCordRate >= 90 &&
+    meets(emergencyPullCordRate, 90) &&
     totalWheelchairRecords > 0
   ) {
     insights.push({
@@ -1317,7 +1308,7 @@ export function computeBathroomAccessibilityAdaptations(
 
   if (
     meets(childModificationRate, 90) &&
-    modificationChildConsultedRate >= 90 &&
+    meets(modificationChildConsultedRate, 90) &&
     totalModificationRecords > 0
   ) {
     insights.push({
@@ -1337,7 +1328,7 @@ export function computeBathroomAccessibilityAdaptations(
   }
 
   if (
-    childModificationCoverage >= 100 &&
+    meets(childModificationCoverage, 100) &&
     total_children > 0 &&
     totalModificationRecords > 0
   ) {

@@ -273,7 +273,9 @@ describe("pct(0,0) = 0 edge case", () => {
       ...baseInput,
       temperature_monitoring_records: manyTemp(5),
     });
-    expect(r.action_response_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.action_response_rate).toBeNull();
+    expect(r.action_response_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("rates default to 0 for empty sub-arrays even with data in others", () => {
@@ -281,9 +283,13 @@ describe("pct(0,0) = 0 edge case", () => {
       ...baseInput,
       temperature_monitoring_records: manyTemp(5),
     });
-    expect(r.ventilation_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.ventilation_rate).toBeNull();
+    expect(r.ventilation_rate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(r.heating_check_rate).toBeNull();;
-    expect(r.window_compliance_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.window_compliance_rate).toBeNull();
+    expect(r.window_compliance_rate).not.toBe(0); // 0% is a claim; nothing was measured
     expect(r.child_comfort_rate).toBeNull();;
   });
 });
@@ -993,7 +999,9 @@ describe("rates", () => {
       heating_check_records: manyHeating(5, { issues_found: false }),
       child_comfort_records: manyComfort(4, { requested_changes: false }),
     });
-    expect(r.action_response_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.action_response_rate).toBeNull();
+    expect(r.action_response_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 });
 

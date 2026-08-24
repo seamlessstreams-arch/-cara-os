@@ -8,6 +8,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface BehaviourLogInput {
   id: string;
   date: string;                              // YYYY-MM-DD
@@ -62,10 +64,13 @@ export interface BehaviourProfile {
   total_logs_90d: number;
   positive_count: number;
   concern_count: number;
-  positive_ratio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_ratio: number | null;
   high_critical_count: number;
-  abc_documentation_rate: number;
-  strategy_use_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  abc_documentation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_use_rate: number | null;
   children_with_concerns: string[];
   repeat_concern_children: string[];
 }
@@ -74,18 +79,26 @@ export interface ReinforcementProfile {
   total_entries_90d: number;
   reward_count: number;
   sanction_count: number;
-  reward_ratio: number;
-  proportionality_rate: number;
-  child_response_rate: number;
-  outcome_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reward_ratio: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcome_rate: number | null;
 }
 
 export interface RestorativeProfile {
   total_consequences_90d: number;
-  child_voice_rate: number;
-  relationship_repair_rate: number;
-  bsp_linked_rate: number;
-  restorative_question_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relationship_repair_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bsp_linked_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorative_question_rate: number | null;
 }
 
 export interface BehaviourInsight {
@@ -132,8 +145,9 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 // ── Main Compute ────────────────────────────────────────────────────────────
@@ -246,8 +260,8 @@ export function computeHomeBehaviour(
 
   // Positive ratio (±5)
   if (logs90d.length > 0) {
-    if (positiveRatio >= 60) score += 5;
-    else if (positiveRatio >= 40) score += 2;
+    if (meets(positiveRatio, 60)) score += 5;
+    else if (meets(positiveRatio, 40)) score += 2;
     else score -= 4;
   }
 
@@ -258,48 +272,48 @@ export function computeHomeBehaviour(
 
   // ABC documentation (±3)
   if (logs90d.length > 0) {
-    if (abcRate >= 80) score += 3;
-    else if (abcRate >= 60) score += 1;
+    if (meets(abcRate, 80)) score += 3;
+    else if (meets(abcRate, 60)) score += 1;
     else score -= 3;
   }
 
   // Reward ratio (±5)
   if (sr90d.length > 0) {
-    if (rewardRatio >= 60) score += 5;
-    else if (rewardRatio >= 40) score += 2;
+    if (meets(rewardRatio, 60)) score += 5;
+    else if (meets(rewardRatio, 40)) score += 2;
     else score -= 4;
   }
 
   // Proportionality (±3)
   if (sanctionEntries.length > 0) {
     if (proportionalityRate === 100) score += 3;
-    else if (proportionalityRate >= 80) score += 1;
+    else if (meets(proportionalityRate, 80)) score += 1;
     else score -= 3;
   }
 
   // Child response (±2)
   if (sr90d.length > 0) {
-    if (childResponseRate >= 80) score += 2;
+    if (meets(childResponseRate, 80)) score += 2;
     else score -= 1;
   }
 
   // Child voice in consequences (±3)
   if (cons90d.length > 0) {
-    if (childVoiceRate >= 80) score += 3;
-    else if (childVoiceRate >= 60) score += 1;
+    if (meets(childVoiceRate, 80)) score += 3;
+    else if (meets(childVoiceRate, 60)) score += 1;
     else score -= 2;
   }
 
   // Relationship repair (±3)
   if (cons90d.length > 0) {
-    if (repairRate >= 80) score += 3;
-    else if (repairRate >= 60) score += 1;
+    if (meets(repairRate, 80)) score += 3;
+    else if (meets(repairRate, 60)) score += 1;
     else score -= 2;
   }
 
   // BSP linkage (±2)
   if (cons90d.length > 0) {
-    if (bspLinkedRate >= 60) score += 2;
+    if (meets(bspLinkedRate, 60)) score += 2;
     else score -= 1;
   }
 
@@ -309,7 +323,7 @@ export function computeHomeBehaviour(
 
   // Strategy use (±2)
   if (logs90d.length > 0) {
-    if (strategyRate >= 80) score += 2;
+    if (meets(strategyRate, 80)) score += 2;
     else score -= 2;
   }
 
@@ -318,43 +332,43 @@ export function computeHomeBehaviour(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (positiveRatio >= 60 && logs90d.length > 0) strengths.push(`${positiveRatio}% of behaviour records are positive — the home is recognising and reinforcing good behaviour.`);
-  if (rewardRatio >= 60 && sr90d.length > 0) strengths.push(`Reward-to-sanction ratio is ${rewards}:${sanctions} — positive reinforcement is the dominant approach.`);
+  if (meets(positiveRatio, 60) && logs90d.length > 0) strengths.push(`${positiveRatio}% of behaviour records are positive — the home is recognising and reinforcing good behaviour.`);
+  if (meets(rewardRatio, 60) && sr90d.length > 0) strengths.push(`Reward-to-sanction ratio is ${rewards}:${sanctions} — positive reinforcement is the dominant approach.`);
   if (proportionalityRate === 100 && sanctionEntries.length > 0) strengths.push("All sanctions rated as proportionate — consequences are fair and appropriate.");
-  if (abcRate >= 80 && logs90d.length > 0) strengths.push(`ABC documentation rate is ${abcRate}% — staff are recording antecedents, behaviours, and consequences thoroughly.`);
-  if (repairRate >= 80 && cons90d.length > 0) strengths.push(`${repairRate}% of consequences resulted in relationship repair — restorative approaches are effective.`);
-  if (childVoiceRate >= 80 && cons90d.length > 0) strengths.push(`Child voice captured in ${childVoiceRate}% of consequences — children's perspectives are valued.`);
+  if (meets(abcRate, 80) && logs90d.length > 0) strengths.push(`ABC documentation rate is ${abcRate}% — staff are recording antecedents, behaviours, and consequences thoroughly.`);
+  if (meets(repairRate, 80) && cons90d.length > 0) strengths.push(`${repairRate}% of consequences resulted in relationship repair — restorative approaches are effective.`);
+  if (meets(childVoiceRate, 80) && cons90d.length > 0) strengths.push(`Child voice captured in ${childVoiceRate}% of consequences — children's perspectives are valued.`);
   if (highCritical === 0 && logs90d.length > 0) strengths.push("No high or critical intensity behaviour incidents — the home environment is stable.");
-  if (strategyRate >= 80 && logs90d.length > 0) strengths.push(`De-escalation strategies documented in ${strategyRate}% of behaviour logs — proactive management is embedded.`);
+  if (meets(strategyRate, 80) && logs90d.length > 0) strengths.push(`De-escalation strategies documented in ${strategyRate}% of behaviour logs — proactive management is embedded.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (positiveRatio < 40 && logs90d.length > 0) concerns.push(`Only ${positiveRatio}% of behaviour records are positive — the home may be over-focused on negative behaviour.`);
-  if (rewardRatio < 40 && sr90d.length > 0) concerns.push(`Only ${rewardRatio}% of entries are rewards — sanctions outweigh positive reinforcement.`);
-  if (proportionalityRate < 80 && sanctionEntries.length > 0) concerns.push(`Only ${proportionalityRate}% of sanctions rated proportionate — disproportionate consequences undermine trust.`);
+  if (below(positiveRatio, 40) && logs90d.length > 0) concerns.push(`Only ${positiveRatio}% of behaviour records are positive — the home may be over-focused on negative behaviour.`);
+  if (below(rewardRatio, 40) && sr90d.length > 0) concerns.push(`Only ${rewardRatio}% of entries are rewards — sanctions outweigh positive reinforcement.`);
+  if (below(proportionalityRate, 80) && sanctionEntries.length > 0) concerns.push(`Only ${proportionalityRate}% of sanctions rated proportionate — disproportionate consequences undermine trust.`);
   if (repeatConcernChildren.length > 0) concerns.push(`${repeatConcernChildren.length} child${repeatConcernChildren.length > 1 ? "ren" : ""} with 3+ behaviour concerns — BSP effectiveness needs review.`);
   if (highCritical > 3) concerns.push(`${highCritical} high/critical behaviour incidents in 90 days — escalation patterns need analysis.`);
-  if (abcRate < 60 && logs90d.length > 0) concerns.push(`ABC documentation rate is only ${abcRate}% — incomplete recording hinders pattern analysis.`);
-  if (repairRate < 60 && cons90d.length > 0) concerns.push(`Relationship repair rate is only ${repairRate}% — restorative approaches may not be effective.`);
-  if (strategyRate < 60 && logs90d.length > 0) concerns.push(`De-escalation strategies documented in only ${strategyRate}% of logs — staff may not be using proactive approaches.`);
+  if (below(abcRate, 60) && logs90d.length > 0) concerns.push(`ABC documentation rate is only ${abcRate}% — incomplete recording hinders pattern analysis.`);
+  if (below(repairRate, 60) && cons90d.length > 0) concerns.push(`Relationship repair rate is only ${repairRate}% — restorative approaches may not be effective.`);
+  if (below(strategyRate, 60) && logs90d.length > 0) concerns.push(`De-escalation strategies documented in only ${strategyRate}% of logs — staff may not be using proactive approaches.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: BehaviourRecommendation[] = [];
   let rank = 1;
 
-  if (positiveRatio < 40 && logs90d.length > 0) {
+  if (below(positiveRatio, 40) && logs90d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Increase recording of positive behaviour — aim for at least 3 positive entries per concern to evidence therapeutic culture.", urgency: "immediate", regulatory_ref: "Reg 19" });
   }
   if (repeatConcernChildren.length > 0) {
     recs.push({ rank: rank++, recommendation: `Review BSPs for ${repeatConcernChildren.length} child${repeatConcernChildren.length > 1 ? "ren" : ""} with repeat concerns — strategies may need updating.`, urgency: "immediate", regulatory_ref: "Reg 19" });
   }
-  if (proportionalityRate < 80 && sanctionEntries.length > 0) {
+  if (below(proportionalityRate, 80) && sanctionEntries.length > 0) {
     recs.push({ rank: rank++, recommendation: "Review sanctions for proportionality — all consequences must be fair, explained, and linked to the behaviour.", urgency: "soon", regulatory_ref: "Reg 19" });
   }
-  if (abcRate < 80 && logs90d.length > 0) {
+  if (below(abcRate, 80) && logs90d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Improve ABC documentation — recording antecedents, behaviours, and consequences enables effective pattern analysis.", urgency: "soon", regulatory_ref: "Reg 19" });
   }
-  if (repairRate < 60 && cons90d.length > 0) {
+  if (below(repairRate, 60) && cons90d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Strengthen restorative practice — focus on relationship repair after every consequence.", urgency: "planned", regulatory_ref: "Reg 19" });
   }
 
@@ -364,19 +378,19 @@ export function computeHomeBehaviour(
   if (highCritical > 3) {
     insights.push({ text: `${highCritical} high/critical behaviour incidents in 90 days. Ofsted will examine whether behaviour management strategies are effective and whether staff are appropriately trained.`, severity: "critical" });
   }
-  if (proportionalityRate < 60 && sanctionEntries.length > 0) {
+  if (below(proportionalityRate, 60) && sanctionEntries.length > 0) {
     insights.push({ text: `Only ${proportionalityRate}% of sanctions rated proportionate. Ofsted expects all consequences to be fair, explained to the child, and proportionate to the behaviour.`, severity: "critical" });
   }
   if (repeatConcernChildren.length > 0) {
     insights.push({ text: `${repeatConcernChildren.length} child${repeatConcernChildren.length > 1 ? "ren" : ""} with repeat behaviour concerns. Ofsted will assess whether the home is adapting care plans and learning from patterns.`, severity: "warning" });
   }
-  if (positiveRatio >= 60 && logs90d.length > 0) {
+  if (meets(positiveRatio, 60) && logs90d.length > 0) {
     insights.push({ text: `${positiveRatio}% positive behaviour ratio demonstrates a strengths-based approach. Ofsted values homes that recognise and celebrate positive behaviour.`, severity: "positive" });
   }
-  if (rewardRatio >= 60 && sr90d.length > 0) {
+  if (meets(rewardRatio, 60) && sr90d.length > 0) {
     insights.push({ text: `Reward-led reinforcement (${rewardRatio}%) evidences a therapeutic approach to behaviour management — a key SCCIF expectation.`, severity: "positive" });
   }
-  if (repairRate >= 80 && cons90d.length > 0) {
+  if (meets(repairRate, 80) && cons90d.length > 0) {
     insights.push({ text: `${repairRate}% relationship repair rate demonstrates effective restorative practice — Ofsted expects consequences to strengthen, not damage, relationships.`, severity: "positive" });
   }
 

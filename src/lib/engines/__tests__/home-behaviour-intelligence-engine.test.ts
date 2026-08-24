@@ -629,7 +629,9 @@ describe("Home Behaviour Management Intelligence Engine", () => {
           // No sanctions — proportionality not scored
         ],
       }));
-      expect(r.reinforcement_profile.proportionality_rate).toBe(0); // pct(0,0) = 0
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.reinforcement_profile.proportionality_rate).toBeNull();
+      expect(r.reinforcement_profile.proportionality_rate).not.toBe(0); // 0% is a claim; nothing was measured // pct(0,0) = 0
     });
   });
 });

@@ -14,6 +14,8 @@
 
 // -- Input Types -------------------------------------------------------------
 
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 export interface BehaviourSupportPlanInput {
   id: string;
   child_id: string;
@@ -149,8 +151,9 @@ export interface BehaviourSupportPlanEffectivenessResult {
 
 // -- Helpers -----------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -377,11 +380,7 @@ export function computeBehaviourSupportPlanEffectiveness(
 
   // Compliance composite for restrictive practices
   const restrictiveComplianceItems = totalRestrictive > 0
-    ? (pct(justifiedRestrictive, totalRestrictive) +
-       pct(proportionateRestrictive, totalRestrictive) +
-       pct(lastResortRestrictive, totalRestrictive) +
-       pct(restrictiveWithPostIncident, totalRestrictive) +
-       pct(restrictiveWithBodyMap, totalRestrictive)) / 5
+    ? meanOf([pct(justifiedRestrictive, totalRestrictive), pct(proportionateRestrictive, totalRestrictive), pct(lastResortRestrictive, totalRestrictive), pct(restrictiveWithPostIncident, totalRestrictive), pct(restrictiveWithBodyMap, totalRestrictive)])
     : 100; // no restrictive practices is ideal
 
   // --- Child debrief rate across all record types ---
@@ -396,8 +395,8 @@ export function computeBehaviourSupportPlanEffectiveness(
   let score = 52;
 
   // --- Bonus 1: bspCoverageRate (>=100: +4, >=80: +2) ---
-  if (bspCoverageRate >= 100) score += 4;
-  else if (bspCoverageRate >= 80) score += 2;
+  if (meets(bspCoverageRate, 100)) score += 4;
+  else if (meets(bspCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: interventionSuccessRate (>=90: +3, >=70: +1) ---
   if ((interventionSuccessRate ?? 0) >= 90) score += 3;
@@ -408,38 +407,38 @@ export function computeBehaviourSupportPlanEffectiveness(
   else if ((deescalationEffectivenessRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 4: positiveReinforcementRate (>=90: +3, >=70: +1) ---
-  if (positiveReinforcementRate >= 90) score += 3;
-  else if (positiveReinforcementRate >= 70) score += 1;
+  if (meets(positiveReinforcementRate, 90)) score += 3;
+  else if (meets(positiveReinforcementRate, 70)) score += 1;
 
   // --- Bonus 5: restrictivePracticeReductionRate (>=90: +3, >=70: +1) OR no restrictive practices (+3) ---
   if (totalRestrictive === 0 && totalInterventions > 0) {
     score += 3; // no restrictive practices used at all is ideal
-  } else if (restrictivePracticeReductionRate >= 90) {
+  } else if (meets(restrictivePracticeReductionRate, 90)) {
     score += 3;
-  } else if (restrictivePracticeReductionRate >= 70) {
+  } else if (meets(restrictivePracticeReductionRate, 70)) {
     score += 1;
   }
 
   // --- Bonus 6: childInvolvementRate (>=90: +3, >=70: +1) ---
-  if (childInvolvementRate >= 90) score += 3;
-  else if (childInvolvementRate >= 70) score += 1;
+  if (meets(childInvolvementRate, 90)) score += 3;
+  else if (meets(childInvolvementRate, 70)) score += 1;
 
   // --- Bonus 7: staffTrainingRate (>=100: +2, >=80: +1) ---
-  if (staffTrainingRate >= 100) score += 2;
-  else if (staffTrainingRate >= 80) score += 1;
+  if (meets(staffTrainingRate, 100)) score += 2;
+  else if (meets(staffTrainingRate, 80)) score += 1;
 
   // --- Bonus 8: childDebriefRate (>=90: +3, >=70: +1) ---
-  if (childDebriefRate >= 90) score += 3;
-  else if (childDebriefRate >= 70) score += 1;
+  if (meets(childDebriefRate, 90)) score += 3;
+  else if (meets(childDebriefRate, 70)) score += 1;
 
   // --- Bonus 9: bspReviewComplianceRate (>=90: +3, >=70: +1) ---
-  if (bspReviewComplianceRate >= 90) score += 3;
-  else if (bspReviewComplianceRate >= 70) score += 1;
+  if (meets(bspReviewComplianceRate, 90)) score += 3;
+  else if (meets(bspReviewComplianceRate, 70)) score += 1;
 
   // -- Penalties (4 penalties with guards) ---------------------------------
 
   // bspCoverageRate < 50 -> -5 (guard: total_children > 0)
-  if (bspCoverageRate < 50 && total_children > 0) score -= 5;
+  if (below(bspCoverageRate, 50) && total_children > 0) score -= 5;
 
   // interventionSuccessRate < 40 -> -5 (guard: totalInterventions > 0)
   if ((interventionSuccessRate ?? 0) < 40 && totalInterventions > 0) score -= 5;
@@ -448,7 +447,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   if ((deescalationEffectivenessRate ?? 0) < 40 && totalDeescalations > 0) score -= 5;
 
   // restrictive compliance composite < 50 -> -3 (guard: totalRestrictive > 0)
-  if (restrictiveComplianceItems < 50 && totalRestrictive > 0) score -= 3;
+  if (below(restrictiveComplianceItems, 50) && totalRestrictive > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -458,11 +457,11 @@ export function computeBehaviourSupportPlanEffectiveness(
 
   const strengths: string[] = [];
 
-  if (bspCoverageRate >= 100 && total_children > 0) {
+  if (meets(bspCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has an active behaviour support plan -- the home demonstrates comprehensive, individualised behaviour management for all children.",
     );
-  } else if (bspCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(bspCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${bspCoverageRate}% BSP coverage -- the majority of children have individualised behaviour support plans in place.`,
     );
@@ -488,11 +487,11 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (positiveReinforcementRate >= 90 && totalPositiveRecords > 0) {
+  if (meets(positiveReinforcementRate, 90) && totalPositiveRecords > 0) {
     strengths.push(
       `${positiveReinforcementRate}% positive response to reinforcement strategies -- children are responding well to the home's positive behaviour approach.`,
     );
-  } else if (positiveReinforcementRate >= 70 && totalPositiveRecords > 0) {
+  } else if (meets(positiveReinforcementRate, 70) && totalPositiveRecords > 0) {
     strengths.push(
       `${positiveReinforcementRate}% positive response rate -- reinforcement strategies are generally effective for most children.`,
     );
@@ -502,51 +501,51 @@ export function computeBehaviourSupportPlanEffectiveness(
     strengths.push(
       "No restrictive practices used -- the home manages behaviour entirely through positive, proactive, and de-escalation strategies without resorting to restriction.",
     );
-  } else if (restrictivePracticeReductionRate >= 90 && totalRestrictive > 0) {
+  } else if (meets(restrictivePracticeReductionRate, 90) && totalRestrictive > 0) {
     strengths.push(
       `${restrictivePracticeReductionRate}% of restrictive practice incidents have reduction plans in place -- the home is actively working to minimise restriction.`,
     );
-  } else if (restrictivePracticeReductionRate >= 70 && totalRestrictive > 0) {
+  } else if (meets(restrictivePracticeReductionRate, 70) && totalRestrictive > 0) {
     strengths.push(
       `${restrictivePracticeReductionRate}% of restrictive practices have reduction plans -- good progress toward minimising restrictive interventions.`,
     );
   }
 
-  if (childInvolvementRate >= 90 && activeBSPs.length > 0) {
+  if (meets(childInvolvementRate, 90) && activeBSPs.length > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in BSP creation -- children are active participants in designing their own behaviour support strategies.`,
     );
-  } else if (childInvolvementRate >= 70 && activeBSPs.length > 0) {
+  } else if (meets(childInvolvementRate, 70) && activeBSPs.length > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in BSP creation -- most children participate in shaping their behaviour support plans.`,
     );
   }
 
-  if (staffTrainingRate >= 100 && activeBSPs.length > 0) {
+  if (meets(staffTrainingRate, 100) && activeBSPs.length > 0) {
     strengths.push(
       "All staff are trained on every active BSP -- consistent, informed implementation of behaviour support strategies across the team.",
     );
-  } else if (staffTrainingRate >= 80 && activeBSPs.length > 0) {
+  } else if (meets(staffTrainingRate, 80) && activeBSPs.length > 0) {
     strengths.push(
       `${staffTrainingRate}% of BSPs have associated staff training completed -- strong training coverage supporting consistent implementation.`,
     );
   }
 
-  if (childDebriefRate >= 90 && totalDebriefOpportunities > 0) {
+  if (meets(childDebriefRate, 90) && totalDebriefOpportunities > 0) {
     strengths.push(
       `${childDebriefRate}% child debrief rate across interventions -- children are consistently supported to reflect on and process behavioural incidents.`,
     );
-  } else if (childDebriefRate >= 70 && totalDebriefOpportunities > 0) {
+  } else if (meets(childDebriefRate, 70) && totalDebriefOpportunities > 0) {
     strengths.push(
       `${childDebriefRate}% child debrief rate -- good practice in debriefing children after behavioural incidents.`,
     );
   }
 
-  if (bspReviewComplianceRate >= 90 && activeBSPs.length > 0) {
+  if (meets(bspReviewComplianceRate, 90) && activeBSPs.length > 0) {
     strengths.push(
       `${bspReviewComplianceRate}% BSP review compliance -- plans are regularly reviewed and updated to reflect children's changing needs.`,
     );
-  } else if (bspReviewComplianceRate >= 70 && activeBSPs.length > 0) {
+  } else if (meets(bspReviewComplianceRate, 70) && activeBSPs.length > 0) {
     strengths.push(
       `${bspReviewComplianceRate}% BSP review compliance -- the majority of plans are reviewed on schedule.`,
     );
@@ -558,19 +557,19 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (deescalationRestraintAvoidanceRate >= 90 && totalDeescalations > 0) {
+  if (meets(deescalationRestraintAvoidanceRate, 90) && totalDeescalations > 0) {
     strengths.push(
       `${deescalationRestraintAvoidanceRate}% of de-escalation attempts avoided restrictive practices -- demonstrating skilled, non-restrictive approaches to behaviour management.`,
     );
   }
 
-  if (consistencyRate >= 90 && totalPositiveRecords > 0) {
+  if (meets(consistencyRate, 90) && totalPositiveRecords > 0) {
     strengths.push(
       `${consistencyRate}% of positive reinforcement is consistent with BSP strategies -- the team implements behaviour plans faithfully.`,
     );
   }
 
-  if (pct(incidentsPrevented, totalInterventions) >= 70 && totalInterventions > 0) {
+  if (meets(pct(incidentsPrevented, totalInterventions), 70) && totalInterventions > 0) {
     strengths.push(
       `${pct(incidentsPrevented, totalInterventions)}% of interventions prevented escalation to a formal incident -- proactive strategies are effective at maintaining safety.`,
     );
@@ -580,11 +579,11 @@ export function computeBehaviourSupportPlanEffectiveness(
 
   const concerns: string[] = [];
 
-  if (bspCoverageRate < 50 && total_children > 0) {
+  if (below(bspCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${bspCoverageRate}% of children have an active BSP -- the majority of children lack individualised behaviour support, which is a fundamental Reg 35 requirement.`,
     );
-  } else if (bspCoverageRate < 80 && bspCoverageRate >= 50 && total_children > 0) {
+  } else if (below(bspCoverageRate, 80) && meets(bspCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `BSP coverage at ${bspCoverageRate}% -- some children do not have an active behaviour support plan, risking inconsistent behaviour management.`,
     );
@@ -610,61 +609,61 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (positiveReinforcementRate < 50 && totalPositiveRecords > 0) {
+  if (below(positiveReinforcementRate, 50) && totalPositiveRecords > 0) {
     concerns.push(
       `Only ${positiveReinforcementRate}% positive response to reinforcement -- most children are not responding positively to current reinforcement strategies, which may indicate poorly matched or inconsistently applied approaches.`,
     );
-  } else if (positiveReinforcementRate < 70 && positiveReinforcementRate >= 50 && totalPositiveRecords > 0) {
+  } else if (below(positiveReinforcementRate, 70) && meets(positiveReinforcementRate, 50) && totalPositiveRecords > 0) {
     concerns.push(
       `Positive reinforcement response rate at ${positiveReinforcementRate}% -- reinforcement strategies are not consistently effective for all children.`,
     );
   }
 
-  if (restrictiveComplianceItems < 50 && totalRestrictive > 0) {
+  if (below(restrictiveComplianceItems, 50) && totalRestrictive > 0) {
     concerns.push(
       "Restrictive practice compliance is critically low -- not all instances are documented as justified, proportionate, used as last resort, or properly reviewed. This poses significant regulatory and safeguarding risks.",
     );
-  } else if (restrictiveComplianceItems < 70 && restrictiveComplianceItems >= 50 && totalRestrictive > 0) {
+  } else if (below(restrictiveComplianceItems, 70) && meets(restrictiveComplianceItems, 50) && totalRestrictive > 0) {
     concerns.push(
       "Restrictive practice compliance needs improvement -- some instances lack full documentation of justification, proportionality, or post-incident review.",
     );
   }
 
-  if (childInvolvementRate < 50 && activeBSPs.length > 0) {
+  if (below(childInvolvementRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `Only ${childInvolvementRate}% of BSPs involve the child in creation -- children are not being given meaningful input into their own behaviour support strategies.`,
     );
-  } else if (childInvolvementRate < 70 && childInvolvementRate >= 50 && activeBSPs.length > 0) {
+  } else if (below(childInvolvementRate, 70) && meets(childInvolvementRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `Child involvement in BSP creation at ${childInvolvementRate}% -- not all children are participating in designing their behaviour support plans.`,
     );
   }
 
-  if (staffTrainingRate < 50 && activeBSPs.length > 0) {
+  if (below(staffTrainingRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% of BSPs have associated staff training -- staff may not understand or consistently implement children's behaviour support strategies.`,
     );
-  } else if (staffTrainingRate < 80 && staffTrainingRate >= 50 && activeBSPs.length > 0) {
+  } else if (below(staffTrainingRate, 80) && meets(staffTrainingRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `Staff training coverage at ${staffTrainingRate}% -- some BSPs lack associated staff training, risking inconsistent implementation.`,
     );
   }
 
-  if (childDebriefRate < 50 && totalDebriefOpportunities > 0) {
+  if (below(childDebriefRate, 50) && totalDebriefOpportunities > 0) {
     concerns.push(
       `Only ${childDebriefRate}% of children debriefed after behavioural incidents -- children are not being supported to process and reflect on incidents, which undermines therapeutic recovery and learning.`,
     );
-  } else if (childDebriefRate < 70 && childDebriefRate >= 50 && totalDebriefOpportunities > 0) {
+  } else if (below(childDebriefRate, 70) && meets(childDebriefRate, 50) && totalDebriefOpportunities > 0) {
     concerns.push(
       `Child debrief rate at ${childDebriefRate}% -- not all children are debriefed after incidents, missing opportunities for reflection and recovery.`,
     );
   }
 
-  if (bspReviewComplianceRate < 50 && activeBSPs.length > 0) {
+  if (below(bspReviewComplianceRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `Only ${bspReviewComplianceRate}% of BSPs reviewed on schedule -- plans may be outdated and no longer reflect children's current needs, triggers, or effective strategies.`,
     );
-  } else if (bspReviewComplianceRate < 70 && bspReviewComplianceRate >= 50 && activeBSPs.length > 0) {
+  } else if (below(bspReviewComplianceRate, 70) && meets(bspReviewComplianceRate, 50) && activeBSPs.length > 0) {
     concerns.push(
       `BSP review compliance at ${bspReviewComplianceRate}% -- some plans are overdue for review, risking misalignment with children's evolving needs.`,
     );
@@ -676,13 +675,13 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (totalRestrictive > 0 && restrictivePracticeReductionRate < 50) {
+  if (totalRestrictive > 0 && below(restrictivePracticeReductionRate, 50)) {
     concerns.push(
       `Only ${restrictivePracticeReductionRate}% of restrictive practices have reduction plans -- the home is not systematically working to minimise restriction.`,
     );
   }
 
-  if (totalRestrictive > 0 && pct(restrictiveWithBSPReview, totalRestrictive) < 50) {
+  if (totalRestrictive > 0 && below(pct(restrictiveWithBSPReview, totalRestrictive), 50)) {
     concerns.push(
       `Only ${pct(restrictiveWithBSPReview, totalRestrictive)}% of restrictive practices triggered a BSP review -- the home is missing opportunities to update behaviour support strategies after significant incidents.`,
     );
@@ -693,7 +692,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   const recommendations: BehaviourSupportRecommendation[] = [];
   let rank = 0;
 
-  if (bspCoverageRate < 50 && total_children > 0) {
+  if (below(bspCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -723,7 +722,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (restrictiveComplianceItems < 50 && totalRestrictive > 0) {
+  if (below(restrictiveComplianceItems, 50) && totalRestrictive > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -733,7 +732,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (childInvolvementRate < 50 && activeBSPs.length > 0) {
+  if (below(childInvolvementRate, 50) && activeBSPs.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -743,7 +742,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (childDebriefRate < 50 && totalDebriefOpportunities > 0) {
+  if (below(childDebriefRate, 50) && totalDebriefOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -753,7 +752,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (staffTrainingRate < 50 && activeBSPs.length > 0) {
+  if (below(staffTrainingRate, 50) && activeBSPs.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -763,7 +762,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (positiveReinforcementRate < 50 && totalPositiveRecords > 0) {
+  if (below(positiveReinforcementRate, 50) && totalPositiveRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -773,7 +772,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (bspReviewComplianceRate < 50 && activeBSPs.length > 0) {
+  if (below(bspReviewComplianceRate, 50) && activeBSPs.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -783,7 +782,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (bspCoverageRate >= 50 && bspCoverageRate < 80 && total_children > 0) {
+  if (meets(bspCoverageRate, 50) && below(bspCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -823,7 +822,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (totalRestrictive > 0 && restrictivePracticeReductionRate < 70) {
+  if (totalRestrictive > 0 && below(restrictivePracticeReductionRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -833,7 +832,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (childInvolvementRate >= 50 && childInvolvementRate < 70 && activeBSPs.length > 0) {
+  if (meets(childInvolvementRate, 50) && below(childInvolvementRate, 70) && activeBSPs.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -843,7 +842,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (staffTrainingRate >= 50 && staffTrainingRate < 80 && activeBSPs.length > 0) {
+  if (meets(staffTrainingRate, 50) && below(staffTrainingRate, 80) && activeBSPs.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -853,7 +852,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (consistencyRate < 70 && totalPositiveRecords > 0) {
+  if (below(consistencyRate, 70) && totalPositiveRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +868,7 @@ export function computeBehaviourSupportPlanEffectiveness(
 
   // --- Critical insights ---
 
-  if (bspCoverageRate < 50 && total_children > 0) {
+  if (below(bspCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${bspCoverageRate}% of children have an active BSP. Ofsted expects every child to have an individualised behaviour support plan -- without this, the home cannot evidence that it understands and responds to each child's behavioural needs as required by Reg 35.`,
       severity: "critical",
@@ -890,21 +889,21 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (restrictiveComplianceItems < 50 && totalRestrictive > 0) {
+  if (below(restrictiveComplianceItems, 50) && totalRestrictive > 0) {
     insights.push({
       text: "Restrictive practice compliance is critically low. Ofsted will view incomplete documentation of justification, proportionality, post-incident reviews, and body maps as evidence that the home may be using restriction inappropriately or failing to safeguard children during these incidents.",
       severity: "critical",
     });
   }
 
-  if (childDebriefRate < 30 && totalDebriefOpportunities > 0) {
+  if (below(childDebriefRate, 30) && totalDebriefOpportunities > 0) {
     insights.push({
       text: `Child debrief rate at only ${childDebriefRate}%. Without debriefing, children are left to process distressing behavioural incidents alone. Ofsted views consistent post-incident support as essential to children's emotional wellbeing and Reg 12 compliance.`,
       severity: "critical",
     });
   }
 
-  if (totalRestrictive > 5 && pct(lastResortRestrictive, totalRestrictive) < 50) {
+  if (totalRestrictive > 5 && below(pct(lastResortRestrictive, totalRestrictive), 50)) {
     insights.push({
       text: `Fewer than half of restrictive practices documented as a last resort. This raises serious questions about whether the home is exhausting all other options before using restriction, as required by Reg 20.`,
       severity: "critical",
@@ -913,7 +912,7 @@ export function computeBehaviourSupportPlanEffectiveness(
 
   // --- Warning insights ---
 
-  if (bspCoverageRate >= 50 && bspCoverageRate < 80 && total_children > 0) {
+  if (meets(bspCoverageRate, 50) && below(bspCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `BSP coverage at ${bspCoverageRate}% -- improving but some children still lack individualised plans. Every child benefits from a documented approach to behaviour support, even those without significant behavioural challenges.`,
       severity: "warning",
@@ -934,14 +933,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (positiveReinforcementRate < 70 && positiveReinforcementRate >= 50 && totalPositiveRecords > 0) {
+  if (below(positiveReinforcementRate, 70) && meets(positiveReinforcementRate, 50) && totalPositiveRecords > 0) {
     insights.push({
       text: `Positive reinforcement response rate at ${positiveReinforcementRate}% -- not all children are responding to current approaches. Reinforcement strategies may need to be more individually tailored to each child's interests and motivations.`,
       severity: "warning",
     });
   }
 
-  if (bspReviewComplianceRate < 70 && bspReviewComplianceRate >= 50 && activeBSPs.length > 0) {
+  if (below(bspReviewComplianceRate, 70) && meets(bspReviewComplianceRate, 50) && activeBSPs.length > 0) {
     insights.push({
       text: `BSP review compliance at ${bspReviewComplianceRate}% -- some plans are not being reviewed on schedule. Out-of-date BSPs may contain strategies that no longer reflect a child's needs or triggers.`,
       severity: "warning",
@@ -955,28 +954,28 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (staffTrainingRate < 70 && staffTrainingRate >= 50 && activeBSPs.length > 0) {
+  if (below(staffTrainingRate, 70) && meets(staffTrainingRate, 50) && activeBSPs.length > 0) {
     insights.push({
       text: `Staff training on BSPs at ${staffTrainingRate}% -- not all staff understand each child's behaviour support strategies. Inconsistent implementation can confuse children and reduce the effectiveness of planned approaches.`,
       severity: "warning",
     });
   }
 
-  if (childInvolvementRate < 70 && childInvolvementRate >= 50 && activeBSPs.length > 0) {
+  if (below(childInvolvementRate, 70) && meets(childInvolvementRate, 50) && activeBSPs.length > 0) {
     insights.push({
       text: `Child involvement in BSP creation at ${childInvolvementRate}% -- plans created without the child's input may lack the insight needed to identify what truly helps that child manage their behaviour.`,
       severity: "warning",
     });
   }
 
-  if (consistencyRate < 70 && consistencyRate >= 50 && totalPositiveRecords > 0) {
+  if (below(consistencyRate, 70) && meets(consistencyRate, 50) && totalPositiveRecords > 0) {
     insights.push({
       text: `Positive reinforcement consistency with BSPs at ${consistencyRate}% -- staff are not always following the reinforcement strategies documented in children's plans, which can undermine the structured approach.`,
       severity: "warning",
     });
   }
 
-  if (totalRestrictive > 0 && restrictivePracticeReductionRate < 70 && restrictivePracticeReductionRate >= 50) {
+  if (totalRestrictive > 0 && below(restrictivePracticeReductionRate, 70) && meets(restrictivePracticeReductionRate, 50)) {
     insights.push({
       text: `Restrictive practice reduction plans in place for ${restrictivePracticeReductionRate}% of incidents -- while some progress is being made, the home should aim for reduction plans following every instance of restriction.`,
       severity: "warning",
@@ -992,7 +991,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (bspCoverageRate >= 100 && childInvolvementRate >= 90 && total_children > 0 && activeBSPs.length > 0) {
+  if (meets(bspCoverageRate, 100) && meets(childInvolvementRate, 90) && total_children > 0 && activeBSPs.length > 0) {
     insights.push({
       text: `Every child has an active BSP with ${childInvolvementRate}% child involvement -- the home ensures behaviour support is both comprehensive and genuinely child-centred, reflecting each child's own understanding of their needs and preferences.`,
       severity: "positive",
@@ -1013,14 +1012,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (deescalationRestraintAvoidanceRate >= 95 && totalDeescalations > 0) {
+  if (meets(deescalationRestraintAvoidanceRate, 95) && totalDeescalations > 0) {
     insights.push({
       text: `${deescalationRestraintAvoidanceRate}% of de-escalation attempts avoided restrictive practice -- the home's commitment to non-restrictive approaches is consistently demonstrated in practice, not just in policy.`,
       severity: "positive",
     });
   }
 
-  if (childDebriefRate >= 90 && totalDebriefOpportunities > 0) {
+  if (meets(childDebriefRate, 90) && totalDebriefOpportunities > 0) {
     insights.push({
       text: `${childDebriefRate}% child debrief rate -- the home consistently supports children to reflect on and learn from behavioural incidents, contributing to emotional recovery and long-term behaviour change.`,
       severity: "positive",
@@ -1034,14 +1033,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (staffTrainingRate >= 100 && bspReviewComplianceRate >= 90 && activeBSPs.length > 0) {
+  if (meets(staffTrainingRate, 100) && meets(bspReviewComplianceRate, 90) && activeBSPs.length > 0) {
     insights.push({
       text: `All staff trained on BSPs with ${bspReviewComplianceRate}% review compliance -- the home ensures behaviour support strategies are not only documented but understood by all staff and kept current. This supports consistent, high-quality implementation.`,
       severity: "positive",
     });
   }
 
-  if (positiveReinforcementRate >= 90 && consistencyRate >= 90 && totalPositiveRecords > 0) {
+  if (meets(positiveReinforcementRate, 90) && meets(consistencyRate, 90) && totalPositiveRecords > 0) {
     insights.push({
       text: `${positiveReinforcementRate}% positive response with ${consistencyRate}% BSP consistency -- the home's positive reinforcement approach is both effective and faithfully implemented according to each child's plan.`,
       severity: "positive",

@@ -916,7 +916,9 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           intervention_records: interventions,
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
         }));
-        expect(r.restrictive_practice_reduction_rate).toBe(0);
+        // Empty population: this asserted the fab-0 the helper used to return.
+        expect(r.restrictive_practice_reduction_rate).toBeNull();
+        expect(r.restrictive_practice_reduction_rate).not.toBe(0); // 0% is a claim; nothing was measured
         // No restrictive + interventions > 0 => +3
       });
 
@@ -962,7 +964,9 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           positive_reinforcement_records: [makePositiveReinforcement({ child_response: "negative" })],
         }));
         // This just confirms no restrictive bonus fires
-        expect(r.restrictive_practice_reduction_rate).toBe(0);
+        // Empty population: this asserted the fab-0 the helper used to return.
+        expect(r.restrictive_practice_reduction_rate).toBeNull();
+        expect(r.restrictive_practice_reduction_rate).not.toBe(0); // 0% is a claim; nothing was measured
       });
     });
 
@@ -1453,7 +1457,9 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           intervention_records: [makeIntervention({ outcome: "unsuccessful" })],
         }));
-        expect(r.positive_reinforcement_rate).toBe(0);
+        // Empty population: this asserted the fab-0 the helper used to return.
+        expect(r.positive_reinforcement_rate).toBeNull();
+        expect(r.positive_reinforcement_rate).not.toBe(0); // 0% is a claim; nothing was measured
       });
     });
 
@@ -1483,7 +1489,9 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           intervention_records: [makeIntervention({ outcome: "unsuccessful" })],
         }));
-        expect(r.restrictive_practice_reduction_rate).toBe(0);
+        // Empty population: this asserted the fab-0 the helper used to return.
+        expect(r.restrictive_practice_reduction_rate).toBeNull();
+        expect(r.restrictive_practice_reduction_rate).not.toBe(0); // 0% is a claim; nothing was measured
       });
     });
 
@@ -1526,7 +1534,9 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           positive_reinforcement_records: [makePositiveReinforcement({ child_response: "positive" })],
         }));
-        expect(r.child_debrief_rate).toBe(0);
+        // Empty population: this asserted the fab-0 the helper used to return.
+        expect(r.child_debrief_rate).toBeNull();
+        expect(r.child_debrief_rate).not.toBe(0); // 0% is a claim; nothing was measured
       });
     });
 
@@ -2854,8 +2864,12 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
       }));
       expect(r.total_bsps).toBe(3);
       expect(r.bsp_coverage_rate).toBe(0);
-      expect(r.child_involvement_rate).toBe(0);
-      expect(r.staff_training_rate).toBe(0);
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.child_involvement_rate).toBeNull();
+      expect(r.child_involvement_rate).not.toBe(0); // 0% is a claim; nothing was measured
+      // Empty population: this asserted the fab-0 the helper used to return.
+      expect(r.staff_training_rate).toBeNull();
+      expect(r.staff_training_rate).not.toBe(0); // 0% is a claim; nothing was measured
     });
 
     it("physical intervention type counts as reactive", () => {

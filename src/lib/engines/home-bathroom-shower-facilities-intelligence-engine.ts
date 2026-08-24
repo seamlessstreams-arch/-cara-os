@@ -15,6 +15,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface CleanlinessAuditRecordInput {
   id: string;
   date: string;
@@ -181,12 +183,18 @@ export interface BathroomShowerFacilitiesResult {
   total_hot_water_records: number;
   total_privacy_records: number;
   total_accessibility_records: number;
-  cleanliness_rate: number;
-  shower_availability_rate: number;
-  hot_water_safety_rate: number;
-  privacy_rate: number;
-  accessibility_rate: number;
-  child_satisfaction_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cleanliness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  shower_availability_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hot_water_safety_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessibility_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: BathroomShowerRecommendation[];
@@ -195,8 +203,9 @@ export interface BathroomShowerFacilitiesResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -467,45 +476,45 @@ export function computeBathroomShowerFacilities(
   let score = 52;
 
   // --- Bonus 1: cleanlinessRate (>=90: +5, >=70: +3) ---
-  if (cleanlinessRate >= 90) score += 5;
-  else if (cleanlinessRate >= 70) score += 3;
+  if (meets(cleanlinessRate, 90)) score += 5;
+  else if (meets(cleanlinessRate, 70)) score += 3;
 
   // --- Bonus 2: showerAvailabilityRate (>=95: +5, >=80: +3) ---
-  if (showerAvailabilityRate >= 95) score += 5;
-  else if (showerAvailabilityRate >= 80) score += 3;
+  if (meets(showerAvailabilityRate, 95)) score += 5;
+  else if (meets(showerAvailabilityRate, 80)) score += 3;
 
   // --- Bonus 3: hotWaterSafetyRate (>=95: +5, >=80: +3) ---
-  if (hotWaterSafetyRate >= 95) score += 5;
-  else if (hotWaterSafetyRate >= 80) score += 3;
+  if (meets(hotWaterSafetyRate, 95)) score += 5;
+  else if (meets(hotWaterSafetyRate, 80)) score += 3;
 
   // --- Bonus 4: privacyRate (>=90: +4, >=70: +2) ---
-  if (privacyRate >= 90) score += 4;
-  else if (privacyRate >= 70) score += 2;
+  if (meets(privacyRate, 90)) score += 4;
+  else if (meets(privacyRate, 70)) score += 2;
 
   // --- Bonus 5: accessibilityRate (>=90: +4, >=70: +2) ---
-  if (accessibilityRate >= 90) score += 4;
-  else if (accessibilityRate >= 70) score += 2;
+  if (meets(accessibilityRate, 90)) score += 4;
+  else if (meets(accessibilityRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: ventilationRate (>=90: +1) ---
-  if (ventilationRate >= 90 && totalCleanlinessAudits > 0) score += 1;
+  if (meets(ventilationRate, 90) && totalCleanlinessAudits > 0) score += 1;
 
   // --- Bonus 8: tmvFittedRate (>=95: +1) ---
-  if (tmvFittedRate >= 95 && totalHotWaterRecords > 0) score += 1;
+  if (meets(tmvFittedRate, 95) && totalHotWaterRecords > 0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // hotWaterSafetyRate < 60 → -8 (guarded) — scalding is a critical safety risk
-  if (hotWaterSafetyRate < 60 && totalHotWaterRecords > 0) score -= 8;
+  if (below(hotWaterSafetyRate, 60) && totalHotWaterRecords > 0) score -= 8;
 
   // cleanlinessRate < 50 → -5 (guarded)
-  if (cleanlinessRate < 50 && totalCleanlinessAudits > 0) score -= 5;
+  if (below(cleanlinessRate, 50) && totalCleanlinessAudits > 0) score -= 5;
 
   // privacyRate < 50 → -5 (guarded)
-  if (privacyRate < 50 && totalPrivacyRecords > 0) score -= 5;
+  if (below(privacyRate, 50) && totalPrivacyRecords > 0) score -= 5;
 
   // scaldingIncidentCount > 0 → -6 (guarded)
   if (scaldingIncidentCount > 0 && totalHotWaterRecords > 0) score -= 6;
@@ -518,83 +527,83 @@ export function computeBathroomShowerFacilities(
 
   const strengths: string[] = [];
 
-  if (cleanlinessRate >= 90 && totalCleanlinessAudits > 0) {
+  if (meets(cleanlinessRate, 90) && totalCleanlinessAudits > 0) {
     strengths.push(
       `${cleanlinessRate}% of cleanliness audits scored 4+ out of 5 — bathrooms are maintained to an excellent standard of hygiene and cleanliness.`,
     );
-  } else if (cleanlinessRate >= 70 && totalCleanlinessAudits > 0) {
+  } else if (meets(cleanlinessRate, 70) && totalCleanlinessAudits > 0) {
     strengths.push(
       `${cleanlinessRate}% cleanliness audit pass rate — bathrooms are generally well-maintained with good standards of hygiene.`,
     );
   }
 
-  if (showerAvailabilityRate >= 95 && totalShowerAvailabilityChecks > 0) {
+  if (meets(showerAvailabilityRate, 95) && totalShowerAvailabilityChecks > 0) {
     strengths.push(
       `${showerAvailabilityRate}% shower/bath availability with hot water — children have consistent access to functional bathing facilities.`,
     );
-  } else if (showerAvailabilityRate >= 80 && totalShowerAvailabilityChecks > 0) {
+  } else if (meets(showerAvailabilityRate, 80) && totalShowerAvailabilityChecks > 0) {
     strengths.push(
       `${showerAvailabilityRate}% shower/bath availability — children generally have reliable access to bathing facilities with hot water.`,
     );
   }
 
-  if (hotWaterSafetyRate >= 95 && totalHotWaterRecords > 0) {
+  if (meets(hotWaterSafetyRate, 95) && totalHotWaterRecords > 0) {
     strengths.push(
       `${hotWaterSafetyRate}% hot water temperature safety compliance — water temperatures are consistently maintained within the safe range, protecting children from scalding risk.`,
     );
-  } else if (hotWaterSafetyRate >= 80 && totalHotWaterRecords > 0) {
+  } else if (meets(hotWaterSafetyRate, 80) && totalHotWaterRecords > 0) {
     strengths.push(
       `${hotWaterSafetyRate}% hot water safety rate — the majority of temperature checks show water within the safe range.`,
     );
   }
 
-  if (privacyRate >= 90 && totalPrivacyRecords > 0) {
+  if (meets(privacyRate, 90) && totalPrivacyRecords > 0) {
     strengths.push(
       `${privacyRate}% privacy compliance — bathrooms provide excellent privacy with functional locks, adequate screening, and staff observing knock-before-entry policy.`,
     );
-  } else if (privacyRate >= 70 && totalPrivacyRecords > 0) {
+  } else if (meets(privacyRate, 70) && totalPrivacyRecords > 0) {
     strengths.push(
       `${privacyRate}% privacy rate — the home provides good privacy provisions in bathroom facilities for children.`,
     );
   }
 
-  if (accessibilityRate >= 90 && totalAccessibilityRecords > 0) {
+  if (meets(accessibilityRate, 90) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${accessibilityRate}% accessibility compliance — bathroom facilities are well-adapted to children's individual needs with completed assessments and care plan-matched adaptations.`,
     );
-  } else if (accessibilityRate >= 70 && totalAccessibilityRecords > 0) {
+  } else if (meets(accessibilityRate, 70) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${accessibilityRate}% accessibility rate — the home demonstrates good attention to making bathroom facilities accessible to children's individual needs.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalChildSatDen > 0) {
+  if (meets(childSatisfactionRate, 90) && totalChildSatDen > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with bathroom facilities — children report positive experiences across cleanliness, privacy, and accessibility.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalChildSatDen > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalChildSatDen > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — children are generally satisfied with the bathroom facilities provided.`,
     );
   }
 
-  if (tmvFittedRate >= 95 && totalHotWaterRecords > 0) {
+  if (meets(tmvFittedRate, 95) && totalHotWaterRecords > 0) {
     strengths.push(
       `${tmvFittedRate}% of hot water outlets fitted with thermostatic mixing valves — comprehensive scalding prevention measures are in place across all bathroom facilities.`,
     );
-  } else if (tmvFittedRate >= 80 && totalHotWaterRecords > 0) {
+  } else if (meets(tmvFittedRate, 80) && totalHotWaterRecords > 0) {
     strengths.push(
       `${tmvFittedRate}% TMV fitting rate — the majority of hot water outlets have thermostatic mixing valves fitted for scalding prevention.`,
     );
   }
 
-  if (ventilationRate >= 90 && totalCleanlinessAudits > 0) {
+  if (meets(ventilationRate, 90) && totalCleanlinessAudits > 0) {
     strengths.push(
       `${ventilationRate}% of bathrooms have adequate ventilation — good air quality management reducing mould risk and maintaining comfortable facilities.`,
     );
   }
 
-  if (antiSlipRate >= 90 && totalShowerAvailabilityChecks > 0) {
+  if (meets(antiSlipRate, 90) && totalShowerAvailabilityChecks > 0) {
     strengths.push(
       `${antiSlipRate}% of shower/bath areas have anti-slip measures in place — proactive approach to preventing slip injuries in wet areas.`,
     );
@@ -606,25 +615,25 @@ export function computeBathroomShowerFacilities(
     );
   }
 
-  if (knockPolicyRate >= 95 && totalPrivacyRecords > 0) {
+  if (meets(knockPolicyRate, 95) && totalPrivacyRecords > 0) {
     strengths.push(
       `${knockPolicyRate}% staff compliance with knock-before-entry policy — children's dignity and privacy is consistently respected by all staff.`,
     );
   }
 
-  if (legionellaCheckedRate >= 90 && legionellaPassedRate >= 95 && totalHotWaterRecords > 0) {
+  if (meets(legionellaCheckedRate, 90) && meets(legionellaPassedRate, 95) && totalHotWaterRecords > 0) {
     strengths.push(
       "Comprehensive Legionella monitoring with consistent pass rates — water safety management is robust and well-evidenced.",
     );
   }
 
-  if (childIndependentRate >= 90 && totalAccessibilityRecords > 0) {
+  if (meets(childIndependentRate, 90) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${childIndependentRate}% of children can use bathroom facilities independently — adaptations and design support children's autonomy and dignity.`,
     );
   }
 
-  if (correctiveActionRate >= 95 && hazardsFoundCount > 0) {
+  if (meets(correctiveActionRate, 95) && hazardsFoundCount > 0) {
     strengths.push(
       `${correctiveActionRate}% of identified bathroom hazards had corrective action taken — responsive approach to maintaining a safe environment.`,
     );
@@ -640,61 +649,61 @@ export function computeBathroomShowerFacilities(
 
   const concerns: string[] = [];
 
-  if (cleanlinessRate < 50 && totalCleanlinessAudits > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAudits > 0) {
     concerns.push(
       `Only ${cleanlinessRate}% of cleanliness audits scored 4+ — the majority of bathrooms are not maintained to an acceptable standard of hygiene, creating an undignified and potentially unhealthy environment for children.`,
     );
-  } else if (cleanlinessRate < 70 && cleanlinessRate >= 50 && totalCleanlinessAudits > 0) {
+  } else if (below(cleanlinessRate, 70) && meets(cleanlinessRate, 50) && totalCleanlinessAudits > 0) {
     concerns.push(
       `Cleanliness audit pass rate at ${cleanlinessRate}% — inconsistent cleaning standards mean some bathrooms are not meeting acceptable hygiene levels.`,
     );
   }
 
-  if (showerAvailabilityRate < 70 && totalShowerAvailabilityChecks > 0) {
+  if (below(showerAvailabilityRate, 70) && totalShowerAvailabilityChecks > 0) {
     concerns.push(
       `Only ${showerAvailabilityRate}% shower/bath availability — children do not have reliable access to functional bathing facilities with hot water, which is a fundamental requirement under Reg 25.`,
     );
-  } else if (showerAvailabilityRate < 80 && showerAvailabilityRate >= 70 && totalShowerAvailabilityChecks > 0) {
+  } else if (below(showerAvailabilityRate, 80) && meets(showerAvailabilityRate, 70) && totalShowerAvailabilityChecks > 0) {
     concerns.push(
       `Shower/bath availability at ${showerAvailabilityRate}% — some periods of reduced access to bathing facilities require attention to ensure consistent provision.`,
     );
   }
 
-  if (hotWaterSafetyRate < 60 && totalHotWaterRecords > 0) {
+  if (below(hotWaterSafetyRate, 60) && totalHotWaterRecords > 0) {
     concerns.push(
       `Only ${hotWaterSafetyRate}% hot water temperature safety compliance — a significant proportion of water temperature checks fall outside the safe range, creating an unacceptable scalding risk for children. This is a critical safety failure.`,
     );
-  } else if (hotWaterSafetyRate < 80 && hotWaterSafetyRate >= 60 && totalHotWaterRecords > 0) {
+  } else if (below(hotWaterSafetyRate, 80) && meets(hotWaterSafetyRate, 60) && totalHotWaterRecords > 0) {
     concerns.push(
       `Hot water safety at ${hotWaterSafetyRate}% — water temperatures are not consistently within the safe range, indicating scalding risk that must be addressed.`,
     );
   }
 
-  if (privacyRate < 50 && totalPrivacyRecords > 0) {
+  if (below(privacyRate, 50) && totalPrivacyRecords > 0) {
     concerns.push(
       `Only ${privacyRate}% privacy compliance — the majority of bathroom assessments show inadequate privacy provisions, compromising children's dignity and potentially breaching their right to privacy.`,
     );
-  } else if (privacyRate < 70 && privacyRate >= 50 && totalPrivacyRecords > 0) {
+  } else if (below(privacyRate, 70) && meets(privacyRate, 50) && totalPrivacyRecords > 0) {
     concerns.push(
       `Privacy rate at ${privacyRate}% — privacy provisions in some bathrooms are inadequate, requiring improvement to protect children's dignity.`,
     );
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Only ${accessibilityRate}% accessibility compliance — bathroom facilities do not adequately meet children's individual accessibility needs, limiting their independence and dignity.`,
     );
-  } else if (accessibilityRate < 70 && accessibilityRate >= 50 && totalAccessibilityRecords > 0) {
+  } else if (below(accessibilityRate, 70) && meets(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Accessibility rate at ${accessibilityRate}% — some bathroom facilities are not fully adapted to children's individual needs, requiring review and improvement.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalChildSatDen > 0) {
+  if (below(childSatisfactionRate, 50) && totalChildSatDen > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with bathroom facilities — children are not happy with the provision, which should be urgently addressed as their voice must inform improvements.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalChildSatDen > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalChildSatDen > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — some children are not satisfied with bathroom facilities, indicating areas where provision could be improved.`,
     );
@@ -712,57 +721,57 @@ export function computeBathroomShowerFacilities(
     );
   }
 
-  if (mouldRate >= 30 && totalCleanlinessAudits > 0) {
+  if (meets(mouldRate, 30) && totalCleanlinessAudits > 0) {
     concerns.push(
       `Mould detected in ${mouldRate}% of bathroom audits — persistent mould indicates ventilation problems and poses a health risk to children. This requires immediate remediation.`,
     );
-  } else if (mouldRate >= 15 && mouldRate < 30 && totalCleanlinessAudits > 0) {
+  } else if (meets(mouldRate, 15) && below(mouldRate, 30) && totalCleanlinessAudits > 0) {
     concerns.push(
       `Mould detected in ${mouldRate}% of audits — early signs of mould require preventive action to avoid health risks and damage to facilities.`,
     );
   }
 
-  if (tmvFittedRate < 50 && totalHotWaterRecords > 0) {
+  if (below(tmvFittedRate, 50) && totalHotWaterRecords > 0) {
     concerns.push(
       `Only ${tmvFittedRate}% of hot water outlets have TMVs fitted — thermostatic mixing valves are essential to prevent scalding and their absence represents a significant safety gap.`,
     );
-  } else if (tmvFittedRate < 80 && tmvFittedRate >= 50 && totalHotWaterRecords > 0) {
+  } else if (below(tmvFittedRate, 80) && meets(tmvFittedRate, 50) && totalHotWaterRecords > 0) {
     concerns.push(
       `TMV fitting rate at ${tmvFittedRate}% — not all hot water outlets have thermostatic mixing valves, leaving some facilities without adequate scalding prevention.`,
     );
   }
 
-  if (lockFittedRate < 70 && totalPrivacyRecords > 0) {
+  if (below(lockFittedRate, 70) && totalPrivacyRecords > 0) {
     concerns.push(
       `Only ${lockFittedRate}% of bathrooms have locks fitted — children cannot secure bathrooms for privacy, which is a basic dignity requirement.`,
     );
   }
 
-  if (knockPolicyRate < 70 && totalPrivacyRecords > 0) {
+  if (below(knockPolicyRate, 70) && totalPrivacyRecords > 0) {
     concerns.push(
       `Knock-before-entry policy observed in only ${knockPolicyRate}% of assessments — staff are not consistently respecting children's bathroom privacy.`,
     );
   }
 
-  if (followUpCompletionRate < 70 && followUpRequiredCount > 0) {
+  if (below(followUpCompletionRate, 70) && followUpRequiredCount > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of required follow-up actions completed — outstanding follow-ups from bathroom audits must be addressed to maintain safe facilities.`,
     );
   }
 
-  if (repairCompletionRate < 50 && repairRequestedCount > 0) {
+  if (below(repairCompletionRate, 50) && repairRequestedCount > 0) {
     concerns.push(
       `Only ${repairCompletionRate}% of bathroom repairs completed — unresolved repairs compromise the availability and safety of facilities for children.`,
     );
   }
 
-  if (legionellaCheckedRate < 50 && totalHotWaterRecords > 0) {
+  if (below(legionellaCheckedRate, 50) && totalHotWaterRecords > 0) {
     concerns.push(
       `Only ${legionellaCheckedRate}% of hot water records include Legionella checks — Legionella monitoring is a statutory water safety requirement that is not being consistently met.`,
     );
   }
 
-  if (needsAssessmentRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(needsAssessmentRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Only ${needsAssessmentRate}% of accessibility records show completed individual needs assessments — the home cannot demonstrate that bathroom adaptations are based on assessed needs.`,
     );
@@ -783,7 +792,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (hotWaterSafetyRate < 60 && totalHotWaterRecords > 0) {
+  if (below(hotWaterSafetyRate, 60) && totalHotWaterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -793,7 +802,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (cleanlinessRate < 50 && totalCleanlinessAudits > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -803,7 +812,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (privacyRate < 50 && totalPrivacyRecords > 0) {
+  if (below(privacyRate, 50) && totalPrivacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -813,7 +822,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (tmvFittedRate < 50 && totalHotWaterRecords > 0) {
+  if (below(tmvFittedRate, 50) && totalHotWaterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -823,7 +832,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -833,7 +842,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (mouldRate >= 30 && totalCleanlinessAudits > 0) {
+  if (meets(mouldRate, 30) && totalCleanlinessAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -843,7 +852,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (showerAvailabilityRate < 70 && totalShowerAvailabilityChecks > 0) {
+  if (below(showerAvailabilityRate, 70) && totalShowerAvailabilityChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -854,8 +863,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    hotWaterSafetyRate >= 60 &&
-    hotWaterSafetyRate < 80 &&
+    meets(hotWaterSafetyRate, 60) &&
+    below(hotWaterSafetyRate, 80) &&
     totalHotWaterRecords > 0
   ) {
     recommendations.push({
@@ -868,8 +877,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    cleanlinessRate >= 50 &&
-    cleanlinessRate < 70 &&
+    meets(cleanlinessRate, 50) &&
+    below(cleanlinessRate, 70) &&
     totalCleanlinessAudits > 0
   ) {
     recommendations.push({
@@ -882,8 +891,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    privacyRate >= 50 &&
-    privacyRate < 70 &&
+    meets(privacyRate, 50) &&
+    below(privacyRate, 70) &&
     totalPrivacyRecords > 0
   ) {
     recommendations.push({
@@ -895,7 +904,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (knockPolicyRate < 70 && totalPrivacyRecords > 0) {
+  if (below(knockPolicyRate, 70) && totalPrivacyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -906,8 +915,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 70 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 70) &&
     totalAccessibilityRecords > 0
   ) {
     recommendations.push({
@@ -919,7 +928,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (legionellaCheckedRate < 50 && totalHotWaterRecords > 0) {
+  if (below(legionellaCheckedRate, 50) && totalHotWaterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +938,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalChildSatDen > 0) {
+  if (below(childSatisfactionRate, 50) && totalChildSatDen > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +948,7 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (antiSlipRate < 70 && totalShowerAvailabilityChecks > 0) {
+  if (below(antiSlipRate, 70) && totalShowerAvailabilityChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,8 +959,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    tmvFittedRate >= 50 &&
-    tmvFittedRate < 80 &&
+    meets(tmvFittedRate, 50) &&
+    below(tmvFittedRate, 80) &&
     totalHotWaterRecords > 0
   ) {
     recommendations.push({
@@ -964,8 +973,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    mouldRate >= 15 &&
-    mouldRate < 30 &&
+    meets(mouldRate, 15) &&
+    below(mouldRate, 30) &&
     totalCleanlinessAudits > 0
   ) {
     recommendations.push({
@@ -990,28 +999,28 @@ export function computeBathroomShowerFacilities(
     });
   }
 
-  if (hotWaterSafetyRate < 60 && totalHotWaterRecords > 0) {
+  if (below(hotWaterSafetyRate, 60) && totalHotWaterRecords > 0) {
     insights.push({
       text: `Only ${hotWaterSafetyRate}% hot water temperature safety compliance. Water delivered at unsafe temperatures poses a direct scalding risk to children. This is a fundamental Reg 25 premises safety failure — all outlets must be fitted with functioning TMVs and regularly tested. Ofsted inspectors will scrutinise hot water safety as a critical safeguarding measure.`,
       severity: "critical",
     });
   }
 
-  if (cleanlinessRate < 50 && totalCleanlinessAudits > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAudits > 0) {
     insights.push({
       text: `Only ${cleanlinessRate}% of bathroom cleanliness audits passed. Poor bathroom hygiene creates an undignified living environment and poses infection control risks. Under Reg 25, premises must be maintained to a standard that promotes children's welfare. Children deserve clean, well-maintained facilities that respect their dignity.`,
       severity: "critical",
     });
   }
 
-  if (privacyRate < 50 && totalPrivacyRecords > 0) {
+  if (below(privacyRate, 50) && totalPrivacyRecords > 0) {
     insights.push({
       text: `Only ${privacyRate}% privacy compliance in bathrooms. Inadequate privacy provisions undermine children's dignity and right to privacy — a fundamental aspect of quality care. Without functional locks, adequate screening, and staff respecting the knock-before-entry policy, children cannot feel safe and respected in their own home.`,
       severity: "critical",
     });
   }
 
-  if (tmvFittedRate < 50 && totalHotWaterRecords > 0) {
+  if (below(tmvFittedRate, 50) && totalHotWaterRecords > 0) {
     insights.push({
       text: `Only ${tmvFittedRate}% of hot water outlets have TMVs fitted. Thermostatic mixing valves are the primary engineering control against scalding. Their absence from the majority of outlets means the home is relying on behavioural controls alone, which is insufficient for vulnerable children. This should be treated as an urgent premises safety priority.`,
       severity: "critical",
@@ -1035,8 +1044,8 @@ export function computeBathroomShowerFacilities(
   // -- Warning insights --
 
   if (
-    hotWaterSafetyRate >= 60 &&
-    hotWaterSafetyRate < 80 &&
+    meets(hotWaterSafetyRate, 60) &&
+    below(hotWaterSafetyRate, 80) &&
     totalHotWaterRecords > 0
   ) {
     insights.push({
@@ -1046,8 +1055,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    cleanlinessRate >= 50 &&
-    cleanlinessRate < 70 &&
+    meets(cleanlinessRate, 50) &&
+    below(cleanlinessRate, 70) &&
     totalCleanlinessAudits > 0
   ) {
     insights.push({
@@ -1057,8 +1066,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    privacyRate >= 50 &&
-    privacyRate < 70 &&
+    meets(privacyRate, 50) &&
+    below(privacyRate, 70) &&
     totalPrivacyRecords > 0
   ) {
     insights.push({
@@ -1068,8 +1077,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 70 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 70) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({
@@ -1079,8 +1088,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    showerAvailabilityRate >= 70 &&
-    showerAvailabilityRate < 80 &&
+    meets(showerAvailabilityRate, 70) &&
+    below(showerAvailabilityRate, 80) &&
     totalShowerAvailabilityChecks > 0
   ) {
     insights.push({
@@ -1090,8 +1099,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalChildSatDen > 0
   ) {
     insights.push({
@@ -1101,8 +1110,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    mouldRate >= 15 &&
-    mouldRate < 30 &&
+    meets(mouldRate, 15) &&
+    below(mouldRate, 30) &&
     totalCleanlinessAudits > 0
   ) {
     insights.push({
@@ -1148,8 +1157,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    hotWaterSafetyRate >= 95 &&
-    tmvFittedRate >= 95 &&
+    meets(hotWaterSafetyRate, 95) &&
+    meets(tmvFittedRate, 95) &&
     scaldingIncidentCount === 0 &&
     totalHotWaterRecords > 0
   ) {
@@ -1160,9 +1169,9 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    cleanlinessRate >= 90 &&
+    meets(cleanlinessRate, 90) &&
     mouldRate === 0 &&
-    ventilationRate >= 90 &&
+    meets(ventilationRate, 90) &&
     totalCleanlinessAudits > 0
   ) {
     insights.push({
@@ -1172,8 +1181,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    privacyRate >= 90 &&
-    knockPolicyRate >= 95 &&
+    meets(privacyRate, 90) &&
+    meets(knockPolicyRate, 95) &&
     totalPrivacyRecords > 0
   ) {
     insights.push({
@@ -1183,8 +1192,8 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    accessibilityRate >= 90 &&
-    childIndependentRate >= 90 &&
+    meets(accessibilityRate, 90) &&
+    meets(childIndependentRate, 90) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({
@@ -1194,7 +1203,7 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalChildSatDen > 0
   ) {
     insights.push({
@@ -1204,9 +1213,9 @@ export function computeBathroomShowerFacilities(
   }
 
   if (
-    legionellaCheckedRate >= 90 &&
-    legionellaPassedRate >= 95 &&
-    waterQualityRate >= 95 &&
+    meets(legionellaCheckedRate, 90) &&
+    meets(legionellaPassedRate, 95) &&
+    meets(waterQualityRate, 95) &&
     totalHotWaterRecords > 0
   ) {
     insights.push({

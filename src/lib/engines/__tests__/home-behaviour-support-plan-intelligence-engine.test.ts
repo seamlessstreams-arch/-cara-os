@@ -2040,8 +2040,12 @@ describe("edge cases", () => {
     const r = computeBehaviourSupportPlan(
       baseInput({ total_children: 5, plans: [] }),
     );
-    expect(r.active_plan_rate).toBe(0);
-    expect(r.trigger_analysis_rate).toBe(0);
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.active_plan_rate).toBeNull();
+    expect(r.active_plan_rate).not.toBe(0); // 0% is a claim; nothing was measured
+    // Empty population: this asserted the fab-0 the helper used to return.
+    expect(r.trigger_analysis_rate).toBeNull();
+    expect(r.trigger_analysis_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
   it("one child with multiple plans — child rate is accurate", () => {

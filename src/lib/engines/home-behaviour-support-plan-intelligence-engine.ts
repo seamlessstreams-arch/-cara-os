@@ -9,6 +9,8 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 export interface BehaviourSupportPlanRecordInput {
   id: string;
   child_id: string;
@@ -58,12 +60,18 @@ export interface BehaviourSupportPlanResult {
   bsp_score: number;
   headline: string;
   total_plans: number;
-  children_with_plan_rate: number;
-  active_plan_rate: number;
-  trigger_analysis_rate: number;
-  de_escalation_rate: number;
-  positive_strategy_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  active_plan_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trigger_analysis_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  de_escalation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_strategy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -77,8 +85,9 @@ export interface BehaviourSupportPlanResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
+// Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
+function pct(n: number, d: number): number | null {
+  return rate(n, d);
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -178,45 +187,45 @@ export function computeBehaviourSupportPlan(
   if (total === 0) {
     score -= 3;
   } else {
-    if (activePlanRate >= 85) score += 6;
-    else if (activePlanRate >= 60) score += 2;
-    else if (activePlanRate < 40) score -= 5;
+    if (meets(activePlanRate, 85)) score += 6;
+    else if (meets(activePlanRate, 60)) score += 2;
+    else if (below(activePlanRate, 40)) score -= 5;
   }
 
   // Modifier 2: Trigger analysis depth
   if (total === 0) {
     score -= 1;
   } else {
-    if (triggerAnalysisRate >= 80) score += 5;
-    else if (triggerAnalysisRate >= 50) score += 2;
-    else if (triggerAnalysisRate < 25) score -= 5;
+    if (meets(triggerAnalysisRate, 80)) score += 5;
+    else if (meets(triggerAnalysisRate, 50)) score += 2;
+    else if (below(triggerAnalysisRate, 25)) score -= 5;
   }
 
   // Modifier 3: De-escalation completeness
   if (total === 0) {
     score -= 1;
   } else {
-    if (deEscalationRate >= 75) score += 5;
-    else if (deEscalationRate >= 40) score += 2;
-    else if (deEscalationRate < 20) score -= 4;
+    if (meets(deEscalationRate, 75)) score += 5;
+    else if (meets(deEscalationRate, 40)) score += 2;
+    else if (below(deEscalationRate, 20)) score -= 4;
   }
 
   // Modifier 4: Positive strategy approach
   if (total === 0) {
     // no adjustment
   } else {
-    if (positiveStrategyRate >= 80 && effectivenessRate >= 60) score += 5;
-    else if (positiveStrategyRate >= 50) score += 2;
-    else if (positiveStrategyRate < 25) score -= 4;
+    if (meets(positiveStrategyRate, 80) && meets(effectivenessRate, 60)) score += 5;
+    else if (meets(positiveStrategyRate, 50)) score += 2;
+    else if (below(positiveStrategyRate, 25)) score -= 4;
   }
 
   // Modifier 5: Child voice
   if (total === 0) {
     score -= 1;
   } else {
-    if (childVoiceRate >= 80) score += 4;
-    else if (childVoiceRate >= 50) score += 1;
-    else if (childVoiceRate < 20) score -= 4;
+    if (meets(childVoiceRate, 80)) score += 4;
+    else if (meets(childVoiceRate, 50)) score += 1;
+    else if (below(childVoiceRate, 20)) score -= 4;
   }
 
   // Modifier 6: Safety planning and staff guidance
@@ -225,9 +234,9 @@ export function computeBehaviourSupportPlan(
   } else {
     const safetyRate = pct(withSafetyPlans, total);
     const guidanceRate = pct(withStaffGuidance, total);
-    if (safetyRate >= 75 && guidanceRate >= 75) score += 5;
-    else if (safetyRate >= 50 || guidanceRate >= 50) score += 2;
-    else if (safetyRate < 25 && guidanceRate < 25) score -= 3;
+    if (meets(safetyRate, 75) && meets(guidanceRate, 75)) score += 5;
+    else if (meets(safetyRate, 50) || meets(guidanceRate, 50)) score += 2;
+    else if (below(safetyRate, 25) && below(guidanceRate, 25)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -238,34 +247,34 @@ export function computeBehaviourSupportPlan(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (activePlanRate >= 85 && total > 0)
+  if (meets(activePlanRate, 85) && total > 0)
     strengths.push("Behaviour support plans are actively maintained — staff have current, responsive guidance for each child");
-  if (triggerAnalysisRate >= 80 && total > 0)
+  if (meets(triggerAnalysisRate, 80) && total > 0)
     strengths.push("Triggers and early warnings are thoroughly identified — staff can anticipate and prevent escalation");
-  if (deEscalationRate >= 75 && total > 0)
+  if (meets(deEscalationRate, 75) && total > 0)
     strengths.push("Full de-escalation pathways (green/amber/red) are in place — staff have staged responses at every level");
-  if (positiveStrategyRate >= 80 && effectivenessRate >= 60 && total > 0)
+  if (meets(positiveStrategyRate, 80) && meets(effectivenessRate, 60) && total > 0)
     strengths.push("Positive strategies are embedded and effective — the home prioritises therapeutic responses over restrictive measures");
-  if (childVoiceRate >= 80 && total > 0)
+  if (meets(childVoiceRate, 80) && total > 0)
     strengths.push("Children's views are consistently captured in BSPs — their perspective informs how behaviour is understood and supported");
-  if (pct(withSafetyPlans, total) >= 75 && total > 0)
+  if (meets(pct(withSafetyPlans, total), 75) && total > 0)
     strengths.push("Safety plans are in place for high-risk scenarios — the home is prepared to respond safely to crisis situations");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No behaviour support plans — the home cannot demonstrate structured, therapeutic responses to challenging behaviour");
-  if (activePlanRate < 40 && total > 0)
+  if (below(activePlanRate, 40) && total > 0)
     concerns.push("Most plans are not active — staff may be working without current behaviour support guidance");
   if (overdueReviewPlans.length > 0)
     concerns.push(`${overdueReviewPlans.length} active behaviour support plan${overdueReviewPlans.length > 1 ? "s are" : " is"} overdue for review — strategies may no longer match the child's evolving needs`);
-  if (triggerAnalysisRate < 25 && total > 0)
+  if (below(triggerAnalysisRate, 25) && total > 0)
     concerns.push("Triggers and early warnings are poorly identified — staff cannot anticipate or prevent behavioural escalation");
-  if (deEscalationRate < 20 && total > 0)
+  if (below(deEscalationRate, 20) && total > 0)
     concerns.push("De-escalation pathways are incomplete — staff lack staged responses for managing escalating behaviour");
-  if (positiveStrategyRate < 25 && total > 0)
+  if (below(positiveStrategyRate, 25) && total > 0)
     concerns.push("Positive strategies are rarely documented — the approach may over-rely on reactive or restrictive measures");
-  if (childVoiceRate < 20 && total > 0)
+  if (below(childVoiceRate, 20) && total > 0)
     concerns.push("Children's voices are absent from BSPs — behaviour is being managed without understanding the child's perspective");
   if (totalRestrictive > 3 && totalLastResort < totalRestrictive)
     concerns.push("Restrictive interventions exist that are not marked as last resort — governance of restrictive practice may be insufficient");
@@ -276,32 +285,32 @@ export function computeBehaviourSupportPlan(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Create behaviour support plans for all children with identified behavioural needs", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
-  if (triggerAnalysisRate < 50 && total > 0)
+  if (below(triggerAnalysisRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Conduct thorough trigger analyses for all BSPs — identify triggers, early warnings and patterns", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 35" });
   if (overdueReviewPlans.length > 0)
     recommendations.push({ rank: ++rank, recommendation: `Review the ${overdueReviewPlans.length} overdue behaviour support plan${overdueReviewPlans.length > 1 ? "s" : ""} — BSPs must be kept current to remain effective`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
-  if (deEscalationRate < 40 && total > 0)
+  if (below(deEscalationRate, 40) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Complete de-escalation pathways with green/amber/red stages and specific strategies for each level", urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
-  if (childVoiceRate < 50 && total > 0)
+  if (below(childVoiceRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure children's views about their behaviour and what helps them are captured in every BSP", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
-  if (positiveStrategyRate < 50 && total > 0)
+  if (below(positiveStrategyRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Develop and document positive behaviour strategies for each child — reduce reliance on reactive approaches", urgency: "soon", regulatory_ref: "CHR 2015 Reg 35" });
-  if (pct(withStaffGuidance, total) < 50 && total > 0)
+  if (below(pct(withStaffGuidance, total), 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Add specific staff guidance to each BSP so carers can implement consistent, therapeutic responses", urgency: "planned", regulatory_ref: "CHR 2015 Reg 13" });
 
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: BehaviourSupportPlanResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No BSPs means Ofsted cannot verify the home has structured, therapeutic behaviour management", severity: "critical" });
-  if (total > 0 && triggerAnalysisRate >= 80 && deEscalationRate >= 75)
+  if (total > 0 && meets(triggerAnalysisRate, 80) && meets(deEscalationRate, 75))
     insights.push({ text: "Thorough trigger analysis combined with full de-escalation pathways demonstrates proactive, trauma-informed behaviour management", severity: "positive" });
   if (totalWorsening > 3 && total > 0)
     insights.push({ text: "Multiple worsening behaviour trends suggest current strategies may need revision or additional therapeutic input", severity: "warning" });
-  if (totalRestrictive > 0 && pct(totalLastResort, totalRestrictive) >= 100 && total > 0)
+  if (totalRestrictive > 0 && meets(pct(totalLastResort, totalRestrictive), 100) && total > 0)
     insights.push({ text: "All restrictive interventions are documented as last resort — governance of restrictive practice is robust", severity: "positive" });
-  if (effectivenessRate >= 60 && totalStrategies > 0)
+  if (meets(effectivenessRate, 60) && totalStrategies > 0)
     insights.push({ text: "Positive strategies are demonstrably effective — evidence-based approaches are driving improved outcomes", severity: "positive" });
-  if (total > 0 && pct(withProfessionalInput, total) >= 60)
+  if (total > 0 && meets(pct(withProfessionalInput, total), 60))
     insights.push({ text: "Professional input informs BSPs — multi-disciplinary perspectives strengthen behaviour understanding", severity: "positive" });
 
   // ── Headline ───────────────────────────────────────────────────────────
