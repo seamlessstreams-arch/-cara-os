@@ -80,10 +80,10 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
     return {
       strategic_risk_rating: "insufficient_data", strategic_risk_score: 0,
       headline: "No strategic risk data available for analysis.",
-      briefings: { total: 0, recent_7_days: 0, avg_child_risks: 0, coverage_rate: 0 },
-      register: { total: 0, critical_count: 0, high_count: 0, overdue_reviews: 0, mitigated_rate: 0 },
+      briefings: { total: 0, recent_7_days: 0, avg_child_risks: 0, coverage_rate: null },
+      register: { total: 0, critical_count: 0, high_count: 0, overdue_reviews: 0, mitigated_rate: null },
       strategic: { total: 0, board_level_count: 0, worsening_count: 0, above_target_count: 0 },
-      plans: { total: 0, active_rate: 0, child_views_rate: 0, overdue_reviews: 0 },
+      plans: { total: 0, active_rate: null, child_views_rate: null, overdue_reviews: 0 },
       appetite: { total: 0, domains_with_red_lines: 0 },
       strengths: [], concerns: [], recommendations: [], insights: [],
     };

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -130,10 +131,10 @@ export function HomeShiftPatternIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.punctuality.on_time_rate >= 90 ? "text-[--cs-success]" :
-                  d.punctuality.on_time_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.punctuality.on_time_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.punctuality.on_time_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.punctuality.shifts_with_actual_start > 0 ? `${d.punctuality.on_time_rate}%` : "—"}
+                  {d.punctuality.shifts_with_actual_start > 0 ? `${formatRate(d.punctuality.on_time_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">On Time</p>

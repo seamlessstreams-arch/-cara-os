@@ -175,11 +175,11 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
       behaviour: {
         positive_rate_30d: 0, positive_rate_7d: 0,
         behaviour_trend: "insufficient_data", severe_incidents_30d: 0,
-        trigger_themes: [], strategy_use_rate: 0,
+        trigger_themes: [], strategy_use_rate: null,
       },
       engagement: {
-        keywork_sessions_30d: 0, keywork_voice_rate: 0,
-        keywork_mood_improvement_rate: 0, therapy_attendance_rate: 0,
+        keywork_sessions_30d: 0, keywork_voice_rate: null,
+        keywork_mood_improvement_rate: null, therapy_attendance_rate: null,
         therapy_engagement_quality: 0,
       },
       reward_balance: { rewards_30d: 0, sanctions_30d: 0, reward_ratio: 0, balance_rating: "no_data" },

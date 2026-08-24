@@ -61,7 +61,8 @@ export interface BelongingPropertyResult {
   hair_cultural_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   gift_personalisation_rate: number | null;
-  property_loss_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  property_loss_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -80,8 +81,8 @@ export function computeBelongingPersonalProperty(input: BelongingPropertyInput):
     return {
       belonging_rating: "insufficient_data", belonging_score: 0,
       headline: "No children in placement — belonging & personal property cannot be assessed.",
-      children_with_inventory: 0, clothing_choice_rate: 0, hair_cultural_rate: 0,
-      gift_personalisation_rate: 0, property_loss_rate: 0,
+      children_with_inventory: 0, clothing_choice_rate: null, hair_cultural_rate: null,
+      gift_personalisation_rate: null, property_loss_rate: null,
       strengths: [], concerns: [], recommendations: [], insights: [],
     };
   }

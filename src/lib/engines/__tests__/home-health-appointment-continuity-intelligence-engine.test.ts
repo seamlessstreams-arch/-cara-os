@@ -45,12 +45,12 @@ describe("Home Health Appointment Continuity Intelligence Engine", () => {
       expect(r.appointment_score).toBe(0);
       expect(r.headline).toBe("No data available for health appointment analysis");
       expect(r.total_appointments).toBe(0);
-      expect(r.attendance_rate).toBe(0);
-      expect(r.missed_rate).toBe(0);
-      expect(r.outcome_documentation_rate).toBe(0);
-      expect(r.transport_compliance_rate).toBe(0);
+      expect(r.attendance_rate).toBeNull();
+      expect(r.missed_rate).toBeNull();
+      expect(r.outcome_documentation_rate).toBeNull();
+      expect(r.transport_compliance_rate).toBeNull();
       expect(r.health_domain_variety).toBe(0);
-      expect(r.children_with_appointments_rate).toBe(0);
+      expect(r.children_with_appointments_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights when insufficient", () => {

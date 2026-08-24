@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,20 +78,20 @@ export function HomeStaffReflectivePracticeIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.staff_reflecting > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.staff_reflecting}</p>
               <p className="text-[9px] text-muted-foreground">Reflecting</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reflection_sharing_rate >= 80 ? "bg-green-50" : d.reflection_sharing_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reflection_sharing_rate >= 80 ? "text-[--cs-success]" : d.reflection_sharing_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reflection_sharing_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reflection_sharing_rate, 80) ? "bg-green-50" : meets(d.reflection_sharing_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reflection_sharing_rate, 80) ? "text-[--cs-success]" : meets(d.reflection_sharing_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reflection_sharing_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Shared</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.shadowing_completion_rate >= 85 ? "bg-green-50" : d.shadowing_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.shadowing_completion_rate >= 85 ? "text-[--cs-success]" : d.shadowing_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.shadowing_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.shadowing_completion_rate, 85) ? "bg-green-50" : meets(d.shadowing_completion_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.shadowing_completion_rate, 85) ? "text-[--cs-success]" : meets(d.shadowing_completion_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.shadowing_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Shadowing</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.meeting_attendance_rate >= 80 ? "bg-green-50" : d.meeting_attendance_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.meeting_attendance_rate >= 80 ? "text-[--cs-success]" : d.meeting_attendance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meeting_attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.meeting_attendance_rate, 80) ? "bg-green-50" : meets(d.meeting_attendance_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.meeting_attendance_rate, 80) ? "text-[--cs-success]" : meets(d.meeting_attendance_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.meeting_attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.themes_resolved_rate >= 80 ? "bg-green-50" : d.themes_resolved_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.themes_resolved_rate >= 80 ? "text-[--cs-success]" : d.themes_resolved_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.themes_resolved_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.themes_resolved_rate, 80) ? "bg-green-50" : meets(d.themes_resolved_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.themes_resolved_rate, 80) ? "text-[--cs-success]" : meets(d.themes_resolved_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.themes_resolved_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Themes</p>
             </div>
           </div>

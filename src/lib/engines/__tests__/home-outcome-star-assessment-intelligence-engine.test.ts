@@ -54,16 +54,16 @@ describe("computeOutcomeStarAssessment", () => {
       expect(result.star_score).toBe(0);
     });
 
-    it("returns zero for all rates when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 0 }),
       );
-      expect(result.children_assessed_rate).toBe(0);
-      expect(result.repeat_assessment_rate).toBe(0);
+      expect(result.children_assessed_rate).toBeNull();
+      expect(result.repeat_assessment_rate).toBeNull();
       expect(result.average_score_across_home).toBe(0);
-      expect(result.improvement_rate).toBe(0);
-      expect(result.action_plan_rate).toBe(0);
-      expect(result.child_voice_rate).toBe(0);
+      expect(result.improvement_rate).toBeNull();
+      expect(result.action_plan_rate).toBeNull();
+      expect(result.child_voice_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {
@@ -124,11 +124,11 @@ describe("computeOutcomeStarAssessment", () => {
       expect(result.children_assessed_rate).toBe(0);
     });
 
-    it("sets average_score_across_home to 0", () => {
+    it("average_score_across_home is unmeasured when there are no assessments", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: [] }),
       );
-      expect(result.average_score_across_home).toBeNull();;
+      expect(result.average_score_across_home).toBeNull();
     });
   });
 
@@ -2013,11 +2013,11 @@ describe("computeOutcomeStarAssessment", () => {
       expect(result.average_score_across_home).toBe(4);
     });
 
-    it("returns 0 when there are no assessments", () => {
+    it("average_score_across_home is unmeasured when there are no assessments (duplicate coverage)", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: [] }),
       );
-      expect(result.average_score_across_home).toBeNull();;
+      expect(result.average_score_across_home).toBeNull();
     });
 
     it("rounds 3.55 to 3.6 (Math.round behavior)", () => {

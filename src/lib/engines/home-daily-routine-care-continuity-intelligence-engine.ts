@@ -75,10 +75,14 @@ export interface DailyRoutineResult {
   routine_score: number;
   headline: string;
   children_with_routines: number;
-  duty_log_completion_rate: number;
-  shift_note_quality_rate: number;
-  cleaning_standard_rate: number;
-  sleep_in_response_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  duty_log_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  shift_note_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cleaning_standard_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleep_in_response_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -105,10 +109,10 @@ export function computeDailyRoutineCare(
       routine_score: 0,
       headline: "No children in placement — daily routine analysis not applicable.",
       children_with_routines: 0,
-      duty_log_completion_rate: 0,
-      shift_note_quality_rate: 0,
-      cleaning_standard_rate: 0,
-      sleep_in_response_rate: 0,
+      duty_log_completion_rate: null,
+      shift_note_quality_rate: null,
+      cleaning_standard_rate: null,
+      sleep_in_response_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
