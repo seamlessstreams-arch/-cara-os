@@ -134,13 +134,13 @@ describe("insufficient data", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns zero for all metric fields", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({ total_children: 0 }));
     expect(r.children_with_pocket_money).toBe(0);
     expect(r.children_with_bank_accounts).toBe(0);
-    expect(r.receipt_compliance_rate).toBe(0);
-    expect(r.savings_engagement_rate).toBe(0);
-    expect(r.charity_access_rate).toBe(0);
+    expect(r.receipt_compliance_rate).toBeNull();
+    expect(r.savings_engagement_rate).toBeNull();
+    expect(r.charity_access_rate).toBeNull();
   });
 });
 
@@ -1032,13 +1032,13 @@ describe("edge cases", () => {
     expect(r.children_with_pocket_money).toBe(1);
   });
 
-  it("receipt compliance returns 0 when no pocket_money or petty_cash", () => {
+  it("receipt_compliance_rate is unmeasured when no pocket_money or petty_cash", () => {
     const r = computeFinancialLiteracyMoneyManagement(baseInput({
       pocket_money: [],
       petty_cash: [],
     }));
     // pct(0, 0) = 0
-    expect(r.receipt_compliance_rate).toBe(0);
+    expect(r.receipt_compliance_rate).toBeNull();
   });
 
   it("pct returns 0 when denominator is 0", () => {

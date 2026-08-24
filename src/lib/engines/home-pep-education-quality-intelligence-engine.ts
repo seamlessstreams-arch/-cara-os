@@ -6,6 +6,8 @@
 // CHR 2015 Reg 8: "The education standard." SCCIF: Education.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PepRecordInput {
@@ -47,12 +49,17 @@ export interface PepEducationResult {
   pep_score: number;
   headline: string;
   total_peps: number;
-  children_with_pep_rate: number;
-  current_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  children_with_pep_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  current_rate: number | null;
   average_attendance: number;
-  exclusion_rate: number;
-  target_progress_rate: number;
-  action_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  exclusion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  target_progress_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  action_completion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -65,10 +72,6 @@ export interface PepEducationResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -95,12 +98,12 @@ export function computePepEducationQuality(
       pep_score: 0,
       headline: "No data available for PEP education quality analysis",
       total_peps: 0,
-      children_with_pep_rate: 0,
-      current_rate: 0,
+      children_with_pep_rate: null,
+      current_rate: null,
       average_attendance: 0,
-      exclusion_rate: 0,
-      target_progress_rate: 0,
-      action_completion_rate: 0,
+      exclusion_rate: null,
+      target_progress_rate: null,
+      action_completion_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -112,24 +115,24 @@ export function computePepEducationQuality(
   const total = peps.length;
 
   const uniqueChildren = new Set(peps.map(p => p.child_id)).size;
-  const childrenWithPepRate = pct(uniqueChildren, total_children);
+  const childrenWithPepRate = rate(uniqueChildren, total_children);
 
   const current = peps.filter(p => p.status === "current").length;
-  const currentRate = pct(current, total);
+  const currentRate = rate(current, total);
 
   const totalAttendance = peps.reduce((sum, p) => sum + p.attendance, 0);
   const averageAttendance = total === 0 ? 0 : Math.round(totalAttendance / total);
 
   const withExclusions = peps.filter(p => p.exclusions > 0).length;
-  const exclusionRate = pct(withExclusions, total);
+  const exclusionRate = rate(withExclusions, total);
 
   const totalTargets = peps.reduce((sum, p) => sum + p.target_count, 0);
   const onTrackOrExceeded = peps.reduce((sum, p) => sum + p.targets_on_track_count + p.targets_exceeded_count, 0);
-  const targetProgressRate = pct(onTrackOrExceeded, totalTargets);
+  const targetProgressRate = rate(onTrackOrExceeded, totalTargets);
 
   const totalActions = peps.reduce((sum, p) => sum + p.actions_total, 0);
   const completedActions = peps.reduce((sum, p) => sum + p.actions_completed, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -138,18 +141,18 @@ export function computePepEducationQuality(
   if (total === 0) {
     score -= 3;
   } else {
-    if (childrenWithPepRate >= 90) score += 6;
-    else if (childrenWithPepRate >= 60) score += 2;
-    else if (childrenWithPepRate < 40) score -= 5;
+    if (meets(childrenWithPepRate, 90)) score += 6;
+    else if (meets(childrenWithPepRate, 60)) score += 2;
+    else if (below(childrenWithPepRate, 40)) score -= 5;
   }
 
   // Modifier 2: PEP currency (current status)
   if (total === 0) {
     // no adjustment
   } else {
-    if (currentRate >= 80) score += 5;
-    else if (currentRate >= 50) score += 2;
-    else if (currentRate < 30) score -= 5;
+    if (meets(currentRate, 80)) score += 5;
+    else if (meets(currentRate, 50)) score += 2;
+    else if (below(currentRate, 30)) score -= 5;
   }
 
   // Modifier 3: Average attendance
@@ -167,9 +170,9 @@ export function computePepEducationQuality(
   } else if (totalTargets === 0 && total > 0) {
     score += 2; // No targets set but PEPs exist — neutral
   } else {
-    if (targetProgressRate >= 75) score += 5;
-    else if (targetProgressRate >= 50) score += 2;
-    else if (targetProgressRate < 30) score -= 4;
+    if (meets(targetProgressRate, 75)) score += 5;
+    else if (meets(targetProgressRate, 50)) score += 2;
+    else if (below(targetProgressRate, 30)) score -= 4;
   }
 
   // Modifier 5: Action completion
@@ -178,9 +181,9 @@ export function computePepEducationQuality(
   } else if (totalActions === 0 && total > 0) {
     score += 2; // No actions recorded but PEPs exist — neutral
   } else {
-    if (actionCompletionRate >= 80) score += 4;
-    else if (actionCompletionRate >= 50) score += 1;
-    else if (actionCompletionRate < 30) score -= 4;
+    if (meets(actionCompletionRate, 80)) score += 4;
+    else if (meets(actionCompletionRate, 50)) score += 1;
+    else if (below(actionCompletionRate, 30)) score -= 4;
   }
 
   // Modifier 6: Child voice in PEPs
@@ -188,10 +191,10 @@ export function computePepEducationQuality(
     score -= 2;
   } else {
     const withChildViews = peps.filter(p => p.has_child_views).length;
-    const childViewRate = pct(withChildViews, total);
-    if (childViewRate >= 80) score += 5;
-    else if (childViewRate >= 50) score += 2;
-    else if (childViewRate < 30) score -= 3;
+    const childViewRate = rate(withChildViews, total);
+    if (meets(childViewRate, 80)) score += 5;
+    else if (meets(childViewRate, 50)) score += 2;
+    else if (below(childViewRate, 30)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -218,22 +221,22 @@ export function computePepEducationQuality(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childrenWithPepRate >= 90 && total > 0) strengths.push("All children have Personal Education Plans — comprehensive education oversight");
-  if (currentRate >= 80 && total > 0) strengths.push("PEPs are overwhelmingly current and up to date");
+  if (meets(childrenWithPepRate, 90) && total > 0) strengths.push("All children have Personal Education Plans — comprehensive education oversight");
+  if (meets(currentRate, 80) && total > 0) strengths.push("PEPs are overwhelmingly current and up to date");
   if (averageAttendance >= 95 && total > 0) strengths.push("School attendance across the home is excellent — above 95%");
-  if (targetProgressRate >= 75 && totalTargets > 0) strengths.push("Education targets are on track or exceeded for most children");
-  if (actionCompletionRate >= 80 && totalActions > 0) strengths.push("PEP actions are consistently completed — strong follow-through");
-  const childViewPct = total > 0 ? pct(peps.filter(p => p.has_child_views).length, total) : 0;
-  if (childViewPct >= 80 && total > 0) strengths.push("Children's own educational aspirations and views are captured in their PEPs");
+  if (meets(targetProgressRate, 75) && totalTargets > 0) strengths.push("Education targets are on track or exceeded for most children");
+  if (meets(actionCompletionRate, 80) && totalActions > 0) strengths.push("PEP actions are consistently completed — strong follow-through");
+  const childViewPct = total > 0 ? rate(peps.filter(p => p.has_child_views).length, total) : 0;
+  if (meets(childViewPct, 80) && total > 0) strengths.push("Children's own educational aspirations and views are captured in their PEPs");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No PEP records — children's education plans are not being documented");
-  if (childrenWithPepRate < 40 && total > 0) concerns.push("Most children do not have a PEP — education planning is critically incomplete");
-  if (currentRate < 30 && total > 0) concerns.push("Most PEPs are overdue or in draft — plans are not current");
+  if (below(childrenWithPepRate, 40) && total > 0) concerns.push("Most children do not have a PEP — education planning is critically incomplete");
+  if (below(currentRate, 30) && total > 0) concerns.push("Most PEPs are overdue or in draft — plans are not current");
   if (averageAttendance < 75 && total > 0) concerns.push("Average attendance is below 75% — persistent absence is a significant concern");
-  if (targetProgressRate < 30 && totalTargets > 0) concerns.push("Very few education targets are on track — children are not making expected progress");
-  if (actionCompletionRate < 30 && totalActions > 0) concerns.push("PEP actions are rarely completed — accountability is poor");
+  if (below(targetProgressRate, 30) && totalTargets > 0) concerns.push("Very few education targets are on track — children are not making expected progress");
+  if (below(actionCompletionRate, 30) && totalActions > 0) concerns.push("PEP actions are rarely completed — accountability is poor");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: PepEducationResult["recommendations"] = [];
@@ -241,19 +244,19 @@ export function computePepEducationQuality(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Ensure every child has a Personal Education Plan and establish termly review cycles", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
-  if (childrenWithPepRate < 60 && total > 0) {
+  if (below(childrenWithPepRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Prioritise creating PEPs for children who currently lack one", urgency: "immediate", regulatory_ref: "SCCIF Education" });
   }
-  if (currentRate < 50 && total > 0) {
+  if (below(currentRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Schedule PEP reviews to bring overdue and draft plans up to date", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
   if (averageAttendance < 85 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Implement attendance improvement strategies with designated teachers and virtual school", urgency: "soon", regulatory_ref: "SCCIF Education" });
   }
-  if (targetProgressRate < 50 && totalTargets > 0) {
+  if (below(targetProgressRate, 50) && totalTargets > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Review education targets with schools to ensure they are realistic and adequately supported", urgency: "planned", regulatory_ref: "CHR 2015 Reg 8" });
   }
-  if (exclusionRate >= 30 && total > 0) {
+  if (meets(exclusionRate, 30) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Work with schools to reduce exclusions through managed moves, restorative practice and early intervention", urgency: "soon", regulatory_ref: "SCCIF Education" });
   }
 
@@ -262,7 +265,7 @@ export function computePepEducationQuality(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: PepEducationResult["insights"] = [];
 
-  if (childrenWithPepRate >= 90 && currentRate >= 80 && averageAttendance >= 95 && total >= 10) {
+  if (meets(childrenWithPepRate, 90) && meets(currentRate, 80) && averageAttendance >= 95 && total >= 10) {
     insights.push({ text: "Education quality is exemplary — every child has a current PEP, attendance is excellent and targets are being met", severity: "positive" });
   }
   if (total === 0) {
@@ -274,7 +277,7 @@ export function computePepEducationQuality(
   if (averageAttendance >= 95 && total > 0) {
     insights.push({ text: "Excellent attendance rates demonstrate the home prioritises education and supports children to attend school", severity: "positive" });
   }
-  if (exclusionRate >= 30 && total > 0) {
+  if (meets(exclusionRate, 30) && total > 0) {
     insights.push({ text: "High exclusion rates suggest children may need additional behaviour support and school advocacy", severity: "warning" });
   }
 

@@ -706,7 +706,7 @@ describe("edge cases", () => {
       peer_dynamics: [makePair({ entries: [] })],
     }));
     expect(r.entry_profile.total_entries).toBe(0);
-    expect(r.entry_profile.positive_ratio).toBe(0);
+    expect(r.entry_profile.positive_ratio).toBeNull();
   });
 
   it("handles group assessments only (no pairs)", () => {

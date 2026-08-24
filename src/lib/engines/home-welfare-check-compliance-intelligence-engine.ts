@@ -12,6 +12,8 @@
 // "Experiences and progress of children". NMS 7.9, 10.1.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface WelfareCheckRecordInput {
@@ -68,13 +70,19 @@ export interface WelfareCheckComplianceResult {
   headline: string;
   total_rounds: number;
   rounds_last_90_days: number;
-  check_completion_rate: number;
-  building_security_rate: number;
-  fire_exit_compliance_rate: number;
-  distress_response_rate: number;
-  window_security_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  check_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  building_security_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fire_exit_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  distress_response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  window_security_rate: number | null;
   temperature_issue_count: number;
-  documentation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WelfareRecommendation[];
@@ -82,10 +90,6 @@ export interface WelfareCheckComplianceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -112,13 +116,13 @@ export function computeWelfareCheckCompliance(
       headline: "No children registered — welfare check analysis unavailable.",
       total_rounds: rounds.length,
       rounds_last_90_days: 0,
-      check_completion_rate: 0,
-      building_security_rate: 0,
-      fire_exit_compliance_rate: 0,
-      distress_response_rate: 0,
-      window_security_rate: 0,
+      check_completion_rate: null,
+      building_security_rate: null,
+      fire_exit_compliance_rate: null,
+      distress_response_rate: null,
+      window_security_rate: null,
       temperature_issue_count: 0,
-      documentation_rate: 0,
+      documentation_rate: null,
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -143,13 +147,13 @@ export function computeWelfareCheckCompliance(
       headline: "No welfare check rounds recorded — serious compliance gap.",
       total_rounds: totalRounds,
       rounds_last_90_days: 0,
-      check_completion_rate: 0,
-      building_security_rate: 0,
-      fire_exit_compliance_rate: 0,
-      distress_response_rate: 0,
-      window_security_rate: 0,
+      check_completion_rate: null,
+      building_security_rate: null,
+      fire_exit_compliance_rate: null,
+      distress_response_rate: null,
+      window_security_rate: null,
       temperature_issue_count: 0,
-      documentation_rate: 0,
+      documentation_rate: null,
       strengths: [],
       concerns: ["No welfare check rounds recorded in the analysis period."],
       recommendations: [
@@ -173,22 +177,22 @@ export function computeWelfareCheckCompliance(
 
   // ── Compute rates ──────────────────────────────────────────────────────
   const allCheckedCount = recent.filter((r) => r.all_children_checked).length;
-  const checkCompletionRate = pct(allCheckedCount, roundsLast90);
+  const checkCompletionRate = rate(allCheckedCount, roundsLast90);
 
   const secureCount = recent.filter(
     (r) => r.building_secure && r.external_doors_locked && r.alarm_set,
   ).length;
-  const buildingSecurityRate = pct(secureCount, roundsLast90);
+  const buildingSecurityRate = rate(secureCount, roundsLast90);
 
   const fireExitCount = recent.filter((r) => r.fire_exits_clear).length;
-  const fireExitComplianceRate = pct(fireExitCount, roundsLast90);
+  const fireExitComplianceRate = rate(fireExitCount, roundsLast90);
 
   // Distress response: only rounds where distressed_count > 0
   const roundsWithDistress = recent.filter((r) => r.distressed_count > 0);
   const distressActionedCount = roundsWithDistress.filter(
     (r) => r.all_distressed_actioned,
   ).length;
-  const distressResponseRate = pct(
+  const distressResponseRate = rate(
     distressActionedCount,
     roundsWithDistress.length,
   );
@@ -199,7 +203,7 @@ export function computeWelfareCheckCompliance(
     0,
   );
   const totalWindows = recent.reduce((sum, r) => sum + r.windows_total, 0);
-  const windowSecurityRate = pct(totalWindowsSecure, totalWindows);
+  const windowSecurityRate = rate(totalWindowsSecure, totalWindows);
 
   // Temperature issues total
   const temperatureIssueCount = recent.reduce(
@@ -209,7 +213,7 @@ export function computeWelfareCheckCompliance(
 
   // Documentation rate
   const notesCount = recent.filter((r) => r.has_notes).length;
-  const documentationRate = pct(notesCount, roundsLast90);
+  const documentationRate = rate(notesCount, roundsLast90);
 
   // ── Frequency: rounds per night for last 30 days ───────────────────────
   const nightsLast30 = new Set<string>();
@@ -228,43 +232,43 @@ export function computeWelfareCheckCompliance(
   let score = BASE;
 
   // Modifier 1: Check completion rate (all_children_checked compliance)
-  if (checkCompletionRate >= 98) score += 6;
-  else if (checkCompletionRate >= 90) score += 3;
-  else if (checkCompletionRate < 50) score -= 8; // -5 + -3 stacked
-  else if (checkCompletionRate < 70) score -= 5;
+  if (meets(checkCompletionRate, 98)) score += 6;
+  else if (meets(checkCompletionRate, 90)) score += 3;
+  else if (below(checkCompletionRate, 50)) score -= 8; // -5 + -3 stacked
+  else if (below(checkCompletionRate, 70)) score -= 5;
 
   // Modifier 2: Building security compliance
-  if (buildingSecurityRate >= 98) score += 5;
-  else if (buildingSecurityRate >= 90) score += 2;
-  else if (buildingSecurityRate < 70) score -= 5;
+  if (meets(buildingSecurityRate, 98)) score += 5;
+  else if (meets(buildingSecurityRate, 90)) score += 2;
+  else if (below(buildingSecurityRate, 70)) score -= 5;
 
   // Modifier 3: Distress response
   if (roundsWithDistress.length === 0) {
     score += 2; // no distressed children — bonus
-  } else if (distressResponseRate >= 95) {
+  } else if (meets(distressResponseRate, 95)) {
     score += 5;
-  } else if (distressResponseRate >= 80) {
+  } else if (meets(distressResponseRate, 80)) {
     score += 2;
-  } else if (distressResponseRate < 60) {
+  } else if (below(distressResponseRate, 60)) {
     score -= 4;
   }
 
   // Modifier 4: Fire exit compliance
-  if (fireExitComplianceRate >= 98) score += 5;
-  else if (fireExitComplianceRate >= 90) score += 2;
-  else if (fireExitComplianceRate < 80) score -= 4;
+  if (meets(fireExitComplianceRate, 98)) score += 5;
+  else if (meets(fireExitComplianceRate, 90)) score += 2;
+  else if (below(fireExitComplianceRate, 80)) score -= 4;
 
   // Modifier 5: Environmental safety
-  if (windowSecurityRate >= 95 && temperatureIssueCount === 0) {
+  if (meets(windowSecurityRate, 95) && temperatureIssueCount === 0) {
     score += 4;
-  } else if (windowSecurityRate >= 90) {
+  } else if (meets(windowSecurityRate, 90)) {
     score += 2;
-  } else if (windowSecurityRate < 70) {
+  } else if (below(windowSecurityRate, 70)) {
     score -= 4;
   }
 
   // Modifier 6: Frequency & documentation
-  if (frequencySufficient && documentationRate >= 80) {
+  if (frequencySufficient && meets(documentationRate, 80)) {
     score += 5;
   } else if (frequencyOk) {
     score += 2;
@@ -287,27 +291,27 @@ export function computeWelfareCheckCompliance(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (checkCompletionRate >= 95) {
+  if (meets(checkCompletionRate, 95)) {
     strengths.push(
-      `${checkCompletionRate}% of welfare rounds confirmed all children checked — excellent safeguarding compliance (Reg 12).`,
+      `${formatRate(checkCompletionRate)} of welfare rounds confirmed all children checked — excellent safeguarding compliance (Reg 12).`,
     );
   }
 
-  if (buildingSecurityRate >= 95) {
+  if (meets(buildingSecurityRate, 95)) {
     strengths.push(
-      `Building security confirmed in ${buildingSecurityRate}% of rounds — doors locked, alarms set, premises secure (Reg 25).`,
+      `Building security confirmed in ${formatRate(buildingSecurityRate)} of rounds — doors locked, alarms set, premises secure (Reg 25).`,
     );
   }
 
-  if (fireExitComplianceRate >= 95) {
+  if (meets(fireExitComplianceRate, 95)) {
     strengths.push(
-      `Fire exits confirmed clear in ${fireExitComplianceRate}% of rounds — consistent fire safety compliance.`,
+      `Fire exits confirmed clear in ${formatRate(fireExitComplianceRate)} of rounds — consistent fire safety compliance.`,
     );
   }
 
-  if (roundsWithDistress.length > 0 && distressResponseRate >= 95) {
+  if (roundsWithDistress.length > 0 && meets(distressResponseRate, 95)) {
     strengths.push(
-      `Distress response documented in ${distressResponseRate}% of rounds where children were upset — proactive and responsive care.`,
+      `Distress response documented in ${formatRate(distressResponseRate)} of rounds where children were upset — proactive and responsive care.`,
     );
   }
 
@@ -317,15 +321,15 @@ export function computeWelfareCheckCompliance(
     );
   }
 
-  if (windowSecurityRate >= 95 && temperatureIssueCount === 0 && roundsLast90 >= 5) {
+  if (meets(windowSecurityRate, 95) && temperatureIssueCount === 0 && roundsLast90 >= 5) {
     strengths.push(
       "Excellent environmental safety: all windows secure and no temperature concerns recorded.",
     );
   }
 
-  if (frequencySufficient && documentationRate >= 80) {
+  if (frequencySufficient && meets(documentationRate, 80)) {
     strengths.push(
-      `Strong round frequency (${nightsWithRounds.size} of 30 nights) with ${documentationRate}% documentation rate — evidence of consistent overnight monitoring.`,
+      `Strong round frequency (${nightsWithRounds.size} of 30 nights) with ${formatRate(documentationRate)} documentation rate — evidence of consistent overnight monitoring.`,
     );
   }
 
@@ -338,33 +342,33 @@ export function computeWelfareCheckCompliance(
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (checkCompletionRate < 70) {
+  if (below(checkCompletionRate, 70)) {
     concerns.push(
-      `Only ${checkCompletionRate}% of rounds confirmed all children checked. Every child must be physically checked during welfare rounds — gaps create safeguarding risk (Reg 12).`,
+      `Only ${formatRate(checkCompletionRate)} of rounds confirmed all children checked. Every child must be physically checked during welfare rounds — gaps create safeguarding risk (Reg 12).`,
     );
   }
 
-  if (buildingSecurityRate < 70) {
+  if (below(buildingSecurityRate, 70)) {
     concerns.push(
-      `Building security confirmed in only ${buildingSecurityRate}% of rounds. External doors, alarms, and building integrity must be verified every round (Reg 25).`,
+      `Building security confirmed in only ${formatRate(buildingSecurityRate)} of rounds. External doors, alarms, and building integrity must be verified every round (Reg 25).`,
     );
   }
 
-  if (fireExitComplianceRate < 80) {
+  if (below(fireExitComplianceRate, 80)) {
     concerns.push(
-      `Fire exits clear in only ${fireExitComplianceRate}% of rounds. Obstructed fire exits are a serious safety hazard — immediate review required (Reg 25).`,
+      `Fire exits clear in only ${formatRate(fireExitComplianceRate)} of rounds. Obstructed fire exits are a serious safety hazard — immediate review required (Reg 25).`,
     );
   }
 
-  if (roundsWithDistress.length > 0 && distressResponseRate < 60) {
+  if (roundsWithDistress.length > 0 && below(distressResponseRate, 60)) {
     concerns.push(
-      `Distress response documented in only ${distressResponseRate}% of rounds with upset children. All instances of distress must be noted and actioned (NMS 7.9).`,
+      `Distress response documented in only ${formatRate(distressResponseRate)} of rounds with upset children. All instances of distress must be noted and actioned (NMS 7.9).`,
     );
   }
 
-  if (windowSecurityRate < 70) {
+  if (below(windowSecurityRate, 70)) {
     concerns.push(
-      `Window security rate is ${windowSecurityRate}% — unsecured windows overnight present a significant safety risk.`,
+      `Window security rate is ${formatRate(windowSecurityRate)} — unsecured windows overnight present a significant safety risk.`,
     );
   }
 
@@ -380,9 +384,9 @@ export function computeWelfareCheckCompliance(
     );
   }
 
-  if (documentationRate < 50 && roundsLast90 >= 5) {
+  if (below(documentationRate, 50) && roundsLast90 >= 5) {
     concerns.push(
-      `Only ${documentationRate}% of rounds include notes. Welfare check documentation should capture meaningful observations about each child.`,
+      `Only ${formatRate(documentationRate)} of rounds include notes. Welfare check documentation should capture meaningful observations about each child.`,
     );
   }
 
@@ -390,7 +394,7 @@ export function computeWelfareCheckCompliance(
   const recommendations: WelfareRecommendation[] = [];
   let rank = 0;
 
-  if (checkCompletionRate < 70) {
+  if (below(checkCompletionRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -401,7 +405,7 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (buildingSecurityRate < 70) {
+  if (below(buildingSecurityRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -412,7 +416,7 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (fireExitComplianceRate < 80) {
+  if (below(fireExitComplianceRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -423,7 +427,7 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (roundsWithDistress.length > 0 && distressResponseRate < 80) {
+  if (roundsWithDistress.length > 0 && below(distressResponseRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -434,7 +438,7 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (windowSecurityRate < 80) {
+  if (below(windowSecurityRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -467,7 +471,7 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (documentationRate < 50 && roundsLast90 >= 5) {
+  if (below(documentationRate, 50) && roundsLast90 >= 5) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -502,24 +506,24 @@ export function computeWelfareCheckCompliance(
     });
   }
 
-  if (checkCompletionRate >= 98 && buildingSecurityRate >= 98 && fireExitComplianceRate >= 98) {
+  if (meets(checkCompletionRate, 98) && meets(buildingSecurityRate, 98) && meets(fireExitComplianceRate, 98)) {
     insights.push({
       severity: "positive",
       text: "Near-perfect compliance across all safety domains: child checks, building security, and fire exits. This is exemplary practice that exceeds minimum regulatory requirements.",
     });
   }
 
-  if (checkCompletionRate < 50) {
+  if (below(checkCompletionRate, 50)) {
     insights.push({
       severity: "critical",
-      text: `Fewer than half of welfare rounds confirmed all children checked (${checkCompletionRate}%). This is a serious safeguarding gap — every child must be accounted for during overnight hours.`,
+      text: `Fewer than half of welfare rounds confirmed all children checked (${formatRate(checkCompletionRate)}). This is a serious safeguarding gap — every child must be accounted for during overnight hours.`,
     });
   }
 
-  if (roundsWithDistress.length > 0 && distressResponseRate >= 95) {
+  if (roundsWithDistress.length > 0 && meets(distressResponseRate, 95)) {
     insights.push({
       severity: "positive",
-      text: `Excellent distress response: ${distressResponseRate}% of rounds with upset children had documented interventions. Staff are responding proactively to children's overnight emotional needs.`,
+      text: `Excellent distress response: ${formatRate(distressResponseRate)} of rounds with upset children had documented interventions. Staff are responding proactively to children's overnight emotional needs.`,
     });
   }
 
@@ -541,8 +545,8 @@ export function computeWelfareCheckCompliance(
   const parts: string[] = [];
   parts.push(`Welfare check compliance: ${welfare_rating}`);
   parts.push(`${roundsLast90} rounds (90d)`);
-  if (checkCompletionRate > 0) parts.push(`${checkCompletionRate}% all-checked`);
-  if (buildingSecurityRate > 0) parts.push(`${buildingSecurityRate}% building secure`);
+  if (above(checkCompletionRate, 0)) parts.push(`${formatRate(checkCompletionRate)} all-checked`);
+  if (above(buildingSecurityRate, 0)) parts.push(`${formatRate(buildingSecurityRate)} building secure`);
   if (concerns.length > 0) parts.push(`${concerns.length} concern${concerns.length !== 1 ? "s" : ""}`);
   const headline = parts.join(". ") + ".";
 

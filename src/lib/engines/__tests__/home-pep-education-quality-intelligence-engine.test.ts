@@ -60,15 +60,15 @@ describe("computePepEducationQuality", () => {
       expect(result.pep_score).toBe(0);
     });
 
-    it("returns zero for all metrics when total_children is 0", () => {
+    it("leaves every rate unmeasured when total_children is 0", () => {
       const result = computePepEducationQuality(baseInput({ total_children: 0 }));
       expect(result.total_peps).toBe(0);
-      expect(result.children_with_pep_rate).toBe(0);
-      expect(result.current_rate).toBe(0);
+      expect(result.children_with_pep_rate).toBeNull();
+      expect(result.current_rate).toBeNull();
       expect(result.average_attendance).toBe(0);
-      expect(result.exclusion_rate).toBe(0);
-      expect(result.target_progress_rate).toBe(0);
-      expect(result.action_completion_rate).toBe(0);
+      expect(result.exclusion_rate).toBeNull();
+      expect(result.target_progress_rate).toBeNull();
+      expect(result.action_completion_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights when total_children is 0", () => {
@@ -574,13 +574,13 @@ describe("computePepEducationQuality", () => {
       const peps = pepArray(5, { target_count: 0, targets_on_track_count: 0, targets_exceeded_count: 0 });
       // totalTargets = 0, total > 0 → +2
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps }));
-      expect(result.target_progress_rate).toBe(0);
+      expect(result.target_progress_rate).toBeNull();
       // We can verify score includes +2 from this path
     });
 
     it("no adjustment for target progress when 0 records", () => {
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps: [] }));
-      expect(result.target_progress_rate).toBe(0);
+      expect(result.target_progress_rate).toBeNull();
     });
 
     it("combines on_track and exceeded for progress calculation", () => {
@@ -628,13 +628,13 @@ describe("computePepEducationQuality", () => {
     it("adds +2 when total actions is 0 but PEPs exist (neutral bonus)", () => {
       const peps = pepArray(5, { actions_total: 0, actions_completed: 0 });
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps }));
-      expect(result.action_completion_rate).toBe(0);
+      expect(result.action_completion_rate).toBeNull();
     });
 
     it("subtracts -1 when 0 PEP records", () => {
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps: [] }));
       // Already verified total score, but confirm action_completion_rate is 0
-      expect(result.action_completion_rate).toBe(0);
+      expect(result.action_completion_rate).toBeNull();
     });
   });
 
@@ -764,10 +764,10 @@ describe("computePepEducationQuality", () => {
       expect(result.action_completion_rate).toBe(60);
     });
 
-    it("pct helper returns 0 when denominator is 0", () => {
+    it("target_progress_rate is unmeasured when its denominator is 0", () => {
       const peps = pepArray(5, { target_count: 0, targets_on_track_count: 0, targets_exceeded_count: 0 });
       const result = computePepEducationQuality(baseInput({ total_children: 5, peps }));
-      expect(result.target_progress_rate).toBe(0);
+      expect(result.target_progress_rate).toBeNull();
     });
   });
 

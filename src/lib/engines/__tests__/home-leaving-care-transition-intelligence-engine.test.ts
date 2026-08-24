@@ -111,10 +111,10 @@ describe("insufficient data", () => {
   it("populates all metrics with zeros when no children", () => {
     const r = computeLeavingCareTransition(baseInput({ total_children: 0 }));
     expect(r.children_with_pathway_plans).toBe(0);
-    expect(r.goal_achievement_rate).toBe(0);
-    expect(r.aspiration_recording_rate).toBe(0);
-    expect(r.travel_readiness_rate).toBe(0);
-    expect(r.financial_readiness_rate).toBe(0);
+    expect(r.goal_achievement_rate).toBeNull();
+    expect(r.aspiration_recording_rate).toBeNull();
+    expect(r.travel_readiness_rate).toBeNull();
+    expect(r.financial_readiness_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -1129,10 +1129,10 @@ describe("edge cases", () => {
       leaving_care_packages: [],
     });
     expect(r.leaving_care_rating).toBe("inadequate");
-    expect(r.goal_achievement_rate).toBe(0);
+    expect(r.goal_achievement_rate).toBeNull();
     expect(r.aspiration_recording_rate).toBe(0);
-    expect(r.travel_readiness_rate).toBe(0);
-    expect(r.financial_readiness_rate).toBe(0);
+    expect(r.travel_readiness_rate).toBeNull();
+    expect(r.financial_readiness_rate).toBeNull();
   });
 
   it("handles single child with full data", () => {
@@ -1195,8 +1195,8 @@ describe("edge cases", () => {
     const r = computeLeavingCareTransition(baseInput({
       transition_goals: [],
     }));
-    // goal_achievement_rate should be 0 (0/0 via pct guard)
-    expect(r.goal_achievement_rate).toBe(0);
+    // goal_achievement_rate is unmeasured — 0 goals means nothing to score, not a 0% achievement rate
+    expect(r.goal_achievement_rate).toBeNull();
     // But pathway plans, aspirations, travel, financial should still score
     expect(r.children_with_pathway_plans).toBe(4);
   });

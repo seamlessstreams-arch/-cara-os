@@ -67,12 +67,12 @@ describe("Insufficient data", () => {
       "No data available for multi-disciplinary formulation analysis",
     );
     expect(r.total_formulations).toBe(0);
-    expect(r.children_with_formulation_rate).toBe(0);
-    expect(r.four_p_completeness_rate).toBe(0);
-    expect(r.child_contribution_rate).toBe(0);
-    expect(r.intervention_planning_rate).toBe(0);
-    expect(r.multi_agency_rate).toBe(0);
-    expect(r.review_scheduled_rate).toBe(0);
+    expect(r.children_with_formulation_rate).toBeNull();
+    expect(r.four_p_completeness_rate).toBeNull();
+    expect(r.child_contribution_rate).toBeNull();
+    expect(r.intervention_planning_rate).toBeNull();
+    expect(r.multi_agency_rate).toBeNull();
+    expect(r.review_scheduled_rate).toBeNull();
     expect(r.strengths).toEqual([]);
     expect(r.concerns).toEqual([]);
     expect(r.recommendations).toEqual([]);

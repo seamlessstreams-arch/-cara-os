@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wifi } from "lucide-react";
@@ -71,20 +72,20 @@ export function HomeDigitalLiteracyOnlineSafetyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_digital_plans > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_digital_plans}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.digital_skill_coverage_rate >= 80 ? "bg-green-50" : d.digital_skill_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.digital_skill_coverage_rate >= 80 ? "text-[--cs-success]" : d.digital_skill_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.digital_skill_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.digital_skill_coverage_rate, 80) ? "bg-green-50" : meets(d.digital_skill_coverage_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.digital_skill_coverage_rate, 80) ? "text-[--cs-success]" : meets(d.digital_skill_coverage_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.digital_skill_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Skills</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.parental_controls_rate >= 90 ? "bg-green-50" : d.parental_controls_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.parental_controls_rate >= 90 ? "text-[--cs-success]" : d.parental_controls_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.parental_controls_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.parental_controls_rate, 90) ? "bg-green-50" : meets(d.parental_controls_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.parental_controls_rate, 90) ? "text-[--cs-success]" : meets(d.parental_controls_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.parental_controls_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Controls</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.rse_digital_coverage_rate >= 80 ? "bg-green-50" : d.rse_digital_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.rse_digital_coverage_rate >= 80 ? "text-[--cs-success]" : d.rse_digital_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.rse_digital_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.rse_digital_coverage_rate, 80) ? "bg-green-50" : meets(d.rse_digital_coverage_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.rse_digital_coverage_rate, 80) ? "text-[--cs-success]" : meets(d.rse_digital_coverage_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.rse_digital_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">RSE</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.exploitation_risk_assessed_rate >= 90 ? "bg-green-50" : d.exploitation_risk_assessed_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.exploitation_risk_assessed_rate >= 90 ? "text-[--cs-success]" : d.exploitation_risk_assessed_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.exploitation_risk_assessed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.exploitation_risk_assessed_rate, 90) ? "bg-green-50" : meets(d.exploitation_risk_assessed_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.exploitation_risk_assessed_rate, 90) ? "text-[--cs-success]" : meets(d.exploitation_risk_assessed_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.exploitation_risk_assessed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk</p>
             </div>
           </div>

@@ -173,14 +173,14 @@ describe("special cases", () => {
     expect(r.insights).toEqual([]);
   });
 
-  it("returns 0 for all rates when total_children === 0", () => {
+  it("leaves every rate unmeasured when total_children === 0", () => {
     const r = computeWelfareCheckCompliance(baseInput({ total_children: 0 }));
-    expect(r.check_completion_rate).toBe(0);
-    expect(r.building_security_rate).toBe(0);
-    expect(r.fire_exit_compliance_rate).toBe(0);
-    expect(r.distress_response_rate).toBe(0);
-    expect(r.window_security_rate).toBe(0);
-    expect(r.documentation_rate).toBe(0);
+    expect(r.check_completion_rate).toBeNull();
+    expect(r.building_security_rate).toBeNull();
+    expect(r.fire_exit_compliance_rate).toBeNull();
+    expect(r.distress_response_rate).toBeNull();
+    expect(r.window_security_rate).toBeNull();
+    expect(r.documentation_rate).toBeNull();
   });
 
   it("returns inadequate score 30 when 0 rounds and children > 0", () => {
@@ -661,7 +661,7 @@ describe("modifier 3: distress response", () => {
     const rounds = generateNightlyRounds(10);
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
     // All rounds have distressed_count: 0
-    expect(r.distress_response_rate).toBe(0); // no distressed → pct(0,0) = 0
+    expect(r.distress_response_rate).toBeNull(); // no distressed → pct(0,0) = 0
   });
 
   it("gives +5 when distress response >= 95%", () => {
@@ -899,7 +899,7 @@ describe("modifier 5: environmental safety", () => {
   it("0 windows total gives 0% rate", () => {
     const rounds = [makeRound({ windows_secure_count: 0, windows_total: 0 })];
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
-    expect(r.window_security_rate).toBe(0);
+    expect(r.window_security_rate).toBeNull();
   });
 
   it("95% windows with temp issues gives +2 not +4", () => {
@@ -1795,13 +1795,13 @@ describe("edge cases", () => {
       makeRound({ id: "r2", round_date: daysAgo(2), windows_secure_count: 0, windows_total: 0 }),
     ];
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
-    expect(r.window_security_rate).toBe(0);
+    expect(r.window_security_rate).toBeNull();
   });
 
   it("handles distressed_count 0 with all_distressed_actioned true", () => {
     const rounds = [makeRound({ distressed_count: 0, all_distressed_actioned: true })];
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
-    expect(r.distress_response_rate).toBe(0); // no distressed rounds
+    expect(r.distress_response_rate).toBeNull(); // no distressed rounds
   });
 
   it("handles expected_checks larger than checks_completed", () => {
@@ -1961,13 +1961,13 @@ describe("pct helper behaviour through engine", () => {
     // No distressed rounds → distress_response_rate = pct(0, 0) = 0
     const rounds = [makeRound({ distressed_count: 0 })];
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
-    expect(r.distress_response_rate).toBe(0);
+    expect(r.distress_response_rate).toBeNull();
   });
 
   it("returns 0 when denominator is 0 for window rate", () => {
     const rounds = [makeRound({ windows_secure_count: 0, windows_total: 0 })];
     const r = computeWelfareCheckCompliance(baseInput({ rounds }));
-    expect(r.window_security_rate).toBe(0);
+    expect(r.window_security_rate).toBeNull();
   });
 
   it("rounds to nearest integer", () => {

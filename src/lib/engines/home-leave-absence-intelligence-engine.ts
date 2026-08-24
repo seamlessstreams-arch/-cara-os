@@ -4,6 +4,8 @@
 // CHR 2015 Reg 33. SCCIF: "Staffing arrangements — availability and adequacy."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface LeaveInput {
@@ -97,10 +99,6 @@ export interface HomeLeaveAbsenceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -123,13 +121,13 @@ export function computeHomeLeaveAbsence(
         pending_count: 0, approved_count: 0, rejected_count: 0, cancelled_count: 0,
       },
       sickness: {
-        sick_requests: 0, sick_days: 0, sick_rate: 0, active_sick_count: 0,
-        rtw_required: 0, rtw_completed: 0, rtw_compliance_rate: 0,
+        sick_requests: 0, sick_days: 0, sick_rate: null, active_sick_count: 0,
+        rtw_required: 0, rtw_completed: 0, rtw_compliance_rate: null,
       },
       planning: {
         annual_leave_requests: 0, annual_leave_days: 0,
         future_leave_count: 0, future_leave_days: 0,
-        current_absent_count: 0, current_absent_rate: 0,
+        current_absent_count: 0, current_absent_rate: null,
       },
       distribution: [],
       strengths: [],
@@ -177,11 +175,11 @@ export function computeHomeLeaveAbsence(
   const sickness: SicknessProfile = {
     sick_requests: sickRequests.length,
     sick_days: sickDays,
-    sick_rate: pct(sickDays, totalDays > 0 ? totalDays : 1),
+    sick_rate: rate(sickDays, totalDays > 0 ? totalDays : 1),
     active_sick_count: activeSick.length,
     rtw_required: rtwRequired.length,
     rtw_completed: rtwCompleted.length,
-    rtw_compliance_rate: pct(rtwCompleted.length, rtwRequired.length),
+    rtw_compliance_rate: rate(rtwCompleted.length, rtwRequired.length),
   };
 
   // ── Planning Profile ──────────────────────────────────────────────────
@@ -199,7 +197,7 @@ export function computeHomeLeaveAbsence(
       l.end_date >= today &&
       (l.status === "approved" || l.status === "pending"),
   );
-  const currentAbsentRate = pct(currentAbsent.length, total_staff);
+  const currentAbsentRate = rate(currentAbsent.length, total_staff);
 
   const planning: PlanningProfile = {
     annual_leave_requests: annualLeave.length,
@@ -230,23 +228,23 @@ export function computeHomeLeaveAbsence(
   let score = 52;
 
   // Modifier 1: Sickness rate (±5)
-  const sickRateOfTotal = pct(sickDays, total_staff * 5); // relative to team capacity (5 days/staff baseline)
+  const sickRateOfTotal = rate(sickDays, total_staff * 5); // relative to team capacity (5 days/staff baseline)
   if (sickDays === 0) score += 5;
-  else if (sickRateOfTotal <= 10) score += 3;
-  else if (sickRateOfTotal <= 25) score += 0;
+  else if ((sickRateOfTotal !== null && sickRateOfTotal <= 10)) score += 3;
+  else if ((sickRateOfTotal !== null && sickRateOfTotal <= 25)) score += 0;
   else score -= 4;
 
   // Modifier 2: Pending approval (±3)
-  const pendingRate = pct(pending.length, leave_requests.length > 0 ? leave_requests.length : 1);
+  const pendingRate = rate(pending.length, leave_requests.length > 0 ? leave_requests.length : 1);
   if (leave_requests.length === 0 || pendingRate === 0) score += 3;
-  else if (pendingRate <= 20) score += 1;
-  else if (pendingRate <= 40) score += 0;
+  else if ((pendingRate !== null && pendingRate <= 20)) score += 1;
+  else if ((pendingRate !== null && pendingRate <= 40)) score += 0;
   else score -= 3;
 
   // Modifier 3: Current absence rate (±4)
   if (currentAbsentRate === 0) score += 4;
-  else if (currentAbsentRate <= 15) score += 2;
-  else if (currentAbsentRate <= 25) score += 0;
+  else if ((currentAbsentRate !== null && currentAbsentRate <= 15)) score += 2;
+  else if ((currentAbsentRate !== null && currentAbsentRate <= 25)) score += 0;
   else score -= 3;
 
   // Modifier 4: RTW compliance (±4)
@@ -266,9 +264,9 @@ export function computeHomeLeaveAbsence(
   // Modifier 6: Leave type diversity (±3)
   // Mostly annual leave = good (planned). Mostly sick = concerning
   if (nonCancelled.length > 0) {
-    const plannedRate = pct(annualLeave.length, nonCancelled.length);
-    if (plannedRate >= 60) score += 3;
-    else if (plannedRate >= 30) score += 1;
+    const plannedRate = rate(annualLeave.length, nonCancelled.length);
+    if (meets(plannedRate, 60)) score += 3;
+    else if (meets(plannedRate, 30)) score += 1;
     else if (sickRequests.length > annualLeave.length) score -= 2;
     else score += 0;
   } else {
@@ -287,7 +285,7 @@ export function computeHomeLeaveAbsence(
   const uniqueCurrentAbsent = new Set(currentAbsent.map((l) => l.staff_id)).size;
   if (uniqueCurrentAbsent === 0) score += 3;
   else if (uniqueCurrentAbsent === 1) score += 1;
-  else if (pct(uniqueCurrentAbsent, total_staff) <= 25) score += 0;
+  else if (below(rate(uniqueCurrentAbsent, total_staff), 26)) score += 0;
   else score -= 3;
 
   score = clamp(score, 0, 100);
@@ -326,8 +324,8 @@ export function computeHomeLeaveAbsence(
     concerns.push(`${pending.length} leave request(s) awaiting approval — delays affect staff planning.`);
   if (rtwRequired.length > 0 && (sickness.rtw_compliance_rate ?? 0) < 50)
     concerns.push(`Return-to-work compliance at ${sickness.rtw_compliance_rate}% — non-compliance creates governance risk.`);
-  if (currentAbsentRate > 25)
-    concerns.push(`${currentAbsentRate}% of staff currently absent — staffing adequacy may be compromised.`);
+  if (above(currentAbsentRate, 25))
+    concerns.push(`${formatRate(currentAbsentRate)} of staff currently absent — staffing adequacy may be compromised.`);
   if (sickDays > total_staff * 2)
     concerns.push(`${sickDays} sick days recorded — high sickness absence warrants review.`);
   if (uniqueCurrentAbsent >= 2)
@@ -354,7 +352,7 @@ export function computeHomeLeaveAbsence(
     recommendations.push({
       rank: rank++,
       recommendation: "Review shift rota to ensure adequate coverage during current sickness absence.",
-      urgency: currentAbsentRate > 25 ? "immediate" : "planned",
+      urgency: above(currentAbsentRate, 25) ? "immediate" : "planned",
       regulatory_ref: "Reg 33",
     });
   if (sickDays > total_staff)
@@ -367,9 +365,9 @@ export function computeHomeLeaveAbsence(
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: Insight[] = [];
-  if (currentAbsentRate > 25)
+  if (above(currentAbsentRate, 25))
     insights.push({
-      text: `${currentAbsentRate}% of the team is currently absent. Ofsted will expect evidence that the home maintains sufficient staffing at all times (Reg 33). Review contingency arrangements.`,
+      text: `${formatRate(currentAbsentRate)} of the team is currently absent. Ofsted will expect evidence that the home maintains sufficient staffing at all times (Reg 33). Review contingency arrangements.`,
       severity: "critical",
     });
   if (sickDays === 0 && leave_requests.length > 0)

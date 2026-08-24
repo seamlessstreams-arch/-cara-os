@@ -80,17 +80,17 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("all metrics are zero", () => {
+    it("every rate is unmeasured with no children, no filing items, and no care events", () => {
       const r = computeFilingEvidenceGovernance(baseInput({ total_children: 0, filing_items: [], care_events: [] }));
       expect(r.total_filing_items).toBe(0);
-      expect(r.verified_rate).toBe(0);
-      expect(r.description_rate).toBe(0);
-      expect(r.linked_rate).toBe(0);
-      expect(r.tagged_rate).toBe(0);
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.verified_rate).toBeNull();
+      expect(r.description_rate).toBeNull();
+      expect(r.linked_rate).toBeNull();
+      expect(r.tagged_rate).toBeNull();
+      expect(r.significant_event_filing_rate).toBeNull();
       expect(r.category_diversity).toBe(0);
       expect(r.verification_timeliness_hours).toBe(0);
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.child_coverage_rate).toBeNull();
     });
 
     it("has no strengths", () => {
@@ -146,10 +146,10 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all metrics zero", () => {
+    it("child_coverage_rate is unmeasured when there are no filing items", () => {
       const r = computeFilingEvidenceGovernance(baseInput({ total_children: 3, filing_items: [], care_events: [] }));
       expect(r.total_filing_items).toBe(0);
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.child_coverage_rate).toBeNull();
     });
   });
 
@@ -380,10 +380,10 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
       expect(r.significant_event_filing_rate).toBe(0);
     });
 
-    it("returns 0 when no significant events exist (0/0)", () => {
+    it("significant_event_filing_rate is unmeasured when no significant events exist", () => {
       const events = [makeCareEvent({ is_significant: false })];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: [makeFilingItem()], care_events: events }));
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.significant_event_filing_rate).toBeNull();
     });
 
     it("ignores non-significant events", () => {
@@ -506,10 +506,10 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
       expect(r.child_coverage_rate).toBe(50);
     });
 
-    it("returns 0 when total_children is 0", () => {
+    it("child_coverage_rate is unmeasured when total_children is 0", () => {
       const items = [makeFilingItem({ id: "fi_1", child_id: null })];
       const r = computeFilingEvidenceGovernance(baseInput({ total_children: 0, filing_items: items, care_events: [makeCareEvent()] }));
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.child_coverage_rate).toBeNull();
     });
 
     it("does not double-count children with multiple items", () => {
@@ -1584,7 +1584,7 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
     it("handles empty care_events with filing items present", () => {
       const items = [makeFilingItem()];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: [] }));
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.significant_event_filing_rate).toBeNull();
       expect(r.filing_rating).not.toBe("insufficient_data");
     });
 
@@ -1592,7 +1592,7 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
       const items = [makeFilingItem()];
       const events = [makeCareEvent({ is_significant: false })];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: events }));
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.significant_event_filing_rate).toBeNull();
     });
   });
 
@@ -1623,11 +1623,11 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
   // ── Edge Cases ────────────────────────────────────────────────────────────
 
   describe("edge cases", () => {
-    it("handles total_children = 0 with items present", () => {
+    it("child_coverage_rate is unmeasured when total_children = 0, even with items present", () => {
       const items = [makeFilingItem({ child_id: "child_1" })];
       const events = [makeCareEvent()];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: events, total_children: 0 }));
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.child_coverage_rate).toBeNull();
     });
 
     it("handles items with null child_id only", () => {
@@ -1671,7 +1671,7 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
         makeCareEvent({ id: `ce_${i}`, is_significant: false, has_filing: false })
       );
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: events }));
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.significant_event_filing_rate).toBeNull();
     });
 
     it("handles many categories", () => {
@@ -2057,18 +2057,18 @@ describe("Home Filing Evidence Governance Intelligence Engine", () => {
   // ── pct helper edge cases ─────────────────────────────────────────────────
 
   describe("pct helper behaviour", () => {
-    it("pct returns 0 when denominator is 0 (no significant events)", () => {
+    it("significant_event_filing_rate is unmeasured when there are no significant events", () => {
       const items = [makeFilingItem()];
       const events: CareEventBasicInput[] = [];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: events }));
-      expect(r.significant_event_filing_rate).toBe(0);
+      expect(r.significant_event_filing_rate).toBeNull();
     });
 
-    it("pct returns 0 for 0/0 child coverage (total_children=0)", () => {
+    it("child_coverage_rate is unmeasured when total_children is 0", () => {
       const items = [makeFilingItem({ child_id: null })];
       const events = [makeCareEvent()];
       const r = computeFilingEvidenceGovernance(baseInput({ filing_items: items, care_events: events, total_children: 0 }));
-      expect(r.child_coverage_rate).toBe(0);
+      expect(r.child_coverage_rate).toBeNull();
     });
   });
 

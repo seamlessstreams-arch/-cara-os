@@ -5,7 +5,7 @@
 // SCCIF: "Children feel safe with each other and with staff."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { rate, meets, below } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -85,7 +85,8 @@ export interface EntryProfile {
   mediations: number;
   reviews: number;
   entries_last_30_days: number;
-  positive_ratio: number;              // % positive out of total
+  /** null when the population is empty — nothing measured, not 0%. */
+  positive_ratio: number | null;              // % positive out of total
 }
 
 export interface ReviewProfile {
@@ -141,10 +142,6 @@ export interface HomePeerDynamicsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -250,7 +247,7 @@ export function computeHomePeerDynamics(
     mediations: allEntries.filter((e) => e.type === "mediation").length,
     reviews: allEntries.filter((e) => e.type === "review").length,
     entries_last_30_days: entriesLast30.length,
-    positive_ratio: pct(
+    positive_ratio: rate(
       allEntries.filter((e) => e.type === "positive_interaction").length,
       allEntries.length,
     ),
@@ -311,15 +308,15 @@ export function computeHomePeerDynamics(
   let score = BASE_SCORE;
 
   // mod1: Relationship quality balance (±5)
-  const positiveRate = pct(
+  const positiveRate = rate(
     relationships.positive_count + relationships.developing_count,
     relationships.total_pairs,
   );
   const mod1 =
     relationships.total_pairs === 0 ? 0 :
-    positiveRate >= 75 ? 5 :
-    positiveRate >= 50 ? 3 :
-    positiveRate >= 25 ? 0 : -5;
+    meets(positiveRate, 75) ? 5 :
+    meets(positiveRate, 50) ? 3 :
+    meets(positiveRate, 25) ? 0 : -5;
   score += mod1;
 
   // mod2: Risk level (±4)
@@ -340,17 +337,20 @@ export function computeHomePeerDynamics(
   // mod4: Positive interaction ratio (±4)
   const mod4 =
     entry_profile.total_entries === 0 ? 0 :
-    entry_profile.positive_ratio >= 50 ? 4 :
-    entry_profile.positive_ratio >= 30 ? 2 :
-    entry_profile.positive_ratio >= 15 ? 0 : -3;
+    meets(entry_profile.positive_ratio, 50) ? 4 :
+    meets(entry_profile.positive_ratio, 30) ? 2 :
+    meets(entry_profile.positive_ratio, 15) ? 0 : -3;
   score += mod4;
 
   // mod5: Review compliance (±3)
+  // Both zero-checks below leave the denominator positive by the time
+  // rate() is called, so it never answers null here.
+  const overdueReviewRate = rate(review_profile.overdue_reviews, review_profile.total_reviews_due);
   const mod5 =
     review_profile.total_reviews_due === 0 ? 0 :
     review_profile.overdue_reviews === 0 ? 3 :
-    pct(review_profile.overdue_reviews, review_profile.total_reviews_due) <= 25 ? 1 :
-    pct(review_profile.overdue_reviews, review_profile.total_reviews_due) <= 50 ? -1 : -3;
+    below(overdueReviewRate, 26) ? 1 :
+    below(overdueReviewRate, 51) ? -1 : -3;
   score += mod5;
 
   // mod6: Group atmosphere (±4)
@@ -362,10 +362,13 @@ export function computeHomePeerDynamics(
   score += mod6;
 
   // mod7: Strategy coverage (±3)
+  // Both zero-checks below leave the denominator positive by the time
+  // rate() is called, so it never answers null here.
+  const pairsNeedingStrategiesRate = rate(strategy_profile.pairs_needing_strategies, highRiskPairs.length);
   const mod7 =
     highRiskPairs.length === 0 ? 3 :
     strategy_profile.pairs_needing_strategies === 0 ? 3 :
-    pct(strategy_profile.pairs_needing_strategies, highRiskPairs.length) <= 25 ? 1 : -3;
+    below(pairsNeedingStrategiesRate, 26) ? 1 : -3;
   score += mod7;
 
   // mod8: Coverage completeness (±3)
@@ -390,11 +393,11 @@ export function computeHomePeerDynamics(
   const strengths: string[] = [];
   if (relationships.positive_count > 0) strengths.push(`${relationships.positive_count} peer relationship(s) rated positive — children supporting each other.`);
   if (risks.high_count === 0 && peer_dynamics.length > 0) strengths.push("No high-risk peer relationships identified.");
-  if (entry_profile.positive_ratio >= 50 && entry_profile.total_entries > 0) strengths.push(`${entry_profile.positive_ratio}% of recorded peer interactions are positive.`);
+  if (meets(entry_profile.positive_ratio, 50) && entry_profile.total_entries > 0) strengths.push(`${entry_profile.positive_ratio}% of recorded peer interactions are positive.`);
   if (review_profile.overdue_reviews === 0 && peer_dynamics.length > 0) strengths.push("All peer relationship reviews are up to date.");
   if (group_profile.latest_atmosphere === "calm") strengths.push("Latest group assessment indicates a calm atmosphere in the home.");
   if (strategy_profile.pairs_needing_strategies === 0 && highRiskPairs.length > 0) strengths.push("All strained/conflicted relationships have documented strategies.");
-  if (meets(coverageRate, 80)) strengths.push(`${coverageRate}% of possible peer pairings have been assessed — comprehensive monitoring.`);
+  if (meets(coverageRate, 80)) strengths.push(`${formatRate(coverageRate)} of possible peer pairings have been assessed — comprehensive monitoring.`);
   if (entry_profile.mediations > 0) strengths.push(`${entry_profile.mediations} mediation(s) recorded — active conflict resolution practice.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -406,7 +409,7 @@ export function computeHomePeerDynamics(
   if (group_profile.latest_atmosphere === "tense") concerns.push("Latest group assessment indicates tension — risk of escalation.");
   if (strategy_profile.pairs_needing_strategies > 0) concerns.push(`${strategy_profile.pairs_needing_strategies} strained/conflicted relationship(s) have no documented management strategies.`);
   if (entry_profile.incidents > entry_profile.positive_interactions && entry_profile.total_entries > 0) concerns.push("More peer incidents than positive interactions recorded — negative dynamic prevailing.");
-  if (below(coverageRate, 50) && expectedPairs > 0) concerns.push(`Only ${coverageRate}% of possible peer pairings assessed — significant monitoring gaps.`);
+  if (below(coverageRate, 50) && expectedPairs > 0) concerns.push(`Only ${formatRate(coverageRate)} of possible peer pairings assessed — significant monitoring gaps.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recommendations: Recommendation[] = [];
@@ -478,7 +481,7 @@ export function computeHomePeerDynamics(
   }
   if (relationships.positive_count >= relationships.total_pairs / 2 && relationships.total_pairs > 0) {
     insights.push({
-      text: `${pct(relationships.positive_count, relationships.total_pairs)}% of peer relationships are positive — the home fosters healthy connections.`,
+      text: `${rate(relationships.positive_count, relationships.total_pairs)}% of peer relationships are positive — the home fosters healthy connections.`,
       severity: "positive",
     });
   }

@@ -8,6 +8,8 @@
 // SCCIF: "Children are well prepared for adulthood."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface IndependenceSkillInput {
@@ -96,10 +98,6 @@ export interface IndependenceSkillsReadinessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 const PROFICIENCY_VALUES: Record<string, number> = {
   not_started: 0,
   emerging: 1,
@@ -141,13 +139,13 @@ export function computeIndependenceSkillsReadiness(
       total_records: 0,
       children_assessed: 0,
       average_readiness: 0,
-      child_view_rate: 0,
-      evidence_rate: 0,
-      next_step_rate: 0,
-      skill_progression_rate: 0,
-      pathway_plan_rate: 0,
-      pathway_child_voice_rate: 0,
-      review_currency_rate: 0,
+      child_view_rate: null,
+      evidence_rate: null,
+      next_step_rate: null,
+      skill_progression_rate: null,
+      pathway_plan_rate: null,
+      pathway_child_voice_rate: null,
+      review_currency_rate: null,
       category_coverage: 0,
       strengths: [],
       concerns: [],
@@ -165,13 +163,13 @@ export function computeIndependenceSkillsReadiness(
       total_records: 0,
       children_assessed: 0,
       average_readiness: 0,
-      child_view_rate: 0,
-      evidence_rate: 0,
-      next_step_rate: 0,
-      skill_progression_rate: 0,
-      pathway_plan_rate: 0,
-      pathway_child_voice_rate: 0,
-      review_currency_rate: 0,
+      child_view_rate: null,
+      evidence_rate: null,
+      next_step_rate: null,
+      skill_progression_rate: null,
+      pathway_plan_rate: null,
+      pathway_child_voice_rate: null,
+      review_currency_rate: null,
       category_coverage: 0,
       strengths: [],
       concerns: [
@@ -216,7 +214,7 @@ export function computeIndependenceSkillsReadiness(
 
   // Child view rate
   const recordsWithChildView = records.filter((r) => r.has_child_view).length;
-  const child_view_rate = pct(recordsWithChildView, total_records);
+  const child_view_rate = rate(recordsWithChildView, total_records);
 
   // All skills across all records
   const allSkills = records.flatMap((r) => r.skills);
@@ -224,34 +222,34 @@ export function computeIndependenceSkillsReadiness(
 
   // Evidence rate
   const skillsWithEvidence = allSkills.filter((s) => s.has_evidence).length;
-  const evidence_rate = pct(skillsWithEvidence, totalSkills);
+  const evidence_rate = rate(skillsWithEvidence, totalSkills);
 
   // Next step rate
   const skillsWithNextStep = allSkills.filter((s) => s.has_next_step).length;
-  const next_step_rate = pct(skillsWithNextStep, totalSkills);
+  const next_step_rate = rate(skillsWithNextStep, totalSkills);
 
   // Skill progression rate (% at developing or above, i.e. proficiency >= 2)
   const skillsProgressing = allSkills.filter(
     (s) => proficiencyValue(s.proficiency) >= 2,
   ).length;
-  const skill_progression_rate = pct(skillsProgressing, totalSkills);
+  const skill_progression_rate = rate(skillsProgressing, totalSkills);
 
   // Pathway plan rate (% of children with active pathway plan).
   // Canonical PathwayPlanStatus has no "active" value — it's "active_16_18" /
   // "active_18plus_formerly_looked_after" / "pre_pathway_15plus" / "closed_at_25".
   const activePlans = pathway_plans.filter((p) => (p.status ?? "").startsWith("active"));
   const childrenWithActivePlan = new Set(activePlans.map((p) => p.child_id)).size;
-  const pathway_plan_rate = pct(childrenWithActivePlan, total_children);
+  const pathway_plan_rate = rate(childrenWithActivePlan, total_children);
 
   // Pathway child voice rate (% of pathway plans with child voice)
   const plansWithChildVoice = pathway_plans.filter((p) => p.has_child_voice).length;
-  const pathway_child_voice_rate = pct(plansWithChildVoice, pathway_plans.length);
+  const pathway_child_voice_rate = rate(plansWithChildVoice, pathway_plans.length);
 
   // Review currency rate (% of records reviewed within 90 days of today)
   const currentRecords = records.filter(
     (r) => daysBetween(r.review_date, today) <= 90,
   ).length;
-  const review_currency_rate = pct(currentRecords, total_records);
+  const review_currency_rate = rate(currentRecords, total_records);
 
   // Category coverage (avg distinct categories per child)
   const categoriesByChild = new Map<string, Set<string>>();
@@ -281,44 +279,44 @@ export function computeIndependenceSkillsReadiness(
   else if ((average_readiness ?? 0) >= 50) score += 2;
 
   // Bonus: child_view_rate
-  if (child_view_rate >= 90) score += 4;
-  else if (child_view_rate >= 70) score += 2;
+  if (meets(child_view_rate, 90)) score += 4;
+  else if (meets(child_view_rate, 70)) score += 2;
 
   // Bonus: evidence_rate
-  if (evidence_rate >= 90) score += 4;
-  else if (evidence_rate >= 75) score += 2;
+  if (meets(evidence_rate, 90)) score += 4;
+  else if (meets(evidence_rate, 75)) score += 2;
 
   // Bonus: next_step_rate
-  if (next_step_rate >= 90) score += 3;
-  else if (next_step_rate >= 75) score += 1;
+  if (meets(next_step_rate, 90)) score += 3;
+  else if (meets(next_step_rate, 75)) score += 1;
 
   // Bonus: skill_progression_rate
-  if (skill_progression_rate >= 70) score += 4;
-  else if (skill_progression_rate >= 50) score += 2;
+  if (meets(skill_progression_rate, 70)) score += 4;
+  else if (meets(skill_progression_rate, 50)) score += 2;
 
   // Bonus: pathway_plan_rate
-  if (pathway_plan_rate >= 100) score += 4;
-  else if (pathway_plan_rate >= 80) score += 2;
+  if (meets(pathway_plan_rate, 100)) score += 4;
+  else if (meets(pathway_plan_rate, 80)) score += 2;
 
   // Bonus: review_currency_rate
-  if (review_currency_rate >= 90) score += 3;
-  else if (review_currency_rate >= 70) score += 1;
+  if (meets(review_currency_rate, 90)) score += 3;
+  else if (meets(review_currency_rate, 70)) score += 1;
 
   // Bonus: category_coverage
   if ((category_coverage ?? 0) >= 5) score += 2;
   else if ((category_coverage ?? 0) >= 3) score += 1;
 
   // Penalty: child_view_rate < 30%
-  if (child_view_rate < 30) score -= 5;
+  if (below(child_view_rate, 30)) score -= 5;
 
   // Penalty: evidence_rate < 40%
-  if (evidence_rate < 40) score -= 5;
+  if (below(evidence_rate, 40)) score -= 5;
 
   // Penalty: average_readiness < 30
   if ((average_readiness ?? 0) < 30) score -= 5;
 
   // Penalty: review_currency_rate < 50%
-  if (review_currency_rate < 50) score -= 3;
+  if (below(review_currency_rate, 50)) score -= 3;
 
   // Clamp 0-100
   score = Math.max(0, Math.min(100, score));
@@ -330,41 +328,41 @@ export function computeIndependenceSkillsReadiness(
 
   if ((average_readiness ?? 0) >= 70)
     strengths.push(
-      `Average independence readiness is ${average_readiness}% — children are demonstrating strong preparation for adulthood.`,
+      `Average independence readiness is ${formatRate(average_readiness)} — children are demonstrating strong preparation for adulthood.`,
     );
 
-  if (child_view_rate >= 90)
+  if (meets(child_view_rate, 90))
     strengths.push(
-      `${child_view_rate}% of independence records include the child's own views — excellent practice under Reg 12.`,
+      `${formatRate(child_view_rate)} of independence records include the child's own views — excellent practice under Reg 12.`,
     );
 
-  if (evidence_rate >= 90)
+  if (meets(evidence_rate, 90))
     strengths.push(
-      `${evidence_rate}% of skills have supporting evidence recorded — robust documentation of independence development.`,
+      `${formatRate(evidence_rate)} of skills have supporting evidence recorded — robust documentation of independence development.`,
     );
 
-  if (skill_progression_rate >= 70)
+  if (meets(skill_progression_rate, 70))
     strengths.push(
-      `${skill_progression_rate}% of skills are at developing level or above — children are making meaningful progress.`,
+      `${formatRate(skill_progression_rate)} of skills are at developing level or above — children are making meaningful progress.`,
     );
 
-  if (pathway_plan_rate >= 100)
+  if (meets(pathway_plan_rate, 100))
     strengths.push(
       "All children have active pathway plans — comprehensive leaving care coverage in line with the Children (Leaving Care) Act 2000.",
     );
-  else if (pathway_plan_rate >= 80)
+  else if (meets(pathway_plan_rate, 80))
     strengths.push(
-      `${pathway_plan_rate}% of children have active pathway plans — strong coverage for leaving care preparation.`,
+      `${formatRate(pathway_plan_rate)} of children have active pathway plans — strong coverage for leaving care preparation.`,
     );
 
-  if (review_currency_rate >= 90)
+  if (meets(review_currency_rate, 90))
     strengths.push(
-      `${review_currency_rate}% of independence records have been reviewed within 90 days — assessments are current and actively maintained.`,
+      `${formatRate(review_currency_rate)} of independence records have been reviewed within 90 days — assessments are current and actively maintained.`,
     );
 
-  if (next_step_rate >= 90)
+  if (meets(next_step_rate, 90))
     strengths.push(
-      `${next_step_rate}% of skills have next steps defined — clear progression planning is in place.`,
+      `${formatRate(next_step_rate)} of skills have next steps defined — clear progression planning is in place.`,
     );
 
   if ((category_coverage ?? 0) >= 5)
@@ -372,52 +370,52 @@ export function computeIndependenceSkillsReadiness(
       `Children are assessed across an average of ${category_coverage} skill categories — broad coverage of independence domains.`,
     );
 
-  if (pathway_child_voice_rate >= 90)
+  if (meets(pathway_child_voice_rate, 90))
     strengths.push(
-      `${pathway_child_voice_rate}% of pathway plans include the child's voice — strong participation in planning.`,
+      `${formatRate(pathway_child_voice_rate)} of pathway plans include the child's voice — strong participation in planning.`,
     );
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (child_view_rate < 30)
+  if (below(child_view_rate, 30))
     concerns.push(
-      `Only ${child_view_rate}% of independence records include the child's views — Reg 12 requires that children's wishes and feelings are sought and recorded.`,
+      `Only ${formatRate(child_view_rate)} of independence records include the child's views — Reg 12 requires that children's wishes and feelings are sought and recorded.`,
     );
 
-  if (evidence_rate < 40)
+  if (below(evidence_rate, 40))
     concerns.push(
-      `Only ${evidence_rate}% of skills have evidence recorded — assessments lack the documentation needed for Ofsted scrutiny.`,
+      `Only ${formatRate(evidence_rate)} of skills have evidence recorded — assessments lack the documentation needed for Ofsted scrutiny.`,
     );
 
   if ((average_readiness ?? 0) < 30)
     concerns.push(
-      `Average independence readiness is only ${average_readiness}% — children are significantly underprepared for independence.`,
+      `Average independence readiness is only ${formatRate(average_readiness)} — children are significantly underprepared for independence.`,
     );
 
-  if (review_currency_rate < 50)
+  if (below(review_currency_rate, 50))
     concerns.push(
-      `Only ${review_currency_rate}% of records have been reviewed in the last 90 days — assessments are going stale.`,
+      `Only ${formatRate(review_currency_rate)} of records have been reviewed in the last 90 days — assessments are going stale.`,
     );
 
-  if (pathway_plan_rate < 50)
+  if (below(pathway_plan_rate, 50))
     concerns.push(
-      `Only ${pathway_plan_rate}% of children have active pathway plans — the Children (Leaving Care) Act 2000 requires plans for all eligible young people.`,
+      `Only ${formatRate(pathway_plan_rate)} of children have active pathway plans — the Children (Leaving Care) Act 2000 requires plans for all eligible young people.`,
     );
 
-  if (skill_progression_rate < 30 && totalSkills > 0)
+  if (below(skill_progression_rate, 30) && totalSkills > 0)
     concerns.push(
-      `Only ${skill_progression_rate}% of skills are at developing level or above — most children are stuck at early stages.`,
+      `Only ${formatRate(skill_progression_rate)} of skills are at developing level or above — most children are stuck at early stages.`,
     );
 
-  if (next_step_rate < 40 && totalSkills > 0)
+  if (below(next_step_rate, 40) && totalSkills > 0)
     concerns.push(
-      `Only ${next_step_rate}% of skills have next steps defined — progression planning is inadequate.`,
+      `Only ${formatRate(next_step_rate)} of skills have next steps defined — progression planning is inadequate.`,
     );
 
-  if (pathway_child_voice_rate < 40 && pathway_plans.length > 0)
+  if (below(pathway_child_voice_rate, 40) && pathway_plans.length > 0)
     concerns.push(
-      `Only ${pathway_child_voice_rate}% of pathway plans include the child's voice — Reg 5 requires children to participate in their own planning.`,
+      `Only ${formatRate(pathway_child_voice_rate)} of pathway plans include the child's voice — Reg 5 requires children to participate in their own planning.`,
     );
 
   if ((category_coverage ?? 0) < 3 && childrenWithSkills > 0)
@@ -434,49 +432,49 @@ export function computeIndependenceSkillsReadiness(
   }[] = [];
   let rank = 1;
 
-  if (child_view_rate < 70)
+  if (below(child_view_rate, 70))
     recommendations.push({
       rank: rank++,
-      recommendation: `Increase child participation in independence assessments — currently ${child_view_rate}% include the child's views.`,
-      urgency: child_view_rate < 30 ? "immediate" : "soon",
+      recommendation: `Increase child participation in independence assessments — currently ${formatRate(child_view_rate)} include the child's views.`,
+      urgency: below(child_view_rate, 30) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 12",
     });
 
-  if (evidence_rate < 75)
+  if (below(evidence_rate, 75))
     recommendations.push({
       rank: rank++,
-      recommendation: `Ensure all skills assessments include supporting evidence — currently ${evidence_rate}% documented.`,
-      urgency: evidence_rate < 40 ? "immediate" : "soon",
+      recommendation: `Ensure all skills assessments include supporting evidence — currently ${formatRate(evidence_rate)} documented.`,
+      urgency: below(evidence_rate, 40) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 12",
     });
 
-  if (pathway_plan_rate < 80)
+  if (below(pathway_plan_rate, 80))
     recommendations.push({
       rank: rank++,
-      recommendation: `Create active pathway plans for all eligible children — currently ${pathway_plan_rate}% covered.`,
-      urgency: pathway_plan_rate < 50 ? "immediate" : "soon",
+      recommendation: `Create active pathway plans for all eligible children — currently ${formatRate(pathway_plan_rate)} covered.`,
+      urgency: below(pathway_plan_rate, 50) ? "immediate" : "soon",
       regulatory_ref: "Children (Leaving Care) Act 2000",
     });
 
-  if (review_currency_rate < 70)
+  if (below(review_currency_rate, 70))
     recommendations.push({
       rank: rank++,
-      recommendation: `Review overdue independence assessments — ${100 - review_currency_rate}% of records are more than 90 days old.`,
-      urgency: review_currency_rate < 50 ? "immediate" : "soon",
+      recommendation: `Review overdue independence assessments — ${100 - review_currency_rate!}% of records are more than 90 days old.`,
+      urgency: below(review_currency_rate, 50) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 12",
     });
 
-  if (skill_progression_rate < 50 && totalSkills > 0)
+  if (below(skill_progression_rate, 50) && totalSkills > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Focus on moving children beyond emerging skill levels through structured teaching and practice opportunities.",
-      urgency: skill_progression_rate < 30 ? "immediate" : "soon",
+      urgency: below(skill_progression_rate, 30) ? "immediate" : "soon",
     });
 
-  if (next_step_rate < 75 && totalSkills > 0)
+  if (below(next_step_rate, 75) && totalSkills > 0)
     recommendations.push({
       rank: rank++,
-      recommendation: `Define next steps for all skills — only ${next_step_rate}% currently have progression plans.`,
+      recommendation: `Define next steps for all skills — only ${formatRate(next_step_rate)} currently have progression plans.`,
       urgency: "planned",
     });
 
@@ -490,81 +488,81 @@ export function computeIndependenceSkillsReadiness(
   if ((average_readiness ?? 0) < 50 && total_records > 0)
     recommendations.push({
       rank: rank++,
-      recommendation: `Address low overall readiness scores — average is ${average_readiness}%, indicating children need more intensive independence support.`,
+      recommendation: `Address low overall readiness scores — average is ${formatRate(average_readiness)}, indicating children need more intensive independence support.`,
       urgency: (average_readiness ?? 0) < 30 ? "immediate" : "soon",
     });
 
-  if (pathway_child_voice_rate < 70 && pathway_plans.length > 0)
+  if (below(pathway_child_voice_rate, 70) && pathway_plans.length > 0)
     recommendations.push({
       rank: rank++,
-      recommendation: `Ensure pathway plans capture the child's voice — currently ${pathway_child_voice_rate}% include child participation.`,
-      urgency: pathway_child_voice_rate < 40 ? "immediate" : "planned",
+      recommendation: `Ensure pathway plans capture the child's voice — currently ${formatRate(pathway_child_voice_rate)} include child participation.`,
+      urgency: below(pathway_child_voice_rate, 40) ? "immediate" : "planned",
     });
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: { text: string; severity: "critical" | "warning" | "positive" }[] = [];
 
-  if (child_view_rate < 30)
+  if (below(child_view_rate, 30))
     insights.push({
-      text: `Only ${child_view_rate}% of independence records include the child's own views. Ofsted inspectors will identify this as a failure to comply with Reg 12 — children must be active participants in their independence planning.`,
+      text: `Only ${formatRate(child_view_rate)} of independence records include the child's own views. Ofsted inspectors will identify this as a failure to comply with Reg 12 — children must be active participants in their independence planning.`,
       severity: "critical",
     });
 
-  if (evidence_rate < 40)
+  if (below(evidence_rate, 40))
     insights.push({
-      text: `Only ${evidence_rate}% of skills have evidence recorded. Without documented evidence, independence assessments lack credibility and cannot demonstrate progress to Ofsted.`,
+      text: `Only ${formatRate(evidence_rate)} of skills have evidence recorded. Without documented evidence, independence assessments lack credibility and cannot demonstrate progress to Ofsted.`,
       severity: "critical",
     });
 
   if ((average_readiness ?? 0) < 30)
     insights.push({
-      text: `Average readiness is ${average_readiness}%. Children are significantly underprepared for independence — Ofsted will view this as a systemic failure in the home's approach to life skills development under Reg 12.`,
+      text: `Average readiness is ${formatRate(average_readiness)}. Children are significantly underprepared for independence — Ofsted will view this as a systemic failure in the home's approach to life skills development under Reg 12.`,
       severity: "critical",
     });
 
-  if (pathway_plan_rate < 50)
+  if (below(pathway_plan_rate, 50))
     insights.push({
-      text: `Only ${pathway_plan_rate}% of children have active pathway plans. The Children (Leaving Care) Act 2000 requires pathway plans for all eligible young people — this gap puts the home at regulatory risk.`,
+      text: `Only ${formatRate(pathway_plan_rate)} of children have active pathway plans. The Children (Leaving Care) Act 2000 requires pathway plans for all eligible young people — this gap puts the home at regulatory risk.`,
       severity: "critical",
     });
 
-  if (review_currency_rate < 50)
+  if (below(review_currency_rate, 50))
     insights.push({
-      text: `${100 - review_currency_rate}% of independence records are more than 90 days old. Stale assessments cannot accurately reflect children's current skills and may mislead care planning.`,
+      text: `${100 - review_currency_rate!}% of independence records are more than 90 days old. Stale assessments cannot accurately reflect children's current skills and may mislead care planning.`,
       severity: "warning",
     });
 
-  if (skill_progression_rate < 50 && totalSkills > 0)
+  if (below(skill_progression_rate, 50) && totalSkills > 0)
     insights.push({
-      text: `Only ${skill_progression_rate}% of skills are at developing level or above. This suggests independence teaching is not translating into meaningful skill acquisition.`,
+      text: `Only ${formatRate(skill_progression_rate)} of skills are at developing level or above. This suggests independence teaching is not translating into meaningful skill acquisition.`,
       severity: "warning",
     });
 
-  if (next_step_rate < 50 && totalSkills > 0)
+  if (below(next_step_rate, 50) && totalSkills > 0)
     insights.push({
-      text: `Only ${next_step_rate}% of skills have next steps defined. Without clear progression plans, skills development risks stalling.`,
+      text: `Only ${formatRate(next_step_rate)} of skills have next steps defined. Without clear progression plans, skills development risks stalling.`,
       severity: "warning",
     });
 
   if ((average_readiness ?? 0) >= 70)
     insights.push({
-      text: `Average readiness of ${average_readiness}% demonstrates that independence skills development is a genuine strength of this home — children are being effectively prepared for adulthood.`,
+      text: `Average readiness of ${formatRate(average_readiness)} demonstrates that independence skills development is a genuine strength of this home — children are being effectively prepared for adulthood.`,
       severity: "positive",
     });
 
-  if (child_view_rate >= 90)
+  if (meets(child_view_rate, 90))
     insights.push({
-      text: `${child_view_rate}% of assessments include the child's voice — this exemplary practice ensures children feel ownership of their independence journey, as required by Reg 12.`,
+      text: `${formatRate(child_view_rate)} of assessments include the child's voice — this exemplary practice ensures children feel ownership of their independence journey, as required by Reg 12.`,
       severity: "positive",
     });
 
-  if (evidence_rate >= 90 && skill_progression_rate >= 70)
+  if (meets(evidence_rate, 90) && meets(skill_progression_rate, 70))
     insights.push({
       text: "Strong evidence documentation combined with high skill progression demonstrates a well-structured, accountable approach to independence development.",
       severity: "positive",
     });
 
-  if (pathway_plan_rate >= 100 && pathway_child_voice_rate >= 90)
+  if (meets(pathway_plan_rate, 100) && meets(pathway_child_voice_rate, 90))
     insights.push({
       text: "All children have active pathway plans with strong child voice — this comprehensive approach to leaving care preparation will be positively noted by Ofsted.",
       severity: "positive",
@@ -573,9 +571,9 @@ export function computeIndependenceSkillsReadiness(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (readiness_rating === "outstanding") {
-    headline = `Excellent independence skills readiness: ${average_readiness}% average readiness, ${children_assessed} of ${total_children} children assessed with strong evidence and progression.`;
+    headline = `Excellent independence skills readiness: ${formatRate(average_readiness)} average readiness, ${children_assessed} of ${total_children} children assessed with strong evidence and progression.`;
   } else if (readiness_rating === "good") {
-    headline = `Good independence preparation with ${average_readiness}% average readiness and ${children_assessed} children assessed — some areas for further development.`;
+    headline = `Good independence preparation with ${formatRate(average_readiness)} average readiness and ${children_assessed} children assessed — some areas for further development.`;
   } else if (readiness_rating === "adequate") {
     headline = `Independence skills preparation in place but ${concerns.length > 0 ? concerns.length + " concern(s) identified" : "needs strengthening"} — focused improvement needed.`;
   } else {

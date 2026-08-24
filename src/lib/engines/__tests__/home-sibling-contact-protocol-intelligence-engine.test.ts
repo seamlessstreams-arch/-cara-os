@@ -74,12 +74,12 @@ describe("Insufficient data", () => {
       "No data available for sibling contact intelligence analysis",
     );
     expect(result.total_protocols).toBe(0);
-    expect(result.children_with_protocol_rate).toBe(0);
-    expect(result.regular_contact_rate).toBe(0);
-    expect(result.agreed_plan_rate).toBe(0);
-    expect(result.child_preference_rate).toBe(0);
-    expect(result.celebration_plan_rate).toBe(0);
-    expect(result.review_current_rate).toBe(0);
+    expect(result.children_with_protocol_rate).toBeNull();
+    expect(result.regular_contact_rate).toBeNull();
+    expect(result.agreed_plan_rate).toBeNull();
+    expect(result.child_preference_rate).toBeNull();
+    expect(result.celebration_plan_rate).toBeNull();
+    expect(result.review_current_rate).toBeNull();
     expect(result.strengths).toEqual([]);
     expect(result.concerns).toEqual([]);
     expect(result.recommendations).toEqual([]);
@@ -2726,32 +2726,36 @@ describe("Headlines", () => {
 // ── 17. pct() Edge Cases ───────────────────────────────────────────────────
 
 describe("pct() edge cases via engine outputs", () => {
-  it("all rates are 0 when no records and total_children > 0", () => {
+  it("children_with_protocol_rate is a genuine 0 with records absent, but the other five rates are unmeasured", () => {
     const result = computeSiblingContactProtocol({
       today: "2025-06-15",
       total_children: 5,
       records: [],
     });
     expect(result.children_with_protocol_rate).toBe(0);
-    expect(result.regular_contact_rate).toBe(0);
-    expect(result.agreed_plan_rate).toBe(0);
-    expect(result.child_preference_rate).toBe(0);
-    expect(result.celebration_plan_rate).toBe(0);
-    expect(result.review_current_rate).toBe(0);
+    expect(result.regular_contact_rate).toBeNull();
+    expect(result.agreed_plan_rate).toBeNull();
+    expect(result.child_preference_rate).toBeNull();
+    expect(result.celebration_plan_rate).toBeNull();
+    expect(result.review_current_rate).toBeNull();
   });
 
-  it("rates are 0 when total_children is 0 (pct denominator 0)", () => {
+  it("every rate is unmeasured when total_children is 0 (insufficient-data guard)", () => {
+    // This early-return branch used to hardcode 0 for all six rates, which
+    // is the same fabricated-empty-population lie the rest of this batch
+    // fixes — an unmeasured population is "insufficient_data", not a
+    // measured 0% across the board.
     const result = computeSiblingContactProtocol({
       today: "2025-06-15",
       total_children: 0,
       records: [],
     });
-    expect(result.children_with_protocol_rate).toBe(0);
-    expect(result.regular_contact_rate).toBe(0);
-    expect(result.agreed_plan_rate).toBe(0);
-    expect(result.child_preference_rate).toBe(0);
-    expect(result.celebration_plan_rate).toBe(0);
-    expect(result.review_current_rate).toBe(0);
+    expect(result.children_with_protocol_rate).toBeNull();
+    expect(result.regular_contact_rate).toBeNull();
+    expect(result.agreed_plan_rate).toBeNull();
+    expect(result.child_preference_rate).toBeNull();
+    expect(result.celebration_plan_rate).toBeNull();
+    expect(result.review_current_rate).toBeNull();
   });
 
   it("pct rounds correctly: 1 of 3 = 33%", () => {

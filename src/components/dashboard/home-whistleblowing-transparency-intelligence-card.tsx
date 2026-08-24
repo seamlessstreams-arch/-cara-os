@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Megaphone } from "lucide-react";
@@ -78,16 +79,16 @@ export function HomeWhistleblowingTransparencyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.open_concerns === 0 ? "text-[--cs-success]" : d.open_concerns <= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.open_concerns}</p>
               <p className="text-[9px] text-muted-foreground">Open</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.resolution_rate >= 90 ? "bg-green-50" : d.resolution_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.resolution_rate >= 90 ? "text-[--cs-success]" : d.resolution_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.resolution_rate, 90) ? "bg-green-50" : meets(d.resolution_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.resolution_rate, 90) ? "text-[--cs-success]" : meets(d.resolution_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.lessons_learned_rate >= 90 ? "bg-green-50" : d.lessons_learned_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.lessons_learned_rate >= 90 ? "text-[--cs-success]" : d.lessons_learned_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.lessons_learned_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.lessons_learned_rate, 90) ? "bg-green-50" : meets(d.lessons_learned_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.lessons_learned_rate, 90) ? "text-[--cs-success]" : meets(d.lessons_learned_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.lessons_learned_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Lessons</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_confidence_rate >= 90 ? "bg-green-50" : d.staff_confidence_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_confidence_rate >= 90 ? "text-[--cs-success]" : d.staff_confidence_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_confidence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_confidence_rate, 90) ? "bg-green-50" : meets(d.staff_confidence_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_confidence_rate, 90) ? "text-[--cs-success]" : meets(d.staff_confidence_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_confidence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confident</p>
             </div>
           </div>

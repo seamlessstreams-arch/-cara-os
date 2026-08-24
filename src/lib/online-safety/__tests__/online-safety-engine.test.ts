@@ -257,7 +257,7 @@ describe("evaluateRiskAssessments", () => {
   it("handles no assessments", () => {
     const result = evaluateRiskAssessments(makeChildren(), [], CURRENT_DATE);
     expect(result.assessmentRate).toBe(0);
-    expect(result.deviceAgreementRate).toBe(0);
+    expect(result.deviceAgreementRate).toBeNull();
   });
 });
 
@@ -320,7 +320,7 @@ describe("analyseOnlineIncidents", () => {
     const result = analyseOnlineIncidents(makeChildren(), [], PERIOD_START, PERIOD_END);
     expect(result.totalIncidents).toBe(0);
     expect(result.averageSeverity).toBe(0);
-    expect(result.resolvedRate).toBe(0);
+    expect(result.resolvedRate).toBeNull();
   });
 });
 

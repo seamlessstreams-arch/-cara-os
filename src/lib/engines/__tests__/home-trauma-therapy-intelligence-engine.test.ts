@@ -58,13 +58,13 @@ describe("Insufficient data guard (total_children === 0)", () => {
     expect(r.therapy_score).toBe(0);
   });
 
-  it("returns zero for all rate fields when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is 0", () => {
     const r = computeTraumaTherapy(baseInput({ total_children: 0 }));
-    expect(r.children_in_therapy_rate).toBe(0);
-    expect(r.attendance_rate).toBe(0);
-    expect(r.mood_improvement_rate).toBe(0);
-    expect(r.engagement_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.children_in_therapy_rate).toBeNull();
+    expect(r.attendance_rate).toBeNull();
+    expect(r.mood_improvement_rate).toBeNull();
+    expect(r.engagement_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
     expect(r.modality_diversity).toBe(0);
   });
 
@@ -123,22 +123,22 @@ describe("Zero logs with total_children > 0", () => {
 
   it("attendance_rate is 0 with no logs", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.attendance_rate).toBe(0);
+    expect(r.attendance_rate).toBeNull();
   });
 
   it("mood_improvement_rate is 0 with no logs", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.mood_improvement_rate).toBe(0);
+    expect(r.mood_improvement_rate).toBeNull();
   });
 
   it("engagement_rate is 0 with no logs", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.engagement_rate).toBe(0);
+    expect(r.engagement_rate).toBeNull();
   });
 
   it("child_voice_rate is 0 with no logs", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.child_voice_rate).toBeNull();
   });
 
   it("modality_diversity is 0 with no logs", () => {
@@ -347,7 +347,7 @@ describe("Modifier 3: Mood improvement rate", () => {
     const logs = makeLogs(5, { attended: false });
     const r = computeTraumaTherapy(baseInput({ logs }));
     // attendedSessions.length === 0 → score -= 1
-    expect(r.mood_improvement_rate).toBe(0);
+    expect(r.mood_improvement_rate).toBeNull();
   });
 
   it("mood improvement only counts attended sessions", () => {
@@ -445,7 +445,7 @@ describe("Modifier 4: Child engagement rate", () => {
   it("0 attended sessions with total>0 subtracts -1 for engagement", () => {
     const logs = makeLogs(5, { attended: false });
     const r = computeTraumaTherapy(baseInput({ logs }));
-    expect(r.engagement_rate).toBe(0);
+    expect(r.engagement_rate).toBeNull();
   });
 });
 
@@ -1473,8 +1473,8 @@ describe("Edge cases", () => {
     });
     const r = computeTraumaTherapy(baseInput({ logs }));
     expect(r.attendance_rate).toBe(0);
-    expect(r.engagement_rate).toBe(0);
-    expect(r.mood_improvement_rate).toBe(0);
+    expect(r.engagement_rate).toBeNull();
+    expect(r.mood_improvement_rate).toBeNull();
   });
 
   it("mix of attended and not-attended logs calculates rates correctly", () => {
@@ -1756,31 +1756,31 @@ describe("Score clamping 0-100", () => {
 describe("pct edge cases (0 denominator)", () => {
   it("0 total logs → attendanceRate is 0 (pct with 0 denominator)", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.attendance_rate).toBe(0);
+    expect(r.attendance_rate).toBeNull();
   });
 
   it("0 attended sessions → mood improvement rate is 0", () => {
     const logs = makeLogs(5, { attended: false });
     const r = computeTraumaTherapy(baseInput({ logs }));
-    expect(r.mood_improvement_rate).toBe(0);
+    expect(r.mood_improvement_rate).toBeNull();
   });
 
   it("0 attended sessions → engagement rate is 0", () => {
     const logs = makeLogs(5, { attended: false });
     const r = computeTraumaTherapy(baseInput({ logs }));
-    expect(r.engagement_rate).toBe(0);
+    expect(r.engagement_rate).toBeNull();
   });
 
-  it("0 total children → children in therapy rate is 0 (guard returns early)", () => {
+  it("0 total children leaves children_in_therapy_rate unmeasured (guard returns early)", () => {
     const r = computeTraumaTherapy(
       baseInput({ total_children: 0, logs: [] }),
     );
-    expect(r.children_in_therapy_rate).toBe(0);
+    expect(r.children_in_therapy_rate).toBeNull();
   });
 
   it("child voice rate with 0 total logs is 0", () => {
     const r = computeTraumaTherapy(baseInput({ logs: [] }));
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.child_voice_rate).toBeNull();
   });
 });
 

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -148,10 +149,10 @@ export function HomePeerDynamicsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.entry_profile.positive_ratio >= 50 ? "text-[--cs-success]" :
-                  d.entry_profile.positive_ratio >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.entry_profile.positive_ratio, 50) ? "text-[--cs-success]" :
+                  meets(d.entry_profile.positive_ratio, 30) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.entry_profile.positive_ratio}%
+                  {formatRate(d.entry_profile.positive_ratio)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Positive %</p>

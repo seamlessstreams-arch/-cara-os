@@ -5,6 +5,8 @@
 // CHR 2015 Reg 40. PIDA 1998. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface WhistleblowingRecordInput {
@@ -51,9 +53,12 @@ export interface WhistleblowingResult {
   headline: string;
   total_concerns: number;
   open_concerns: number;
-  resolution_rate: number;
-  lessons_learned_rate: number;
-  staff_confidence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolution_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessons_learned_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_confidence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -81,10 +86,6 @@ function toRating(score: number): WhistleblowingRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeWhistleblowingTransparency(
@@ -100,9 +101,9 @@ export function computeWhistleblowingTransparency(
       headline: "No staff data available to assess whistleblowing transparency.",
       total_concerns: 0,
       open_concerns: 0,
-      resolution_rate: 0,
-      lessons_learned_rate: 0,
-      staff_confidence_rate: 0,
+      resolution_rate: null,
+      lessons_learned_rate: null,
+      staff_confidence_rate: null,
       strengths: [],
       concerns: [
         "No staff data available — whistleblowing culture cannot be assessed.",
@@ -136,28 +137,28 @@ export function computeWhistleblowingTransparency(
   const resolvedOrClosed = records.filter(
     (r) => r.status === "resolved" || r.status === "closed_no_action",
   ).length;
-  const resolutionRate = pct(resolvedOrClosed, totalConcerns);
+  const resolutionRate = rate(resolvedOrClosed, totalConcerns);
 
   const withLessons = records.filter((r) => r.has_lessons_learned).length;
-  const lessonsLearnedRate = pct(withLessons, totalConcerns);
+  const lessonsLearnedRate = rate(withLessons, totalConcerns);
 
   const confidentStaff = culture.filter(
     (c) => c.feels_confident_to_report,
   ).length;
-  const staffConfidenceRate = pct(confidentStaff, culture.length);
+  const staffConfidenceRate = rate(confidentStaff, culture.length);
 
   const policyRead = culture.filter(
     (c) => c.whistleblowing_policy_read,
   ).length;
-  const policyAwarenessRate = pct(policyRead, culture.length);
+  const policyAwarenessRate = rate(policyRead, culture.length);
 
   const knowsHow = culture.filter((c) => c.knows_how_to_report).length;
-  const reportingKnowledgeRate = pct(knowsHow, culture.length);
+  const reportingKnowledgeRate = rate(knowsHow, culture.length);
 
   const withProtection = records.filter(
     (r) => r.protection_measures_count > 0,
   ).length;
-  const protectionRate = pct(withProtection, totalConcerns);
+  const protectionRate = rate(withProtection, totalConcerns);
 
   // ── Scoring ───────────────────────────────────────────────────────────
   // Base 52, 6 modifiers (max ~30 bonus)
@@ -166,11 +167,11 @@ export function computeWhistleblowingTransparency(
   // 1. Resolution rate (±5)
   if (totalConcerns === 0) {
     score += 3;
-  } else if (resolutionRate >= 90) {
+  } else if (meets(resolutionRate, 90)) {
     score += 5;
-  } else if (resolutionRate >= 70) {
+  } else if (meets(resolutionRate, 70)) {
     score += 2;
-  } else if (resolutionRate >= 40) {
+  } else if (meets(resolutionRate, 40)) {
     score += 0;
   } else {
     score -= 5;
@@ -179,33 +180,33 @@ export function computeWhistleblowingTransparency(
   // 2. Lessons learned (±6/-5)
   if (totalConcerns === 0) {
     score += 3;
-  } else if (lessonsLearnedRate >= 90) {
+  } else if (meets(lessonsLearnedRate, 90)) {
     score += 6;
-  } else if (lessonsLearnedRate >= 70) {
+  } else if (meets(lessonsLearnedRate, 70)) {
     score += 3;
-  } else if (lessonsLearnedRate >= 40) {
+  } else if (meets(lessonsLearnedRate, 40)) {
     score += 0;
   } else {
     score -= 5;
   }
 
   // 3. Staff confidence (±5/-4)
-  if (staffConfidenceRate >= 90) {
+  if (meets(staffConfidenceRate, 90)) {
     score += 5;
-  } else if (staffConfidenceRate >= 70) {
+  } else if (meets(staffConfidenceRate, 70)) {
     score += 2;
-  } else if (staffConfidenceRate >= 40) {
+  } else if (meets(staffConfidenceRate, 40)) {
     score += 0;
   } else {
     score -= 4;
   }
 
   // 4. Policy awareness (±5/-5)
-  if (policyAwarenessRate >= 95) {
+  if (meets(policyAwarenessRate, 95)) {
     score += 5;
-  } else if (policyAwarenessRate >= 80) {
+  } else if (meets(policyAwarenessRate, 80)) {
     score += 2;
-  } else if (policyAwarenessRate >= 50) {
+  } else if (meets(policyAwarenessRate, 50)) {
     score += 0;
   } else {
     score -= 5;
@@ -214,22 +215,22 @@ export function computeWhistleblowingTransparency(
   // 5. Protection measures (±4/-4)
   if (totalConcerns === 0) {
     score += 2;
-  } else if (protectionRate >= 90) {
+  } else if (meets(protectionRate, 90)) {
     score += 4;
-  } else if (protectionRate >= 60) {
+  } else if (meets(protectionRate, 60)) {
     score += 1;
-  } else if (protectionRate >= 30) {
+  } else if (meets(protectionRate, 30)) {
     score += 0;
   } else {
     score -= 4;
   }
 
   // 6. Reporting knowledge (±5/-5)
-  if (reportingKnowledgeRate >= 95) {
+  if (meets(reportingKnowledgeRate, 95)) {
     score += 5;
-  } else if (reportingKnowledgeRate >= 80) {
+  } else if (meets(reportingKnowledgeRate, 80)) {
     score += 2;
-  } else if (reportingKnowledgeRate >= 50) {
+  } else if (meets(reportingKnowledgeRate, 50)) {
     score += 0;
   } else {
     score -= 5;
@@ -241,37 +242,37 @@ export function computeWhistleblowingTransparency(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (resolutionRate >= 90 && totalConcerns > 0) {
+  if (meets(resolutionRate, 90) && totalConcerns > 0) {
     strengths.push(
-      `${resolutionRate}% of whistleblowing concerns resolved — demonstrates robust follow-through.`,
+      `${formatRate(resolutionRate)} of whistleblowing concerns resolved — demonstrates robust follow-through.`,
     );
   }
-  if (lessonsLearnedRate >= 90 && totalConcerns > 0) {
+  if (meets(lessonsLearnedRate, 90) && totalConcerns > 0) {
     strengths.push(
-      `Lessons learned documented in ${lessonsLearnedRate}% of concerns — reflective practice embedded.`,
+      `Lessons learned documented in ${formatRate(lessonsLearnedRate)} of concerns — reflective practice embedded.`,
     );
   }
-  if (staffConfidenceRate >= 90) {
+  if (meets(staffConfidenceRate, 90)) {
     strengths.push(
-      `${staffConfidenceRate}% of staff feel confident to raise whistleblowing concerns — strong transparency culture.`,
+      `${formatRate(staffConfidenceRate)} of staff feel confident to raise whistleblowing concerns — strong transparency culture.`,
     );
   }
-  if (policyAwarenessRate >= 95) {
+  if (meets(policyAwarenessRate, 95)) {
     strengths.push(
-      `${policyAwarenessRate}% of staff have read the whistleblowing policy — excellent awareness.`,
+      `${formatRate(policyAwarenessRate)} of staff have read the whistleblowing policy — excellent awareness.`,
     );
   }
-  if (protectionRate >= 90 && totalConcerns > 0) {
+  if (meets(protectionRate, 90) && totalConcerns > 0) {
     strengths.push(
-      `Protection measures in place for ${protectionRate}% of concerns — whistleblowers are safeguarded.`,
+      `Protection measures in place for ${formatRate(protectionRate)} of concerns — whistleblowers are safeguarded.`,
     );
   }
-  if (reportingKnowledgeRate >= 95) {
+  if (meets(reportingKnowledgeRate, 95)) {
     strengths.push(
-      `${reportingKnowledgeRate}% of staff know how to report — reporting pathways are well understood.`,
+      `${formatRate(reportingKnowledgeRate)} of staff know how to report — reporting pathways are well understood.`,
     );
   }
-  if (totalConcerns === 0 && staffConfidenceRate >= 90) {
+  if (totalConcerns === 0 && meets(staffConfidenceRate, 90)) {
     strengths.push(
       "No whistleblowing concerns raised and staff confidence is high — this suggests a well-managed, transparent environment.",
     );
@@ -280,34 +281,34 @@ export function computeWhistleblowingTransparency(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (resolutionRate < 70 && totalConcerns > 0) {
+  if (below(resolutionRate, 70) && totalConcerns > 0) {
     concerns.push(
-      `Only ${resolutionRate}% of whistleblowing concerns have been resolved — unresolved concerns undermine trust.`,
+      `Only ${formatRate(resolutionRate)} of whistleblowing concerns have been resolved — unresolved concerns undermine trust.`,
     );
   }
-  if (lessonsLearnedRate < 70 && totalConcerns > 0) {
+  if (below(lessonsLearnedRate, 70) && totalConcerns > 0) {
     concerns.push(
-      `Lessons learned documented in only ${lessonsLearnedRate}% of concerns — the home is not learning from disclosures.`,
+      `Lessons learned documented in only ${formatRate(lessonsLearnedRate)} of concerns — the home is not learning from disclosures.`,
     );
   }
-  if (staffConfidenceRate < 70) {
+  if (below(staffConfidenceRate, 70)) {
     concerns.push(
-      `Only ${staffConfidenceRate}% of staff feel confident to raise concerns — this suggests a culture that does not support transparency.`,
+      `Only ${formatRate(staffConfidenceRate)} of staff feel confident to raise concerns — this suggests a culture that does not support transparency.`,
     );
   }
-  if (policyAwarenessRate < 80) {
+  if (below(policyAwarenessRate, 80)) {
     concerns.push(
-      `Only ${policyAwarenessRate}% of staff have read the whistleblowing policy — significant awareness gap.`,
+      `Only ${formatRate(policyAwarenessRate)} of staff have read the whistleblowing policy — significant awareness gap.`,
     );
   }
-  if (protectionRate < 60 && totalConcerns > 0) {
+  if (below(protectionRate, 60) && totalConcerns > 0) {
     concerns.push(
-      `Protection measures in place for only ${protectionRate}% of concerns — whistleblowers may feel exposed.`,
+      `Protection measures in place for only ${formatRate(protectionRate)} of concerns — whistleblowers may feel exposed.`,
     );
   }
-  if (reportingKnowledgeRate < 80) {
+  if (below(reportingKnowledgeRate, 80)) {
     concerns.push(
-      `Only ${reportingKnowledgeRate}% of staff know how to report — reporting pathways are unclear.`,
+      `Only ${formatRate(reportingKnowledgeRate)} of staff know how to report — reporting pathways are unclear.`,
     );
   }
   if (openConcerns > 0) {
@@ -330,7 +331,7 @@ export function computeWhistleblowingTransparency(
   const recs: WhistleblowingResult["recommendations"] = [];
   let rank = 1;
 
-  if (staffConfidenceRate < 70 && rank <= 5) {
+  if (below(staffConfidenceRate, 70) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -339,7 +340,7 @@ export function computeWhistleblowingTransparency(
       regulatory_ref: "PIDA 1998",
     });
   }
-  if (policyAwarenessRate < 80 && rank <= 5) {
+  if (below(policyAwarenessRate, 80) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -348,7 +349,7 @@ export function computeWhistleblowingTransparency(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (resolutionRate < 70 && totalConcerns > 0 && rank <= 5) {
+  if (below(resolutionRate, 70) && totalConcerns > 0 && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -357,7 +358,7 @@ export function computeWhistleblowingTransparency(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (lessonsLearnedRate < 70 && totalConcerns > 0 && rank <= 5) {
+  if (below(lessonsLearnedRate, 70) && totalConcerns > 0 && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -366,7 +367,7 @@ export function computeWhistleblowingTransparency(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (reportingKnowledgeRate < 80 && rank <= 5) {
+  if (below(reportingKnowledgeRate, 80) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -375,7 +376,7 @@ export function computeWhistleblowingTransparency(
       regulatory_ref: "PIDA 1998",
     });
   }
-  if (protectionRate < 60 && totalConcerns > 0 && rank <= 5) {
+  if (below(protectionRate, 60) && totalConcerns > 0 && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -401,33 +402,33 @@ export function computeWhistleblowingTransparency(
   const insights: WhistleblowingResult["insights"] = [];
 
   if (
-    staffConfidenceRate >= 90 &&
-    policyAwarenessRate >= 95 &&
-    reportingKnowledgeRate >= 95
+    meets(staffConfidenceRate, 90) &&
+    meets(policyAwarenessRate, 95) &&
+    meets(reportingKnowledgeRate, 95)
   ) {
     insights.push({
-      text: `Staff confidence at ${staffConfidenceRate}%, policy awareness at ${policyAwarenessRate}%, and reporting knowledge at ${reportingKnowledgeRate}% — this home has built an exemplary transparency culture that Ofsted will recognise as a significant strength.`,
+      text: `Staff confidence at ${formatRate(staffConfidenceRate)}, policy awareness at ${formatRate(policyAwarenessRate)}, and reporting knowledge at ${formatRate(reportingKnowledgeRate)} — this home has built an exemplary transparency culture that Ofsted will recognise as a significant strength.`,
       severity: "positive",
     });
   }
 
-  if (staffConfidenceRate < 50) {
+  if (below(staffConfidenceRate, 50)) {
     insights.push({
-      text: `Only ${staffConfidenceRate}% of staff feel confident to raise concerns. This is a serious cultural issue — Ofsted will view low confidence as evidence that the home may not be safe for whistleblowers.`,
+      text: `Only ${formatRate(staffConfidenceRate)} of staff feel confident to raise concerns. This is a serious cultural issue — Ofsted will view low confidence as evidence that the home may not be safe for whistleblowers.`,
       severity: "critical",
     });
   }
 
-  if (totalConcerns > 0 && resolutionRate >= 90 && lessonsLearnedRate >= 90) {
+  if (totalConcerns > 0 && meets(resolutionRate, 90) && meets(lessonsLearnedRate, 90)) {
     insights.push({
-      text: `${resolutionRate}% resolution rate with ${lessonsLearnedRate}% lessons learned — whistleblowing concerns are being handled with rigour and are driving organisational improvement.`,
+      text: `${formatRate(resolutionRate)} resolution rate with ${formatRate(lessonsLearnedRate)} lessons learned — whistleblowing concerns are being handled with rigour and are driving organisational improvement.`,
       severity: "positive",
     });
   }
 
   if (
     totalConcerns === 0 &&
-    staffConfidenceRate < 70
+    below(staffConfidenceRate, 70)
   ) {
     insights.push({
       text: "No whistleblowing concerns on record combined with low staff confidence suggests staff may be reluctant to report — this is a red flag for Ofsted.",
@@ -448,7 +449,7 @@ export function computeWhistleblowingTransparency(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding whistleblowing transparency — ${staffConfidenceRate}% staff confidence, ${policyAwarenessRate}% policy awareness.`;
+    headline = `Outstanding whistleblowing transparency — ${formatRate(staffConfidenceRate)} staff confidence, ${formatRate(policyAwarenessRate)} policy awareness.`;
   } else if (rating === "good") {
     headline = `Good whistleblowing transparency — staff are generally confident and aware, with minor gaps to address.`;
   } else if (rating === "adequate") {
