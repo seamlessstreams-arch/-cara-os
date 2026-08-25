@@ -13,7 +13,7 @@
 //             environmentalQualityRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -159,12 +159,18 @@ export interface GardenOutdoorResult {
   total_space_utilisation_records: number;
   total_child_involvement_records: number;
   total_environmental_quality_records: number;
-  garden_condition_rate: number;
-  equipment_safety_rate: number;
-  space_utilisation_rate: number;
-  child_involvement_rate: number;
-  environmental_quality_rate: number;
-  child_enjoyment_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  garden_condition_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  equipment_safety_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  space_utilisation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_involvement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmental_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_enjoyment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: GardenOutdoorRecommendation[];
@@ -172,10 +178,6 @@ export interface GardenOutdoorResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -204,12 +206,12 @@ function emptyResult(
     total_space_utilisation_records: 0,
     total_child_involvement_records: 0,
     total_environmental_quality_records: 0,
-    garden_condition_rate: 0,
-    equipment_safety_rate: 0,
-    space_utilisation_rate: 0,
-    child_involvement_rate: 0,
-    environmental_quality_rate: 0,
-    child_enjoyment_rate: 0,
+    garden_condition_rate: null,
+    equipment_safety_rate: null,
+    space_utilisation_rate: null,
+    child_involvement_rate: null,
+    environmental_quality_rate: null,
+    child_enjoyment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -291,12 +293,12 @@ export function computeGardenOutdoorSpaceMaintenance(
   const goodConditionCount = garden_condition_records.filter(
     (g) => g.condition_rating >= 4,
   ).length;
-  const gardenConditionRate = pct(goodConditionCount, totalGardenConditionRecords);
+  const gardenConditionRate = rate(goodConditionCount, totalGardenConditionRecords);
 
   const goodCleanlinessCount = garden_condition_records.filter(
     (g) => g.cleanliness_rating >= 4,
   ).length;
-  const cleanlinessRate = pct(goodCleanlinessCount, totalGardenConditionRecords);
+  const cleanlinessRate = rate(goodCleanlinessCount, totalGardenConditionRecords);
 
   const hazardsFoundCount = garden_condition_records.filter(
     (g) => g.safety_hazards_found,
@@ -305,7 +307,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const hazardsResolvedCount = garden_condition_records.filter(
     (g) => g.safety_hazards_found && g.hazards_resolved,
   ).length;
-  const hazardResolutionRate = pct(hazardsResolvedCount, hazardsFoundCount);
+  const hazardResolutionRate = rate(hazardsResolvedCount, hazardsFoundCount);
 
   const maintenanceRequiredCount = garden_condition_records.filter(
     (g) => g.maintenance_required,
@@ -313,7 +315,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const maintenanceCompletedCount = garden_condition_records.filter(
     (g) => g.maintenance_required && g.maintenance_completed,
   ).length;
-  const maintenanceCompletionRate = pct(maintenanceCompletedCount, maintenanceRequiredCount);
+  const maintenanceCompletionRate = rate(maintenanceCompletedCount, maintenanceRequiredCount);
 
   // --- Equipment safety metrics ---
   const totalEquipmentSafetyRecords = equipment_safety_records.length;
@@ -321,7 +323,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const safetyCompliantCount = equipment_safety_records.filter(
     (e) => e.safety_compliant,
   ).length;
-  const equipmentSafetyRate = pct(safetyCompliantCount, totalEquipmentSafetyRecords);
+  const equipmentSafetyRate = rate(safetyCompliantCount, totalEquipmentSafetyRecords);
 
   const defectsFoundCount = equipment_safety_records.filter(
     (e) => e.defects_found,
@@ -330,22 +332,22 @@ export function computeGardenOutdoorSpaceMaintenance(
   const defectsResolvedCount = equipment_safety_records.filter(
     (e) => e.defects_found && e.defects_resolved,
   ).length;
-  const defectResolutionRate = pct(defectsResolvedCount, defectsFoundCount);
+  const defectResolutionRate = rate(defectsResolvedCount, defectsFoundCount);
 
   const surfaceSafeCount = equipment_safety_records.filter(
     (e) => e.surface_condition_safe,
   ).length;
-  const surfaceSafeRate = pct(surfaceSafeCount, totalEquipmentSafetyRecords);
+  const surfaceSafeRate = rate(surfaceSafeCount, totalEquipmentSafetyRecords);
 
   const anchoringSecureCount = equipment_safety_records.filter(
     (e) => e.anchoring_secure,
   ).length;
-  const anchoringSecureRate = pct(anchoringSecureCount, totalEquipmentSafetyRecords);
+  const anchoringSecureRate = rate(anchoringSecureCount, totalEquipmentSafetyRecords);
 
   const hasProfessionalInspection = equipment_safety_records.filter(
     (e) => e.last_professional_inspection !== null && e.last_professional_inspection !== "",
   ).length;
-  const professionalInspectionRate = pct(hasProfessionalInspection, totalEquipmentSafetyRecords);
+  const professionalInspectionRate = rate(hasProfessionalInspection, totalEquipmentSafetyRecords);
 
   // --- Space utilisation metrics ---
   const totalSpaceUtilisationRecords = space_utilisation_records.length;
@@ -358,17 +360,17 @@ export function computeGardenOutdoorSpaceMaintenance(
     (sum, s) => sum + s.total_children_available,
     0,
   );
-  const spaceUtilisationRate = pct(totalChildrenUsing, totalChildrenAvailable);
+  const spaceUtilisationRate = rate(totalChildrenUsing, totalChildrenAvailable);
 
   const staffSupervisedCount = space_utilisation_records.filter(
     (s) => s.staff_supervised,
   ).length;
-  const staffSupervisionRate = pct(staffSupervisedCount, totalSpaceUtilisationRecords);
+  const staffSupervisionRate = rate(staffSupervisedCount, totalSpaceUtilisationRecords);
 
   const inclusiveAccessCount = space_utilisation_records.filter(
     (s) => s.inclusive_access,
   ).length;
-  const inclusiveAccessRate = pct(inclusiveAccessCount, totalSpaceUtilisationRecords);
+  const inclusiveAccessRate = rate(inclusiveAccessCount, totalSpaceUtilisationRecords);
 
   const enjoymentObservedCount = space_utilisation_records.filter(
     (s) => s.enjoyment_observed,
@@ -385,22 +387,22 @@ export function computeGardenOutdoorSpaceMaintenance(
   const engagedInvolvementCount = child_involvement_records.filter(
     (c) => c.engaged,
   ).length;
-  const childInvolvementRate = pct(engagedInvolvementCount, totalChildInvolvementRecords);
+  const childInvolvementRate = rate(engagedInvolvementCount, totalChildInvolvementRecords);
 
   const uniqueChildrenInvolved = new Set(
     child_involvement_records.filter((c) => c.engaged).map((c) => c.child_id),
   ).size;
-  const childCoverage = total_children > 0 ? pct(uniqueChildrenInvolved, total_children) : 0;
+  const childCoverage = total_children > 0 ? rate(uniqueChildrenInvolved, total_children) : 0;
 
   const therapeuticBenefitCount = child_involvement_records.filter(
     (c) => c.therapeutic_benefit_noted,
   ).length;
-  const therapeuticBenefitRate = pct(therapeuticBenefitCount, totalChildInvolvementRecords);
+  const therapeuticBenefitRate = rate(therapeuticBenefitCount, totalChildInvolvementRecords);
 
   const produceHarvestedCount = child_involvement_records.filter(
     (c) => c.produce_harvested,
   ).length;
-  const produceHarvestedRate = pct(produceHarvestedCount, totalChildInvolvementRecords);
+  const produceHarvestedRate = rate(produceHarvestedCount, totalChildInvolvementRecords);
 
   const childChoseCount = child_involvement_records.filter(
     (c) => c.child_chose_activity,
@@ -409,7 +411,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const linkedToCarePlanCount = child_involvement_records.filter(
     (c) => c.linked_to_care_plan,
   ).length;
-  const carePlanLinkRate = pct(linkedToCarePlanCount, totalChildInvolvementRecords);
+  const carePlanLinkRate = rate(linkedToCarePlanCount, totalChildInvolvementRecords);
 
   // fab-0: null when no involvement records to average.
   const avgEnjoymentLevel: number | null =
@@ -427,7 +429,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const meetsStandardCount = environmental_quality_records.filter(
     (e) => e.meets_standard,
   ).length;
-  const environmentalQualityRate = pct(meetsStandardCount, totalEnvironmentalQualityRecords);
+  const environmentalQualityRate = rate(meetsStandardCount, totalEnvironmentalQualityRecords);
 
   const improvementNeededCount = environmental_quality_records.filter(
     (e) => e.improvement_needed,
@@ -435,17 +437,17 @@ export function computeGardenOutdoorSpaceMaintenance(
   const improvementCompletedCount = environmental_quality_records.filter(
     (e) => e.improvement_needed && e.improvement_completed,
   ).length;
-  const improvementCompletionRate = pct(improvementCompletedCount, improvementNeededCount);
+  const improvementCompletionRate = rate(improvementCompletedCount, improvementNeededCount);
 
   const sensoryBenefitCount = environmental_quality_records.filter(
     (e) => e.sensory_benefit,
   ).length;
-  const sensoryBenefitRate = pct(sensoryBenefitCount, totalEnvironmentalQualityRecords);
+  const sensoryBenefitRate = rate(sensoryBenefitCount, totalEnvironmentalQualityRecords);
 
   const wildlifeObservedCount = environmental_quality_records.filter(
     (e) => e.wildlife_observed,
   ).length;
-  const wildlifeRate = pct(wildlifeObservedCount, totalEnvironmentalQualityRecords);
+  const wildlifeRate = rate(wildlifeObservedCount, totalEnvironmentalQualityRecords);
 
   // --- Child enjoyment composite ---
   // Composite of enjoyment observed in spaces + child enjoyment level in involvement + child choice
@@ -470,61 +472,61 @@ export function computeGardenOutdoorSpaceMaintenance(
 
   const totalEnjoymentNum = childEnjoymentNumerators.reduce((a, b) => a + b, 0);
   const totalEnjoymentDenom = childEnjoymentDenominators.reduce((a, b) => a + b, 0);
-  const childEnjoymentRate = pct(totalEnjoymentNum, totalEnjoymentDenom);
+  const childEnjoymentRate = rate(totalEnjoymentNum, totalEnjoymentDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: gardenConditionRate (>=90: +4, >=70: +2) ---
-  if (gardenConditionRate >= 90) score += 4;
-  else if (gardenConditionRate >= 70) score += 2;
+  if (meets(gardenConditionRate, 90)) score += 4;
+  else if (meets(gardenConditionRate, 70)) score += 2;
 
   // --- Bonus 2: equipmentSafetyRate (>=95: +5, >=80: +3) ---
-  if (equipmentSafetyRate >= 95) score += 5;
-  else if (equipmentSafetyRate >= 80) score += 3;
+  if (meets(equipmentSafetyRate, 95)) score += 5;
+  else if (meets(equipmentSafetyRate, 80)) score += 3;
 
   // --- Bonus 3: spaceUtilisationRate (>=80: +3, >=60: +1) ---
-  if (spaceUtilisationRate >= 80) score += 3;
-  else if (spaceUtilisationRate >= 60) score += 1;
+  if (meets(spaceUtilisationRate, 80)) score += 3;
+  else if (meets(spaceUtilisationRate, 60)) score += 1;
 
   // --- Bonus 4: childInvolvementRate (>=90: +3, >=70: +1) ---
-  if (childInvolvementRate >= 90) score += 3;
-  else if (childInvolvementRate >= 70) score += 1;
+  if (meets(childInvolvementRate, 90)) score += 3;
+  else if (meets(childInvolvementRate, 70)) score += 1;
 
   // --- Bonus 5: environmentalQualityRate (>=90: +3, >=70: +1) ---
-  if (environmentalQualityRate >= 90) score += 3;
-  else if (environmentalQualityRate >= 70) score += 1;
+  if (meets(environmentalQualityRate, 90)) score += 3;
+  else if (meets(environmentalQualityRate, 70)) score += 1;
 
   // --- Bonus 6: childEnjoymentRate (>=90: +3, >=70: +1) ---
-  if (childEnjoymentRate >= 90) score += 3;
-  else if (childEnjoymentRate >= 70) score += 1;
+  if (meets(childEnjoymentRate, 90)) score += 3;
+  else if (meets(childEnjoymentRate, 70)) score += 1;
 
   // --- Bonus 7: hazardResolutionRate (>=95: +3, >=80: +1) ---
-  if (hazardResolutionRate >= 95 && hazardsFoundCount > 0) score += 3;
-  else if (hazardResolutionRate >= 80 && hazardsFoundCount > 0) score += 1;
+  if (meets(hazardResolutionRate, 95) && hazardsFoundCount > 0) score += 3;
+  else if (meets(hazardResolutionRate, 80) && hazardsFoundCount > 0) score += 1;
 
   // --- Bonus 8: defectResolutionRate (>=95: +2, >=80: +1) ---
-  if (defectResolutionRate >= 95 && defectsFoundCount > 0) score += 2;
-  else if (defectResolutionRate >= 80 && defectsFoundCount > 0) score += 1;
+  if (meets(defectResolutionRate, 95) && defectsFoundCount > 0) score += 2;
+  else if (meets(defectResolutionRate, 80) && defectsFoundCount > 0) score += 1;
 
   // --- Bonus 9: avgEnjoymentLevel (>=4.0: +2, >=3.0: +1) ---
-  if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 4.0)) score += 2;
+  if (above(totalChildInvolvementRecords, 0) && meets(avgEnjoymentLevel, 4.0)) score += 2;
   else if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 3.0)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // equipmentSafetyRate < 50 → -6 (guarded)
-  if (equipmentSafetyRate < 50 && equipment_safety_records.length > 0) score -= 6;
+  if (below(equipmentSafetyRate, 50) && equipment_safety_records.length > 0) score -= 6;
 
   // gardenConditionRate < 40 → -5 (guarded)
-  if (gardenConditionRate < 40 && garden_condition_records.length > 0) score -= 5;
+  if (below(gardenConditionRate, 40) && garden_condition_records.length > 0) score -= 5;
 
   // childInvolvementRate < 30 → -4 (guarded)
-  if (childInvolvementRate < 30 && child_involvement_records.length > 0) score -= 4;
+  if (below(childInvolvementRate, 30) && child_involvement_records.length > 0) score -= 4;
 
   // environmentalQualityRate < 40 → -3 (guarded)
-  if (environmentalQualityRate < 40 && environmental_quality_records.length > 0) score -= 3;
+  if (below(environmentalQualityRate, 40) && environmental_quality_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -534,91 +536,91 @@ export function computeGardenOutdoorSpaceMaintenance(
 
   const strengths: string[] = [];
 
-  if (gardenConditionRate >= 90 && totalGardenConditionRecords > 0) {
+  if (meets(gardenConditionRate, 90) && totalGardenConditionRecords > 0) {
     strengths.push(
       `${gardenConditionRate}% of garden areas in good or excellent condition — the home maintains high-quality outdoor spaces that provide a positive living environment for children.`,
     );
-  } else if (gardenConditionRate >= 70 && totalGardenConditionRecords > 0) {
+  } else if (meets(gardenConditionRate, 70) && totalGardenConditionRecords > 0) {
     strengths.push(
       `${gardenConditionRate}% garden condition rate — the home generally maintains its outdoor spaces to a good standard, supporting children's access to quality outside areas.`,
     );
   }
 
-  if (equipmentSafetyRate >= 95 && totalEquipmentSafetyRecords > 0) {
+  if (meets(equipmentSafetyRate, 95) && totalEquipmentSafetyRecords > 0) {
     strengths.push(
       `${equipmentSafetyRate}% equipment safety compliance — outdoor play equipment is consistently maintained to safety standards, ensuring children can play safely.`,
     );
-  } else if (equipmentSafetyRate >= 80 && totalEquipmentSafetyRecords > 0) {
+  } else if (meets(equipmentSafetyRate, 80) && totalEquipmentSafetyRecords > 0) {
     strengths.push(
       `${equipmentSafetyRate}% equipment safety compliance rate — the home demonstrates strong commitment to outdoor play equipment safety through regular checking and maintenance.`,
     );
   }
 
-  if (spaceUtilisationRate >= 80 && totalSpaceUtilisationRecords > 0) {
+  if (meets(spaceUtilisationRate, 80) && totalSpaceUtilisationRecords > 0) {
     strengths.push(
       `${spaceUtilisationRate}% outdoor space utilisation — children are actively using the home's outdoor spaces, indicating well-designed, accessible, and inviting environments.`,
     );
-  } else if (spaceUtilisationRate >= 60 && totalSpaceUtilisationRecords > 0) {
+  } else if (meets(spaceUtilisationRate, 60) && totalSpaceUtilisationRecords > 0) {
     strengths.push(
       `${spaceUtilisationRate}% space utilisation rate — outdoor spaces are being used regularly by children, demonstrating good access and encouragement of outdoor activity.`,
     );
   }
 
-  if (childInvolvementRate >= 90 && totalChildInvolvementRecords > 0) {
+  if (meets(childInvolvementRate, 90) && totalChildInvolvementRecords > 0) {
     strengths.push(
       `${childInvolvementRate}% child engagement in garden activities — children are enthusiastically involved in gardening, developing practical skills, responsibility, and connection with nature.`,
     );
-  } else if (childInvolvementRate >= 70 && totalChildInvolvementRecords > 0) {
+  } else if (meets(childInvolvementRate, 70) && totalChildInvolvementRecords > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in gardening activities — good levels of children's engagement with growing, nature, and outdoor responsibilities.`,
     );
   }
 
-  if (environmentalQualityRate >= 90 && totalEnvironmentalQualityRecords > 0) {
+  if (meets(environmentalQualityRate, 90) && totalEnvironmentalQualityRecords > 0) {
     strengths.push(
       `${environmentalQualityRate}% of environmental quality assessments meet standards — the home provides excellent outdoor environmental quality supporting children's wellbeing and sensory experiences.`,
     );
-  } else if (environmentalQualityRate >= 70 && totalEnvironmentalQualityRecords > 0) {
+  } else if (meets(environmentalQualityRate, 70) && totalEnvironmentalQualityRecords > 0) {
     strengths.push(
       `${environmentalQualityRate}% environmental quality rate — the outdoor environment generally meets quality standards, providing a positive space for children.`,
     );
   }
 
-  if (childEnjoymentRate >= 90 && totalEnjoymentDenom > 0) {
+  if (meets(childEnjoymentRate, 90) && totalEnjoymentDenom > 0) {
     strengths.push(
       `${childEnjoymentRate}% child enjoyment across outdoor activities — children genuinely enjoy their time in the garden and outdoor spaces, indicating these areas are meeting their needs and interests.`,
     );
-  } else if (childEnjoymentRate >= 70 && totalEnjoymentDenom > 0) {
+  } else if (meets(childEnjoymentRate, 70) && totalEnjoymentDenom > 0) {
     strengths.push(
       `${childEnjoymentRate}% child enjoyment rate in outdoor activities — most children show positive responses to garden and outdoor experiences.`,
     );
   }
 
-  if (hazardResolutionRate >= 95 && hazardsFoundCount > 0) {
+  if (meets(hazardResolutionRate, 95) && hazardsFoundCount > 0) {
     strengths.push(
       `${hazardResolutionRate}% of garden safety hazards resolved — the home responds effectively to identified risks, maintaining safe outdoor spaces for children.`,
     );
-  } else if (hazardResolutionRate >= 80 && hazardsFoundCount > 0) {
+  } else if (meets(hazardResolutionRate, 80) && hazardsFoundCount > 0) {
     strengths.push(
       `${hazardResolutionRate}% hazard resolution rate — the home generally addresses identified garden safety hazards promptly.`,
     );
   }
 
-  if (defectResolutionRate >= 95 && defectsFoundCount > 0) {
+  if (meets(defectResolutionRate, 95) && defectsFoundCount > 0) {
     strengths.push(
       `${defectResolutionRate}% of equipment defects resolved — identified equipment issues are being addressed promptly, maintaining safe play environments.`,
     );
-  } else if (defectResolutionRate >= 80 && defectsFoundCount > 0) {
+  } else if (meets(defectResolutionRate, 80) && defectsFoundCount > 0) {
     strengths.push(
       `${defectResolutionRate}% equipment defect resolution — most identified equipment issues are addressed, supporting ongoing safety.`,
     );
   }
 
-  if (maintenanceCompletionRate >= 90 && maintenanceRequiredCount > 0) {
+  if (meets(maintenanceCompletionRate, 90) && maintenanceRequiredCount > 0) {
     strengths.push(
       `${maintenanceCompletionRate}% of required garden maintenance completed — the home follows through on maintenance tasks to keep outdoor spaces in good order.`,
     );
-  } else if (maintenanceCompletionRate >= 70 && maintenanceRequiredCount > 0) {
+  } else if (meets(maintenanceCompletionRate, 70) && maintenanceRequiredCount > 0) {
     strengths.push(
       `${maintenanceCompletionRate}% maintenance completion rate — the home generally completes required garden maintenance tasks.`,
     );
@@ -634,41 +636,41 @@ export function computeGardenOutdoorSpaceMaintenance(
     );
   }
 
-  if (childCoverage >= 100 && total_children > 0) {
+  if (meets(childCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has been involved in garden activities — outdoor engagement is embedded in the home's approach to children's development and daily life.",
     );
-  } else if (childCoverage >= 80 && total_children > 0) {
+  } else if (meets(childCoverage, 80) && total_children > 0) {
     strengths.push(
       `${childCoverage}% of children have participated in garden activities — strong coverage ensuring most children benefit from outdoor engagement and nature-based experiences.`,
     );
   }
 
-  if (therapeuticBenefitRate >= 70 && totalChildInvolvementRecords > 0) {
+  if (meets(therapeuticBenefitRate, 70) && totalChildInvolvementRecords > 0) {
     strengths.push(
       `Therapeutic benefit noted in ${therapeuticBenefitRate}% of garden activities — outdoor engagement is contributing meaningfully to children's emotional wellbeing and regulation.`,
     );
   }
 
-  if (inclusiveAccessRate >= 90 && totalSpaceUtilisationRecords > 0) {
+  if (meets(inclusiveAccessRate, 90) && totalSpaceUtilisationRecords > 0) {
     strengths.push(
       `${inclusiveAccessRate}% inclusive access across outdoor spaces — the home ensures outdoor areas are accessible to all children regardless of ability or need.`,
     );
   }
 
-  if (wildlifeRate >= 70 && totalEnvironmentalQualityRecords > 0) {
+  if (meets(wildlifeRate, 70) && totalEnvironmentalQualityRecords > 0) {
     strengths.push(
       `Wildlife observed in ${wildlifeRate}% of environmental quality assessments — the garden supports biodiversity, providing children with direct experiences of nature and wildlife.`,
     );
   }
 
-  if (produceHarvestedRate >= 50 && totalChildInvolvementRecords > 0) {
+  if (meets(produceHarvestedRate, 50) && totalChildInvolvementRecords > 0) {
     strengths.push(
       `Produce harvested in ${produceHarvestedRate}% of garden activities — children experience the full cycle of growing, from planting to harvest, developing practical life skills.`,
     );
   }
 
-  if (carePlanLinkRate >= 60 && totalChildInvolvementRecords > 0) {
+  if (meets(carePlanLinkRate, 60) && totalChildInvolvementRecords > 0) {
     strengths.push(
       `${carePlanLinkRate}% of garden activities linked to care plans — outdoor engagement is purposefully connected to individual children's developmental goals.`,
     );
@@ -678,107 +680,107 @@ export function computeGardenOutdoorSpaceMaintenance(
 
   const concerns: string[] = [];
 
-  if (equipmentSafetyRate < 50 && totalEquipmentSafetyRecords > 0) {
+  if (below(equipmentSafetyRate, 50) && totalEquipmentSafetyRecords > 0) {
     concerns.push(
       `Only ${equipmentSafetyRate}% equipment safety compliance — the majority of outdoor play equipment does not meet safety standards, posing an unacceptable risk to children's physical safety.`,
     );
-  } else if (equipmentSafetyRate < 80 && equipmentSafetyRate >= 50 && totalEquipmentSafetyRecords > 0) {
+  } else if (below(equipmentSafetyRate, 80) && meets(equipmentSafetyRate, 50) && totalEquipmentSafetyRecords > 0) {
     concerns.push(
       `Equipment safety compliance at ${equipmentSafetyRate}% — not all outdoor play equipment meets safety requirements, creating potential risks for children during outdoor play.`,
     );
   }
 
-  if (gardenConditionRate < 40 && totalGardenConditionRecords > 0) {
+  if (below(gardenConditionRate, 40) && totalGardenConditionRecords > 0) {
     concerns.push(
       `Only ${gardenConditionRate}% of garden areas in good condition — outdoor spaces are poorly maintained, failing to provide children with a quality living environment and safe outdoor access.`,
     );
-  } else if (gardenConditionRate < 70 && gardenConditionRate >= 40 && totalGardenConditionRecords > 0) {
+  } else if (below(gardenConditionRate, 70) && meets(gardenConditionRate, 40) && totalGardenConditionRecords > 0) {
     concerns.push(
       `Garden condition rate at ${gardenConditionRate}% — outdoor spaces are not consistently maintained to a good standard, affecting children's experience of their living environment.`,
     );
   }
 
-  if (childInvolvementRate < 30 && totalChildInvolvementRecords > 0) {
+  if (below(childInvolvementRate, 30) && totalChildInvolvementRecords > 0) {
     concerns.push(
       `Only ${childInvolvementRate}% child engagement in garden activities — children are not meaningfully involved in gardening, missing valuable opportunities for skill development, therapeutic benefit, and connection with nature.`,
     );
-  } else if (childInvolvementRate < 70 && childInvolvementRate >= 30 && totalChildInvolvementRecords > 0) {
+  } else if (below(childInvolvementRate, 70) && meets(childInvolvementRate, 30) && totalChildInvolvementRecords > 0) {
     concerns.push(
       `Child involvement in garden activities at ${childInvolvementRate}% — not all children are engaging with outdoor gardening activities, suggesting barriers to participation.`,
     );
   }
 
-  if (environmentalQualityRate < 40 && totalEnvironmentalQualityRecords > 0) {
+  if (below(environmentalQualityRate, 40) && totalEnvironmentalQualityRecords > 0) {
     concerns.push(
       `Only ${environmentalQualityRate}% of environmental quality assessments meet standards — the outdoor environment falls below expected quality, potentially affecting children's wellbeing and enjoyment of outdoor spaces.`,
     );
-  } else if (environmentalQualityRate < 70 && environmentalQualityRate >= 40 && totalEnvironmentalQualityRecords > 0) {
+  } else if (below(environmentalQualityRate, 70) && meets(environmentalQualityRate, 40) && totalEnvironmentalQualityRecords > 0) {
     concerns.push(
       `Environmental quality rate at ${environmentalQualityRate}% — the outdoor environment does not consistently meet quality standards across all assessment areas.`,
     );
   }
 
-  if (spaceUtilisationRate < 40 && totalSpaceUtilisationRecords > 0) {
+  if (below(spaceUtilisationRate, 40) && totalSpaceUtilisationRecords > 0) {
     concerns.push(
       `Only ${spaceUtilisationRate}% outdoor space utilisation — the garden and outdoor areas are significantly underused, suggesting they may be inaccessible, uninviting, or not promoted to children.`,
     );
-  } else if (spaceUtilisationRate < 60 && spaceUtilisationRate >= 40 && totalSpaceUtilisationRecords > 0) {
+  } else if (below(spaceUtilisationRate, 60) && meets(spaceUtilisationRate, 40) && totalSpaceUtilisationRecords > 0) {
     concerns.push(
       `Space utilisation at ${spaceUtilisationRate}% — outdoor spaces are not being fully used by children, indicating potential barriers to access or engagement.`,
     );
   }
 
-  if (childEnjoymentRate < 40 && totalEnjoymentDenom > 0) {
+  if (below(childEnjoymentRate, 40) && totalEnjoymentDenom > 0) {
     concerns.push(
       `Only ${childEnjoymentRate}% child enjoyment in outdoor activities — children are not finding outdoor experiences enjoyable, which may indicate the spaces or activities do not meet their interests or needs.`,
     );
-  } else if (childEnjoymentRate < 70 && childEnjoymentRate >= 40 && totalEnjoymentDenom > 0) {
+  } else if (below(childEnjoymentRate, 70) && meets(childEnjoymentRate, 40) && totalEnjoymentDenom > 0) {
     concerns.push(
       `Child enjoyment in outdoor activities at ${childEnjoymentRate}% — not all children are experiencing positive outdoor encounters, suggesting scope for improvement.`,
     );
   }
 
-  if (hazardResolutionRate < 70 && hazardsFoundCount > 0) {
+  if (below(hazardResolutionRate, 70) && hazardsFoundCount > 0) {
     concerns.push(
       `Only ${hazardResolutionRate}% of identified garden hazards resolved — unresolved safety hazards in outdoor spaces present ongoing risks to children's physical safety.`,
     );
   }
 
-  if (defectResolutionRate < 70 && defectsFoundCount > 0) {
+  if (below(defectResolutionRate, 70) && defectsFoundCount > 0) {
     concerns.push(
       `Only ${defectResolutionRate}% of equipment defects resolved — unresolved defects in outdoor play equipment are a safeguarding concern that must be addressed urgently.`,
     );
   }
 
-  if (maintenanceCompletionRate < 50 && maintenanceRequiredCount > 0) {
+  if (below(maintenanceCompletionRate, 50) && maintenanceRequiredCount > 0) {
     concerns.push(
       `Only ${maintenanceCompletionRate}% of required garden maintenance completed — incomplete maintenance means outdoor spaces deteriorate, affecting children's living environment.`,
     );
-  } else if (maintenanceCompletionRate < 70 && maintenanceCompletionRate >= 50 && maintenanceRequiredCount > 0) {
+  } else if (below(maintenanceCompletionRate, 70) && meets(maintenanceCompletionRate, 50) && maintenanceRequiredCount > 0) {
     concerns.push(
       `Garden maintenance completion at ${maintenanceCompletionRate}% — some required maintenance is not being completed, risking gradual deterioration of outdoor spaces.`,
     );
   }
 
-  if (anchoringSecureRate < 80 && totalEquipmentSafetyRecords > 0) {
+  if (below(anchoringSecureRate, 80) && totalEquipmentSafetyRecords > 0) {
     concerns.push(
       `Only ${anchoringSecureRate}% of equipment anchoring assessed as secure — insecure anchoring of play equipment presents a serious safety risk.`,
     );
   }
 
-  if (childCoverage < 50 && total_children > 0 && totalChildInvolvementRecords > 0) {
+  if (below(childCoverage, 50) && total_children > 0 && totalChildInvolvementRecords > 0) {
     concerns.push(
       `Only ${childCoverage}% of children have been involved in garden activities — many children are missing out on the developmental and therapeutic benefits of outdoor engagement.`,
     );
   }
 
-  if (staffSupervisionRate < 70 && totalSpaceUtilisationRecords > 0) {
+  if (below(staffSupervisionRate, 70) && totalSpaceUtilisationRecords > 0) {
     concerns.push(
       `Staff supervision of outdoor spaces at only ${staffSupervisionRate}% — insufficient supervision during outdoor play may compromise children's safety.`,
     );
   }
 
-  if (professionalInspectionRate < 50 && totalEquipmentSafetyRecords > 0) {
+  if (below(professionalInspectionRate, 50) && totalEquipmentSafetyRecords > 0) {
     concerns.push(
       `Only ${professionalInspectionRate}% of equipment has a recorded professional inspection — without regular professional safety inspections, the home cannot fully evidence equipment safety compliance.`,
     );
@@ -789,7 +791,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   const recommendations: GardenOutdoorRecommendation[] = [];
   let rank = 0;
 
-  if (equipmentSafetyRate < 50 && totalEquipmentSafetyRecords > 0) {
+  if (below(equipmentSafetyRate, 50) && totalEquipmentSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -799,7 +801,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (defectResolutionRate < 70 && defectsFoundCount > 0) {
+  if (below(defectResolutionRate, 70) && defectsFoundCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -809,7 +811,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (hazardResolutionRate < 70 && hazardsFoundCount > 0) {
+  if (below(hazardResolutionRate, 70) && hazardsFoundCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -819,7 +821,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (gardenConditionRate < 40 && totalGardenConditionRecords > 0) {
+  if (below(gardenConditionRate, 40) && totalGardenConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -829,7 +831,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (surfaceSafeRate < 70 && totalEquipmentSafetyRecords > 0) {
+  if (below(surfaceSafeRate, 70) && totalEquipmentSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -839,7 +841,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (anchoringSecureRate < 80 && totalEquipmentSafetyRecords > 0) {
+  if (below(anchoringSecureRate, 80) && totalEquipmentSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +851,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (childInvolvementRate < 30 && totalChildInvolvementRecords > 0) {
+  if (below(childInvolvementRate, 30) && totalChildInvolvementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +861,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (environmentalQualityRate < 40 && totalEnvironmentalQualityRecords > 0) {
+  if (below(environmentalQualityRate, 40) && totalEnvironmentalQualityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +871,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (staffSupervisionRate < 70 && totalSpaceUtilisationRecords > 0) {
+  if (below(staffSupervisionRate, 70) && totalSpaceUtilisationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -880,8 +882,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    equipmentSafetyRate >= 50 &&
-    equipmentSafetyRate < 80 &&
+    meets(equipmentSafetyRate, 50) &&
+    below(equipmentSafetyRate, 80) &&
     totalEquipmentSafetyRecords > 0
   ) {
     recommendations.push({
@@ -894,8 +896,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    gardenConditionRate >= 40 &&
-    gardenConditionRate < 70 &&
+    meets(gardenConditionRate, 40) &&
+    below(gardenConditionRate, 70) &&
     totalGardenConditionRecords > 0
   ) {
     recommendations.push({
@@ -907,7 +909,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (maintenanceCompletionRate < 70 && maintenanceRequiredCount > 0) {
+  if (below(maintenanceCompletionRate, 70) && maintenanceRequiredCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -917,7 +919,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (professionalInspectionRate < 50 && totalEquipmentSafetyRecords > 0) {
+  if (below(professionalInspectionRate, 50) && totalEquipmentSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,7 +930,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    spaceUtilisationRate < 60 &&
+    below(spaceUtilisationRate, 60) &&
     totalSpaceUtilisationRecords > 0
   ) {
     recommendations.push({
@@ -941,8 +943,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childInvolvementRate >= 30 &&
-    childInvolvementRate < 70 &&
+    meets(childInvolvementRate, 30) &&
+    below(childInvolvementRate, 70) &&
     totalChildInvolvementRecords > 0
   ) {
     recommendations.push({
@@ -955,8 +957,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    environmentalQualityRate >= 40 &&
-    environmentalQualityRate < 70 &&
+    meets(environmentalQualityRate, 40) &&
+    below(environmentalQualityRate, 70) &&
     totalEnvironmentalQualityRecords > 0
   ) {
     recommendations.push({
@@ -969,8 +971,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childCoverage < 80 &&
-    childCoverage >= 50 &&
+    below(childCoverage, 80) &&
+    meets(childCoverage, 50) &&
     total_children > 0 &&
     totalChildInvolvementRecords > 0
   ) {
@@ -984,8 +986,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childEnjoymentRate >= 40 &&
-    childEnjoymentRate < 70 &&
+    meets(childEnjoymentRate, 40) &&
+    below(childEnjoymentRate, 70) &&
     totalEnjoymentDenom > 0
   ) {
     recommendations.push({
@@ -997,7 +999,7 @@ export function computeGardenOutdoorSpaceMaintenance(
     });
   }
 
-  if (improvementCompletionRate < 70 && improvementNeededCount > 0) {
+  if (below(improvementCompletionRate, 70) && improvementNeededCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1013,35 +1015,35 @@ export function computeGardenOutdoorSpaceMaintenance(
 
   // -- Critical insights --
 
-  if (equipmentSafetyRate < 50 && totalEquipmentSafetyRecords > 0) {
+  if (below(equipmentSafetyRate, 50) && totalEquipmentSafetyRecords > 0) {
     insights.push({
       text: `Only ${equipmentSafetyRate}% equipment safety compliance. The majority of outdoor play equipment fails to meet safety standards — this is a serious safeguarding concern. Ofsted expects children's homes to maintain safe premises under Reg 25, and equipment that poses injury risk must be removed from use immediately pending repair or replacement.`,
       severity: "critical",
     });
   }
 
-  if (gardenConditionRate < 40 && totalGardenConditionRecords > 0) {
+  if (below(gardenConditionRate, 40) && totalGardenConditionRecords > 0) {
     insights.push({
       text: `Only ${gardenConditionRate}% of garden areas in good condition. Poorly maintained outdoor spaces fail to provide the quality living environment children deserve. Under Reg 25 premises must be maintained to a standard appropriate for the purpose of the home — children should have access to clean, safe, well-kept outdoor areas.`,
       severity: "critical",
     });
   }
 
-  if (defectResolutionRate < 50 && defectsFoundCount > 0) {
+  if (below(defectResolutionRate, 50) && defectsFoundCount > 0) {
     insights.push({
       text: `Only ${defectResolutionRate}% of equipment defects resolved. Unrepaired defects in outdoor play equipment represent direct physical risks to children. Each unresolved defect is a potential accident — the home must demonstrate that it responds to identified safety issues promptly and effectively.`,
       severity: "critical",
     });
   }
 
-  if (hazardResolutionRate < 50 && hazardsFoundCount > 0) {
+  if (below(hazardResolutionRate, 50) && hazardsFoundCount > 0) {
     insights.push({
       text: `Only ${hazardResolutionRate}% of garden safety hazards resolved. Unresolved hazards in outdoor spaces mean children are exposed to avoidable risks. The home's duty of care requires that identified safety concerns are addressed promptly — the current resolution rate is inadequate.`,
       severity: "critical",
     });
   }
 
-  if (childInvolvementRate < 30 && totalChildInvolvementRecords > 0) {
+  if (below(childInvolvementRate, 30) && totalChildInvolvementRecords > 0) {
     insights.push({
       text: `Only ${childInvolvementRate}% child engagement in garden activities. Children are not meaningfully involved in gardening or outdoor activities, missing opportunities for skill development, therapeutic benefit, physical activity, and connection with nature that support their overall wellbeing and development.`,
       severity: "critical",
@@ -1065,8 +1067,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   // -- Warning insights --
 
   if (
-    equipmentSafetyRate >= 50 &&
-    equipmentSafetyRate < 80 &&
+    meets(equipmentSafetyRate, 50) &&
+    below(equipmentSafetyRate, 80) &&
     totalEquipmentSafetyRecords > 0
   ) {
     insights.push({
@@ -1076,8 +1078,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    gardenConditionRate >= 40 &&
-    gardenConditionRate < 70 &&
+    meets(gardenConditionRate, 40) &&
+    below(gardenConditionRate, 70) &&
     totalGardenConditionRecords > 0
   ) {
     insights.push({
@@ -1087,8 +1089,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childInvolvementRate >= 30 &&
-    childInvolvementRate < 70 &&
+    meets(childInvolvementRate, 30) &&
+    below(childInvolvementRate, 70) &&
     totalChildInvolvementRecords > 0
   ) {
     insights.push({
@@ -1098,8 +1100,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    environmentalQualityRate >= 40 &&
-    environmentalQualityRate < 70 &&
+    meets(environmentalQualityRate, 40) &&
+    below(environmentalQualityRate, 70) &&
     totalEnvironmentalQualityRecords > 0
   ) {
     insights.push({
@@ -1109,8 +1111,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    spaceUtilisationRate >= 40 &&
-    spaceUtilisationRate < 60 &&
+    meets(spaceUtilisationRate, 40) &&
+    below(spaceUtilisationRate, 60) &&
     totalSpaceUtilisationRecords > 0
   ) {
     insights.push({
@@ -1120,8 +1122,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childEnjoymentRate >= 40 &&
-    childEnjoymentRate < 70 &&
+    meets(childEnjoymentRate, 40) &&
+    below(childEnjoymentRate, 70) &&
     totalEnjoymentDenom > 0
   ) {
     insights.push({
@@ -1131,8 +1133,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    maintenanceCompletionRate >= 50 &&
-    maintenanceCompletionRate < 70 &&
+    meets(maintenanceCompletionRate, 50) &&
+    below(maintenanceCompletionRate, 70) &&
     maintenanceRequiredCount > 0
   ) {
     insights.push({
@@ -1163,8 +1165,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    equipmentSafetyRate >= 95 &&
-    defectResolutionRate >= 95 &&
+    meets(equipmentSafetyRate, 95) &&
+    meets(defectResolutionRate, 95) &&
     totalEquipmentSafetyRecords > 0 &&
     defectsFoundCount > 0
   ) {
@@ -1175,8 +1177,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    gardenConditionRate >= 90 &&
-    cleanlinessRate >= 90 &&
+    meets(gardenConditionRate, 90) &&
+    meets(cleanlinessRate, 90) &&
     totalGardenConditionRecords > 0
   ) {
     insights.push({
@@ -1188,7 +1190,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   if (
     totalChildInvolvementRecords > 0 &&
     avgEnjoymentLevel !== null &&
-    childInvolvementRate >= 90 &&
+    meets(childInvolvementRate, 90) &&
     avgEnjoymentLevel >= 4.0
   ) {
     insights.push({
@@ -1198,7 +1200,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    childCoverage >= 100 &&
+    meets(childCoverage, 100) &&
     total_children > 0 &&
     totalChildInvolvementRecords > 0
   ) {
@@ -1209,7 +1211,7 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    spaceUtilisationRate >= 80 &&
+    meets(spaceUtilisationRate, 80) &&
     uniqueSpaceTypes >= 4 &&
     totalSpaceUtilisationRecords > 0
   ) {
@@ -1220,8 +1222,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    environmentalQualityRate >= 90 &&
-    sensoryBenefitRate >= 70 &&
+    meets(environmentalQualityRate, 90) &&
+    meets(sensoryBenefitRate, 70) &&
     totalEnvironmentalQualityRecords > 0
   ) {
     insights.push({
@@ -1231,8 +1233,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
-    hazardResolutionRate >= 95 &&
-    maintenanceCompletionRate >= 90 &&
+    meets(hazardResolutionRate, 95) &&
+    meets(maintenanceCompletionRate, 90) &&
     hazardsFoundCount > 0 &&
     maintenanceRequiredCount > 0
   ) {

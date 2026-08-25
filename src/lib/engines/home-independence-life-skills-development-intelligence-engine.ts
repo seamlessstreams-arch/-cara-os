@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME INDEPENDENCE & LIFE SKILLS DEVELOPMENT INTELLIGENCE ENGINE
 // Tracks how effectively the home prepares children/young people for
@@ -155,10 +156,6 @@ export interface IndependenceLifeSkillsResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -181,12 +178,12 @@ function emptyResult(
     independence_rating: rating,
     independence_score: score,
     headline,
-    skills_assessment_coverage_rate: 0,
-    cooking_competency_rate: 0,
-    travel_independence_rate: 0,
-    personal_care_rate: 0,
-    milestone_achievement_rate: 0,
-    child_engagement_rate: 0,
+    skills_assessment_coverage_rate: null,
+    cooking_competency_rate: null,
+    travel_independence_rate: null,
+    personal_care_rate: null,
+    milestone_achievement_rate: null,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -267,7 +264,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     life_skills_assessment_records.map((a) => a.child_id),
   ).size;
   const skillsAssessmentCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithAssessments, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithAssessments, total_children) : 0;
 
   const totalAssessments = life_skills_assessment_records.length;
 
@@ -275,13 +272,13 @@ export function computeIndependenceLifeSkillsDevelopment(
   const assessmentsWithChildInvolvement = life_skills_assessment_records.filter(
     (a) => a.child_involved,
   ).length;
-  const assessmentChildInvolvementRate = pct(assessmentsWithChildInvolvement, totalAssessments);
+  const assessmentChildInvolvementRate = rate(assessmentsWithChildInvolvement, totalAssessments);
 
   const overdueAssessmentReviews = life_skills_assessment_records.filter(
     (a) => a.review_overdue,
   ).length;
   const assessmentReviewComplianceRate = totalAssessments > 0
-    ? pct(totalAssessments - overdueAssessmentReviews, totalAssessments)
+    ? rate(totalAssessments - overdueAssessmentReviews, totalAssessments)
     : null;
 
   // --- Skills improvement tracking ---
@@ -291,7 +288,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   const assessmentsShowingImprovement = assessmentsWithPreviousScore.filter(
     (a) => (a.overall_independence_score ?? 0) > (a.previous_overall_score ?? 0),
   ).length;
-  const skillsImprovementRate = pct(assessmentsShowingImprovement, assessmentsWithPreviousScore.length);
+  const skillsImprovementRate = rate(assessmentsShowingImprovement, assessmentsWithPreviousScore.length);
 
   // --- Goals tracking ---
   const totalGoalsSet = life_skills_assessment_records.reduce(
@@ -300,7 +297,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   const totalGoalsAchieved = life_skills_assessment_records.reduce(
     (sum, a) => sum + a.goals_achieved, 0,
   );
-  const goalsAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
+  const goalsAchievementRate = rate(totalGoalsAchieved, totalGoalsSet);
 
   // --- Cooking programme metrics ---
   const totalCookingSessions = cooking_programme_records.length;
@@ -308,37 +305,37 @@ export function computeIndependenceLifeSkillsDevelopment(
     cooking_programme_records.map((c) => c.child_id),
   ).size;
   const cookingParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenCooking, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenCooking, total_children) : 0;
 
   const cookingIndependentOrSupervised = cooking_programme_records.filter(
     (c) => c.skill_level === "independent" || c.skill_level === "supervised",
   ).length;
-  const cookingCompetencyRate = pct(cookingIndependentOrSupervised, totalCookingSessions);
+  const cookingCompetencyRate = rate(cookingIndependentOrSupervised, totalCookingSessions);
 
   const cookingSafetyCompliant = cooking_programme_records.filter(
     (c) => c.safety_standards_met,
   ).length;
-  const cookingSafetyRate = pct(cookingSafetyCompliant, totalCookingSessions);
+  const cookingSafetyRate = rate(cookingSafetyCompliant, totalCookingSessions);
 
   const cookingChildEnjoyed = cooking_programme_records.filter(
     (c) => c.child_enjoyed,
   ).length;
-  const cookingEnjoymentRate = pct(cookingChildEnjoyed, totalCookingSessions);
+  const cookingEnjoymentRate = rate(cookingChildEnjoyed, totalCookingSessions);
 
   const cookingNewSkillLearned = cooking_programme_records.filter(
     (c) => c.new_skill_learned,
   ).length;
-  const cookingNewSkillRate = pct(cookingNewSkillLearned, totalCookingSessions);
+  const cookingNewSkillRate = rate(cookingNewSkillLearned, totalCookingSessions);
 
   const cookingChildChoseRecipe = cooking_programme_records.filter(
     (c) => c.child_chose_recipe,
   ).length;
-  const cookingChildChoiceRate = pct(cookingChildChoseRecipe, totalCookingSessions);
+  const cookingChildChoiceRate = rate(cookingChildChoseRecipe, totalCookingSessions);
 
   const cookingNotesRecorded = cooking_programme_records.filter(
     (c) => c.notes_recorded,
   ).length;
-  const cookingDocumentationRate = pct(cookingNotesRecorded, totalCookingSessions);
+  const cookingDocumentationRate = rate(cookingNotesRecorded, totalCookingSessions);
 
   // --- Travel training metrics ---
   const totalTravelSessions = travel_training_records.length;
@@ -346,17 +343,17 @@ export function computeIndependenceLifeSkillsDevelopment(
     travel_training_records.map((t) => t.child_id),
   ).size;
   const travelParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenTravel, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenTravel, total_children) : 0;
 
   const travelIndependentOrCompetent = travel_training_records.filter(
     (t) => t.competency_level === "independent" || t.competency_level === "competent",
   ).length;
-  const travelIndependenceRate = pct(travelIndependentOrCompetent, totalTravelSessions);
+  const travelIndependenceRate = rate(travelIndependentOrCompetent, totalTravelSessions);
 
   const travelRiskAssessmentCompleted = travel_training_records.filter(
     (t) => t.risk_assessment_completed,
   ).length;
-  const travelRiskAssessmentRate = pct(travelRiskAssessmentCompleted, totalTravelSessions);
+  const travelRiskAssessmentRate = rate(travelRiskAssessmentCompleted, totalTravelSessions);
 
   const travelChildFeedbackPositive = travel_training_records.filter(
     (t) => t.child_feedback_positive,
@@ -376,12 +373,12 @@ export function computeIndependenceLifeSkillsDevelopment(
     personal_care_records.map((p) => p.child_id),
   ).size;
   const personalCareParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenPersonalCare, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenPersonalCare, total_children) : 0;
 
   const personalCareIndependent = personal_care_records.filter(
     (p) => p.independence_level === "independent" || p.independence_level === "minimal_prompts",
   ).length;
-  const personalCareRate = pct(personalCareIndependent, totalPersonalCareRecords);
+  const personalCareRate = rate(personalCareIndependent, totalPersonalCareRecords);
 
   const personalCareChildEngaged = personal_care_records.filter(
     (p) => p.child_engaged,
@@ -390,14 +387,14 @@ export function computeIndependenceLifeSkillsDevelopment(
   const personalCareDignityRespected = personal_care_records.filter(
     (p) => p.dignity_respected,
   ).length;
-  const personalCareDignityRate = pct(personalCareDignityRespected, totalPersonalCareRecords);
+  const personalCareDignityRate = rate(personalCareDignityRespected, totalPersonalCareRecords);
 
   // --- Independence milestones ---
   const totalMilestones = independence_milestone_records.length;
   const achievedMilestones = independence_milestone_records.filter(
     (m) => m.achieved,
   ).length;
-  const milestoneAchievementRate = pct(achievedMilestones, totalMilestones);
+  const milestoneAchievementRate = rate(achievedMilestones, totalMilestones);
 
   const overdueMilestones = independence_milestone_records.filter(
     (m) => m.overdue && !m.achieved,
@@ -406,17 +403,17 @@ export function computeIndependenceLifeSkillsDevelopment(
   const celebratedMilestones = independence_milestone_records.filter(
     (m) => m.achieved && m.child_celebrated,
   ).length;
-  const milestoneCelebrationRate = pct(celebratedMilestones, achievedMilestones);
+  const milestoneCelebrationRate = rate(celebratedMilestones, achievedMilestones);
 
   const evidencedMilestones = independence_milestone_records.filter(
     (m) => m.achieved && m.evidenced_in_records,
   ).length;
-  const milestoneEvidenceRate = pct(evidencedMilestones, achievedMilestones);
+  const milestoneEvidenceRate = rate(evidencedMilestones, achievedMilestones);
 
   const sharedWithSWMilestones = independence_milestone_records.filter(
     (m) => m.achieved && m.shared_with_social_worker,
   ).length;
-  const milestoneSharedRate = pct(sharedWithSWMilestones, achievedMilestones);
+  const milestoneSharedRate = rate(sharedWithSWMilestones, achievedMilestones);
 
   // Milestone category analysis
   const milestoneCategoryCounts: Record<string, { total: number; achieved: number }> = {};
@@ -439,61 +436,61 @@ export function computeIndependenceLifeSkillsDevelopment(
     totalCookingSessions +
     totalTravelSessions +
     totalPersonalCareRecords;
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: skillsAssessmentCoverageRate (>=100: +4, >=80: +2) ---
-  if (skillsAssessmentCoverageRate >= 100) score += 4;
-  else if (skillsAssessmentCoverageRate >= 80) score += 2;
+  if (meets(skillsAssessmentCoverageRate, 100)) score += 4;
+  else if (meets(skillsAssessmentCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: cookingCompetencyRate (>=80: +4, >=60: +2) ---
-  if (cookingCompetencyRate >= 80) score += 4;
-  else if (cookingCompetencyRate >= 60) score += 2;
+  if (meets(cookingCompetencyRate, 80)) score += 4;
+  else if (meets(cookingCompetencyRate, 60)) score += 2;
 
   // --- Bonus 3: travelIndependenceRate (>=80: +3, >=60: +1) ---
-  if (travelIndependenceRate >= 80) score += 3;
-  else if (travelIndependenceRate >= 60) score += 1;
+  if (meets(travelIndependenceRate, 80)) score += 3;
+  else if (meets(travelIndependenceRate, 60)) score += 1;
 
   // --- Bonus 4: personalCareRate (>=90: +3, >=70: +1) ---
-  if (personalCareRate >= 90) score += 3;
-  else if (personalCareRate >= 70) score += 1;
+  if (meets(personalCareRate, 90)) score += 3;
+  else if (meets(personalCareRate, 70)) score += 1;
 
   // --- Bonus 5: milestoneAchievementRate (>=90: +4, >=70: +2) ---
-  if (milestoneAchievementRate >= 90) score += 4;
-  else if (milestoneAchievementRate >= 70) score += 2;
+  if (meets(milestoneAchievementRate, 90)) score += 4;
+  else if (meets(milestoneAchievementRate, 70)) score += 2;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: goalsAchievementRate (>=80: +3, >=60: +1) ---
-  if (goalsAchievementRate >= 80) score += 3;
-  else if (goalsAchievementRate >= 60) score += 1;
+  if (meets(goalsAchievementRate, 80)) score += 3;
+  else if (meets(goalsAchievementRate, 60)) score += 1;
 
   // --- Bonus 8: assessmentReviewComplianceRate (>=100: +2, >=80: +1) ---
   if ((assessmentReviewComplianceRate ?? 0) >= 100) score += 2;
   else if ((assessmentReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 9: skillsImprovementRate (>=80: +2, >=60: +1) ---
-  if (skillsImprovementRate >= 80) score += 2;
-  else if (skillsImprovementRate >= 60) score += 1;
+  if (meets(skillsImprovementRate, 80)) score += 2;
+  else if (meets(skillsImprovementRate, 60)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // skillsAssessmentCoverageRate < 50 → -6 (major gap in understanding needs)
-  if (skillsAssessmentCoverageRate < 50 && total_children > 0) score -= 6;
+  if (below(skillsAssessmentCoverageRate, 50) && total_children > 0) score -= 6;
 
   // cookingCompetencyRate < 40 → -4
-  if (cookingCompetencyRate < 40 && totalCookingSessions > 0) score -= 4;
+  if (below(cookingCompetencyRate, 40) && totalCookingSessions > 0) score -= 4;
 
   // travelIndependenceRate < 30 → -4
-  if (travelIndependenceRate < 30 && totalTravelSessions > 0) score -= 4;
+  if (below(travelIndependenceRate, 30) && totalTravelSessions > 0) score -= 4;
 
   // personalCareRate < 40 → -3
-  if (personalCareRate < 40 && totalPersonalCareRecords > 0) score -= 3;
+  if (below(personalCareRate, 40) && totalPersonalCareRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -503,83 +500,83 @@ export function computeIndependenceLifeSkillsDevelopment(
 
   const strengths: string[] = [];
 
-  if (skillsAssessmentCoverageRate >= 100 && total_children > 0) {
+  if (meets(skillsAssessmentCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has a life skills assessment — the home demonstrates comprehensive identification of each child's independence development needs.",
     );
-  } else if (skillsAssessmentCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(skillsAssessmentCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${skillsAssessmentCoverageRate}% of children have life skills assessments — strong coverage in identifying children's independence development needs.`,
     );
   }
 
-  if (cookingCompetencyRate >= 80 && totalCookingSessions > 0) {
+  if (meets(cookingCompetencyRate, 80) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingCompetencyRate}% of cooking sessions at supervised or independent level — children are developing genuine cooking competency for independent living.`,
     );
-  } else if (cookingCompetencyRate >= 60 && totalCookingSessions > 0) {
+  } else if (meets(cookingCompetencyRate, 60) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingCompetencyRate}% cooking competency rate — the majority of cooking sessions demonstrate real skill development.`,
     );
   }
 
-  if (travelIndependenceRate >= 80 && totalTravelSessions > 0) {
+  if (meets(travelIndependenceRate, 80) && totalTravelSessions > 0) {
     strengths.push(
       `${travelIndependenceRate}% of travel training at competent or independent level — children are developing strong travel skills for independent living.`,
     );
-  } else if (travelIndependenceRate >= 60 && totalTravelSessions > 0) {
+  } else if (meets(travelIndependenceRate, 60) && totalTravelSessions > 0) {
     strengths.push(
       `${travelIndependenceRate}% travel independence rate — good progress in developing children's travel competency.`,
     );
   }
 
-  if (personalCareRate >= 90 && totalPersonalCareRecords > 0) {
+  if (meets(personalCareRate, 90) && totalPersonalCareRecords > 0) {
     strengths.push(
       `${personalCareRate}% of personal care at independent or minimal-prompts level — children are managing their personal care with growing independence.`,
     );
-  } else if (personalCareRate >= 70 && totalPersonalCareRecords > 0) {
+  } else if (meets(personalCareRate, 70) && totalPersonalCareRecords > 0) {
     strengths.push(
       `${personalCareRate}% personal care independence — most children demonstrate good levels of independence in managing their personal hygiene and self-care.`,
     );
   }
 
-  if (milestoneAchievementRate >= 90 && totalMilestones > 0) {
+  if (meets(milestoneAchievementRate, 90) && totalMilestones > 0) {
     strengths.push(
       `${milestoneAchievementRate}% of independence milestones achieved — children are consistently reaching their independence development targets.`,
     );
-  } else if (milestoneAchievementRate >= 70 && totalMilestones > 0) {
+  } else if (meets(milestoneAchievementRate, 70) && totalMilestones > 0) {
     strengths.push(
       `${milestoneAchievementRate}% milestone achievement rate — the majority of independence milestones are being met.`,
     );
   }
 
-  if (childEngagementRate >= 90 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 90) && engagementDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement across life skills activities — children are actively involved and motivated in developing their independence.`,
     );
-  } else if (childEngagementRate >= 70 && engagementDenominator > 0) {
+  } else if (meets(childEngagementRate, 70) && engagementDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement rate — most children are positively engaged in life skills development activities.`,
     );
   }
 
-  if (goalsAchievementRate >= 80 && totalGoalsSet > 0) {
+  if (meets(goalsAchievementRate, 80) && totalGoalsSet > 0) {
     strengths.push(
       `${goalsAchievementRate}% of independence goals achieved — the home sets appropriate targets and supports children to reach them.`,
     );
-  } else if (goalsAchievementRate >= 60 && totalGoalsSet > 0) {
+  } else if (meets(goalsAchievementRate, 60) && totalGoalsSet > 0) {
     strengths.push(
       `${goalsAchievementRate}% goal achievement rate — most children are meeting their independence development goals.`,
     );
   }
 
-  if (cookingEnjoymentRate >= 90 && totalCookingSessions > 0) {
+  if (meets(cookingEnjoymentRate, 90) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingEnjoymentRate}% of children enjoy cooking sessions — the cooking programme is engaging and creates positive experiences.`,
     );
   }
 
-  if (cookingChildChoiceRate >= 70 && totalCookingSessions > 0) {
+  if (meets(cookingChildChoiceRate, 70) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingChildChoiceRate}% of cooking sessions involve the child choosing their own recipe — children have genuine agency in their life skills learning.`,
     );
@@ -591,7 +588,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     );
   }
 
-  if (milestoneCelebrationRate >= 80 && achievedMilestones > 0) {
+  if (meets(milestoneCelebrationRate, 80) && achievedMilestones > 0) {
     strengths.push(
       `${milestoneCelebrationRate}% of achieved milestones celebrated with the child — the home recognises and validates children's independence achievements.`,
     );
@@ -607,23 +604,23 @@ export function computeIndependenceLifeSkillsDevelopment(
     );
   }
 
-  if (skillsImprovementRate >= 80 && assessmentsWithPreviousScore.length > 0) {
+  if (meets(skillsImprovementRate, 80) && assessmentsWithPreviousScore.length > 0) {
     strengths.push(
       `${skillsImprovementRate}% of children showing measurable improvement in independence skills — the home's approach to life skills development is achieving real progress.`,
     );
-  } else if (skillsImprovementRate >= 60 && assessmentsWithPreviousScore.length > 0) {
+  } else if (meets(skillsImprovementRate, 60) && assessmentsWithPreviousScore.length > 0) {
     strengths.push(
       `${skillsImprovementRate}% of children showing improvement — most children are making progress in their independence development.`,
     );
   }
 
-  if (personalCareDignityRate >= 100 && totalPersonalCareRecords > 0) {
+  if (meets(personalCareDignityRate, 100) && totalPersonalCareRecords > 0) {
     strengths.push(
       "Dignity is respected in 100% of personal care support — the home ensures children's privacy and dignity are maintained throughout personal care development.",
     );
   }
 
-  if (cookingSafetyRate >= 100 && totalCookingSessions > 0) {
+  if (meets(cookingSafetyRate, 100) && totalCookingSessions > 0) {
     strengths.push(
       "Safety standards met in 100% of cooking sessions — children learn in a safe environment that builds confidence.",
     );
@@ -633,61 +630,61 @@ export function computeIndependenceLifeSkillsDevelopment(
 
   const concerns: string[] = [];
 
-  if (skillsAssessmentCoverageRate < 50 && total_children > 0) {
+  if (below(skillsAssessmentCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${skillsAssessmentCoverageRate}% of children have life skills assessments — the majority of children's independence development needs have not been formally assessed, preventing the home from delivering tailored support.`,
     );
-  } else if (skillsAssessmentCoverageRate < 80 && skillsAssessmentCoverageRate >= 50 && total_children > 0) {
+  } else if (below(skillsAssessmentCoverageRate, 80) && meets(skillsAssessmentCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Life skills assessment coverage at ${skillsAssessmentCoverageRate}% — some children's independence development needs remain unassessed, which may result in missed opportunities to develop critical life skills.`,
     );
   }
 
-  if (cookingCompetencyRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingCompetencyRate, 40) && totalCookingSessions > 0) {
     concerns.push(
       `Only ${cookingCompetencyRate}% of cooking sessions at supervised or independent level — most children are still requiring significant support, suggesting the cooking programme needs strengthening to build genuine competency.`,
     );
-  } else if (cookingCompetencyRate < 60 && cookingCompetencyRate >= 40 && totalCookingSessions > 0) {
+  } else if (below(cookingCompetencyRate, 60) && meets(cookingCompetencyRate, 40) && totalCookingSessions > 0) {
     concerns.push(
       `Cooking competency at ${cookingCompetencyRate}% — a significant proportion of sessions still require full assistance, indicating slower progress in developing cooking independence.`,
     );
   }
 
-  if (travelIndependenceRate < 30 && totalTravelSessions > 0) {
+  if (below(travelIndependenceRate, 30) && totalTravelSessions > 0) {
     concerns.push(
       `Only ${travelIndependenceRate}% of travel training at competent or independent level — the majority of children have not yet developed sufficient travel skills for safe independent movement.`,
     );
-  } else if (travelIndependenceRate < 60 && travelIndependenceRate >= 30 && totalTravelSessions > 0) {
+  } else if (below(travelIndependenceRate, 60) && meets(travelIndependenceRate, 30) && totalTravelSessions > 0) {
     concerns.push(
       `Travel independence at ${travelIndependenceRate}% — many children are still in early stages of travel competency, requiring increased training frequency and graduated exposure.`,
     );
   }
 
-  if (personalCareRate < 40 && totalPersonalCareRecords > 0) {
+  if (below(personalCareRate, 40) && totalPersonalCareRecords > 0) {
     concerns.push(
       `Only ${personalCareRate}% of personal care at independent or minimal-prompts level — the majority of children still require significant support with personal hygiene and self-care routines.`,
     );
-  } else if (personalCareRate < 70 && personalCareRate >= 40 && totalPersonalCareRecords > 0) {
+  } else if (below(personalCareRate, 70) && meets(personalCareRate, 40) && totalPersonalCareRecords > 0) {
     concerns.push(
       `Personal care independence at ${personalCareRate}% — some children still need considerable support with personal care, indicating the need for more structured development of self-care routines.`,
     );
   }
 
-  if (milestoneAchievementRate < 50 && totalMilestones > 0) {
+  if (below(milestoneAchievementRate, 50) && totalMilestones > 0) {
     concerns.push(
       `Only ${milestoneAchievementRate}% of independence milestones achieved — the majority of milestones are not being met, suggesting targets may be unrealistic or insufficient support is provided to help children reach them.`,
     );
-  } else if (milestoneAchievementRate < 70 && milestoneAchievementRate >= 50 && totalMilestones > 0) {
+  } else if (below(milestoneAchievementRate, 70) && meets(milestoneAchievementRate, 50) && totalMilestones > 0) {
     concerns.push(
       `Milestone achievement at ${milestoneAchievementRate}% — a notable proportion of independence milestones are not being met, requiring review of targets and support strategies.`,
     );
   }
 
-  if (childEngagementRate < 50 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementDenominator > 0) {
     concerns.push(
       `Only ${childEngagementRate}% child engagement across life skills activities — most children are not positively engaged, raising questions about whether activities are motivating, age-appropriate, and meeting their interests.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50 && engagementDenominator > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50) && engagementDenominator > 0) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — a significant proportion of children are not actively engaged in life skills development, which may reduce the effectiveness of independence training.`,
     );
@@ -705,25 +702,25 @@ export function computeIndependenceLifeSkillsDevelopment(
     );
   }
 
-  if (cookingParticipationRate < 50 && total_children > 0 && totalCookingSessions > 0) {
+  if (below(cookingParticipationRate, 50) && total_children > 0 && totalCookingSessions > 0) {
     concerns.push(
       `Only ${cookingParticipationRate}% of children are participating in the cooking programme — the majority of children are missing out on essential cooking skills development.`,
     );
   }
 
-  if (travelParticipationRate < 50 && total_children > 0 && totalTravelSessions > 0) {
+  if (below(travelParticipationRate, 50) && total_children > 0 && totalTravelSessions > 0) {
     concerns.push(
       `Only ${travelParticipationRate}% of children are receiving travel training — most children are not being supported to develop safe travel skills.`,
     );
   }
 
-  if (personalCareParticipationRate < 50 && total_children > 0 && totalPersonalCareRecords > 0) {
+  if (below(personalCareParticipationRate, 50) && total_children > 0 && totalPersonalCareRecords > 0) {
     concerns.push(
       `Only ${personalCareParticipationRate}% of children have personal care development records — the home cannot evidence individualised personal care support for most children.`,
     );
   }
 
-  if (cookingSafetyRate < 80 && totalCookingSessions > 0) {
+  if (below(cookingSafetyRate, 80) && totalCookingSessions > 0) {
     concerns.push(
       `Safety standards met in only ${cookingSafetyRate}% of cooking sessions — children must be safe during all cooking activities and any lapse in safety standards is unacceptable.`,
     );
@@ -734,7 +731,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   const recommendations: IndependenceLifeSkillsRecommendation[] = [];
   let rank = 0;
 
-  if (skillsAssessmentCoverageRate < 50 && total_children > 0) {
+  if (below(skillsAssessmentCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -744,7 +741,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (cookingCompetencyRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingCompetencyRate, 40) && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -754,7 +751,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (travelIndependenceRate < 30 && totalTravelSessions > 0) {
+  if (below(travelIndependenceRate, 30) && totalTravelSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -764,7 +761,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (personalCareRate < 40 && totalPersonalCareRecords > 0) {
+  if (below(personalCareRate, 40) && totalPersonalCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -774,7 +771,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (childEngagementRate < 50 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -784,7 +781,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (cookingSafetyRate < 80 && totalCookingSessions > 0) {
+  if (below(cookingSafetyRate, 80) && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -794,7 +791,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (milestoneAchievementRate < 50 && totalMilestones > 0) {
+  if (below(milestoneAchievementRate, 50) && totalMilestones > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -825,8 +822,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    skillsAssessmentCoverageRate >= 50 &&
-    skillsAssessmentCoverageRate < 80 &&
+    meets(skillsAssessmentCoverageRate, 50) &&
+    below(skillsAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -839,8 +836,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    cookingCompetencyRate >= 40 &&
-    cookingCompetencyRate < 60 &&
+    meets(cookingCompetencyRate, 40) &&
+    below(cookingCompetencyRate, 60) &&
     totalCookingSessions > 0
   ) {
     recommendations.push({
@@ -853,8 +850,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    travelIndependenceRate >= 30 &&
-    travelIndependenceRate < 60 &&
+    meets(travelIndependenceRate, 30) &&
+    below(travelIndependenceRate, 60) &&
     totalTravelSessions > 0
   ) {
     recommendations.push({
@@ -867,8 +864,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    personalCareRate >= 40 &&
-    personalCareRate < 70 &&
+    meets(personalCareRate, 40) &&
+    below(personalCareRate, 70) &&
     totalPersonalCareRecords > 0
   ) {
     recommendations.push({
@@ -880,7 +877,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (cookingParticipationRate < 50 && total_children > 0 && totalCookingSessions > 0) {
+  if (below(cookingParticipationRate, 50) && total_children > 0 && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -890,7 +887,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (travelRiskAssessmentRate < 80 && totalTravelSessions > 0) {
+  if (below(travelRiskAssessmentRate, 80) && totalTravelSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -900,7 +897,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (cookingDocumentationRate < 70 && totalCookingSessions > 0) {
+  if (below(cookingDocumentationRate, 70) && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -910,7 +907,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (milestoneSharedRate < 70 && achievedMilestones > 0) {
+  if (below(milestoneSharedRate, 70) && achievedMilestones > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -921,8 +918,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     engagementDenominator > 0
   ) {
     recommendations.push({
@@ -940,35 +937,35 @@ export function computeIndependenceLifeSkillsDevelopment(
 
   // -- Critical insights --
 
-  if (skillsAssessmentCoverageRate < 50 && total_children > 0) {
+  if (below(skillsAssessmentCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${skillsAssessmentCoverageRate}% of children have life skills assessments. Without formal assessment of each child's independence development needs, the home cannot demonstrate that it is tailoring life skills support to individual requirements. Ofsted expects evidence that the home actively prepares children for independence under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (cookingCompetencyRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingCompetencyRate, 40) && totalCookingSessions > 0) {
     insights.push({
       text: `Only ${cookingCompetencyRate}% of cooking sessions at supervised or independent level. The cooking programme is not effectively building competency — children need progressive, structured pathways from observation through to independent cooking to develop a fundamental life skill.`,
       severity: "critical",
     });
   }
 
-  if (travelIndependenceRate < 30 && totalTravelSessions > 0) {
+  if (below(travelIndependenceRate, 30) && totalTravelSessions > 0) {
     insights.push({
       text: `Only ${travelIndependenceRate}% of travel training at competent or independent level. Most children cannot travel safely and independently, which significantly limits their ability to access education, employment, and social opportunities. This is a critical independence deficit.`,
       severity: "critical",
     });
   }
 
-  if (personalCareRate < 40 && totalPersonalCareRecords > 0) {
+  if (below(personalCareRate, 40) && totalPersonalCareRecords > 0) {
     insights.push({
       text: `Only ${personalCareRate}% of personal care at independent or minimal-prompts level. The majority of children still require significant support with basic personal hygiene routines. While support must always respect dignity, the home should be actively building self-care independence.`,
       severity: "critical",
     });
   }
 
-  if (childEngagementRate < 50 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementDenominator > 0) {
     insights.push({
       text: `Only ${childEngagementRate}% child engagement across life skills activities. When most children are not engaged, the programme is not meeting their needs or interests. Reg 7 requires that children's views shape their care, and low engagement suggests children's preferences are not being heard.`,
       severity: "critical",
@@ -978,8 +975,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   // -- Warning insights --
 
   if (
-    skillsAssessmentCoverageRate >= 50 &&
-    skillsAssessmentCoverageRate < 80 &&
+    meets(skillsAssessmentCoverageRate, 50) &&
+    below(skillsAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -989,8 +986,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    cookingCompetencyRate >= 40 &&
-    cookingCompetencyRate < 60 &&
+    meets(cookingCompetencyRate, 40) &&
+    below(cookingCompetencyRate, 60) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1000,8 +997,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    travelIndependenceRate >= 30 &&
-    travelIndependenceRate < 60 &&
+    meets(travelIndependenceRate, 30) &&
+    below(travelIndependenceRate, 60) &&
     totalTravelSessions > 0
   ) {
     insights.push({
@@ -1011,8 +1008,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    personalCareRate >= 40 &&
-    personalCareRate < 70 &&
+    meets(personalCareRate, 40) &&
+    below(personalCareRate, 70) &&
     totalPersonalCareRecords > 0
   ) {
     insights.push({
@@ -1022,8 +1019,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    milestoneAchievementRate >= 50 &&
-    milestoneAchievementRate < 70 &&
+    meets(milestoneAchievementRate, 50) &&
+    below(milestoneAchievementRate, 70) &&
     totalMilestones > 0
   ) {
     insights.push({
@@ -1033,8 +1030,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     engagementDenominator > 0
   ) {
     insights.push({
@@ -1057,21 +1054,21 @@ export function computeIndependenceLifeSkillsDevelopment(
     });
   }
 
-  if (goalsAchievementRate < 60 && goalsAchievementRate >= 40 && totalGoalsSet > 0) {
+  if (below(goalsAchievementRate, 60) && meets(goalsAchievementRate, 40) && totalGoalsSet > 0) {
     insights.push({
       text: `Goal achievement at ${goalsAchievementRate}% — less than two-thirds of independence goals are being met. This may indicate that goals are too ambitious or that children need more structured support to achieve them.`,
       severity: "warning",
     });
   }
 
-  if (cookingSafetyRate < 90 && cookingSafetyRate >= 80 && totalCookingSessions > 0) {
+  if (below(cookingSafetyRate, 90) && meets(cookingSafetyRate, 80) && totalCookingSessions > 0) {
     insights.push({
       text: `Cooking safety compliance at ${cookingSafetyRate}% — while mostly compliant, any shortfall in kitchen safety during children's cooking activities is concerning and must be addressed.`,
       severity: "warning",
     });
   }
 
-  if (travelRiskAssessmentRate < 80 && travelRiskAssessmentRate >= 60 && totalTravelSessions > 0) {
+  if (below(travelRiskAssessmentRate, 80) && meets(travelRiskAssessmentRate, 60) && totalTravelSessions > 0) {
     insights.push({
       text: `Travel training risk assessment completion at ${travelRiskAssessmentRate}% — not all sessions have documented risk assessments. Every travel training session should have a proportionate risk assessment.`,
       severity: "warning",
@@ -1121,8 +1118,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    skillsAssessmentCoverageRate >= 100 &&
-    assessmentChildInvolvementRate >= 90 &&
+    meets(skillsAssessmentCoverageRate, 100) &&
+    meets(assessmentChildInvolvementRate, 90) &&
     total_children > 0 &&
     totalAssessments > 0
   ) {
@@ -1133,8 +1130,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    cookingCompetencyRate >= 80 &&
-    cookingEnjoymentRate >= 80 &&
+    meets(cookingCompetencyRate, 80) &&
+    meets(cookingEnjoymentRate, 80) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1144,7 +1141,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    travelIndependenceRate >= 80 &&
+    meets(travelIndependenceRate, 80) &&
     (travelChildConfidenceAvg ?? 0) >= 4.0 &&
     totalTravelSessions > 0
   ) {
@@ -1155,8 +1152,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    personalCareRate >= 90 &&
-    personalCareDignityRate >= 100 &&
+    meets(personalCareRate, 90) &&
+    meets(personalCareDignityRate, 100) &&
     totalPersonalCareRecords > 0
   ) {
     insights.push({
@@ -1166,8 +1163,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    milestoneAchievementRate >= 90 &&
-    milestoneCelebrationRate >= 80 &&
+    meets(milestoneAchievementRate, 90) &&
+    meets(milestoneCelebrationRate, 80) &&
     totalMilestones > 0
   ) {
     insights.push({
@@ -1177,7 +1174,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    childEngagementRate >= 90 &&
+    meets(childEngagementRate, 90) &&
     engagementDenominator > 0
   ) {
     insights.push({
@@ -1187,8 +1184,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    goalsAchievementRate >= 80 &&
-    skillsImprovementRate >= 80 &&
+    meets(goalsAchievementRate, 80) &&
+    meets(skillsImprovementRate, 80) &&
     totalGoalsSet > 0 &&
     assessmentsWithPreviousScore.length > 0
   ) {
@@ -1199,8 +1196,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    cookingChildChoiceRate >= 70 &&
-    cookingNewSkillRate >= 60 &&
+    meets(cookingChildChoiceRate, 70) &&
+    meets(cookingNewSkillRate, 60) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1210,8 +1207,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   }
 
   if (
-    milestoneEvidenceRate >= 90 &&
-    milestoneSharedRate >= 80 &&
+    meets(milestoneEvidenceRate, 90) &&
+    meets(milestoneSharedRate, 80) &&
     achievedMilestones > 0
   ) {
     insights.push({

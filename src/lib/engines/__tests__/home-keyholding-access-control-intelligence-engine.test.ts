@@ -266,12 +266,12 @@ describe("Insufficient data", () => {
 
   it("returns zero for all metric rates", () => {
     const r = computeKeyholdingAccessControl(baseInput({ total_children: 0 }));
-    expect(r.key_register_rate).toBe(0);
-    expect(r.access_control_rate).toBe(0);
-    expect(r.key_tracking_rate).toBe(0);
-    expect(r.security_audit_rate).toBe(0);
-    expect(r.child_safe_rate).toBe(0);
-    expect(r.staff_compliance_rate).toBe(0);
+    expect(r.key_register_rate).toBeNull();
+    expect(r.access_control_rate).toBeNull();
+    expect(r.key_tracking_rate).toBeNull();
+    expect(r.security_audit_rate).toBeNull();
+    expect(r.child_safe_rate).toBeNull();
+    expect(r.staff_compliance_rate).toBeNull();
   });
 
   it("returns zero totals for all record counts", () => {
@@ -335,12 +335,12 @@ describe("Inadequate floor (empty arrays, children > 0)", () => {
 
   it("returns zero for all metric rates", () => {
     const r = computeKeyholdingAccessControl(baseInput({ total_children: 3 }));
-    expect(r.key_register_rate).toBe(0);
-    expect(r.access_control_rate).toBe(0);
-    expect(r.key_tracking_rate).toBe(0);
-    expect(r.security_audit_rate).toBe(0);
-    expect(r.child_safe_rate).toBe(0);
-    expect(r.staff_compliance_rate).toBe(0);
+    expect(r.key_register_rate).toBeNull();
+    expect(r.access_control_rate).toBeNull();
+    expect(r.key_tracking_rate).toBeNull();
+    expect(r.security_audit_rate).toBeNull();
+    expect(r.child_safe_rate).toBeNull();
+    expect(r.staff_compliance_rate).toBeNull();
   });
 
   it("returns zero totals for all record counts", () => {
@@ -2611,10 +2611,10 @@ describe("Edge cases", () => {
         key_register_records: repeat(10, makeKeyRegisterGood),
       }),
     );
-    expect(r.access_control_rate).toBe(0);
-    expect(r.key_tracking_rate).toBe(0);
-    expect(r.security_audit_rate).toBe(0);
-    expect(r.child_safe_rate).toBe(0);
+    expect(r.access_control_rate).toBeNull();
+    expect(r.key_tracking_rate).toBeNull();
+    expect(r.security_audit_rate).toBeNull();
+    expect(r.child_safe_rate).toBeNull();
   });
 
   it("all arrays have 0 records but total_children=0 → insufficient_data (not allEmpty special case only)", () => {

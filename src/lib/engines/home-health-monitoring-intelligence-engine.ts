@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME HEALTH MONITORING INTELLIGENCE ENGINE
 // Home-level: synthesises annual health assessments, immunisation records,
@@ -146,10 +147,6 @@ function daysBetween(a: string, b: string): number {
   return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -193,12 +190,12 @@ export function computeHomeHealthMonitoring(
   });
 
   const childrenAssessed = [...new Set(recent365.map(a => a.child_id))].length;
-  const completionRate = pct(recent365.filter(a => a.completed_within_deadline).length, recent365.length);
-  const immunUpRate = pct(recent365.filter(a => a.immunisations_up_to_date).length, recent365.length);
-  const dentalUpRate = pct(recent365.filter(a => a.dental_up_to_date).length, recent365.length);
-  const opticalUpRate = pct(recent365.filter(a => a.optical_up_to_date).length, recent365.length);
-  const laSignOffRate = pct(recent365.filter(a => a.signed_off_by_la).length, recent365.length);
-  const reportSharedRate = pct(recent365.filter(a => a.report_shared).length, recent365.length);
+  const completionRate = rate(recent365.filter(a => a.completed_within_deadline).length, recent365.length);
+  const immunUpRate = rate(recent365.filter(a => a.immunisations_up_to_date).length, recent365.length);
+  const dentalUpRate = rate(recent365.filter(a => a.dental_up_to_date).length, recent365.length);
+  const opticalUpRate = rate(recent365.filter(a => a.optical_up_to_date).length, recent365.length);
+  const laSignOffRate = rate(recent365.filter(a => a.signed_off_by_la).length, recent365.length);
+  const reportSharedRate = rate(recent365.filter(a => a.report_shared).length, recent365.length);
   const avgRecs = recent365.length > 0
     ? Math.round((recent365.reduce((s, a) => s + a.recommendations_count, 0) / recent365.length) * 10) / 10
     : null;
@@ -223,16 +220,16 @@ export function computeHomeHealthMonitoring(
   const totalUpcoming = immunisations.reduce((s, i) => s + i.upcoming_due_count, 0);
   const childConsent = immunisations.filter(i => i.child_consent).length;
   const gpReviewed = immunisations.filter(i => i.gp_reviewed).length;
-  const catchUpRatio = totalMissed > 0 ? Math.min(pct(totalCaughtUp, totalMissed), 100) : 100;
+  const catchUpRatio = totalMissed > 0 ? Math.min(rate(totalCaughtUp, totalMissed)!, 100) : 100; // nothing missed = fully caught up, by design
 
   const immunisationProfile: ImmunisationProfile = {
     total_records: immunisations.length,
-    gp_registered_rate: pct(gpRegistered, immunisations.length),
+    gp_registered_rate: rate(gpRegistered, immunisations.length),
     missed_total: totalMissed,
     caught_up_total: totalCaughtUp,
     upcoming_due_total: totalUpcoming,
-    child_consent_rate: pct(childConsent, immunisations.length),
-    gp_reviewed_rate: pct(gpReviewed, immunisations.length),
+    child_consent_rate: rate(childConsent, immunisations.length),
+    gp_reviewed_rate: rate(gpReviewed, immunisations.length),
     catch_up_ratio: catchUpRatio,
   };
 
@@ -250,7 +247,7 @@ export function computeHomeHealthMonitoring(
 
   const dentalProfile: DentalProfile = {
     total_records: dental_records.length,
-    registered_rate: pct(registeredDental, dental_records.length),
+    registered_rate: rate(registeredDental, dental_records.length),
     overdue_checkups: overdueDental,
     anxiety_count: anxietyCount,
     avg_adjustments: avgAdjustments,
@@ -262,7 +259,7 @@ export function computeHomeHealthMonitoring(
     const d = daysBetween(p.last_updated, today);
     return d >= 0 && d <= 182; // ~6 months
   }).length;
-  const currencyRate = pct(currentPassports, health_passports.length);
+  const currencyRate = rate(currentPassports, health_passports.length);
   const avgMeds = health_passports.length > 0
     ? Math.round((health_passports.reduce((s, p) => s + p.medications_count, 0) / health_passports.length) * 10) / 10
     : null;
@@ -277,8 +274,8 @@ export function computeHomeHealthMonitoring(
     currency_rate: currencyRate,
     avg_medications: avgMeds,
     avg_conditions: avgConditions,
-    consent_given_rate: pct(consentGiven, health_passports.length),
-    immunisations_up_to_date_rate: pct(passportImmunUp, health_passports.length),
+    consent_given_rate: rate(consentGiven, health_passports.length),
+    immunisations_up_to_date_rate: rate(passportImmunUp, health_passports.length),
   };
 
   // ── Scoring ───────────────────────────────────────────────────────────
@@ -286,55 +283,55 @@ export function computeHomeHealthMonitoring(
   let score = 52;
 
   // 1. AHA completion rate (±5)
-  const ahaCompRate = pct(childrenAssessed, total_children);
+  const ahaCompRate = rate(childrenAssessed, total_children);
   if (ahaCompRate === 100) score += 5;
-  else if (ahaCompRate >= 80) score += 2;
-  else if (ahaCompRate < 50) score -= 5;
+  else if (meets(ahaCompRate, 80)) score += 2;
+  else if (below(ahaCompRate, 50)) score -= 5;
   else score -= 2;
 
   // 2. Immunisation coverage (±4)
-  const immunCoverage = pct(immunisations.filter(i => !i.missed_count || i.caught_up_count >= i.missed_count).length, immunisations.length);
+  const immunCoverage = rate(immunisations.filter(i => !i.missed_count || i.caught_up_count >= i.missed_count).length, immunisations.length);
   if (immunCoverage === 100) score += 4;
-  else if (immunCoverage >= 80) score += 2;
-  else if (immunCoverage < 50) score -= 4;
+  else if (meets(immunCoverage, 80)) score += 2;
+  else if (below(immunCoverage, 50)) score -= 4;
   else score -= 1;
 
   // 3. Dental registration (±4)
-  const dentalRegRate = pct(registeredDental, dental_records.length);
+  const dentalRegRate = rate(registeredDental, dental_records.length);
   if (dentalRegRate === 100) score += 4;
-  else if (dentalRegRate >= 80) score += 2;
-  else if (dentalRegRate < 50) score -= 4;
+  else if (meets(dentalRegRate, 80)) score += 2;
+  else if (below(dentalRegRate, 50)) score -= 4;
   else score -= 1;
 
   // 4. Health passport currency (±3) — updated within 6 months
   if (currencyRate === 100) score += 3;
-  else if (currencyRate >= 80) score += 1;
-  else if (currencyRate < 50) score -= 3;
+  else if (meets(currencyRate, 80)) score += 1;
+  else if (below(currencyRate, 50)) score -= 3;
   else score -= 1;
 
   // 5. AHA timeliness (±3) — completed_within_deadline
   if (completionRate === 100 && recent365.length > 0) score += 3;
-  else if (completionRate >= 80) score += 1;
-  else if (completionRate < 50 && recent365.length > 0) score -= 3;
+  else if (meets(completionRate, 80)) score += 1;
+  else if (below(completionRate, 50) && recent365.length > 0) score -= 3;
   else if (recent365.length > 0) score -= 1;
 
   // 6. Optical check coverage (±3)
   if (opticalUpRate === 100 && recent365.length > 0) score += 3;
-  else if (opticalUpRate >= 80) score += 1;
-  else if (opticalUpRate < 50 && recent365.length > 0) score -= 3;
+  else if (meets(opticalUpRate, 80)) score += 1;
+  else if (below(opticalUpRate, 50) && recent365.length > 0) score -= 3;
   else if (recent365.length > 0) score -= 1;
 
   // 7. Child consent / participation (±3)
-  const consentRate = pct(childConsent, immunisations.length);
+  const consentRate = rate(childConsent, immunisations.length);
   if (consentRate === 100 && immunisations.length > 0) score += 3;
-  else if (consentRate >= 80) score += 1;
-  else if (consentRate < 50 && immunisations.length > 0) score -= 3;
+  else if (meets(consentRate, 80)) score += 1;
+  else if (below(consentRate, 50) && immunisations.length > 0) score -= 3;
   else if (immunisations.length > 0) score -= 1;
 
   // 8. LA sign-off compliance (±3)
   if (laSignOffRate === 100 && recent365.length > 0) score += 3;
-  else if (laSignOffRate >= 80) score += 1;
-  else if (laSignOffRate < 50 && recent365.length > 0) score -= 3;
+  else if (meets(laSignOffRate, 80)) score += 1;
+  else if (below(laSignOffRate, 50) && recent365.length > 0) score -= 3;
   else if (recent365.length > 0) score -= 1;
 
   score = clamp(score, 0, 100);
@@ -356,13 +353,13 @@ export function computeHomeHealthMonitoring(
   const concerns: string[] = [];
   const childrenNotAssessed = total_children - childrenAssessed;
   if (childrenNotAssessed > 0 && total_children > 0) concerns.push(`${childrenNotAssessed} child${childrenNotAssessed > 1 ? "ren" : ""} without a health assessment in the last 12 months — statutory requirement.`);
-  if (completionRate < 80 && recent365.length > 0) concerns.push(`Only ${completionRate}% of assessments completed within deadline — timeliness needs improvement.`);
+  if (below(completionRate, 80) && recent365.length > 0) concerns.push(`Only ${completionRate}% of assessments completed within deadline — timeliness needs improvement.`);
   if (totalMissed > 0 && catchUpRatio < 100) concerns.push(`${totalMissed} missed immunisation${totalMissed > 1 ? "s" : ""} across children with only ${catchUpRatio}% catch-up rate.`);
   if (overdueDental > 0) concerns.push(`${overdueDental} overdue dental check-up${overdueDental > 1 ? "s" : ""} — 6-monthly dental reviews are expected.`);
-  if (currencyRate < 80 && health_passports.length > 0) concerns.push(`Only ${currencyRate}% of health passports updated within 6 months — passports should be kept current.`);
-  if (dentalRegRate < 80 && dental_records.length > 0) concerns.push(`Only ${dentalRegRate}% dental registration rate — all children should be registered with a dentist.`);
-  if (opticalUpRate < 80 && recent365.length > 0) concerns.push(`Only ${opticalUpRate}% optical check coverage — annual eye tests are expected.`);
-  if (laSignOffRate < 80 && recent365.length > 0) concerns.push(`Only ${laSignOffRate}% LA sign-off rate — all health assessments should be signed off by the placing authority.`);
+  if (below(currencyRate, 80) && health_passports.length > 0) concerns.push(`Only ${currencyRate}% of health passports updated within 6 months — passports should be kept current.`);
+  if (below(dentalRegRate, 80) && dental_records.length > 0) concerns.push(`Only ${dentalRegRate}% dental registration rate — all children should be registered with a dentist.`);
+  if (below(opticalUpRate, 80) && recent365.length > 0) concerns.push(`Only ${opticalUpRate}% optical check coverage — annual eye tests are expected.`);
+  if (below(laSignOffRate, 80) && recent365.length > 0) concerns.push(`Only ${laSignOffRate}% LA sign-off rate — all health assessments should be signed off by the placing authority.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: HealthMonitoringRecommendation[] = [];
@@ -377,16 +374,16 @@ export function computeHomeHealthMonitoring(
   if (overdueDental > 0) {
     recs.push({ rank: rank++, recommendation: `Arrange dental appointments for ${overdueDental} overdue check-up${overdueDental > 1 ? "s" : ""}.`, urgency: "soon", regulatory_ref: "Reg 10" });
   }
-  if (currencyRate < 80 && health_passports.length > 0) {
+  if (below(currencyRate, 80) && health_passports.length > 0) {
     recs.push({ rank: rank++, recommendation: "Update health passports to ensure all are current within 6 months — include medication, allergy, and condition changes.", urgency: "soon", regulatory_ref: "Reg 10/15" });
   }
-  if (dentalRegRate < 100 && dental_records.length > 0) {
+  if (below(dentalRegRate, 100) && dental_records.length > 0) {
     recs.push({ rank: rank++, recommendation: "Register all children with a dental practice — pursue waiting list or transfer options if needed.", urgency: "soon", regulatory_ref: "Reg 10" });
   }
-  if (laSignOffRate < 100 && recent365.length > 0) {
+  if (below(laSignOffRate, 100) && recent365.length > 0) {
     recs.push({ rank: rank++, recommendation: "Chase LA sign-off for outstanding health assessments — this is required for multi-agency compliance.", urgency: "planned", regulatory_ref: "Reg 10" });
   }
-  if (opticalUpRate < 80 && recent365.length > 0) {
+  if (below(opticalUpRate, 80) && recent365.length > 0) {
     recs.push({ rank: rank++, recommendation: "Schedule optical checks for children without recent eye tests.", urgency: "planned", regulatory_ref: "Reg 10" });
   }
   if (anxietyCount > 0) {
@@ -405,7 +402,7 @@ export function computeHomeHealthMonitoring(
   if (overdueDental >= 2) {
     insights.push({ text: `${overdueDental} overdue dental appointments. Dental neglect is a safeguarding indicator — Ofsted expects 6-monthly dental reviews.`, severity: "warning" });
   }
-  if (currencyRate < 50 && health_passports.length > 0) {
+  if (below(currencyRate, 50) && health_passports.length > 0) {
     insights.push({ text: `Only ${currencyRate}% of health passports are current. Outdated passports risk missed allergies, medications, or conditions in emergency situations.`, severity: "warning" });
   }
   if (ahaCompRate === 100 && completionRate === 100 && total_children > 0) {
@@ -423,7 +420,7 @@ export function computeHomeHealthMonitoring(
   if (rating === "outstanding") {
     headline = "Outstanding health monitoring — comprehensive assessments, full immunisation coverage, and current health passports across all children.";
   } else if (rating === "good") {
-    headline = `Good health monitoring — ${childrenAssessed} of ${total_children} children assessed with ${completionRate}% timeliness.`;
+    headline = `Good health monitoring — ${childrenAssessed} of ${total_children} children assessed with ${formatRate(completionRate)} timeliness.`;
   } else if (rating === "adequate") {
     headline = "Adequate health monitoring — some gaps in assessment coverage, immunisation, or dental registration need attention.";
   } else {
@@ -450,23 +447,23 @@ export function computeHomeHealthMonitoring(
 function emptyAssessment(): AssessmentProfile {
   return {
     total_assessments: 0, recent_365d: 0, children_assessed: 0,
-    completion_rate: 0, immunisations_up_to_date_rate: 0,
-    dental_up_to_date_rate: 0, optical_up_to_date_rate: 0,
-    la_sign_off_rate: 0, report_shared_rate: 0, avg_recommendations: 0,
+    completion_rate: null, immunisations_up_to_date_rate: null,
+    dental_up_to_date_rate: null, optical_up_to_date_rate: null,
+    la_sign_off_rate: null, report_shared_rate: null, avg_recommendations: 0,
   };
 }
 
 function emptyImmunisation(): ImmunisationProfile {
   return {
-    total_records: 0, gp_registered_rate: 0,
+    total_records: 0, gp_registered_rate: null,
     missed_total: 0, caught_up_total: 0, upcoming_due_total: 0,
-    child_consent_rate: 0, gp_reviewed_rate: 0, catch_up_ratio: 100,
+    child_consent_rate: null, gp_reviewed_rate: null, catch_up_ratio: 100,
   };
 }
 
 function emptyDental(): DentalProfile {
   return {
-    total_records: 0, registered_rate: 0,
+    total_records: 0, registered_rate: null,
     overdue_checkups: 0, anxiety_count: 0, avg_adjustments: 0,
     children_with_dental: 0,
   };
@@ -474,8 +471,8 @@ function emptyDental(): DentalProfile {
 
 function emptyPassport(): PassportProfile {
   return {
-    total_passports: 0, currency_rate: 0,
+    total_passports: 0, currency_rate: null,
     avg_medications: 0, avg_conditions: 0,
-    consent_given_rate: 0, immunisations_up_to_date_rate: 0,
+    consent_given_rate: null, immunisations_up_to_date_rate: null,
   };
 }

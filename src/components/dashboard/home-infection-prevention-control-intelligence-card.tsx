@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldPlus } from
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { InfectionPreventionRating } from "@/lib/engines/home-infection-prevention-control-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<InfectionPreventionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeInfectionPreventionControlIntelligenceCard() {
             <ShieldPlus className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-lime-600")} />
             <span className="text-slate-900 font-bold">Infection Prevention & Control</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.infection_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.infection_score}%</span>}
+            {d.infection_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.infection_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeInfectionPreventionControlIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.infection_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.hygiene_audit_compliance_rate >= 90 ? "bg-green-50" : d.hygiene_audit_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hygiene_audit_compliance_rate >= 90 ? "text-[--cs-success]" : d.hygiene_audit_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_audit_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hygiene_audit_compliance_rate, 90) ? "bg-green-50" : meets(d.hygiene_audit_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hygiene_audit_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.hygiene_audit_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_audit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.outbreak_management_rate >= 90 ? "bg-green-50" : d.outbreak_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outbreak_management_rate >= 90 ? "text-[--cs-success]" : d.outbreak_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outbreak_management_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.outbreak_management_rate, 90) ? "bg-green-50" : meets(d.outbreak_management_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.outbreak_management_rate, 90) ? "text-[--cs-success]" : meets(d.outbreak_management_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outbreak_management_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Outbreak</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hand_hygiene_rate >= 90 ? "bg-green-50" : d.hand_hygiene_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hand_hygiene_rate >= 90 ? "text-[--cs-success]" : d.hand_hygiene_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hand_hygiene_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hand_hygiene_rate, 90) ? "bg-green-50" : meets(d.hand_hygiene_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hand_hygiene_rate, 90) ? "text-[--cs-success]" : meets(d.hand_hygiene_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hand_hygiene_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hands</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cleaning_compliance_rate >= 90 ? "bg-green-50" : d.cleaning_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cleaning_compliance_rate >= 90 ? "text-[--cs-success]" : d.cleaning_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cleaning_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cleaning_compliance_rate, 90) ? "bg-green-50" : meets(d.cleaning_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cleaning_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.cleaning_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleaning_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cleaning</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.immunisation_coverage_rate >= 90 ? "bg-green-50" : d.immunisation_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.immunisation_coverage_rate >= 90 ? "text-[--cs-success]" : d.immunisation_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.immunisation_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.immunisation_coverage_rate, 90) ? "bg-green-50" : meets(d.immunisation_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.immunisation_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.immunisation_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.immunisation_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Immun.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME HOLIDAY & TRIP PLANNING INTELLIGENCE ENGINE
 // Monitors holiday activity planning, trip risk assessment completion, consent
@@ -164,10 +165,6 @@ export interface HolidayTripResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -192,12 +189,12 @@ function emptyResult(
     headline,
     total_holiday_plans: 0,
     total_risk_assessments: 0,
-    holiday_planning_rate: 0,
-    risk_assessment_rate: 0,
-    consent_compliance_rate: 0,
-    experience_quality_rate: 0,
-    child_participation_rate: 0,
-    child_enjoyment_rate: 0,
+    holiday_planning_rate: null,
+    risk_assessment_rate: null,
+    consent_compliance_rate: null,
+    experience_quality_rate: null,
+    child_participation_rate: null,
+    child_enjoyment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -296,13 +293,13 @@ export function computeHolidayTripPlanning(
       if (check(rec)) totalPlanningChecksPassed++;
     }
   }
-  const holidayPlanningRate = pct(totalPlanningChecksPassed, totalPlanningChecksPossible);
+  const holidayPlanningRate = rate(totalPlanningChecksPassed, totalPlanningChecksPossible);
 
   const childBriefed = holiday_plan_records.filter((h) => h.child_briefed).length;
-  const childBriefingRate = pct(childBriefed, totalHolidayPlans);
+  const childBriefingRate = rate(childBriefed, totalHolidayPlans);
 
   const socialWorkerNotified = holiday_plan_records.filter((h) => h.social_worker_notified).length;
-  const socialWorkerNotificationRate = pct(socialWorkerNotified, totalHolidayPlans);
+  const socialWorkerNotificationRate = rate(socialWorkerNotified, totalHolidayPlans);
 
   // Holiday type distribution
   const holidayTypes: Record<string, number> = {};
@@ -314,7 +311,7 @@ export function computeHolidayTripPlanning(
   const uniqueChildrenWithHolidays = new Set(
     holiday_plan_records.map((h) => h.child_id),
   ).size;
-  const holidayCoverageRate = total_children > 0 ? pct(uniqueChildrenWithHolidays, total_children) : 0;
+  const holidayCoverageRate = total_children > 0 ? rate(uniqueChildrenWithHolidays, total_children) : 0;
 
   // --- Risk assessment metrics ---
   const totalRiskAssessments = trip_risk_assessment_records.length;
@@ -326,12 +323,12 @@ export function computeHolidayTripPlanning(
   const riskApproved = trip_risk_assessment_records.filter((r) => r.approved).length;
 
   const dynamicRAPlanned = trip_risk_assessment_records.filter((r) => r.dynamic_risk_assessment_planned).length;
-  const dynamicRARate = pct(dynamicRAPlanned, totalRiskAssessments);
+  const dynamicRARate = rate(dynamicRAPlanned, totalRiskAssessments);
 
   // Composite risk assessment rate: mitigation + reviewed + approved
   const riskAssessmentNumerator = mitigationInPlace + riskReviewed + riskApproved;
   const riskAssessmentDenominator = totalRiskAssessments * 3;
-  const riskAssessmentRate = pct(riskAssessmentNumerator, riskAssessmentDenominator);
+  const riskAssessmentRate = rate(riskAssessmentNumerator, riskAssessmentDenominator);
 
   // High-risk unmitigated assessments
   const highRiskUnmitigated = trip_risk_assessment_records.filter(
@@ -349,7 +346,7 @@ export function computeHolidayTripPlanning(
     trip_risk_assessment_records.map((r) => r.holiday_plan_id),
   );
   const plansWithRA = holiday_plan_records.filter((h) => holidayPlanIdsWithRA.has(h.id)).length;
-  const riskAssessmentCoverageRate = pct(plansWithRA, totalHolidayPlans);
+  const riskAssessmentCoverageRate = rate(plansWithRA, totalHolidayPlans);
 
   // --- Consent management metrics ---
   const totalConsentRecords = consent_management_records.length;
@@ -361,13 +358,13 @@ export function computeHolidayTripPlanning(
   // Composite consent compliance: received + documented
   const consentComplianceNumerator = consentReceived + consentDocumented;
   const consentComplianceDenominator = totalConsentRecords * 2;
-  const consentComplianceRate = pct(consentComplianceNumerator, consentComplianceDenominator);
+  const consentComplianceRate = rate(consentComplianceNumerator, consentComplianceDenominator);
 
   // Outstanding (not yet received, not refused)
   const consentOutstanding = consent_management_records.filter(
     (c) => !c.consent_received && !c.refused,
   ).length;
-  const consentOutstandingRate = pct(consentOutstanding, totalConsentRecords);
+  const consentOutstandingRate = rate(consentOutstanding, totalConsentRecords);
 
   // Consent type distribution
   const consentTypes: Record<string, number> = {};
@@ -387,24 +384,24 @@ export function computeHolidayTripPlanning(
   const positiveFeedback = experience_records.filter((e) => e.child_feedback_positive).length;
 
   const memorableMoments = experience_records.filter((e) => e.memorable_moment_captured).length;
-  const memorableMomentRate = pct(memorableMoments, totalExperiences);
+  const memorableMomentRate = rate(memorableMoments, totalExperiences);
 
   const photosTaken = experience_records.filter((e) => e.photos_taken).length;
-  const photosRate = pct(photosTaken, totalExperiences);
+  const photosRate = rate(photosTaken, totalExperiences);
 
   const newSkills = experience_records.filter((e) => e.new_skill_learned).length;
-  const newSkillRate = pct(newSkills, totalExperiences);
+  const newSkillRate = rate(newSkills, totalExperiences);
 
   const socialInteractionPositive = experience_records.filter((e) => e.social_interaction_positive).length;
 
   // Composite experience quality: feedback_positive + memorable + photos + skills + social
   const expQualityNumerator = positiveFeedback + memorableMoments + photosTaken + newSkills + socialInteractionPositive;
   const expQualityDenominator = totalExperiences * 5;
-  const experienceQualityRate = pct(expQualityNumerator, expQualityDenominator);
+  const experienceQualityRate = rate(expQualityNumerator, expQualityDenominator);
 
   // Child enjoyment rate: enjoyment >= 4 out of 5
   const highEnjoyment = experience_records.filter((e) => e.child_enjoyment_rating >= 4).length;
-  const childEnjoymentRate = pct(highEnjoyment, totalExperiences);
+  const childEnjoymentRate = rate(highEnjoyment, totalExperiences);
 
   // Experience type distribution
   const experienceTypes: Record<string, number> = {};
@@ -420,7 +417,7 @@ export function computeHolidayTripPlanning(
   const viewsRecorded = child_participation_records.filter((p) => p.child_views_recorded).length;
 
   const viewsActedUpon = child_participation_records.filter((p) => p.child_views_acted_upon).length;
-  const viewsActedUponRate = pct(viewsActedUpon, totalParticipation);
+  const viewsActedUponRate = rate(viewsActedUpon, totalParticipation);
 
   const enthusiasmSum = child_participation_records.reduce((sum, p) => sum + p.child_enthusiasm_rating, 0);
   const avgEnthusiasmRating =
@@ -434,12 +431,12 @@ export function computeHolidayTripPlanning(
   const barriersAddressed = child_participation_records.filter(
     (p) => p.barriers_to_participation !== null && p.barriers_to_participation !== "" && p.barriers_addressed,
   ).length;
-  const barrierResolutionRate = pct(barriersAddressed, barriersIdentified);
+  const barrierResolutionRate = rate(barriersAddressed, barriersIdentified);
 
   // Composite child participation rate: involved + views recorded + views acted upon
   const participationNumerator = childInvolved + viewsRecorded + viewsActedUpon;
   const participationDenominator = totalParticipation * 3;
-  const childParticipationRate = pct(participationNumerator, participationDenominator);
+  const childParticipationRate = rate(participationNumerator, participationDenominator);
 
   // Participation type distribution
   const participationTypes: Record<string, number> = {};
@@ -452,54 +449,54 @@ export function computeHolidayTripPlanning(
   let score = 52;
 
   // --- Bonus 1: holidayPlanningRate (>=90: +4, >=70: +2) ---
-  if (holidayPlanningRate >= 90) score += 4;
-  else if (holidayPlanningRate >= 70) score += 2;
+  if (meets(holidayPlanningRate, 90)) score += 4;
+  else if (meets(holidayPlanningRate, 70)) score += 2;
 
   // --- Bonus 2: riskAssessmentRate (>=90: +4, >=70: +2) ---
-  if (riskAssessmentRate >= 90) score += 4;
-  else if (riskAssessmentRate >= 70) score += 2;
+  if (meets(riskAssessmentRate, 90)) score += 4;
+  else if (meets(riskAssessmentRate, 70)) score += 2;
 
   // --- Bonus 3: consentComplianceRate (>=90: +4, >=70: +2) ---
-  if (consentComplianceRate >= 90) score += 4;
-  else if (consentComplianceRate >= 70) score += 2;
+  if (meets(consentComplianceRate, 90)) score += 4;
+  else if (meets(consentComplianceRate, 70)) score += 2;
 
   // --- Bonus 4: experienceQualityRate (>=85: +3, >=65: +1) ---
-  if (experienceQualityRate >= 85) score += 3;
-  else if (experienceQualityRate >= 65) score += 1;
+  if (meets(experienceQualityRate, 85)) score += 3;
+  else if (meets(experienceQualityRate, 65)) score += 1;
 
   // --- Bonus 5: childParticipationRate (>=90: +3, >=70: +1) ---
-  if (childParticipationRate >= 90) score += 3;
-  else if (childParticipationRate >= 70) score += 1;
+  if (meets(childParticipationRate, 90)) score += 3;
+  else if (meets(childParticipationRate, 70)) score += 1;
 
   // --- Bonus 6: childEnjoymentRate (>=90: +3, >=70: +1) ---
-  if (childEnjoymentRate >= 90) score += 3;
-  else if (childEnjoymentRate >= 70) score += 1;
+  if (meets(childEnjoymentRate, 90)) score += 3;
+  else if (meets(childEnjoymentRate, 70)) score += 1;
 
   // --- Bonus 7: riskAssessmentCoverageRate (>=90: +3, >=70: +1) ---
-  if (riskAssessmentCoverageRate >= 90) score += 3;
-  else if (riskAssessmentCoverageRate >= 70) score += 1;
+  if (meets(riskAssessmentCoverageRate, 90)) score += 3;
+  else if (meets(riskAssessmentCoverageRate, 70)) score += 1;
 
   // --- Bonus 8: holidayCoverageRate (>=80: +2, >=50: +1) ---
-  if (holidayCoverageRate >= 80) score += 2;
-  else if (holidayCoverageRate >= 50) score += 1;
+  if (meets(holidayCoverageRate, 80)) score += 2;
+  else if (meets(holidayCoverageRate, 50)) score += 1;
 
   // --- Bonus 9: memorableMomentRate (>=85: +2, >=65: +1) ---
-  if (memorableMomentRate >= 85) score += 2;
-  else if (memorableMomentRate >= 65) score += 1;
+  if (meets(memorableMomentRate, 85)) score += 2;
+  else if (meets(memorableMomentRate, 65)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // holidayPlanningRate < 50 → -5
-  if (holidayPlanningRate < 50 && holiday_plan_records.length > 0) score -= 5;
+  if (below(holidayPlanningRate, 50) && holiday_plan_records.length > 0) score -= 5;
 
   // riskAssessmentRate < 50 → -5
-  if (riskAssessmentRate < 50 && trip_risk_assessment_records.length > 0) score -= 5;
+  if (below(riskAssessmentRate, 50) && trip_risk_assessment_records.length > 0) score -= 5;
 
   // consentComplianceRate < 50 → -5
-  if (consentComplianceRate < 50 && consent_management_records.length > 0) score -= 5;
+  if (below(consentComplianceRate, 50) && consent_management_records.length > 0) score -= 5;
 
   // childParticipationRate < 40 → -3
-  if (childParticipationRate < 40 && child_participation_records.length > 0) score -= 3;
+  if (below(childParticipationRate, 40) && child_participation_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -509,127 +506,127 @@ export function computeHolidayTripPlanning(
 
   const strengths: string[] = [];
 
-  if (holidayPlanningRate >= 90 && totalHolidayPlans > 0) {
+  if (meets(holidayPlanningRate, 90) && totalHolidayPlans > 0) {
     strengths.push(
       `${holidayPlanningRate}% holiday planning completeness — holidays and trips are thoroughly planned with itineraries, budgets, staffing, transport, accommodation, and activities all confirmed, demonstrating excellent organisational practice.`,
     );
-  } else if (holidayPlanningRate >= 70 && totalHolidayPlans > 0) {
+  } else if (meets(holidayPlanningRate, 70) && totalHolidayPlans > 0) {
     strengths.push(
       `${holidayPlanningRate}% holiday planning completeness — the home generally plans holidays and trips well with most key elements in place.`,
     );
   }
 
-  if (riskAssessmentRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentRate}% risk assessment compliance — trip risks are consistently identified, mitigated, reviewed, and approved, ensuring children's safety is prioritised during holidays and outings.`,
     );
-  } else if (riskAssessmentRate >= 70 && totalRiskAssessments > 0) {
+  } else if (meets(riskAssessmentRate, 70) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentRate}% risk assessment compliance — the home generally manages trip risk assessments effectively with mitigation measures in place.`,
     );
   }
 
-  if (consentComplianceRate >= 90 && totalConsentRecords > 0) {
+  if (meets(consentComplianceRate, 90) && totalConsentRecords > 0) {
     strengths.push(
       `${consentComplianceRate}% consent compliance — consent is consistently obtained and documented for holidays and trips, ensuring regulatory compliance and proper authorisation from all required parties.`,
     );
-  } else if (consentComplianceRate >= 70 && totalConsentRecords > 0) {
+  } else if (meets(consentComplianceRate, 70) && totalConsentRecords > 0) {
     strengths.push(
       `${consentComplianceRate}% consent compliance — the home generally obtains and documents consent for holidays and trips effectively.`,
     );
   }
 
-  if (experienceQualityRate >= 85 && totalExperiences > 0) {
+  if (meets(experienceQualityRate, 85) && totalExperiences > 0) {
     strengths.push(
       `${experienceQualityRate}% experience quality — holidays and trips consistently create memorable moments, new skills, positive social interactions, and documented memories through photographs and child feedback.`,
     );
-  } else if (experienceQualityRate >= 65 && totalExperiences > 0) {
+  } else if (meets(experienceQualityRate, 65) && totalExperiences > 0) {
     strengths.push(
       `${experienceQualityRate}% experience quality — the home generally creates positive, enriching experiences during holidays and trips.`,
     );
   }
 
-  if (childParticipationRate >= 90 && totalParticipation > 0) {
+  if (meets(childParticipationRate, 90) && totalParticipation > 0) {
     strengths.push(
       `${childParticipationRate}% child participation — children are actively involved in planning their holidays and trips, their views are recorded and acted upon, reflecting genuinely child-centred practice.`,
     );
-  } else if (childParticipationRate >= 70 && totalParticipation > 0) {
+  } else if (meets(childParticipationRate, 70) && totalParticipation > 0) {
     strengths.push(
       `${childParticipationRate}% child participation — most children are involved in planning and their views are generally recorded and considered.`,
     );
   }
 
-  if (childEnjoymentRate >= 90 && totalExperiences > 0) {
+  if (meets(childEnjoymentRate, 90) && totalExperiences > 0) {
     strengths.push(
       `${childEnjoymentRate}% child enjoyment rate — children consistently rate their holiday and trip experiences highly, indicating that activities are well-matched to their interests and preferences.`,
     );
-  } else if (childEnjoymentRate >= 70 && totalExperiences > 0) {
+  } else if (meets(childEnjoymentRate, 70) && totalExperiences > 0) {
     strengths.push(
       `${childEnjoymentRate}% child enjoyment rate — most children report enjoying their holiday and trip experiences.`,
     );
   }
 
-  if (riskAssessmentCoverageRate >= 90 && totalHolidayPlans > 0) {
+  if (meets(riskAssessmentCoverageRate, 90) && totalHolidayPlans > 0) {
     strengths.push(
       `${riskAssessmentCoverageRate}% of holiday plans have associated risk assessments — the home ensures risk assessment is integral to every trip and holiday planning process.`,
     );
-  } else if (riskAssessmentCoverageRate >= 70 && totalHolidayPlans > 0) {
+  } else if (meets(riskAssessmentCoverageRate, 70) && totalHolidayPlans > 0) {
     strengths.push(
       `${riskAssessmentCoverageRate}% of holiday plans have risk assessments — the home generally links risk assessment to trip planning.`,
     );
   }
 
-  if (memorableMomentRate >= 85 && totalExperiences > 0) {
+  if (meets(memorableMomentRate, 85) && totalExperiences > 0) {
     strengths.push(
       `${memorableMomentRate}% of experiences include captured memorable moments — staff consistently record and celebrate special moments, helping children build positive memory banks and a sense of belonging.`,
     );
-  } else if (memorableMomentRate >= 65 && totalExperiences > 0) {
+  } else if (meets(memorableMomentRate, 65) && totalExperiences > 0) {
     strengths.push(
       `${memorableMomentRate}% of experiences include memorable moments — the home generally captures and celebrates special moments during holidays and trips.`,
     );
   }
 
-  if (socialWorkerNotificationRate >= 90 && totalHolidayPlans > 0) {
+  if (meets(socialWorkerNotificationRate, 90) && totalHolidayPlans > 0) {
     strengths.push(
       `${socialWorkerNotificationRate}% social worker notification rate — social workers are consistently informed about holiday and trip plans, demonstrating strong multi-agency communication.`,
     );
-  } else if (socialWorkerNotificationRate >= 70 && totalHolidayPlans > 0) {
+  } else if (meets(socialWorkerNotificationRate, 70) && totalHolidayPlans > 0) {
     strengths.push(
       `${socialWorkerNotificationRate}% social worker notification rate — the home generally keeps social workers informed about holiday plans.`,
     );
   }
 
-  if (childBriefingRate >= 90 && totalHolidayPlans > 0) {
+  if (meets(childBriefingRate, 90) && totalHolidayPlans > 0) {
     strengths.push(
       `${childBriefingRate}% of children briefed before holidays — children are consistently prepared and informed about upcoming trips, reducing anxiety and promoting engagement.`,
     );
   }
 
-  if (newSkillRate >= 70 && totalExperiences > 0) {
+  if (meets(newSkillRate, 70) && totalExperiences > 0) {
     strengths.push(
       `${newSkillRate}% of experiences include new skill development — holidays and trips are used as opportunities for children to learn and grow, extending beyond recreation to genuine developmental enrichment.`,
     );
   }
 
-  if (viewsActedUponRate >= 90 && totalParticipation > 0) {
+  if (meets(viewsActedUponRate, 90) && totalParticipation > 0) {
     strengths.push(
       `${viewsActedUponRate}% of children's views acted upon — the home not only records children's preferences but demonstrably incorporates them into planning, evidencing meaningful participation.`,
     );
   }
 
-  if (dynamicRARate >= 80 && totalRiskAssessments > 0) {
+  if (meets(dynamicRARate, 80) && totalRiskAssessments > 0) {
     strengths.push(
       `${dynamicRARate}% of risk assessments include dynamic assessment planning — the home plans for on-the-day risk management, showing sophisticated, responsive safety practice.`,
     );
   }
 
-  if (holidayCoverageRate >= 80 && total_children > 0) {
+  if (meets(holidayCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${holidayCoverageRate}% of children have documented holiday or trip plans — the home ensures equitable access to enriching experiences for all children in placement.`,
     );
   }
 
-  if (barrierResolutionRate >= 90 && barriersIdentified > 0) {
+  if (meets(barrierResolutionRate, 90) && barriersIdentified > 0) {
     strengths.push(
       `${barrierResolutionRate}% of identified participation barriers addressed — when obstacles to children's involvement are identified, the home takes effective action to overcome them.`,
     );
@@ -649,61 +646,61 @@ export function computeHolidayTripPlanning(
 
   const concerns: string[] = [];
 
-  if (holidayPlanningRate < 50 && totalHolidayPlans > 0) {
+  if (below(holidayPlanningRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Only ${holidayPlanningRate}% holiday planning completeness — the majority of holiday and trip plans are missing critical elements such as itineraries, budgets, staffing, or emergency plans, creating risks to children's safety and enjoyment.`,
     );
-  } else if (holidayPlanningRate < 70 && holidayPlanningRate >= 50 && totalHolidayPlans > 0) {
+  } else if (below(holidayPlanningRate, 70) && meets(holidayPlanningRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Holiday planning completeness at ${holidayPlanningRate}% — some key planning elements are missing from holiday and trip documentation, which may leave gaps in preparation.`,
     );
   }
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${riskAssessmentRate}% risk assessment compliance — the majority of trip risk assessments lack proper mitigation, review, or approval, potentially exposing children to unmanaged risks during holidays and outings.`,
     );
-  } else if (riskAssessmentRate < 70 && riskAssessmentRate >= 50 && totalRiskAssessments > 0) {
+  } else if (below(riskAssessmentRate, 70) && meets(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Risk assessment compliance at ${riskAssessmentRate}% — some risk assessments are not fully mitigated, reviewed, or approved, leaving gaps in safety management.`,
     );
   }
 
-  if (consentComplianceRate < 50 && totalConsentRecords > 0) {
+  if (below(consentComplianceRate, 50) && totalConsentRecords > 0) {
     concerns.push(
       `Only ${consentComplianceRate}% consent compliance — the majority of required consents are not obtained or documented, meaning holidays and trips may proceed without proper authorisation from parents, social workers, or placing authorities.`,
     );
-  } else if (consentComplianceRate < 70 && consentComplianceRate >= 50 && totalConsentRecords > 0) {
+  } else if (below(consentComplianceRate, 70) && meets(consentComplianceRate, 50) && totalConsentRecords > 0) {
     concerns.push(
       `Consent compliance at ${consentComplianceRate}% — some consents are not obtained or documented, creating regulatory and safeguarding risks.`,
     );
   }
 
-  if (experienceQualityRate < 50 && totalExperiences > 0) {
+  if (below(experienceQualityRate, 50) && totalExperiences > 0) {
     concerns.push(
       `Only ${experienceQualityRate}% experience quality — holidays and trips are not consistently creating positive, memorable, or developmental experiences for children, undermining the purpose of enrichment activities.`,
     );
-  } else if (experienceQualityRate < 65 && experienceQualityRate >= 50 && totalExperiences > 0) {
+  } else if (below(experienceQualityRate, 65) && meets(experienceQualityRate, 50) && totalExperiences > 0) {
     concerns.push(
       `Experience quality at ${experienceQualityRate}% — some holiday and trip experiences lack positive feedback, memorable moments, or developmental value.`,
     );
   }
 
-  if (childParticipationRate < 40 && totalParticipation > 0) {
+  if (below(childParticipationRate, 40) && totalParticipation > 0) {
     concerns.push(
       `Only ${childParticipationRate}% child participation — children are largely excluded from planning their own holidays and trips, their views are not recorded, and their preferences are not acted upon. This fails to meet the voice of the child requirement.`,
     );
-  } else if (childParticipationRate < 70 && childParticipationRate >= 40 && totalParticipation > 0) {
+  } else if (below(childParticipationRate, 70) && meets(childParticipationRate, 40) && totalParticipation > 0) {
     concerns.push(
       `Child participation at ${childParticipationRate}% — children's involvement in planning, and the extent to which their views are recorded and acted upon, requires improvement.`,
     );
   }
 
-  if (childEnjoymentRate < 50 && totalExperiences > 0) {
+  if (below(childEnjoymentRate, 50) && totalExperiences > 0) {
     concerns.push(
       `Only ${childEnjoymentRate}% child enjoyment rate — the majority of children are not rating their holiday and trip experiences highly, suggesting activities may not be well-matched to children's interests, abilities, or preferences.`,
     );
-  } else if (childEnjoymentRate < 70 && childEnjoymentRate >= 50 && totalExperiences > 0) {
+  } else if (below(childEnjoymentRate, 70) && meets(childEnjoymentRate, 50) && totalExperiences > 0) {
     concerns.push(
       `Child enjoyment rate at ${childEnjoymentRate}% — a notable proportion of children are not finding their holiday and trip experiences enjoyable.`,
     );
@@ -715,33 +712,33 @@ export function computeHolidayTripPlanning(
     );
   }
 
-  if (consentOutstandingRate > 30 && totalConsentRecords > 0) {
+  if (above(consentOutstandingRate, 30) && totalConsentRecords > 0) {
     concerns.push(
       `${consentOutstandingRate}% of consents are outstanding (not received and not refused) — a significant proportion of required consents have not been obtained, potentially delaying or jeopardising planned holidays and trips.`,
     );
   }
 
-  if (riskAssessmentCoverageRate < 50 && totalHolidayPlans > 0) {
+  if (below(riskAssessmentCoverageRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Only ${riskAssessmentCoverageRate}% of holiday plans have associated risk assessments — the majority of planned holidays and trips do not have documented risk assessments, which is a fundamental gap in child protection.`,
     );
-  } else if (riskAssessmentCoverageRate < 70 && riskAssessmentCoverageRate >= 50 && totalHolidayPlans > 0) {
+  } else if (below(riskAssessmentCoverageRate, 70) && meets(riskAssessmentCoverageRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Risk assessment coverage at ${riskAssessmentCoverageRate}% — some holiday plans do not have linked risk assessments.`,
     );
   }
 
-  if (holidayCoverageRate < 50 && total_children > 0 && totalHolidayPlans > 0) {
+  if (below(holidayCoverageRate, 50) && total_children > 0 && totalHolidayPlans > 0) {
     concerns.push(
       `Only ${holidayCoverageRate}% of children have documented holiday or trip plans — some children may be missing out on enriching experiences that their peers are accessing.`,
     );
   }
 
-  if (socialWorkerNotificationRate < 50 && totalHolidayPlans > 0) {
+  if (below(socialWorkerNotificationRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Only ${socialWorkerNotificationRate}% social worker notification rate — social workers are not being consistently informed about holiday plans, which may breach communication requirements with placing authorities.`,
     );
-  } else if (socialWorkerNotificationRate < 70 && socialWorkerNotificationRate >= 50 && totalHolidayPlans > 0) {
+  } else if (below(socialWorkerNotificationRate, 70) && meets(socialWorkerNotificationRate, 50) && totalHolidayPlans > 0) {
     concerns.push(
       `Social worker notification rate at ${socialWorkerNotificationRate}% — some social workers are not being informed about planned holidays and trips.`,
     );
@@ -775,13 +772,13 @@ export function computeHolidayTripPlanning(
     );
   }
 
-  if (viewsActedUponRate < 50 && totalParticipation > 0) {
+  if (below(viewsActedUponRate, 50) && totalParticipation > 0) {
     concerns.push(
       `Only ${viewsActedUponRate}% of children's views acted upon — while children may be asked for their preferences, their views are not being demonstrably incorporated into planning decisions.`,
     );
   }
 
-  if (barrierResolutionRate < 50 && barriersIdentified > 0) {
+  if (below(barrierResolutionRate, 50) && barriersIdentified > 0) {
     concerns.push(
       `Only ${barrierResolutionRate}% of identified participation barriers addressed — barriers preventing children from fully participating in holiday planning are recognised but not resolved.`,
     );
@@ -792,7 +789,7 @@ export function computeHolidayTripPlanning(
   const recommendations: HolidayTripRecommendation[] = [];
   let rank = 0;
 
-  if (holidayPlanningRate < 50 && totalHolidayPlans > 0) {
+  if (below(holidayPlanningRate, 50) && totalHolidayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -802,7 +799,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -812,7 +809,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (consentComplianceRate < 50 && totalConsentRecords > 0) {
+  if (below(consentComplianceRate, 50) && totalConsentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -832,7 +829,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipation > 0) {
+  if (below(childParticipationRate, 40) && totalParticipation > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -872,7 +869,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (childEnjoymentRate < 50 && totalExperiences > 0) {
+  if (below(childEnjoymentRate, 50) && totalExperiences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -882,7 +879,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (riskAssessmentCoverageRate < 50 && totalHolidayPlans > 0) {
+  if (below(riskAssessmentCoverageRate, 50) && totalHolidayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -892,7 +889,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (consentOutstandingRate > 30 && totalConsentRecords > 0) {
+  if (above(consentOutstandingRate, 30) && totalConsentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -902,7 +899,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (socialWorkerNotificationRate < 50 && totalHolidayPlans > 0) {
+  if (below(socialWorkerNotificationRate, 50) && totalHolidayPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -912,7 +909,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (experienceQualityRate < 50 && totalExperiences > 0) {
+  if (below(experienceQualityRate, 50) && totalExperiences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -923,8 +920,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    holidayPlanningRate >= 50 &&
-    holidayPlanningRate < 70 &&
+    meets(holidayPlanningRate, 50) &&
+    below(holidayPlanningRate, 70) &&
     totalHolidayPlans > 0
   ) {
     recommendations.push({
@@ -937,8 +934,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    riskAssessmentRate >= 50 &&
-    riskAssessmentRate < 70 &&
+    meets(riskAssessmentRate, 50) &&
+    below(riskAssessmentRate, 70) &&
     totalRiskAssessments > 0
   ) {
     recommendations.push({
@@ -951,8 +948,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    consentComplianceRate >= 50 &&
-    consentComplianceRate < 70 &&
+    meets(consentComplianceRate, 50) &&
+    below(consentComplianceRate, 70) &&
     totalConsentRecords > 0
   ) {
     recommendations.push({
@@ -965,8 +962,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childParticipationRate >= 40 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 40) &&
+    below(childParticipationRate, 70) &&
     totalParticipation > 0
   ) {
     recommendations.push({
@@ -979,8 +976,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childEnjoymentRate >= 50 &&
-    childEnjoymentRate < 70 &&
+    meets(childEnjoymentRate, 50) &&
+    below(childEnjoymentRate, 70) &&
     totalExperiences > 0
   ) {
     recommendations.push({
@@ -992,7 +989,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (memorableMomentRate < 65 && totalExperiences > 0) {
+  if (below(memorableMomentRate, 65) && totalExperiences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1003,7 +1000,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    holidayCoverageRate < 50 &&
+    below(holidayCoverageRate, 50) &&
     total_children > 0 &&
     totalHolidayPlans > 0
   ) {
@@ -1016,7 +1013,7 @@ export function computeHolidayTripPlanning(
     });
   }
 
-  if (viewsActedUponRate < 50 && viewsActedUponRate >= 0 && totalParticipation > 0) {
+  if (below(viewsActedUponRate, 50) && meets(viewsActedUponRate, 0) && totalParticipation > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1032,28 +1029,28 @@ export function computeHolidayTripPlanning(
 
   // -- Critical insights --
 
-  if (holidayPlanningRate < 50 && totalHolidayPlans > 0) {
+  if (below(holidayPlanningRate, 50) && totalHolidayPlans > 0) {
     insights.push({
       text: `Only ${holidayPlanningRate}% holiday planning completeness. Ofsted expects children's holidays and trips to be thoroughly planned with documented itineraries, risk management, and proper authorisation. Incomplete planning creates risks to children's safety and undermines the quality of their experiences.`,
       severity: "critical",
     });
   }
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     insights.push({
       text: `Only ${riskAssessmentRate}% risk assessment compliance. When trip risks are not properly mitigated, reviewed, and approved, children may be exposed to avoidable harm. This represents a fundamental gap in the home's duty to protect children during activities outside the home.`,
       severity: "critical",
     });
   }
 
-  if (consentComplianceRate < 50 && totalConsentRecords > 0) {
+  if (below(consentComplianceRate, 50) && totalConsentRecords > 0) {
     insights.push({
       text: `Only ${consentComplianceRate}% consent compliance. Holidays and trips proceeding without proper consent from parents, social workers, or placing authorities represent a serious safeguarding and regulatory concern. Consent is not optional — it is a legal and regulatory requirement.`,
       severity: "critical",
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipation > 0) {
+  if (below(childParticipationRate, 40) && totalParticipation > 0) {
     insights.push({
       text: `Child participation at only ${childParticipationRate}%. Children who are excluded from planning their own holiday and trip experiences miss a crucial opportunity for empowerment and agency. Ofsted expects children to be active participants in decisions that affect them, not passive recipients of adult decisions.`,
       severity: "critical",
@@ -1091,8 +1088,8 @@ export function computeHolidayTripPlanning(
   // -- Warning insights --
 
   if (
-    holidayPlanningRate >= 50 &&
-    holidayPlanningRate < 70 &&
+    meets(holidayPlanningRate, 50) &&
+    below(holidayPlanningRate, 70) &&
     totalHolidayPlans > 0
   ) {
     insights.push({
@@ -1102,8 +1099,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    riskAssessmentRate >= 50 &&
-    riskAssessmentRate < 70 &&
+    meets(riskAssessmentRate, 50) &&
+    below(riskAssessmentRate, 70) &&
     totalRiskAssessments > 0
   ) {
     insights.push({
@@ -1113,8 +1110,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    consentComplianceRate >= 50 &&
-    consentComplianceRate < 70 &&
+    meets(consentComplianceRate, 50) &&
+    below(consentComplianceRate, 70) &&
     totalConsentRecords > 0
   ) {
     insights.push({
@@ -1124,8 +1121,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childParticipationRate >= 40 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 40) &&
+    below(childParticipationRate, 70) &&
     totalParticipation > 0
   ) {
     insights.push({
@@ -1135,8 +1132,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childEnjoymentRate >= 50 &&
-    childEnjoymentRate < 70 &&
+    meets(childEnjoymentRate, 50) &&
+    below(childEnjoymentRate, 70) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1146,8 +1143,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    experienceQualityRate >= 50 &&
-    experienceQualityRate < 65 &&
+    meets(experienceQualityRate, 50) &&
+    below(experienceQualityRate, 65) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1157,8 +1154,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    riskAssessmentCoverageRate >= 50 &&
-    riskAssessmentCoverageRate < 70 &&
+    meets(riskAssessmentCoverageRate, 50) &&
+    below(riskAssessmentCoverageRate, 70) &&
     totalHolidayPlans > 0
   ) {
     insights.push({
@@ -1168,8 +1165,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    consentOutstandingRate > 20 &&
-    consentOutstandingRate <= 30 &&
+    above(consentOutstandingRate, 20) &&
+    consentOutstandingRate! <= 30 &&
     totalConsentRecords > 0
   ) {
     insights.push({
@@ -1190,8 +1187,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    socialWorkerNotificationRate >= 50 &&
-    socialWorkerNotificationRate < 70 &&
+    meets(socialWorkerNotificationRate, 50) &&
+    below(socialWorkerNotificationRate, 70) &&
     totalHolidayPlans > 0
   ) {
     insights.push({
@@ -1238,8 +1235,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    holidayPlanningRate >= 90 &&
-    riskAssessmentRate >= 90 &&
+    meets(holidayPlanningRate, 90) &&
+    meets(riskAssessmentRate, 90) &&
     totalHolidayPlans > 0 &&
     totalRiskAssessments > 0
   ) {
@@ -1250,7 +1247,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    consentComplianceRate >= 90 &&
+    meets(consentComplianceRate, 90) &&
     totalConsentRecords > 0
   ) {
     insights.push({
@@ -1260,8 +1257,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childParticipationRate >= 90 &&
-    childEnjoymentRate >= 90 &&
+    meets(childParticipationRate, 90) &&
+    meets(childEnjoymentRate, 90) &&
     totalParticipation > 0 &&
     totalExperiences > 0
   ) {
@@ -1272,7 +1269,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    experienceQualityRate >= 85 &&
+    meets(experienceQualityRate, 85) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1282,7 +1279,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    childEnjoymentRate >= 90 &&
+    meets(childEnjoymentRate, 90) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1292,7 +1289,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    riskAssessmentCoverageRate >= 90 &&
+    meets(riskAssessmentCoverageRate, 90) &&
     totalHolidayPlans > 0
   ) {
     insights.push({
@@ -1302,8 +1299,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    memorableMomentRate >= 85 &&
-    photosRate >= 85 &&
+    meets(memorableMomentRate, 85) &&
+    meets(photosRate, 85) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1313,7 +1310,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    viewsActedUponRate >= 90 &&
+    meets(viewsActedUponRate, 90) &&
     totalParticipation > 0
   ) {
     insights.push({
@@ -1323,7 +1320,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    holidayCoverageRate >= 80 &&
+    meets(holidayCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1333,7 +1330,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    newSkillRate >= 70 &&
+    meets(newSkillRate, 70) &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1343,7 +1340,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    barrierResolutionRate >= 90 &&
+    meets(barrierResolutionRate, 90) &&
     barriersIdentified > 0
   ) {
     insights.push({

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -102,7 +103,7 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.independence_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.independence_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.independence_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -119,10 +120,10 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.assessments.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.assessments.child_coverage >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.assessments.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.assessments.child_coverage, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.assessments.total_assessments > 0 ? `${d.assessments.child_coverage}%` : "—"}
+                  {d.assessments.total_assessments > 0 ? `${formatRate(d.assessments.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Assessed</p>
@@ -136,7 +137,7 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
                   (d.cooking.independent_or_teaching_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.cooking.independent_or_teaching_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.cooking.total_records > 0 ? `${d.cooking.independent_or_teaching_rate}%` : "—"}
+                  {d.cooking.total_records > 0 ? `${formatRate(d.cooking.independent_or_teaching_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Cooking</p>
@@ -150,7 +151,7 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
                   (d.money.confident_or_independent_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.money.confident_or_independent_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.money.total_records > 0 ? `${d.money.confident_or_independent_rate}%` : "—"}
+                  {d.money.total_records > 0 ? `${formatRate(d.money.confident_or_independent_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Money</p>
@@ -164,7 +165,7 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
                   (d.household.avg_completion ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.household.avg_completion ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.household.total_tasks > 0 ? `${d.household.avg_completion}%` : "—"}
+                  {d.household.total_tasks > 0 ? `${formatRate(d.household.avg_completion)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Tasks</p>

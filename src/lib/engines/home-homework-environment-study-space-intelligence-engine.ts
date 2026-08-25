@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME HOMEWORK ENVIRONMENT & STUDY SPACE INTELLIGENCE ENGINE
 // Monitors study environment quality — dedicated study space provision,
@@ -177,10 +178,6 @@ export interface HomeworkEnvironmentResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -208,12 +205,12 @@ function emptyResult(
     total_equipment_assessments: 0,
     total_lighting_assessments: 0,
     total_satisfaction_surveys: 0,
-    study_space_rate: 0,
-    noise_environment_rate: 0,
-    equipment_rate: 0,
-    lighting_rate: 0,
-    child_satisfaction_rate: 0,
-    utilisation_rate: 0,
+    study_space_rate: null,
+    noise_environment_rate: null,
+    equipment_rate: null,
+    lighting_rate: null,
+    child_satisfaction_rate: null,
+    utilisation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -311,10 +308,10 @@ export function computeHomeworkEnvironmentStudySpace(
       if (check(rec)) totalSpaceChecksPassed++;
     }
   }
-  const studySpaceRate = pct(totalSpaceChecksPassed, totalSpaceChecksPossible);
+  const studySpaceRate = rate(totalSpaceChecksPassed, totalSpaceChecksPossible);
 
   const dedicatedSpaceCount = study_space_records.filter((s) => s.dedicated_space_available).length;
-  const dedicatedSpaceRate = pct(dedicatedSpaceCount, totalSpaceAssessments);
+  const dedicatedSpaceRate = rate(dedicatedSpaceCount, totalSpaceAssessments);
 
   const spaceIssuesIdentified = study_space_records.filter(
     (s) => s.issues_identified.length > 0,
@@ -322,13 +319,13 @@ export function computeHomeworkEnvironmentStudySpace(
   const spaceIssuesResolved = study_space_records.filter(
     (s) => s.issues_identified.length > 0 && s.issues_resolved,
   ).length;
-  const spaceIssueResolutionRate = pct(spaceIssuesResolved, spaceIssuesIdentified);
+  const spaceIssueResolutionRate = rate(spaceIssuesResolved, spaceIssuesIdentified);
 
   // --- Noise environment metrics ---
   const totalNoiseAssessments = noise_environment_records.length;
 
   const noiseAcceptableCount = noise_environment_records.filter((n) => n.noise_level_acceptable).length;
-  const noiseEnvironmentRate = pct(noiseAcceptableCount, totalNoiseAssessments);
+  const noiseEnvironmentRate = rate(noiseAcceptableCount, totalNoiseAssessments);
 
   const noiseMitigationInPlace = noise_environment_records.filter(
     (n) => !n.noise_level_acceptable && n.noise_mitigation_in_place,
@@ -336,18 +333,18 @@ export function computeHomeworkEnvironmentStudySpace(
   const noiseNeedingMitigation = noise_environment_records.filter(
     (n) => !n.noise_level_acceptable,
   ).length;
-  const noiseMitigationRate = pct(noiseMitigationInPlace, noiseNeedingMitigation);
+  const noiseMitigationRate = rate(noiseMitigationInPlace, noiseNeedingMitigation);
 
   const severeConcentrationImpact = noise_environment_records.filter(
     (n) => n.impact_on_concentration === "severe" || n.impact_on_concentration === "moderate",
   ).length;
-  const concentrationImpactRate = pct(severeConcentrationImpact, totalNoiseAssessments);
+  const concentrationImpactRate = rate(severeConcentrationImpact, totalNoiseAssessments);
 
   const noiseFollowUpNeeded = noise_environment_records.filter((n) => n.follow_up_needed).length;
   const noiseFollowUpCompleted = noise_environment_records.filter(
     (n) => n.follow_up_needed && n.follow_up_completed,
   ).length;
-  const noiseFollowUpRate = pct(noiseFollowUpCompleted, noiseFollowUpNeeded);
+  const noiseFollowUpRate = rate(noiseFollowUpCompleted, noiseFollowUpNeeded);
 
   // --- Equipment metrics ---
   const totalEquipmentAssessments = equipment_records.length;
@@ -368,35 +365,35 @@ export function computeHomeworkEnvironmentStudySpace(
       if (check(rec)) totalEquipChecksPassed++;
     }
   }
-  const equipmentRate = pct(totalEquipChecksPassed, totalEquipChecksPossible);
+  const equipmentRate = rate(totalEquipChecksPassed, totalEquipChecksPossible);
 
   const computerAvailableCount = equipment_records.filter((e) => e.computer_laptop_available).length;
-  const computerAvailabilityRate = pct(computerAvailableCount, totalEquipmentAssessments);
+  const computerAvailabilityRate = rate(computerAvailableCount, totalEquipmentAssessments);
 
   const internetAccessCount = equipment_records.filter((e) => e.internet_access).length;
-  const internetAccessRate = pct(internetAccessCount, totalEquipmentAssessments);
+  const internetAccessRate = rate(internetAccessCount, totalEquipmentAssessments);
 
   const specialistNeeded = equipment_records.filter((e) => e.specialist_equipment_needed).length;
   const specialistProvided = equipment_records.filter(
     (e) => e.specialist_equipment_needed && e.specialist_equipment_provided,
   ).length;
-  const specialistProvisionRate = pct(specialistProvided, specialistNeeded);
+  const specialistProvisionRate = rate(specialistProvided, specialistNeeded);
 
   const replacementNeeded = equipment_records.filter((e) => e.replacement_needed).length;
   const replacementActioned = equipment_records.filter(
     (e) => e.replacement_needed && e.replacement_actioned,
   ).length;
-  const replacementActionRate = pct(replacementActioned, replacementNeeded);
+  const replacementActionRate = rate(replacementActioned, replacementNeeded);
 
   const poorConditionCount = equipment_records.filter(
     (e) => e.equipment_condition === "poor",
   ).length;
-  const poorConditionRate = pct(poorConditionCount, totalEquipmentAssessments);
+  const poorConditionRate = rate(poorConditionCount, totalEquipmentAssessments);
 
   const goodExcellentConditionCount = equipment_records.filter(
     (e) => e.equipment_condition === "excellent" || e.equipment_condition === "good",
   ).length;
-  const goodConditionRate = pct(goodExcellentConditionCount, totalEquipmentAssessments);
+  const goodConditionRate = rate(goodExcellentConditionCount, totalEquipmentAssessments);
 
   // --- Lighting metrics ---
   const totalLightingAssessments = lighting_records.length;
@@ -415,10 +412,10 @@ export function computeHomeworkEnvironmentStudySpace(
       if (check(rec)) totalLightChecksPassed++;
     }
   }
-  const lightingRate = pct(totalLightChecksPassed, totalLightChecksPossible);
+  const lightingRate = rate(totalLightChecksPassed, totalLightChecksPossible);
 
   const deskLampCount = lighting_records.filter((l) => l.desk_lamp_available).length;
-  const deskLampRate = pct(deskLampCount, totalLightingAssessments);
+  const deskLampRate = rate(deskLampCount, totalLightingAssessments);
 
   // --- Child satisfaction metrics ---
   const totalSatisfactionSurveys = child_satisfaction_records.length;
@@ -427,27 +424,27 @@ export function computeHomeworkEnvironmentStudySpace(
   const satisfiedChildren = child_satisfaction_records.filter(
     (c) => c.overall_satisfaction >= 4,
   ).length;
-  const childSatisfactionRate = pct(satisfiedChildren, totalSatisfactionSurveys);
+  const childSatisfactionRate = rate(satisfiedChildren, totalSatisfactionSurveys);
 
   const canConcentrate = child_satisfaction_records.filter(
     (c) => c.feels_able_to_concentrate,
   ).length;
-  const concentrationRate = pct(canConcentrate, totalSatisfactionSurveys);
+  const concentrationRate = rate(canConcentrate, totalSatisfactionSurveys);
 
   const feelsSupported = child_satisfaction_records.filter(
     (c) => c.feels_supported_in_study,
   ).length;
-  const studySupportRate = pct(feelsSupported, totalSatisfactionSurveys);
+  const studySupportRate = rate(feelsSupported, totalSatisfactionSurveys);
 
   const wouldChange = child_satisfaction_records.filter(
     (c) => c.would_change_anything,
   ).length;
-  const changeRequestRate = pct(wouldChange, totalSatisfactionSurveys);
+  const changeRequestRate = rate(wouldChange, totalSatisfactionSurveys);
 
   const prefersDifferent = child_satisfaction_records.filter(
     (c) => c.prefers_different_location,
   ).length;
-  const locationDissatisfactionRate = pct(prefersDifferent, totalSatisfactionSurveys);
+  const locationDissatisfactionRate = rate(prefersDifferent, totalSatisfactionSurveys);
 
   const avgHomeworkCompletion =
     totalSatisfactionSurveys > 0
@@ -465,57 +462,57 @@ export function computeHomeworkEnvironmentStudySpace(
     study_space_records.map((s) => s.child_id),
   ).size;
   const utilisationRate =
-    total_children > 0 ? pct(uniqueChildrenWithSpaces, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithSpaces, total_children) : 0;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: studySpaceRate (>=90: +4, >=70: +2) ---
-  if (studySpaceRate >= 90) score += 4;
-  else if (studySpaceRate >= 70) score += 2;
+  if (meets(studySpaceRate, 90)) score += 4;
+  else if (meets(studySpaceRate, 70)) score += 2;
 
   // --- Bonus 2: noiseEnvironmentRate (>=90: +4, >=70: +2) ---
-  if (noiseEnvironmentRate >= 90) score += 4;
-  else if (noiseEnvironmentRate >= 70) score += 2;
+  if (meets(noiseEnvironmentRate, 90)) score += 4;
+  else if (meets(noiseEnvironmentRate, 70)) score += 2;
 
   // --- Bonus 3: equipmentRate (>=90: +4, >=70: +2) ---
-  if (equipmentRate >= 90) score += 4;
-  else if (equipmentRate >= 70) score += 2;
+  if (meets(equipmentRate, 90)) score += 4;
+  else if (meets(equipmentRate, 70)) score += 2;
 
   // --- Bonus 4: lightingRate (>=90: +3, >=70: +1) ---
-  if (lightingRate >= 90) score += 3;
-  else if (lightingRate >= 70) score += 1;
+  if (meets(lightingRate, 90)) score += 3;
+  else if (meets(lightingRate, 70)) score += 1;
 
   // --- Bonus 5: childSatisfactionRate (>=90: +4, >=70: +2) ---
-  if (childSatisfactionRate >= 90) score += 4;
-  else if (childSatisfactionRate >= 70) score += 2;
+  if (meets(childSatisfactionRate, 90)) score += 4;
+  else if (meets(childSatisfactionRate, 70)) score += 2;
 
   // --- Bonus 6: utilisationRate (>=80: +3, >=50: +1) ---
-  if (utilisationRate >= 80) score += 3;
-  else if (utilisationRate >= 50) score += 1;
+  if (meets(utilisationRate, 80)) score += 3;
+  else if (meets(utilisationRate, 50)) score += 1;
 
   // --- Bonus 7: concentrationRate (>=90: +3, >=70: +1) ---
-  if (concentrationRate >= 90) score += 3;
-  else if (concentrationRate >= 70) score += 1;
+  if (meets(concentrationRate, 90)) score += 3;
+  else if (meets(concentrationRate, 70)) score += 1;
 
   // --- Bonus 8: goodConditionRate (>=90: +3, >=70: +1) ---
-  if (goodConditionRate >= 90) score += 3;
-  else if (goodConditionRate >= 70) score += 1;
+  if (meets(goodConditionRate, 90)) score += 3;
+  else if (meets(goodConditionRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // studySpaceRate < 50 -> -5
-  if (studySpaceRate < 50 && totalSpaceAssessments > 0) score -= 5;
+  if (below(studySpaceRate, 50) && totalSpaceAssessments > 0) score -= 5;
 
   // noiseEnvironmentRate < 50 -> -5
-  if (noiseEnvironmentRate < 50 && totalNoiseAssessments > 0) score -= 5;
+  if (below(noiseEnvironmentRate, 50) && totalNoiseAssessments > 0) score -= 5;
 
   // equipmentRate < 50 -> -5
-  if (equipmentRate < 50 && totalEquipmentAssessments > 0) score -= 5;
+  if (below(equipmentRate, 50) && totalEquipmentAssessments > 0) score -= 5;
 
   // concentrationImpactRate > 50 -> -3
-  if (concentrationImpactRate > 50 && totalNoiseAssessments > 0) score -= 3;
+  if (above(concentrationImpactRate, 50) && totalNoiseAssessments > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -525,117 +522,117 @@ export function computeHomeworkEnvironmentStudySpace(
 
   const strengths: string[] = [];
 
-  if (studySpaceRate >= 90 && totalSpaceAssessments > 0) {
+  if (meets(studySpaceRate, 90) && totalSpaceAssessments > 0) {
     strengths.push(
       `${studySpaceRate}% study space quality — children have access to dedicated, well-maintained, distraction-free study spaces that are personalised and equipped with storage for materials.`,
     );
-  } else if (studySpaceRate >= 70 && totalSpaceAssessments > 0) {
+  } else if (meets(studySpaceRate, 70) && totalSpaceAssessments > 0) {
     strengths.push(
       `${studySpaceRate}% study space quality — the majority of study space standards are met, providing children with generally suitable environments for homework and study.`,
     );
   }
 
-  if (dedicatedSpaceRate >= 90 && totalSpaceAssessments > 0) {
+  if (meets(dedicatedSpaceRate, 90) && totalSpaceAssessments > 0) {
     strengths.push(
       `${dedicatedSpaceRate}% of children have a dedicated study space — the home prioritises providing every child with their own area for focused academic work.`,
     );
-  } else if (dedicatedSpaceRate >= 70 && totalSpaceAssessments > 0) {
+  } else if (meets(dedicatedSpaceRate, 70) && totalSpaceAssessments > 0) {
     strengths.push(
       `${dedicatedSpaceRate}% of children have a dedicated study space — most children benefit from a designated area for homework and study.`,
     );
   }
 
-  if (noiseEnvironmentRate >= 90 && totalNoiseAssessments > 0) {
+  if (meets(noiseEnvironmentRate, 90) && totalNoiseAssessments > 0) {
     strengths.push(
       `${noiseEnvironmentRate}% noise environment compliance — study areas consistently maintain acceptable noise levels, enabling children to concentrate effectively on their academic work.`,
     );
-  } else if (noiseEnvironmentRate >= 70 && totalNoiseAssessments > 0) {
+  } else if (meets(noiseEnvironmentRate, 70) && totalNoiseAssessments > 0) {
     strengths.push(
       `${noiseEnvironmentRate}% noise environment compliance — the home generally provides quiet study conditions for children.`,
     );
   }
 
-  if (equipmentRate >= 90 && totalEquipmentAssessments > 0) {
+  if (meets(equipmentRate, 90) && totalEquipmentAssessments > 0) {
     strengths.push(
       `${equipmentRate}% equipment availability — children consistently have access to desks, computers, internet, stationery, and age-appropriate study materials, demonstrating strong educational resource provision.`,
     );
-  } else if (equipmentRate >= 70 && totalEquipmentAssessments > 0) {
+  } else if (meets(equipmentRate, 70) && totalEquipmentAssessments > 0) {
     strengths.push(
       `${equipmentRate}% equipment availability — the home generally provides adequate study equipment and resources for children.`,
     );
   }
 
-  if (lightingRate >= 90 && totalLightingAssessments > 0) {
+  if (meets(lightingRate, 90) && totalLightingAssessments > 0) {
     strengths.push(
       `${lightingRate}% lighting adequacy — study areas have excellent lighting with desk lamps, natural light, and glare-free conditions that meet recommended standards for focused study.`,
     );
-  } else if (lightingRate >= 70 && totalLightingAssessments > 0) {
+  } else if (meets(lightingRate, 70) && totalLightingAssessments > 0) {
     strengths.push(
       `${lightingRate}% lighting adequacy — the majority of study areas meet lighting standards for comfortable studying.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalSatisfactionSurveys > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with study conditions — children report high levels of satisfaction with their homework environment, reflecting child-centred provision that meets individual needs.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSatisfactionSurveys > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — most children are satisfied with their study environment and conditions.`,
     );
   }
 
-  if (concentrationRate >= 90 && totalSatisfactionSurveys > 0) {
+  if (meets(concentrationRate, 90) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${concentrationRate}% of children feel able to concentrate — the study environment effectively supports focused academic engagement, a key indicator of suitable homework conditions.`,
     );
-  } else if (concentrationRate >= 70 && totalSatisfactionSurveys > 0) {
+  } else if (meets(concentrationRate, 70) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${concentrationRate}% of children feel able to concentrate — most children can focus effectively in their study environment.`,
     );
   }
 
-  if (studySupportRate >= 90 && totalSatisfactionSurveys > 0) {
+  if (meets(studySupportRate, 90) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${studySupportRate}% of children feel supported in their study — children experience consistent academic encouragement and practical support from staff.`,
     );
-  } else if (studySupportRate >= 70 && totalSatisfactionSurveys > 0) {
+  } else if (meets(studySupportRate, 70) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${studySupportRate}% of children feel supported in study — the majority of children experience helpful staff support with homework.`,
     );
   }
 
-  if (computerAvailabilityRate >= 90 && totalEquipmentAssessments > 0) {
+  if (meets(computerAvailabilityRate, 90) && totalEquipmentAssessments > 0) {
     strengths.push(
       `${computerAvailabilityRate}% computer and laptop availability — children have consistent access to digital technology for homework, research, and online learning.`,
     );
   }
 
-  if (internetAccessRate >= 90 && totalEquipmentAssessments > 0) {
+  if (meets(internetAccessRate, 90) && totalEquipmentAssessments > 0) {
     strengths.push(
       `${internetAccessRate}% internet access — children can reliably access online learning resources, school portals, and research materials to support their education.`,
     );
   }
 
-  if (specialistProvisionRate >= 90 && specialistNeeded > 0) {
+  if (meets(specialistProvisionRate, 90) && specialistNeeded > 0) {
     strengths.push(
       `${specialistProvisionRate}% specialist equipment provision — where children require specialised equipment for their education, the home ensures it is provided and available.`,
     );
   }
 
-  if (deskLampRate >= 90 && totalLightingAssessments > 0) {
+  if (meets(deskLampRate, 90) && totalLightingAssessments > 0) {
     strengths.push(
       `${deskLampRate}% desk lamp availability — every study area is equipped with focused task lighting to support comfortable reading and writing.`,
     );
   }
 
-  if (spaceIssueResolutionRate >= 90 && spaceIssuesIdentified > 0) {
+  if (meets(spaceIssueResolutionRate, 90) && spaceIssuesIdentified > 0) {
     strengths.push(
       `${spaceIssueResolutionRate}% of study space issues resolved — identified problems with study environments are addressed promptly, ensuring children's learning is not disrupted.`,
     );
   }
 
-  if (noiseMitigationRate >= 90 && noiseNeedingMitigation > 0) {
+  if (meets(noiseMitigationRate, 90) && noiseNeedingMitigation > 0) {
     strengths.push(
       `${noiseMitigationRate}% noise mitigation in place where needed — the home proactively addresses noise issues to protect children's study time.`,
     );
@@ -651,13 +648,13 @@ export function computeHomeworkEnvironmentStudySpace(
     );
   }
 
-  if (goodConditionRate >= 90 && totalEquipmentAssessments > 0) {
+  if (meets(goodConditionRate, 90) && totalEquipmentAssessments > 0) {
     strengths.push(
       `${goodConditionRate}% of equipment in good or excellent condition — study resources are well maintained and fit for purpose.`,
     );
   }
 
-  if (utilisationRate >= 80 && total_children > 0) {
+  if (meets(utilisationRate, 80) && total_children > 0) {
     strengths.push(
       `${utilisationRate}% study space utilisation coverage — the home has assessed and provided study environments for the vast majority of children on placement.`,
     );
@@ -667,87 +664,87 @@ export function computeHomeworkEnvironmentStudySpace(
 
   const concerns: string[] = [];
 
-  if (studySpaceRate < 50 && totalSpaceAssessments > 0) {
+  if (below(studySpaceRate, 50) && totalSpaceAssessments > 0) {
     concerns.push(
       `Only ${studySpaceRate}% study space quality — the majority of study space standards are not met, meaning children lack appropriate environments for homework and academic study. This directly undermines educational progress.`,
     );
-  } else if (studySpaceRate < 70 && studySpaceRate >= 50 && totalSpaceAssessments > 0) {
+  } else if (below(studySpaceRate, 70) && meets(studySpaceRate, 50) && totalSpaceAssessments > 0) {
     concerns.push(
       `Study space quality at ${studySpaceRate}% — some study space standards are not consistently met, which may affect children's ability to complete homework effectively.`,
     );
   }
 
-  if (dedicatedSpaceRate < 50 && totalSpaceAssessments > 0) {
+  if (below(dedicatedSpaceRate, 50) && totalSpaceAssessments > 0) {
     concerns.push(
       `Only ${dedicatedSpaceRate}% of children have a dedicated study space — many children lack a designated area for homework, forcing them to study in unsuitable shared spaces or their bedrooms without proper desk facilities.`,
     );
-  } else if (dedicatedSpaceRate < 70 && dedicatedSpaceRate >= 50 && totalSpaceAssessments > 0) {
+  } else if (below(dedicatedSpaceRate, 70) && meets(dedicatedSpaceRate, 50) && totalSpaceAssessments > 0) {
     concerns.push(
       `Dedicated study space provision at ${dedicatedSpaceRate}% — a notable proportion of children do not have a designated area for focused academic work.`,
     );
   }
 
-  if (noiseEnvironmentRate < 50 && totalNoiseAssessments > 0) {
+  if (below(noiseEnvironmentRate, 50) && totalNoiseAssessments > 0) {
     concerns.push(
       `Only ${noiseEnvironmentRate}% noise environment compliance — study areas are frequently noisy, preventing children from concentrating on homework. This represents a significant barrier to educational achievement.`,
     );
-  } else if (noiseEnvironmentRate < 70 && noiseEnvironmentRate >= 50 && totalNoiseAssessments > 0) {
+  } else if (below(noiseEnvironmentRate, 70) && meets(noiseEnvironmentRate, 50) && totalNoiseAssessments > 0) {
     concerns.push(
       `Noise environment compliance at ${noiseEnvironmentRate}% — noise levels in study areas are not consistently acceptable, affecting some children's concentration.`,
     );
   }
 
-  if (equipmentRate < 50 && totalEquipmentAssessments > 0) {
+  if (below(equipmentRate, 50) && totalEquipmentAssessments > 0) {
     concerns.push(
       `Only ${equipmentRate}% equipment availability — children lack essential study equipment including desks, computers, internet access, and stationery. Without adequate resources, children cannot complete homework to the expected standard.`,
     );
-  } else if (equipmentRate < 70 && equipmentRate >= 50 && totalEquipmentAssessments > 0) {
+  } else if (below(equipmentRate, 70) && meets(equipmentRate, 50) && totalEquipmentAssessments > 0) {
     concerns.push(
       `Equipment availability at ${equipmentRate}% — some children lack access to essential study equipment, which may hinder their academic progress.`,
     );
   }
 
-  if (lightingRate < 50 && totalLightingAssessments > 0) {
+  if (below(lightingRate, 50) && totalLightingAssessments > 0) {
     concerns.push(
       `Only ${lightingRate}% lighting adequacy — study areas have poor lighting conditions, with insufficient natural light, absent desk lamps, or glare issues. Poor lighting causes eye strain and fatigue, undermining children's ability to study effectively.`,
     );
-  } else if (lightingRate < 70 && lightingRate >= 50 && totalLightingAssessments > 0) {
+  } else if (below(lightingRate, 70) && meets(lightingRate, 50) && totalLightingAssessments > 0) {
     concerns.push(
       `Lighting adequacy at ${lightingRate}% — some study areas do not meet recommended lighting standards, which may affect children's comfort and concentration during study.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with study conditions — the majority of children are dissatisfied with their homework environment. Children's negative perceptions of their study space directly affect motivation and academic engagement.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalSatisfactionSurveys > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with their study conditions, indicating unmet needs.`,
     );
   }
 
-  if (concentrationRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(concentrationRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Only ${concentrationRate}% of children feel able to concentrate — the majority of children report difficulty focusing in their study environment, a fundamental failure of homework environment provision.`,
     );
-  } else if (concentrationRate < 70 && concentrationRate >= 50 && totalSatisfactionSurveys > 0) {
+  } else if (below(concentrationRate, 70) && meets(concentrationRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Concentration ability at ${concentrationRate}% — some children struggle to focus in their study environment, suggesting environmental barriers to effective study.`,
     );
   }
 
-  if (concentrationImpactRate > 50 && totalNoiseAssessments > 0) {
+  if (above(concentrationImpactRate, 50) && totalNoiseAssessments > 0) {
     concerns.push(
       `${concentrationImpactRate}% of noise assessments show moderate or severe concentration impact — persistent noise disruption is a significant barrier to children's academic progress and homework completion.`,
     );
-  } else if (concentrationImpactRate > 30 && concentrationImpactRate <= 50 && totalNoiseAssessments > 0) {
+  } else if (above(concentrationImpactRate, 30) && concentrationImpactRate! <= 50 && totalNoiseAssessments > 0) {
     concerns.push(
       `${concentrationImpactRate}% of noise assessments show moderate or severe concentration impact — noise is affecting some children's ability to study effectively.`,
     );
   }
 
-  if (poorConditionRate > 30 && totalEquipmentAssessments > 0) {
+  if (above(poorConditionRate, 30) && totalEquipmentAssessments > 0) {
     concerns.push(
       `${poorConditionRate}% of equipment in poor condition — study resources are deteriorating, and children are expected to work with inadequate tools.`,
     );
@@ -763,17 +760,17 @@ export function computeHomeworkEnvironmentStudySpace(
     );
   }
 
-  if (studySupportRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(studySupportRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Only ${studySupportRate}% of children feel supported in their study — children do not feel staff are helping them with homework, which may indicate a lack of engagement with educational support responsibilities.`,
     );
-  } else if (studySupportRate < 70 && studySupportRate >= 50 && totalSatisfactionSurveys > 0) {
+  } else if (below(studySupportRate, 70) && meets(studySupportRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Study support perception at ${studySupportRate}% — some children do not feel adequately supported in their homework and study.`,
     );
   }
 
-  if (locationDissatisfactionRate > 50 && totalSatisfactionSurveys > 0) {
+  if (above(locationDissatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `${locationDissatisfactionRate}% of children would prefer a different study location — the current study space arrangements are not meeting children's preferences and needs.`,
     );
@@ -814,7 +811,7 @@ export function computeHomeworkEnvironmentStudySpace(
   const recommendations: HomeworkEnvironmentRecommendation[] = [];
   let rank = 0;
 
-  if (studySpaceRate < 50 && totalSpaceAssessments > 0) {
+  if (below(studySpaceRate, 50) && totalSpaceAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -824,7 +821,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (noiseEnvironmentRate < 50 && totalNoiseAssessments > 0) {
+  if (below(noiseEnvironmentRate, 50) && totalNoiseAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -834,7 +831,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (equipmentRate < 50 && totalEquipmentAssessments > 0) {
+  if (below(equipmentRate, 50) && totalEquipmentAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -844,7 +841,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (concentrationImpactRate > 50 && totalNoiseAssessments > 0) {
+  if (above(concentrationImpactRate, 50) && totalNoiseAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -854,7 +851,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -864,7 +861,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (lightingRate < 50 && totalLightingAssessments > 0) {
+  if (below(lightingRate, 50) && totalLightingAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -874,7 +871,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (concentrationRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(concentrationRate, 50) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -934,7 +931,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (studySupportRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(studySupportRate, 50) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -944,7 +941,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (noiseFollowUpRate < 50 && noiseFollowUpNeeded > 0) {
+  if (below(noiseFollowUpRate, 50) && noiseFollowUpNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -955,8 +952,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    studySpaceRate >= 50 &&
-    studySpaceRate < 70 &&
+    meets(studySpaceRate, 50) &&
+    below(studySpaceRate, 70) &&
     totalSpaceAssessments > 0
   ) {
     recommendations.push({
@@ -969,8 +966,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    noiseEnvironmentRate >= 50 &&
-    noiseEnvironmentRate < 70 &&
+    meets(noiseEnvironmentRate, 50) &&
+    below(noiseEnvironmentRate, 70) &&
     totalNoiseAssessments > 0
   ) {
     recommendations.push({
@@ -983,8 +980,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    equipmentRate >= 50 &&
-    equipmentRate < 70 &&
+    meets(equipmentRate, 50) &&
+    below(equipmentRate, 70) &&
     totalEquipmentAssessments > 0
   ) {
     recommendations.push({
@@ -997,8 +994,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    lightingRate >= 50 &&
-    lightingRate < 70 &&
+    meets(lightingRate, 50) &&
+    below(lightingRate, 70) &&
     totalLightingAssessments > 0
   ) {
     recommendations.push({
@@ -1011,8 +1008,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalSatisfactionSurveys > 0
   ) {
     recommendations.push({
@@ -1025,7 +1022,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    utilisationRate < 50 &&
+    below(utilisationRate, 50) &&
     total_children > 0 &&
     totalSpaceAssessments > 0
   ) {
@@ -1038,7 +1035,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (poorConditionRate > 30 && totalEquipmentAssessments > 0) {
+  if (above(poorConditionRate, 30) && totalEquipmentAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1048,7 +1045,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (locationDissatisfactionRate > 50 && totalSatisfactionSurveys > 0) {
+  if (above(locationDissatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1058,7 +1055,7 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (replacementActionRate < 50 && replacementNeeded > 0) {
+  if (below(replacementActionRate, 50) && replacementNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,42 +1071,42 @@ export function computeHomeworkEnvironmentStudySpace(
 
   // -- Critical insights --
 
-  if (studySpaceRate < 50 && totalSpaceAssessments > 0) {
+  if (below(studySpaceRate, 50) && totalSpaceAssessments > 0) {
     insights.push({
       text: `Only ${studySpaceRate}% study space quality. Ofsted expects children in residential care to have access to suitable environments for homework and study. Inadequate study spaces directly undermine children's educational progress, their ability to complete homework, and their motivation to engage with learning.`,
       severity: "critical",
     });
   }
 
-  if (noiseEnvironmentRate < 50 && totalNoiseAssessments > 0) {
+  if (below(noiseEnvironmentRate, 50) && totalNoiseAssessments > 0) {
     insights.push({
       text: `Only ${noiseEnvironmentRate}% noise environment compliance. Persistent noise in study areas prevents children from concentrating, completing homework, and developing the study skills they need for educational success. The home must treat noise management as a fundamental educational support requirement.`,
       severity: "critical",
     });
   }
 
-  if (equipmentRate < 50 && totalEquipmentAssessments > 0) {
+  if (below(equipmentRate, 50) && totalEquipmentAssessments > 0) {
     insights.push({
       text: `Only ${equipmentRate}% equipment availability. Without adequate desks, computers, internet access, and stationery, children cannot be expected to complete homework to the standard expected by their schools. This equipment gap places looked-after children at a direct disadvantage compared to their peers.`,
       severity: "critical",
     });
   }
 
-  if (concentrationImpactRate > 50 && totalNoiseAssessments > 0) {
+  if (above(concentrationImpactRate, 50) && totalNoiseAssessments > 0) {
     insights.push({
       text: `${concentrationImpactRate}% of noise assessments show moderate or severe concentration impact. Chronic inability to concentrate during study time has compounding effects on educational attainment, self-esteem, and children's belief in their own academic potential. This requires systemic intervention.`,
       severity: "critical",
     });
   }
 
-  if (lightingRate < 50 && totalLightingAssessments > 0) {
+  if (below(lightingRate, 50) && totalLightingAssessments > 0) {
     insights.push({
       text: `Only ${lightingRate}% lighting adequacy. Poor lighting in study areas causes eye strain, headaches, and fatigue, all of which reduce children's ability and willingness to engage with homework. Lighting standards for study spaces are a basic premises requirement under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% child satisfaction with study conditions. When the majority of children are dissatisfied with their homework environment, the home cannot claim to be promoting children's education effectively. Children's negative experiences with study conditions directly affect their motivation to learn.`,
       severity: "critical",
@@ -1133,8 +1130,8 @@ export function computeHomeworkEnvironmentStudySpace(
   // -- Warning insights --
 
   if (
-    studySpaceRate >= 50 &&
-    studySpaceRate < 70 &&
+    meets(studySpaceRate, 50) &&
+    below(studySpaceRate, 70) &&
     totalSpaceAssessments > 0
   ) {
     insights.push({
@@ -1144,8 +1141,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    noiseEnvironmentRate >= 50 &&
-    noiseEnvironmentRate < 70 &&
+    meets(noiseEnvironmentRate, 50) &&
+    below(noiseEnvironmentRate, 70) &&
     totalNoiseAssessments > 0
   ) {
     insights.push({
@@ -1155,8 +1152,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    equipmentRate >= 50 &&
-    equipmentRate < 70 &&
+    meets(equipmentRate, 50) &&
+    below(equipmentRate, 70) &&
     totalEquipmentAssessments > 0
   ) {
     insights.push({
@@ -1166,8 +1163,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    lightingRate >= 50 &&
-    lightingRate < 70 &&
+    meets(lightingRate, 50) &&
+    below(lightingRate, 70) &&
     totalLightingAssessments > 0
   ) {
     insights.push({
@@ -1177,8 +1174,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1188,8 +1185,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    concentrationRate >= 50 &&
-    concentrationRate < 70 &&
+    meets(concentrationRate, 50) &&
+    below(concentrationRate, 70) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1199,8 +1196,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    studySupportRate >= 50 &&
-    studySupportRate < 70 &&
+    meets(studySupportRate, 50) &&
+    below(studySupportRate, 70) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1220,14 +1217,14 @@ export function computeHomeworkEnvironmentStudySpace(
     });
   }
 
-  if (changeRequestRate > 50 && totalSatisfactionSurveys > 0) {
+  if (above(changeRequestRate, 50) && totalSatisfactionSurveys > 0) {
     insights.push({
       text: `${changeRequestRate}% of children would change something about their study environment — the majority of children see room for improvement in their homework conditions. Reviewing their specific suggestions could yield targeted, child-centred improvements.`,
       severity: "warning",
     });
   }
 
-  if (poorConditionRate > 20 && poorConditionRate <= 30 && totalEquipmentAssessments > 0) {
+  if (above(poorConditionRate, 20) && poorConditionRate! <= 30 && totalEquipmentAssessments > 0) {
     insights.push({
       text: `${poorConditionRate}% of equipment in poor condition — deteriorating resources need attention before they fail entirely. A proactive replacement programme would prevent disruption to children's study.`,
       severity: "warning",
@@ -1282,8 +1279,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    studySpaceRate >= 90 &&
-    noiseEnvironmentRate >= 90 &&
+    meets(studySpaceRate, 90) &&
+    meets(noiseEnvironmentRate, 90) &&
     totalSpaceAssessments > 0 &&
     totalNoiseAssessments > 0
   ) {
@@ -1294,8 +1291,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    equipmentRate >= 90 &&
-    computerAvailabilityRate >= 90 &&
+    meets(equipmentRate, 90) &&
+    meets(computerAvailabilityRate, 90) &&
     totalEquipmentAssessments > 0
   ) {
     insights.push({
@@ -1305,7 +1302,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    lightingRate >= 90 &&
+    meets(lightingRate, 90) &&
     totalLightingAssessments > 0
   ) {
     insights.push({
@@ -1315,8 +1312,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
-    concentrationRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
+    meets(concentrationRate, 90) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1326,7 +1323,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1336,7 +1333,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    studySupportRate >= 90 &&
+    meets(studySupportRate, 90) &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1356,7 +1353,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    specialistProvisionRate >= 90 &&
+    meets(specialistProvisionRate, 90) &&
     specialistNeeded > 0
   ) {
     insights.push({
@@ -1366,7 +1363,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    spaceIssueResolutionRate >= 90 &&
+    meets(spaceIssueResolutionRate, 90) &&
     spaceIssuesIdentified > 0
   ) {
     insights.push({
@@ -1376,7 +1373,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    noiseMitigationRate >= 90 &&
+    meets(noiseMitigationRate, 90) &&
     noiseNeedingMitigation > 0
   ) {
     insights.push({
@@ -1386,7 +1383,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    utilisationRate >= 80 &&
+    meets(utilisationRate, 80) &&
     total_children > 0
   ) {
     insights.push({

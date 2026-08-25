@@ -66,8 +66,8 @@ export function HomeImmunisationVaccinationComplianceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.immunisation_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.schedule_adherence_rate >= 90 ? "bg-green-50" : d.schedule_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.schedule_adherence_rate >= 90 ? "text-[--cs-success]" : d.schedule_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.schedule_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.schedule_adherence_rate, 90) ? "bg-green-50" : meets(d.schedule_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.schedule_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.schedule_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.schedule_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Schedule</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.catch_up_rate, 90) ? "bg-green-50" : meets(d.catch_up_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

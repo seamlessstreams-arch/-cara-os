@@ -158,12 +158,12 @@ describe("computeHomeworkAcademicSupport", () => {
       );
       expect(r.academic_rating).toBe("insufficient_data");
       expect(r.academic_score).toBe(0);
-      expect(r.homework_completion_rate).toBe(0);
-      expect(r.study_environment_quality_rate).toBe(0);
-      expect(r.tutoring_coverage_rate).toBe(0);
+      expect(r.homework_completion_rate).toBeNull();
+      expect(r.study_environment_quality_rate).toBeNull();
+      expect(r.tutoring_coverage_rate).toBeNull();
       expect(r.resource_availability_rate).toBeNull();
       expect(r.school_liaison_rate).toBeNull();
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
       expect(r.strengths).toHaveLength(0);
       expect(r.concerns).toHaveLength(0);
       expect(r.recommendations).toHaveLength(0);
@@ -213,14 +213,14 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.headline).toContain("No homework or academic support data");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeHomeworkAcademicSupport(baseInput());
-      expect(r.homework_completion_rate).toBe(0);
-      expect(r.study_environment_quality_rate).toBe(0);
-      expect(r.tutoring_coverage_rate).toBe(0);
+      expect(r.homework_completion_rate).toBeNull();
+      expect(r.study_environment_quality_rate).toBeNull();
+      expect(r.tutoring_coverage_rate).toBeNull();
       expect(r.resource_availability_rate).toBeNull();
       expect(r.school_liaison_rate).toBeNull();
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -1433,14 +1433,14 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.homework_completion_rate).toBe(pct(1, 2)); // 50
     });
 
-    it("homework_completion_rate is 0 when no homework set", () => {
+    it("homework_completion_rate is null when no homework set", () => {
       const hwRecs = [
         makeHomeworkSupport({ id: "h1", homework_set: false, homework_completed: false }),
       ];
       const r = computeHomeworkAcademicSupport(baseInput({
         homework_support_records: hwRecs,
       }));
-      expect(r.homework_completion_rate).toBe(0);
+      expect(r.homework_completion_rate).toBeNull();
     });
 
     it("study_environment_quality_rate = pct(good+excellent, total)", () => {
@@ -1503,7 +1503,7 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.resource_availability_rate).toBe(78);
     });
 
-    it("resource_availability_rate is 0 when no records", () => {
+    it("resource_availability_rate is null when no records", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         school_liaison_records: [makeLiaison()], // prevent allEmpty
       }));
@@ -1526,7 +1526,7 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.school_liaison_rate).toBe(65);
     });
 
-    it("school_liaison_rate is 0 when no records", () => {
+    it("school_liaison_rate is null when no records", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         homework_support_records: [makeHomeworkSupport()], // prevent allEmpty
       }));
@@ -1554,11 +1554,11 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.child_engagement_rate).toBe(60);
     });
 
-    it("child_engagement_rate is 0 when no hw/tut/res records", () => {
+    it("child_engagement_rate is null when no hw/tut/res records", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         school_liaison_records: [makeLiaison()],
       }));
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -2485,7 +2485,7 @@ describe("computeHomeworkAcademicSupport", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         homework_support_records: [makeHomeworkSupport({ id: "h1", homework_set: false })],
       }));
-      expect(r.homework_completion_rate).toBe(0);
+      expect(r.homework_completion_rate).toBeNull();
     });
 
     it("single record in each category", () => {
@@ -2535,26 +2535,24 @@ describe("computeHomeworkAcademicSupport", () => {
       const resRecs = [
         makeResource({ id: "r1", requested: false, provided: true, age_appropriate: true, child_using_resource: true }),
       ];
-      // fulfilmentRate = pct(1, 0) = 0 (denominator is requested count = 0)
-      // ageAppropriateRate = pct(1, 1) = 100
-      // usageRate = pct(1, 1) = 100
-      // resourceAvailability = round((0 + 100 + 100) / 3) = round(66.67) = 67
+      // fulfilmentRate is unmeasured (nothing was requested), so meanOf drops it
+      // instead of averaging in a phantom 0%: mean(100 age-appropriate, 100 usage) = 100.
       const r = computeHomeworkAcademicSupport(baseInput({
         educational_resource_records: resRecs,
       }));
-      expect(r.resource_availability_rate).toBe(67);
+      expect(r.resource_availability_rate).toBe(100);
     });
 
-    it("liaison with actions_agreed=0 means actionCompletionRate=0 (pct(0,0)=0)", () => {
+    it("liaison with actions_agreed=0 leaves actionCompletionRate unmeasured (rate(0,0)=null)", () => {
       const liRecs = [
         makeLiaison({ id: "l1", actions_agreed: 0, actions_completed: 0, staff_attended: true, academic_progress_discussed: true }),
       ];
-      // staffAttendance=100, actionCompletion=pct(0,0)=0, academicDiscussion=100
-      // schoolLiaisonRate = round((100+0+100)/3) = round(66.67) = 67
+      // With no actions agreed there is nothing to complete: the rate is null and
+      // meanOf averages only the measured components — mean(100, 100) = 100.
       const r = computeHomeworkAcademicSupport(baseInput({
         school_liaison_records: liRecs,
       }));
-      expect(r.school_liaison_rate).toBe(67);
+      expect(r.school_liaison_rate).toBe(100);
     });
 
     it("follow_up_date=null means not counted in follow-up metrics", () => {

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME LAUNDRY & LINEN MANAGEMENT INTELLIGENCE ENGINE
 // Monitors laundry service timeliness, linen adequacy and condition, personal
@@ -174,10 +175,6 @@ export interface LaundryLinenResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -205,12 +202,12 @@ function emptyResult(
     total_clothing_care_records: 0,
     total_hygiene_assessments: 0,
     total_satisfaction_records: 0,
-    laundry_timeliness_rate: 0,
-    linen_adequacy_rate: 0,
-    clothing_care_rate: 0,
-    hygiene_compliance_rate: 0,
-    child_satisfaction_rate: 0,
-    child_independence_rate: 0,
+    laundry_timeliness_rate: null,
+    linen_adequacy_rate: null,
+    clothing_care_rate: null,
+    hygiene_compliance_rate: null,
+    child_satisfaction_rate: null,
+    child_independence_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -296,19 +293,19 @@ export function computeLaundryLinenManagement(
   const itemsReturned = laundry_service_records.filter((r) => r.items_returned).length;
 
   const returnedWithin24h = laundry_service_records.filter((r) => r.returned_within_24h).length;
-  const timelinessRate = pct(returnedWithin24h, totalServiceRecords);
+  const timelinessRate = rate(returnedWithin24h, totalServiceRecords);
 
   const returnedClean = laundry_service_records.filter((r) => r.returned_clean).length;
 
   const returnedUndamaged = laundry_service_records.filter((r) => r.returned_undamaged).length;
 
   const notMixedWithOthers = laundry_service_records.filter((r) => !r.mixed_with_others).length;
-  const separationRate = pct(notMixedWithOthers, totalServiceRecords);
+  const separationRate = rate(notMixedWithOthers, totalServiceRecords);
 
   // Composite laundry timeliness: collected + returned + within 24h + clean + undamaged
   const laundryTimelinessNumerator = itemsCollected + itemsReturned + returnedWithin24h + returnedClean + returnedUndamaged;
   const laundryTimelinessDenominator = totalServiceRecords * 5;
-  const laundryTimelinessRate = pct(laundryTimelinessNumerator, laundryTimelinessDenominator);
+  const laundryTimelinessRate = rate(laundryTimelinessNumerator, laundryTimelinessDenominator);
 
   // ── 2. Linen adequacy metrics ──────────────────────────────────────────
   const totalLinenAssessments = linen_adequacy_records.length;
@@ -333,10 +330,10 @@ export function computeLaundryLinenManagement(
       if (check(rec)) totalLinenChecksPassed++;
     }
   }
-  const linenAdequacyRate = pct(totalLinenChecksPassed, totalLinenChecksPossible);
+  const linenAdequacyRate = rate(totalLinenChecksPassed, totalLinenChecksPossible);
 
   const linenChildChosen = linen_adequacy_records.filter((r) => r.linen_child_chosen).length;
-  const linenChildChoiceRate = pct(linenChildChosen, totalLinenAssessments);
+  const linenChildChoiceRate = rate(linenChildChosen, totalLinenAssessments);
 
   const linenIssuesIdentified = linen_adequacy_records.filter(
     (r) => r.issues_identified.length > 0,
@@ -344,7 +341,7 @@ export function computeLaundryLinenManagement(
   const linenIssuesResolved = linen_adequacy_records.filter(
     (r) => r.issues_identified.length > 0 && r.issues_resolved,
   ).length;
-  const linenIssueResolutionRate = pct(linenIssuesResolved, linenIssuesIdentified);
+  const linenIssueResolutionRate = rate(linenIssuesResolved, linenIssuesIdentified);
 
   // ── 3. Clothing care metrics ───────────────────────────────────────────
   const totalClothingCareRecords = clothing_care_records.length;
@@ -358,20 +355,20 @@ export function computeLaundryLinenManagement(
   const clothingPrefsRespected = clothing_care_records.filter((r) => r.child_preferences_respected).length;
 
   const culturalNeedsMet = clothing_care_records.filter((r) => r.cultural_needs_met).length;
-  const culturalCareRate = pct(culturalNeedsMet, totalClothingCareRecords);
+  const culturalCareRate = rate(culturalNeedsMet, totalClothingCareRecords);
 
   const ironingDone = clothing_care_records.filter((r) => r.ironing_pressing_done).length;
-  const ironingRate = pct(ironingDone, totalClothingCareRecords);
+  const ironingRate = rate(ironingDone, totalClothingCareRecords);
 
   const stainTreated = clothing_care_records.filter((r) => r.stain_treatment_attempted).length;
-  const stainTreatmentRate = pct(stainTreated, totalClothingCareRecords);
+  const stainTreatmentRate = rate(stainTreated, totalClothingCareRecords);
 
   const childInvolvedInCare = clothing_care_records.filter((r) => r.child_involved_in_care).length;
 
   // Composite clothing care: care instructions + correct return + condition + prefs + cultural
   const clothingCareNumerator = careInstructionsFollowed + returnedToCorrectChild + conditionMaintained + clothingPrefsRespected + culturalNeedsMet;
   const clothingCareDenominator = totalClothingCareRecords * 5;
-  const clothingCareRate = pct(clothingCareNumerator, clothingCareDenominator);
+  const clothingCareRate = rate(clothingCareNumerator, clothingCareDenominator);
 
   // ── 4. Hygiene compliance metrics ──────────────────────────────────────
   const totalHygieneAssessments = hygiene_compliance_records.length;
@@ -398,7 +395,7 @@ export function computeLaundryLinenManagement(
       if (check(rec)) totalHygieneChecksPassed++;
     }
   }
-  const hygieneComplianceRate = pct(totalHygieneChecksPassed, totalHygieneChecksPossible);
+  const hygieneComplianceRate = rate(totalHygieneChecksPassed, totalHygieneChecksPossible);
 
   const hygieneIssuesIdentified = hygiene_compliance_records.filter(
     (r) => r.issues_identified.length > 0,
@@ -406,10 +403,10 @@ export function computeLaundryLinenManagement(
   const hygieneIssuesResolved = hygiene_compliance_records.filter(
     (r) => r.issues_identified.length > 0 && r.issues_resolved,
   ).length;
-  const hygieneIssueResolutionRate = pct(hygieneIssuesResolved, hygieneIssuesIdentified);
+  const hygieneIssueResolutionRate = rate(hygieneIssuesResolved, hygieneIssuesIdentified);
 
   const infectionControlMet = hygiene_compliance_records.filter((r) => r.infection_control_measures_met).length;
-  const infectionControlRate = pct(infectionControlMet, totalHygieneAssessments);
+  const infectionControlRate = rate(infectionControlMet, totalHygieneAssessments);
 
   // ── 5. Child satisfaction metrics ──────────────────────────────────────
   const totalSatisfactionRecords = child_satisfaction_records.length;
@@ -431,22 +428,22 @@ export function computeLaundryLinenManagement(
   const preferencesListened = child_satisfaction_records.filter((r) => r.preferences_listened_to).length;
 
   const feelsRespected = child_satisfaction_records.filter((r) => r.feels_respected).length;
-  const feelsRespectedRate = pct(feelsRespected, totalSatisfactionRecords);
+  const feelsRespectedRate = rate(feelsRespected, totalSatisfactionRecords);
 
   const allowedOwnLaundry = child_satisfaction_records.filter((r) => r.allowed_to_do_own_laundry).length;
 
   const wantsMoreIndependence = child_satisfaction_records.filter((r) => r.wants_more_independence).length;
-  const wantsMoreIndependenceRate = pct(wantsMoreIndependence, totalSatisfactionRecords);
+  const wantsMoreIndependenceRate = rate(wantsMoreIndependence, totalSatisfactionRecords);
 
   // Composite child satisfaction: clean + timely + handled with care + bedding comfortable + prefs listened + feels respected
   const satisfactionNumerator = clothingCleanEnough + clothingReturnedTimely + handledWithCare + beddingComfortable + preferencesListened + feelsRespected;
   const satisfactionDenominator = totalSatisfactionRecords * 6;
-  const childSatisfactionRate = pct(satisfactionNumerator, satisfactionDenominator);
+  const childSatisfactionRate = rate(satisfactionNumerator, satisfactionDenominator);
 
   // Child independence rate: allowed own laundry + child involved in care
   const independenceNumerator = allowedOwnLaundry + childInvolvedInCare;
   const independenceDenominator = totalSatisfactionRecords + totalClothingCareRecords;
-  const childIndependenceRate = pct(independenceNumerator, independenceDenominator);
+  const childIndependenceRate = rate(independenceNumerator, independenceDenominator);
 
   // ══════════════════════════════════════════════════════════════════════════
   // SCORING: base 52, max bonuses +28, 4 penalties guarded by .length > 0
@@ -455,51 +452,51 @@ export function computeLaundryLinenManagement(
   let score = 52;
 
   // --- Bonus 1: laundryTimelinessRate (>=90: +4, >=70: +2) ---
-  if (laundryTimelinessRate >= 90) score += 4;
-  else if (laundryTimelinessRate >= 70) score += 2;
+  if (meets(laundryTimelinessRate, 90)) score += 4;
+  else if (meets(laundryTimelinessRate, 70)) score += 2;
 
   // --- Bonus 2: linenAdequacyRate (>=90: +4, >=70: +2) ---
-  if (linenAdequacyRate >= 90) score += 4;
-  else if (linenAdequacyRate >= 70) score += 2;
+  if (meets(linenAdequacyRate, 90)) score += 4;
+  else if (meets(linenAdequacyRate, 70)) score += 2;
 
   // --- Bonus 3: clothingCareRate (>=90: +4, >=70: +2) ---
-  if (clothingCareRate >= 90) score += 4;
-  else if (clothingCareRate >= 70) score += 2;
+  if (meets(clothingCareRate, 90)) score += 4;
+  else if (meets(clothingCareRate, 70)) score += 2;
 
   // --- Bonus 4: hygieneComplianceRate (>=90: +4, >=70: +2) ---
-  if (hygieneComplianceRate >= 90) score += 4;
-  else if (hygieneComplianceRate >= 70) score += 2;
+  if (meets(hygieneComplianceRate, 90)) score += 4;
+  else if (meets(hygieneComplianceRate, 70)) score += 2;
 
   // --- Bonus 5: childSatisfactionRate (>=90: +4, >=70: +2) ---
-  if (childSatisfactionRate >= 90) score += 4;
-  else if (childSatisfactionRate >= 70) score += 2;
+  if (meets(childSatisfactionRate, 90)) score += 4;
+  else if (meets(childSatisfactionRate, 70)) score += 2;
 
   // --- Bonus 6: childIndependenceRate (>=80: +4, >=50: +2) ---
-  if (childIndependenceRate >= 80) score += 4;
-  else if (childIndependenceRate >= 50) score += 2;
+  if (meets(childIndependenceRate, 80)) score += 4;
+  else if (meets(childIndependenceRate, 50)) score += 2;
 
   // --- Bonus 7: linenIssueResolutionRate (>=90 or no issues: +2, >=70: +1) ---
   if (linenIssuesIdentified === 0 && totalLinenAssessments > 0) score += 2;
-  else if (linenIssueResolutionRate >= 90) score += 2;
-  else if (linenIssueResolutionRate >= 70) score += 1;
+  else if (meets(linenIssueResolutionRate, 90)) score += 2;
+  else if (meets(linenIssueResolutionRate, 70)) score += 1;
 
   // --- Bonus 8: culturalCareRate (>=90: +2, >=70: +1) ---
-  if (culturalCareRate >= 90) score += 2;
-  else if (culturalCareRate >= 70) score += 1;
+  if (meets(culturalCareRate, 90)) score += 2;
+  else if (meets(culturalCareRate, 70)) score += 1;
 
   // ── Penalties (4, guarded by array.length > 0) ────────────────────────
 
   // Penalty 1: laundryTimelinessRate < 50 -> -5
-  if (laundryTimelinessRate < 50 && laundry_service_records.length > 0) score -= 5;
+  if (below(laundryTimelinessRate, 50) && laundry_service_records.length > 0) score -= 5;
 
   // Penalty 2: linenAdequacyRate < 50 -> -5
-  if (linenAdequacyRate < 50 && linen_adequacy_records.length > 0) score -= 5;
+  if (below(linenAdequacyRate, 50) && linen_adequacy_records.length > 0) score -= 5;
 
   // Penalty 3: hygieneComplianceRate < 50 -> -5
-  if (hygieneComplianceRate < 50 && hygiene_compliance_records.length > 0) score -= 5;
+  if (below(hygieneComplianceRate, 50) && hygiene_compliance_records.length > 0) score -= 5;
 
   // Penalty 4: childSatisfactionRate < 40 -> -3
-  if (childSatisfactionRate < 40 && child_satisfaction_records.length > 0) score -= 3;
+  if (below(childSatisfactionRate, 40) && child_satisfaction_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -512,156 +509,156 @@ export function computeLaundryLinenManagement(
   const strengths: string[] = [];
 
   // -- Laundry timeliness strengths --
-  if (laundryTimelinessRate >= 90 && totalServiceRecords > 0) {
+  if (meets(laundryTimelinessRate, 90) && totalServiceRecords > 0) {
     strengths.push(
       `${laundryTimelinessRate}% laundry service quality — clothing and linen are collected, laundered, and returned promptly in clean, undamaged condition, demonstrating excellent service management.`,
     );
-  } else if (laundryTimelinessRate >= 70 && totalServiceRecords > 0) {
+  } else if (meets(laundryTimelinessRate, 70) && totalServiceRecords > 0) {
     strengths.push(
       `${laundryTimelinessRate}% laundry service quality — the home generally provides a timely and effective laundry service for children's clothing and linen.`,
     );
   }
 
   // -- Timeliness sub-metric strength --
-  if (timelinessRate >= 90 && totalServiceRecords > 0) {
+  if (meets(timelinessRate, 90) && totalServiceRecords > 0) {
     strengths.push(
       `${timelinessRate}% of laundry returned within 24 hours — children's clothing is turned around promptly, ensuring they always have clean items available and do not experience unnecessary disruption.`,
     );
-  } else if (timelinessRate >= 70 && totalServiceRecords > 0 && laundryTimelinessRate < 90) {
+  } else if (meets(timelinessRate, 70) && totalServiceRecords > 0 && below(laundryTimelinessRate, 90)) {
     strengths.push(
       `${timelinessRate}% of laundry returned within 24 hours — the majority of children's clothing is returned in a timely manner.`,
     );
   }
 
   // -- Linen adequacy strengths --
-  if (linenAdequacyRate >= 90 && totalLinenAssessments > 0) {
+  if (meets(linenAdequacyRate, 90) && totalLinenAssessments > 0) {
     strengths.push(
       `${linenAdequacyRate}% linen adequacy — bedding, towels, and linen consistently meet high standards for sufficiency, cleanliness, condition, and age-appropriateness across the home.`,
     );
-  } else if (linenAdequacyRate >= 70 && totalLinenAssessments > 0) {
+  } else if (meets(linenAdequacyRate, 70) && totalLinenAssessments > 0) {
     strengths.push(
       `${linenAdequacyRate}% linen adequacy — the majority of linen assessments confirm acceptable standards of bedding, towels, and related items.`,
     );
   }
 
   // -- Linen child choice --
-  if (linenChildChoiceRate >= 80 && totalLinenAssessments > 0) {
+  if (meets(linenChildChoiceRate, 80) && totalLinenAssessments > 0) {
     strengths.push(
       `${linenChildChoiceRate}% of children involved in choosing their linen — children exercise agency in personalising their bedroom environment, supporting their sense of belonging and identity.`,
     );
-  } else if (linenChildChoiceRate >= 60 && totalLinenAssessments > 0) {
+  } else if (meets(linenChildChoiceRate, 60) && totalLinenAssessments > 0) {
     strengths.push(
       `${linenChildChoiceRate}% of children involved in choosing their linen — the home encourages children to personalise their sleeping environment.`,
     );
   }
 
   // -- Clothing care strengths --
-  if (clothingCareRate >= 90 && totalClothingCareRecords > 0) {
+  if (meets(clothingCareRate, 90) && totalClothingCareRecords > 0) {
     strengths.push(
       `${clothingCareRate}% clothing care quality — care instructions are followed, clothing is returned to the correct child in good condition, and children's preferences and cultural needs are respected consistently.`,
     );
-  } else if (clothingCareRate >= 70 && totalClothingCareRecords > 0) {
+  } else if (meets(clothingCareRate, 70) && totalClothingCareRecords > 0) {
     strengths.push(
       `${clothingCareRate}% clothing care quality — the home generally handles children's clothing with appropriate care and respect for preferences.`,
     );
   }
 
   // -- Cultural care --
-  if (culturalCareRate >= 90 && totalClothingCareRecords > 0) {
+  if (meets(culturalCareRate, 90) && totalClothingCareRecords > 0) {
     strengths.push(
       `${culturalCareRate}% cultural needs met in clothing care — the home demonstrates excellent sensitivity to children's cultural and religious clothing requirements, reflecting inclusive and respectful practice.`,
     );
-  } else if (culturalCareRate >= 70 && totalClothingCareRecords > 0) {
+  } else if (meets(culturalCareRate, 70) && totalClothingCareRecords > 0) {
     strengths.push(
       `${culturalCareRate}% cultural needs met in clothing care — the home generally respects children's cultural clothing requirements.`,
     );
   }
 
   // -- Hygiene compliance strengths --
-  if (hygieneComplianceRate >= 90 && totalHygieneAssessments > 0) {
+  if (meets(hygieneComplianceRate, 90) && totalHygieneAssessments > 0) {
     strengths.push(
       `${hygieneComplianceRate}% hygiene compliance — laundry facilities, equipment, processes, and infection control measures consistently meet high standards, protecting children's health and wellbeing.`,
     );
-  } else if (hygieneComplianceRate >= 70 && totalHygieneAssessments > 0) {
+  } else if (meets(hygieneComplianceRate, 70) && totalHygieneAssessments > 0) {
     strengths.push(
       `${hygieneComplianceRate}% hygiene compliance — the majority of hygiene and infection control standards are met in laundry operations.`,
     );
   }
 
   // -- Infection control --
-  if (infectionControlRate >= 90 && totalHygieneAssessments > 0) {
+  if (meets(infectionControlRate, 90) && totalHygieneAssessments > 0) {
     strengths.push(
       `${infectionControlRate}% infection control measures met — the home maintains robust infection prevention protocols in laundry handling, reducing cross-contamination risk for children.`,
     );
   }
 
   // -- Child satisfaction strengths --
-  if (childSatisfactionRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — children report that their clothing is clean, returned on time, handled with care, and that their preferences are listened to. This reflects a service that genuinely respects children's dignity.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSatisfactionRecords > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — the majority of children report positive experiences with laundry and linen services.`,
     );
   }
 
   // -- Child feels respected --
-  if (feelsRespectedRate >= 90 && totalSatisfactionRecords > 0) {
+  if (meets(feelsRespectedRate, 90) && totalSatisfactionRecords > 0) {
     strengths.push(
       `${feelsRespectedRate}% of children feel respected in how their clothing and belongings are handled — this is a powerful indicator that the home values children as individuals and treats their possessions with dignity.`,
     );
-  } else if (feelsRespectedRate >= 70 && totalSatisfactionRecords > 0 && childSatisfactionRate < 90) {
+  } else if (meets(feelsRespectedRate, 70) && totalSatisfactionRecords > 0 && below(childSatisfactionRate, 90)) {
     strengths.push(
       `${feelsRespectedRate}% of children feel respected in how their clothing is handled — the majority of children feel their belongings are treated with care.`,
     );
   }
 
   // -- Child independence strengths --
-  if (childIndependenceRate >= 80 && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
+  if (meets(childIndependenceRate, 80) && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
     strengths.push(
       `${childIndependenceRate}% child independence in laundry — children are actively supported to develop practical life skills by participating in their own laundry and clothing care, preparing them for independence.`,
     );
-  } else if (childIndependenceRate >= 50 && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
+  } else if (meets(childIndependenceRate, 50) && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
     strengths.push(
       `${childIndependenceRate}% child independence in laundry — the home provides opportunities for children to participate in their own laundry care.`,
     );
   }
 
   // -- Linen issue resolution --
-  if (linenIssueResolutionRate >= 90 && linenIssuesIdentified > 0) {
+  if (meets(linenIssueResolutionRate, 90) && linenIssuesIdentified > 0) {
     strengths.push(
       `${linenIssueResolutionRate}% of linen issues resolved — identified problems with bedding, towels, or linen are addressed promptly, ensuring children's comfort is maintained.`,
     );
-  } else if (linenIssueResolutionRate >= 70 && linenIssuesIdentified > 0) {
+  } else if (meets(linenIssueResolutionRate, 70) && linenIssuesIdentified > 0) {
     strengths.push(
       `${linenIssueResolutionRate}% of linen issues resolved — the home generally addresses identified linen problems in a reasonable timeframe.`,
     );
   }
 
   // -- Hygiene issue resolution --
-  if (hygieneIssueResolutionRate >= 90 && hygieneIssuesIdentified > 0) {
+  if (meets(hygieneIssueResolutionRate, 90) && hygieneIssuesIdentified > 0) {
     strengths.push(
       `${hygieneIssueResolutionRate}% of hygiene issues resolved — identified hygiene concerns are remediated promptly, maintaining safe laundry practices.`,
     );
   }
 
   // -- Clothing separation --
-  if (separationRate >= 90 && totalServiceRecords > 0) {
+  if (meets(separationRate, 90) && totalServiceRecords > 0) {
     strengths.push(
       `${separationRate}% of children's laundry kept separate — personal clothing is not mixed with other children's items, respecting individual ownership and preventing loss or damage of personal belongings.`,
     );
   }
 
   // -- Stain treatment --
-  if (stainTreatmentRate >= 80 && totalClothingCareRecords > 0) {
+  if (meets(stainTreatmentRate, 80) && totalClothingCareRecords > 0) {
     strengths.push(
       `${stainTreatmentRate}% stain treatment rate — staff make active efforts to pre-treat stains before washing, demonstrating care for the longevity and appearance of children's clothing.`,
     );
   }
 
   // -- Ironing --
-  if (ironingRate >= 80 && totalClothingCareRecords > 0) {
+  if (meets(ironingRate, 80) && totalClothingCareRecords > 0) {
     strengths.push(
       `${ironingRate}% ironing and pressing completed — children's clothing is presented to a good standard, supporting their self-esteem and sense of being valued.`,
     );
@@ -685,135 +682,135 @@ export function computeLaundryLinenManagement(
   const concerns: string[] = [];
 
   // -- Laundry timeliness concerns --
-  if (laundryTimelinessRate < 50 && totalServiceRecords > 0) {
+  if (below(laundryTimelinessRate, 50) && totalServiceRecords > 0) {
     concerns.push(
       `Only ${laundryTimelinessRate}% laundry service quality — children's clothing and linen are not consistently collected, laundered, and returned in clean, undamaged condition within acceptable timescales. This undermines children's dignity and access to clean clothing.`,
     );
-  } else if (laundryTimelinessRate < 70 && laundryTimelinessRate >= 50 && totalServiceRecords > 0) {
+  } else if (below(laundryTimelinessRate, 70) && meets(laundryTimelinessRate, 50) && totalServiceRecords > 0) {
     concerns.push(
       `Laundry service quality at ${laundryTimelinessRate}% — some children's clothing is not being returned in a timely, clean, or undamaged state, requiring improvement to meet acceptable standards.`,
     );
   }
 
   // -- Timeliness sub-metric concern --
-  if (timelinessRate < 50 && totalServiceRecords > 0) {
+  if (below(timelinessRate, 50) && totalServiceRecords > 0) {
     concerns.push(
       `Only ${timelinessRate}% of laundry returned within 24 hours — children are waiting too long for clean clothing, which impacts their daily routines, self-esteem, and sense of being cared for.`,
     );
-  } else if (timelinessRate < 70 && timelinessRate >= 50 && totalServiceRecords > 0) {
+  } else if (below(timelinessRate, 70) && meets(timelinessRate, 50) && totalServiceRecords > 0) {
     concerns.push(
       `Laundry turnaround within 24 hours at ${timelinessRate}% — a notable proportion of children experience delays in having clean clothing returned.`,
     );
   }
 
   // -- Linen adequacy concerns --
-  if (linenAdequacyRate < 50 && totalLinenAssessments > 0) {
+  if (below(linenAdequacyRate, 50) && totalLinenAssessments > 0) {
     concerns.push(
       `Only ${linenAdequacyRate}% linen adequacy — a significant proportion of bedding, towels, and linen standards are not being met. Children may be sleeping with insufficient, unclean, or worn-out bedding, which directly affects their comfort, health, and sense of being valued.`,
     );
-  } else if (linenAdequacyRate < 70 && linenAdequacyRate >= 50 && totalLinenAssessments > 0) {
+  } else if (below(linenAdequacyRate, 70) && meets(linenAdequacyRate, 50) && totalLinenAssessments > 0) {
     concerns.push(
       `Linen adequacy at ${linenAdequacyRate}% — some linen standards are not consistently met across children's bedrooms, requiring attention to ensure all children have adequate, clean, and comfortable bedding and towels.`,
     );
   }
 
   // -- Clothing care concerns --
-  if (clothingCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(clothingCareRate, 50) && totalClothingCareRecords > 0) {
     concerns.push(
       `Only ${clothingCareRate}% clothing care quality — care instructions are not being followed, clothing is being returned to wrong children, condition is not maintained, and children's preferences and cultural needs are not respected. This represents a fundamental failure to treat children's personal belongings with dignity.`,
     );
-  } else if (clothingCareRate < 70 && clothingCareRate >= 50 && totalClothingCareRecords > 0) {
+  } else if (below(clothingCareRate, 70) && meets(clothingCareRate, 50) && totalClothingCareRecords > 0) {
     concerns.push(
       `Clothing care quality at ${clothingCareRate}% — some aspects of clothing care need improvement, including following care instructions, maintaining condition, and respecting children's preferences.`,
     );
   }
 
   // -- Cultural care concerns --
-  if (culturalCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(culturalCareRate, 50) && totalClothingCareRecords > 0) {
     concerns.push(
       `Only ${culturalCareRate}% cultural needs met in clothing care — children's cultural and religious clothing requirements are not being respected, which fails to promote their identity and may cause distress.`,
     );
-  } else if (culturalCareRate < 70 && culturalCareRate >= 50 && totalClothingCareRecords > 0) {
+  } else if (below(culturalCareRate, 70) && meets(culturalCareRate, 50) && totalClothingCareRecords > 0) {
     concerns.push(
       `Cultural needs met at ${culturalCareRate}% in clothing care — the home is not consistently meeting all children's cultural and religious clothing requirements.`,
     );
   }
 
   // -- Hygiene compliance concerns --
-  if (hygieneComplianceRate < 50 && totalHygieneAssessments > 0) {
+  if (below(hygieneComplianceRate, 50) && totalHygieneAssessments > 0) {
     concerns.push(
       `Only ${hygieneComplianceRate}% hygiene compliance — laundry facilities, equipment, and infection control measures are falling significantly below acceptable standards, creating potential health risks for children.`,
     );
-  } else if (hygieneComplianceRate < 70 && hygieneComplianceRate >= 50 && totalHygieneAssessments > 0) {
+  } else if (below(hygieneComplianceRate, 70) && meets(hygieneComplianceRate, 50) && totalHygieneAssessments > 0) {
     concerns.push(
       `Hygiene compliance at ${hygieneComplianceRate}% — some laundry hygiene and infection control standards are not being met consistently, requiring attention.`,
     );
   }
 
   // -- Infection control concern --
-  if (infectionControlRate < 50 && totalHygieneAssessments > 0) {
+  if (below(infectionControlRate, 50) && totalHygieneAssessments > 0) {
     concerns.push(
       `Only ${infectionControlRate}% infection control measures met — the home's laundry infection prevention protocols are inadequate, putting children at risk of cross-contamination and illness.`,
     );
-  } else if (infectionControlRate < 70 && infectionControlRate >= 50 && totalHygieneAssessments > 0) {
+  } else if (below(infectionControlRate, 70) && meets(infectionControlRate, 50) && totalHygieneAssessments > 0) {
     concerns.push(
       `Infection control at ${infectionControlRate}% — some laundry infection prevention measures are not consistently followed.`,
     );
   }
 
   // -- Child satisfaction concerns --
-  if (childSatisfactionRate < 40 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 40) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction — children report that clothing is not clean enough, not returned on time, not handled with care, bedding is uncomfortable, and their preferences are not listened to. This indicates a service that does not meet children's basic expectations or promote their dignity.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 40 && totalSatisfactionRecords > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 40) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with the laundry and linen service, indicating room for improvement in meeting children's needs.`,
     );
   }
 
   // -- Feels respected concern --
-  if (feelsRespectedRate < 50 && totalSatisfactionRecords > 0) {
+  if (below(feelsRespectedRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feelsRespectedRate}% of children feel respected in how their clothing is handled — when children do not feel their belongings are treated with care, it undermines their sense of being valued and their trust in the home.`,
     );
-  } else if (feelsRespectedRate < 70 && feelsRespectedRate >= 50 && totalSatisfactionRecords > 0) {
+  } else if (below(feelsRespectedRate, 70) && meets(feelsRespectedRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `Only ${feelsRespectedRate}% of children feel respected — some children do not feel their clothing and belongings are handled with sufficient care.`,
     );
   }
 
   // -- Child independence concerns --
-  if (childIndependenceRate < 30 && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
+  if (below(childIndependenceRate, 30) && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
     concerns.push(
       `Only ${childIndependenceRate}% child independence in laundry — children are not being given sufficient opportunities to learn practical laundry skills, which is essential for their preparation for independence and adult life.`,
     );
-  } else if (childIndependenceRate < 50 && childIndependenceRate >= 30 && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
+  } else if (below(childIndependenceRate, 50) && meets(childIndependenceRate, 30) && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
     concerns.push(
       `Child independence at ${childIndependenceRate}% — more children should be supported to participate in their own laundry care as part of independence skill development.`,
     );
   }
 
   // -- Wants more independence concern --
-  if (wantsMoreIndependenceRate > 50 && totalSatisfactionRecords > 0) {
+  if (above(wantsMoreIndependenceRate, 50) && totalSatisfactionRecords > 0) {
     concerns.push(
       `${wantsMoreIndependenceRate}% of children want more independence in laundry — children are expressing a desire for greater autonomy that the home is not currently meeting. Responding to this would both respect children's wishes and build life skills.`,
     );
   }
 
   // -- Linen issue resolution concern --
-  if (linenIssueResolutionRate < 50 && linenIssuesIdentified > 0) {
+  if (below(linenIssueResolutionRate, 50) && linenIssuesIdentified > 0) {
     concerns.push(
       `Only ${linenIssueResolutionRate}% of identified linen issues resolved — problems with bedding, towels, or linen are persisting without remediation, leaving children with substandard conditions.`,
     );
-  } else if (linenIssueResolutionRate < 70 && linenIssueResolutionRate >= 50 && linenIssuesIdentified > 0) {
+  } else if (below(linenIssueResolutionRate, 70) && meets(linenIssueResolutionRate, 50) && linenIssuesIdentified > 0) {
     concerns.push(
       `Linen issue resolution at ${linenIssueResolutionRate}% — some identified linen problems are not being addressed in a timely manner.`,
     );
   }
 
   // -- Separation concern --
-  if (separationRate < 70 && totalServiceRecords > 0) {
+  if (below(separationRate, 70) && totalServiceRecords > 0) {
     concerns.push(
       `Only ${separationRate}% of children's laundry kept separate — mixing children's clothing with others' risks damage, loss, and undermines the sense that personal belongings are treated as individual property.`,
     );
@@ -868,7 +865,7 @@ export function computeLaundryLinenManagement(
   const recommendations: LaundryLinenRecommendation[] = [];
   let rank = 0;
 
-  if (laundryTimelinessRate < 50 && totalServiceRecords > 0) {
+  if (below(laundryTimelinessRate, 50) && totalServiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -878,7 +875,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (hygieneComplianceRate < 50 && totalHygieneAssessments > 0) {
+  if (below(hygieneComplianceRate, 50) && totalHygieneAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -888,7 +885,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (linenAdequacyRate < 50 && totalLinenAssessments > 0) {
+  if (below(linenAdequacyRate, 50) && totalLinenAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -898,7 +895,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (clothingCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(clothingCareRate, 50) && totalClothingCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -908,7 +905,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (childSatisfactionRate < 40 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 40) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,7 +915,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (culturalCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(culturalCareRate, 50) && totalClothingCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,7 +925,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (infectionControlRate < 50 && totalHygieneAssessments > 0) {
+  if (below(infectionControlRate, 50) && totalHygieneAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -978,7 +975,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (linenIssueResolutionRate < 50 && linenIssuesIdentified > 0) {
+  if (below(linenIssueResolutionRate, 50) && linenIssuesIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -988,7 +985,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (childIndependenceRate < 30 && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
+  if (below(childIndependenceRate, 30) && (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -998,7 +995,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (wantsMoreIndependenceRate > 50 && totalSatisfactionRecords > 0) {
+  if (above(wantsMoreIndependenceRate, 50) && totalSatisfactionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1008,7 +1005,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (separationRate < 70 && totalServiceRecords > 0) {
+  if (below(separationRate, 70) && totalServiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1019,8 +1016,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    laundryTimelinessRate >= 50 &&
-    laundryTimelinessRate < 70 &&
+    meets(laundryTimelinessRate, 50) &&
+    below(laundryTimelinessRate, 70) &&
     totalServiceRecords > 0
   ) {
     recommendations.push({
@@ -1033,8 +1030,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    linenAdequacyRate >= 50 &&
-    linenAdequacyRate < 70 &&
+    meets(linenAdequacyRate, 50) &&
+    below(linenAdequacyRate, 70) &&
     totalLinenAssessments > 0
   ) {
     recommendations.push({
@@ -1047,8 +1044,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    clothingCareRate >= 50 &&
-    clothingCareRate < 70 &&
+    meets(clothingCareRate, 50) &&
+    below(clothingCareRate, 70) &&
     totalClothingCareRecords > 0
   ) {
     recommendations.push({
@@ -1061,8 +1058,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    hygieneComplianceRate >= 50 &&
-    hygieneComplianceRate < 70 &&
+    meets(hygieneComplianceRate, 50) &&
+    below(hygieneComplianceRate, 70) &&
     totalHygieneAssessments > 0
   ) {
     recommendations.push({
@@ -1075,8 +1072,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 40) &&
+    below(childSatisfactionRate, 70) &&
     totalSatisfactionRecords > 0
   ) {
     recommendations.push({
@@ -1088,7 +1085,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (linenChildChoiceRate < 50 && totalLinenAssessments > 0) {
+  if (below(linenChildChoiceRate, 50) && totalLinenAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1098,7 +1095,7 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (stainTreatmentRate < 50 && totalClothingCareRecords > 0) {
+  if (below(stainTreatmentRate, 50) && totalClothingCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1116,49 +1113,49 @@ export function computeLaundryLinenManagement(
 
   // ── Critical insights ─────────────────────────────────────────────────
 
-  if (laundryTimelinessRate < 50 && totalServiceRecords > 0) {
+  if (below(laundryTimelinessRate, 50) && totalServiceRecords > 0) {
     insights.push({
       text: `Only ${laundryTimelinessRate}% laundry service quality. Ofsted expects children in residential care to have access to clean, well-maintained clothing at all times. When the laundry service fails to collect, wash, and return items promptly and in good condition, children may be left without clean clothing, which directly impacts their dignity, self-esteem, and daily routines.`,
       severity: "critical",
     });
   }
 
-  if (linenAdequacyRate < 50 && totalLinenAssessments > 0) {
+  if (below(linenAdequacyRate, 50) && totalLinenAssessments > 0) {
     insights.push({
       text: `Only ${linenAdequacyRate}% linen adequacy. Children's bedding, towels, and linen do not consistently meet acceptable standards. Sleeping in insufficient, unclean, or worn-out bedding affects children's comfort, health, and their sense of being valued. Under Reg 25, the home must ensure premises and facilities are fit for purpose.`,
       severity: "critical",
     });
   }
 
-  if (hygieneComplianceRate < 50 && totalHygieneAssessments > 0) {
+  if (below(hygieneComplianceRate, 50) && totalHygieneAssessments > 0) {
     insights.push({
       text: `Only ${hygieneComplianceRate}% hygiene compliance. Laundry facilities and processes are falling below acceptable hygiene and infection control standards. This creates tangible health risks for children, particularly around cross-contamination of soiled items. Immediate remediation is required to meet Reg 25 premises standards.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 40 && totalSatisfactionRecords > 0) {
+  if (below(childSatisfactionRate, 40) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% child satisfaction. Children are reporting that their clothing is not clean enough, not returned on time, not handled with care, and that their preferences are not listened to. When children feel their belongings are disrespected, it damages their trust in the home and undermines the therapeutic relationship.`,
       severity: "critical",
     });
   }
 
-  if (clothingCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(clothingCareRate, 50) && totalClothingCareRecords > 0) {
     insights.push({
       text: `Only ${clothingCareRate}% clothing care quality. Personal clothing is not being handled with appropriate care — care instructions are not followed, clothing is returned to wrong children, and children's preferences and cultural needs are not respected. For looked-after children, personal clothing often carries deep emotional significance, and its mishandling can be experienced as a profound disrespect.`,
       severity: "critical",
     });
   }
 
-  if (culturalCareRate < 50 && totalClothingCareRecords > 0) {
+  if (below(culturalCareRate, 50) && totalClothingCareRecords > 0) {
     insights.push({
       text: `Only ${culturalCareRate}% cultural needs met in clothing care. Failing to respect children's cultural and religious clothing requirements is a significant concern under Reg 5 and SCCIF expectations. Cultural garments often require specific care methods, and their mishandling can cause distress and undermine children's cultural identity.`,
       severity: "critical",
     });
   }
 
-  if (infectionControlRate < 50 && totalHygieneAssessments > 0) {
+  if (below(infectionControlRate, 50) && totalHygieneAssessments > 0) {
     insights.push({
       text: `Only ${infectionControlRate}% infection control measures met. Inadequate infection prevention in laundry operations creates direct health risks for children. Proper separation of soiled items, correct wash temperatures, and staff adherence to hand hygiene are essential safeguards that are not currently in place.`,
       severity: "critical",
@@ -1189,8 +1186,8 @@ export function computeLaundryLinenManagement(
   // ── Warning insights ──────────────────────────────────────────────────
 
   if (
-    laundryTimelinessRate >= 50 &&
-    laundryTimelinessRate < 70 &&
+    meets(laundryTimelinessRate, 50) &&
+    below(laundryTimelinessRate, 70) &&
     totalServiceRecords > 0
   ) {
     insights.push({
@@ -1200,8 +1197,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    linenAdequacyRate >= 50 &&
-    linenAdequacyRate < 70 &&
+    meets(linenAdequacyRate, 50) &&
+    below(linenAdequacyRate, 70) &&
     totalLinenAssessments > 0
   ) {
     insights.push({
@@ -1211,8 +1208,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    clothingCareRate >= 50 &&
-    clothingCareRate < 70 &&
+    meets(clothingCareRate, 50) &&
+    below(clothingCareRate, 70) &&
     totalClothingCareRecords > 0
   ) {
     insights.push({
@@ -1222,8 +1219,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    hygieneComplianceRate >= 50 &&
-    hygieneComplianceRate < 70 &&
+    meets(hygieneComplianceRate, 50) &&
+    below(hygieneComplianceRate, 70) &&
     totalHygieneAssessments > 0
   ) {
     insights.push({
@@ -1233,8 +1230,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 40) &&
+    below(childSatisfactionRate, 70) &&
     totalSatisfactionRecords > 0
   ) {
     insights.push({
@@ -1244,8 +1241,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    childIndependenceRate < 50 &&
-    childIndependenceRate >= 30 &&
+    below(childIndependenceRate, 50) &&
+    meets(childIndependenceRate, 30) &&
     (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)
   ) {
     insights.push({
@@ -1255,8 +1252,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    feelsRespectedRate >= 50 &&
-    feelsRespectedRate < 70 &&
+    meets(feelsRespectedRate, 50) &&
+    below(feelsRespectedRate, 70) &&
     totalSatisfactionRecords > 0
   ) {
     insights.push({
@@ -1276,14 +1273,14 @@ export function computeLaundryLinenManagement(
     });
   }
 
-  if (separationRate < 70 && totalServiceRecords > 0) {
+  if (below(separationRate, 70) && totalServiceRecords > 0) {
     insights.push({
       text: `Only ${separationRate}% of laundry kept separate — children's clothing is frequently mixed with others'. For looked-after children, having their personal items treated as distinct property is important for their sense of ownership and identity.`,
       severity: "warning",
     });
   }
 
-  if (wantsMoreIndependenceRate > 50 && totalSatisfactionRecords > 0) {
+  if (above(wantsMoreIndependenceRate, 50) && totalSatisfactionRecords > 0) {
     insights.push({
       text: `${wantsMoreIndependenceRate}% of children want more independence in laundry — this is a clear signal from children that they are ready for greater autonomy. The home should respond by creating structured, age-appropriate opportunities for self-sufficiency.`,
       severity: "warning",
@@ -1336,8 +1333,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    laundryTimelinessRate >= 90 &&
-    childSatisfactionRate >= 90 &&
+    meets(laundryTimelinessRate, 90) &&
+    meets(childSatisfactionRate, 90) &&
     totalServiceRecords > 0 &&
     totalSatisfactionRecords > 0
   ) {
@@ -1348,7 +1345,7 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    linenAdequacyRate >= 90 &&
+    meets(linenAdequacyRate, 90) &&
     totalLinenAssessments > 0
   ) {
     insights.push({
@@ -1358,8 +1355,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    clothingCareRate >= 90 &&
-    culturalCareRate >= 90 &&
+    meets(clothingCareRate, 90) &&
+    meets(culturalCareRate, 90) &&
     totalClothingCareRecords > 0
   ) {
     insights.push({
@@ -1369,8 +1366,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    hygieneComplianceRate >= 90 &&
-    infectionControlRate >= 90 &&
+    meets(hygieneComplianceRate, 90) &&
+    meets(infectionControlRate, 90) &&
     totalHygieneAssessments > 0
   ) {
     insights.push({
@@ -1380,8 +1377,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
-    feelsRespectedRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
+    meets(feelsRespectedRate, 90) &&
     totalSatisfactionRecords > 0
   ) {
     insights.push({
@@ -1391,7 +1388,7 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    childIndependenceRate >= 80 &&
+    meets(childIndependenceRate, 80) &&
     (totalSatisfactionRecords > 0 || totalClothingCareRecords > 0)
   ) {
     insights.push({
@@ -1401,7 +1398,7 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    linenIssueResolutionRate >= 90 &&
+    meets(linenIssueResolutionRate, 90) &&
     linenIssuesIdentified > 0
   ) {
     insights.push({
@@ -1411,7 +1408,7 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    separationRate >= 90 &&
+    meets(separationRate, 90) &&
     totalServiceRecords > 0
   ) {
     insights.push({

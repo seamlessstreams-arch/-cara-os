@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME INFECTION PREVENTION & CONTROL INTELLIGENCE ENGINE
 // Tracks infection control effectiveness — hygiene audits, illness outbreak
@@ -163,10 +164,6 @@ export interface InfectionPreventionResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -194,12 +191,12 @@ function emptyResult(
     total_hand_hygiene_observations: 0,
     total_cleaning_records: 0,
     total_immunisation_records: 0,
-    hygiene_audit_compliance_rate: 0,
-    outbreak_management_rate: 0,
-    hand_hygiene_rate: 0,
-    cleaning_compliance_rate: 0,
-    immunisation_coverage_rate: 0,
-    staff_training_rate: 0,
+    hygiene_audit_compliance_rate: null,
+    outbreak_management_rate: null,
+    hand_hygiene_rate: null,
+    cleaning_compliance_rate: null,
+    immunisation_coverage_rate: null,
+    staff_training_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -295,7 +292,7 @@ export function computeInfectionPreventionControl(
       if (check(rec)) totalAuditChecksPassed++;
     }
   }
-  const hygieneAuditComplianceRate = pct(totalAuditChecksPassed, totalAuditChecksPossible);
+  const hygieneAuditComplianceRate = rate(totalAuditChecksPassed, totalAuditChecksPossible);
 
   const auditIssuesIdentified = hygiene_audit_records.filter(
     (a) => a.issues_identified.length > 0,
@@ -303,7 +300,7 @@ export function computeInfectionPreventionControl(
   const auditIssuesResolved = hygiene_audit_records.filter(
     (a) => a.issues_identified.length > 0 && a.issues_resolved,
   ).length;
-  const auditIssueResolutionRate = pct(auditIssuesResolved, auditIssuesIdentified);
+  const auditIssueResolutionRate = rate(auditIssuesResolved, auditIssuesIdentified);
 
   // --- Illness outbreak metrics ---
   const totalOutbreaks = illness_outbreak_records.length;
@@ -311,34 +308,34 @@ export function computeInfectionPreventionControl(
   const outbreaksWithIsolation = illness_outbreak_records.filter(
     (o) => o.isolation_measures_implemented,
   ).length;
-  const isolationRate = pct(outbreaksWithIsolation, totalOutbreaks);
+  const isolationRate = rate(outbreaksWithIsolation, totalOutbreaks);
 
   const outbreaksWithGP = illness_outbreak_records.filter(
     (o) => o.gp_consulted,
   ).length;
-  const gpConsultationRate = pct(outbreaksWithGP, totalOutbreaks);
+  const gpConsultationRate = rate(outbreaksWithGP, totalOutbreaks);
 
   const outbreaksContained = illness_outbreak_records.filter(
     (o) => o.containment_effective,
   ).length;
-  const containmentEffectivenessRate = pct(outbreaksContained, totalOutbreaks);
+  const containmentEffectivenessRate = rate(outbreaksContained, totalOutbreaks);
 
   const outbreaksWithLessonsLearned = illness_outbreak_records.filter(
     (o) => o.lessons_learned_documented,
   ).length;
-  const lessonsLearnedRate = pct(outbreaksWithLessonsLearned, totalOutbreaks);
+  const lessonsLearnedRate = rate(outbreaksWithLessonsLearned, totalOutbreaks);
 
   // Outbreak management composite: isolation + GP + containment + lessons learned
   const outbreakManagementNumerator =
     outbreaksWithIsolation + outbreaksWithGP + outbreaksContained + outbreaksWithLessonsLearned;
   const outbreakManagementDenominator = totalOutbreaks * 4;
-  const outbreakManagementRate = pct(outbreakManagementNumerator, outbreakManagementDenominator);
+  const outbreakManagementRate = rate(outbreakManagementNumerator, outbreakManagementDenominator);
 
   // Multi-child outbreaks
   const multiChildOutbreaks = illness_outbreak_records.filter(
     (o) => o.children_affected_count > 1,
   ).length;
-  const spreadRate = pct(multiChildOutbreaks, totalOutbreaks);
+  const spreadRate = rate(multiChildOutbreaks, totalOutbreaks);
 
   // --- Hand hygiene metrics ---
   const totalHandHygieneObs = hand_hygiene_records.length;
@@ -350,7 +347,7 @@ export function computeInfectionPreventionControl(
   const techniqueCorrect = hand_hygiene_records.filter(
     (h) => h.technique_correct,
   ).length;
-  const techniqueCorrectRate = pct(techniqueCorrect, totalHandHygieneObs);
+  const techniqueCorrectRate = rate(techniqueCorrect, totalHandHygieneObs);
 
   const soapOrSanitiserUsed = hand_hygiene_records.filter(
     (h) => h.soap_or_sanitiser_used,
@@ -359,19 +356,19 @@ export function computeInfectionPreventionControl(
   const durationAdequate = hand_hygiene_records.filter(
     (h) => h.duration_adequate,
   ).length;
-  const durationAdequateRate = pct(durationAdequate, totalHandHygieneObs);
+  const durationAdequateRate = rate(durationAdequate, totalHandHygieneObs);
 
   // Hand hygiene composite: performed + technique + soap + duration
   const handHygieneNumerator =
     handHygienePerformed + techniqueCorrect + soapOrSanitiserUsed + durationAdequate;
   const handHygieneDenominator = totalHandHygieneObs * 4;
-  const handHygieneRate = pct(handHygieneNumerator, handHygieneDenominator);
+  const handHygieneRate = rate(handHygieneNumerator, handHygieneDenominator);
 
   // Staff training
   const staffTrained = hand_hygiene_records.filter(
     (h) => h.training_completed,
   ).length;
-  const staffTrainingRate = pct(staffTrained, totalHandHygieneObs);
+  const staffTrainingRate = rate(staffTrained, totalHandHygieneObs);
 
   // --- Cleaning schedule metrics ---
   const totalCleaningRecords = cleaning_schedule_records.length;
@@ -379,7 +376,7 @@ export function computeInfectionPreventionControl(
   const cleaningCompleted = cleaning_schedule_records.filter(
     (c) => c.completed,
   ).length;
-  const cleaningCompletionRate = pct(cleaningCompleted, totalCleaningRecords);
+  const cleaningCompletionRate = rate(cleaningCompleted, totalCleaningRecords);
 
   const productsUsedCorrectly = cleaning_schedule_records.filter(
     (c) => c.products_used_correctly,
@@ -388,7 +385,7 @@ export function computeInfectionPreventionControl(
   const checksPassed = cleaning_schedule_records.filter(
     (c) => c.check_passed,
   ).length;
-  const checkPassRate = pct(checksPassed, totalCleaningRecords);
+  const checkPassRate = rate(checksPassed, totalCleaningRecords);
 
   const cleaningIssuesFound = cleaning_schedule_records.filter(
     (c) => c.issues_found !== null && c.issues_found !== "",
@@ -396,12 +393,12 @@ export function computeInfectionPreventionControl(
   const cleaningIssuesAddressed = cleaning_schedule_records.filter(
     (c) => c.issues_found !== null && c.issues_found !== "" && c.issues_addressed,
   ).length;
-  const cleaningIssueResolutionRate = pct(cleaningIssuesAddressed, cleaningIssuesFound);
+  const cleaningIssueResolutionRate = rate(cleaningIssuesAddressed, cleaningIssuesFound);
 
   // Cleaning compliance composite: completed + products correct + check passed
   const cleaningComplianceNumerator = cleaningCompleted + productsUsedCorrectly + checksPassed;
   const cleaningComplianceDenominator = totalCleaningRecords * 3;
-  const cleaningComplianceRate = pct(cleaningComplianceNumerator, cleaningComplianceDenominator);
+  const cleaningComplianceRate = rate(cleaningComplianceNumerator, cleaningComplianceDenominator);
 
   // --- Immunisation metrics ---
   const totalImmunisationRecords = immunisation_records.length;
@@ -409,7 +406,7 @@ export function computeInfectionPreventionControl(
   const consentObtained = immunisation_records.filter(
     (i) => i.consent_obtained,
   ).length;
-  const consentRate = pct(consentObtained, totalImmunisationRecords);
+  const consentRate = rate(consentObtained, totalImmunisationRecords);
 
   const catchUpPlans = immunisation_records.filter(
     (i) => !i.administered && !i.declined && i.catch_up_plan_in_place,
@@ -417,68 +414,68 @@ export function computeInfectionPreventionControl(
   const outstandingWithoutPlan = immunisation_records.filter(
     (i) => !i.administered && !i.declined,
   ).length;
-  const catchUpPlanRate = pct(catchUpPlans, outstandingWithoutPlan);
+  const catchUpPlanRate = rate(catchUpPlans, outstandingWithoutPlan);
 
   // Immunisation coverage: children with up-to-date immunisations
   const uniqueChildrenWithImmunisations = new Set(
     immunisation_records.filter((i) => i.administered).map((i) => i.child_id),
   ).size;
   const immunisationCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithImmunisations, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithImmunisations, total_children) : 0;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: hygieneAuditComplianceRate (>=90: +4, >=70: +2) ---
-  if (hygieneAuditComplianceRate >= 90) score += 4;
-  else if (hygieneAuditComplianceRate >= 70) score += 2;
+  if (meets(hygieneAuditComplianceRate, 90)) score += 4;
+  else if (meets(hygieneAuditComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: outbreakManagementRate (>=90: +4, >=70: +2) ---
-  if (outbreakManagementRate >= 90) score += 4;
-  else if (outbreakManagementRate >= 70) score += 2;
+  if (meets(outbreakManagementRate, 90)) score += 4;
+  else if (meets(outbreakManagementRate, 70)) score += 2;
 
   // --- Bonus 3: handHygieneRate (>=90: +4, >=70: +2) ---
-  if (handHygieneRate >= 90) score += 4;
-  else if (handHygieneRate >= 70) score += 2;
+  if (meets(handHygieneRate, 90)) score += 4;
+  else if (meets(handHygieneRate, 70)) score += 2;
 
   // --- Bonus 4: cleaningComplianceRate (>=90: +3, >=70: +1) ---
-  if (cleaningComplianceRate >= 90) score += 3;
-  else if (cleaningComplianceRate >= 70) score += 1;
+  if (meets(cleaningComplianceRate, 90)) score += 3;
+  else if (meets(cleaningComplianceRate, 70)) score += 1;
 
   // --- Bonus 5: immunisationCoverageRate (>=90: +3, >=70: +1) ---
-  if (immunisationCoverageRate >= 90) score += 3;
-  else if (immunisationCoverageRate >= 70) score += 1;
+  if (meets(immunisationCoverageRate, 90)) score += 3;
+  else if (meets(immunisationCoverageRate, 70)) score += 1;
 
   // --- Bonus 6: staffTrainingRate (>=90: +3, >=70: +1) ---
-  if (staffTrainingRate >= 90) score += 3;
-  else if (staffTrainingRate >= 70) score += 1;
+  if (meets(staffTrainingRate, 90)) score += 3;
+  else if (meets(staffTrainingRate, 70)) score += 1;
 
   // --- Bonus 7: containmentEffectivenessRate (>=90: +3, >=70: +1) ---
-  if (containmentEffectivenessRate >= 90) score += 3;
-  else if (containmentEffectivenessRate >= 70) score += 1;
+  if (meets(containmentEffectivenessRate, 90)) score += 3;
+  else if (meets(containmentEffectivenessRate, 70)) score += 1;
 
   // --- Bonus 8: auditIssueResolutionRate (>=90: +2, >=70: +1) ---
-  if (auditIssueResolutionRate >= 90) score += 2;
-  else if (auditIssueResolutionRate >= 70) score += 1;
+  if (meets(auditIssueResolutionRate, 90)) score += 2;
+  else if (meets(auditIssueResolutionRate, 70)) score += 1;
 
   // --- Bonus 9: lessonsLearnedRate (>=90: +2, >=70: +1) ---
-  if (lessonsLearnedRate >= 90) score += 2;
-  else if (lessonsLearnedRate >= 70) score += 1;
+  if (meets(lessonsLearnedRate, 90)) score += 2;
+  else if (meets(lessonsLearnedRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // hygieneAuditComplianceRate < 50 → -5
-  if (hygieneAuditComplianceRate < 50 && hygiene_audit_records.length > 0) score -= 5;
+  if (below(hygieneAuditComplianceRate, 50) && hygiene_audit_records.length > 0) score -= 5;
 
   // handHygieneRate < 50 → -5
-  if (handHygieneRate < 50 && hand_hygiene_records.length > 0) score -= 5;
+  if (below(handHygieneRate, 50) && hand_hygiene_records.length > 0) score -= 5;
 
   // cleaningComplianceRate < 50 → -5
-  if (cleaningComplianceRate < 50 && cleaning_schedule_records.length > 0) score -= 5;
+  if (below(cleaningComplianceRate, 50) && cleaning_schedule_records.length > 0) score -= 5;
 
   // spreadRate > 50 → -3 (more than half of outbreaks spread to multiple children)
-  if (spreadRate > 50 && illness_outbreak_records.length > 0) score -= 3;
+  if (above(spreadRate, 50) && illness_outbreak_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -488,121 +485,121 @@ export function computeInfectionPreventionControl(
 
   const strengths: string[] = [];
 
-  if (hygieneAuditComplianceRate >= 90 && totalAudits > 0) {
+  if (meets(hygieneAuditComplianceRate, 90) && totalAudits > 0) {
     strengths.push(
       `${hygieneAuditComplianceRate}% hygiene audit compliance — the home consistently meets infection control standards across hand washing, waste disposal, food hygiene, PPE, and laundry procedures.`,
     );
-  } else if (hygieneAuditComplianceRate >= 70 && totalAudits > 0) {
+  } else if (meets(hygieneAuditComplianceRate, 70) && totalAudits > 0) {
     strengths.push(
       `${hygieneAuditComplianceRate}% hygiene audit compliance — the home generally maintains good infection control standards across audited areas.`,
     );
   }
 
-  if (outbreakManagementRate >= 90 && totalOutbreaks > 0) {
+  if (meets(outbreakManagementRate, 90) && totalOutbreaks > 0) {
     strengths.push(
       `${outbreakManagementRate}% outbreak management effectiveness — outbreaks are managed with isolation measures, GP consultation, effective containment, and documented lessons learned.`,
     );
-  } else if (outbreakManagementRate >= 70 && totalOutbreaks > 0) {
+  } else if (meets(outbreakManagementRate, 70) && totalOutbreaks > 0) {
     strengths.push(
       `${outbreakManagementRate}% outbreak management — the home generally manages illness outbreaks effectively with appropriate responses.`,
     );
   }
 
-  if (handHygieneRate >= 90 && totalHandHygieneObs > 0) {
+  if (meets(handHygieneRate, 90) && totalHandHygieneObs > 0) {
     strengths.push(
       `${handHygieneRate}% hand hygiene compliance — staff consistently perform hand hygiene with correct technique, appropriate products, and adequate duration.`,
     );
-  } else if (handHygieneRate >= 70 && totalHandHygieneObs > 0) {
+  } else if (meets(handHygieneRate, 70) && totalHandHygieneObs > 0) {
     strengths.push(
       `${handHygieneRate}% hand hygiene compliance — the majority of staff hand hygiene observations meet expected standards.`,
     );
   }
 
-  if (cleaningComplianceRate >= 90 && totalCleaningRecords > 0) {
+  if (meets(cleaningComplianceRate, 90) && totalCleaningRecords > 0) {
     strengths.push(
       `${cleaningComplianceRate}% cleaning compliance — cleaning schedules are completed consistently with correct products and verified by supervisors.`,
     );
-  } else if (cleaningComplianceRate >= 70 && totalCleaningRecords > 0) {
+  } else if (meets(cleaningComplianceRate, 70) && totalCleaningRecords > 0) {
     strengths.push(
       `${cleaningComplianceRate}% cleaning compliance — cleaning tasks are generally completed to standard with appropriate verification.`,
     );
   }
 
-  if (immunisationCoverageRate >= 90 && total_children > 0 && totalImmunisationRecords > 0) {
+  if (meets(immunisationCoverageRate, 90) && total_children > 0 && totalImmunisationRecords > 0) {
     strengths.push(
       `${immunisationCoverageRate}% immunisation coverage — the vast majority of children have up-to-date immunisation records, protecting both individual children and the home community.`,
     );
-  } else if (immunisationCoverageRate >= 70 && total_children > 0 && totalImmunisationRecords > 0) {
+  } else if (meets(immunisationCoverageRate, 70) && total_children > 0 && totalImmunisationRecords > 0) {
     strengths.push(
       `${immunisationCoverageRate}% immunisation coverage — most children on placement have received their due immunisations.`,
     );
   }
 
-  if (staffTrainingRate >= 90 && totalHandHygieneObs > 0) {
+  if (meets(staffTrainingRate, 90) && totalHandHygieneObs > 0) {
     strengths.push(
       `${staffTrainingRate}% staff infection control training completion — staff are well trained in hygiene procedures, ensuring consistent practice across the home.`,
     );
-  } else if (staffTrainingRate >= 70 && totalHandHygieneObs > 0) {
+  } else if (meets(staffTrainingRate, 70) && totalHandHygieneObs > 0) {
     strengths.push(
       `${staffTrainingRate}% staff training completion — the majority of staff have completed infection control training.`,
     );
   }
 
-  if (containmentEffectivenessRate >= 90 && totalOutbreaks > 0) {
+  if (meets(containmentEffectivenessRate, 90) && totalOutbreaks > 0) {
     strengths.push(
       `${containmentEffectivenessRate}% outbreak containment effectiveness — the home's containment measures successfully prevent illness spread, demonstrating robust infection control protocols.`,
     );
-  } else if (containmentEffectivenessRate >= 70 && totalOutbreaks > 0) {
+  } else if (meets(containmentEffectivenessRate, 70) && totalOutbreaks > 0) {
     strengths.push(
       `${containmentEffectivenessRate}% outbreak containment — the home generally succeeds in containing illness outbreaks when they occur.`,
     );
   }
 
-  if (auditIssueResolutionRate >= 90 && auditIssuesIdentified > 0) {
+  if (meets(auditIssueResolutionRate, 90) && auditIssuesIdentified > 0) {
     strengths.push(
       `${auditIssueResolutionRate}% of hygiene audit issues resolved — identified problems are promptly addressed, demonstrating a proactive approach to maintaining hygiene standards.`,
     );
-  } else if (auditIssueResolutionRate >= 70 && auditIssuesIdentified > 0) {
+  } else if (meets(auditIssueResolutionRate, 70) && auditIssuesIdentified > 0) {
     strengths.push(
       `${auditIssueResolutionRate}% of audit issues resolved — the home generally addresses hygiene issues identified during audits.`,
     );
   }
 
-  if (lessonsLearnedRate >= 90 && totalOutbreaks > 0) {
+  if (meets(lessonsLearnedRate, 90) && totalOutbreaks > 0) {
     strengths.push(
       `${lessonsLearnedRate}% of outbreaks have documented lessons learned — the home actively learns from illness events to improve future prevention and response.`,
     );
-  } else if (lessonsLearnedRate >= 70 && totalOutbreaks > 0) {
+  } else if (meets(lessonsLearnedRate, 70) && totalOutbreaks > 0) {
     strengths.push(
       `${lessonsLearnedRate}% lessons learned documentation — the home generally documents learning from outbreak events.`,
     );
   }
 
-  if (isolationRate >= 90 && totalOutbreaks > 0) {
+  if (meets(isolationRate, 90) && totalOutbreaks > 0) {
     strengths.push(
       `${isolationRate}% of outbreaks have isolation measures in place — the home consistently implements isolation protocols to protect other children and staff.`,
     );
   }
 
-  if (gpConsultationRate >= 90 && totalOutbreaks > 0) {
+  if (meets(gpConsultationRate, 90) && totalOutbreaks > 0) {
     strengths.push(
       `${gpConsultationRate}% GP consultation during outbreaks — the home consistently seeks medical advice during illness events, ensuring children receive appropriate healthcare.`,
     );
   }
 
-  if (cleaningCompletionRate >= 95 && totalCleaningRecords > 0) {
+  if (meets(cleaningCompletionRate, 95) && totalCleaningRecords > 0) {
     strengths.push(
       `${cleaningCompletionRate}% cleaning schedule completion — the home maintains an exemplary cleaning regime with near-complete adherence to scheduled tasks.`,
     );
   }
 
-  if (consentRate >= 90 && totalImmunisationRecords > 0) {
+  if (meets(consentRate, 90) && totalImmunisationRecords > 0) {
     strengths.push(
       `${consentRate}% immunisation consent obtained — the home diligently secures appropriate consent for children's vaccinations, working effectively with those with parental responsibility.`,
     );
   }
 
-  if (techniqueCorrectRate >= 90 && totalHandHygieneObs > 0) {
+  if (meets(techniqueCorrectRate, 90) && totalHandHygieneObs > 0) {
     strengths.push(
       `${techniqueCorrectRate}% correct hand hygiene technique — staff demonstrate consistently high-quality hand washing and sanitising practice.`,
     );
@@ -612,99 +609,99 @@ export function computeInfectionPreventionControl(
 
   const concerns: string[] = [];
 
-  if (hygieneAuditComplianceRate < 50 && totalAudits > 0) {
+  if (below(hygieneAuditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Only ${hygieneAuditComplianceRate}% hygiene audit compliance — more than half of infection control checks are failing, placing children at increased risk of preventable illness and representing a significant Reg 25 concern.`,
     );
-  } else if (hygieneAuditComplianceRate < 70 && hygieneAuditComplianceRate >= 50 && totalAudits > 0) {
+  } else if (below(hygieneAuditComplianceRate, 70) && meets(hygieneAuditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Hygiene audit compliance at ${hygieneAuditComplianceRate}% — infection control standards are inconsistently met, with notable gaps in key areas.`,
     );
   }
 
-  if (handHygieneRate < 50 && totalHandHygieneObs > 0) {
+  if (below(handHygieneRate, 50) && totalHandHygieneObs > 0) {
     concerns.push(
       `Only ${handHygieneRate}% hand hygiene compliance — the majority of staff hand hygiene observations do not meet expected standards, creating a serious infection risk for children and staff.`,
     );
-  } else if (handHygieneRate < 70 && handHygieneRate >= 50 && totalHandHygieneObs > 0) {
+  } else if (below(handHygieneRate, 70) && meets(handHygieneRate, 50) && totalHandHygieneObs > 0) {
     concerns.push(
       `Hand hygiene compliance at ${handHygieneRate}% — staff hand hygiene practice is inconsistent and requires improvement to protect children from infection.`,
     );
   }
 
-  if (cleaningComplianceRate < 50 && totalCleaningRecords > 0) {
+  if (below(cleaningComplianceRate, 50) && totalCleaningRecords > 0) {
     concerns.push(
       `Only ${cleaningComplianceRate}% cleaning compliance — cleaning schedules are not being followed, products are not used correctly, or supervisory checks are failing, compromising the cleanliness and safety of the home environment.`,
     );
-  } else if (cleaningComplianceRate < 70 && cleaningComplianceRate >= 50 && totalCleaningRecords > 0) {
+  } else if (below(cleaningComplianceRate, 70) && meets(cleaningComplianceRate, 50) && totalCleaningRecords > 0) {
     concerns.push(
       `Cleaning compliance at ${cleaningComplianceRate}% — cleaning standards are inconsistent and require improvement to maintain a safe, hygienic environment.`,
     );
   }
 
-  if (outbreakManagementRate < 50 && totalOutbreaks > 0) {
+  if (below(outbreakManagementRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `Only ${outbreakManagementRate}% outbreak management effectiveness — illness outbreaks are not being managed with appropriate isolation, medical consultation, containment, or documented learning, placing children at risk.`,
     );
-  } else if (outbreakManagementRate < 70 && outbreakManagementRate >= 50 && totalOutbreaks > 0) {
+  } else if (below(outbreakManagementRate, 70) && meets(outbreakManagementRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `Outbreak management at ${outbreakManagementRate}% — the home's response to illness outbreaks is inconsistent, with gaps in isolation, consultation, or containment.`,
     );
   }
 
-  if (immunisationCoverageRate < 50 && total_children > 0 && totalImmunisationRecords > 0) {
+  if (below(immunisationCoverageRate, 50) && total_children > 0 && totalImmunisationRecords > 0) {
     concerns.push(
       `Only ${immunisationCoverageRate}% immunisation coverage — more than half of children on placement do not have up-to-date immunisation records, leaving them vulnerable to preventable diseases.`,
     );
-  } else if (immunisationCoverageRate < 70 && immunisationCoverageRate >= 50 && total_children > 0 && totalImmunisationRecords > 0) {
+  } else if (below(immunisationCoverageRate, 70) && meets(immunisationCoverageRate, 50) && total_children > 0 && totalImmunisationRecords > 0) {
     concerns.push(
       `Immunisation coverage at ${immunisationCoverageRate}% — a significant number of children are not fully immunised, requiring urgent catch-up planning.`,
     );
   }
 
-  if (staffTrainingRate < 50 && totalHandHygieneObs > 0) {
+  if (below(staffTrainingRate, 50) && totalHandHygieneObs > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% staff infection control training — the majority of staff have not completed infection control training, undermining the home's ability to maintain consistent hygiene practices.`,
     );
-  } else if (staffTrainingRate < 70 && staffTrainingRate >= 50 && totalHandHygieneObs > 0) {
+  } else if (below(staffTrainingRate, 70) && meets(staffTrainingRate, 50) && totalHandHygieneObs > 0) {
     concerns.push(
       `Staff training rate at ${staffTrainingRate}% — a notable proportion of staff have not completed infection control training.`,
     );
   }
 
-  if (spreadRate > 50 && totalOutbreaks > 0) {
+  if (above(spreadRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `${spreadRate}% of outbreaks affected multiple children — illness is spreading between children, indicating containment measures are insufficient or not implemented quickly enough.`,
     );
-  } else if (spreadRate > 30 && spreadRate <= 50 && totalOutbreaks > 0) {
+  } else if (above(spreadRate, 30) && spreadRate! <= 50 && totalOutbreaks > 0) {
     concerns.push(
       `${spreadRate}% of outbreaks affected multiple children — some illness spread is occurring, suggesting containment protocols should be reviewed.`,
     );
   }
 
-  if (containmentEffectivenessRate < 50 && totalOutbreaks > 0) {
+  if (below(containmentEffectivenessRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `Only ${containmentEffectivenessRate}% outbreak containment effectiveness — containment measures are not successfully controlling illness spread in the home.`,
     );
-  } else if (containmentEffectivenessRate < 70 && containmentEffectivenessRate >= 50 && totalOutbreaks > 0) {
+  } else if (below(containmentEffectivenessRate, 70) && meets(containmentEffectivenessRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `Outbreak containment at ${containmentEffectivenessRate}% — containment measures are partially effective but need strengthening to better protect children.`,
     );
   }
 
-  if (auditIssueResolutionRate < 50 && auditIssuesIdentified > 0) {
+  if (below(auditIssueResolutionRate, 50) && auditIssuesIdentified > 0) {
     concerns.push(
       `Only ${auditIssueResolutionRate}% of hygiene audit issues resolved — identified problems with infection control standards persist without remediation.`,
     );
   }
 
-  if (lessonsLearnedRate < 50 && totalOutbreaks > 0) {
+  if (below(lessonsLearnedRate, 50) && totalOutbreaks > 0) {
     concerns.push(
       `Only ${lessonsLearnedRate}% of outbreaks have documented lessons learned — the home is not systematically learning from illness events, risking repeated failures.`,
     );
   }
 
-  if (cleaningCompletionRate < 70 && totalCleaningRecords > 0) {
+  if (below(cleaningCompletionRate, 70) && totalCleaningRecords > 0) {
     concerns.push(
       `Cleaning completion rate at only ${cleaningCompletionRate}% — scheduled cleaning tasks are not being completed, creating hygiene gaps across the home.`,
     );
@@ -734,7 +731,7 @@ export function computeInfectionPreventionControl(
     );
   }
 
-  if (catchUpPlanRate < 50 && outstandingWithoutPlan > 0) {
+  if (below(catchUpPlanRate, 50) && outstandingWithoutPlan > 0) {
     concerns.push(
       `Only ${catchUpPlanRate}% of children with outstanding immunisations have catch-up plans — children are falling behind on vaccinations without structured plans to bring them up to date.`,
     );
@@ -745,7 +742,7 @@ export function computeInfectionPreventionControl(
   const recommendations: InfectionPreventionRecommendation[] = [];
   let rank = 0;
 
-  if (hygieneAuditComplianceRate < 50 && totalAudits > 0) {
+  if (below(hygieneAuditComplianceRate, 50) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -755,7 +752,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (handHygieneRate < 50 && totalHandHygieneObs > 0) {
+  if (below(handHygieneRate, 50) && totalHandHygieneObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -765,7 +762,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (cleaningComplianceRate < 50 && totalCleaningRecords > 0) {
+  if (below(cleaningComplianceRate, 50) && totalCleaningRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -775,7 +772,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (outbreakManagementRate < 50 && totalOutbreaks > 0) {
+  if (below(outbreakManagementRate, 50) && totalOutbreaks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -785,7 +782,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (immunisationCoverageRate < 50 && total_children > 0 && totalImmunisationRecords > 0) {
+  if (below(immunisationCoverageRate, 50) && total_children > 0 && totalImmunisationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -795,7 +792,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (staffTrainingRate < 50 && totalHandHygieneObs > 0) {
+  if (below(staffTrainingRate, 50) && totalHandHygieneObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -805,7 +802,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (spreadRate > 50 && totalOutbreaks > 0) {
+  if (above(spreadRate, 50) && totalOutbreaks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -855,7 +852,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (auditIssueResolutionRate < 50 && auditIssuesIdentified > 0) {
+  if (below(auditIssueResolutionRate, 50) && auditIssuesIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -865,7 +862,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (lessonsLearnedRate < 50 && totalOutbreaks > 0) {
+  if (below(lessonsLearnedRate, 50) && totalOutbreaks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -875,7 +872,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (catchUpPlanRate < 50 && outstandingWithoutPlan > 0) {
+  if (below(catchUpPlanRate, 50) && outstandingWithoutPlan > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -886,8 +883,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    hygieneAuditComplianceRate >= 50 &&
-    hygieneAuditComplianceRate < 70 &&
+    meets(hygieneAuditComplianceRate, 50) &&
+    below(hygieneAuditComplianceRate, 70) &&
     totalAudits > 0
   ) {
     recommendations.push({
@@ -900,8 +897,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    handHygieneRate >= 50 &&
-    handHygieneRate < 70 &&
+    meets(handHygieneRate, 50) &&
+    below(handHygieneRate, 70) &&
     totalHandHygieneObs > 0
   ) {
     recommendations.push({
@@ -914,8 +911,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    cleaningComplianceRate >= 50 &&
-    cleaningComplianceRate < 70 &&
+    meets(cleaningComplianceRate, 50) &&
+    below(cleaningComplianceRate, 70) &&
     totalCleaningRecords > 0
   ) {
     recommendations.push({
@@ -928,8 +925,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    immunisationCoverageRate >= 50 &&
-    immunisationCoverageRate < 70 &&
+    meets(immunisationCoverageRate, 50) &&
+    below(immunisationCoverageRate, 70) &&
     total_children > 0 &&
     totalImmunisationRecords > 0
   ) {
@@ -943,8 +940,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    staffTrainingRate >= 50 &&
-    staffTrainingRate < 70 &&
+    meets(staffTrainingRate, 50) &&
+    below(staffTrainingRate, 70) &&
     totalHandHygieneObs > 0
   ) {
     recommendations.push({
@@ -957,8 +954,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    outbreakManagementRate >= 50 &&
-    outbreakManagementRate < 70 &&
+    meets(outbreakManagementRate, 50) &&
+    below(outbreakManagementRate, 70) &&
     totalOutbreaks > 0
   ) {
     recommendations.push({
@@ -970,7 +967,7 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (cleaningIssueResolutionRate < 70 && cleaningIssuesFound > 0) {
+  if (below(cleaningIssueResolutionRate, 70) && cleaningIssuesFound > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -986,49 +983,49 @@ export function computeInfectionPreventionControl(
 
   // -- Critical insights --
 
-  if (hygieneAuditComplianceRate < 50 && totalAudits > 0) {
+  if (below(hygieneAuditComplianceRate, 50) && totalAudits > 0) {
     insights.push({
       text: `Only ${hygieneAuditComplianceRate}% hygiene audit compliance. Ofsted expects children's homes to maintain rigorous infection control standards. When more than half of hygiene checks fail, children are exposed to avoidable infection risks, and the home's compliance with Reg 25 (Premises) is seriously in question.`,
       severity: "critical",
     });
   }
 
-  if (handHygieneRate < 50 && totalHandHygieneObs > 0) {
+  if (below(handHygieneRate, 50) && totalHandHygieneObs > 0) {
     insights.push({
       text: `Only ${handHygieneRate}% hand hygiene compliance. Hand hygiene is the single most effective measure for preventing the spread of infection. When staff compliance falls below 50%, the risk of illness transmission within the home increases dramatically. This requires immediate intervention under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (cleaningComplianceRate < 50 && totalCleaningRecords > 0) {
+  if (below(cleaningComplianceRate, 50) && totalCleaningRecords > 0) {
     insights.push({
       text: `Only ${cleaningComplianceRate}% cleaning compliance. A home that cannot maintain basic cleaning standards is failing in its duty to provide safe, hygienic premises. This directly undermines Reg 25 and places children's health at risk from environmental contamination.`,
       severity: "critical",
     });
   }
 
-  if (spreadRate > 50 && totalOutbreaks > 0) {
+  if (above(spreadRate, 50) && totalOutbreaks > 0) {
     insights.push({
       text: `${spreadRate}% of outbreaks spread to multiple children. When illness consistently spreads between children, it signals systemic failure in containment protocols. This pattern suggests isolation measures, hygiene practices, or environmental cleaning are inadequate during illness events.`,
       severity: "critical",
     });
   }
 
-  if (outbreakManagementRate < 50 && totalOutbreaks > 0) {
+  if (below(outbreakManagementRate, 50) && totalOutbreaks > 0) {
     insights.push({
       text: `Only ${outbreakManagementRate}% outbreak management effectiveness. When illness events are not managed with proper isolation, medical oversight, containment, and systematic learning, children are exposed to prolonged illness and repeated outbreaks. This requires urgent action under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (immunisationCoverageRate < 50 && total_children > 0 && totalImmunisationRecords > 0) {
+  if (below(immunisationCoverageRate, 50) && total_children > 0 && totalImmunisationRecords > 0) {
     insights.push({
       text: `Only ${immunisationCoverageRate}% immunisation coverage. Low vaccination rates leave children vulnerable to preventable diseases and reduce herd protection within the home. Looked-after children often have fragmented health histories — the home must work proactively with GPs to ensure coverage.`,
       severity: "critical",
     });
   }
 
-  if (staffTrainingRate < 50 && totalHandHygieneObs > 0) {
+  if (below(staffTrainingRate, 50) && totalHandHygieneObs > 0) {
     insights.push({
       text: `Only ${staffTrainingRate}% staff infection control training completed. Untrained staff cannot be expected to maintain consistent infection prevention practices. This represents a fundamental gap in the home's infection control framework and undermines Reg 5 quality of care.`,
       severity: "critical",
@@ -1059,8 +1056,8 @@ export function computeInfectionPreventionControl(
   // -- Warning insights --
 
   if (
-    hygieneAuditComplianceRate >= 50 &&
-    hygieneAuditComplianceRate < 70 &&
+    meets(hygieneAuditComplianceRate, 50) &&
+    below(hygieneAuditComplianceRate, 70) &&
     totalAudits > 0
   ) {
     insights.push({
@@ -1070,8 +1067,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    handHygieneRate >= 50 &&
-    handHygieneRate < 70 &&
+    meets(handHygieneRate, 50) &&
+    below(handHygieneRate, 70) &&
     totalHandHygieneObs > 0
   ) {
     insights.push({
@@ -1081,8 +1078,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    cleaningComplianceRate >= 50 &&
-    cleaningComplianceRate < 70 &&
+    meets(cleaningComplianceRate, 50) &&
+    below(cleaningComplianceRate, 70) &&
     totalCleaningRecords > 0
   ) {
     insights.push({
@@ -1092,8 +1089,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    outbreakManagementRate >= 50 &&
-    outbreakManagementRate < 70 &&
+    meets(outbreakManagementRate, 50) &&
+    below(outbreakManagementRate, 70) &&
     totalOutbreaks > 0
   ) {
     insights.push({
@@ -1103,8 +1100,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    immunisationCoverageRate >= 50 &&
-    immunisationCoverageRate < 70 &&
+    meets(immunisationCoverageRate, 50) &&
+    below(immunisationCoverageRate, 70) &&
     total_children > 0 &&
     totalImmunisationRecords > 0
   ) {
@@ -1115,8 +1112,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    staffTrainingRate >= 50 &&
-    staffTrainingRate < 70 &&
+    meets(staffTrainingRate, 50) &&
+    below(staffTrainingRate, 70) &&
     totalHandHygieneObs > 0
   ) {
     insights.push({
@@ -1126,8 +1123,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    containmentEffectivenessRate >= 50 &&
-    containmentEffectivenessRate < 70 &&
+    meets(containmentEffectivenessRate, 50) &&
+    below(containmentEffectivenessRate, 70) &&
     totalOutbreaks > 0
   ) {
     insights.push({
@@ -1137,8 +1134,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    auditIssueResolutionRate >= 50 &&
-    auditIssueResolutionRate < 70 &&
+    meets(auditIssueResolutionRate, 50) &&
+    below(auditIssueResolutionRate, 70) &&
     auditIssuesIdentified > 0
   ) {
     insights.push({
@@ -1147,14 +1144,14 @@ export function computeInfectionPreventionControl(
     });
   }
 
-  if (cleaningCompletionRate >= 70 && cleaningCompletionRate < 90 && totalCleaningRecords > 0) {
+  if (meets(cleaningCompletionRate, 70) && below(cleaningCompletionRate, 90) && totalCleaningRecords > 0) {
     insights.push({
       text: `Cleaning completion at ${cleaningCompletionRate}% — while most tasks are completed, gaps remain. Missed cleaning tasks in high-risk areas such as kitchens and bathrooms can have disproportionate impact on infection risk.`,
       severity: "warning",
     });
   }
 
-  if (catchUpPlanRate < 50 && outstandingWithoutPlan > 0) {
+  if (below(catchUpPlanRate, 50) && outstandingWithoutPlan > 0) {
     insights.push({
       text: `Only ${catchUpPlanRate}% of children with outstanding immunisations have catch-up plans. Without structured plans, these children remain unprotected against preventable diseases. The home should work with GPs to establish plans for every outstanding vaccination.`,
       severity: "warning",
@@ -1189,8 +1186,8 @@ export function computeInfectionPreventionControl(
     if (c.completed) cleaningAreas[c.cleaning_type].completed++;
   }
   const poorCleaningAreas = Object.entries(cleaningAreas)
-    .filter(([, v]) => v.total >= 3 && pct(v.completed, v.total) < 70)
-    .map(([area, v]) => `${area.replace(/_/g, " ")} (${pct(v.completed, v.total)}%)`)
+    .filter(([, v]) => v.total >= 3 && below(rate(v.completed, v.total), 70))
+    .map(([area, v]) => `${area.replace(/_/g, " ")} (${rate(v.completed, v.total)}%)`)
     .slice(0, 3);
   if (poorCleaningAreas.length > 0) {
     insights.push({
@@ -1209,8 +1206,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    hygieneAuditComplianceRate >= 90 &&
-    handHygieneRate >= 90 &&
+    meets(hygieneAuditComplianceRate, 90) &&
+    meets(handHygieneRate, 90) &&
     totalAudits > 0 &&
     totalHandHygieneObs > 0
   ) {
@@ -1221,8 +1218,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    containmentEffectivenessRate >= 90 &&
-    lessonsLearnedRate >= 90 &&
+    meets(containmentEffectivenessRate, 90) &&
+    meets(lessonsLearnedRate, 90) &&
     totalOutbreaks > 0
   ) {
     insights.push({
@@ -1232,7 +1229,7 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    cleaningComplianceRate >= 90 &&
+    meets(cleaningComplianceRate, 90) &&
     totalCleaningRecords > 0
   ) {
     insights.push({
@@ -1242,7 +1239,7 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    immunisationCoverageRate >= 90 &&
+    meets(immunisationCoverageRate, 90) &&
     total_children > 0 &&
     totalImmunisationRecords > 0
   ) {
@@ -1253,8 +1250,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    staffTrainingRate >= 90 &&
-    handHygieneRate >= 90 &&
+    meets(staffTrainingRate, 90) &&
+    meets(handHygieneRate, 90) &&
     totalHandHygieneObs > 0
   ) {
     insights.push({
@@ -1264,8 +1261,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    cleaningCompletionRate >= 95 &&
-    checkPassRate >= 90 &&
+    meets(cleaningCompletionRate, 95) &&
+    meets(checkPassRate, 90) &&
     totalCleaningRecords > 0
   ) {
     insights.push({
@@ -1275,8 +1272,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    isolationRate >= 90 &&
-    gpConsultationRate >= 90 &&
+    meets(isolationRate, 90) &&
+    meets(gpConsultationRate, 90) &&
     totalOutbreaks > 0
   ) {
     insights.push({
@@ -1286,7 +1283,7 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    auditIssueResolutionRate >= 90 &&
+    meets(auditIssueResolutionRate, 90) &&
     auditIssuesIdentified > 0
   ) {
     insights.push({
@@ -1296,8 +1293,8 @@ export function computeInfectionPreventionControl(
   }
 
   if (
-    techniqueCorrectRate >= 90 &&
-    durationAdequateRate >= 90 &&
+    meets(techniqueCorrectRate, 90) &&
+    meets(durationAdequateRate, 90) &&
     totalHandHygieneObs > 0
   ) {
     insights.push({

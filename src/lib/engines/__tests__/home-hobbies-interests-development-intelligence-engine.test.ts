@@ -190,12 +190,12 @@ describe("Home Hobbies & Interests Development Intelligence Engine", () => {
       expect(r.hobbies_rating).toBe("insufficient_data");
       expect(r.hobbies_score).toBe(0);
       expect(r.total_hobbies).toBe(0);
-      expect(r.hobby_participation_rate).toBe(0);
-      expect(r.interest_exploration_rate).toBe(0);
-      expect(r.talent_development_rate).toBe(0);
-      expect(r.creative_expression_rate).toBe(0);
-      expect(r.child_led_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.hobby_participation_rate).toBeNull();
+      expect(r.interest_exploration_rate).toBeNull();
+      expect(r.talent_development_rate).toBeNull();
+      expect(r.creative_expression_rate).toBeNull();
+      expect(r.child_led_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
       expect(r.strengths).toHaveLength(0);
       expect(r.concerns).toHaveLength(0);
       expect(r.recommendations).toHaveLength(0);
@@ -245,12 +245,12 @@ describe("Home Hobbies & Interests Development Intelligence Engine", () => {
 
     it("all six rates are zero", () => {
       const r = run({ total_children: 3 });
-      expect(r.hobby_participation_rate).toBe(0);
-      expect(r.interest_exploration_rate).toBe(0);
-      expect(r.talent_development_rate).toBe(0);
-      expect(r.creative_expression_rate).toBe(0);
-      expect(r.child_led_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.hobby_participation_rate).toBeNull();
+      expect(r.interest_exploration_rate).toBeNull();
+      expect(r.talent_development_rate).toBeNull();
+      expect(r.creative_expression_rate).toBeNull();
+      expect(r.child_led_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -258,12 +258,12 @@ describe("Home Hobbies & Interests Development Intelligence Engine", () => {
   describe("pct(0,0) = 0 edge case", () => {
     it("rates are 0 when denominators are 0 (0 children)", () => {
       const r = run({ total_children: 0 });
-      expect(r.hobby_participation_rate).toBe(0);
-      expect(r.interest_exploration_rate).toBe(0);
-      expect(r.talent_development_rate).toBe(0);
-      expect(r.creative_expression_rate).toBe(0);
-      expect(r.child_led_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.hobby_participation_rate).toBeNull();
+      expect(r.interest_exploration_rate).toBeNull();
+      expect(r.talent_development_rate).toBeNull();
+      expect(r.creative_expression_rate).toBeNull();
+      expect(r.child_led_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 

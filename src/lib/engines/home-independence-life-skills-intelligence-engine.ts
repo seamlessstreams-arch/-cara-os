@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME INDEPENDENCE & LIFE SKILLS INTELLIGENCE ENGINE
 // Home-level: aggregates independence living assessments, cooking & baking,
@@ -88,7 +89,8 @@ export type IndependenceLifeSkillsRating =
 
 export interface AssessmentSummary {
   total_assessments: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   competent_or_independent_rate: number | null;
   child_agreed_rate: number | null;
   overdue_assessments: number;
@@ -96,7 +98,8 @@ export interface AssessmentSummary {
 
 export interface CookingSummary {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   independent_or_teaching_rate: number | null;
   hygiene_certificate_rate: number | null;
   led_family_meal_rate: number | null;
@@ -105,7 +108,8 @@ export interface CookingSummary {
 
 export interface LaundrySummary {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   independent_or_mastered_rate: number | null;
   owns_basket_rate: number | null;
   knows_care_symbols_rate: number | null;
@@ -114,7 +118,8 @@ export interface LaundrySummary {
 
 export interface MoneySummary {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   confident_or_independent_rate: number | null;
   real_world_application_rate: number | null;
   child_voice_rate: number | null;
@@ -122,7 +127,8 @@ export interface MoneySummary {
 
 export interface HouseholdSummary {
   total_tasks: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_completion: number | null;
   child_chose_rate: number | null;
   independent_or_role_model_rate: number | null;
@@ -144,10 +150,6 @@ export interface HomeIndependenceLifeSkillsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -178,11 +180,11 @@ export function computeHomeIndependenceLifeSkills(
       independence_rating: "insufficient_data",
       independence_score: 0,
       headline: "No independence and life skills data available for analysis.",
-      assessments: { total_assessments: 0, child_coverage: 0, competent_or_independent_rate: null, child_agreed_rate: null, overdue_assessments: 0 },
-      cooking: { total_records: 0, child_coverage: 0, independent_or_teaching_rate: null, hygiene_certificate_rate: null, led_family_meal_rate: null, child_voice_rate: null },
-      laundry: { total_records: 0, child_coverage: 0, independent_or_mastered_rate: null, owns_basket_rate: null, knows_care_symbols_rate: null, iron_competent_rate: null },
-      money: { total_records: 0, child_coverage: 0, confident_or_independent_rate: null, real_world_application_rate: null, child_voice_rate: null },
-      household: { total_tasks: 0, child_coverage: 0, avg_completion: 0, child_chose_rate: null, independent_or_role_model_rate: null },
+      assessments: { total_assessments: 0, child_coverage: null, competent_or_independent_rate: null, child_agreed_rate: null, overdue_assessments: 0 },
+      cooking: { total_records: 0, child_coverage: null, independent_or_teaching_rate: null, hygiene_certificate_rate: null, led_family_meal_rate: null, child_voice_rate: null },
+      laundry: { total_records: 0, child_coverage: null, independent_or_mastered_rate: null, owns_basket_rate: null, knows_care_symbols_rate: null, iron_competent_rate: null },
+      money: { total_records: 0, child_coverage: null, confident_or_independent_rate: null, real_world_application_rate: null, child_voice_rate: null },
+      household: { total_tasks: 0, child_coverage: null, avg_completion: 0, child_chose_rate: null, independent_or_role_model_rate: null },
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -192,13 +194,13 @@ export function computeHomeIndependenceLifeSkills(
 
   // ── Independence Assessment analysis ─────────────────────────────────
   const iaChildIds = new Set(independence_assessments.map(a => a.child_id));
-  const iaCoverage = pct(iaChildIds.size, total_children);
+  const iaCoverage = rate(iaChildIds.size, total_children);
   const iaCompetentIndep = independence_assessments.filter(a =>
     a.overall_readiness === "competent" || a.overall_readiness === "independent",
   ).length;
-  const iaCompetentIndepRate = pct(iaCompetentIndep, independence_assessments.length);
+  const iaCompetentIndepRate = rate(iaCompetentIndep, independence_assessments.length);
   const iaAgreed = independence_assessments.filter(a => a.child_agreed).length;
-  const iaAgreedRate = pct(iaAgreed, independence_assessments.length);
+  const iaAgreedRate = rate(iaAgreed, independence_assessments.length);
   const iaOverdue = independence_assessments.filter(a => daysBetween(a.next_assessment_due, today) > 0).length;
 
   const assessments: AssessmentSummary = {
@@ -211,17 +213,17 @@ export function computeHomeIndependenceLifeSkills(
 
   // ── Cooking & Baking analysis ────────────────────────────────────────
   const ckChildIds = new Set(cooking_records.map(r => r.child_id));
-  const ckCoverage = pct(ckChildIds.size, total_children);
+  const ckCoverage = rate(ckChildIds.size, total_children);
   const ckIndepTeach = cooking_records.filter(r =>
     r.competency_level === "independent" || r.competency_level === "teaching_others",
   ).length;
-  const ckIndepTeachRate = pct(ckIndepTeach, cooking_records.length);
+  const ckIndepTeachRate = rate(ckIndepTeach, cooking_records.length);
   const ckHygiene = cooking_records.filter(r => r.hygiene_certificate).length;
-  const ckHygieneRate = pct(ckHygiene, cooking_records.length);
+  const ckHygieneRate = rate(ckHygiene, cooking_records.length);
   const ckFamilyMeal = cooking_records.filter(r => r.led_family_meal).length;
-  const ckFamilyMealRate = pct(ckFamilyMeal, cooking_records.length);
+  const ckFamilyMealRate = rate(ckFamilyMeal, cooking_records.length);
   const ckVoice = cooking_records.filter(r => r.child_voice_present).length;
-  const ckVoiceRate = pct(ckVoice, cooking_records.length);
+  const ckVoiceRate = rate(ckVoice, cooking_records.length);
 
   const cooking: CookingSummary = {
     total_records: cooking_records.length,
@@ -234,17 +236,17 @@ export function computeHomeIndependenceLifeSkills(
 
   // ── Laundry & Self-Care analysis ─────────────────────────────────────
   const lyChildIds = new Set(laundry_records.map(r => r.child_id));
-  const lyCoverage = pct(lyChildIds.size, total_children);
+  const lyCoverage = rate(lyChildIds.size, total_children);
   const lyIndepMastered = laundry_records.filter(r =>
     r.overall_stage === "independent" || r.overall_stage === "mastered",
   ).length;
-  const lyIndepMasteredRate = pct(lyIndepMastered, laundry_records.length);
+  const lyIndepMasteredRate = rate(lyIndepMastered, laundry_records.length);
   const lyBasket = laundry_records.filter(r => r.owns_basket).length;
-  const lyBasketRate = pct(lyBasket, laundry_records.length);
+  const lyBasketRate = rate(lyBasket, laundry_records.length);
   const lyCareSymbols = laundry_records.filter(r => r.knows_care_symbols).length;
-  const lyCareSymbolsRate = pct(lyCareSymbols, laundry_records.length);
+  const lyCareSymbolsRate = rate(lyCareSymbols, laundry_records.length);
   const lyIron = laundry_records.filter(r => r.iron_competent).length;
-  const lyIronRate = pct(lyIron, laundry_records.length);
+  const lyIronRate = rate(lyIron, laundry_records.length);
 
   const laundry: LaundrySummary = {
     total_records: laundry_records.length,
@@ -257,15 +259,15 @@ export function computeHomeIndependenceLifeSkills(
 
   // ── Money Management analysis ────────────────────────────────────────
   const mnChildIds = new Set(money_records.map(r => r.child_id));
-  const mnCoverage = pct(mnChildIds.size, total_children);
+  const mnCoverage = rate(mnChildIds.size, total_children);
   const mnConfIndep = money_records.filter(r =>
     r.competency === "confident" || r.competency === "independent",
   ).length;
-  const mnConfIndepRate = pct(mnConfIndep, money_records.length);
+  const mnConfIndepRate = rate(mnConfIndep, money_records.length);
   const mnRealWorld = money_records.filter(r => r.real_world_application_count > 0).length;
-  const mnRealWorldRate = pct(mnRealWorld, money_records.length);
+  const mnRealWorldRate = rate(mnRealWorld, money_records.length);
   const mnVoice = money_records.filter(r => r.child_voice_present).length;
-  const mnVoiceRate = pct(mnVoice, money_records.length);
+  const mnVoiceRate = rate(mnVoice, money_records.length);
 
   const money: MoneySummary = {
     total_records: money_records.length,
@@ -277,16 +279,16 @@ export function computeHomeIndependenceLifeSkills(
 
   // ── Household Task analysis ──────────────────────────────────────────
   const htChildIds = new Set(household_tasks.map(t => t.child_id));
-  const htCoverage = pct(htChildIds.size, total_children);
+  const htCoverage = rate(htChildIds.size, total_children);
   const htAvgCompletion = household_tasks.length > 0
     ? Math.round(household_tasks.reduce((s, t) => s + t.completion_recent, 0) / household_tasks.length)
     : null;
   const htChose = household_tasks.filter(t => t.child_chose).length;
-  const htChoseRate = pct(htChose, household_tasks.length);
+  const htChoseRate = rate(htChose, household_tasks.length);
   const htIndepRole = household_tasks.filter(t =>
     t.support_level === "independent" || t.support_level === "role_model",
   ).length;
-  const htIndepRoleRate = pct(htIndepRole, household_tasks.length);
+  const htIndepRoleRate = rate(htIndepRole, household_tasks.length);
 
   const household: HouseholdSummary = {
     total_tasks: household_tasks.length,
@@ -307,17 +309,17 @@ export function computeHomeIndependenceLifeSkills(
     let m = 0;
     if (independence_assessments.length > 0) {
       // Coverage
-      if (iaCoverage >= 80) m += 2;
-      else if (iaCoverage >= 50) m += 1;
+      if (meets(iaCoverage, 80)) m += 2;
+      else if (meets(iaCoverage, 50)) m += 1;
       else m -= 1;
 
       // Readiness levels
-      if (iaCompetentIndepRate >= 60) m += 1;
-      else if (iaCompetentIndepRate < 20) m -= 1;
+      if (meets(iaCompetentIndepRate, 60)) m += 1;
+      else if (below(iaCompetentIndepRate, 20)) m -= 1;
 
       // Child agreed
-      if (iaAgreedRate >= 80) m += 1;
-      else if (iaAgreedRate < 40) m -= 1;
+      if (meets(iaAgreedRate, 80)) m += 1;
+      else if (below(iaAgreedRate, 40)) m -= 1;
 
       // Overdue penalties
       if (iaOverdue === 0) m += 1;
@@ -333,20 +335,20 @@ export function computeHomeIndependenceLifeSkills(
     let m = 0;
     if (cooking_records.length > 0) {
       // Coverage
-      if (ckCoverage >= 80) m += 1;
-      else if (ckCoverage < 40) m -= 1;
+      if (meets(ckCoverage, 80)) m += 1;
+      else if (below(ckCoverage, 40)) m -= 1;
 
       // Competency progression
-      if (ckIndepTeachRate >= 60) m += 1;
-      else if (ckIndepTeachRate < 20) m -= 1;
+      if (meets(ckIndepTeachRate, 60)) m += 1;
+      else if (below(ckIndepTeachRate, 20)) m -= 1;
 
       // Hygiene certificate
-      if (ckHygieneRate >= 60) m += 1;
-      else if (ckHygieneRate < 20) m -= 1;
+      if (meets(ckHygieneRate, 60)) m += 1;
+      else if (below(ckHygieneRate, 20)) m -= 1;
 
       // Family meal
-      if (ckFamilyMealRate >= 50) m += 1;
-      else if (ckFamilyMealRate < 10) m -= 1;
+      if (meets(ckFamilyMealRate, 50)) m += 1;
+      else if (below(ckFamilyMealRate, 10)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -358,15 +360,15 @@ export function computeHomeIndependenceLifeSkills(
     let m = 0;
     if (laundry_records.length > 0) {
       // Coverage
-      if (lyCoverage >= 80) m += 1;
-      else if (lyCoverage < 40) m -= 1;
+      if (meets(lyCoverage, 80)) m += 1;
+      else if (below(lyCoverage, 40)) m -= 1;
 
       // Stage progression
-      if (lyIndepMasteredRate >= 60) m += 1;
-      else if (lyIndepMasteredRate < 20) m -= 1;
+      if (meets(lyIndepMasteredRate, 60)) m += 1;
+      else if (below(lyIndepMasteredRate, 20)) m -= 1;
 
       // Knowledge markers: basket + care symbols + iron
-      const knowledgeScore = (lyBasketRate >= 60 ? 1 : 0) + (lyCareSymbolsRate >= 60 ? 1 : 0) + (lyIronRate >= 60 ? 1 : 0);
+      const knowledgeScore = (meets(lyBasketRate, 60) ? 1 : 0) + (meets(lyCareSymbolsRate, 60) ? 1 : 0) + (meets(lyIronRate, 60) ? 1 : 0);
       if (knowledgeScore >= 2) m += 1;
       else if (knowledgeScore === 0) m -= 1;
     } else {
@@ -380,20 +382,20 @@ export function computeHomeIndependenceLifeSkills(
     let m = 0;
     if (money_records.length > 0) {
       // Coverage
-      if (mnCoverage >= 80) m += 1;
-      else if (mnCoverage < 40) m -= 1;
+      if (meets(mnCoverage, 80)) m += 1;
+      else if (below(mnCoverage, 40)) m -= 1;
 
       // Competency
-      if (mnConfIndepRate >= 60) m += 1;
-      else if (mnConfIndepRate < 20) m -= 1;
+      if (meets(mnConfIndepRate, 60)) m += 1;
+      else if (below(mnConfIndepRate, 20)) m -= 1;
 
       // Real-world application
-      if (mnRealWorldRate >= 80) m += 1;
-      else if (mnRealWorldRate < 30) m -= 1;
+      if (meets(mnRealWorldRate, 80)) m += 1;
+      else if (below(mnRealWorldRate, 30)) m -= 1;
 
       // Child voice
-      if (mnVoiceRate >= 80) m += 1;
-      else if (mnVoiceRate < 30) m -= 1;
+      if (meets(mnVoiceRate, 80)) m += 1;
+      else if (below(mnVoiceRate, 30)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -409,12 +411,12 @@ export function computeHomeIndependenceLifeSkills(
       else if ((htAvgCompletion ?? 0) < 40) m -= 1;
 
       // Child chose
-      if (htChoseRate >= 70) m += 1;
-      else if (htChoseRate < 30) m -= 1;
+      if (meets(htChoseRate, 70)) m += 1;
+      else if (below(htChoseRate, 30)) m -= 1;
 
       // Independence level
-      if (htIndepRoleRate >= 60) m += 1;
-      else if (htIndepRoleRate < 20) m -= 1;
+      if (meets(htIndepRoleRate, 60)) m += 1;
+      else if (below(htIndepRoleRate, 20)) m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
     }
@@ -425,17 +427,17 @@ export function computeHomeIndependenceLifeSkills(
   {
     let m = 0;
     const voiceSources: number[] = [];
-    if (independence_assessments.length > 0) voiceSources.push(iaAgreedRate);
-    if (cooking_records.length > 0) voiceSources.push(ckVoiceRate);
+    if (independence_assessments.length > 0) voiceSources.push(iaAgreedRate!);
+    if (cooking_records.length > 0) voiceSources.push(ckVoiceRate!);
     if (laundry_records.length > 0) {
       const lyVoice = laundry_records.filter(r => r.child_voice_present).length;
-      const lyVoiceRate = pct(lyVoice, laundry_records.length);
+      const lyVoiceRate = rate(lyVoice, laundry_records.length)!;
       voiceSources.push(lyVoiceRate);
     }
-    if (money_records.length > 0) voiceSources.push(mnVoiceRate);
+    if (money_records.length > 0) voiceSources.push(mnVoiceRate!);
     if (household_tasks.length > 0) {
       const htVoice = household_tasks.filter(t => t.child_voice_present).length;
-      const htVoiceRate = pct(htVoice, household_tasks.length);
+      const htVoiceRate = rate(htVoice, household_tasks.length)!;
       voiceSources.push(htVoiceRate);
     }
 
@@ -535,13 +537,13 @@ export function computeHomeIndependenceLifeSkills(
   let rank = 0;
 
   // Independence assessments
-  if (independence_assessments.length > 0 && iaCoverage >= 80 && iaOverdue === 0) {
+  if (independence_assessments.length > 0 && meets(iaCoverage, 80) && iaOverdue === 0) {
     strengths.push(`Comprehensive independence assessment coverage — ${iaCoverage}% of children assessed with all reviews current.`);
   }
-  if (independence_assessments.length > 0 && iaCompetentIndepRate >= 60) {
+  if (independence_assessments.length > 0 && meets(iaCompetentIndepRate, 60)) {
     strengths.push(`Strong readiness levels — ${iaCompetentIndepRate}% of assessments show competent or independent readiness.`);
   }
-  if (independence_assessments.length > 0 && iaAgreedRate >= 80) {
+  if (independence_assessments.length > 0 && meets(iaAgreedRate, 80)) {
     strengths.push(`Excellent child participation — ${iaAgreedRate}% of children agreed to their independence assessment.`);
   }
   if (iaOverdue >= 3) {
@@ -554,22 +556,22 @@ export function computeHomeIndependenceLifeSkills(
   }
 
   // Cooking
-  if (cooking_records.length > 0 && ckIndepTeachRate >= 60) {
+  if (cooking_records.length > 0 && meets(ckIndepTeachRate, 60)) {
     strengths.push(`Strong cooking competency — ${ckIndepTeachRate}% of records show independent or teaching-others level.`);
   }
-  if (cooking_records.length > 0 && ckHygieneRate >= 60) {
+  if (cooking_records.length > 0 && meets(ckHygieneRate, 60)) {
     strengths.push(`Good food hygiene awareness — ${ckHygieneRate}% hold hygiene certificates.`);
   }
   if (cooking_records.length === 0 && total_children >= 2) {
     concerns.push("No cooking and baking records — a key life skill is not being tracked.");
     recommendations.push({ rank: ++rank, recommendation: "Introduce cooking and baking skill tracking to develop independence in meal preparation.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (cooking_records.length > 0 && ckIndepTeachRate < 20) {
+  if (cooking_records.length > 0 && below(ckIndepTeachRate, 20)) {
     concerns.push(`Low cooking independence — only ${ckIndepTeachRate}% of cooking records show independent competency.`);
   }
 
   // Laundry
-  if (laundry_records.length > 0 && lyIndepMasteredRate >= 60) {
+  if (laundry_records.length > 0 && meets(lyIndepMasteredRate, 60)) {
     strengths.push(`Good laundry and self-care skills — ${lyIndepMasteredRate}% at independent or mastered stage.`);
   }
   if (laundry_records.length === 0 && total_children >= 2) {
@@ -577,19 +579,19 @@ export function computeHomeIndependenceLifeSkills(
   }
 
   // Money
-  if (money_records.length > 0 && mnConfIndepRate >= 60) {
+  if (money_records.length > 0 && meets(mnConfIndepRate, 60)) {
     strengths.push(`Strong money management — ${mnConfIndepRate}% of records show confident or independent competency.`);
   }
   if (money_records.length === 0 && total_children >= 2) {
     concerns.push("No money management records — financial literacy development is not being evidenced.");
     recommendations.push({ rank: ++rank, recommendation: "Implement money management tracking to develop children's financial independence.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (money_records.length > 0 && mnRealWorldRate < 30) {
+  if (money_records.length > 0 && below(mnRealWorldRate, 30)) {
     concerns.push(`Low real-world money application — only ${mnRealWorldRate}% of records show practical application.`);
   }
 
   // Household tasks
-  if (household_tasks.length > 0 && (htAvgCompletion ?? 0) >= 80 && htChoseRate >= 70) {
+  if (household_tasks.length > 0 && (htAvgCompletion ?? 0) >= 80 && meets(htChoseRate, 70)) {
     strengths.push(`Excellent household task engagement — ${htAvgCompletion}% average completion with ${htChoseRate}% child-chosen.`);
   }
   if (household_tasks.length > 0 && (htAvgCompletion ?? 0) < 40) {
@@ -601,13 +603,13 @@ export function computeHomeIndependenceLifeSkills(
   // Cross-domain skill gaps
   if (independence_assessments.length > 0) {
     const notReady = independence_assessments.filter(a => a.overall_readiness === "not_ready").length;
-    const notReadyRate = pct(notReady, independence_assessments.length);
-    if (notReadyRate >= 40) {
+    const notReadyRate = rate(notReady, independence_assessments.length);
+    if (meets(notReadyRate, 40)) {
       insights.push({ text: `${notReadyRate}% of children assessed as not ready for independent living — review support intensity and skill-building programmes.`, severity: "warning" });
     }
   }
 
-  if (cooking_records.length > 0 && ckFamilyMealRate >= 50 && ckHygieneRate >= 60) {
+  if (cooking_records.length > 0 && meets(ckFamilyMealRate, 50) && meets(ckHygieneRate, 60)) {
     insights.push({ text: "Children are leading family meals and hold hygiene certificates — outstanding practical cooking development.", severity: "positive" });
   }
 
@@ -616,11 +618,11 @@ export function computeHomeIndependenceLifeSkills(
     insights.push({ text: `Children have explored ${allCuisinesInsight.size} different cuisines — excellent cultural breadth in cooking education.`, severity: "positive" });
   }
 
-  if (money_records.length > 0 && mnRealWorldRate >= 80 && mnConfIndepRate >= 60) {
+  if (money_records.length > 0 && meets(mnRealWorldRate, 80) && meets(mnConfIndepRate, 60)) {
     insights.push({ text: `Strong money management with ${mnRealWorldRate}% real-world application — children are developing practical financial independence.`, severity: "positive" });
   }
 
-  if (household_tasks.length > 0 && htChoseRate >= 80 && htIndepRoleRate >= 60) {
+  if (household_tasks.length > 0 && meets(htChoseRate, 80) && meets(htIndepRoleRate, 60)) {
     insights.push({ text: "Children are choosing their own household tasks and performing independently — excellent ownership of daily living skills.", severity: "positive" });
   }
 

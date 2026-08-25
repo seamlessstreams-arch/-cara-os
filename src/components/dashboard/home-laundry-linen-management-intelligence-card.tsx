@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shirt } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { LaundryLinenRating } from "@/lib/engines/home-laundry-linen-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<LaundryLinenRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeLaundryLinenManagementIntelligenceCard() {
             <Shirt className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-blue-600")} />
             <span className="text-slate-900 font-bold">Laundry & Linen Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.laundry_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.laundry_score}%</span>}
+            {d.laundry_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.laundry_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeLaundryLinenManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.laundry_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.laundry_timeliness_rate >= 90 ? "bg-green-50" : d.laundry_timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.laundry_timeliness_rate >= 90 ? "text-[--cs-success]" : d.laundry_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.laundry_timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.laundry_timeliness_rate, 90) ? "bg-green-50" : meets(d.laundry_timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.laundry_timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.laundry_timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.laundry_timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.linen_adequacy_rate >= 90 ? "bg-green-50" : d.linen_adequacy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.linen_adequacy_rate >= 90 ? "text-[--cs-success]" : d.linen_adequacy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.linen_adequacy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.linen_adequacy_rate, 90) ? "bg-green-50" : meets(d.linen_adequacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.linen_adequacy_rate, 90) ? "text-[--cs-success]" : meets(d.linen_adequacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.linen_adequacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Linen</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.clothing_care_rate >= 90 ? "bg-green-50" : d.clothing_care_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.clothing_care_rate >= 90 ? "text-[--cs-success]" : d.clothing_care_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.clothing_care_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.clothing_care_rate, 90) ? "bg-green-50" : meets(d.clothing_care_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.clothing_care_rate, 90) ? "text-[--cs-success]" : meets(d.clothing_care_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.clothing_care_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clothing</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hygiene_compliance_rate >= 90 ? "bg-green-50" : d.hygiene_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hygiene_compliance_rate >= 90 ? "text-[--cs-success]" : d.hygiene_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hygiene_compliance_rate, 90) ? "bg-green-50" : meets(d.hygiene_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hygiene_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.hygiene_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_independence_rate >= 90 ? "bg-green-50" : d.child_independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_independence_rate >= 90 ? "text-[--cs-success]" : d.child_independence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_independence_rate, 90) ? "bg-green-50" : meets(d.child_independence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_independence_rate, 90) ? "text-[--cs-success]" : meets(d.child_independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Indep.</p>
             </div>
           </div>

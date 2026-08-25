@@ -731,7 +731,7 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
         makeRisk({ id: "r1", mitigations_count: 0, effective_mitigations: 0 }),
       ];
       const r = computeLocalitySafeguarding(baseInput({ risks }));
-      expect(r.mitigation_effectiveness).toBe(0);
+      expect(r.mitigation_effectiveness).toBeNull();
     });
 
     it("gives 0 modifier for 65-74% effectiveness", () => {
@@ -859,7 +859,7 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
       // But this only hits when screenings or missing are present (else special case)
       const r = computeLocalitySafeguarding(baseInput({ screenings: [makeScreening()] }));
       // No risks to review
-      expect(r.review_currency_rate).toBe(0);
+      expect(r.review_currency_rate).toBeNull();
     });
   });
 
@@ -984,7 +984,7 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
 
     it("gives 0 when no screenings", () => {
       const r = computeLocalitySafeguarding(baseInput({ risks: [makeRisk()] }));
-      expect(r.safety_plan_rate).toBe(0);
+      expect(r.safety_plan_rate).toBeNull();
     });
   });
 
@@ -1701,7 +1701,7 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
     it("returns 0 when denominator is 0 for mitigation effectiveness", () => {
       const risks = [makeRisk({ mitigations_count: 0, effective_mitigations: 0 })];
       const r = computeLocalitySafeguarding(baseInput({ risks }));
-      expect(r.mitigation_effectiveness).toBe(0);
+      expect(r.mitigation_effectiveness).toBeNull();
     });
 
     it("rounds to nearest integer", () => {
@@ -1731,9 +1731,9 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
       expect(r.mitigation_effectiveness).toBe(100);
     });
 
-    it("returns 0 when no screenings for safety plan rate", () => {
+    it("returns null when no screenings for safety plan rate", () => {
       const r = computeLocalitySafeguarding(baseInput({ risks: [makeRisk()] }));
-      expect(r.safety_plan_rate).toBe(0);
+      expect(r.safety_plan_rate).toBeNull();
     });
 
     it("returns 0 when no screenings for screening coverage", () => {
@@ -1843,7 +1843,7 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
         makeRisk({ id: "r2", mitigations_count: 0, effective_mitigations: 0 }),
       ];
       const r = computeLocalitySafeguarding(baseInput({ risks }));
-      expect(r.mitigation_effectiveness).toBe(0);
+      expect(r.mitigation_effectiveness).toBeNull();
     });
 
     it("handles missing episode still in progress (no date_returned)", () => {

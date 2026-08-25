@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IndependenceLifeSkillsRating } from "@/lib/engines/home-independence-life-skills-development-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<IndependenceLifeSkillsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeIndependenceLifeSkillsDevelopmentIntelligenceCard() {
             <Utensils className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-rose-600")} />
             <span className="text-slate-900 font-bold">Independence & Life Skills</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.independence_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.independence_score}%</span>}
+            {d.independence_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.independence_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeIndependenceLifeSkillsDevelopmentIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.independence_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.skills_assessment_coverage_rate >= 90 ? "bg-green-50" : d.skills_assessment_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.skills_assessment_coverage_rate >= 90 ? "text-[--cs-success]" : d.skills_assessment_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.skills_assessment_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.skills_assessment_coverage_rate, 90) ? "bg-green-50" : meets(d.skills_assessment_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.skills_assessment_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.skills_assessment_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.skills_assessment_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Assessed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cooking_competency_rate >= 90 ? "bg-green-50" : d.cooking_competency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cooking_competency_rate >= 90 ? "text-[--cs-success]" : d.cooking_competency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cooking_competency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cooking_competency_rate, 90) ? "bg-green-50" : meets(d.cooking_competency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cooking_competency_rate, 90) ? "text-[--cs-success]" : meets(d.cooking_competency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cooking_competency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cooking</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.travel_independence_rate >= 90 ? "bg-green-50" : d.travel_independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.travel_independence_rate >= 90 ? "text-[--cs-success]" : d.travel_independence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.travel_independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.travel_independence_rate, 90) ? "bg-green-50" : meets(d.travel_independence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.travel_independence_rate, 90) ? "text-[--cs-success]" : meets(d.travel_independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.travel_independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Travel</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.personal_care_rate >= 90 ? "bg-green-50" : d.personal_care_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.personal_care_rate >= 90 ? "text-[--cs-success]" : d.personal_care_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.personal_care_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.personal_care_rate, 90) ? "bg-green-50" : meets(d.personal_care_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.personal_care_rate, 90) ? "text-[--cs-success]" : meets(d.personal_care_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.personal_care_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Care</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.milestone_achievement_rate >= 90 ? "bg-green-50" : d.milestone_achievement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.milestone_achievement_rate >= 90 ? "text-[--cs-success]" : d.milestone_achievement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.milestone_achievement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.milestone_achievement_rate, 90) ? "bg-green-50" : meets(d.milestone_achievement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.milestone_achievement_rate, 90) ? "text-[--cs-success]" : meets(d.milestone_achievement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.milestone_achievement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Milestones</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
           </div>

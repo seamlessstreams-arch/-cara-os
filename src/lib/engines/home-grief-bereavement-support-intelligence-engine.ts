@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME GRIEF & BEREAVEMENT SUPPORT INTELLIGENCE ENGINE
 // Tracks grief and bereavement support quality — loss identification,
@@ -146,12 +147,18 @@ export interface GriefBereavementResult {
   grief_score: number;
   headline: string;
   total_losses_identified: number;
-  loss_identification_rate: number;
-  counselling_access_rate: number;
-  memory_work_rate: number;
-  intervention_effectiveness_rate: number;
-  anniversary_management_rate: number;
-  child_coping_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  loss_identification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  counselling_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  memory_work_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  intervention_effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  anniversary_management_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coping_rate: number | null;
   // fab-0: null when no counselling records / no intervention data.
   counselling_wait_avg_days: number | null;
   intervention_progress_avg: number | null;
@@ -162,10 +169,6 @@ export interface GriefBereavementResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -190,12 +193,12 @@ function emptyResult(
     grief_score: score,
     headline,
     total_losses_identified: 0,
-    loss_identification_rate: 0,
-    counselling_access_rate: 0,
-    memory_work_rate: 0,
-    intervention_effectiveness_rate: 0,
-    anniversary_management_rate: 0,
-    child_coping_rate: 0,
+    loss_identification_rate: null,
+    counselling_access_rate: null,
+    memory_work_rate: null,
+    intervention_effectiveness_rate: null,
+    anniversary_management_rate: null,
+    child_coping_rate: null,
     counselling_wait_avg_days: null,
     intervention_progress_avg: null,
     strengths: [],
@@ -282,22 +285,22 @@ export function computeGriefBereavementSupport(
   const lossesWithSupportPlan = loss_identification_records.filter(
     (l) => l.support_plan_in_place,
   ).length;
-  const lossIdentificationRate = pct(lossesWithSupportPlan, totalLosses);
+  const lossIdentificationRate = rate(lossesWithSupportPlan, totalLosses);
 
   const lossesWithCarePlanUpdated = loss_identification_records.filter(
     (l) => l.care_plan_updated,
   ).length;
-  const carePlanUpdateRate = pct(lossesWithCarePlanUpdated, totalLosses);
+  const carePlanUpdateRate = rate(lossesWithCarePlanUpdated, totalLosses);
 
   const lossesWithRiskAssessment = loss_identification_records.filter(
     (l) => l.risk_assessment_completed,
   ).length;
-  const riskAssessmentRate = pct(lossesWithRiskAssessment, totalLosses);
+  const riskAssessmentRate = rate(lossesWithRiskAssessment, totalLosses);
 
   const lossesChildInformedSensitively = loss_identification_records.filter(
     (l) => l.child_informed_sensitively,
   ).length;
-  const sensitiveInformingRate = pct(lossesChildInformedSensitively, totalLosses);
+  const sensitiveInformingRate = rate(lossesChildInformedSensitively, totalLosses);
 
   const overdueLossReviews = loss_identification_records.filter(
     (l) => l.review_overdue,
@@ -309,7 +312,7 @@ export function computeGriefBereavementSupport(
   const severeLossesWithSupport = loss_identification_records.filter(
     (l) => l.impact_severity === "severe" && l.support_plan_in_place,
   ).length;
-  const severeLossSupportRate = pct(severeLossesWithSupport, severeLosses);
+  const severeLossSupportRate = rate(severeLossesWithSupport, severeLosses);
 
   // --- Counselling access ---
   const totalCounselling = counselling_access_records.length;
@@ -320,7 +323,7 @@ export function computeGriefBereavementSupport(
   // Counselling access rate = children with loss who have counselling access
   const counsellingAccessRate =
     uniqueChildrenWithLoss > 0
-      ? pct(uniqueChildrenWithCounselling, uniqueChildrenWithLoss)
+      ? rate(uniqueChildrenWithCounselling, uniqueChildrenWithLoss)
       : totalCounselling > 0 ? 100 : 0;
 
   const activeCounselling = counselling_access_records.filter(
@@ -335,7 +338,7 @@ export function computeGriefBereavementSupport(
     (sum, c) => sum + c.sessions_offered,
     0,
   );
-  const counsellingAttendanceRate = pct(counsellingAttendanceTotal, counsellingOfferedTotal);
+  const counsellingAttendanceRate = rate(counsellingAttendanceTotal, counsellingOfferedTotal);
 
   const counsellingWaitDays = counselling_access_records
     .filter((c) => c.waiting_days >= 0)
@@ -352,7 +355,7 @@ export function computeGriefBereavementSupport(
   const counsellingFoundHelpful = counselling_access_records.filter(
     (c) => c.child_found_helpful,
   ).length;
-  const counsellingHelpfulRate = pct(counsellingFoundHelpful, totalCounselling);
+  const counsellingHelpfulRate = rate(counsellingFoundHelpful, totalCounselling);
 
   const overdueCounsellingReviews = counselling_access_records.filter(
     (c) => c.review_overdue && c.active,
@@ -361,7 +364,7 @@ export function computeGriefBereavementSupport(
   const counsellingWithBarriers = counselling_access_records.filter(
     (c) => c.barriers_to_access.length > 0,
   ).length;
-  const barriersRate = pct(counsellingWithBarriers, totalCounselling);
+  const barriersRate = rate(counsellingWithBarriers, totalCounselling);
 
   // --- Memory work ---
   const totalMemoryWork = memory_work_records.length;
@@ -372,28 +375,28 @@ export function computeGriefBereavementSupport(
   // Memory work rate = children with loss who have memory work
   const memoryWorkRate =
     uniqueChildrenWithLoss > 0
-      ? pct(uniqueChildrenWithMemoryWork, uniqueChildrenWithLoss)
+      ? rate(uniqueChildrenWithMemoryWork, uniqueChildrenWithLoss)
       : totalMemoryWork > 0 ? 100 : 0;
 
   const memoryWorkDocumented = memory_work_records.filter(
     (m) => m.documented,
   ).length;
-  const memoryWorkDocumentationRate = pct(memoryWorkDocumented, totalMemoryWork);
+  const memoryWorkDocumentationRate = rate(memoryWorkDocumented, totalMemoryWork);
 
   const memoryWorkMeaningful = memory_work_records.filter(
     (m) => m.child_found_meaningful,
   ).length;
-  const memoryWorkMeaningfulRate = pct(memoryWorkMeaningful, totalMemoryWork);
+  const memoryWorkMeaningfulRate = rate(memoryWorkMeaningful, totalMemoryWork);
 
   const memoryWorkStaffBenefit = memory_work_records.filter(
     (m) => m.staff_observed_benefit,
   ).length;
-  const memoryWorkBenefitRate = pct(memoryWorkStaffBenefit, totalMemoryWork);
+  const memoryWorkBenefitRate = rate(memoryWorkStaffBenefit, totalMemoryWork);
 
   const childLedMemoryWork = memory_work_records.filter(
     (m) => m.facilitated_by === "child_led",
   ).length;
-  const childLedRate = pct(childLedMemoryWork, totalMemoryWork);
+  const childLedRate = rate(childLedMemoryWork, totalMemoryWork);
 
   // --- Grief interventions ---
   const totalInterventions = grief_intervention_records.length;
@@ -405,7 +408,7 @@ export function computeGriefBereavementSupport(
   const interventionsShowingImprovement = grief_intervention_records.filter(
     (i) => i.current_grief_score < i.baseline_grief_score,
   ).length;
-  const interventionEffectivenessRate = pct(
+  const interventionEffectivenessRate = rate(
     interventionsShowingImprovement,
     totalInterventions,
   );
@@ -430,12 +433,12 @@ export function computeGriefBereavementSupport(
   const childReportedImprovement = grief_intervention_records.filter(
     (i) => i.child_reported_improvement,
   ).length;
-  const childReportedImprovementRate = pct(childReportedImprovement, totalInterventions);
+  const childReportedImprovementRate = rate(childReportedImprovement, totalInterventions);
 
   const staffReportedImprovement = grief_intervention_records.filter(
     (i) => i.staff_reported_improvement,
   ).length;
-  const staffReportedImprovementRate = pct(staffReportedImprovement, totalInterventions);
+  const staffReportedImprovementRate = rate(staffReportedImprovement, totalInterventions);
 
   const sessionsCompletedTotal = grief_intervention_records.reduce(
     (sum, i) => sum + i.sessions_completed,
@@ -445,7 +448,7 @@ export function computeGriefBereavementSupport(
     (sum, i) => sum + i.sessions_planned,
     0,
   );
-  const sessionCompletionRate = pct(sessionsCompletedTotal, sessionsPlannedTotal);
+  const sessionCompletionRate = rate(sessionsCompletedTotal, sessionsPlannedTotal);
 
   const overdueInterventionReviews = grief_intervention_records.filter(
     (i) => i.review_overdue && i.active,
@@ -454,7 +457,7 @@ export function computeGriefBereavementSupport(
   const professionalInvolved = grief_intervention_records.filter(
     (i) => i.professional_involved,
   ).length;
-  const professionalInvolvementRate = pct(professionalInvolved, totalInterventions);
+  const professionalInvolvementRate = rate(professionalInvolved, totalInterventions);
 
   // Coping strategies
   const totalCopingTaught = grief_intervention_records.reduce(
@@ -465,7 +468,7 @@ export function computeGriefBereavementSupport(
     (sum, i) => sum + i.coping_strategies_used_by_child,
     0,
   );
-  const copingStrategyUptakeRate = pct(totalCopingUsed, totalCopingTaught);
+  const copingStrategyUptakeRate = rate(totalCopingUsed, totalCopingTaught);
 
   // --- Anniversary management ---
   const totalAnniversaries = anniversary_management_records.length;
@@ -473,17 +476,17 @@ export function computeGriefBereavementSupport(
   const anniversariesWithPlan = anniversary_management_records.filter(
     (a) => a.plan_in_place,
   ).length;
-  const anniversaryManagementRate = pct(anniversariesWithPlan, totalAnniversaries);
+  const anniversaryManagementRate = rate(anniversariesWithPlan, totalAnniversaries);
 
   const childPreferencesRecorded = anniversary_management_records.filter(
     (a) => a.child_preferences_recorded,
   ).length;
-  const preferencesRecordedRate = pct(childPreferencesRecorded, totalAnniversaries);
+  const preferencesRecordedRate = rate(childPreferencesRecorded, totalAnniversaries);
 
   const proactiveSupportOffered = anniversary_management_records.filter(
     (a) => a.proactive_support_offered,
   ).length;
-  const proactiveSupportRate = pct(proactiveSupportOffered, totalAnniversaries);
+  const proactiveSupportRate = rate(proactiveSupportOffered, totalAnniversaries);
 
   // For anniversaries that have occurred
   const occurredAnniversaries = anniversary_management_records.filter(
@@ -492,73 +495,73 @@ export function computeGriefBereavementSupport(
   const managedWell = occurredAnniversaries.filter(
     (a) => a.day_managed_well === true,
   ).length;
-  const dayManagedWellRate = pct(managedWell, occurredAnniversaries.length);
+  const dayManagedWellRate = rate(managedWell, occurredAnniversaries.length);
 
   const feedbackPositiveAnniv = occurredAnniversaries.filter(
     (a) => a.child_feedback_positive === true,
   ).length;
-  const anniversaryFeedbackRate = pct(feedbackPositiveAnniv, occurredAnniversaries.length);
+  const anniversaryFeedbackRate = rate(feedbackPositiveAnniv, occurredAnniversaries.length);
 
   // --- Child coping rate (composite: child-reported improvement + counselling helpful + memory work meaningful) ---
   const totalCopingOpportunities =
     totalInterventions + totalCounselling + totalMemoryWork;
   const totalPositiveCoping =
     childReportedImprovement + counsellingFoundHelpful + memoryWorkMeaningful;
-  const childCopingRate = pct(totalPositiveCoping, totalCopingOpportunities);
+  const childCopingRate = rate(totalPositiveCoping, totalCopingOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: lossIdentificationRate (>=90: +4, >=70: +2) ---
-  if (lossIdentificationRate >= 90) score += 4;
-  else if (lossIdentificationRate >= 70) score += 2;
+  if (meets(lossIdentificationRate, 90)) score += 4;
+  else if (meets(lossIdentificationRate, 70)) score += 2;
 
   // --- Bonus 2: counsellingAccessRate (>=90: +4, >=70: +2) ---
-  if (counsellingAccessRate >= 90) score += 4;
-  else if (counsellingAccessRate >= 70) score += 2;
+  if (meets(counsellingAccessRate, 90)) score += 4;
+  else if (meets(counsellingAccessRate, 70)) score += 2;
 
   // --- Bonus 3: memoryWorkRate (>=80: +3, >=60: +1) ---
-  if (memoryWorkRate >= 80) score += 3;
-  else if (memoryWorkRate >= 60) score += 1;
+  if (meets(memoryWorkRate, 80)) score += 3;
+  else if (meets(memoryWorkRate, 60)) score += 1;
 
   // --- Bonus 4: interventionEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (interventionEffectivenessRate >= 90) score += 4;
-  else if (interventionEffectivenessRate >= 70) score += 2;
+  if (meets(interventionEffectivenessRate, 90)) score += 4;
+  else if (meets(interventionEffectivenessRate, 70)) score += 2;
 
   // --- Bonus 5: anniversaryManagementRate (>=90: +3, >=70: +1) ---
-  if (anniversaryManagementRate >= 90) score += 3;
-  else if (anniversaryManagementRate >= 70) score += 1;
+  if (meets(anniversaryManagementRate, 90)) score += 3;
+  else if (meets(anniversaryManagementRate, 70)) score += 1;
 
   // --- Bonus 6: childCopingRate (>=90: +3, >=70: +1) ---
-  if (childCopingRate >= 90) score += 3;
-  else if (childCopingRate >= 70) score += 1;
+  if (meets(childCopingRate, 90)) score += 3;
+  else if (meets(childCopingRate, 70)) score += 1;
 
   // --- Bonus 7: counsellingAttendanceRate (>=90: +3, >=70: +1) ---
-  if (counsellingAttendanceRate >= 90) score += 3;
-  else if (counsellingAttendanceRate >= 70) score += 1;
+  if (meets(counsellingAttendanceRate, 90)) score += 3;
+  else if (meets(counsellingAttendanceRate, 70)) score += 1;
 
   // --- Bonus 8: carePlanUpdateRate (>=100: +2, >=80: +1) ---
-  if (carePlanUpdateRate >= 100) score += 2;
-  else if (carePlanUpdateRate >= 80) score += 1;
+  if (meets(carePlanUpdateRate, 100)) score += 2;
+  else if (meets(carePlanUpdateRate, 80)) score += 1;
 
   // --- Bonus 9: proactiveSupportRate (>=90: +2, >=70: +1) ---
-  if (proactiveSupportRate >= 90) score += 2;
-  else if (proactiveSupportRate >= 70) score += 1;
+  if (meets(proactiveSupportRate, 90)) score += 2;
+  else if (meets(proactiveSupportRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // lossIdentificationRate < 50 → -5
-  if (lossIdentificationRate < 50 && loss_identification_records.length > 0) score -= 5;
+  if (below(lossIdentificationRate, 50) && loss_identification_records.length > 0) score -= 5;
 
   // counsellingAccessRate < 50 → -5
-  if (counsellingAccessRate < 50 && counselling_access_records.length > 0) score -= 5;
+  if (below(counsellingAccessRate, 50) && counselling_access_records.length > 0) score -= 5;
 
   // interventionEffectivenessRate < 40 → -4
-  if (interventionEffectivenessRate < 40 && grief_intervention_records.length > 0) score -= 4;
+  if (below(interventionEffectivenessRate, 40) && grief_intervention_records.length > 0) score -= 4;
 
   // anniversaryManagementRate < 50 → -4
-  if (anniversaryManagementRate < 50 && anniversary_management_records.length > 0) score -= 4;
+  if (below(anniversaryManagementRate, 50) && anniversary_management_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -568,139 +571,139 @@ export function computeGriefBereavementSupport(
 
   const strengths: string[] = [];
 
-  if (lossIdentificationRate >= 90 && totalLosses > 0) {
+  if (meets(lossIdentificationRate, 90) && totalLosses > 0) {
     strengths.push(
       `${lossIdentificationRate}% of identified losses have a support plan in place — the home demonstrates comprehensive, systematic response to children's experiences of loss.`,
     );
-  } else if (lossIdentificationRate >= 70 && totalLosses > 0) {
+  } else if (meets(lossIdentificationRate, 70) && totalLosses > 0) {
     strengths.push(
       `${lossIdentificationRate}% of losses have support plans — strong practice in ensuring children's grief is formally acknowledged and responded to.`,
     );
   }
 
-  if (counsellingAccessRate >= 90 && uniqueChildrenWithLoss > 0) {
+  if (meets(counsellingAccessRate, 90) && uniqueChildrenWithLoss > 0) {
     strengths.push(
       `${counsellingAccessRate}% of bereaved children have access to counselling — the home ensures therapeutic support is available to children who have experienced loss.`,
     );
-  } else if (counsellingAccessRate >= 70 && uniqueChildrenWithLoss > 0) {
+  } else if (meets(counsellingAccessRate, 70) && uniqueChildrenWithLoss > 0) {
     strengths.push(
       `${counsellingAccessRate}% counselling access for bereaved children — good practice in connecting children with therapeutic grief support.`,
     );
   }
 
-  if (memoryWorkRate >= 80 && uniqueChildrenWithLoss > 0) {
+  if (meets(memoryWorkRate, 80) && uniqueChildrenWithLoss > 0) {
     strengths.push(
       `${memoryWorkRate}% of bereaved children engage in memory work — the home facilitates meaningful ways for children to process and honour their experiences of loss.`,
     );
-  } else if (memoryWorkRate >= 60 && uniqueChildrenWithLoss > 0) {
+  } else if (meets(memoryWorkRate, 60) && uniqueChildrenWithLoss > 0) {
     strengths.push(
       `${memoryWorkRate}% memory work participation — good engagement in activities that help children maintain connections and process grief.`,
     );
   }
 
-  if (interventionEffectivenessRate >= 90 && totalInterventions > 0) {
+  if (meets(interventionEffectivenessRate, 90) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of grief interventions showing improvement — therapeutic interventions are highly effective in supporting children's grief recovery.`,
     );
-  } else if (interventionEffectivenessRate >= 70 && totalInterventions > 0) {
+  } else if (meets(interventionEffectivenessRate, 70) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of grief interventions showing improvement — the majority of therapeutic grief support is achieving positive outcomes for children.`,
     );
   }
 
-  if (anniversaryManagementRate >= 90 && totalAnniversaries > 0) {
+  if (meets(anniversaryManagementRate, 90) && totalAnniversaries > 0) {
     strengths.push(
       `${anniversaryManagementRate}% of anniversaries and trigger dates have management plans — the home proactively prepares for emotionally significant dates.`,
     );
-  } else if (anniversaryManagementRate >= 70 && totalAnniversaries > 0) {
+  } else if (meets(anniversaryManagementRate, 70) && totalAnniversaries > 0) {
     strengths.push(
       `${anniversaryManagementRate}% anniversary management — good practice in planning ahead for known trigger dates and anniversaries.`,
     );
   }
 
-  if (childCopingRate >= 90 && totalCopingOpportunities > 0) {
+  if (meets(childCopingRate, 90) && totalCopingOpportunities > 0) {
     strengths.push(
       `${childCopingRate}% positive coping outcomes reported by children — children consistently report that grief support is genuinely helping them cope with their loss.`,
     );
-  } else if (childCopingRate >= 70 && totalCopingOpportunities > 0) {
+  } else if (meets(childCopingRate, 70) && totalCopingOpportunities > 0) {
     strengths.push(
       `${childCopingRate}% positive coping outcomes — most children report benefiting from the grief support provided.`,
     );
   }
 
-  if (counsellingAttendanceRate >= 90 && counsellingOfferedTotal > 0) {
+  if (meets(counsellingAttendanceRate, 90) && counsellingOfferedTotal > 0) {
     strengths.push(
       `${counsellingAttendanceRate}% counselling session attendance — children are consistently engaging with their bereavement counselling, indicating trust in the therapeutic relationship.`,
     );
-  } else if (counsellingAttendanceRate >= 70 && counsellingOfferedTotal > 0) {
+  } else if (meets(counsellingAttendanceRate, 70) && counsellingOfferedTotal > 0) {
     strengths.push(
       `${counsellingAttendanceRate}% counselling attendance — good levels of engagement with bereavement counselling services.`,
     );
   }
 
-  if (carePlanUpdateRate >= 100 && totalLosses > 0) {
+  if (meets(carePlanUpdateRate, 100) && totalLosses > 0) {
     strengths.push(
       "Every identified loss has resulted in an updated care plan — the home integrates bereavement needs into each child's wider care planning.",
     );
-  } else if (carePlanUpdateRate >= 80 && totalLosses > 0) {
+  } else if (meets(carePlanUpdateRate, 80) && totalLosses > 0) {
     strengths.push(
       `${carePlanUpdateRate}% of care plans updated following loss — strong practice in integrating grief support into care planning.`,
     );
   }
 
-  if (proactiveSupportRate >= 90 && totalAnniversaries > 0) {
+  if (meets(proactiveSupportRate, 90) && totalAnniversaries > 0) {
     strengths.push(
       `${proactiveSupportRate}% of anniversary dates receive proactive support — the home anticipates children's emotional needs rather than waiting for crisis.`,
     );
-  } else if (proactiveSupportRate >= 70 && totalAnniversaries > 0) {
+  } else if (meets(proactiveSupportRate, 70) && totalAnniversaries > 0) {
     strengths.push(
       `${proactiveSupportRate}% proactive anniversary support — good anticipatory care around known emotional trigger dates.`,
     );
   }
 
-  if (sensitiveInformingRate >= 90 && totalLosses > 0) {
+  if (meets(sensitiveInformingRate, 90) && totalLosses > 0) {
     strengths.push(
       `${sensitiveInformingRate}% of children informed about losses in a sensitive manner — the home handles disclosure of difficult news with care and compassion.`,
     );
   }
 
-  if (riskAssessmentRate >= 90 && totalLosses > 0) {
+  if (meets(riskAssessmentRate, 90) && totalLosses > 0) {
     strengths.push(
       `${riskAssessmentRate}% of losses have risk assessments completed — the home systematically evaluates the impact of bereavement on children's safety and wellbeing.`,
     );
   }
 
-  if (memoryWorkMeaningfulRate >= 90 && totalMemoryWork > 0) {
+  if (meets(memoryWorkMeaningfulRate, 90) && totalMemoryWork > 0) {
     strengths.push(
       `${memoryWorkMeaningfulRate}% of memory work activities found meaningful by children — activities are genuinely child-centred and emotionally resonant.`,
     );
   }
 
-  if (copingStrategyUptakeRate >= 80 && totalCopingTaught > 0) {
+  if (meets(copingStrategyUptakeRate, 80) && totalCopingTaught > 0) {
     strengths.push(
       `${copingStrategyUptakeRate}% of taught coping strategies actively used by children — children are internalising therapeutic tools and applying them independently.`,
     );
   }
 
-  if (professionalInvolvementRate >= 80 && totalInterventions > 0) {
+  if (meets(professionalInvolvementRate, 80) && totalInterventions > 0) {
     strengths.push(
       `${professionalInvolvementRate}% of grief interventions involve professional input — the home draws on specialist bereavement expertise to support children.`,
     );
   }
 
-  if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays <= 14) {
+  if (above(totalCounselling, 0) && counsellingWaitAvgDays !== null && counsellingWaitAvgDays <= 14) {
     strengths.push(
       `Average counselling waiting time of ${counsellingWaitAvgDays} days — children access bereavement counselling promptly when needed.`,
     );
   }
 
-  if (dayManagedWellRate >= 90 && occurredAnniversaries.length > 0) {
+  if (meets(dayManagedWellRate, 90) && occurredAnniversaries.length > 0) {
     strengths.push(
       `${dayManagedWellRate}% of occurred anniversaries were managed well — children are effectively supported through emotionally difficult dates.`,
     );
   }
 
-  if (childLedRate >= 40 && totalMemoryWork > 0) {
+  if (meets(childLedRate, 40) && totalMemoryWork > 0) {
     strengths.push(
       `${childLedRate}% of memory work activities are child-led — children are empowered to direct their own grief processing at their own pace.`,
     );
@@ -710,61 +713,61 @@ export function computeGriefBereavementSupport(
 
   const concerns: string[] = [];
 
-  if (lossIdentificationRate < 50 && totalLosses > 0) {
+  if (below(lossIdentificationRate, 50) && totalLosses > 0) {
     concerns.push(
       `Only ${lossIdentificationRate}% of identified losses have support plans — the majority of children's grief experiences are not being formally supported, preventing the home from evidencing individualised bereavement care.`,
     );
-  } else if (lossIdentificationRate < 70 && lossIdentificationRate >= 50 && totalLosses > 0) {
+  } else if (below(lossIdentificationRate, 70) && meets(lossIdentificationRate, 50) && totalLosses > 0) {
     concerns.push(
       `Loss support plan rate at ${lossIdentificationRate}% — some children who have experienced loss do not have formal support plans, meaning their grief may not be systematically addressed.`,
     );
   }
 
-  if (counsellingAccessRate < 50 && uniqueChildrenWithLoss > 0) {
+  if (below(counsellingAccessRate, 50) && uniqueChildrenWithLoss > 0) {
     concerns.push(
       `Only ${counsellingAccessRate}% of bereaved children have access to counselling — the majority of children who have experienced loss are not receiving therapeutic support, leaving significant emotional needs unmet.`,
     );
-  } else if (counsellingAccessRate < 70 && counsellingAccessRate >= 50 && uniqueChildrenWithLoss > 0) {
+  } else if (below(counsellingAccessRate, 70) && meets(counsellingAccessRate, 50) && uniqueChildrenWithLoss > 0) {
     concerns.push(
       `Counselling access at ${counsellingAccessRate}% — some bereaved children lack access to bereavement counselling, meaning their grief may not receive the professional support it requires.`,
     );
   }
 
-  if (memoryWorkRate < 40 && uniqueChildrenWithLoss > 0) {
+  if (below(memoryWorkRate, 40) && uniqueChildrenWithLoss > 0) {
     concerns.push(
       `Only ${memoryWorkRate}% of bereaved children engage in memory work — most children do not have access to memory work activities, missing opportunities to process grief through meaningful connection.`,
     );
-  } else if (memoryWorkRate < 60 && memoryWorkRate >= 40 && uniqueChildrenWithLoss > 0) {
+  } else if (below(memoryWorkRate, 60) && meets(memoryWorkRate, 40) && uniqueChildrenWithLoss > 0) {
     concerns.push(
       `Memory work participation at ${memoryWorkRate}% — not all bereaved children are offered or engaging in memory work activities that could support their grief processing.`,
     );
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Only ${interventionEffectivenessRate}% of grief interventions showing improvement — the majority of therapeutic interventions are not achieving their intended outcomes, suggesting a fundamental review of approach is needed.`,
     );
-  } else if (interventionEffectivenessRate < 70 && interventionEffectivenessRate >= 40 && totalInterventions > 0) {
+  } else if (below(interventionEffectivenessRate, 70) && meets(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Intervention effectiveness at ${interventionEffectivenessRate}% — not all grief interventions are achieving positive outcomes. Review is needed to ensure interventions are appropriately matched to individual children's grief experiences.`,
     );
   }
 
-  if (anniversaryManagementRate < 50 && totalAnniversaries > 0) {
+  if (below(anniversaryManagementRate, 50) && totalAnniversaries > 0) {
     concerns.push(
       `Only ${anniversaryManagementRate}% of anniversaries have management plans — the majority of known trigger dates and anniversaries lack proactive planning, leaving children vulnerable to unmanaged emotional distress.`,
     );
-  } else if (anniversaryManagementRate < 70 && anniversaryManagementRate >= 50 && totalAnniversaries > 0) {
+  } else if (below(anniversaryManagementRate, 70) && meets(anniversaryManagementRate, 50) && totalAnniversaries > 0) {
     concerns.push(
       `Anniversary management at ${anniversaryManagementRate}% — some known trigger dates lack proactive plans, meaning children may face emotionally difficult days without prepared support.`,
     );
   }
 
-  if (childCopingRate < 50 && totalCopingOpportunities > 0) {
+  if (below(childCopingRate, 50) && totalCopingOpportunities > 0) {
     concerns.push(
       `Only ${childCopingRate}% positive coping outcomes — most children do not report that grief support is helping them, raising serious questions about whether the home's bereavement provision genuinely meets children's emotional needs.`,
     );
-  } else if (childCopingRate < 70 && childCopingRate >= 50 && totalCopingOpportunities > 0) {
+  } else if (below(childCopingRate, 70) && meets(childCopingRate, 50) && totalCopingOpportunities > 0) {
     concerns.push(
       `Child coping rate at ${childCopingRate}% — a significant proportion of children do not report positive outcomes from grief support provision.`,
     );
@@ -780,7 +783,7 @@ export function computeGriefBereavementSupport(
     );
   }
 
-  if (carePlanUpdateRate < 50 && totalLosses > 0) {
+  if (below(carePlanUpdateRate, 50) && totalLosses > 0) {
     concerns.push(
       `Only ${carePlanUpdateRate}% of care plans updated following loss — most children's care plans do not reflect their bereavement needs, meaning daily care may not account for the impact of grief.`,
     );
@@ -798,37 +801,37 @@ export function computeGriefBereavementSupport(
     );
   }
 
-  if (overdueInterventionReviews > 0 && activeInterventions > 0) {
+  if (above(overdueInterventionReviews, 0) && activeInterventions > 0) {
     concerns.push(
       `${overdueInterventionReviews} active grief intervention review${overdueInterventionReviews !== 1 ? "s are" : " is"} overdue — interventions without timely review may continue ineffectively while children's grief needs evolve.`,
     );
   }
 
-  if (counsellingAttendanceRate < 50 && counsellingOfferedTotal > 0) {
+  if (below(counsellingAttendanceRate, 50) && counsellingOfferedTotal > 0) {
     concerns.push(
       `Only ${counsellingAttendanceRate}% counselling session attendance — poor engagement with bereavement counselling suggests barriers, mismatched provision, or unaddressed reluctance that needs exploration.`,
     );
   }
 
-  if (severeLosses > 0 && severeLossSupportRate < 100) {
+  if (above(severeLosses, 0) && below(severeLossSupportRate, 100)) {
     concerns.push(
       `${severeLosses - severeLossesWithSupport} severe-impact loss${(severeLosses - severeLossesWithSupport) !== 1 ? "es lack" : " lacks"} a support plan — children experiencing severe grief impact must have immediate, structured bereavement support.`,
     );
   }
 
-  if (barriersRate > 40 && totalCounselling > 0) {
+  if (above(barriersRate, 40) && totalCounselling > 0) {
     concerns.push(
       `${barriersRate}% of counselling referrals have identified barriers to access — systemic barriers are preventing children from receiving the bereavement support they need.`,
     );
   }
 
-  if (memoryWorkDocumentationRate < 70 && totalMemoryWork > 0) {
+  if (below(memoryWorkDocumentationRate, 70) && totalMemoryWork > 0) {
     concerns.push(
       `Memory work documentation at only ${memoryWorkDocumentationRate}% — poor recording makes it difficult to evidence the purpose and outcomes of memory work activities.`,
     );
   }
 
-  if (sessionCompletionRate < 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     concerns.push(
       `Only ${sessionCompletionRate}% of planned intervention sessions completed — the home is not delivering the grief support it has committed to, leaving children's therapeutic needs unmet.`,
     );
@@ -839,7 +842,7 @@ export function computeGriefBereavementSupport(
   const recommendations: GriefBereavementRecommendation[] = [];
   let rank = 0;
 
-  if (lossIdentificationRate < 50 && totalLosses > 0) {
+  if (below(lossIdentificationRate, 50) && totalLosses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +852,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (counsellingAccessRate < 50 && uniqueChildrenWithLoss > 0) {
+  if (below(counsellingAccessRate, 50) && uniqueChildrenWithLoss > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +862,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +872,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (anniversaryManagementRate < 50 && totalAnniversaries > 0) {
+  if (below(anniversaryManagementRate, 50) && totalAnniversaries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +882,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (severeLosses > 0 && severeLossSupportRate < 100) {
+  if (severeLosses > 0 && below(severeLossSupportRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +902,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (childCopingRate < 50 && totalCopingOpportunities > 0) {
+  if (below(childCopingRate, 50) && totalCopingOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -909,7 +912,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (carePlanUpdateRate < 50 && totalLosses > 0) {
+  if (below(carePlanUpdateRate, 50) && totalLosses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,8 +953,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    lossIdentificationRate >= 50 &&
-    lossIdentificationRate < 70 &&
+    meets(lossIdentificationRate, 50) &&
+    below(lossIdentificationRate, 70) &&
     totalLosses > 0
   ) {
     recommendations.push({
@@ -964,8 +967,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    counsellingAccessRate >= 50 &&
-    counsellingAccessRate < 70 &&
+    meets(counsellingAccessRate, 50) &&
+    below(counsellingAccessRate, 70) &&
     uniqueChildrenWithLoss > 0
   ) {
     recommendations.push({
@@ -978,8 +981,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     recommendations.push({
@@ -992,8 +995,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    anniversaryManagementRate >= 50 &&
-    anniversaryManagementRate < 70 &&
+    meets(anniversaryManagementRate, 50) &&
+    below(anniversaryManagementRate, 70) &&
     totalAnniversaries > 0
   ) {
     recommendations.push({
@@ -1005,7 +1008,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && sessionsPlannedTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1015,7 +1018,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (memoryWorkRate < 60 && uniqueChildrenWithLoss > 0) {
+  if (below(memoryWorkRate, 60) && uniqueChildrenWithLoss > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1025,7 +1028,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (professionalInvolvementRate < 50 && totalInterventions > 0) {
+  if (below(professionalInvolvementRate, 50) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1035,7 +1038,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (counsellingAttendanceRate < 70 && counsellingOfferedTotal > 0) {
+  if (below(counsellingAttendanceRate, 70) && counsellingOfferedTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1045,7 +1048,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (preferencesRecordedRate < 70 && totalAnniversaries > 0) {
+  if (below(preferencesRecordedRate, 70) && totalAnniversaries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1055,7 +1058,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (memoryWorkDocumentationRate < 70 && totalMemoryWork > 0) {
+  if (below(memoryWorkDocumentationRate, 70) && totalMemoryWork > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1086,35 +1089,35 @@ export function computeGriefBereavementSupport(
 
   // -- Critical insights --
 
-  if (lossIdentificationRate < 50 && totalLosses > 0) {
+  if (below(lossIdentificationRate, 50) && totalLosses > 0) {
     insights.push({
       text: `Only ${lossIdentificationRate}% of identified losses have support plans. Without structured bereavement support for each loss, the home cannot demonstrate that children's grief is being actively and individually addressed. Ofsted expects evidence of responsive, child-centred care under Reg 5, and the absence of support plans for the majority of losses represents a fundamental gap.`,
       severity: "critical",
     });
   }
 
-  if (counsellingAccessRate < 50 && uniqueChildrenWithLoss > 0) {
+  if (below(counsellingAccessRate, 50) && uniqueChildrenWithLoss > 0) {
     insights.push({
       text: `Only ${counsellingAccessRate}% of bereaved children have access to counselling. Looked-after children who experience loss without professional therapeutic support are at significantly increased risk of complicated grief, emotional dysregulation, and mental health difficulties. This gap directly undermines the home's duty under Reg 14 to promote children's health and emotional wellbeing.`,
       severity: "critical",
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     insights.push({
       text: `Only ${interventionEffectivenessRate}% of grief interventions showing improvement. When most therapeutic interventions are not reducing grief severity, this indicates a systemic issue — interventions may not be appropriately matched to children's grief experiences, professionally informed, or consistently delivered. A fundamental review with specialist bereavement expertise is needed.`,
       severity: "critical",
     });
   }
 
-  if (anniversaryManagementRate < 50 && totalAnniversaries > 0) {
+  if (below(anniversaryManagementRate, 50) && totalAnniversaries > 0) {
     insights.push({
       text: `Only ${anniversaryManagementRate}% of known anniversaries have management plans. Anniversary dates and grief triggers are predictable, and the failure to prepare for them means children are likely to experience avoidable emotional crises. Proactive anniversary management is a hallmark of high-quality bereavement care.`,
       severity: "critical",
     });
   }
 
-  if (severeLosses > 0 && severeLossSupportRate < 50) {
+  if (severeLosses > 0 && below(severeLossSupportRate, 50)) {
     insights.push({
       text: `${severeLosses} severe-impact losses identified but only ${severeLossSupportRate}% have support plans. Children experiencing the most intense grief reactions are not receiving structured support — this represents an immediate welfare concern requiring urgent action.`,
       severity: "critical",
@@ -1131,8 +1134,8 @@ export function computeGriefBereavementSupport(
   // -- Warning insights --
 
   if (
-    lossIdentificationRate >= 50 &&
-    lossIdentificationRate < 70 &&
+    meets(lossIdentificationRate, 50) &&
+    below(lossIdentificationRate, 70) &&
     totalLosses > 0
   ) {
     insights.push({
@@ -1142,8 +1145,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    counsellingAccessRate >= 50 &&
-    counsellingAccessRate < 70 &&
+    meets(counsellingAccessRate, 50) &&
+    below(counsellingAccessRate, 70) &&
     uniqueChildrenWithLoss > 0
   ) {
     insights.push({
@@ -1153,8 +1156,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1164,8 +1167,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    anniversaryManagementRate >= 50 &&
-    anniversaryManagementRate < 70 &&
+    meets(anniversaryManagementRate, 50) &&
+    below(anniversaryManagementRate, 70) &&
     totalAnniversaries > 0
   ) {
     insights.push({
@@ -1175,8 +1178,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    childCopingRate >= 50 &&
-    childCopingRate < 70 &&
+    meets(childCopingRate, 50) &&
+    below(childCopingRate, 70) &&
     totalCopingOpportunities > 0
   ) {
     insights.push({
@@ -1211,14 +1214,14 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionCompletionRate >= 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && meets(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     insights.push({
       text: `Session completion at ${sessionCompletionRate}% — planned grief therapy sessions are not being consistently delivered. Gaps in therapeutic continuity may undermine the cumulative benefit of grief interventions.`,
       severity: "warning",
     });
   }
 
-  if (barriersRate > 40 && totalCounselling > 0) {
+  if (above(barriersRate, 40) && totalCounselling > 0) {
     insights.push({
       text: `${barriersRate}% of counselling referrals have identified barriers to access. Systemic barriers such as transport, availability, or waitlists are preventing children from receiving bereavement support. The home should actively work to remove these barriers.`,
       severity: "warning",
@@ -1226,8 +1229,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    counsellingAttendanceRate >= 50 &&
-    counsellingAttendanceRate < 70 &&
+    meets(counsellingAttendanceRate, 50) &&
+    below(counsellingAttendanceRate, 70) &&
     counsellingOfferedTotal > 0
   ) {
     insights.push({
@@ -1300,8 +1303,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    lossIdentificationRate >= 90 &&
-    carePlanUpdateRate >= 90 &&
+    meets(lossIdentificationRate, 90) &&
+    meets(carePlanUpdateRate, 90) &&
     totalLosses > 0
   ) {
     insights.push({
@@ -1311,8 +1314,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    counsellingAccessRate >= 90 &&
-    counsellingHelpfulRate >= 80 &&
+    meets(counsellingAccessRate, 90) &&
+    meets(counsellingHelpfulRate, 80) &&
     uniqueChildrenWithLoss > 0 &&
     totalCounselling > 0
   ) {
@@ -1323,8 +1326,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    interventionEffectivenessRate >= 90 &&
-    childReportedImprovementRate >= 80 &&
+    meets(interventionEffectivenessRate, 90) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1334,8 +1337,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    anniversaryManagementRate >= 90 &&
-    proactiveSupportRate >= 90 &&
+    meets(anniversaryManagementRate, 90) &&
+    meets(proactiveSupportRate, 90) &&
     totalAnniversaries > 0
   ) {
     insights.push({
@@ -1345,8 +1348,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    memoryWorkMeaningfulRate >= 90 &&
-    memoryWorkBenefitRate >= 80 &&
+    meets(memoryWorkMeaningfulRate, 90) &&
+    meets(memoryWorkBenefitRate, 80) &&
     totalMemoryWork > 0
   ) {
     insights.push({
@@ -1356,7 +1359,7 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    childCopingRate >= 90 &&
+    meets(childCopingRate, 90) &&
     totalCopingOpportunities > 0
   ) {
     insights.push({
@@ -1366,8 +1369,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    staffReportedImprovementRate >= 80 &&
-    childReportedImprovementRate >= 80 &&
+    meets(staffReportedImprovementRate, 80) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1377,7 +1380,7 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    copingStrategyUptakeRate >= 80 &&
+    meets(copingStrategyUptakeRate, 80) &&
     totalCopingTaught > 0
   ) {
     insights.push({
@@ -1390,7 +1393,7 @@ export function computeGriefBereavementSupport(
     totalCounselling > 0 &&
     counsellingWaitAvgDays !== null &&
     counsellingWaitAvgDays <= 14 &&
-    counsellingAttendanceRate >= 90
+    meets(counsellingAttendanceRate, 90)
   ) {
     insights.push({
       text: `Average wait of ${counsellingWaitAvgDays} days with ${counsellingAttendanceRate}% attendance — children access bereavement counselling swiftly and engage consistently, creating optimal conditions for therapeutic benefit.`,
@@ -1399,8 +1402,8 @@ export function computeGriefBereavementSupport(
   }
 
   if (
-    dayManagedWellRate >= 90 &&
-    anniversaryFeedbackRate >= 80 &&
+    meets(dayManagedWellRate, 90) &&
+    meets(anniversaryFeedbackRate, 80) &&
     occurredAnniversaries.length > 0
   ) {
     insights.push({

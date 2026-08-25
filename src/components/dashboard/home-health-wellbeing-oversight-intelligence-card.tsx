@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HealthWellbeingRating } from "@/lib/engines/home-health-wellbeing-oversight-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<HealthWellbeingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeHealthWellbeingOversightIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.wellbeing_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.health_assessment_compliance_rate >= 90 ? "bg-green-50" : d.health_assessment_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.health_assessment_compliance_rate >= 90 ? "text-[--cs-success]" : d.health_assessment_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.health_assessment_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.health_assessment_compliance_rate, 90) ? "bg-green-50" : meets(d.health_assessment_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.health_assessment_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.health_assessment_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.health_assessment_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Health Assess</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dental_check_rate >= 90 ? "bg-green-50" : d.dental_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dental_check_rate >= 90 ? "text-[--cs-success]" : d.dental_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dental_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dental_check_rate, 90) ? "bg-green-50" : meets(d.dental_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dental_check_rate, 90) ? "text-[--cs-success]" : meets(d.dental_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dental_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dental</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.immunisation_rate >= 90 ? "bg-green-50" : d.immunisation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.immunisation_rate >= 90 ? "text-[--cs-success]" : d.immunisation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.immunisation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.immunisation_rate, 90) ? "bg-green-50" : meets(d.immunisation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.immunisation_rate, 90) ? "text-[--cs-success]" : meets(d.immunisation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.immunisation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Immunise</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.health_passport_currency_rate >= 90 ? "bg-green-50" : d.health_passport_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.health_passport_currency_rate >= 90 ? "text-[--cs-success]" : d.health_passport_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.health_passport_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.health_passport_currency_rate, 90) ? "bg-green-50" : meets(d.health_passport_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.health_passport_currency_rate, 90) ? "text-[--cs-success]" : meets(d.health_passport_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.health_passport_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Passport</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.follow_up_completion_rate >= 90 ? "bg-green-50" : d.follow_up_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_completion_rate >= 90 ? "text-[--cs-success]" : d.follow_up_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.follow_up_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.follow_up_completion_rate, 90) ? "bg-green-50" : meets(d.follow_up_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.follow_up_completion_rate, 90) ? "text-[--cs-success]" : meets(d.follow_up_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.follow_up_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Follow-up</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.consent_form_rate >= 90 ? "bg-green-50" : d.consent_form_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.consent_form_rate >= 90 ? "text-[--cs-success]" : d.consent_form_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.consent_form_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.consent_form_rate, 90) ? "bg-green-50" : meets(d.consent_form_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.consent_form_rate, 90) ? "text-[--cs-success]" : meets(d.consent_form_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.consent_form_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Consent</p>
             </div>
           </div>

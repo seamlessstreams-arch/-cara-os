@@ -179,14 +179,14 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
         health_record_entries: [],
       });
       expect(r.total_health_assessments).toBe(0);
-      expect(r.health_assessment_compliance_rate).toBe(0);
-      expect(r.dental_check_rate).toBe(0);
-      expect(r.health_passport_currency_rate).toBe(0);
-      expect(r.monitoring_completion_rate).toBe(0);
-      expect(r.health_action_completion_rate).toBe(0);
-      expect(r.immunisation_rate).toBe(0);
-      expect(r.consent_form_rate).toBe(0);
-      expect(r.follow_up_completion_rate).toBe(0);
+      expect(r.health_assessment_compliance_rate).toBeNull();
+      expect(r.dental_check_rate).toBeNull();
+      expect(r.health_passport_currency_rate).toBeNull();
+      expect(r.monitoring_completion_rate).toBeNull();
+      expect(r.health_action_completion_rate).toBeNull();
+      expect(r.immunisation_rate).toBeNull();
+      expect(r.consent_form_rate).toBeNull();
+      expect(r.follow_up_completion_rate).toBeNull();
     });
 
     it("returns inadequate with children > 0 and all arrays empty", () => {
@@ -1124,10 +1124,10 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
       expect(noPenalty.wellbeing_score - withPenalty.wellbeing_score).toBe(5);
     });
 
-    it("does not apply monitoring penalty when totalMonitoring is 0", () => {
+    it("does not apply monitoring penalty when totalMonitoring is null", () => {
       const r = computeHealthWellbeingOversight(baseInput({ health_monitoring: [] }));
       // monitoringCompletionRate = pct(0,0) = 0% but guard: totalMonitoring=0 → no penalty
-      expect(r.monitoring_completion_rate).toBe(0);
+      expect(r.monitoring_completion_rate).toBeNull();
       expect(r.wellbeing_score).toBeGreaterThanOrEqual(52);
     });
 
@@ -1157,9 +1157,9 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
       expect(noPenalty.wellbeing_score - withPenalty.wellbeing_score).toBe(3);
     });
 
-    it("does not apply passport currency penalty when totalPassports is 0", () => {
+    it("does not apply passport currency penalty when totalPassports is null", () => {
       const r = computeHealthWellbeingOversight(baseInput({ health_passports: [] }));
-      expect(r.health_passport_currency_rate).toBe(0);
+      expect(r.health_passport_currency_rate).toBeNull();
       expect(r.wellbeing_score).toBeGreaterThanOrEqual(52);
     });
   });
@@ -1386,7 +1386,7 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
       );
     });
 
-    it("pct(0, 0) returns 0 for all rates when denominators are zero", () => {
+    it("rate(0,0)=nullreturns 0 for all rates when denominators are zero", () => {
       const r = computeHealthWellbeingOversight({
         today: "2025-06-01",
         total_children: 0,
@@ -1396,14 +1396,14 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
         health_passports: [],
         health_record_entries: [],
       });
-      expect(r.health_assessment_compliance_rate).toBe(0);
-      expect(r.dental_check_rate).toBe(0);
-      expect(r.health_passport_currency_rate).toBe(0);
-      expect(r.monitoring_completion_rate).toBe(0);
-      expect(r.health_action_completion_rate).toBe(0);
-      expect(r.immunisation_rate).toBe(0);
-      expect(r.consent_form_rate).toBe(0);
-      expect(r.follow_up_completion_rate).toBe(0);
+      expect(r.health_assessment_compliance_rate).toBeNull();
+      expect(r.dental_check_rate).toBeNull();
+      expect(r.health_passport_currency_rate).toBeNull();
+      expect(r.monitoring_completion_rate).toBeNull();
+      expect(r.health_action_completion_rate).toBeNull();
+      expect(r.immunisation_rate).toBeNull();
+      expect(r.consent_form_rate).toBeNull();
+      expect(r.follow_up_completion_rate).toBeNull();
     });
 
     it("total_health_assessments equals input array length", () => {
@@ -1419,7 +1419,7 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
       expect(r.total_health_assessments).toBe(3);
     });
 
-    it("healthActionCompletionRate is 0 when no actions identified", () => {
+    it("healthActionCompletionRate is null when no actions identified", () => {
       const r = computeHealthWellbeingOversight(
         baseInput({
           health_assessments: [
@@ -1430,10 +1430,10 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.health_action_completion_rate).toBe(0);
+      expect(r.health_action_completion_rate).toBeNull();
     });
 
-    it("followUpCompletionRate is 0 when no entries require follow-up", () => {
+    it("followUpCompletionRate is null when no entries require follow-up", () => {
       const r = computeHealthWellbeingOversight(
         baseInput({
           health_record_entries: [
@@ -1442,7 +1442,7 @@ describe("Home Health & Wellbeing Oversight Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.follow_up_completion_rate).toBe(0);
+      expect(r.follow_up_completion_rate).toBeNull();
     });
 
     it("pct rounds to nearest integer", () => {

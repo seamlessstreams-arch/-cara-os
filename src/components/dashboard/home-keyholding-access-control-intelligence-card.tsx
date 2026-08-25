@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Key } from "lucid
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { KeyholdingRating } from "@/lib/engines/home-keyholding-access-control-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<KeyholdingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeKeyholdingAccessControlIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.keyholding_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.key_register_rate >= 90 ? "bg-green-50" : d.key_register_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.key_register_rate >= 90 ? "text-[--cs-success]" : d.key_register_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.key_register_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.key_register_rate, 90) ? "bg-green-50" : meets(d.key_register_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.key_register_rate, 90) ? "text-[--cs-success]" : meets(d.key_register_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_register_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Register</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.access_control_rate >= 90 ? "bg-green-50" : d.access_control_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.access_control_rate >= 90 ? "text-[--cs-success]" : d.access_control_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.access_control_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.access_control_rate, 90) ? "bg-green-50" : meets(d.access_control_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.access_control_rate, 90) ? "text-[--cs-success]" : meets(d.access_control_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.access_control_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.key_tracking_rate >= 90 ? "bg-green-50" : d.key_tracking_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.key_tracking_rate >= 90 ? "text-[--cs-success]" : d.key_tracking_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.key_tracking_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.key_tracking_rate, 90) ? "bg-green-50" : meets(d.key_tracking_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.key_tracking_rate, 90) ? "text-[--cs-success]" : meets(d.key_tracking_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_tracking_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Tracking</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.security_audit_rate >= 90 ? "bg-green-50" : d.security_audit_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.security_audit_rate >= 90 ? "text-[--cs-success]" : d.security_audit_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.security_audit_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.security_audit_rate, 90) ? "bg-green-50" : meets(d.security_audit_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.security_audit_rate, 90) ? "text-[--cs-success]" : meets(d.security_audit_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.security_audit_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Audits</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_safe_rate >= 90 ? "bg-green-50" : d.child_safe_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_safe_rate >= 90 ? "text-[--cs-success]" : d.child_safe_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_safe_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_safe_rate, 90) ? "bg-green-50" : meets(d.child_safe_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_safe_rate, 90) ? "text-[--cs-success]" : meets(d.child_safe_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_safe_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Safe</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_compliance_rate >= 90 ? "bg-green-50" : d.staff_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_compliance_rate >= 90 ? "text-[--cs-success]" : d.staff_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_compliance_rate, 90) ? "bg-green-50" : meets(d.staff_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.staff_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Staff</p>
             </div>
           </div>

@@ -212,12 +212,12 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
 
     it("returns zero for all rates", () => {
       const r = computeHolidayTripPlanning(baseInput({ total_children: 0 }));
-      expect(r.holiday_planning_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.consent_compliance_rate).toBe(0);
-      expect(r.experience_quality_rate).toBe(0);
-      expect(r.child_participation_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.holiday_planning_rate).toBeNull();
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.consent_compliance_rate).toBeNull();
+      expect(r.experience_quality_rate).toBeNull();
+      expect(r.child_participation_rate).toBeNull();
+      expect(r.child_enjoyment_rate).toBeNull();
     });
 
     it("returns zero totals", () => {
@@ -264,12 +264,12 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
 
     it("returns zero for all rates", () => {
       const r = computeHolidayTripPlanning(baseInput({ total_children: 5 }));
-      expect(r.holiday_planning_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.consent_compliance_rate).toBe(0);
-      expect(r.experience_quality_rate).toBe(0);
-      expect(r.child_participation_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.holiday_planning_rate).toBeNull();
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.consent_compliance_rate).toBeNull();
+      expect(r.experience_quality_rate).toBeNull();
+      expect(r.child_participation_rate).toBeNull();
+      expect(r.child_enjoyment_rate).toBeNull();
     });
 
     it("returns zero totals", () => {
@@ -597,25 +597,25 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
   // ══════════════════════════════════════════════════════════════════════════
 
   describe("pct(0,0)=0 behaviour", () => {
-    it("returns 0 rates when arrays are empty but total_children > 0 and some data exists", () => {
+    it("returns null rates when arrays are empty but total_children > 0 and some data exists", () => {
       // Only experience records, no holiday plans
       const r = computeHolidayTripPlanning(baseInput({
         total_children: 3,
         experience_records: [makeExperience()],
       }));
-      expect(r.holiday_planning_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.consent_compliance_rate).toBe(0);
-      expect(r.child_participation_rate).toBe(0);
+      expect(r.holiday_planning_rate).toBeNull();
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.consent_compliance_rate).toBeNull();
+      expect(r.child_participation_rate).toBeNull();
     });
 
-    it("returns 0 for child_enjoyment_rate when no experiences exist but other data does", () => {
+    it("returns null for child_enjoyment_rate when no experiences exist but other data does", () => {
       const r = computeHolidayTripPlanning(baseInput({
         total_children: 3,
         holiday_plan_records: [makeHolidayPlan()],
       }));
-      expect(r.child_enjoyment_rate).toBe(0);
-      expect(r.experience_quality_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
+      expect(r.experience_quality_rate).toBeNull();
     });
   });
 
@@ -1174,7 +1174,7 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
         total_children: 3,
         holiday_plan_records: [makeHolidayPlan()],
       }));
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
       // Still gets holidayPlanning bonus +4, no RA penalty
       expect(r.holiday_score).toBe(56);
     });
@@ -1199,7 +1199,7 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
         total_children: 3,
         holiday_plan_records: [makeHolidayPlan()],
       }));
-      expect(r.consent_compliance_rate).toBe(0);
+      expect(r.consent_compliance_rate).toBeNull();
       // holidayPlanning +4, no consent penalty
       expect(r.holiday_score).toBe(56);
     });
@@ -1225,7 +1225,7 @@ describe("Home Holiday & Trip Planning Intelligence Engine", () => {
         total_children: 3,
         holiday_plan_records: [makeHolidayPlan()],
       }));
-      expect(r.child_participation_rate).toBe(0);
+      expect(r.child_participation_rate).toBeNull();
       // holidayPlanning +4, no participation penalty
       expect(r.holiday_score).toBe(56);
     });

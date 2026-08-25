@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { MedicationGovernanceRating } from "@/lib/engines/home-medication-governance-intelligence-engine";
 import type { HomeMedicationGovernanceResult } from "@/lib/engines/home-medication-governance-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.governance_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.governance_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.governance_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -123,7 +124,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                   (d.audit.pass_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.audit.pass_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.audit.total_audits > 0 ? `${d.audit.pass_rate}%` : "—"}
+                  {d.audit.total_audits > 0 ? `${formatRate(d.audit.pass_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Audit Pass</p>
@@ -137,7 +138,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                   (d.storage.pass_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.storage.pass_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.storage.total_audits > 0 ? `${d.storage.pass_rate}%` : "—"}
+                  {d.storage.total_audits > 0 ? `${formatRate(d.storage.pass_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Storage</p>
@@ -151,7 +152,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                   (d.stock.balanced_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.stock.balanced_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.stock.total_checks > 0 ? `${d.stock.balanced_rate}%` : "—"}
+                  {d.stock.total_checks > 0 ? `${formatRate(d.stock.balanced_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Stock</p>
@@ -188,7 +189,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                 </p>
                 <p>Debrief rate: <span className={cn("font-medium",
                   (d.errors.debrief_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.errors.debrief_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.errors.total_errors > 0 ? `${d.errors.debrief_rate}%` : "—"}</span></p>
+                )}>{d.errors.total_errors > 0 ? `${formatRate(d.errors.debrief_rate)}` : "—"}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">
@@ -204,7 +205,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                 <p>CD governance: <span className={cn("font-medium",
                   (d.storage.controlled_drugs_correct_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.storage.controlled_drugs_correct_rate ?? 0) >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.storage.total_audits > 0 ? `${d.storage.controlled_drugs_correct_rate}%` : "—"}</span></p>
+                )}>{d.storage.total_audits > 0 ? `${formatRate(d.storage.controlled_drugs_correct_rate)}` : "—"}</span></p>
               </div>
             </div>
           </div>

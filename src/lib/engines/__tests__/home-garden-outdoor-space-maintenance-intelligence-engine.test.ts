@@ -273,16 +273,16 @@ describe("Home Garden & Outdoor Space Maintenance Intelligence Engine", () => {
       expect(r.total_environmental_quality_records).toBe(0);
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeGardenOutdoorSpaceMaintenance(
         baseInput({ total_children: 0 }),
       );
-      expect(r.garden_condition_rate).toBe(0);
-      expect(r.equipment_safety_rate).toBe(0);
-      expect(r.space_utilisation_rate).toBe(0);
-      expect(r.child_involvement_rate).toBe(0);
-      expect(r.environmental_quality_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.garden_condition_rate).toBeNull();
+      expect(r.equipment_safety_rate).toBeNull();
+      expect(r.space_utilisation_rate).toBeNull();
+      expect(r.child_involvement_rate).toBeNull();
+      expect(r.environmental_quality_rate).toBeNull();
+      expect(r.child_enjoyment_rate).toBeNull();
     });
   });
 
@@ -443,7 +443,7 @@ describe("Home Garden & Outdoor Space Maintenance Intelligence Engine", () => {
 
     it("0 when no garden condition records", () => {
       const r = computeGardenOutdoorSpaceMaintenance(baseInput({ total_children: 0 }));
-      expect(r.garden_condition_rate).toBe(0);
+      expect(r.garden_condition_rate).toBeNull();
     });
   });
 
@@ -597,13 +597,13 @@ describe("Home Garden & Outdoor Space Maintenance Intelligence Engine", () => {
   // ── Child Enjoyment Rate (Composite) ──────────────────────────────────
 
   describe("child enjoyment rate", () => {
-    it("is 0 when no space utilisation or involvement records", () => {
+    it("is null when no space utilisation or involvement records", () => {
       const r = computeGardenOutdoorSpaceMaintenance(
         baseInput({
           garden_condition_records: [makeGardenCondition()],
         }),
       );
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
     });
 
     it("includes enjoyment_observed from space utilisation", () => {

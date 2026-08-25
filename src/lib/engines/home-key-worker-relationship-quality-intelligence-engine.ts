@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME KEY WORKER RELATIONSHIP QUALITY INTELLIGENCE ENGINE
 // Monitors the quality and consistency of key worker relationships with children.
@@ -163,10 +164,6 @@ export interface KeyWorkerRelationshipQualityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -295,21 +292,21 @@ export function computeKeyWorkerRelationshipQuality(
     activeAllocations.map((a) => a.child_id),
   ).size;
   const allocationCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenAllocated, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenAllocated, total_children) : 0;
 
   // --- Backup key worker ---
   const withBackup = activeAllocations.filter((a) => a.backup_key_worker_assigned).length;
-  const backupKeyWorkerRate = pct(withBackup, activeAllocations.length);
+  const backupKeyWorkerRate = rate(withBackup, activeAllocations.length);
 
   // --- Allocation reviewed ---
   const reviewedAllocations = activeAllocations.filter((a) => a.allocation_reviewed).length;
-  const allocationReviewRate = pct(reviewedAllocations, activeAllocations.length);
+  const allocationReviewRate = rate(reviewedAllocations, activeAllocations.length);
 
   // --- Child consulted on allocation ---
   const consultedOnAllocation = activeAllocations.filter(
     (a) => a.child_consulted_on_allocation,
   ).length;
-  const childConsultedAllocationRate = pct(consultedOnAllocation, activeAllocations.length);
+  const childConsultedAllocationRate = rate(consultedOnAllocation, activeAllocations.length);
 
   // --- Relationship quality assessments ---
   const totalAssessments = relationship_assessment_records.length;
@@ -333,7 +330,7 @@ export function computeKeyWorkerRelationshipQuality(
   const goodQualityAssessments = relationship_assessment_records.filter(
     (r) => r.overall_quality_score >= 4,
   ).length;
-  const relationshipQualityRate = pct(goodQualityAssessments, totalAssessments);
+  const relationshipQualityRate = rate(goodQualityAssessments, totalAssessments);
 
   const assessmentsWithChildVoice = relationship_assessment_records.filter(
     (r) => r.child_voice_included,
@@ -347,8 +344,8 @@ export function computeKeyWorkerRelationshipQuality(
   const cancelledSessions = key_worker_session_records.filter(
     (s) => s.session_cancelled,
   ).length;
-  const sessionCompletionRate = pct(completedSessions, totalSessions);
-  const sessionCancellationRate = pct(cancelledSessions, totalSessions);
+  const sessionCompletionRate = rate(completedSessions, totalSessions);
+  const sessionCancellationRate = rate(cancelledSessions, totalSessions);
 
   // Session regularity: unique children who had at least one completed session
   // in the last 14 days as a proportion of allocated children
@@ -367,7 +364,7 @@ export function computeKeyWorkerRelationshipQuality(
   ).size;
   const sessionRegularityRate =
     uniqueChildrenAllocated > 0
-      ? pct(recentSessionChildren, uniqueChildrenAllocated)
+      ? rate(recentSessionChildren, uniqueChildrenAllocated)
       : totalSessions > 0
         ? sessionCompletionRate
         : 0;
@@ -400,7 +397,7 @@ export function computeKeyWorkerRelationshipQuality(
   const satisfiedChildren = child_satisfaction_records.filter(
     (s) => s.satisfaction_score >= 4,
   ).length;
-  const childSatisfactionRate = pct(satisfiedChildren, totalSatisfactionSurveys);
+  const childSatisfactionRate = rate(satisfiedChildren, totalSatisfactionSurveys);
 
   const feelsListened = child_satisfaction_records.filter(
     (s) => s.feels_listened_to,
@@ -422,7 +419,7 @@ export function computeKeyWorkerRelationshipQuality(
   const stableRelationships = continuity_records.filter(
     (c) => c.key_worker_changes <= 1,
   ).length;
-  const continuityRate = pct(stableRelationships, totalContinuityRecords);
+  const continuityRate = rate(stableRelationships, totalContinuityRecords);
 
   // Children consulted on changes
   const changeMadeRecords = continuity_records.filter((c) => c.key_worker_changes > 0);
@@ -458,43 +455,43 @@ export function computeKeyWorkerRelationshipQuality(
     completedSessions +
     activeAllocations.length +
     (total_children > 0 ? total_children : 0);
-  const childVoiceRate = pct(voiceNumerator, voiceDenominator);
+  const childVoiceRate = rate(voiceNumerator, voiceDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: allocationCoverageRate (>=100: +4, >=80: +2) ---
-  if (allocationCoverageRate >= 100) score += 4;
-  else if (allocationCoverageRate >= 80) score += 2;
+  if (meets(allocationCoverageRate, 100)) score += 4;
+  else if (meets(allocationCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: relationshipQualityRate (>=90: +4, >=70: +2) ---
-  if (relationshipQualityRate >= 90) score += 4;
-  else if (relationshipQualityRate >= 70) score += 2;
+  if (meets(relationshipQualityRate, 90)) score += 4;
+  else if (meets(relationshipQualityRate, 70)) score += 2;
 
   // --- Bonus 3: sessionRegularityRate (>=90: +3, >=70: +1) ---
-  if (sessionRegularityRate >= 90) score += 3;
-  else if (sessionRegularityRate >= 70) score += 1;
+  if (meets(sessionRegularityRate, 90)) score += 3;
+  else if (meets(sessionRegularityRate, 70)) score += 1;
 
   // --- Bonus 4: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 5: continuityRate (>=90: +3, >=70: +1) ---
-  if (continuityRate >= 90) score += 3;
-  else if (continuityRate >= 70) score += 1;
+  if (meets(continuityRate, 90)) score += 3;
+  else if (meets(continuityRate, 70)) score += 1;
 
   // --- Bonus 6: childVoiceRate (>=90: +3, >=70: +1) ---
-  if (childVoiceRate >= 90) score += 3;
-  else if (childVoiceRate >= 70) score += 1;
+  if (meets(childVoiceRate, 90)) score += 3;
+  else if (meets(childVoiceRate, 70)) score += 1;
 
   // --- Bonus 7: backupKeyWorkerRate (>=90: +2, >=70: +1) ---
-  if (backupKeyWorkerRate >= 90) score += 2;
-  else if (backupKeyWorkerRate >= 70) score += 1;
+  if (meets(backupKeyWorkerRate, 90)) score += 2;
+  else if (meets(backupKeyWorkerRate, 70)) score += 1;
 
   // --- Bonus 8: sessionCompletionRate (>=95: +3, >=80: +1) ---
-  if (sessionCompletionRate >= 95) score += 3;
-  else if (sessionCompletionRate >= 80) score += 1;
+  if (meets(sessionCompletionRate, 95)) score += 3;
+  else if (meets(sessionCompletionRate, 80)) score += 1;
 
   // --- Bonus 9: avgOverallQualityScore (>=4.5: +3, >=3.5: +1) ---
   if (avgOverallQualityScore >= 4.5) score += 3;
@@ -503,16 +500,16 @@ export function computeKeyWorkerRelationshipQuality(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: allocationCoverageRate < 50 → -5
-  if (allocationCoverageRate < 50 && total_children > 0) score -= 5;
+  if (below(allocationCoverageRate, 50) && total_children > 0) score -= 5;
 
   // Penalty 2: childSatisfactionRate < 50 → -5
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) score -= 5;
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) score -= 5;
 
   // Penalty 3: sessionRegularityRate < 50 → -4
-  if (sessionRegularityRate < 50 && uniqueChildrenAllocated > 0) score -= 4;
+  if (below(sessionRegularityRate, 50) && uniqueChildrenAllocated > 0) score -= 4;
 
   // Penalty 4: continuityRate < 40 → -4
-  if (continuityRate < 40 && totalContinuityRecords > 0) score -= 4;
+  if (below(continuityRate, 40) && totalContinuityRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -522,41 +519,41 @@ export function computeKeyWorkerRelationshipQuality(
 
   const strengths: string[] = [];
 
-  if (allocationCoverageRate >= 100 && total_children > 0) {
+  if (meets(allocationCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has an allocated key worker — the home ensures every child has a named member of staff who knows and understands them.",
     );
-  } else if (allocationCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(allocationCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${allocationCoverageRate}% of children have an allocated key worker — strong key worker allocation coverage across the home.`,
     );
   }
 
-  if (backupKeyWorkerRate >= 90 && activeAllocations.length > 0) {
+  if (meets(backupKeyWorkerRate, 90) && activeAllocations.length > 0) {
     strengths.push(
       `${backupKeyWorkerRate}% of children have a backup key worker assigned — continuity of relationship is protected even when the primary key worker is unavailable.`,
     );
-  } else if (backupKeyWorkerRate >= 70 && activeAllocations.length > 0) {
+  } else if (meets(backupKeyWorkerRate, 70) && activeAllocations.length > 0) {
     strengths.push(
       `${backupKeyWorkerRate}% of children have a backup key worker — good contingency planning for relationship continuity.`,
     );
   }
 
-  if (childConsultedAllocationRate >= 90 && activeAllocations.length > 0) {
+  if (meets(childConsultedAllocationRate, 90) && activeAllocations.length > 0) {
     strengths.push(
       `${childConsultedAllocationRate}% of children consulted on their key worker allocation — children's preferences are actively sought and respected.`,
     );
-  } else if (childConsultedAllocationRate >= 70 && activeAllocations.length > 0) {
+  } else if (meets(childConsultedAllocationRate, 70) && activeAllocations.length > 0) {
     strengths.push(
       `${childConsultedAllocationRate}% of children consulted on their key worker allocation — the home generally seeks children's views on who supports them.`,
     );
   }
 
-  if (relationshipQualityRate >= 90 && totalAssessments > 0) {
+  if (meets(relationshipQualityRate, 90) && totalAssessments > 0) {
     strengths.push(
       `${relationshipQualityRate}% of relationship assessments rated good or outstanding — key worker relationships are consistently high quality.`,
     );
-  } else if (relationshipQualityRate >= 70 && totalAssessments > 0) {
+  } else if (meets(relationshipQualityRate, 70) && totalAssessments > 0) {
     strengths.push(
       `${relationshipQualityRate}% of relationship assessments rated good or outstanding — the majority of key worker relationships are of good quality.`,
     );
@@ -584,29 +581,29 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (sessionRegularityRate >= 90 && uniqueChildrenAllocated > 0) {
+  if (meets(sessionRegularityRate, 90) && uniqueChildrenAllocated > 0) {
     strengths.push(
       `${sessionRegularityRate}% of children had a key worker session within the last 14 days — excellent session regularity ensuring consistent relationship maintenance.`,
     );
-  } else if (sessionRegularityRate >= 70 && uniqueChildrenAllocated > 0) {
+  } else if (meets(sessionRegularityRate, 70) && uniqueChildrenAllocated > 0) {
     strengths.push(
       `${sessionRegularityRate}% of children had a recent key worker session — good regularity of key worker contact.`,
     );
   }
 
-  if (sessionCompletionRate >= 95 && totalSessions > 0) {
+  if (meets(sessionCompletionRate, 95) && totalSessions > 0) {
     strengths.push(
       `${sessionCompletionRate}% session completion rate — key worker sessions are rarely missed, demonstrating commitment to maintaining relationships.`,
     );
-  } else if (sessionCompletionRate >= 80 && totalSessions > 0) {
+  } else if (meets(sessionCompletionRate, 80) && totalSessions > 0) {
     strengths.push(
       `${sessionCompletionRate}% session completion rate — the majority of planned key worker sessions take place as scheduled.`,
     );
   }
 
   if (completedSessions > 0) {
-    const engagementRate = pct(engagedSessions, completedSessions);
-    if (engagementRate >= 90) {
+    const engagementRate = rate(engagedSessions, completedSessions);
+    if (meets(engagementRate, 90)) {
       strengths.push(
         `${engagementRate}% child engagement in key worker sessions — children are actively engaged during their time with their key worker.`,
       );
@@ -614,8 +611,8 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (completedSessions > 0) {
-    const notesRate = pct(sessionsWithNotes, completedSessions);
-    if (notesRate >= 90) {
+    const notesRate = rate(sessionsWithNotes, completedSessions);
+    if (meets(notesRate, 90)) {
       strengths.push(
         `${notesRate}% of sessions have notes recorded — thorough documentation of key worker interactions supports continuity and evidences relationship quality.`,
       );
@@ -623,52 +620,52 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (sessionsWithObjectives > 0) {
-    const objectivesMetRate = pct(sessionsObjectivesMet, sessionsWithObjectives);
-    if (objectivesMetRate >= 80) {
+    const objectivesMetRate = rate(sessionsObjectivesMet, sessionsWithObjectives);
+    if (meets(objectivesMetRate, 80)) {
       strengths.push(
         `${objectivesMetRate}% of session objectives met — key worker sessions are purposeful and deliver on planned outcomes.`,
       );
     }
   }
 
-  if (childSatisfactionRate >= 90 && totalSatisfactionSurveys > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with key worker — children overwhelmingly value and appreciate their key worker relationship.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSatisfactionSurveys > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSatisfactionSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — most children are satisfied with their key worker relationship.`,
     );
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const listenedRate = pct(feelsListened, totalSatisfactionSurveys);
-    if (listenedRate >= 90) {
+    const listenedRate = rate(feelsListened, totalSatisfactionSurveys);
+    if (meets(listenedRate, 90)) {
       strengths.push(
         `${listenedRate}% of children feel listened to by their key worker — children's voices are genuinely heard in the key worker relationship.`,
       );
     }
 
-    const supportedRate = pct(feelsSupported, totalSatisfactionSurveys);
-    if (supportedRate >= 90) {
+    const supportedRate = rate(feelsSupported, totalSatisfactionSurveys);
+    if (meets(supportedRate, 90)) {
       strengths.push(
         `${supportedRate}% of children feel supported by their key worker — key workers provide meaningful emotional and practical support.`,
       );
     }
 
-    const recommendRate = pct(wouldRecommend, totalSatisfactionSurveys);
-    if (recommendRate >= 90) {
+    const recommendRate = rate(wouldRecommend, totalSatisfactionSurveys);
+    if (meets(recommendRate, 90)) {
       strengths.push(
         `${recommendRate}% of children would recommend their key worker — a strong endorsement of the quality of key worker relationships.`,
       );
     }
   }
 
-  if (continuityRate >= 90 && totalContinuityRecords > 0) {
+  if (meets(continuityRate, 90) && totalContinuityRecords > 0) {
     strengths.push(
       `${continuityRate}% of children have stable key worker relationships (1 or fewer changes) — the home maintains excellent relationship continuity.`,
     );
-  } else if (continuityRate >= 70 && totalContinuityRecords > 0) {
+  } else if (meets(continuityRate, 70) && totalContinuityRecords > 0) {
     strengths.push(
       `${continuityRate}% of children have stable key worker relationships — good continuity of key worker assignments across the home.`,
     );
@@ -681,32 +678,32 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (changeMadeRecords.length > 0) {
-    const consultedOnChangeRate = pct(consultedOnChange, changeMadeRecords.length);
-    if (consultedOnChangeRate >= 90) {
+    const consultedOnChangeRate = rate(consultedOnChange, changeMadeRecords.length);
+    if (meets(consultedOnChangeRate, 90)) {
       strengths.push(
         `${consultedOnChangeRate}% of key worker changes involved child consultation — children have a genuine voice in who cares for them, even during transitions.`,
       );
     }
 
-    const transitionSupportRate = pct(transitionsSupported, changeMadeRecords.length);
-    if (transitionSupportRate >= 90) {
+    const transitionSupportRate = rate(transitionsSupported, changeMadeRecords.length);
+    if (meets(transitionSupportRate, 90)) {
       strengths.push(
         `${transitionSupportRate}% of key worker transitions were supported — changes are managed sensitively with the child's emotional wellbeing prioritised.`,
       );
     }
   }
 
-  if (childVoiceRate >= 90) {
+  if (meets(childVoiceRate, 90)) {
     strengths.push(
       `Child voice captured across ${childVoiceRate}% of key worker activities — children's perspectives are consistently embedded in the key worker relationship.`,
     );
-  } else if (childVoiceRate >= 70) {
+  } else if (meets(childVoiceRate, 70)) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of key worker activities — good practice in embedding children's perspectives.`,
     );
   }
 
-  if (allocationReviewRate >= 90 && activeAllocations.length > 0) {
+  if (meets(allocationReviewRate, 90) && activeAllocations.length > 0) {
     strengths.push(
       `${allocationReviewRate}% of key worker allocations have been reviewed — the home regularly evaluates whether key worker matches are working for children.`,
     );
@@ -716,43 +713,43 @@ export function computeKeyWorkerRelationshipQuality(
 
   const concerns: string[] = [];
 
-  if (allocationCoverageRate < 50 && total_children > 0) {
+  if (below(allocationCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${allocationCoverageRate}% of children have an allocated key worker — the majority of children lack a named person who knows them well, undermining individualised care.`,
     );
-  } else if (allocationCoverageRate >= 50 && allocationCoverageRate < 80 && total_children > 0) {
+  } else if (meets(allocationCoverageRate, 50) && below(allocationCoverageRate, 80) && total_children > 0) {
     concerns.push(
       `Key worker allocation at ${allocationCoverageRate}% — not all children have a named key worker, which may leave some children without consistent, individualised support.`,
     );
   }
 
-  if (backupKeyWorkerRate < 50 && activeAllocations.length > 0) {
+  if (below(backupKeyWorkerRate, 50) && activeAllocations.length > 0) {
     concerns.push(
       `Only ${backupKeyWorkerRate}% of children have a backup key worker — when the primary key worker is absent, children may lack a consistent adult who knows them.`,
     );
   }
 
-  if (childConsultedAllocationRate < 50 && activeAllocations.length > 0) {
+  if (below(childConsultedAllocationRate, 50) && activeAllocations.length > 0) {
     concerns.push(
       `Only ${childConsultedAllocationRate}% of children consulted on key worker allocation — children are not given a meaningful voice in who their key worker is.`,
     );
-  } else if (childConsultedAllocationRate >= 50 && childConsultedAllocationRate < 70 && activeAllocations.length > 0) {
+  } else if (meets(childConsultedAllocationRate, 50) && below(childConsultedAllocationRate, 70) && activeAllocations.length > 0) {
     concerns.push(
       `Child consultation on allocation at ${childConsultedAllocationRate}% — some children are not being asked about their key worker preferences.`,
     );
   }
 
-  if (allocationReviewRate < 50 && activeAllocations.length > 0) {
+  if (below(allocationReviewRate, 50) && activeAllocations.length > 0) {
     concerns.push(
       `Only ${allocationReviewRate}% of key worker allocations reviewed — without regular review, unsuitable key worker matches may persist, affecting relationship quality.`,
     );
   }
 
-  if (relationshipQualityRate < 50 && totalAssessments > 0) {
+  if (below(relationshipQualityRate, 50) && totalAssessments > 0) {
     concerns.push(
       `Only ${relationshipQualityRate}% of relationship assessments rated good or outstanding — the majority of key worker relationships are not meeting quality expectations.`,
     );
-  } else if (relationshipQualityRate >= 50 && relationshipQualityRate < 70 && totalAssessments > 0) {
+  } else if (meets(relationshipQualityRate, 50) && below(relationshipQualityRate, 70) && totalAssessments > 0) {
     concerns.push(
       `Relationship quality rate at ${relationshipQualityRate}% — a significant proportion of key worker relationships are not yet at the level expected.`,
     );
@@ -776,73 +773,73 @@ export function computeKeyWorkerRelationshipQuality(
     );
   }
 
-  if (sessionRegularityRate < 50 && uniqueChildrenAllocated > 0) {
+  if (below(sessionRegularityRate, 50) && uniqueChildrenAllocated > 0) {
     concerns.push(
       `Only ${sessionRegularityRate}% of children had a key worker session in the last 14 days — irregular contact undermines the key worker relationship and children's sense of being valued.`,
     );
-  } else if (sessionRegularityRate >= 50 && sessionRegularityRate < 70 && uniqueChildrenAllocated > 0) {
+  } else if (meets(sessionRegularityRate, 50) && below(sessionRegularityRate, 70) && uniqueChildrenAllocated > 0) {
     concerns.push(
       `Session regularity at ${sessionRegularityRate}% — some children are not receiving regular key worker sessions, which may affect relationship depth.`,
     );
   }
 
-  if (sessionCancellationRate > 30 && totalSessions > 0) {
+  if (above(sessionCancellationRate, 30) && totalSessions > 0) {
     concerns.push(
       `Session cancellation rate at ${sessionCancellationRate}% — frequent cancellations may communicate to children that their key worker time is not a priority.`,
     );
-  } else if (sessionCancellationRate > 15 && totalSessions > 0) {
+  } else if (above(sessionCancellationRate, 15) && totalSessions > 0) {
     concerns.push(
       `Session cancellation rate at ${sessionCancellationRate}% — cancellations above expected levels may be affecting children's trust in the consistency of their key worker relationship.`,
     );
   }
 
   if (completedSessions > 0) {
-    const engagementRate = pct(engagedSessions, completedSessions);
-    if (engagementRate < 50) {
+    const engagementRate = rate(engagedSessions, completedSessions);
+    if (below(engagementRate, 50)) {
       concerns.push(
         `Only ${engagementRate}% child engagement in sessions — children are not engaging during key worker time, which may indicate sessions are not meeting their needs or preferences.`,
       );
     }
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with key worker — the majority of children are not satisfied with their key worker relationship, indicating a fundamental gap in care quality.`,
     );
-  } else if (childSatisfactionRate >= 50 && childSatisfactionRate < 70 && totalSatisfactionSurveys > 0) {
+  } else if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 70) && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with their key worker, which requires investigation.`,
     );
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const wantsChangeRate = pct(wantsChange, totalSatisfactionSurveys);
-    if (wantsChangeRate > 20) {
+    const wantsChangeRate = rate(wantsChange, totalSatisfactionSurveys);
+    if (above(wantsChangeRate, 20)) {
       concerns.push(
         `${wantsChangeRate}% of children want a change of key worker — this level of dissatisfaction with key worker assignments requires immediate review of allocation practices.`,
       );
     }
 
-    const listenedRate = pct(feelsListened, totalSatisfactionSurveys);
-    if (listenedRate < 50) {
+    const listenedRate = rate(feelsListened, totalSatisfactionSurveys);
+    if (below(listenedRate, 50)) {
       concerns.push(
         `Only ${listenedRate}% of children feel listened to by their key worker — children do not feel their voice matters within the key worker relationship.`,
       );
     }
 
-    const supportedRate = pct(feelsSupported, totalSatisfactionSurveys);
-    if (supportedRate < 50) {
+    const supportedRate = rate(feelsSupported, totalSatisfactionSurveys);
+    if (below(supportedRate, 50)) {
       concerns.push(
         `Only ${supportedRate}% of children feel supported by their key worker — key workers are not providing the emotional or practical support children need.`,
       );
     }
   }
 
-  if (continuityRate < 40 && totalContinuityRecords > 0) {
+  if (below(continuityRate, 40) && totalContinuityRecords > 0) {
     concerns.push(
       `Only ${continuityRate}% of children have stable key worker relationships — frequent changes of key worker disrupt children's sense of security and belonging.`,
     );
-  } else if (continuityRate >= 40 && continuityRate < 70 && totalContinuityRecords > 0) {
+  } else if (meets(continuityRate, 40) && below(continuityRate, 70) && totalContinuityRecords > 0) {
     concerns.push(
       `Continuity rate at ${continuityRate}% — some children are experiencing multiple key worker changes which may affect attachment and trust.`,
     );
@@ -855,19 +852,19 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (changeMadeRecords.length > 0) {
-    const consultedOnChangeRate = pct(consultedOnChange, changeMadeRecords.length);
-    if (consultedOnChangeRate < 50) {
+    const consultedOnChangeRate = rate(consultedOnChange, changeMadeRecords.length);
+    if (below(consultedOnChangeRate, 50)) {
       concerns.push(
         `Only ${consultedOnChangeRate}% of key worker changes involved child consultation — children's views are not being sought when decisions are made about who supports them.`,
       );
     }
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     concerns.push(
       `Child voice captured in only ${childVoiceRate}% of key worker activities — children's perspectives are not being systematically sought or recorded within the key worker framework.`,
     );
-  } else if (childVoiceRate >= 50 && childVoiceRate < 70 && voiceDenominator > 0) {
+  } else if (meets(childVoiceRate, 50) && below(childVoiceRate, 70) && voiceDenominator > 0) {
     concerns.push(
       `Child voice rate at ${childVoiceRate}% — capturing children's perspectives in key worker activities is inconsistent and needs strengthening.`,
     );
@@ -890,7 +887,7 @@ export function computeKeyWorkerRelationshipQuality(
   const recommendations: KeyWorkerRecommendation[] = [];
   let rank = 0;
 
-  if (allocationCoverageRate < 50 && total_children > 0) {
+  if (below(allocationCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -900,7 +897,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -910,7 +907,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (sessionRegularityRate < 50 && uniqueChildrenAllocated > 0) {
+  if (below(sessionRegularityRate, 50) && uniqueChildrenAllocated > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -920,7 +917,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (continuityRate < 40 && totalContinuityRecords > 0) {
+  if (below(continuityRate, 40) && totalContinuityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,7 +947,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (childConsultedAllocationRate < 50 && activeAllocations.length > 0) {
+  if (below(childConsultedAllocationRate, 50) && activeAllocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,7 +957,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (relationshipQualityRate < 50 && totalAssessments > 0) {
+  if (below(relationshipQualityRate, 50) && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -970,7 +967,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (backupKeyWorkerRate < 50 && activeAllocations.length > 0) {
+  if (below(backupKeyWorkerRate, 50) && activeAllocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -980,7 +977,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -990,7 +987,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (allocationCoverageRate >= 50 && allocationCoverageRate < 80 && total_children > 0) {
+  if (meets(allocationCoverageRate, 50) && below(allocationCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1000,7 +997,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (sessionRegularityRate >= 50 && sessionRegularityRate < 70 && uniqueChildrenAllocated > 0) {
+  if (meets(sessionRegularityRate, 50) && below(sessionRegularityRate, 70) && uniqueChildrenAllocated > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1010,7 +1007,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (sessionCancellationRate > 30 && totalSessions > 0) {
+  if (above(sessionCancellationRate, 30) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1020,7 +1017,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 70 && totalSatisfactionSurveys > 0) {
+  if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 70) && totalSatisfactionSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1030,7 +1027,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (continuityRate >= 40 && continuityRate < 70 && totalContinuityRecords > 0) {
+  if (meets(continuityRate, 40) && below(continuityRate, 70) && totalContinuityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1040,7 +1037,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (relationshipQualityRate >= 50 && relationshipQualityRate < 70 && totalAssessments > 0) {
+  if (meets(relationshipQualityRate, 50) && below(relationshipQualityRate, 70) && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1050,7 +1047,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (childVoiceRate >= 50 && childVoiceRate < 70 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 50) && below(childVoiceRate, 70) && voiceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1060,7 +1057,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (allocationReviewRate < 50 && activeAllocations.length > 0) {
+  if (below(allocationReviewRate, 50) && activeAllocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1071,8 +1068,8 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const wantsChangeRate = pct(wantsChange, totalSatisfactionSurveys);
-    if (wantsChangeRate > 20) {
+    const wantsChangeRate = rate(wantsChange, totalSatisfactionSurveys);
+    if (above(wantsChangeRate, 20)) {
       recommendations.push({
         rank: ++rank,
         recommendation:
@@ -1089,28 +1086,28 @@ export function computeKeyWorkerRelationshipQuality(
 
   // -- Critical insights --
 
-  if (allocationCoverageRate < 50 && total_children > 0) {
+  if (below(allocationCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${allocationCoverageRate}% of children have an allocated key worker. Ofsted expects every child to have a named key worker who knows them well — without this, the home cannot evidence individualised, relationship-based care.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSatisfactionSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSatisfactionSurveys > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% of children satisfied with their key worker. When children are not satisfied with their primary carer relationship, it indicates a fundamental gap in the home's ability to provide relationship-based care that meets children's emotional needs.`,
       severity: "critical",
     });
   }
 
-  if (sessionRegularityRate < 50 && uniqueChildrenAllocated > 0) {
+  if (below(sessionRegularityRate, 50) && uniqueChildrenAllocated > 0) {
     insights.push({
       text: `Only ${sessionRegularityRate}% of children had a key worker session in the last 14 days. Irregular contact prevents relationships from deepening and may leave children feeling that their key worker does not prioritise them. Ofsted will view this as a failure in relationship-based care.`,
       severity: "critical",
     });
   }
 
-  if (continuityRate < 40 && totalContinuityRecords > 0) {
+  if (below(continuityRate, 40) && totalContinuityRecords > 0) {
     insights.push({
       text: `Only ${continuityRate}% of children have stable key worker relationships. Frequent changes disrupt the trust and security that children need from their primary carer. For children who have experienced loss and instability, key worker changes can be re-traumatising.`,
       severity: "critical",
@@ -1132,8 +1129,8 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const wantsChangeRate = pct(wantsChange, totalSatisfactionSurveys);
-    if (wantsChangeRate > 30) {
+    const wantsChangeRate = rate(wantsChange, totalSatisfactionSurveys);
+    if (above(wantsChangeRate, 30)) {
       insights.push({
         text: `${wantsChangeRate}% of children want a change of key worker. This level of dissatisfaction is a serious indicator that key worker allocation is not working for children. Each request must be acted on — forcing children to remain with a key worker they do not want undermines trust and autonomy.`,
         severity: "critical",
@@ -1150,56 +1147,56 @@ export function computeKeyWorkerRelationshipQuality(
 
   // -- Warning insights --
 
-  if (allocationCoverageRate >= 50 && allocationCoverageRate < 80 && total_children > 0) {
+  if (meets(allocationCoverageRate, 50) && below(allocationCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `Key worker allocation at ${allocationCoverageRate}% — improving but some children still lack a named key worker. Every child deserves a dedicated staff member who champions their individual needs.`,
       severity: "warning",
     });
   }
 
-  if (relationshipQualityRate >= 50 && relationshipQualityRate < 70 && totalAssessments > 0) {
+  if (meets(relationshipQualityRate, 50) && below(relationshipQualityRate, 70) && totalAssessments > 0) {
     insights.push({
       text: `Relationship quality at ${relationshipQualityRate}% good or outstanding — while improving, some key worker relationships need development. Consider targeted training in communication, empathy, and attunement skills.`,
       severity: "warning",
     });
   }
 
-  if (sessionRegularityRate >= 50 && sessionRegularityRate < 70 && uniqueChildrenAllocated > 0) {
+  if (meets(sessionRegularityRate, 50) && below(sessionRegularityRate, 70) && uniqueChildrenAllocated > 0) {
     insights.push({
       text: `Session regularity at ${sessionRegularityRate}% — some children are not receiving regular key worker sessions. Relationships require consistent investment of time to deepen and sustain.`,
       severity: "warning",
     });
   }
 
-  if (sessionCancellationRate > 15 && sessionCancellationRate <= 30 && totalSessions > 0) {
+  if (above(sessionCancellationRate, 15) && sessionCancellationRate! <= 30 && totalSessions > 0) {
     insights.push({
       text: `Session cancellation rate at ${sessionCancellationRate}% — above expected levels. Frequent cancellations, even if rescheduled, can communicate to children that their time is not valued. Review rota planning to protect key worker session time.`,
       severity: "warning",
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 70 && totalSatisfactionSurveys > 0) {
+  if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 70) && totalSatisfactionSurveys > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not fully satisfied with their key worker. Explore what children would value in the relationship and adapt practice accordingly.`,
       severity: "warning",
     });
   }
 
-  if (continuityRate >= 40 && continuityRate < 70 && totalContinuityRecords > 0) {
+  if (meets(continuityRate, 40) && below(continuityRate, 70) && totalContinuityRecords > 0) {
     insights.push({
       text: `Continuity at ${continuityRate}% — some children are experiencing multiple key worker changes. Each change requires the child to invest trust in a new adult, which can be particularly challenging for children with attachment difficulties.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceRate >= 50 && childVoiceRate < 70 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 50) && below(childVoiceRate, 70) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of key worker activities — while present, capturing children's views is not yet consistent. Embedding child voice as standard practice across all key worker interactions would strengthen the home's evidence base.`,
       severity: "warning",
     });
   }
 
-  if (backupKeyWorkerRate < 50 && activeAllocations.length > 0) {
+  if (below(backupKeyWorkerRate, 50) && activeAllocations.length > 0) {
     insights.push({
       text: `Only ${backupKeyWorkerRate}% of children have a backup key worker. When the primary key worker is absent — through leave, sickness, or shift patterns — children may lose contact with anyone who knows them well.`,
       severity: "warning",
@@ -1214,8 +1211,8 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const listenedRate = pct(feelsListened, totalSatisfactionSurveys);
-    if (listenedRate >= 50 && listenedRate < 70) {
+    const listenedRate = rate(feelsListened, totalSatisfactionSurveys);
+    if (meets(listenedRate, 50) && below(listenedRate, 70)) {
       insights.push({
         text: `${listenedRate}% of children feel listened to by their key worker — while positive, this means some children feel their views are not being heard. Active listening skills development could improve this.`,
         severity: "warning",
@@ -1250,7 +1247,7 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (allocationCoverageRate >= 100 && backupKeyWorkerRate >= 90 && total_children > 0 && activeAllocations.length > 0) {
+  if (meets(allocationCoverageRate, 100) && meets(backupKeyWorkerRate, 90) && total_children > 0 && activeAllocations.length > 0) {
     insights.push({
       text: `Every child has a key worker and ${backupKeyWorkerRate}% have a backup — the home ensures relationship continuity is protected through comprehensive allocation and contingency planning.`,
       severity: "positive",
@@ -1264,28 +1261,28 @@ export function computeKeyWorkerRelationshipQuality(
     });
   }
 
-  if (sessionRegularityRate >= 90 && sessionCompletionRate >= 95 && uniqueChildrenAllocated > 0 && totalSessions > 0) {
+  if (meets(sessionRegularityRate, 90) && meets(sessionCompletionRate, 95) && uniqueChildrenAllocated > 0 && totalSessions > 0) {
     insights.push({
       text: `${sessionRegularityRate}% session regularity with ${sessionCompletionRate}% completion — key worker sessions are protected, prioritised, and consistently delivered, ensuring every child has regular quality time with their key worker.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionRate >= 90 && totalSatisfactionSurveys > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisfactionSurveys > 0) {
     insights.push({
       text: `${childSatisfactionRate}% child satisfaction with key worker relationships — children overwhelmingly value their key worker. Ofsted will view this as powerful evidence that the home's approach to key working is genuinely child-centred and effective.`,
       severity: "positive",
     });
   }
 
-  if (continuityRate >= 90 && totalContinuityRecords > 0) {
+  if (meets(continuityRate, 90) && totalContinuityRecords > 0) {
     insights.push({
       text: `${continuityRate}% of children have stable key worker relationships — the home maintains excellent relationship continuity, providing children with the consistency and security they need.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceRate >= 90 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 90) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured across ${childVoiceRate}% of key worker activities — children's perspectives are systematically embedded in every aspect of the key worker relationship, from allocation to sessions to assessments.`,
       severity: "positive",
@@ -1293,9 +1290,9 @@ export function computeKeyWorkerRelationshipQuality(
   }
 
   if (totalSatisfactionSurveys > 0) {
-    const listenedRate = pct(feelsListened, totalSatisfactionSurveys);
-    const supportedRate = pct(feelsSupported, totalSatisfactionSurveys);
-    if (listenedRate >= 90 && supportedRate >= 90) {
+    const listenedRate = rate(feelsListened, totalSatisfactionSurveys);
+    const supportedRate = rate(feelsSupported, totalSatisfactionSurveys);
+    if (meets(listenedRate, 90) && meets(supportedRate, 90)) {
       insights.push({
         text: `${listenedRate}% of children feel listened to and ${supportedRate}% feel supported by their key worker — children experience their key worker relationship as one where they are genuinely heard and helped.`,
         severity: "positive",
@@ -1303,7 +1300,7 @@ export function computeKeyWorkerRelationshipQuality(
     }
   }
 
-  if (childConsultedAllocationRate >= 90 && activeAllocations.length > 0) {
+  if (meets(childConsultedAllocationRate, 90) && activeAllocations.length > 0) {
     insights.push({
       text: `${childConsultedAllocationRate}% of children consulted on key worker allocation — the home gives children genuine agency in choosing who their key worker is, which fosters ownership and investment in the relationship.`,
       severity: "positive",

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME LIFE STORY & IDENTITY INTELLIGENCE ENGINE
 // Life story work, personal passports, friendships, aspirations, LGBTQ+, style.
@@ -69,7 +70,6 @@ export interface HomeLifeStoryIdentityResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput): HomeLifeStoryIdentityResult {
@@ -95,9 +95,9 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   const lsLinked = life_story_entries.filter(e => e.linked_to_book).length;
   const life_stories: LifeStorySummary = {
     total: life_story_entries.length,
-    completed_rate: pct(lsCompleted, life_story_entries.length),
-    child_voice_rate: pct(lsWithVoice, life_story_entries.length),
-    linked_to_book_rate: pct(lsLinked, life_story_entries.length),
+    completed_rate: rate(lsCompleted, life_story_entries.length),
+    child_voice_rate: rate(lsWithVoice, life_story_entries.length),
+    linked_to_book_rate: rate(lsLinked, life_story_entries.length),
   };
 
   const ppAuthored = personal_passports.filter(p => p.child_authored).length;
@@ -105,8 +105,8 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   const ppSections = personal_passports.length > 0 ? Math.round(personal_passports.reduce((s, p) => s + p.sections_completed, 0) / personal_passports.length) : null;
   const passports: PassportSummary = {
     total: personal_passports.length,
-    child_authored_rate: pct(ppAuthored, personal_passports.length),
-    reviewed_rate: pct(ppReviewed, personal_passports.length),
+    child_authored_rate: rate(ppAuthored, personal_passports.length),
+    reviewed_rate: rate(ppReviewed, personal_passports.length),
     avg_sections: ppSections,
   };
 
@@ -117,7 +117,7 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
     total: friendship_maps.length,
     avg_friends: fAvgFriends,
     high_isolation_count: fHighIso,
-    reviewed_rate: pct(fReviewed, friendship_maps.length),
+    reviewed_rate: rate(fReviewed, friendship_maps.length),
   };
 
   const aspChosen = aspirations.filter(a => a.child_chose).length;
@@ -125,8 +125,8 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   const aspOverdue = aspirations.filter(a => a.review_date && daysBetween(a.review_date, today) > 30).length;
   const aspSummary: AspirationSummary = {
     total: aspirations.length,
-    child_chosen_rate: pct(aspChosen, aspirations.length),
-    active_steps_rate: pct(aspActive, aspirations.length),
+    child_chosen_rate: rate(aspChosen, aspirations.length),
+    active_steps_rate: rate(aspActive, aspirations.length),
     overdue_reviews: aspOverdue,
   };
 
@@ -135,16 +135,16 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   const lgVoice = lgbtq_inclusions.filter(l => l.child_voice_present).length;
   const lgbtq: LgbtqSummary = {
     total: lgbtq_inclusions.length,
-    pronouns_consistent_rate: pct(lgPronouns, lgbtq_inclusions.length),
-    affirming_actions_rate: pct(lgAffirming, lgbtq_inclusions.length),
-    child_voice_rate: pct(lgVoice, lgbtq_inclusions.length),
+    pronouns_consistent_rate: rate(lgPronouns, lgbtq_inclusions.length),
+    affirming_actions_rate: rate(lgAffirming, lgbtq_inclusions.length),
+    child_voice_rate: rate(lgVoice, lgbtq_inclusions.length),
   };
 
   const stVoice = style_identities.filter(s => s.child_voice.trim().length > 0).length;
   const stAvgDesc = style_identities.length > 0 ? Math.round(style_identities.reduce((s, r) => s + r.style_descriptors_count, 0) / style_identities.length) : null;
   const style: StyleSummary = {
     total: style_identities.length,
-    child_voice_rate: pct(stVoice, style_identities.length),
+    child_voice_rate: rate(stVoice, style_identities.length),
     avg_descriptors: stAvgDesc,
   };
 
@@ -237,10 +237,10 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   if (lgbtq_inclusions.length > 0) voiceSources.push((lgbtq.child_voice_rate ?? 0) >= 60);
   if (style_identities.length > 0) voiceSources.push((style.child_voice_rate ?? 0) >= 60);
   if (voiceSources.length > 0) {
-    const voiceRate = pct(voiceSources.filter(Boolean).length, voiceSources.length);
-    if (voiceRate >= 80) mod7 = 3;
-    else if (voiceRate >= 60) mod7 = 1;
-    else if (voiceRate < 30) mod7 = -3;
+    const voiceRate = rate(voiceSources.filter(Boolean).length, voiceSources.length);
+    if (meets(voiceRate, 80)) mod7 = 3;
+    else if (meets(voiceRate, 60)) mod7 = 1;
+    else if (below(voiceRate, 30)) mod7 = -3;
     else mod7 = 0;
   }
   score += mod7;
@@ -254,10 +254,10 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   ].length;
   const totalDocs = life_story_entries.length + friendship_maps.length + style_identities.length;
   if (totalDocs > 0) {
-    const staleRate = pct(staleCount, totalDocs);
+    const staleRate = rate(staleCount, totalDocs);
     if (staleRate === 0) mod8 = 3;
-    else if (staleRate <= 20) mod8 = 1;
-    else if (staleRate >= 60) mod8 = -3;
+    else if (staleRate! <= 20) mod8 = 1;
+    else if (meets(staleRate, 60)) mod8 = -3;
     else mod8 = -1;
   }
   score += mod8;
