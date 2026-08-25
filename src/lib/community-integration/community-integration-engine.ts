@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Community Integration Intelligence Engine
 //
@@ -123,36 +124,50 @@ export interface InclusionAssessment {
 export interface ActivityParticipationResult {
   overallScore: number; // 0-25
   totalActivities: number;
-  regularParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularParticipationRate: number | null;
   activityVariety: number;
-  communityBasedRate: number;
-  enjoymentRate: number;
-  independentAttendanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityBasedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  enjoymentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentAttendanceRate: number | null;
 }
 
 export interface SocialNetworkResult {
   overallScore: number; // 0-25
   totalNetworks: number;
-  friendshipQualityRate: number;
-  friendsOutsideCareRate: number;
-  mentorRate: number;
-  socialMediaSafetyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  friendshipQualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  friendsOutsideCareRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialMediaSafetyRate: number | null;
 }
 
 export interface BarrierManagementResult {
   overallScore: number; // 0-25
   totalBarriers: number;
-  resolutionRate: number;
-  actionTakenRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTakenRate: number | null;
 }
 
 export interface InclusionOutcomesResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  communityBelongingRate: number;
-  amenityAccessRate: number;
-  positiveRelationshipsRate: number;
-  independentTravelRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityBelongingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  amenityAccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRelationshipsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentTravelRate: number | null;
 }
 
 export interface ChildCommunityProfile {
@@ -268,11 +283,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -295,11 +305,11 @@ export function evaluateActivityParticipation(
     return {
       overallScore: 0,
       totalActivities: 0,
-      regularParticipationRate: 0,
+      regularParticipationRate: null,
       activityVariety: 0,
-      communityBasedRate: 0,
-      enjoymentRate: 0,
-      independentAttendanceRate: 0,
+      communityBasedRate: null,
+      enjoymentRate: null,
+      independentAttendanceRate: null,
     };
   }
 
@@ -309,11 +319,11 @@ export function evaluateActivityParticipation(
   const regular = activities.filter(
     (a) => a.participationLevel === "regular",
   ).length;
-  const regularParticipationRate = pct(regular, activities.length);
+  const regularParticipationRate = rate(regular, activities.length);
   // +7 for >= 80%, +5 for >= 60%, +3 for >= 40%
-  if (regularParticipationRate >= 80) score += 7;
-  else if (regularParticipationRate >= 60) score += 5;
-  else if (regularParticipationRate >= 40) score += 3;
+  if (meets(regularParticipationRate, 80)) score += 7;
+  else if (meets(regularParticipationRate, 60)) score += 5;
+  else if (meets(regularParticipationRate, 40)) score += 3;
 
   // Activity variety (unique categories)
   const uniqueCategories = new Set(activities.map((a) => a.activityCategory));
@@ -325,27 +335,27 @@ export function evaluateActivityParticipation(
 
   // Community-based rate
   const communityBased = activities.filter((a) => a.communityBased).length;
-  const communityBasedRate = pct(communityBased, activities.length);
+  const communityBasedRate = rate(communityBased, activities.length);
   // +5 for >= 80%, +3 for >= 60%, +1 for >= 40%
-  if (communityBasedRate >= 80) score += 5;
-  else if (communityBasedRate >= 60) score += 3;
-  else if (communityBasedRate >= 40) score += 1;
+  if (meets(communityBasedRate, 80)) score += 5;
+  else if (meets(communityBasedRate, 60)) score += 3;
+  else if (meets(communityBasedRate, 40)) score += 1;
 
   // Enjoyment rate
   const enjoyed = activities.filter((a) => a.childEnjoys).length;
-  const enjoymentRate = pct(enjoyed, activities.length);
+  const enjoymentRate = rate(enjoyed, activities.length);
   // +4 for >= 80%, +2 for >= 60%
-  if (enjoymentRate >= 80) score += 4;
-  else if (enjoymentRate >= 60) score += 2;
+  if (meets(enjoymentRate, 80)) score += 4;
+  else if (meets(enjoymentRate, 60)) score += 2;
 
   // Independent attendance rate
   const independent = activities.filter(
     (a) => a.independentAttendance,
   ).length;
-  const independentAttendanceRate = pct(independent, activities.length);
+  const independentAttendanceRate = rate(independent, activities.length);
   // +4 for >= 50%, +2 for >= 25%
-  if (independentAttendanceRate >= 50) score += 4;
-  else if (independentAttendanceRate >= 25) score += 2;
+  if (meets(independentAttendanceRate, 50)) score += 4;
+  else if (meets(independentAttendanceRate, 25)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -370,10 +380,10 @@ export function evaluateSocialNetworks(
     return {
       overallScore: 0,
       totalNetworks: 0,
-      friendshipQualityRate: 0,
-      friendsOutsideCareRate: 0,
-      mentorRate: 0,
-      socialMediaSafetyRate: 0,
+      friendshipQualityRate: null,
+      friendsOutsideCareRate: null,
+      mentorRate: null,
+      socialMediaSafetyRate: null,
     };
   }
 
@@ -385,26 +395,26 @@ export function evaluateSocialNetworks(
     (n) =>
       n.friendshipQuality === "strong" || n.friendshipQuality === "developing",
   ).length;
-  const friendshipQualityRate = pct(goodFriendships, total);
+  const friendshipQualityRate = rate(goodFriendships, total);
   // +8 for >= 80%, +5 for >= 60%, +3 for >= 40%
-  if (friendshipQualityRate >= 80) score += 8;
-  else if (friendshipQualityRate >= 60) score += 5;
-  else if (friendshipQualityRate >= 40) score += 3;
+  if (meets(friendshipQualityRate, 80)) score += 8;
+  else if (meets(friendshipQualityRate, 60)) score += 5;
+  else if (meets(friendshipQualityRate, 40)) score += 3;
 
   // Friends outside care rate
   const outsideCare = networks.filter((n) => n.friendsOutsideCare).length;
-  const friendsOutsideCareRate = pct(outsideCare, total);
+  const friendsOutsideCareRate = rate(outsideCare, total);
   // +6 for >= 70%, +4 for >= 50%, +2 for >= 30%
-  if (friendsOutsideCareRate >= 70) score += 6;
-  else if (friendsOutsideCareRate >= 50) score += 4;
-  else if (friendsOutsideCareRate >= 30) score += 2;
+  if (meets(friendsOutsideCareRate, 70)) score += 6;
+  else if (meets(friendsOutsideCareRate, 50)) score += 4;
+  else if (meets(friendsOutsideCareRate, 30)) score += 2;
 
   // Mentor rate
   const mentored = networks.filter((n) => n.communityMentor).length;
-  const mentorRate = pct(mentored, total);
+  const mentorRate = rate(mentored, total);
   // +5 for >= 50%, +3 for >= 25%
-  if (mentorRate >= 50) score += 5;
-  else if (mentorRate >= 25) score += 3;
+  if (meets(mentorRate, 50)) score += 5;
+  else if (meets(mentorRate, 25)) score += 3;
 
   // Social media safety rate (safe_and_supported or not_applicable)
   const safeSocial = networks.filter(
@@ -412,11 +422,11 @@ export function evaluateSocialNetworks(
       n.socialMediaSafety === "safe_and_supported" ||
       n.socialMediaSafety === "not_applicable",
   ).length;
-  const socialMediaSafetyRate = pct(safeSocial, total);
+  const socialMediaSafetyRate = rate(safeSocial, total);
   // +6 for >= 90%, +4 for >= 70%, +2 for >= 50%
-  if (socialMediaSafetyRate >= 90) score += 6;
-  else if (socialMediaSafetyRate >= 70) score += 4;
-  else if (socialMediaSafetyRate >= 50) score += 2;
+  if (meets(socialMediaSafetyRate, 90)) score += 6;
+  else if (meets(socialMediaSafetyRate, 70)) score += 4;
+  else if (meets(socialMediaSafetyRate, 50)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -444,8 +454,8 @@ export function evaluateBarrierManagement(
     return {
       overallScore: 25,
       totalBarriers: 0,
-      resolutionRate: 0,
-      actionTakenRate: 0,
+      resolutionRate: null,
+      actionTakenRate: null,
     };
   }
 
@@ -453,26 +463,26 @@ export function evaluateBarrierManagement(
 
   // Resolution rate
   const resolved = realBarriers.filter((b) => b.resolved).length;
-  const resolutionRate = pct(resolved, realBarriers.length);
+  const resolutionRate = rate(resolved, realBarriers.length);
   // +10 for >= 80%, +7 for >= 60%, +4 for >= 40%, +2 for >= 20%
-  if (resolutionRate >= 80) score += 10;
-  else if (resolutionRate >= 60) score += 7;
-  else if (resolutionRate >= 40) score += 4;
-  else if (resolutionRate >= 20) score += 2;
+  if (meets(resolutionRate, 80)) score += 10;
+  else if (meets(resolutionRate, 60)) score += 7;
+  else if (meets(resolutionRate, 40)) score += 4;
+  else if (meets(resolutionRate, 20)) score += 2;
 
   // Action taken rate
   const actionTaken = realBarriers.filter((b) => b.actionTaken).length;
-  const actionTakenRate = pct(actionTaken, realBarriers.length);
+  const actionTakenRate = rate(actionTaken, realBarriers.length);
   // +10 for >= 90%, +7 for >= 70%, +4 for >= 50%, +2 for >= 30%
-  if (actionTakenRate >= 90) score += 10;
-  else if (actionTakenRate >= 70) score += 7;
-  else if (actionTakenRate >= 50) score += 4;
-  else if (actionTakenRate >= 30) score += 2;
+  if (meets(actionTakenRate, 90)) score += 10;
+  else if (meets(actionTakenRate, 70)) score += 7;
+  else if (meets(actionTakenRate, 50)) score += 4;
+  else if (meets(actionTakenRate, 30)) score += 2;
 
   // Bonus for having barriers identified (proactive identification is good)
   // +5 if barriers exist and action rate >= 70% (shows proactive management)
-  if (realBarriers.length > 0 && actionTakenRate >= 70) score += 5;
-  else if (realBarriers.length > 0 && actionTakenRate >= 50) score += 3;
+  if (realBarriers.length > 0 && meets(actionTakenRate, 70)) score += 5;
+  else if (realBarriers.length > 0 && meets(actionTakenRate, 50)) score += 3;
 
   return {
     overallScore: Math.min(score, 25),
@@ -495,10 +505,10 @@ export function evaluateInclusionOutcomes(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      communityBelongingRate: 0,
-      amenityAccessRate: 0,
-      positiveRelationshipsRate: 0,
-      independentTravelRate: 0,
+      communityBelongingRate: null,
+      amenityAccessRate: null,
+      positiveRelationshipsRate: null,
+      independentTravelRate: null,
     };
   }
 
@@ -509,41 +519,41 @@ export function evaluateInclusionOutcomes(
   const belonging = assessments.filter(
     (a) => a.feelsPartOfCommunity,
   ).length;
-  const communityBelongingRate = pct(belonging, total);
+  const communityBelongingRate = rate(belonging, total);
   // +7 for >= 80%, +5 for >= 60%, +3 for >= 40%
-  if (communityBelongingRate >= 80) score += 7;
-  else if (communityBelongingRate >= 60) score += 5;
-  else if (communityBelongingRate >= 40) score += 3;
+  if (meets(communityBelongingRate, 80)) score += 7;
+  else if (meets(communityBelongingRate, 60)) score += 5;
+  else if (meets(communityBelongingRate, 40)) score += 3;
 
   // Amenity access rate
   const amenityAccess = assessments.filter(
     (a) => a.accessToLocalAmenities,
   ).length;
-  const amenityAccessRate = pct(amenityAccess, total);
+  const amenityAccessRate = rate(amenityAccess, total);
   // +6 for >= 90%, +4 for >= 70%, +2 for >= 50%
-  if (amenityAccessRate >= 90) score += 6;
-  else if (amenityAccessRate >= 70) score += 4;
-  else if (amenityAccessRate >= 50) score += 2;
+  if (meets(amenityAccessRate, 90)) score += 6;
+  else if (meets(amenityAccessRate, 70)) score += 4;
+  else if (meets(amenityAccessRate, 50)) score += 2;
 
   // Positive relationships rate
   const positiveRels = assessments.filter(
     (a) => a.positiveLocalRelationships,
   ).length;
-  const positiveRelationshipsRate = pct(positiveRels, total);
+  const positiveRelationshipsRate = rate(positiveRels, total);
   // +6 for >= 80%, +4 for >= 60%, +2 for >= 40%
-  if (positiveRelationshipsRate >= 80) score += 6;
-  else if (positiveRelationshipsRate >= 60) score += 4;
-  else if (positiveRelationshipsRate >= 40) score += 2;
+  if (meets(positiveRelationshipsRate, 80)) score += 6;
+  else if (meets(positiveRelationshipsRate, 60)) score += 4;
+  else if (meets(positiveRelationshipsRate, 40)) score += 2;
 
   // Independent travel skills rate
   const independentTravel = assessments.filter(
     (a) => a.independentTravelSkills,
   ).length;
-  const independentTravelRate = pct(independentTravel, total);
+  const independentTravelRate = rate(independentTravel, total);
   // +6 for >= 70%, +4 for >= 50%, +2 for >= 30%
-  if (independentTravelRate >= 70) score += 6;
-  else if (independentTravelRate >= 50) score += 4;
-  else if (independentTravelRate >= 30) score += 2;
+  if (meets(independentTravelRate, 70)) score += 6;
+  else if (meets(independentTravelRate, 50)) score += 4;
+  else if (meets(independentTravelRate, 30)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -665,7 +675,7 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (activity.regularParticipationRate >= 70) {
+  if (meets(activity.regularParticipationRate, 70)) {
     strengths.push(
       "Strong regular participation rate — children are consistently engaged in community activities",
     );
@@ -677,43 +687,43 @@ function generateStrengths(
     );
   }
 
-  if (activity.communityBasedRate >= 80) {
+  if (meets(activity.communityBasedRate, 80)) {
     strengths.push(
       "Majority of activities take place in the community — promoting genuine integration",
     );
   }
 
-  if (activity.enjoymentRate >= 85) {
+  if (meets(activity.enjoymentRate, 85)) {
     strengths.push(
       "High enjoyment rate — children genuinely enjoy their community activities",
     );
   }
 
-  if (activity.independentAttendanceRate >= 50) {
+  if (meets(activity.independentAttendanceRate, 50)) {
     strengths.push(
       "Good independent attendance rate — children are developing autonomy in community participation",
     );
   }
 
-  if (social.friendshipQualityRate >= 80) {
+  if (meets(social.friendshipQualityRate, 80)) {
     strengths.push(
       "Strong friendship quality across children — positive peer relationships evident",
     );
   }
 
-  if (social.friendsOutsideCareRate >= 70) {
+  if (meets(social.friendsOutsideCareRate, 70)) {
     strengths.push(
       "Most children have friends outside the care system — reducing isolation and stigma",
     );
   }
 
-  if (social.mentorRate >= 50) {
+  if (meets(social.mentorRate, 50)) {
     strengths.push(
       "Strong mentoring provision — children benefit from positive community role models",
     );
   }
 
-  if (social.socialMediaSafetyRate >= 90) {
+  if (meets(social.socialMediaSafetyRate, 90)) {
     strengths.push(
       "Social media use is safe and well-supported across children",
     );
@@ -725,25 +735,25 @@ function generateStrengths(
     );
   }
 
-  if (barrier.totalBarriers > 0 && barrier.resolutionRate >= 80) {
+  if (barrier.totalBarriers > 0 && meets(barrier.resolutionRate, 80)) {
     strengths.push(
       "High barrier resolution rate — the home proactively addresses obstacles to participation",
     );
   }
 
-  if (inclusion.communityBelongingRate >= 80) {
+  if (meets(inclusion.communityBelongingRate, 80)) {
     strengths.push(
       "Most children feel part of their local community — strong sense of belonging",
     );
   }
 
-  if (inclusion.positiveRelationshipsRate >= 80) {
+  if (meets(inclusion.positiveRelationshipsRate, 80)) {
     strengths.push(
       "Children have positive relationships with local community members",
     );
   }
 
-  if (inclusion.independentTravelRate >= 70) {
+  if (meets(inclusion.independentTravelRate, 70)) {
     strengths.push(
       "Good independent travel skills — children can access the community independently",
     );
@@ -767,7 +777,7 @@ function generateAreasForImprovement(
   }
 
   if (
-    activity.regularParticipationRate < 50 &&
+    below(activity.regularParticipationRate, 50) &&
     activity.totalActivities > 0
   ) {
     areas.push(
@@ -775,20 +785,20 @@ function generateAreasForImprovement(
     );
   }
 
-  if (activity.communityBasedRate < 60 && activity.totalActivities > 0) {
+  if (below(activity.communityBasedRate, 60) && activity.totalActivities > 0) {
     areas.push(
       `Only ${activity.communityBasedRate}% of activities are community-based — more activities should take place outside the home`,
     );
   }
 
-  if (activity.enjoymentRate < 60 && activity.totalActivities > 0) {
+  if (below(activity.enjoymentRate, 60) && activity.totalActivities > 0) {
     areas.push(
       `Child enjoyment rate at ${activity.enjoymentRate}% — activities should better reflect children's interests`,
     );
   }
 
   if (
-    activity.independentAttendanceRate < 25 &&
+    below(activity.independentAttendanceRate, 25) &&
     activity.totalActivities > 0
   ) {
     areas.push(
@@ -802,31 +812,31 @@ function generateAreasForImprovement(
     );
   }
 
-  if (social.friendshipQualityRate < 50 && social.totalNetworks > 0) {
+  if (below(social.friendshipQualityRate, 50) && social.totalNetworks > 0) {
     areas.push(
       `Friendship quality rate at ${social.friendshipQualityRate}% — children need support to develop stronger peer relationships`,
     );
   }
 
-  if (social.friendsOutsideCareRate < 50 && social.totalNetworks > 0) {
+  if (below(social.friendsOutsideCareRate, 50) && social.totalNetworks > 0) {
     areas.push(
       `Only ${social.friendsOutsideCareRate}% of children have friends outside care — reducing isolation should be a priority`,
     );
   }
 
-  if (social.socialMediaSafetyRate < 70 && social.totalNetworks > 0) {
+  if (below(social.socialMediaSafetyRate, 70) && social.totalNetworks > 0) {
     areas.push(
       `Social media safety rate at ${social.socialMediaSafetyRate}% — online safety support needs strengthening`,
     );
   }
 
-  if (barrier.totalBarriers > 0 && barrier.actionTakenRate < 70) {
+  if (barrier.totalBarriers > 0 && below(barrier.actionTakenRate, 70)) {
     areas.push(
       `Action taken on only ${barrier.actionTakenRate}% of identified barriers — barriers need more active management`,
     );
   }
 
-  if (barrier.totalBarriers > 0 && barrier.resolutionRate < 50) {
+  if (barrier.totalBarriers > 0 && below(barrier.resolutionRate, 50)) {
     areas.push(
       `Barrier resolution rate at ${barrier.resolutionRate}% — more barriers need to be resolved`,
     );
@@ -839,7 +849,7 @@ function generateAreasForImprovement(
   }
 
   if (
-    inclusion.communityBelongingRate < 60 &&
+    below(inclusion.communityBelongingRate, 60) &&
     inclusion.totalAssessments > 0
   ) {
     areas.push(
@@ -848,7 +858,7 @@ function generateAreasForImprovement(
   }
 
   if (
-    inclusion.amenityAccessRate < 70 &&
+    below(inclusion.amenityAccessRate, 70) &&
     inclusion.totalAssessments > 0
   ) {
     areas.push(
@@ -886,7 +896,7 @@ function generateActions(
   }
 
   if (
-    activity.regularParticipationRate < 50 &&
+    below(activity.regularParticipationRate, 50) &&
     activity.totalActivities > 0
   ) {
     actions.push(
@@ -901,7 +911,7 @@ function generateActions(
   }
 
   if (
-    activity.communityBasedRate < 60 &&
+    below(activity.communityBasedRate, 60) &&
     activity.totalActivities > 0
   ) {
     actions.push(
@@ -909,26 +919,26 @@ function generateActions(
     );
   }
 
-  if (social.friendsOutsideCareRate < 50 && social.totalNetworks > 0) {
+  if (below(social.friendsOutsideCareRate, 50) && social.totalNetworks > 0) {
     actions.push(
       "Support children to develop friendships outside care — facilitate social opportunities and sleepovers",
     );
   }
 
-  if (social.socialMediaSafetyRate < 70 && social.totalNetworks > 0) {
+  if (below(social.socialMediaSafetyRate, 70) && social.totalNetworks > 0) {
     actions.push(
       "Review social media safety — ensure all children have appropriate online safety support",
     );
   }
 
-  if (barrier.totalBarriers > 0 && barrier.actionTakenRate < 70) {
+  if (barrier.totalBarriers > 0 && below(barrier.actionTakenRate, 70)) {
     actions.push(
       "Address unmanaged barriers — develop action plans for each identified barrier to community participation",
     );
   }
 
   if (
-    inclusion.communityBelongingRate < 60 &&
+    below(inclusion.communityBelongingRate, 60) &&
     inclusion.totalAssessments > 0
   ) {
     actions.push(
@@ -937,7 +947,7 @@ function generateActions(
   }
 
   if (
-    inclusion.independentTravelRate < 50 &&
+    below(inclusion.independentTravelRate, 50) &&
     inclusion.totalAssessments > 0
   ) {
     actions.push(

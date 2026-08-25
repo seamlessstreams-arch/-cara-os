@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShowerHead } from
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { BathroomShowerRating } from "@/lib/engines/home-bathroom-shower-facilities-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeBathroomShowerFacilitiesIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomeBathroomShowerFacilitiesIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.bathroom_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.cleanliness_rate >= 90 ? "bg-green-50" : d.cleanliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cleanliness_rate >= 90 ? "text-[--cs-success]" : d.cleanliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cleanliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cleanliness_rate, 90) ? "bg-green-50" : meets(d.cleanliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cleanliness_rate, 90) ? "text-[--cs-success]" : meets(d.cleanliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleanliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clean</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.shower_availability_rate >= 90 ? "bg-green-50" : d.shower_availability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.shower_availability_rate >= 90 ? "text-[--cs-success]" : d.shower_availability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.shower_availability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.shower_availability_rate, 90) ? "bg-green-50" : meets(d.shower_availability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.shower_availability_rate, 90) ? "text-[--cs-success]" : meets(d.shower_availability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.shower_availability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Shower</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hot_water_safety_rate >= 90 ? "bg-green-50" : d.hot_water_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hot_water_safety_rate >= 90 ? "text-[--cs-success]" : d.hot_water_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hot_water_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hot_water_safety_rate, 90) ? "bg-green-50" : meets(d.hot_water_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hot_water_safety_rate, 90) ? "text-[--cs-success]" : meets(d.hot_water_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hot_water_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hot Water</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.privacy_rate >= 90 ? "bg-green-50" : d.privacy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.privacy_rate >= 90 ? "text-[--cs-success]" : d.privacy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.privacy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.privacy_rate, 90) ? "bg-green-50" : meets(d.privacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.privacy_rate, 90) ? "text-[--cs-success]" : meets(d.privacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.privacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Privacy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.accessibility_rate >= 90 ? "bg-green-50" : d.accessibility_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.accessibility_rate >= 90 ? "text-[--cs-success]" : d.accessibility_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.accessibility_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.accessibility_rate, 90) ? "bg-green-50" : meets(d.accessibility_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.accessibility_rate, 90) ? "text-[--cs-success]" : meets(d.accessibility_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.accessibility_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

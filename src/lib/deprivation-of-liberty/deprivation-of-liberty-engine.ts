@@ -17,7 +17,7 @@
 // Pure deterministic engine — no AI, no external calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, formatRate, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Type Definitions ─────────────────────────────────────────────────────────
 
@@ -299,11 +299,6 @@ export function getSafeguardTypeLabel(s: SafeguardType): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /**
  * Domain sub-score over the components that could actually be measured, with
  * the remaining weights renormalised. Silence neither earns points nor
@@ -375,12 +370,12 @@ export function evaluateAuthorisationCompliance(
       r.authorisationStatus === "local_authority_authorised" ||
       r.authorisationStatus === "not_required",
   );
-  const authorisedRate = pct(authorised.length, total);
+  const authorisedRate = rate(authorised.length, total);
   // +10 for ≥ 95% authorised, +7 for ≥ 80%, +4 for ≥ 60%
-  if (authorisedRate >= 95) score += 10;
-  else if (authorisedRate >= 80) score += 7;
-  else if (authorisedRate >= 60) score += 4;
-  else if (authorisedRate >= 40) score += 2;
+  if (meets(authorisedRate, 95)) score += 10;
+  else if (meets(authorisedRate, 80)) score += 7;
+  else if (meets(authorisedRate, 60)) score += 4;
+  else if (meets(authorisedRate, 40)) score += 2;
 
   // Pending applications
   const pending = restrictions.filter(
@@ -398,28 +393,28 @@ export function evaluateAuthorisationCompliance(
   const biCompleted = restrictions.filter(
     (r) => r.bestInterestsAssessmentCompleted,
   );
-  const bestInterestsRate = pct(biCompleted.length, total);
+  const bestInterestsRate = rate(biCompleted.length, total);
   // +5 for ≥ 90%
-  if (bestInterestsRate >= 90) score += 5;
-  else if (bestInterestsRate >= 70) score += 3;
-  else if (bestInterestsRate >= 50) score += 1;
+  if (meets(bestInterestsRate, 90)) score += 5;
+  else if (meets(bestInterestsRate, 70)) score += 3;
+  else if (meets(bestInterestsRate, 50)) score += 1;
 
   // Least restrictive option considered rate
   const leastRestrictive = restrictions.filter(
     (r) => r.leastRestrictiveOptionConsidered,
   );
-  const leastRestrictiveRate = pct(leastRestrictive.length, total);
+  const leastRestrictiveRate = rate(leastRestrictive.length, total);
   // +5 for ≥ 90%
-  if (leastRestrictiveRate >= 90) score += 5;
-  else if (leastRestrictiveRate >= 70) score += 3;
-  else if (leastRestrictiveRate >= 50) score += 1;
+  if (meets(leastRestrictiveRate, 90)) score += 5;
+  else if (meets(leastRestrictiveRate, 70)) score += 3;
+  else if (meets(leastRestrictiveRate, 50)) score += 1;
 
   // Risk assessment linked rate
   const riskLinked = restrictions.filter((r) => r.riskAssessmentLinked);
-  const riskAssessmentRate = pct(riskLinked.length, total);
+  const riskAssessmentRate = rate(riskLinked.length, total);
   // +4 for ≥ 90%
-  if (riskAssessmentRate >= 90) score += 4;
-  else if (riskAssessmentRate >= 70) score += 2;
+  if (meets(riskAssessmentRate, 90)) score += 4;
+  else if (meets(riskAssessmentRate, 70)) score += 2;
 
   // +2 bonus if no refused authorisations
   const refused = restrictions.filter(
@@ -480,12 +475,12 @@ export function evaluateProportionality(
     (r) => r.proportionality === "not_assessed",
   ).length;
 
-  const proportionateRate = pct(proportionate, restrictions.length);
+  const proportionateRate = rate(proportionate, restrictions.length);
 
   // +8 for ≥ 90% proportionate, +5 for ≥ 70%, +3 for ≥ 50%
-  if (proportionateRate >= 90) score += 8;
-  else if (proportionateRate >= 70) score += 5;
-  else if (proportionateRate >= 50) score += 3;
+  if (meets(proportionateRate, 90)) score += 8;
+  else if (meets(proportionateRate, 70)) score += 5;
+  else if (meets(proportionateRate, 50)) score += 3;
 
   // +4 if no disproportionate restrictions
   if (disproportionate === 0) score += 4;
@@ -586,11 +581,11 @@ export function evaluateReviewSafeguards(
   const overdueReviews = reviews.filter(
     (r) => new Date(r.nextReviewDue) < new Date(periodEnd),
   ).length;
-  const onTimeRate = pct(reviews.length - overdueReviews, reviews.length);
+  const onTimeRate = rate(reviews.length - overdueReviews, reviews.length);
   // +6 for ≥ 90% on time
-  if (onTimeRate >= 90) score += 6;
-  else if (onTimeRate >= 70) score += 4;
-  else if (onTimeRate >= 50) score += 2;
+  if (meets(onTimeRate, 90)) score += 6;
+  else if (meets(onTimeRate, 70)) score += 4;
+  else if (meets(onTimeRate, 50)) score += 2;
 
   // Child views obtained rate
   const viewsObtained = reviews.filter(
@@ -598,51 +593,51 @@ export function evaluateReviewSafeguards(
       r.childViewStatus === "views_obtained" ||
       r.childViewStatus === "non_verbal_observation_used",
   ).length;
-  const childViewsRate = pct(viewsObtained, reviews.length);
+  const childViewsRate = rate(viewsObtained, reviews.length);
   // +5 for ≥ 90%
-  if (childViewsRate >= 90) score += 5;
-  else if (childViewsRate >= 70) score += 3;
-  else if (childViewsRate >= 50) score += 1;
+  if (meets(childViewsRate, 90)) score += 5;
+  else if (meets(childViewsRate, 70)) score += 3;
+  else if (meets(childViewsRate, 50)) score += 1;
 
   // Family consulted rate
   const familyConsulted = reviews.filter((r) => r.familyConsulted).length;
-  const familyConsultedRate = pct(familyConsulted, reviews.length);
+  const familyConsultedRate = rate(familyConsulted, reviews.length);
   // +3 for ≥ 80%
-  if (familyConsultedRate >= 80) score += 3;
-  else if (familyConsultedRate >= 60) score += 2;
+  if (meets(familyConsultedRate, 80)) score += 3;
+  else if (meets(familyConsultedRate, 60)) score += 2;
 
   // Independent person involvement rate
   const independentInvolved = reviews.filter(
     (r) => r.independentPersonInvolved,
   ).length;
-  const independentInvolvementRate = pct(
+  const independentInvolvementRate = rate(
     independentInvolved,
     reviews.length,
   );
   // +3 for ≥ 80%
-  if (independentInvolvementRate >= 80) score += 3;
-  else if (independentInvolvementRate >= 60) score += 2;
+  if (meets(independentInvolvementRate, 80)) score += 3;
+  else if (meets(independentInvolvementRate, 60)) score += 2;
 
   // Proportionality reassessed at review
   const propReassessed = reviews.filter(
     (r) => r.proportionalityReassessed,
   ).length;
-  const proportionalityReassessedRate = pct(propReassessed, reviews.length);
+  const proportionalityReassessedRate = rate(propReassessed, reviews.length);
   // +4 for ≥ 90%
-  if (proportionalityReassessedRate >= 90) score += 4;
-  else if (proportionalityReassessedRate >= 70) score += 2;
+  if (meets(proportionalityReassessedRate, 90)) score += 4;
+  else if (meets(proportionalityReassessedRate, 70)) score += 2;
 
   // Less restrictive alternatives considered at review
   const lessRestrictive = reviews.filter(
     (r) => r.lessRestrictiveAlternativesConsidered,
   ).length;
-  const lessRestrictiveConsideredRate = pct(
+  const lessRestrictiveConsideredRate = rate(
     lessRestrictive,
     reviews.length,
   );
   // +2 for ≥ 90%
-  if (lessRestrictiveConsideredRate >= 90) score += 2;
-  else if (lessRestrictiveConsideredRate >= 70) score += 1;
+  if (meets(lessRestrictiveConsideredRate, 90)) score += 2;
+  else if (meets(lessRestrictiveConsideredRate, 70)) score += 1;
 
   // +2 bonus if reviews led to at least one modification or cessation (demonstrating active review)
   const modificationsOrCessations = reviews.filter(
@@ -731,29 +726,29 @@ export function evaluateRightsProtection(
     if (childSafeguardTypes.has("ofsted_notification")) ofstedNotifCount++;
   }
 
-  const safeguardCoverage = pct(childrenFullyCovered, totalChildren);
-  const advocacyRate = pct(advocacyCount, totalChildren);
-  const legalRepresentationRate = pct(legalRepCount, totalChildren);
-  const rightsInformationRate = pct(rightsInfoCount, totalChildren);
-  const familyNotificationRate = pct(familyNotifCount, totalChildren);
-  const ofstedNotificationRate = pct(ofstedNotifCount, totalChildren);
+  const safeguardCoverage = rate(childrenFullyCovered, totalChildren);
+  const advocacyRate = rate(advocacyCount, totalChildren);
+  const legalRepresentationRate = rate(legalRepCount, totalChildren);
+  const rightsInformationRate = rate(rightsInfoCount, totalChildren);
+  const familyNotificationRate = rate(familyNotifCount, totalChildren);
+  const ofstedNotificationRate = rate(ofstedNotifCount, totalChildren);
 
   // +5 for safeguard coverage ≥ 90%
-  if (safeguardCoverage >= 90) score += 5;
-  else if (safeguardCoverage >= 70) score += 3;
-  else if (safeguardCoverage >= 50) score += 1;
+  if (meets(safeguardCoverage, 90)) score += 5;
+  else if (meets(safeguardCoverage, 70)) score += 3;
+  else if (meets(safeguardCoverage, 50)) score += 1;
 
   // +3 for advocacy rate ≥ 90%
-  if (advocacyRate >= 90) score += 3;
-  else if (advocacyRate >= 70) score += 2;
+  if (meets(advocacyRate, 90)) score += 3;
+  else if (meets(advocacyRate, 70)) score += 2;
 
   // +3 for rights information ≥ 90%
-  if (rightsInformationRate >= 90) score += 3;
-  else if (rightsInformationRate >= 70) score += 2;
+  if (meets(rightsInformationRate, 90)) score += 3;
+  else if (meets(rightsInformationRate, 70)) score += 2;
 
   // +3 for Ofsted notification ≥ 90%
-  if (ofstedNotificationRate >= 90) score += 3;
-  else if (ofstedNotificationRate >= 70) score += 2;
+  if (meets(ofstedNotificationRate, 90)) score += 3;
+  else if (meets(ofstedNotificationRate, 70)) score += 2;
 
   // Legal compliance — court orders. Null when no court order is in place:
   // there is nothing to notify about, which is not the same as having notified.

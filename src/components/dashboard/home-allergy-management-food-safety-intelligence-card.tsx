@@ -70,28 +70,28 @@ export function HomeAllergyManagementFoodSafetyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.allergy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.allergy_plan_rate >= 90 ? "bg-green-50" : d.allergy_plan_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.allergy_plan_rate >= 90 ? "text-[--cs-success]" : d.allergy_plan_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.allergy_plan_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.allergy_plan_rate, 90) ? "bg-green-50" : meets(d.allergy_plan_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.allergy_plan_rate, 90) ? "text-[--cs-success]" : meets(d.allergy_plan_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.allergy_plan_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.allergen_awareness_rate >= 90 ? "bg-green-50" : d.allergen_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.allergen_awareness_rate >= 90 ? "text-[--cs-success]" : d.allergen_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.allergen_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.allergen_awareness_rate, 90) ? "bg-green-50" : meets(d.allergen_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.allergen_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.allergen_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.allergen_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.epipen_check_rate >= 90 ? "bg-green-50" : d.epipen_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.epipen_check_rate >= 90 ? "text-[--cs-success]" : d.epipen_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.epipen_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.epipen_check_rate, 90) ? "bg-green-50" : meets(d.epipen_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.epipen_check_rate, 90) ? "text-[--cs-success]" : meets(d.epipen_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.epipen_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Epipens</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.food_labelling_rate >= 90 ? "bg-green-50" : d.food_labelling_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.food_labelling_rate >= 90 ? "text-[--cs-success]" : d.food_labelling_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.food_labelling_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.food_labelling_rate, 90) ? "bg-green-50" : meets(d.food_labelling_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.food_labelling_rate, 90) ? "text-[--cs-success]" : meets(d.food_labelling_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.food_labelling_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Labelling</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.emergency_response_rate, 90) ? "bg-green-50" : meets(d.emergency_response_rate, 70) ? "bg-amber-50" : d.emergency_response_rate === null ? "bg-muted" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.emergency_response_rate, 90) ? "text-[--cs-success]" : meets(d.emergency_response_rate, 70) ? "text-[--cs-warning]" : d.emergency_response_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.emergency_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Emergency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

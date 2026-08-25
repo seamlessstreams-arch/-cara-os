@@ -70,24 +70,24 @@ export function HomeAdvocacyIndependentVisitorIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.advocacy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.visitor_allocation_rate >= 90 ? "bg-green-50" : d.visitor_allocation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.visitor_allocation_rate >= 90 ? "text-[--cs-success]" : d.visitor_allocation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.visitor_allocation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.visitor_allocation_rate, 90) ? "bg-green-50" : meets(d.visitor_allocation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.visitor_allocation_rate, 90) ? "text-[--cs-success]" : meets(d.visitor_allocation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.visitor_allocation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">IV Alloc.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.advocacy_access_rate >= 90 ? "bg-green-50" : d.advocacy_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.advocacy_access_rate >= 90 ? "text-[--cs-success]" : d.advocacy_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.advocacy_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.advocacy_access_rate, 90) ? "bg-green-50" : meets(d.advocacy_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.advocacy_access_rate, 90) ? "text-[--cs-success]" : meets(d.advocacy_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.advocacy_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Advocacy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.representation_quality_rate >= 90 ? "bg-green-50" : d.representation_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.representation_quality_rate >= 90 ? "text-[--cs-success]" : d.representation_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.representation_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.representation_quality_rate, 90) ? "bg-green-50" : meets(d.representation_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.representation_quality_rate, 90) ? "text-[--cs-success]" : meets(d.representation_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.representation_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Repres.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.visit_compliance_rate >= 90 ? "bg-green-50" : d.visit_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.visit_compliance_rate >= 90 ? "text-[--cs-success]" : d.visit_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.visit_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.visit_compliance_rate, 90) ? "bg-green-50" : meets(d.visit_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.visit_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.visit_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.visit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Visits</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 90) ? "bg-green-50" : meets(d.child_voice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : d.child_satisfaction_rate === null ? "bg-muted" : "bg-red-50")}>

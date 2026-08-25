@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -110,16 +111,21 @@ export interface StaffAntiBullyingTraining {
 export interface IncidentManagementResult {
   totalIncidents: number;
   timelyResponseCount: number;
-  timelyResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
   averageResponseHours: number;
   resolutionBreakdown: Record<ResolutionOutcome, number>;
-  fullyResolvedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyResolvedRate: number | null;
   followUpCompletedCount: number;
-  followUpCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletedRate: number | null;
   childViewSoughtCount: number;
-  childViewSoughtRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewSoughtRate: number | null;
   impactAssessedCount: number;
-  impactAssessedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null;
   severityBreakdown: Record<IncidentSeverity, number>;
   typeBreakdown: Record<BullyingType, number>;
   score: number; // 0-25
@@ -130,11 +136,14 @@ export interface IncidentManagementResult {
 export interface PreventionCultureResult {
   totalSurveys: number;
   feelsSafeCount: number;
-  feelsSafeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsSafeRate: number | null;
   bulliedRecentlyCount: number;
-  bulliedRecentlyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bulliedRecentlyRate: number | null;
   confidenceBreakdown: Record<string, number>;
-  highConfidenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highConfidenceRate: number | null;
   policyCurrentScore: number;
   childrenConsulted: boolean;
   score: number; // 0-25
@@ -145,12 +154,15 @@ export interface PreventionCultureResult {
 export interface InterventionQualityResult {
   totalIncidents: number;
   safetyPlanCount: number;
-  safetyPlanRateHighCritical: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanRateHighCritical: number | null;
   restorativePracticeCount: number;
-  restorativePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeRate: number | null;
   diverseInterventions: number;
   interventionBreakdown: Record<InterventionType, number>;
-  resolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
   externalReferralForCritical: number;
   criticalIncidents: number;
   score: number; // 0-25
@@ -161,13 +173,17 @@ export interface InterventionQualityResult {
 export interface StaffReadinessResult {
   totalStaff: number;
   recognitionSkillsCount: number;
-  recognitionSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recognitionSkillsRate: number | null;
   interventionSkillsCount: number;
-  interventionSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interventionSkillsRate: number | null;
   restorativePracticeCount: number;
-  restorativePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeRate: number | null;
   overallTrainedCount: number;
-  overallTrainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallTrainedRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -211,11 +227,6 @@ export interface AntiBullyingEffectivenessIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -236,19 +247,19 @@ export function evaluateIncidentManagement(
     return {
       totalIncidents: 0,
       timelyResponseCount: 0,
-      timelyResponseRate: 0,
+      timelyResponseRate: null,
       averageResponseHours: 0,
       resolutionBreakdown: {
         fully_resolved: 0, partially_resolved: 0, ongoing: 0,
         escalated: 0, unresolved: 0,
       },
-      fullyResolvedRate: 0,
+      fullyResolvedRate: null,
       followUpCompletedCount: 0,
-      followUpCompletedRate: 0,
+      followUpCompletedRate: null,
       childViewSoughtCount: 0,
-      childViewSoughtRate: 0,
+      childViewSoughtRate: null,
       impactAssessedCount: 0,
-      impactAssessedRate: 0,
+      impactAssessedRate: null,
       severityBreakdown: { low: 0, medium: 0, high: 0, critical: 0 },
       typeBreakdown: {
         physical: 0, verbal: 0, social_exclusion: 0, cyberbullying: 0,
@@ -264,7 +275,7 @@ export function evaluateIncidentManagement(
   const timelyResponseCount = incidents.filter(
     (i) => i.timeToResponse <= TIMELY_RESPONSE_THRESHOLD_HOURS,
   ).length;
-  const timelyResponseRate = pct(timelyResponseCount, totalIncidents);
+  const timelyResponseRate = rate(timelyResponseCount, totalIncidents)!;
   const averageResponseHours =
     Math.round(
       (incidents.reduce((sum, i) => sum + i.timeToResponse, 0) / totalIncidents) * 10,
@@ -278,19 +289,19 @@ export function evaluateIncidentManagement(
   for (const i of incidents) {
     resolutionBreakdown[i.resolutionOutcome]++;
   }
-  const fullyResolvedRate = pct(resolutionBreakdown.fully_resolved, totalIncidents);
+  const fullyResolvedRate = rate(resolutionBreakdown.fully_resolved, totalIncidents)!;
 
   // Follow-up
   const followUpCompletedCount = incidents.filter((i) => i.followUpCompleted).length;
-  const followUpCompletedRate = pct(followUpCompletedCount, totalIncidents);
+  const followUpCompletedRate = rate(followUpCompletedCount, totalIncidents)!;
 
   // Child view
   const childViewSoughtCount = incidents.filter((i) => i.childViewSought).length;
-  const childViewSoughtRate = pct(childViewSoughtCount, totalIncidents);
+  const childViewSoughtRate = rate(childViewSoughtCount, totalIncidents)!;
 
   // Impact assessed
   const impactAssessedCount = incidents.filter((i) => i.impactAssessed).length;
-  const impactAssessedRate = pct(impactAssessedCount, totalIncidents);
+  const impactAssessedRate = rate(impactAssessedCount, totalIncidents)!;
 
   // Severity breakdown
   const severityBreakdown: Record<IncidentSeverity, number> = {
@@ -328,33 +339,33 @@ export function evaluateIncidentManagement(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (timelyResponseRate >= 90) {
+  if (meets(timelyResponseRate, 90)) {
     strengths.push("Excellent response timeliness: " + timelyResponseRate + "% of incidents responded to within 24 hours");
-  } else if (timelyResponseRate < 70) {
+  } else if (below(timelyResponseRate, 70)) {
     concerns.push("Response timeliness at " + timelyResponseRate + "% — below 70% threshold. Timely intervention is critical for child safety");
   }
 
-  if (fullyResolvedRate >= 80) {
+  if (meets(fullyResolvedRate, 80)) {
     strengths.push("Strong resolution rate: " + fullyResolvedRate + "% of bullying incidents fully resolved");
-  } else if (fullyResolvedRate < 50) {
+  } else if (below(fullyResolvedRate, 50)) {
     concerns.push("Resolution rate at " + fullyResolvedRate + "% — over half of incidents not fully resolved");
   }
 
-  if (followUpCompletedRate >= 90) {
+  if (meets(followUpCompletedRate, 90)) {
     strengths.push("Consistent follow-up: " + followUpCompletedRate + "% of incidents have completed follow-up");
-  } else if (followUpCompletedRate < 70) {
+  } else if (below(followUpCompletedRate, 70)) {
     concerns.push("Follow-up completion at " + followUpCompletedRate + "% — children may not feel supported post-incident");
   }
 
-  if (childViewSoughtRate >= 90) {
+  if (meets(childViewSoughtRate, 90)) {
     strengths.push("Children's voice prioritised: " + childViewSoughtRate + "% of incidents included child's view");
-  } else if (childViewSoughtRate < 70) {
+  } else if (below(childViewSoughtRate, 70)) {
     concerns.push("Child view sought in only " + childViewSoughtRate + "% of incidents — UNCRC Article 12 requires children's participation");
   }
 
-  if (impactAssessedRate >= 90) {
+  if (meets(impactAssessedRate, 90)) {
     strengths.push("Impact assessment completed in " + impactAssessedRate + "% of incidents");
-  } else if (impactAssessedRate < 70) {
+  } else if (below(impactAssessedRate, 70)) {
     concerns.push("Impact assessed in only " + impactAssessedRate + "% of incidents — long-term effects may be missed");
   }
 
@@ -396,13 +407,13 @@ export function evaluatePreventionCulture(
     return {
       totalSurveys: 0,
       feelsSafeCount: 0,
-      feelsSafeRate: 0,
+      feelsSafeRate: null,
       bulliedRecentlyCount: 0,
-      bulliedRecentlyRate: 0,
+      bulliedRecentlyRate: null,
       confidenceBreakdown: {
         very_confident: 0, confident: 0, not_confident: 0, no_confidence: 0,
       },
-      highConfidenceRate: 0,
+      highConfidenceRate: null,
       policyCurrentScore: 0,
       childrenConsulted: false,
       score: 0,
@@ -413,11 +424,11 @@ export function evaluatePreventionCulture(
 
   // Feels safe
   const feelsSafeCount = surveys.filter((s) => s.feelsSafe).length;
-  const feelsSafeRate = pct(feelsSafeCount, totalSurveys);
+  const feelsSafeRate = rate(feelsSafeCount, totalSurveys);
 
   // Bullied recently (inverse scoring)
   const bulliedRecentlyCount = surveys.filter((s) => s.bulliedRecently).length;
-  const bulliedRecentlyRate = pct(bulliedRecentlyCount, totalSurveys);
+  const bulliedRecentlyRate = rate(bulliedRecentlyCount, totalSurveys);
 
   // Confidence in staff
   const confidenceBreakdown: Record<string, number> = {
@@ -427,7 +438,7 @@ export function evaluatePreventionCulture(
     confidenceBreakdown[s.confidenceInStaffResponse]++;
   }
   const highConfidenceCount = confidenceBreakdown.very_confident + confidenceBreakdown.confident;
-  const highConfidenceRate = pct(highConfidenceCount, totalSurveys);
+  const highConfidenceRate = rate(highConfidenceCount, totalSurveys);
 
   // Policy currency
   let policyCurrentScore = 0;
@@ -441,12 +452,12 @@ export function evaluatePreventionCulture(
   // Score (out of 25)
   let score = 0;
   // Feels safe rate: max 8
-  score += (feelsSafeRate / 100) * 8;
+  score += ((feelsSafeRate ?? 0) / 100) * 8; // unmeasured earns no marks — rubric is evidence-based
   // Bullied recently inversely: max 6 (0% bullied = 6, 100% bullied = 0)
-  const notBulliedRate = totalSurveys > 0 ? 100 - bulliedRecentlyRate : 0;
+  const notBulliedRate = totalSurveys > 0 ? 100 - bulliedRecentlyRate! : 0;
   score += (notBulliedRate / 100) * 6;
   // Confidence in staff: max 5
-  score += (highConfidenceRate / 100) * 5;
+  score += ((highConfidenceRate ?? 0) / 100) * 5;
   // Policy currency: max 3
   score += policyCurrentScore;
   // Children consulted: max 3
@@ -458,21 +469,21 @@ export function evaluatePreventionCulture(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (feelsSafeRate >= 90) {
+  if (meets(feelsSafeRate, 90)) {
     strengths.push("Excellent safety perception: " + feelsSafeRate + "% of children report feeling safe from bullying");
-  } else if (feelsSafeRate < 70) {
+  } else if (below(feelsSafeRate, 70)) {
     concerns.push("Only " + feelsSafeRate + "% of children feel safe from bullying — culture of safety needs strengthening");
   }
 
   if (bulliedRecentlyRate === 0 && totalSurveys > 0) {
     strengths.push("No children report being bullied recently — strong anti-bullying culture");
-  } else if (bulliedRecentlyRate > 30) {
+  } else if (above(bulliedRecentlyRate, 30)) {
     concerns.push(bulliedRecentlyRate + "% of children report being bullied recently — immediate action required");
   }
 
-  if (highConfidenceRate >= 90) {
+  if (meets(highConfidenceRate, 90)) {
     strengths.push("High confidence in staff response: " + highConfidenceRate + "% of children trust staff to handle bullying");
-  } else if (highConfidenceRate < 60) {
+  } else if (below(highConfidenceRate, 60)) {
     concerns.push("Only " + highConfidenceRate + "% of children have confidence in staff response to bullying");
   }
 
@@ -516,16 +527,16 @@ export function evaluateInterventionQuality(
     return {
       totalIncidents: 0,
       safetyPlanCount: 0,
-      safetyPlanRateHighCritical: 0,
+      safetyPlanRateHighCritical: null,
       restorativePracticeCount: 0,
-      restorativePracticeRate: 0,
+      restorativePracticeRate: null,
       diverseInterventions: 0,
       interventionBreakdown: {
         peer_mediation: 0, restorative_practice: 0, individual_support: 0,
         group_work: 0, staff_intervention: 0, external_referral: 0,
         safety_plan: 0, parental_involvement: 0,
       },
-      resolutionRate: 0,
+      resolutionRate: null,
       externalReferralForCritical: 0,
       criticalIncidents: 0,
       score: 25,
@@ -539,13 +550,13 @@ export function evaluateInterventionQuality(
     (i) => i.severity === "high" || i.severity === "critical",
   );
   const safetyPlanCount = highCriticalIncidents.filter((i) => i.safetyPlanCreated).length;
-  const safetyPlanRateHighCritical = pct(safetyPlanCount, highCriticalIncidents.length);
+  const safetyPlanRateHighCritical = rate(safetyPlanCount, highCriticalIncidents.length);
 
   // Restorative practice
   const restorativePracticeCount = incidents.filter(
     (i) => i.interventionType === "restorative_practice",
   ).length;
-  const restorativePracticeRate = pct(restorativePracticeCount, totalIncidents);
+  const restorativePracticeRate = rate(restorativePracticeCount, totalIncidents)!;
 
   // Diverse interventions
   const interventionBreakdown: Record<InterventionType, number> = {
@@ -562,7 +573,7 @@ export function evaluateInterventionQuality(
   const resolvedCount = incidents.filter(
     (i) => i.resolutionOutcome === "fully_resolved" || i.resolutionOutcome === "partially_resolved",
   ).length;
-  const resolutionRate = pct(resolvedCount, totalIncidents);
+  const resolutionRate = rate(resolvedCount, totalIncidents)!;
 
   // External referral for critical
   const criticalIncidents = incidents.filter((i) => i.severity === "critical");
@@ -574,7 +585,7 @@ export function evaluateInterventionQuality(
   let score = 0;
   // Safety plans for high/critical: max 7
   if (highCriticalIncidents.length > 0) {
-    score += (safetyPlanRateHighCritical / 100) * 7;
+    score += (safetyPlanRateHighCritical! / 100) * 7;
   } else {
     score += 7; // No high/critical = full marks
   }
@@ -586,7 +597,7 @@ export function evaluateInterventionQuality(
   score += (resolutionRate / 100) * 4;
   // External referral for critical: max 3
   if (criticalIncidents.length > 0) {
-    score += (pct(externalReferralForCritical, criticalIncidents.length) / 100) * 3;
+    score += (rate(externalReferralForCritical, criticalIncidents.length)! / 100) * 3;
   } else {
     score += 3; // No critical = full marks
   }
@@ -597,15 +608,15 @@ export function evaluateInterventionQuality(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (highCriticalIncidents.length > 0 && safetyPlanRateHighCritical >= 90) {
+  if (highCriticalIncidents.length > 0 && meets(safetyPlanRateHighCritical, 90)) {
     strengths.push("Safety plans created for " + safetyPlanRateHighCritical + "% of high/critical incidents");
-  } else if (highCriticalIncidents.length > 0 && safetyPlanRateHighCritical < 70) {
+  } else if (highCriticalIncidents.length > 0 && below(safetyPlanRateHighCritical, 70)) {
     concerns.push("Safety plans created for only " + safetyPlanRateHighCritical + "% of high/critical incidents — all serious cases require safety planning");
   }
 
-  if (restorativePracticeRate >= 40) {
+  if (meets(restorativePracticeRate, 40)) {
     strengths.push("Good use of restorative practice (" + restorativePracticeRate + "%) supports relationship repair");
-  } else if (restorativePracticeRate < 20 && totalIncidents > 0) {
+  } else if (below(restorativePracticeRate, 20) && totalIncidents > 0) {
     concerns.push("Restorative practice used in only " + restorativePracticeRate + "% of incidents — consider increasing use");
   }
 
@@ -615,9 +626,9 @@ export function evaluateInterventionQuality(
     concerns.push("Only " + diverseInterventions + " intervention type(s) used — limited range may not meet diverse needs");
   }
 
-  if (resolutionRate >= 80) {
+  if (meets(resolutionRate, 80)) {
     strengths.push("Strong resolution rate: " + resolutionRate + "% of incidents resolved or partially resolved");
-  } else if (resolutionRate < 50) {
+  } else if (below(resolutionRate, 50)) {
     concerns.push("Resolution rate at " + resolutionRate + "% — majority of incidents remain unresolved");
   }
 
@@ -654,13 +665,13 @@ export function evaluateStaffReadiness(
     return {
       totalStaff: 0,
       recognitionSkillsCount: 0,
-      recognitionSkillsRate: 0,
+      recognitionSkillsRate: null,
       interventionSkillsCount: 0,
-      interventionSkillsRate: 0,
+      interventionSkillsRate: null,
       restorativePracticeCount: 0,
-      restorativePracticeRate: 0,
+      restorativePracticeRate: null,
       overallTrainedCount: 0,
-      overallTrainedRate: 0,
+      overallTrainedRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff anti-bullying training records — staff readiness cannot be assessed"],
@@ -669,21 +680,21 @@ export function evaluateStaffReadiness(
 
   // Recognition skills
   const recognitionSkillsCount = training.filter((t) => t.recognitionSkills).length;
-  const recognitionSkillsRate = pct(recognitionSkillsCount, totalStaff);
+  const recognitionSkillsRate = rate(recognitionSkillsCount, totalStaff)!;
 
   // Intervention skills
   const interventionSkillsCount = training.filter((t) => t.interventionSkills).length;
-  const interventionSkillsRate = pct(interventionSkillsCount, totalStaff);
+  const interventionSkillsRate = rate(interventionSkillsCount, totalStaff)!;
 
   // Restorative practice
   const restorativePracticeCount = training.filter((t) => t.restorativePracticeTrained).length;
-  const restorativePracticeRate = pct(restorativePracticeCount, totalStaff);
+  const restorativePracticeRate = rate(restorativePracticeCount, totalStaff)!;
 
   // Overall trained (all three skills)
   const overallTrainedCount = training.filter(
     (t) => t.recognitionSkills && t.interventionSkills && t.restorativePracticeTrained,
   ).length;
-  const overallTrainedRate = pct(overallTrainedCount, totalStaff);
+  const overallTrainedRate = rate(overallTrainedCount, totalStaff)!;
 
   // Score (out of 25)
   let score = 0;
@@ -702,27 +713,27 @@ export function evaluateStaffReadiness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (recognitionSkillsRate >= 90) {
+  if (meets(recognitionSkillsRate, 90)) {
     strengths.push("Excellent bullying recognition skills: " + recognitionSkillsRate + "% of staff trained");
-  } else if (recognitionSkillsRate < 70) {
+  } else if (below(recognitionSkillsRate, 70)) {
     concerns.push("Recognition skills at " + recognitionSkillsRate + "% — staff may miss signs of bullying");
   }
 
-  if (interventionSkillsRate >= 90) {
+  if (meets(interventionSkillsRate, 90)) {
     strengths.push("Strong intervention skills: " + interventionSkillsRate + "% of staff trained to intervene effectively");
-  } else if (interventionSkillsRate < 70) {
+  } else if (below(interventionSkillsRate, 70)) {
     concerns.push("Intervention skills at " + interventionSkillsRate + "% — staff may not respond effectively to bullying");
   }
 
-  if (restorativePracticeRate >= 80) {
+  if (meets(restorativePracticeRate, 80)) {
     strengths.push("Good restorative practice training: " + restorativePracticeRate + "% of staff trained");
-  } else if (restorativePracticeRate < 50) {
+  } else if (below(restorativePracticeRate, 50)) {
     concerns.push("Only " + restorativePracticeRate + "% of staff trained in restorative practice — limits intervention options");
   }
 
   if (overallTrainedRate === 100) {
     strengths.push("100% of staff fully trained across all anti-bullying competencies");
-  } else if (overallTrainedRate < 50) {
+  } else if (below(overallTrainedRate, 50)) {
     concerns.push("Only " + overallTrainedRate + "% of staff have complete anti-bullying training — significant training gap");
   }
 
@@ -991,22 +1002,22 @@ function generateActions(
   }
 
   // High bullied recently rate
-  if (prevention.bulliedRecentlyRate > 30) {
+  if (above(prevention.bulliedRecentlyRate, 30)) {
     actions.push("URGENT: " + prevention.bulliedRecentlyRate + "% of children report recent bullying — initiate whole-home anti-bullying intervention");
   }
 
   // Staff training gaps
-  if (staff.overallTrainedRate < 50) {
+  if (below(staff.overallTrainedRate, 50)) {
     actions.push("HIGH: Only " + staff.overallTrainedRate + "% of staff fully trained in anti-bullying — schedule comprehensive training programme");
   }
 
   // Low feels safe rate
-  if (prevention.feelsSafeRate < 70 && prevention.totalSurveys > 0) {
+  if (below(prevention.feelsSafeRate, 70) && prevention.totalSurveys > 0) {
     actions.push("HIGH: Only " + prevention.feelsSafeRate + "% of children feel safe — review environmental and relational safety measures");
   }
 
   // Low follow-up rate
-  if (incident.followUpCompletedRate < 70 && incident.totalIncidents > 0) {
+  if (below(incident.followUpCompletedRate, 70) && incident.totalIncidents > 0) {
     actions.push("MEDIUM: Follow-up completion at " + incident.followUpCompletedRate + "% — implement follow-up tracking system");
   }
 

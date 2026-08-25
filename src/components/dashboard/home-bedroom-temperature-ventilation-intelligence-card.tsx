@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Thermometer } fro
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { BedroomTempRating } from "@/lib/engines/home-bedroom-temperature-ventilation-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeBedroomTemperatureVentilationIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeBedroomTemperatureVentilationIntelligenceCard() {
             <Thermometer className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-blue-600")} />
             <span className="text-slate-900 font-bold">Bedroom Temperature & Ventilation</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.temperature_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.temperature_score}%</span>}
+            {d.temperature_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.temperature_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeBedroomTemperatureVentilationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.temperature_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.temperature_monitoring_rate >= 90 ? "bg-green-50" : d.temperature_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.temperature_monitoring_rate >= 90 ? "text-[--cs-success]" : d.temperature_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.temperature_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.temperature_monitoring_rate, 90) ? "bg-green-50" : meets(d.temperature_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.temperature_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.temperature_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.temperature_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Temp</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ventilation_rate >= 90 ? "bg-green-50" : d.ventilation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ventilation_rate >= 90 ? "text-[--cs-success]" : d.ventilation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ventilation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.ventilation_rate, 90) ? "bg-green-50" : meets(d.ventilation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.ventilation_rate, 90) ? "text-[--cs-success]" : meets(d.ventilation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ventilation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ventilation</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.heating_check_rate >= 90 ? "bg-green-50" : d.heating_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.heating_check_rate >= 90 ? "text-[--cs-success]" : d.heating_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.heating_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.heating_check_rate, 90) ? "bg-green-50" : meets(d.heating_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.heating_check_rate, 90) ? "text-[--cs-success]" : meets(d.heating_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.heating_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Heating</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.window_compliance_rate >= 90 ? "bg-green-50" : d.window_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.window_compliance_rate >= 90 ? "text-[--cs-success]" : d.window_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.window_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.window_compliance_rate, 90) ? "bg-green-50" : meets(d.window_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.window_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.window_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.window_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Windows</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_comfort_rate >= 90 ? "bg-green-50" : d.child_comfort_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_comfort_rate >= 90 ? "text-[--cs-success]" : d.child_comfort_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_comfort_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_comfort_rate, 90) ? "bg-green-50" : meets(d.child_comfort_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_comfort_rate, 90) ? "text-[--cs-success]" : meets(d.child_comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_response_rate >= 90 ? "bg-green-50" : d.action_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_response_rate >= 90 ? "text-[--cs-success]" : d.action_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_response_rate, 90) ? "bg-green-50" : meets(d.action_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_response_rate, 90) ? "text-[--cs-success]" : meets(d.action_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
           </div>

@@ -182,10 +182,6 @@ export interface BedroomTempResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -213,12 +209,12 @@ function emptyResult(
     total_heating_check_records: 0,
     total_window_compliance_records: 0,
     total_child_comfort_records: 0,
-    temperature_monitoring_rate: 0,
-    ventilation_rate: 0,
-    heating_check_rate: 0,
-    window_compliance_rate: 0,
-    child_comfort_rate: 0,
-    action_response_rate: 0,
+    temperature_monitoring_rate: null,
+    ventilation_rate: null,
+    heating_check_rate: null,
+    window_compliance_rate: null,
+    child_comfort_rate: null,
+    action_response_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -297,12 +293,12 @@ export function computeBedroomTemperatureVentilation(
   // --- Temperature monitoring metrics ---
   const totalTempRecords = temperature_monitoring_records.length;
   const withinRangeTemp = temperature_monitoring_records.filter((t) => t.within_range).length;
-  const temperatureMonitoringRate = pct(withinRangeTemp, totalTempRecords);
+  const temperatureMonitoringRate = rate(withinRangeTemp, totalTempRecords);
 
   const calibratedThermometers = temperature_monitoring_records.filter(
     (t) => t.thermometer_calibrated,
   ).length;
-  const calibrationRate = pct(calibratedThermometers, totalTempRecords);
+  const calibrationRate = rate(calibratedThermometers, totalTempRecords);
 
   const tempActionRequired = temperature_monitoring_records.filter(
     (t) => t.action_required,
@@ -317,7 +313,7 @@ export function computeBedroomTemperatureVentilation(
   const nightTimeWithinRange = temperature_monitoring_records.filter(
     (t) => t.time_of_day === "night" && t.within_range,
   ).length;
-  const nightTimeComplianceRate = pct(nightTimeWithinRange, nightTimeRecords);
+  const nightTimeComplianceRate = rate(nightTimeWithinRange, nightTimeRecords);
 
   // Seasonal coverage analysis
   const seasonCounts: Record<string, number> = {};
@@ -329,15 +325,15 @@ export function computeBedroomTemperatureVentilation(
   // --- Ventilation metrics ---
   const totalVentRecords = ventilation_records.length;
   const adequateVentilation = ventilation_records.filter((v) => v.adequate).length;
-  const ventilationRate = pct(adequateVentilation, totalVentRecords);
+  const ventilationRate = rate(adequateVentilation, totalVentRecords);
 
   const condensationPresent = ventilation_records.filter(
     (v) => v.condensation_present,
   ).length;
-  const condensationRate = pct(condensationPresent, totalVentRecords);
+  const condensationRate = rate(condensationPresent, totalVentRecords);
 
   const mouldPresent = ventilation_records.filter((v) => v.mould_present).length;
-  const mouldRate = pct(mouldPresent, totalVentRecords);
+  const mouldRate = rate(mouldPresent, totalVentRecords);
 
   const ventMaintenanceRequired = ventilation_records.filter(
     (v) => v.maintenance_required,
@@ -351,22 +347,22 @@ export function computeBedroomTemperatureVentilation(
   const systemOperational = heating_check_records.filter(
     (h) => h.system_operational,
   ).length;
-  const heatingOperationalRate = pct(systemOperational, totalHeatingChecks);
+  const heatingOperationalRate = rate(systemOperational, totalHeatingChecks);
 
   const thermostatWorking = heating_check_records.filter(
     (h) => h.thermostat_working,
   ).length;
-  const thermostatWorkingRate = pct(thermostatWorking, totalHeatingChecks);
+  const thermostatWorkingRate = rate(thermostatWorking, totalHeatingChecks);
 
   const safetyCheckPassed = heating_check_records.filter(
     (h) => h.safety_check_passed,
   ).length;
-  const safetyCheckRate = pct(safetyCheckPassed, totalHeatingChecks);
+  const safetyCheckRate = rate(safetyCheckPassed, totalHeatingChecks);
 
   const serviceOverdue = heating_check_records.filter(
     (h) => h.service_overdue,
   ).length;
-  const serviceOverdueRate = pct(serviceOverdue, totalHeatingChecks);
+  const serviceOverdueRate = rate(serviceOverdue, totalHeatingChecks);
 
   const heatingIssuesFound = heating_check_records.filter(
     (h) => h.issues_found,
@@ -378,7 +374,7 @@ export function computeBedroomTemperatureVentilation(
   const engineerCertified = heating_check_records.filter(
     (h) => h.engineer_certified,
   ).length;
-  const engineerCertifiedRate = pct(engineerCertified, totalHeatingChecks);
+  const engineerCertifiedRate = rate(engineerCertified, totalHeatingChecks);
 
   // Composite heating check rate: operational + safety passed + thermostat working
   const heatingCheckRate =
@@ -391,49 +387,49 @@ export function computeBedroomTemperatureVentilation(
   const windowCompliant = window_compliance_records.filter(
     (w) => w.compliance_met,
   ).length;
-  const windowComplianceRate = pct(windowCompliant, totalWindowRecords);
+  const windowComplianceRate = rate(windowCompliant, totalWindowRecords);
 
   const restrictorFitted = window_compliance_records.filter(
     (w) => w.window_restrictor_fitted,
   ).length;
-  const restrictorRate = pct(restrictorFitted, totalWindowRecords);
+  const restrictorRate = rate(restrictorFitted, totalWindowRecords);
 
   const fallRiskAssessed = window_compliance_records.filter(
     (w) => w.fall_risk_assessed,
   ).length;
-  const fallRiskAssessedRate = pct(fallRiskAssessed, totalWindowRecords);
+  const fallRiskAssessedRate = rate(fallRiskAssessed, totalWindowRecords);
 
   const poorConditionWindows = window_compliance_records.filter(
     (w) => w.window_condition === "poor" || w.window_condition === "damaged",
   ).length;
-  const poorConditionRate = pct(poorConditionWindows, totalWindowRecords);
+  const poorConditionRate = rate(poorConditionWindows, totalWindowRecords);
 
   // --- Child comfort metrics ---
   const totalComfortRecords = child_comfort_records.length;
   const comfortableTemp = child_comfort_records.filter(
     (c) => c.temperature_preference === "comfortable",
   ).length;
-  const comfortableTempRate = pct(comfortableTemp, totalComfortRecords);
+  const comfortableTempRate = rate(comfortableTemp, totalComfortRecords);
 
   const sleepsWellTemp = child_comfort_records.filter(
     (c) => c.sleeps_well_temperature,
   ).length;
-  const sleepsWellRate = pct(sleepsWellTemp, totalComfortRecords);
+  const sleepsWellRate = rate(sleepsWellTemp, totalComfortRecords);
 
   const beddingAdequate = child_comfort_records.filter(
     (c) => c.bedding_adequate,
   ).length;
-  const beddingAdequateRate = pct(beddingAdequate, totalComfortRecords);
+  const beddingAdequateRate = rate(beddingAdequate, totalComfortRecords);
 
   const beddingSeasonal = child_comfort_records.filter(
     (c) => c.bedding_seasonal,
   ).length;
-  const beddingSeasonalRate = pct(beddingSeasonal, totalComfortRecords);
+  const beddingSeasonalRate = rate(beddingSeasonal, totalComfortRecords);
 
   const canAdjustTemp = child_comfort_records.filter(
     (c) => c.can_adjust_temperature,
   ).length;
-  const canAdjustTempRate = pct(canAdjustTemp, totalComfortRecords);
+  const canAdjustTempRate = rate(canAdjustTemp, totalComfortRecords);
 
   const changesRequested = child_comfort_records.filter(
     (c) => c.requested_changes,
@@ -441,12 +437,12 @@ export function computeBedroomTemperatureVentilation(
   const changesActioned = child_comfort_records.filter(
     (c) => c.requested_changes && c.changes_actioned,
   ).length;
-  const changesActionedRate = pct(changesActioned, changesRequested);
+  const changesActionedRate = rate(changesActioned, changesRequested);
 
   const childVoiceCaptured = child_comfort_records.filter(
     (c) => c.child_voice_captured,
   ).length;
-  const childVoiceCapturedRate = pct(childVoiceCaptured, totalComfortRecords);
+  const childVoiceCapturedRate = rate(childVoiceCaptured, totalComfortRecords);
 
   const avgComfortRating =
     totalComfortRecords > 0
@@ -468,7 +464,7 @@ export function computeBedroomTemperatureVentilation(
     child_comfort_records.map((c) => c.child_id),
   ).size;
   const childCoverage =
-    total_children > 0 ? pct(uniqueChildrenSurveyed, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenSurveyed, total_children) : 0;
 
   // --- Action response rate composite ---
   const actionNumerators: number[] = [];
@@ -493,7 +489,7 @@ export function computeBedroomTemperatureVentilation(
 
   const totalActionNum = actionNumerators.reduce((a, b) => a + b, 0);
   const totalActionDenom = actionDenominators.reduce((a, b) => a + b, 0);
-  const actionResponseRate = pct(totalActionNum, totalActionDenom);
+  const actionResponseRate = rate(totalActionNum, totalActionDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

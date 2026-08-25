@@ -180,7 +180,7 @@ export interface AdmissionsMatchingResult {
   total_matching_records: number;
   total_suitability_reviews: number;
   total_admission_plans: number;
-  // referral_assessment_rate + child_consultation_rate use pct() directly
+  // referral_assessment_rate + child_consultation_rate use rate() directly
   // (deterministic 0 on empty). The 4 composite rates below are null on
   // empty: no source records ⇒ no signal. "0% impact assessment / 0%
   // matching / 0% suitability / 0% planning" would read as a home taking
@@ -202,10 +202,6 @@ export interface AdmissionsMatchingResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -233,12 +229,12 @@ function emptyResult(
     total_matching_records: 0,
     total_suitability_reviews: 0,
     total_admission_plans: 0,
-    referral_assessment_rate: 0,
+    referral_assessment_rate: null,
     impact_assessment_rate: null,
     matching_quality_rate: null,
     suitability_review_rate: null,
     admission_planning_rate: null,
-    child_consultation_rate: 0,
+    child_consultation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -317,16 +313,16 @@ export function computeAdmissionsMatchingAssessment(
   // --- Referral assessment metrics ---
   const totalReferralAssessments = referral_assessment_records.length;
   const completedAssessments = referral_assessment_records.filter((r) => r.assessment_completed).length;
-  const referralAssessmentRate = pct(completedAssessments, totalReferralAssessments);
+  const referralAssessmentRate = rate(completedAssessments, totalReferralAssessments);
 
   const timelyAssessments = referral_assessment_records.filter((r) => r.assessment_completed && r.assessment_timely).length;
-  const timelyAssessmentRate = pct(timelyAssessments, totalReferralAssessments);
+  const timelyAssessmentRate = rate(timelyAssessments, totalReferralAssessments);
 
   const safeguardingChecked = referral_assessment_records.filter((r) => r.safeguarding_history_checked).length;
-  const safeguardingCheckRate = pct(safeguardingChecked, totalReferralAssessments);
+  const safeguardingCheckRate = rate(safeguardingChecked, totalReferralAssessments);
 
   const sopAligned = referral_assessment_records.filter((r) => r.statement_of_purpose_aligned).length;
-  const sopAlignmentRate = pct(sopAligned, totalReferralAssessments);
+  const sopAlignmentRate = rate(sopAligned, totalReferralAssessments);
 
   const referralQualitySum = referral_assessment_records.reduce((s, r) => s + r.quality_rating, 0);
   const avgReferralQuality: number | null = totalReferralAssessments > 0
@@ -337,22 +333,22 @@ export function computeAdmissionsMatchingAssessment(
   const totalImpactAssessments = impact_risk_assessment_records.length;
   const totalExistingChildren = impact_risk_assessment_records.reduce((s, a) => s + a.existing_children_count, 0);
   const totalChildrenConsulted = impact_risk_assessment_records.reduce((s, a) => s + a.children_consulted_count, 0);
-  const impactChildConsultRate = pct(totalChildrenConsulted, totalExistingChildren);
+  const impactChildConsultRate = rate(totalChildrenConsulted, totalExistingChildren);
 
   const individualImpactsAssessed = impact_risk_assessment_records.filter((a) => a.individual_impacts_assessed).length;
-  const individualImpactRate = pct(individualImpactsAssessed, totalImpactAssessments);
+  const individualImpactRate = rate(individualImpactsAssessed, totalImpactAssessments);
 
   const mitigationsAdequate = impact_risk_assessment_records.filter((a) => a.mitigations_adequate).length;
-  const mitigationAdequacyRate = pct(mitigationsAdequate, totalImpactAssessments);
+  const mitigationAdequacyRate = rate(mitigationsAdequate, totalImpactAssessments);
 
   const peerDynamicsConsidered = impact_risk_assessment_records.filter((a) => a.peer_dynamics_considered).length;
-  const peerDynamicsRate = pct(peerDynamicsConsidered, totalImpactAssessments);
+  const peerDynamicsRate = rate(peerDynamicsConsidered, totalImpactAssessments);
 
   const safeguardingImplicationsReviewed = impact_risk_assessment_records.filter((a) => a.safeguarding_implications_reviewed).length;
-  const safeguardingImplicationsRate = pct(safeguardingImplicationsReviewed, totalImpactAssessments);
+  const safeguardingImplicationsRate = rate(safeguardingImplicationsReviewed, totalImpactAssessments);
 
   const managerSignOff = impact_risk_assessment_records.filter((a) => a.has_manager_sign_off).length;
-  const managerSignOffRate = pct(managerSignOff, totalImpactAssessments);
+  const managerSignOffRate = rate(managerSignOff, totalImpactAssessments);
 
   const highRiskImpacts = impact_risk_assessment_records.filter((a) => a.risk_level === "high" || a.risk_level === "very_high").length;
 
@@ -370,13 +366,13 @@ export function computeAdmissionsMatchingAssessment(
   const totalMatchingRecords = matching_criteria_records.length;
   const totalCriteriaCount = matching_criteria_records.reduce((s, m) => s + m.criteria_count, 0);
   const totalCriteriaMet = matching_criteria_records.reduce((s, m) => s + m.criteria_met_count, 0);
-  const criteriaMetRate = pct(totalCriteriaMet, totalCriteriaCount);
+  const criteriaMetRate = rate(totalCriteriaMet, totalCriteriaCount);
 
   const childViewsSought = matching_criteria_records.filter((m) => m.child_views_sought).length;
-  const matchingChildViewsRate = pct(childViewsSought, totalMatchingRecords);
+  const matchingChildViewsRate = rate(childViewsSought, totalMatchingRecords);
 
   const matchingRationale = matching_criteria_records.filter((m) => m.has_rationale).length;
-  const matchingRationaleRate = pct(matchingRationale, totalMatchingRecords);
+  const matchingRationaleRate = rate(matchingRationale, totalMatchingRecords);
 
   const poorMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "poor").length;
   const marginalMatches = matching_criteria_records.filter((m) => m.overall_match_rating === "marginal").length;
@@ -389,7 +385,7 @@ export function computeAdmissionsMatchingAssessment(
   const emotionalCompat = matching_criteria_records.filter((m) => m.emotional_compatibility_assessed).length;
   const behaviouralCompat = matching_criteria_records.filter((m) => m.behavioural_compatibility_assessed).length;
   const domainCoverageCount = ageCompat + needsCompat + riskCompat + culturalCompat + emotionalCompat + behaviouralCompat;
-  const domainCoverageRate = pct(domainCoverageCount, totalMatchingRecords * 6);
+  const domainCoverageRate = rate(domainCoverageCount, totalMatchingRecords * 6);
 
   // Composite matching quality rate
   const matchingQualityRate: number | null = totalMatchingRecords > 0
@@ -399,23 +395,23 @@ export function computeAdmissionsMatchingAssessment(
   // --- Placement suitability metrics ---
   const totalSuitabilityReviews = placement_suitability_records.length;
   const suitabilityDetermined = placement_suitability_records.filter((s) => s.suitability_determined).length;
-  const suitabilityDeterminedRate = pct(suitabilityDetermined, totalSuitabilityReviews);
+  const suitabilityDeterminedRate = rate(suitabilityDetermined, totalSuitabilityReviews);
 
   const sopChecked = placement_suitability_records.filter((s) => s.statement_of_purpose_check).length;
-  const sopCheckRate = pct(sopChecked, totalSuitabilityReviews);
+  const sopCheckRate = rate(sopChecked, totalSuitabilityReviews);
 
   const regulatoryMet = placement_suitability_records.filter((s) => s.regulatory_requirements_met).length;
-  const regulatoryMetRate = pct(regulatoryMet, totalSuitabilityReviews);
+  const regulatoryMetRate = rate(regulatoryMet, totalSuitabilityReviews);
 
   const decisionRationale = placement_suitability_records.filter((s) => s.has_decision_rationale).length;
-  const decisionRationaleRate = pct(decisionRationale, totalSuitabilityReviews);
+  const decisionRationaleRate = rate(decisionRationale, totalSuitabilityReviews);
 
   const unsuitableOutcomes = placement_suitability_records.filter((s) => s.outcome === "unsuitable").length;
   const conditionalOutcomes = placement_suitability_records.filter((s) => s.outcome === "conditional").length;
 
   const conditionsDocumented = placement_suitability_records.filter((s) => s.conditions_count > 0 && s.conditions_documented).length;
   const totalWithConditions = placement_suitability_records.filter((s) => s.conditions_count > 0).length;
-  const conditionsDocRate = pct(conditionsDocumented, totalWithConditions);
+  const conditionsDocRate = rate(conditionsDocumented, totalWithConditions);
 
   // Composite suitability review rate
   const suitabilityReviewRate: number | null = totalSuitabilityReviews > 0
@@ -425,30 +421,30 @@ export function computeAdmissionsMatchingAssessment(
   // --- Admission planning metrics ---
   const totalAdmissionPlans = admission_planning_records.length;
   const introVisitCompleted = admission_planning_records.filter((a) => a.introductory_visit_completed).length;
-  const introVisitRate = pct(introVisitCompleted, totalAdmissionPlans);
+  const introVisitRate = rate(introVisitCompleted, totalAdmissionPlans);
 
   const introVisitPositive = admission_planning_records.filter((a) => a.introductory_visit_completed && a.introductory_visit_child_feedback_positive).length;
-  const introPositiveRate = pct(introVisitPositive, introVisitCompleted);
+  const introPositiveRate = rate(introVisitPositive, introVisitCompleted);
 
   const childPrepPlan = admission_planning_records.filter((a) => a.child_preparation_plan).length;
-  const childPrepRate = pct(childPrepPlan, totalAdmissionPlans);
+  const childPrepRate = rate(childPrepPlan, totalAdmissionPlans);
 
   const existingChildrenPrepared = admission_planning_records.filter((a) => a.existing_children_prepared).length;
-  const existingPrepRate = pct(existingChildrenPrepared, totalAdmissionPlans);
+  const existingPrepRate = rate(existingChildrenPrepared, totalAdmissionPlans);
 
   const staffBriefed = admission_planning_records.filter((a) => a.staff_briefing_completed).length;
-  const staffBriefingRate = pct(staffBriefed, totalAdmissionPlans);
+  const staffBriefingRate = rate(staffBriefed, totalAdmissionPlans);
 
   const keyWorkerAllocated = admission_planning_records.filter((a) => a.key_worker_allocated).length;
-  const keyWorkerRate = pct(keyWorkerAllocated, totalAdmissionPlans);
+  const keyWorkerRate = rate(keyWorkerAllocated, totalAdmissionPlans);
 
   const placementPlanDrafted = admission_planning_records.filter((a) => a.placement_plan_drafted).length;
-  const placementPlanRate = pct(placementPlanDrafted, totalAdmissionPlans);
+  const placementPlanRate = rate(placementPlanDrafted, totalAdmissionPlans);
 
   const childConsulted = admission_planning_records.filter((a) => a.child_consulted).length;
 
   const firstReviewScheduled = admission_planning_records.filter((a) => a.first_review_scheduled).length;
-  const firstReviewRate = pct(firstReviewScheduled, totalAdmissionPlans);
+  const firstReviewRate = rate(firstReviewScheduled, totalAdmissionPlans);
 
   // Composite admission planning rate
   const admissionPlanningRate: number | null = totalAdmissionPlans > 0
@@ -475,7 +471,7 @@ export function computeAdmissionsMatchingAssessment(
 
   const totalChildConsultNum = childConsultNumerators.reduce((a, b) => a + b, 0);
   const totalChildConsultDenom = childConsultDenominators.reduce((a, b) => a + b, 0);
-  const childConsultationRate = pct(totalChildConsultNum, totalChildConsultDenom);
+  const childConsultationRate = rate(totalChildConsultNum, totalChildConsultDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

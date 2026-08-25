@@ -297,7 +297,7 @@ function baseInputNoBonuses(
 describe("computeAllegationsInvestigationsManagement", () => {
   // ── pct(0,0) edge case ──────────────────────────────────────────────
   describe("pct(0,0) returns 0", () => {
-    it("returns 0 for all rates when no records exist but children=0 (insufficient_data)", () => {
+    it("returns null for all rates when no records exist but children=0 (insufficient_data)", () => {
       const r = computeAllegationsInvestigationsManagement({
         today: "2026-05-28",
         total_children: 0,
@@ -307,11 +307,11 @@ describe("computeAllegationsInvestigationsManagement", () => {
         outcome_records: [],
         safeguarding_response_records: [],
       });
-      expect(r.allegation_recording_rate).toBe(0);
-      expect(r.lado_referral_rate).toBe(0);
-      expect(r.investigation_completion_rate).toBe(0);
-      expect(r.outcome_documentation_rate).toBe(0);
-      expect(r.safeguarding_response_rate).toBe(0);
+      expect(r.allegation_recording_rate).toBeNull();
+      expect(r.lado_referral_rate).toBeNull();
+      expect(r.investigation_completion_rate).toBeNull();
+      expect(r.outcome_documentation_rate).toBeNull();
+      expect(r.safeguarding_response_rate).toBeNull();
       // fab-0: null when no timeliness components exist (empty records).
       expect(r.timeliness_rate).toBeNull();
     });
@@ -455,7 +455,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("returns zero for all rates", () => {
+    it("returns null for all rates", () => {
       const r = computeAllegationsInvestigationsManagement({
         today: "2026-05-28",
         total_children: 4,
@@ -465,11 +465,11 @@ describe("computeAllegationsInvestigationsManagement", () => {
         outcome_records: [],
         safeguarding_response_records: [],
       });
-      expect(r.allegation_recording_rate).toBe(0);
-      expect(r.lado_referral_rate).toBe(0);
-      expect(r.investigation_completion_rate).toBe(0);
-      expect(r.outcome_documentation_rate).toBe(0);
-      expect(r.safeguarding_response_rate).toBe(0);
+      expect(r.allegation_recording_rate).toBeNull();
+      expect(r.lado_referral_rate).toBeNull();
+      expect(r.investigation_completion_rate).toBeNull();
+      expect(r.outcome_documentation_rate).toBeNull();
+      expect(r.safeguarding_response_rate).toBeNull();
       // fab-0: null when no timeliness components exist (empty records).
       expect(r.timeliness_rate).toBeNull();
     });
@@ -1687,7 +1687,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.allegation_recording_rate).toBe(0);
     });
 
-    it("returns 0 when no allegations (pct(0,0)=0)", () => {
+    it("returns null when no allegations (rate(0,0)=null)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ allegation_records: [] }));
       // Empty population: this asserted the fab-0 the helper used to return.
       expect(r.allegation_recording_rate).toBeNull();
@@ -1709,7 +1709,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.lado_referral_rate).toBe(60);
     });
 
-    it("returns 0 when no lado records (pct(0,0)=0)", () => {
+    it("returns null when no lado records (rate(0,0)=null)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ lado_referral_records: [] }));
       // Empty population: this asserted the fab-0 the helper used to return.
       expect(r.lado_referral_rate).toBeNull();
@@ -1736,7 +1736,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.investigation_completion_rate).toBe(70);
     });
 
-    it("returns 0 when no investigation records (pct(0,0)=0)", () => {
+    it("returns null when no investigation records (rate(0,0)=null)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ investigation_records: [] }));
       // Empty population: this asserted the fab-0 the helper used to return.
       expect(r.investigation_completion_rate).toBeNull();
@@ -1758,7 +1758,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.outcome_documentation_rate).toBe(40);
     });
 
-    it("returns 0 when no outcome records (pct(0,0)=0)", () => {
+    it("returns null when no outcome records (rate(0,0)=null)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ outcome_records: [] }));
       // Empty population: this asserted the fab-0 the helper used to return.
       expect(r.outcome_documentation_rate).toBeNull();
@@ -1780,7 +1780,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.safeguarding_response_rate).toBe(30);
     });
 
-    it("returns 0 when no safeguarding records (pct(0,0)=0)", () => {
+    it("returns null when no safeguarding records (rate(0,0)=null)", () => {
       const r = computeAllegationsInvestigationsManagement(baseInput({ safeguarding_response_records: [] }));
       // Empty population: this asserted the fab-0 the helper used to return.
       expect(r.safeguarding_response_rate).toBeNull();

@@ -183,10 +183,6 @@ function clamp(n: number, lo: number, hi: number): number {
 }
 
 // Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
-function pct(num: number, den: number): number | null {
-  return rate(num, den);
-}
-
 function avg(nums: number[]): number | null {
   if (nums.length === 0) return null;
   return Math.round(nums.reduce((s, n) => s + n, 0) / nums.length);
@@ -216,16 +212,16 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
       active_medication_count: 0,
       has_controlled_drugs: false,
       adherence: {
-        adherence_rate_30d: 0, adherence_rate_7d: 0,
-        refusal_count_30d: 0, refusal_count_7d: 0, refusal_rate_30d: 0,
-        late_count_30d: 0, late_rate_30d: 0,
-        missed_count_30d: 0, missed_rate_30d: 0,
+        adherence_rate_30d: null, adherence_rate_7d: null,
+        refusal_count_30d: 0, refusal_count_7d: 0, refusal_rate_30d: null,
+        late_count_30d: 0, late_rate_30d: null,
+        missed_count_30d: 0, missed_rate_30d: null,
         total_administrations_30d: 0, total_administrations_7d: 0,
         adherence_trend: "insufficient_data",
       },
-      witnessing: { witnessing_rate_30d: 0, unwitnessed_count_30d: 0, controlled_drug_witnessing_rate: null },
+      witnessing: { witnessing_rate_30d: null, unwitnessed_count_30d: 0, controlled_drug_witnessing_rate: null },
       prn: { prn_count_30d: 0, prn_count_7d: 0, prn_trend: "insufficient_data", effectiveness_recorded_rate: null, reason_recorded_rate: null, prn_medications: [] },
-      timeliness: { on_time_rate_30d: 0, avg_delay_minutes: null, max_delay_minutes: null },
+      timeliness: { on_time_rate_30d: null, avg_delay_minutes: null, max_delay_minutes: null },
       stock: { medications_with_stock: 0, stock_low_count: 0, stock_checked_recently: 0, stock_check_rate: null },
       errors: { total_errors_90d: 0, errors_30d: 0, open_errors: 0, highest_severity: null, remedial_completion_rate: null },
       medication_details: [],
@@ -262,11 +258,11 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   const given7d = admins7d.filter((a) => a.status === "given" || a.status === "self_administered").length;
   const refused7d = admins7d.filter((a) => a.status === "refused").length;
 
-  const adherenceRate30d = pct(given30d + late30d, admins30d.length); // late still counts as given
-  const adherenceRate7d = pct(given7d + admins7d.filter((a) => a.status === "late").length, admins7d.length);
+  const adherenceRate30d = rate(given30d + late30d, admins30d.length); // late still counts as given
+  const adherenceRate7d = rate(given7d + admins7d.filter((a) => a.status === "late").length, admins7d.length);
 
   const givenPrior = adminsPrior30d.filter((a) => a.status === "given" || a.status === "self_administered" || a.status === "late").length;
-  const adherenceRatePrior = pct(givenPrior, adminsPrior30d.length);
+  const adherenceRatePrior = rate(givenPrior, adminsPrior30d.length);
 
   let adherenceTrend: "improving" | "stable" | "declining" | "insufficient_data" = "insufficient_data";
   if (admins30d.length >= 5 && adminsPrior30d.length >= 5) {
@@ -287,11 +283,11 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
     adherence_rate_7d: adherenceRate7d,
     refusal_count_30d: refused30d,
     refusal_count_7d: refused7d,
-    refusal_rate_30d: pct(refused30d, admins30d.length),
+    refusal_rate_30d: rate(refused30d, admins30d.length),
     late_count_30d: late30d,
-    late_rate_30d: pct(late30d, admins30d.length),
+    late_rate_30d: rate(late30d, admins30d.length),
     missed_count_30d: missed30d,
-    missed_rate_30d: pct(missed30d, admins30d.length),
+    missed_rate_30d: rate(missed30d, admins30d.length),
     total_administrations_30d: admins30d.length,
     total_administrations_7d: admins7d.length,
     adherence_trend: adherenceTrend,
@@ -300,13 +296,13 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   // ── Witnessing ──────────────────────────────────────────────────────────
   const givenAdmins30d = admins30d.filter((a) => a.status === "given" || a.status === "self_administered" || a.status === "late");
   const witnessed30d = givenAdmins30d.filter((a) => !!a.witnessed_by).length;
-  const witnessingRate30d = pct(witnessed30d, givenAdmins30d.length);
+  const witnessingRate30d = rate(witnessed30d, givenAdmins30d.length);
 
   // Controlled drug witnessing
   const controlledMedIds = new Set(activeMeds.filter((m) => m.type === "controlled").map((m) => m.id));
   const controlledAdmins = givenAdmins30d.filter((a) => controlledMedIds.has(a.medication_id));
   const controlledWitnessed = controlledAdmins.filter((a) => !!a.witnessed_by).length;
-  const controlledWitnessingRate = pct(controlledWitnessed, controlledAdmins.length);
+  const controlledWitnessingRate = rate(controlledWitnessed, controlledAdmins.length);
 
   const witnessing: WitnessingProfile = {
     witnessing_rate_30d: witnessingRate30d,
@@ -343,8 +339,8 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
     prn_count_30d: prnAdmins30d.length,
     prn_count_7d: prnAdmins7d.length,
     prn_trend: prnTrend,
-    effectiveness_recorded_rate: pct(prnWithEffectiveness, prnAdmins30d.length),
-    reason_recorded_rate: pct(prnWithReason, prnAdmins30d.length),
+    effectiveness_recorded_rate: rate(prnWithEffectiveness, prnAdmins30d.length),
+    reason_recorded_rate: rate(prnWithReason, prnAdmins30d.length),
     prn_medications: Array.from(prnByMed.entries())
       .map(([name, count_30d]) => ({ name, count_30d }))
       .sort((a, b) => b.count_30d - a.count_30d),
@@ -362,7 +358,7 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
   const onTime30d = delays.filter((d) => d <= 30).length;
 
   const timeliness: TimelinesProfile = {
-    on_time_rate_30d: pct(onTime30d, delays.length),
+    on_time_rate_30d: rate(onTime30d, delays.length),
     avg_delay_minutes: avg(delays),
     max_delay_minutes: delays.length > 0 ? Math.max(...delays) : null,
   };
@@ -379,7 +375,7 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
     medications_with_stock: medsWithStock.length,
     stock_low_count: stockLow.length,
     stock_checked_recently: recentlyChecked.length,
-    stock_check_rate: pct(recentlyChecked.length, medsWithStock.length),
+    stock_check_rate: rate(recentlyChecked.length, medsWithStock.length),
   };
 
   // ── Errors ──────────────────────────────────────────────────────────────
@@ -402,7 +398,7 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
     errors_30d: errors30d.length,
     open_errors: openErrors.length,
     highest_severity: highestSeverity,
-    remedial_completion_rate: pct(remedialDone, remedialTotal),
+    remedial_completion_rate: rate(remedialDone, remedialTotal),
   };
 
   // ── Per-medication details ──────────────────────────────────────────────
@@ -418,11 +414,11 @@ export function computeChildMedication(input: ChildMedicationInput): ChildMedica
       frequency: med.frequency,
       is_active: true,
       administrations_30d: medAdmins.length,
-      adherence_rate: pct(medGiven.length, medAdmins.length),
+      adherence_rate: rate(medGiven.length, medAdmins.length),
       refusal_count: medAdmins.filter((a) => a.status === "refused").length,
       late_count: medAdmins.filter((a) => a.status === "late").length,
       missed_count: medAdmins.filter((a) => a.status === "missed").length,
-      witnessing_rate: pct(medWitnessed.length, medGiven.length),
+      witnessing_rate: rate(medWitnessed.length, medGiven.length),
     };
   }).sort((a, b) =>
     // Worst adherence first; an unmeasured medication has no place in that

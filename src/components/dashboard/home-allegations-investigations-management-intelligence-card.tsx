@@ -70,24 +70,24 @@ export function HomeAllegationsInvestigationsManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.allegations_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.allegation_recording_rate >= 90 ? "bg-green-50" : d.allegation_recording_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.allegation_recording_rate >= 90 ? "text-[--cs-success]" : d.allegation_recording_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.allegation_recording_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.allegation_recording_rate, 90) ? "bg-green-50" : meets(d.allegation_recording_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.allegation_recording_rate, 90) ? "text-[--cs-success]" : meets(d.allegation_recording_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.allegation_recording_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Recording</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.lado_referral_rate >= 90 ? "bg-green-50" : d.lado_referral_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.lado_referral_rate >= 90 ? "text-[--cs-success]" : d.lado_referral_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.lado_referral_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.lado_referral_rate, 90) ? "bg-green-50" : meets(d.lado_referral_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.lado_referral_rate, 90) ? "text-[--cs-success]" : meets(d.lado_referral_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.lado_referral_rate)}</p>
               <p className="text-[9px] text-muted-foreground">LADO Ref.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.investigation_completion_rate >= 90 ? "bg-green-50" : d.investigation_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.investigation_completion_rate >= 90 ? "text-[--cs-success]" : d.investigation_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.investigation_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.investigation_completion_rate, 90) ? "bg-green-50" : meets(d.investigation_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.investigation_completion_rate, 90) ? "text-[--cs-success]" : meets(d.investigation_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.investigation_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Invest.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.outcome_documentation_rate >= 90 ? "bg-green-50" : d.outcome_documentation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outcome_documentation_rate >= 90 ? "text-[--cs-success]" : d.outcome_documentation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outcome_documentation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.outcome_documentation_rate, 90) ? "bg-green-50" : meets(d.outcome_documentation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.outcome_documentation_rate, 90) ? "text-[--cs-success]" : meets(d.outcome_documentation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outcome_documentation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Outcomes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_response_rate >= 90 ? "bg-green-50" : d.safeguarding_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_response_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safeguarding_response_rate, 90) ? "bg-green-50" : meets(d.safeguarding_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safeguarding_response_rate, 90) ? "text-[--cs-success]" : meets(d.safeguarding_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Response</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.timeliness_rate, 90) ? "bg-green-50" : meets(d.timeliness_rate, 70) ? "bg-amber-50" : d.timeliness_rate === null ? "bg-muted" : "bg-red-50")}>

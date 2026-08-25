@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   CulturalIdentitySupportIntelligence,
 } from "@/lib/cultural-identity-support/cultural-identity-support-engine";
@@ -42,14 +43,14 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // -- Progress Bar -------------------------------------------------------------
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal}%</span>
+      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal !== null ? `${pctVal}%` : "—"}</span>
     </div>
   );
 }
@@ -145,9 +146,8 @@ export function CulturalIdentitySupportDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard
           label="Fully Met Rate"
-          value={data.needsAssessment.fullyMetRate}
-          suffix="%"
-          color={data.needsAssessment.fullyMetRate >= 80 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.needsAssessment.fullyMetRate)}
+          color={meets(data.needsAssessment.fullyMetRate, 80) ? "text-green-600" : "text-amber-600"}
         />
         <MetricCard
           label="Identity Planning"
@@ -157,51 +157,49 @@ export function CulturalIdentitySupportDashboardWidget() {
         />
         <MetricCard
           label="Engagement Rate"
-          value={data.culturalActivities.engagementRate}
-          suffix="%"
-          color={data.culturalActivities.engagementRate >= 85 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.culturalActivities.engagementRate)}
+          color={meets(data.culturalActivities.engagementRate, 85) ? "text-green-600" : "text-amber-600"}
         />
         <MetricCard
           label="Anti-Racism Rate"
-          value={data.staffReadiness.antiRacismRate}
-          suffix="%"
-          color={data.staffReadiness.antiRacismRate >= 90 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.staffReadiness.antiRacismRate)}
+          color={meets(data.staffReadiness.antiRacismRate, 90) ? "text-green-600" : "text-amber-600"}
         />
       </div>
 
       {/* Status Badges */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {data.needsAssessment.fullyMetRate >= 80 && (
+        {meets(data.needsAssessment.fullyMetRate, 80) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             STRONG CULTURAL PROVISION
           </span>
         )}
-        {data.needsAssessment.childConsultedRate >= 90 && (
+        {meets(data.needsAssessment.childConsultedRate, 90) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             CHILD VOICE CENTRAL
           </span>
         )}
-        {data.culturalActivities.childrenReachedRate >= 90 && (
+        {meets(data.culturalActivities.childrenReachedRate, 90) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             ALL CHILDREN REACHED
           </span>
         )}
-        {data.identityPlanning.planInPlaceRate >= 90 && (
+        {meets(data.identityPlanning.planInPlaceRate, 90) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             PLANS IN PLACE
           </span>
         )}
-        {data.staffReadiness.antiRacismRate >= 90 && (
+        {meets(data.staffReadiness.antiRacismRate, 90) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             ANTI-RACIST PRACTICE
           </span>
         )}
-        {data.needsAssessment.fullyMetRate < 60 && data.needsAssessment.totalAssessments > 0 && (
+        {below(data.needsAssessment.fullyMetRate, 60) && data.needsAssessment.totalAssessments > 0 && (
           <span className="rounded-full bg-red-100 text-red-700 px-3 py-1 text-xs font-medium border border-red-200">
             NEEDS NOT FULLY MET
           </span>
         )}
-        {data.staffReadiness.awarenessRate < 70 && data.staffReadiness.totalStaff > 0 && (
+        {below(data.staffReadiness.awarenessRate, 70) && data.staffReadiness.totalStaff > 0 && (
           <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-medium border border-amber-200">
             STAFF DEVELOPMENT NEEDED
           </span>
@@ -222,30 +220,30 @@ export function CulturalIdentitySupportDashboardWidget() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Fully Met</span>
-                <span className="font-medium">{data.needsAssessment.fullyMetRate}%</span>
+                <span className="font-medium">{formatRate(data.needsAssessment.fullyMetRate)}</span>
               </div>
               <ProgressBar value={data.needsAssessment.fullyMetRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Reviews Current</span>
-                <span className="font-medium">{data.needsAssessment.reviewCurrentRate}%</span>
+                <span className="font-medium">{formatRate(data.needsAssessment.reviewCurrentRate)}</span>
               </div>
               <ProgressBar value={data.needsAssessment.reviewCurrentRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Child Consulted</span>
-                <span className="font-medium">{data.needsAssessment.childConsultedRate}%</span>
+                <span className="font-medium">{formatRate(data.needsAssessment.childConsultedRate)}</span>
               </div>
-              <ProgressBar value={data.needsAssessment.childConsultedRate} max={100} color={data.needsAssessment.childConsultedRate >= 90 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.needsAssessment.childConsultedRate} max={100} color={meets(data.needsAssessment.childConsultedRate, 90) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Family Consulted</span>
-                <span className="font-medium">{data.needsAssessment.familyConsultedRate}%</span>
+                <span className="font-medium">{formatRate(data.needsAssessment.familyConsultedRate)}</span>
               </div>
-              <ProgressBar value={data.needsAssessment.familyConsultedRate} max={100} color={data.needsAssessment.familyConsultedRate >= 80 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.needsAssessment.familyConsultedRate} max={100} color={meets(data.needsAssessment.familyConsultedRate, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             <div className="grid grid-cols-2 gap-3 text-center">
               <div>
@@ -275,37 +273,37 @@ export function CulturalIdentitySupportDashboardWidget() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Plans in Place</span>
-                <span className="font-medium">{data.identityPlanning.planInPlaceRate}%</span>
+                <span className="font-medium">{formatRate(data.identityPlanning.planInPlaceRate)}</span>
               </div>
-              <ProgressBar value={data.identityPlanning.planInPlaceRate} max={100} color={data.identityPlanning.planInPlaceRate >= 90 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.identityPlanning.planInPlaceRate} max={100} color={meets(data.identityPlanning.planInPlaceRate, 90) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Identity Documented</span>
-                <span className="font-medium">{data.identityPlanning.identityDocumentedRate}%</span>
+                <span className="font-medium">{formatRate(data.identityPlanning.identityDocumentedRate)}</span>
               </div>
               <ProgressBar value={data.identityPlanning.identityDocumentedRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Life Story Work Active</span>
-                <span className="font-medium">{data.identityPlanning.lifeStoryRate}%</span>
+                <span className="font-medium">{formatRate(data.identityPlanning.lifeStoryRate)}</span>
               </div>
               <ProgressBar value={data.identityPlanning.lifeStoryRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Cultural Mentor Assigned</span>
-                <span className="font-medium">{data.identityPlanning.mentorRate}%</span>
+                <span className="font-medium">{formatRate(data.identityPlanning.mentorRate)}</span>
               </div>
-              <ProgressBar value={data.identityPlanning.mentorRate} max={100} color={data.identityPlanning.mentorRate >= 80 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.identityPlanning.mentorRate} max={100} color={meets(data.identityPlanning.mentorRate, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Community Links</span>
-                <span className="font-medium">{data.identityPlanning.communityLinksRate}%</span>
+                <span className="font-medium">{formatRate(data.identityPlanning.communityLinksRate)}</span>
               </div>
-              <ProgressBar value={data.identityPlanning.communityLinksRate} max={100} color={data.identityPlanning.communityLinksRate >= 80 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.identityPlanning.communityLinksRate} max={100} color={meets(data.identityPlanning.communityLinksRate, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
           </div>
         )}
@@ -325,42 +323,42 @@ export function CulturalIdentitySupportDashboardWidget() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Cultural Awareness</span>
-                <span className="font-medium">{data.staffReadiness.awarenessRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.awarenessRate)}</span>
               </div>
               <ProgressBar value={data.staffReadiness.awarenessRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Anti-Racism</span>
-                <span className="font-medium">{data.staffReadiness.antiRacismRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.antiRacismRate)}</span>
               </div>
-              <ProgressBar value={data.staffReadiness.antiRacismRate} max={100} color={data.staffReadiness.antiRacismRate >= 90 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.staffReadiness.antiRacismRate} max={100} color={meets(data.staffReadiness.antiRacismRate, 90) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Religious Literacy</span>
-                <span className="font-medium">{data.staffReadiness.religiousLiteracyRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.religiousLiteracyRate)}</span>
               </div>
               <ProgressBar value={data.staffReadiness.religiousLiteracyRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Identity Support</span>
-                <span className="font-medium">{data.staffReadiness.identitySupportRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.identitySupportRate)}</span>
               </div>
               <ProgressBar value={data.staffReadiness.identitySupportRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">LGBTQ+ Awareness</span>
-                <span className="font-medium">{data.staffReadiness.lgbtqAwarenessRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.lgbtqAwarenessRate)}</span>
               </div>
               <ProgressBar value={data.staffReadiness.lgbtqAwarenessRate} max={100} color="bg-blue-500" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-700">Communication Diversity</span>
-                <span className="font-medium">{data.staffReadiness.communicationDiversityRate}%</span>
+                <span className="font-medium">{formatRate(data.staffReadiness.communicationDiversityRate)}</span>
               </div>
               <ProgressBar value={data.staffReadiness.communicationDiversityRate} max={100} color="bg-blue-500" />
             </div>

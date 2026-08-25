@@ -277,11 +277,11 @@ describe("evaluateActivityParticipation", () => {
     const result = evaluateActivityParticipation([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.regularParticipationRate).toBe(0);
+    expect(result.regularParticipationRate).toBeNull();
     expect(result.activityVariety).toBe(0);
-    expect(result.communityBasedRate).toBe(0);
-    expect(result.enjoymentRate).toBe(0);
-    expect(result.independentAttendanceRate).toBe(0);
+    expect(result.communityBasedRate).toBeNull();
+    expect(result.enjoymentRate).toBeNull();
+    expect(result.independentAttendanceRate).toBeNull();
   });
 
   it("scores high for all-regular, diverse, community-based, enjoyed, independent activities", () => {
@@ -468,10 +468,10 @@ describe("evaluateSocialNetworks", () => {
     const result = evaluateSocialNetworks([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalNetworks).toBe(0);
-    expect(result.friendshipQualityRate).toBe(0);
-    expect(result.friendsOutsideCareRate).toBe(0);
-    expect(result.mentorRate).toBe(0);
-    expect(result.socialMediaSafetyRate).toBe(0);
+    expect(result.friendshipQualityRate).toBeNull();
+    expect(result.friendsOutsideCareRate).toBeNull();
+    expect(result.mentorRate).toBeNull();
+    expect(result.socialMediaSafetyRate).toBeNull();
   });
 
   it("scores high for excellent social networks", () => {
@@ -616,8 +616,8 @@ describe("evaluateBarrierManagement", () => {
     const result = evaluateBarrierManagement([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalBarriers).toBe(0);
-    expect(result.resolutionRate).toBe(0);
-    expect(result.actionTakenRate).toBe(0);
+    expect(result.resolutionRate).toBeNull();
+    expect(result.actionTakenRate).toBeNull();
   });
 
   it("returns score 25 for barriers with only 'none' type", () => {
@@ -759,10 +759,10 @@ describe("evaluateInclusionOutcomes", () => {
     const result = evaluateInclusionOutcomes([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.communityBelongingRate).toBe(0);
-    expect(result.amenityAccessRate).toBe(0);
-    expect(result.positiveRelationshipsRate).toBe(0);
-    expect(result.independentTravelRate).toBe(0);
+    expect(result.communityBelongingRate).toBeNull();
+    expect(result.amenityAccessRate).toBeNull();
+    expect(result.positiveRelationshipsRate).toBeNull();
+    expect(result.independentTravelRate).toBeNull();
   });
 
   it("scores high for all-positive assessments", () => {

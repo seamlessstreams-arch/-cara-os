@@ -195,14 +195,14 @@ describe("insufficient_data", () => {
     expect(r.enuresis_score).toBe(0);
   });
 
-  it("returns 0 for all rate fields when insufficient_data", () => {
+  it("returns null for all rate fields when insufficient_data", () => {
     const r = computeBedwettingEnuresisSupport({ ...baseInput, total_children: 0 });
-    expect(r.management_plan_rate).toBe(0);
-    expect(r.discreet_support_rate).toBe(0);
-    expect(r.dignity_preservation_rate).toBe(0);
-    expect(r.medical_referral_rate).toBe(0);
-    expect(r.emotional_wellbeing_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.management_plan_rate).toBeNull();
+    expect(r.discreet_support_rate).toBeNull();
+    expect(r.dignity_preservation_rate).toBeNull();
+    expect(r.medical_referral_rate).toBeNull();
+    expect(r.emotional_wellbeing_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -254,14 +254,14 @@ describe("inadequate floor (children but no records)", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("returns 0 for all rate fields at the inadequate floor", () => {
+  it("returns null for all rate fields at the inadequate floor", () => {
     const r = computeBedwettingEnuresisSupport({ ...baseInput, total_children: 3 });
-    expect(r.management_plan_rate).toBe(0);
-    expect(r.discreet_support_rate).toBe(0);
-    expect(r.dignity_preservation_rate).toBe(0);
-    expect(r.medical_referral_rate).toBe(0);
-    expect(r.emotional_wellbeing_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.management_plan_rate).toBeNull();
+    expect(r.discreet_support_rate).toBeNull();
+    expect(r.dignity_preservation_rate).toBeNull();
+    expect(r.medical_referral_rate).toBeNull();
+    expect(r.emotional_wellbeing_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 
   it("headline mentions urgent", () => {

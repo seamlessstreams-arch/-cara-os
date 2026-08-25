@@ -171,12 +171,12 @@ describe("evaluateEducationQuality", () => {
     expect(result.totalRecords).toBe(0);
   });
 
-  it("returns 0 rates for empty records", () => {
+  it("returns null rates for empty records", () => {
     const result = evaluateEducationQuality([]);
-    expect(result.progressRate).toBe(0);
-    expect(result.pepUpdatedRate).toBe(0);
-    expect(result.attendanceRate).toBe(0);
-    expect(result.childViewsRate).toBe(0);
+    expect(result.progressRate).toBeNull();
+    expect(result.pepUpdatedRate).toBeNull();
+    expect(result.attendanceRate).toBeNull();
+    expect(result.childViewsRate).toBeNull();
   });
 
   it("calculates progressRate correctly (exceeding + expected)", () => {
@@ -263,11 +263,11 @@ describe("evaluateEducationCompliance", () => {
     expect(result.totalRecords).toBe(0);
   });
 
-  it("returns 0 rates for empty records", () => {
+  it("returns null rates for empty records", () => {
     const result = evaluateEducationCompliance([]);
-    expect(result.staffAdvocacyRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.virtualSchoolRate).toBe(0);
+    expect(result.staffAdvocacyRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.virtualSchoolRate).toBeNull();
     expect(result.areaDiversity).toBe(0);
   });
 
@@ -461,14 +461,14 @@ describe("evaluateStaffEducationReadiness", () => {
     expect(result.totalStaff).toBe(0);
   });
 
-  it("returns 0 rates for empty training", () => {
+  it("returns null rates for empty training", () => {
     const result = evaluateStaffEducationReadiness([]);
-    expect(result.educationSupportRate).toBe(0);
-    expect(result.pepProcessRate).toBe(0);
-    expect(result.attendanceImportanceRate).toBe(0);
-    expect(result.senAwarenessRate).toBe(0);
-    expect(result.homeworkStrategiesRate).toBe(0);
-    expect(result.virtualSchoolProtocolRate).toBe(0);
+    expect(result.educationSupportRate).toBeNull();
+    expect(result.pepProcessRate).toBeNull();
+    expect(result.attendanceImportanceRate).toBeNull();
+    expect(result.senAwarenessRate).toBeNull();
+    expect(result.homeworkStrategiesRate).toBeNull();
+    expect(result.virtualSchoolProtocolRate).toBeNull();
   });
 
   it("calculates educationSupportRate correctly", () => {
@@ -1030,23 +1030,23 @@ describe("getRatingLabel", () => {
 describe("pct helper edge cases (via evaluators)", () => {
   it("handles zero denominator in educationQuality", () => {
     const result = evaluateEducationQuality([]);
-    expect(result.progressRate).toBe(0);
-    expect(result.pepUpdatedRate).toBe(0);
-    expect(result.attendanceRate).toBe(0);
-    expect(result.childViewsRate).toBe(0);
+    expect(result.progressRate).toBeNull();
+    expect(result.pepUpdatedRate).toBeNull();
+    expect(result.attendanceRate).toBeNull();
+    expect(result.childViewsRate).toBeNull();
   });
 
   it("handles zero denominator in educationCompliance", () => {
     const result = evaluateEducationCompliance([]);
-    expect(result.staffAdvocacyRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.virtualSchoolRate).toBe(0);
+    expect(result.staffAdvocacyRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.virtualSchoolRate).toBeNull();
   });
 
   it("handles zero denominator in staffEducationReadiness", () => {
     const result = evaluateStaffEducationReadiness([]);
-    expect(result.educationSupportRate).toBe(0);
-    expect(result.pepProcessRate).toBe(0);
+    expect(result.educationSupportRate).toBeNull();
+    expect(result.pepProcessRate).toBeNull();
   });
 
   it("rounds percentages correctly", () => {

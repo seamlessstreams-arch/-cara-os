@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -117,13 +118,17 @@ export interface StaffReviewTraining {
 export interface ReviewTimelinessResult {
   totalReviews: number;
   heldOnTimeCount: number;
-  heldOnTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  heldOnTimeRate: number | null;
   iroPresenceCount: number;
-  iroPresenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  iroPresenceRate: number | null;
   minutesDistributedCount: number;
-  minutesDistributedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesDistributedRate: number | null;
   actionPlanCreatedCount: number;
-  actionPlanCreatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanCreatedRate: number | null;
   reviewTypeBreakdown: Record<ReviewType, number>;
   score: number; // 0-25
   strengths: string[];
@@ -133,13 +138,17 @@ export interface ReviewTimelinessResult {
 export interface ChildParticipationResult {
   totalReviews: number;
   fullyParticipatedCount: number;
-  fullyParticipatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyParticipatedRate: number | null;
   viewsSubmittedPlusCount: number;
-  viewsSubmittedPlusRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  viewsSubmittedPlusRate: number | null;
   multiAgencyAttendanceCount: number;
-  multiAgencyAttendanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyAttendanceRate: number | null;
   previousGoalsReviewedCount: number;
-  previousGoalsReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  previousGoalsReviewedRate: number | null;
   participationBreakdown: Record<ParticipationLevel, number>;
   averageAttendeesPerReview: number;
   score: number; // 0-25
@@ -150,11 +159,14 @@ export interface ChildParticipationResult {
 export interface GoalAchievementResult {
   totalGoals: number;
   achievedCount: number;
-  achievedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievedRate: number | null;
   onTrackPlusCount: number;
-  onTrackPlusRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTrackPlusRate: number | null;
   notMetCount: number;
-  notMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notMetRate: number | null;
   goalsPerChild: number | null;
   uniqueChildren: number;
   statusBreakdown: Record<GoalStatus, number>;
@@ -166,19 +178,26 @@ export interface GoalAchievementResult {
 export interface StaffReviewReadinessResult {
   totalStaff: number;
   reviewProcessCount: number;
-  reviewProcessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewProcessRate: number | null;
   childParticipationCount: number;
-  childParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
   goalSettingCount: number;
-  goalSettingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalSettingRate: number | null;
   multiAgencyWorkingCount: number;
-  multiAgencyWorkingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
   minutesTakingCount: number;
-  minutesTakingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesTakingRate: number | null;
   advocacyAwarenessCount: number;
-  advocacyAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyAwarenessRate: number | null;
   overallReadyCount: number;
-  overallReadyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallReadyRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -221,11 +240,6 @@ export interface AnnualDevelopmentReviewIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -248,13 +262,13 @@ export function evaluateReviewTimeliness(
     return {
       totalReviews: 0,
       heldOnTimeCount: 0,
-      heldOnTimeRate: 0,
+      heldOnTimeRate: null,
       iroPresenceCount: 0,
-      iroPresenceRate: 0,
+      iroPresenceRate: null,
       minutesDistributedCount: 0,
-      minutesDistributedRate: 0,
+      minutesDistributedRate: null,
       actionPlanCreatedCount: 0,
-      actionPlanCreatedRate: 0,
+      actionPlanCreatedRate: null,
       reviewTypeBreakdown: {
         initial: 0, first_review: 0, subsequent: 0, emergency: 0, pre_discharge: 0,
       },
@@ -266,19 +280,19 @@ export function evaluateReviewTimeliness(
 
   // On-time rate
   const heldOnTimeCount = reviews.filter((r) => r.heldOnTime).length;
-  const heldOnTimeRate = pct(heldOnTimeCount, totalReviews);
+  const heldOnTimeRate = rate(heldOnTimeCount, totalReviews)!;
 
   // IRO presence
   const iroPresenceCount = reviews.filter((r) => r.iroPresent).length;
-  const iroPresenceRate = pct(iroPresenceCount, totalReviews);
+  const iroPresenceRate = rate(iroPresenceCount, totalReviews)!;
 
   // Minutes distributed
   const minutesDistributedCount = reviews.filter((r) => r.minutesDistributed).length;
-  const minutesDistributedRate = pct(minutesDistributedCount, totalReviews);
+  const minutesDistributedRate = rate(minutesDistributedCount, totalReviews)!;
 
   // Action plan created
   const actionPlanCreatedCount = reviews.filter((r) => r.actionPlanCreated).length;
-  const actionPlanCreatedRate = pct(actionPlanCreatedCount, totalReviews);
+  const actionPlanCreatedRate = rate(actionPlanCreatedCount, totalReviews)!;
 
   // Review type breakdown
   const reviewTypeBreakdown: Record<ReviewType, number> = {
@@ -305,27 +319,27 @@ export function evaluateReviewTimeliness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (heldOnTimeRate >= 90) {
+  if (meets(heldOnTimeRate, 90)) {
     strengths.push("Excellent review timeliness: " + heldOnTimeRate + "% of reviews held on time");
-  } else if (heldOnTimeRate < 70) {
+  } else if (below(heldOnTimeRate, 70)) {
     concerns.push("Review timeliness at " + heldOnTimeRate + "% — below 70% threshold. Statutory timescales must be met");
   }
 
-  if (iroPresenceRate >= 90) {
+  if (meets(iroPresenceRate, 90)) {
     strengths.push("Strong IRO attendance: " + iroPresenceRate + "% of reviews chaired by IRO");
-  } else if (iroPresenceRate < 70) {
+  } else if (below(iroPresenceRate, 70)) {
     concerns.push("IRO present at only " + iroPresenceRate + "% of reviews — IRO Handbook requires independent oversight");
   }
 
-  if (minutesDistributedRate >= 90) {
+  if (meets(minutesDistributedRate, 90)) {
     strengths.push("Minutes distributed promptly in " + minutesDistributedRate + "% of reviews");
-  } else if (minutesDistributedRate < 70) {
+  } else if (below(minutesDistributedRate, 70)) {
     concerns.push("Minutes distributed in only " + minutesDistributedRate + "% of reviews — participants need timely records");
   }
 
-  if (actionPlanCreatedRate >= 90) {
+  if (meets(actionPlanCreatedRate, 90)) {
     strengths.push("Action plans created for " + actionPlanCreatedRate + "% of reviews");
-  } else if (actionPlanCreatedRate < 70) {
+  } else if (below(actionPlanCreatedRate, 70)) {
     concerns.push("Action plans created for only " + actionPlanCreatedRate + "% of reviews — every review must generate clear actions");
   }
 
@@ -357,13 +371,13 @@ export function evaluateChildParticipation(
     return {
       totalReviews: 0,
       fullyParticipatedCount: 0,
-      fullyParticipatedRate: 0,
+      fullyParticipatedRate: null,
       viewsSubmittedPlusCount: 0,
-      viewsSubmittedPlusRate: 0,
+      viewsSubmittedPlusRate: null,
       multiAgencyAttendanceCount: 0,
-      multiAgencyAttendanceRate: 0,
+      multiAgencyAttendanceRate: null,
       previousGoalsReviewedCount: 0,
-      previousGoalsReviewedRate: 0,
+      previousGoalsReviewedRate: null,
       participationBreakdown: {
         fully_participated: 0, views_submitted: 0, partially_participated: 0,
         declined: 0, not_invited: 0,
@@ -379,7 +393,7 @@ export function evaluateChildParticipation(
   const fullyParticipatedCount = reviews.filter(
     (r) => r.childParticipation === "fully_participated",
   ).length;
-  const fullyParticipatedRate = pct(fullyParticipatedCount, totalReviews);
+  const fullyParticipatedRate = rate(fullyParticipatedCount, totalReviews)!;
 
   // Views submitted or better (fully_participated OR views_submitted)
   const viewsSubmittedPlusCount = reviews.filter(
@@ -387,20 +401,20 @@ export function evaluateChildParticipation(
       r.childParticipation === "fully_participated" ||
       r.childParticipation === "views_submitted",
   ).length;
-  const viewsSubmittedPlusRate = pct(viewsSubmittedPlusCount, totalReviews);
+  const viewsSubmittedPlusRate = rate(viewsSubmittedPlusCount, totalReviews)!;
 
   // Multi-agency attendance (3+ different attendee types per review)
   const multiAgencyAttendanceCount = reviews.filter((r) => {
     const uniqueTypes = new Set(r.attendees);
     return uniqueTypes.size >= 3;
   }).length;
-  const multiAgencyAttendanceRate = pct(multiAgencyAttendanceCount, totalReviews);
+  const multiAgencyAttendanceRate = rate(multiAgencyAttendanceCount, totalReviews)!;
 
   // Previous goals reviewed
   const previousGoalsReviewedCount = reviews.filter(
     (r) => r.previousGoalsReviewed,
   ).length;
-  const previousGoalsReviewedRate = pct(previousGoalsReviewedCount, totalReviews);
+  const previousGoalsReviewedRate = rate(previousGoalsReviewedCount, totalReviews)!;
 
   // Participation breakdown
   const participationBreakdown: Record<ParticipationLevel, number> = {
@@ -433,27 +447,27 @@ export function evaluateChildParticipation(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (fullyParticipatedRate >= 80) {
+  if (meets(fullyParticipatedRate, 80)) {
     strengths.push("Excellent child participation: " + fullyParticipatedRate + "% of children fully participated in their reviews");
-  } else if (fullyParticipatedRate < 50) {
+  } else if (below(fullyParticipatedRate, 50)) {
     concerns.push("Full participation at only " + fullyParticipatedRate + "% — UNCRC Article 12 requires children to be heard");
   }
 
-  if (viewsSubmittedPlusRate >= 90) {
+  if (meets(viewsSubmittedPlusRate, 90)) {
     strengths.push("Children's views captured in " + viewsSubmittedPlusRate + "% of reviews");
-  } else if (viewsSubmittedPlusRate < 70) {
+  } else if (below(viewsSubmittedPlusRate, 70)) {
     concerns.push("Children's views captured in only " + viewsSubmittedPlusRate + "% of reviews — advocacy support may be needed");
   }
 
-  if (multiAgencyAttendanceRate >= 80) {
+  if (meets(multiAgencyAttendanceRate, 80)) {
     strengths.push("Strong multi-agency attendance: " + multiAgencyAttendanceRate + "% of reviews had 3+ professional types");
-  } else if (multiAgencyAttendanceRate < 50) {
+  } else if (below(multiAgencyAttendanceRate, 50)) {
     concerns.push("Multi-agency attendance at only " + multiAgencyAttendanceRate + "% — collaborative working needs strengthening");
   }
 
-  if (previousGoalsReviewedRate >= 90) {
+  if (meets(previousGoalsReviewedRate, 90)) {
     strengths.push("Previous goals reviewed in " + previousGoalsReviewedRate + "% of reviews — strong continuity of care planning");
-  } else if (previousGoalsReviewedRate < 70) {
+  } else if (below(previousGoalsReviewedRate, 70)) {
     concerns.push("Previous goals reviewed in only " + previousGoalsReviewedRate + "% of reviews — continuity of planning at risk");
   }
 
@@ -490,11 +504,11 @@ export function evaluateGoalAchievement(
     return {
       totalGoals: 0,
       achievedCount: 0,
-      achievedRate: 0,
+      achievedRate: null,
       onTrackPlusCount: 0,
-      onTrackPlusRate: 0,
+      onTrackPlusRate: null,
       notMetCount: 0,
-      notMetRate: 0,
+      notMetRate: null,
       goalsPerChild: 0,
       uniqueChildren: 0,
       statusBreakdown: {
@@ -508,17 +522,17 @@ export function evaluateGoalAchievement(
 
   // Achieved
   const achievedCount = goals.filter((g) => g.goalStatus === "achieved").length;
-  const achievedRate = pct(achievedCount, totalGoals);
+  const achievedRate = rate(achievedCount, totalGoals)!;
 
   // On-track+ (achieved or on_track)
   const onTrackPlusCount = goals.filter(
     (g) => g.goalStatus === "achieved" || g.goalStatus === "on_track",
   ).length;
-  const onTrackPlusRate = pct(onTrackPlusCount, totalGoals);
+  const onTrackPlusRate = rate(onTrackPlusCount, totalGoals)!;
 
   // Not met
   const notMetCount = goals.filter((g) => g.goalStatus === "not_met").length;
-  const notMetRate = pct(notMetCount, totalGoals);
+  const notMetRate = rate(notMetCount, totalGoals)!;
 
   // Goals per child breadth
   const uniqueChildIds = new Set(goals.map((g) => g.childId));
@@ -555,19 +569,19 @@ export function evaluateGoalAchievement(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (achievedRate >= 60) {
+  if (meets(achievedRate, 60)) {
     strengths.push("Strong goal achievement: " + achievedRate + "% of goals achieved");
-  } else if (achievedRate < 30) {
+  } else if (below(achievedRate, 30)) {
     concerns.push("Goal achievement at only " + achievedRate + "% — review whether goals are realistic and adequately supported");
   }
 
-  if (onTrackPlusRate >= 80) {
+  if (meets(onTrackPlusRate, 80)) {
     strengths.push("Excellent progress tracking: " + onTrackPlusRate + "% of goals achieved or on track");
-  } else if (onTrackPlusRate < 50) {
+  } else if (below(onTrackPlusRate, 50)) {
     concerns.push("Only " + onTrackPlusRate + "% of goals achieved or on track — care plan effectiveness needs review");
   }
 
-  if (notMetRate > 30) {
+  if (above(notMetRate, 30)) {
     concerns.push(notMetRate + "% of goals not met — systemic barriers to goal achievement may exist");
   }
 
@@ -605,19 +619,19 @@ export function evaluateStaffReviewReadiness(
     return {
       totalStaff: 0,
       reviewProcessCount: 0,
-      reviewProcessRate: 0,
+      reviewProcessRate: null,
       childParticipationCount: 0,
-      childParticipationRate: 0,
+      childParticipationRate: null,
       goalSettingCount: 0,
-      goalSettingRate: 0,
+      goalSettingRate: null,
       multiAgencyWorkingCount: 0,
-      multiAgencyWorkingRate: 0,
+      multiAgencyWorkingRate: null,
       minutesTakingCount: 0,
-      minutesTakingRate: 0,
+      minutesTakingRate: null,
       advocacyAwarenessCount: 0,
-      advocacyAwarenessRate: 0,
+      advocacyAwarenessRate: null,
       overallReadyCount: 0,
-      overallReadyRate: 0,
+      overallReadyRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff review training records — staff readiness cannot be assessed"],
@@ -626,22 +640,22 @@ export function evaluateStaffReviewReadiness(
 
   // Individual field counts
   const reviewProcessCount = training.filter((t) => t.reviewProcess).length;
-  const reviewProcessRate = pct(reviewProcessCount, totalStaff);
+  const reviewProcessRate = rate(reviewProcessCount, totalStaff)!;
 
   const childParticipationCount = training.filter((t) => t.childParticipation).length;
-  const childParticipationRate = pct(childParticipationCount, totalStaff);
+  const childParticipationRate = rate(childParticipationCount, totalStaff)!;
 
   const goalSettingCount = training.filter((t) => t.goalSetting).length;
-  const goalSettingRate = pct(goalSettingCount, totalStaff);
+  const goalSettingRate = rate(goalSettingCount, totalStaff)!;
 
   const multiAgencyWorkingCount = training.filter((t) => t.multiAgencyWorking).length;
-  const multiAgencyWorkingRate = pct(multiAgencyWorkingCount, totalStaff);
+  const multiAgencyWorkingRate = rate(multiAgencyWorkingCount, totalStaff)!;
 
   const minutesTakingCount = training.filter((t) => t.minutesTaking).length;
-  const minutesTakingRate = pct(minutesTakingCount, totalStaff);
+  const minutesTakingRate = rate(minutesTakingCount, totalStaff)!;
 
   const advocacyAwarenessCount = training.filter((t) => t.advocacyAwareness).length;
-  const advocacyAwarenessRate = pct(advocacyAwarenessCount, totalStaff);
+  const advocacyAwarenessRate = rate(advocacyAwarenessCount, totalStaff)!;
 
   // Overall ready (all 6 fields true)
   const overallReadyCount = training.filter(
@@ -653,7 +667,7 @@ export function evaluateStaffReviewReadiness(
       t.minutesTaking &&
       t.advocacyAwareness,
   ).length;
-  const overallReadyRate = pct(overallReadyCount, totalStaff);
+  const overallReadyRate = rate(overallReadyCount, totalStaff)!;
 
   // Score (out of 25) — rate-based scoring per field
   // reviewProcess=6, childParticipation=5, goalSetting=4, multiAgencyWorking=4, minutesTaking=3, advocacyAwareness=3
@@ -671,33 +685,33 @@ export function evaluateStaffReviewReadiness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (reviewProcessRate >= 90) {
+  if (meets(reviewProcessRate, 90)) {
     strengths.push("Excellent review process knowledge: " + reviewProcessRate + "% of staff trained");
-  } else if (reviewProcessRate < 70) {
+  } else if (below(reviewProcessRate, 70)) {
     concerns.push("Review process training at only " + reviewProcessRate + "% — staff may not understand statutory requirements");
   }
 
-  if (childParticipationRate >= 90) {
+  if (meets(childParticipationRate, 90)) {
     strengths.push("Strong child participation skills: " + childParticipationRate + "% of staff trained");
-  } else if (childParticipationRate < 70) {
+  } else if (below(childParticipationRate, 70)) {
     concerns.push("Child participation training at only " + childParticipationRate + "% — children's voices may not be adequately supported");
   }
 
-  if (goalSettingRate >= 90) {
+  if (meets(goalSettingRate, 90)) {
     strengths.push("Good goal-setting competency: " + goalSettingRate + "% of staff trained");
-  } else if (goalSettingRate < 70) {
+  } else if (below(goalSettingRate, 70)) {
     concerns.push("Goal-setting training at only " + goalSettingRate + "% — SMART objectives may not be effectively set");
   }
 
-  if (multiAgencyWorkingRate >= 90) {
+  if (meets(multiAgencyWorkingRate, 90)) {
     strengths.push("Strong multi-agency working skills: " + multiAgencyWorkingRate + "% of staff trained");
-  } else if (multiAgencyWorkingRate < 70) {
+  } else if (below(multiAgencyWorkingRate, 70)) {
     concerns.push("Multi-agency working training at only " + multiAgencyWorkingRate + "% — collaborative practice needs strengthening");
   }
 
   if (overallReadyRate === 100) {
     strengths.push("100% of staff fully trained across all review competencies");
-  } else if (overallReadyRate < 50) {
+  } else if (below(overallReadyRate, 50)) {
     concerns.push("Only " + overallReadyRate + "% of staff have complete review training — significant training gap");
   }
 
@@ -935,17 +949,17 @@ function generateActions(
   const actions: string[] = [];
 
   // Late reviews
-  if (timeliness.heldOnTimeRate < 70 && timeliness.totalReviews > 0) {
+  if (below(timeliness.heldOnTimeRate, 70) && timeliness.totalReviews > 0) {
     actions.push("URGENT: Review timeliness at " + timeliness.heldOnTimeRate + "% — implement review tracking calendar and escalation process");
   }
 
   // IRO absence
-  if (timeliness.iroPresenceRate < 70 && timeliness.totalReviews > 0) {
+  if (below(timeliness.iroPresenceRate, 70) && timeliness.totalReviews > 0) {
     actions.push("URGENT: IRO present at only " + timeliness.iroPresenceRate + "% of reviews — liaise with IRO service to ensure attendance");
   }
 
   // Low child participation
-  if (participation.fullyParticipatedRate < 50 && participation.totalReviews > 0) {
+  if (below(participation.fullyParticipatedRate, 50) && participation.totalReviews > 0) {
     actions.push("URGENT: Only " + participation.fullyParticipatedRate + "% of children fully participating — review participation support and advocacy provision");
   }
 
@@ -955,7 +969,7 @@ function generateActions(
   }
 
   // High not-met goal rate
-  if (goals.notMetRate > 30 && goals.totalGoals > 0) {
+  if (above(goals.notMetRate, 30) && goals.totalGoals > 0) {
     actions.push("HIGH: " + goals.notMetRate + "% of goals not met — review goal-setting process and support mechanisms");
   }
 
@@ -965,22 +979,22 @@ function generateActions(
   }
 
   // Low multi-agency attendance
-  if (participation.multiAgencyAttendanceRate < 50 && participation.totalReviews > 0) {
+  if (below(participation.multiAgencyAttendanceRate, 50) && participation.totalReviews > 0) {
     actions.push("HIGH: Multi-agency attendance at only " + participation.multiAgencyAttendanceRate + "% — strengthen invitation process and professional engagement");
   }
 
   // Staff training gaps
-  if (staff.overallReadyRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.overallReadyRate, 50) && staff.totalStaff > 0) {
     actions.push("HIGH: Only " + staff.overallReadyRate + "% of staff fully trained in review competencies — schedule comprehensive training programme");
   }
 
   // Minutes not distributed
-  if (timeliness.minutesDistributedRate < 70 && timeliness.totalReviews > 0) {
+  if (below(timeliness.minutesDistributedRate, 70) && timeliness.totalReviews > 0) {
     actions.push("MEDIUM: Minutes distributed for only " + timeliness.minutesDistributedRate + "% of reviews — implement distribution tracking");
   }
 
   // Action plans missing
-  if (timeliness.actionPlanCreatedRate < 70 && timeliness.totalReviews > 0) {
+  if (below(timeliness.actionPlanCreatedRate, 70) && timeliness.totalReviews > 0) {
     actions.push("MEDIUM: Action plans created for only " + timeliness.actionPlanCreatedRate + "% of reviews — ensure every review generates an action plan");
   }
 
@@ -999,7 +1013,7 @@ function generateActions(
   }
 
   // Previous goals not reviewed
-  if (participation.previousGoalsReviewedRate < 70 && participation.totalReviews > 0) {
+  if (below(participation.previousGoalsReviewedRate, 70) && participation.totalReviews > 0) {
     actions.push("MEDIUM: Previous goals reviewed in only " + participation.previousGoalsReviewedRate + "% of reviews — ensure continuity in care planning");
   }
 

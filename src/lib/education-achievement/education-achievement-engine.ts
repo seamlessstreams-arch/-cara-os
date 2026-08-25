@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Education Achievement Intelligence Engine
 //
@@ -278,11 +279,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -304,10 +300,10 @@ export function evaluateAttendance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      attendanceRate: 0,
-      unauthorisedAbsenceRate: 0,
+      attendanceRate: null,
+      unauthorisedAbsenceRate: null,
       persistentAbsenceChildren: 0,
-      lateRate: 0,
+      lateRate: null,
       exclusionDays: 0,
     };
   }
@@ -318,24 +314,24 @@ export function evaluateAttendance(
   const present = attendance.filter(
     (a) => a.status === "present" || a.status === "late",
   ).length;
-  const attendanceRate = pct(present, attendance.length);
+  const attendanceRate = rate(present, attendance.length);
 
   // +10 for ≥ 95%, +7 for ≥ 90%, +4 for ≥ 85%, +2 for ≥ 80%
-  if (attendanceRate >= 95) score += 10;
-  else if (attendanceRate >= 90) score += 7;
-  else if (attendanceRate >= 85) score += 4;
-  else if (attendanceRate >= 80) score += 2;
+  if (meets(attendanceRate, 95)) score += 10;
+  else if (meets(attendanceRate, 90)) score += 7;
+  else if (meets(attendanceRate, 85)) score += 4;
+  else if (meets(attendanceRate, 80)) score += 2;
 
   // Unauthorised absence rate
   const unauthorised = attendance.filter(
     (a) => a.status === "unauthorised_absence",
   ).length;
-  const unauthorisedAbsenceRate = pct(unauthorised, attendance.length);
+  const unauthorisedAbsenceRate = rate(unauthorised, attendance.length);
 
   // +5 for 0%, +3 for < 3%, +1 for < 5%
   if (unauthorisedAbsenceRate === 0) score += 5;
-  else if (unauthorisedAbsenceRate <= 3) score += 3;
-  else if (unauthorisedAbsenceRate <= 5) score += 1;
+  else if ((unauthorisedAbsenceRate !== null && unauthorisedAbsenceRate <= 3)) score += 3;
+  else if ((unauthorisedAbsenceRate !== null && unauthorisedAbsenceRate <= 5)) score += 1;
 
   // Persistent absence (children with < 90% attendance)
   const childAttendance = new Map<string, { present: number; total: number }>();
@@ -349,7 +345,7 @@ export function evaluateAttendance(
   }
   let persistentAbsenceChildren = 0;
   childAttendance.forEach((entry) => {
-    if (pct(entry.present, entry.total) < 90) {
+    if (below(rate(entry.present, entry.total), 90)) {
       persistentAbsenceChildren += 1;
     }
   });
@@ -360,11 +356,11 @@ export function evaluateAttendance(
 
   // Late rate
   const late = attendance.filter((a) => a.status === "late").length;
-  const lateRate = pct(late, attendance.length);
+  const lateRate = rate(late, attendance.length);
 
   // +3 for < 3% late, +1 for < 5%
-  if (lateRate < 3) score += 3;
-  else if (lateRate < 5) score += 1;
+  if (below(lateRate, 3)) score += 3;
+  else if (below(lateRate, 5)) score += 1;
 
   // Exclusion days
   const excluded = attendance.filter((a) => a.status === "excluded").length;
@@ -403,12 +399,12 @@ export function evaluatePEPQuality(
     return {
       overallScore: 0,
       totalPEPs: 0,
-      currentRate: 0,
+      currentRate: null,
       qualityDistribution,
-      childViewsRate: 0,
-      smartTargetsRate: 0,
-      virtualSchoolInvolvedRate: 0,
-      ppFundingUsedRate: 0,
+      childViewsRate: null,
+      smartTargetsRate: null,
+      virtualSchoolInvolvedRate: null,
+      ppFundingUsedRate: null,
     };
   }
 
@@ -418,56 +414,56 @@ export function evaluatePEPQuality(
   const current = peps.filter(
     (p) => p.status === "current" || p.status === "completed",
   ).length;
-  const currentRate = pct(current, peps.length);
+  const currentRate = rate(current, peps.length);
 
   // +5 for 100% current, +3 for ≥ 80%
-  if (currentRate >= 100) score += 5;
-  else if (currentRate >= 80) score += 3;
-  else if (currentRate >= 60) score += 1;
+  if (meets(currentRate, 100)) score += 5;
+  else if (meets(currentRate, 80)) score += 3;
+  else if (meets(currentRate, 60)) score += 1;
 
   // Quality distribution
   for (const p of peps) {
     qualityDistribution[p.quality] += 1;
   }
   const goodOrOutstanding = qualityDistribution.outstanding + qualityDistribution.good;
-  const goodRate = pct(goodOrOutstanding, peps.length);
+  const goodRate = rate(goodOrOutstanding, peps.length);
 
   // +5 for ≥ 90% good/outstanding, +3 for ≥ 70%
-  if (goodRate >= 90) score += 5;
-  else if (goodRate >= 70) score += 3;
-  else if (goodRate >= 50) score += 1;
+  if (meets(goodRate, 90)) score += 5;
+  else if (meets(goodRate, 70)) score += 3;
+  else if (meets(goodRate, 50)) score += 1;
 
   // Child views included
   const childViews = peps.filter((p) => p.childViewsIncluded).length;
-  const childViewsRate = pct(childViews, peps.length);
+  const childViewsRate = rate(childViews, peps.length);
 
   // +4 for 100%, +2 for ≥ 80%
-  if (childViewsRate >= 100) score += 4;
-  else if (childViewsRate >= 80) score += 2;
+  if (meets(childViewsRate, 100)) score += 4;
+  else if (meets(childViewsRate, 80)) score += 2;
 
   // SMART targets
   const smartTargets = peps.filter((p) => p.targetsSMART).length;
-  const smartTargetsRate = pct(smartTargets, peps.length);
+  const smartTargetsRate = rate(smartTargets, peps.length);
 
   // +4 for 100%, +2 for ≥ 80%
-  if (smartTargetsRate >= 100) score += 4;
-  else if (smartTargetsRate >= 80) score += 2;
+  if (meets(smartTargetsRate, 100)) score += 4;
+  else if (meets(smartTargetsRate, 80)) score += 2;
 
   // Virtual school involvement
   const vsInvolved = peps.filter((p) => p.virtualSchoolInvolved).length;
-  const virtualSchoolInvolvedRate = pct(vsInvolved, peps.length);
+  const virtualSchoolInvolvedRate = rate(vsInvolved, peps.length);
 
   // +4 for 100%, +2 for ≥ 80%
-  if (virtualSchoolInvolvedRate >= 100) score += 4;
-  else if (virtualSchoolInvolvedRate >= 80) score += 2;
+  if (meets(virtualSchoolInvolvedRate, 100)) score += 4;
+  else if (meets(virtualSchoolInvolvedRate, 80)) score += 2;
 
   // PP funding used
   const ppUsed = peps.filter((p) => p.ppFundingUsed).length;
-  const ppFundingUsedRate = pct(ppUsed, peps.length);
+  const ppFundingUsedRate = rate(ppUsed, peps.length);
 
   // +3 for ≥ 80%, +1 for ≥ 50%
-  if (ppFundingUsedRate >= 80) score += 3;
-  else if (ppFundingUsedRate >= 50) score += 1;
+  if (meets(ppFundingUsedRate, 80)) score += 3;
+  else if (meets(ppFundingUsedRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -493,8 +489,8 @@ export function evaluateAcademicProgress(
     return {
       overallScore: 0,
       totalOutcomes: 0,
-      exceedingExpectedRate: 0,
-      belowExpectedRate: 0,
+      exceedingExpectedRate: null,
+      belowExpectedRate: null,
       subjectCoverage: 0,
       uniqueSubjects: [],
     };
@@ -510,13 +506,13 @@ export function evaluateAcademicProgress(
   const exceedingExpected = assessed.filter(
     (o) => o.progress === "exceeding" || o.progress === "expected",
   ).length;
-  const exceedingExpectedRate = pct(exceedingExpected, assessedCount);
+  const exceedingExpectedRate = rate(exceedingExpected, assessedCount);
 
   // +10 for ≥ 80%, +7 for ≥ 60%, +4 for ≥ 40%
-  if (exceedingExpectedRate >= 80) score += 10;
-  else if (exceedingExpectedRate >= 60) score += 7;
-  else if (exceedingExpectedRate >= 40) score += 4;
-  else if (exceedingExpectedRate > 0) score += 1;
+  if (meets(exceedingExpectedRate, 80)) score += 10;
+  else if (meets(exceedingExpectedRate, 60)) score += 7;
+  else if (meets(exceedingExpectedRate, 40)) score += 4;
+  else if (above(exceedingExpectedRate, 0)) score += 1;
 
   // Below expected rate
   const belowExpected = assessed.filter(
@@ -524,12 +520,12 @@ export function evaluateAcademicProgress(
       o.progress === "below_expected" ||
       o.progress === "significantly_below",
   ).length;
-  const belowExpectedRate = pct(belowExpected, assessedCount);
+  const belowExpectedRate = rate(belowExpected, assessedCount);
 
   // +5 for 0% below, +3 for < 20%, +1 for < 40%
   if (assessedCount > 0 && belowExpectedRate === 0) score += 5;
-  else if (belowExpectedRate < 20) score += 3;
-  else if (belowExpectedRate < 40) score += 1;
+  else if (below(belowExpectedRate, 20)) score += 3;
+  else if (below(belowExpectedRate, 40)) score += 1;
 
   // Subject coverage
   const uniqueSubjects = Array.from(
@@ -692,7 +688,7 @@ export function buildChildEducationProfiles(
       (a) => a.status === "present" || a.status === "late",
     ).length;
     const attendanceRate = childAttendance.length > 0
-      ? pct(presentOrLate, childAttendance.length)
+      ? rate(presentOrLate, childAttendance.length)
       : 0;
 
     // Latest PEP status
@@ -737,9 +733,9 @@ export function buildChildEducationProfiles(
     let profileScore = 3;
 
     // Attendance
-    if (attendanceRate >= 95) profileScore += 2;
-    else if (attendanceRate >= 90) profileScore += 1;
-    else if (attendanceRate < 80 && childAttendance.length > 0) profileScore -= 1;
+    if (meets(attendanceRate, 95)) profileScore += 2;
+    else if (meets(attendanceRate, 90)) profileScore += 1;
+    else if (below(attendanceRate, 80) && childAttendance.length > 0) profileScore -= 1;
 
     // PEP
     if (pepStatus === "current" || pepStatus === "completed") profileScore += 1;

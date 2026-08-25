@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { above, meets } from "@/lib/metrics/rate";
+import { above, formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -122,8 +122,8 @@ export function ChildEmotionalWellbeingIntelligenceCard({ childId }: { childId: 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <Smile className={cn("h-3.5 w-3.5", d.mood.avg_mood_30d !== null && d.mood.avg_mood_30d >= 7 ? "text-green-500" : d.mood.avg_mood_30d !== null && d.mood.avg_mood_30d >= 5 ? "text-amber-500" : "text-red-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.mood.avg_mood_30d !== null && d.mood.avg_mood_30d >= 7 ? "text-green-600" : d.mood.avg_mood_30d !== null && d.mood.avg_mood_30d >= 5 ? "text-amber-600" : "text-red-600")}>
+                <Smile className={cn("h-3.5 w-3.5", d.mood.avg_mood_30d !== null && meets(d.mood.avg_mood_30d, 7) ? "text-green-500" : d.mood.avg_mood_30d !== null && meets(d.mood.avg_mood_30d, 5) ? "text-amber-500" : "text-red-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", d.mood.avg_mood_30d !== null && meets(d.mood.avg_mood_30d, 7) ? "text-green-600" : d.mood.avg_mood_30d !== null && meets(d.mood.avg_mood_30d, 5) ? "text-amber-600" : "text-red-600")}>
                   {d.mood.avg_mood_30d ?? "—"}
                 </p>
                 {d.mood.mood_trend !== "insufficient_data" && (
@@ -134,7 +134,7 @@ export function ChildEmotionalWellbeingIntelligenceCard({ childId }: { childId: 
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums", meets(d.behaviour.positive_rate_30d, 60) ? "text-green-600" : meets(d.behaviour.positive_rate_30d, 40) ? "text-amber-600" : "text-red-600")}>
-                {d.behaviour.positive_rate_30d}%
+                {formatRate(d.behaviour.positive_rate_30d)}
               </p>
               <p className="text-[10px] text-muted-foreground">Positive Beh.</p>
             </div>
@@ -142,7 +142,7 @@ export function ChildEmotionalWellbeingIntelligenceCard({ childId }: { childId: 
               <div className="flex items-center justify-center gap-1">
                 <Award className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", d.reward_balance.balance_rating === "positive" ? "text-green-600" : d.reward_balance.balance_rating === "sanctions_heavy" ? "text-red-600" : "text-slate-600")}>
-                  {d.reward_balance.reward_ratio}%
+                  {formatRate(d.reward_balance.reward_ratio)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Reward Ratio</p>
@@ -179,10 +179,10 @@ export function ChildEmotionalWellbeingIntelligenceCard({ childId }: { childId: 
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Keywork: <span className="font-medium text-slate-600">{d.engagement.keywork_sessions_30d} sessions</span></p>
                 {above(d.engagement.keywork_voice_rate, 0) && (
-                  <p>Voice: <span className="font-medium text-slate-600">{d.engagement.keywork_voice_rate}%</span></p>
+                  <p>Voice: <span className="font-medium text-slate-600">{formatRate(d.engagement.keywork_voice_rate)}</span></p>
                 )}
                 {above(d.engagement.therapy_attendance_rate, 0) && (
-                  <p>Therapy: <span className={meets(d.engagement.therapy_attendance_rate, 80) ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.engagement.therapy_attendance_rate}%</span></p>
+                  <p>Therapy: <span className={meets(d.engagement.therapy_attendance_rate, 80) ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.engagement.therapy_attendance_rate)}</span></p>
                 )}
                 <p>Rewards: <span className="font-medium text-slate-600">{d.reward_balance.rewards_30d}</span> · Sanctions: <span className="font-medium text-slate-600">{d.reward_balance.sanctions_30d}</span></p>
               </div>

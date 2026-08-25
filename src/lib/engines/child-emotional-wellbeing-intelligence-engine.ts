@@ -138,10 +138,6 @@ function clamp(n: number, lo: number, hi: number): number {
 }
 
 // Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
-function pct(num: number, den: number): number | null {
-  return rate(num, den);
-}
-
 function avg(nums: number[]): number | null {
   if (nums.length === 0) return null;
   return Math.round(nums.reduce((s, n) => s + n, 0) / nums.length);
@@ -173,7 +169,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
         low_mood_days: 0, mood_variability: "insufficient_data",
       },
       behaviour: {
-        positive_rate_30d: 0, positive_rate_7d: 0,
+        positive_rate_30d: null, positive_rate_7d: null,
         behaviour_trend: "insufficient_data", severe_incidents_30d: 0,
         trigger_themes: [], strategy_use_rate: null,
       },
@@ -182,7 +178,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
         keywork_mood_improvement_rate: null, therapy_attendance_rate: null,
         therapy_engagement_quality: 0,
       },
-      reward_balance: { rewards_30d: 0, sanctions_30d: 0, reward_ratio: 0, balance_rating: "no_data" },
+      reward_balance: { rewards_30d: 0, sanctions_30d: 0, reward_ratio: null, balance_rating: "no_data" },
       strengths: [],
       concerns: ["No emotional wellbeing data available — daily logs, behaviour records, and keywork sessions may not be recording mood data."],
       recommendations: [{ rank: 1, recommendation: "Ensure daily log entries include mood scores to enable emotional wellbeing monitoring.", urgency: "soon", regulatory_ref: "Reg 10" }],
@@ -270,8 +266,8 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
 
   let behaviourTrend: "improving" | "stable" | "declining" | "insufficient_data" = "insufficient_data";
   if (beh30d.length >= 3 && behPrior30d.length >= 3) {
-    const currentRate = pct(positive30d, beh30d.length);
-    const priorRate = pct(positivePrior, behPrior30d.length);
+    const currentRate = rate(positive30d, beh30d.length);
+    const priorRate = rate(positivePrior, behPrior30d.length);
     // A trend needs both windows measured. The length guards above make that
     // true today, but the difference is only meaningful when it is.
     if (currentRate === null || priorRate === null) behaviourTrend = "insufficient_data";
@@ -296,12 +292,12 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   const strategyUsed = concerning30d.filter((b) => b.has_strategy_used).length;
 
   const behaviourProfile: BehaviourEmotionalProfile = {
-    positive_rate_30d: pct(positive30d, beh30d.length),
-    positive_rate_7d: pct(positive7d, beh7d.length),
+    positive_rate_30d: rate(positive30d, beh30d.length),
+    positive_rate_7d: rate(positive7d, beh7d.length),
     behaviour_trend: behaviourTrend,
     severe_incidents_30d: severe30d,
     trigger_themes: triggerThemes,
-    strategy_use_rate: pct(strategyUsed, concerning30d.length),
+    strategy_use_rate: rate(strategyUsed, concerning30d.length),
   };
 
   // ── Engagement Profile ──────────────────────────────────────────────────
@@ -315,9 +311,9 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
 
   const engagementProfile: EngagementProfile = {
     keywork_sessions_30d: kw30d.length,
-    keywork_voice_rate: pct(kwWithVoice, kw30d.length),
-    keywork_mood_improvement_rate: pct(kwWithMoodImprovement, kw30d.filter((k) => k.mood_before !== null && k.mood_after !== null).length),
-    therapy_attendance_rate: pct(therapyAttended, therapy30d.length),
+    keywork_voice_rate: rate(kwWithVoice, kw30d.length),
+    keywork_mood_improvement_rate: rate(kwWithMoodImprovement, kw30d.filter((k) => k.mood_before !== null && k.mood_after !== null).length),
+    therapy_attendance_rate: rate(therapyAttended, therapy30d.length),
     therapy_engagement_quality: avg(therapyEngagementScores) ?? 0,
   };
 
@@ -328,7 +324,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
 
   let balanceRating: "positive" | "balanced" | "sanctions_heavy" | "no_data" = "no_data";
   if (sr30d.length > 0) {
-    const ratio = pct(rewards30d, rewards30d + sanctions30d);
+    const ratio = rate(rewards30d, rewards30d + sanctions30d);
     if (meets(ratio, 70)) balanceRating = "positive";
     else if (meets(ratio, 40)) balanceRating = "balanced";
     else balanceRating = "sanctions_heavy";
@@ -337,7 +333,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
   const rewardBalance: RewardBalanceProfile = {
     rewards_30d: rewards30d,
     sanctions_30d: sanctions30d,
-    reward_ratio: pct(rewards30d, rewards30d + sanctions30d),
+    reward_ratio: rate(rewards30d, rewards30d + sanctions30d),
     balance_rating: balanceRating,
   };
 
@@ -365,7 +361,7 @@ export function computeChildEmotionalWellbeing(input: ChildEmotionalWellbeingInp
 
   // Behaviour positive rate (+/- 10)
   if (beh30d.length >= 3) {
-    const posRate = pct(positive30d, beh30d.length);
+    const posRate = rate(positive30d, beh30d.length);
     if (meets(posRate, 70)) score += 10;
     else if (meets(posRate, 50)) score += 3;
     else if (below(posRate, 30)) score -= 8;

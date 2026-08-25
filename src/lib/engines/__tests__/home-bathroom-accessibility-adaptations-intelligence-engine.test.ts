@@ -228,7 +228,7 @@ describe("insufficient data", () => {
     expect(r.total_modification_records).toBe(0);
   });
 
-  it("zeroes all rates on insufficient_data", () => {
+  it("nulls all rates on insufficient_data", () => {
     const r = computeBathroomAccessibilityAdaptations({
       today: "2026-05-30",
       total_children: 0,

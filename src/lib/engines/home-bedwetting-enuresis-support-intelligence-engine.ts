@@ -202,10 +202,6 @@ export interface BedwettingEnuresisResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -230,12 +226,12 @@ function emptyResult(
     headline,
     total_management_plans: 0,
     total_support_interactions: 0,
-    management_plan_rate: 0,
-    discreet_support_rate: 0,
-    dignity_preservation_rate: 0,
-    medical_referral_rate: 0,
-    emotional_wellbeing_rate: 0,
-    child_confidence_rate: 0,
+    management_plan_rate: null,
+    discreet_support_rate: null,
+    dignity_preservation_rate: null,
+    medical_referral_rate: null,
+    emotional_wellbeing_rate: null,
+    child_confidence_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -315,15 +311,15 @@ export function computeBedwettingEnuresisSupport(
   const totalManagementPlans = management_plan_records.length;
 
   const reviewedPlans = management_plan_records.filter((p) => p.reviewed).length;
-  const planReviewRate = pct(reviewedPlans, totalManagementPlans);
+  const planReviewRate = rate(reviewedPlans, totalManagementPlans);
 
   const childInvolvedInPlanning = management_plan_records.filter(
     (p) => p.child_involved_in_planning,
   ).length;
-  const childInvolvementRate = pct(childInvolvedInPlanning, totalManagementPlans);
+  const childInvolvementRate = rate(childInvolvedInPlanning, totalManagementPlans);
 
   const staffTrainedOnPlan = management_plan_records.filter((p) => p.staff_trained_on_plan).length;
-  const staffTrainedRate = pct(staffTrainedOnPlan, totalManagementPlans);
+  const staffTrainedRate = rate(staffTrainedOnPlan, totalManagementPlans);
 
   const progressSum = management_plan_records.reduce((sum, p) => sum + p.progress_rating, 0);
   // Null on empty — no management plans ⇒ no progress to rate; "0/5" would
@@ -349,7 +345,7 @@ export function computeBedwettingEnuresisSupport(
       if (check(rec)) totalPlanChecksPassed++;
     }
   }
-  const managementPlanRate = pct(totalPlanChecksPassed, totalPlanChecksPossible);
+  const managementPlanRate = rate(totalPlanChecksPassed, totalPlanChecksPossible);
 
   // --- Discreet support metrics ---
   const totalDiscreetSupport = discreet_support_records.length;
@@ -369,7 +365,7 @@ export function computeBedwettingEnuresisSupport(
       if (check(rec)) totalSupportChecksPassed++;
     }
   }
-  const discreetSupportRate = pct(totalSupportChecksPassed, totalSupportChecksPossible);
+  const discreetSupportRate = rate(totalSupportChecksPassed, totalSupportChecksPossible);
 
   // --- Dignity preservation metrics ---
   const totalDignityRecords = dignity_preservation_records.length;
@@ -392,19 +388,19 @@ export function computeBedwettingEnuresisSupport(
       if (check(rec)) totalDignityChecksPassed++;
     }
   }
-  const dignityPreservationRate = pct(totalDignityChecksPassed, totalDignityChecksPossible);
+  const dignityPreservationRate = rate(totalDignityChecksPassed, totalDignityChecksPossible);
 
   const selfManagementTaught = dignity_preservation_records.filter((d) => d.self_management_skills_taught).length;
-  const selfManagementRate = pct(selfManagementTaught, totalDignityRecords);
+  const selfManagementRate = rate(selfManagementTaught, totalDignityRecords);
 
   const overnightStaysSupported = dignity_preservation_records.filter((d) => d.overnight_stays_supported).length;
-  const overnightSupportRate = pct(overnightStaysSupported, totalDignityRecords);
+  const overnightSupportRate = rate(overnightStaysSupported, totalDignityRecords);
 
   const noPeerAwareness = dignity_preservation_records.filter((d) => d.no_peer_awareness_incidents).length;
-  const peerAwarenessRate = pct(noPeerAwareness, totalDignityRecords);
+  const peerAwarenessRate = rate(noPeerAwareness, totalDignityRecords);
 
   const notBlamedShamed = dignity_preservation_records.filter((d) => d.child_not_blamed_or_shamed).length;
-  const noBlamingRate = pct(notBlamedShamed, totalDignityRecords);
+  const noBlamingRate = rate(notBlamedShamed, totalDignityRecords);
 
   // --- Medical referral metrics ---
   const totalMedicalReferrals = medical_referral_records.length;
@@ -413,10 +409,10 @@ export function computeBedwettingEnuresisSupport(
   const followUpCompleted = medical_referral_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired);
 
   const adviceSharedWithStaff = medical_referral_records.filter((r) => r.professional_advice_shared_with_staff).length;
-  const adviceSharedRate = pct(adviceSharedWithStaff, totalMedicalReferrals);
+  const adviceSharedRate = rate(adviceSharedWithStaff, totalMedicalReferrals);
 
   // Medical referral rate: composite of accepted, attended, outcome documented, advice shared
   const referralQualityChecks = [
@@ -432,27 +428,27 @@ export function computeBedwettingEnuresisSupport(
       if (check(rec)) totalReferralChecksPassed++;
     }
   }
-  const medicalReferralRate = pct(totalReferralChecksPassed, totalReferralChecksPossible);
+  const medicalReferralRate = rate(totalReferralChecksPassed, totalReferralChecksPossible);
 
   // --- Emotional wellbeing metrics ---
   const totalEmotionalRecords = emotional_wellbeing_records.length;
 
   const feelsSupported = emotional_wellbeing_records.filter((e) => e.child_feels_supported).length;
-  const feelsSupportedRate = pct(feelsSupported, totalEmotionalRecords);
+  const feelsSupportedRate = rate(feelsSupported, totalEmotionalRecords);
 
   const childVoiceCaptured = emotional_wellbeing_records.filter((e) => e.child_voice_captured).length;
-  const childVoiceRate = pct(childVoiceCaptured, totalEmotionalRecords);
+  const childVoiceRate = rate(childVoiceCaptured, totalEmotionalRecords);
 
   const copingStrategiesInPlace = emotional_wellbeing_records.filter((e) => e.coping_strategies_in_place).length;
-  const copingStrategiesRate = pct(copingStrategiesInPlace, totalEmotionalRecords);
+  const copingStrategiesRate = rate(copingStrategiesInPlace, totalEmotionalRecords);
 
   const copingEffective = emotional_wellbeing_records.filter(
     (e) => e.coping_strategies_in_place && e.coping_strategies_effective,
   ).length;
-  const copingEffectivenessRate = pct(copingEffective, copingStrategiesInPlace);
+  const copingEffectivenessRate = rate(copingEffective, copingStrategiesInPlace);
 
   const confidenceInManagement = emotional_wellbeing_records.filter((e) => e.confidence_in_management).length;
-  const childConfidenceRate = pct(confidenceInManagement, totalEmotionalRecords);
+  const childConfidenceRate = rate(confidenceInManagement, totalEmotionalRecords);
 
   const declinedProgress = emotional_wellbeing_records.filter((e) => e.progress_since_last_assessment === "declined").length;
   const assessmentsWithProgress = emotional_wellbeing_records.filter(
@@ -460,13 +456,13 @@ export function computeBedwettingEnuresisSupport(
   ).length;
 
   const feelsEmbarrassed = emotional_wellbeing_records.filter((e) => e.child_feels_embarrassed).length;
-  const embarrassmentRate = pct(feelsEmbarrassed, totalEmotionalRecords);
+  const embarrassmentRate = rate(feelsEmbarrassed, totalEmotionalRecords);
 
   const anxietyBedtime = emotional_wellbeing_records.filter((e) => e.child_anxiety_around_bedtime).length;
-  const bedtimeAnxietyRate = pct(anxietyBedtime, totalEmotionalRecords);
+  const bedtimeAnxietyRate = rate(anxietyBedtime, totalEmotionalRecords);
 
   const avoidsSleepover = emotional_wellbeing_records.filter((e) => e.child_avoids_overnight_activities).length;
-  const avoidsSleepoverRate = pct(avoidsSleepover, totalEmotionalRecords);
+  const avoidsSleepoverRate = rate(avoidsSleepover, totalEmotionalRecords);
 
   const selfEsteemSum = emotional_wellbeing_records.reduce((sum, e) => sum + e.child_self_esteem_rating, 0);
   // Null on empty — no emotional-wellbeing records ⇒ no self-esteem to average.
@@ -478,17 +474,17 @@ export function computeBedwettingEnuresisSupport(
   const significantImpact = emotional_wellbeing_records.filter(
     (e) => e.emotional_impact_level === "significant" || e.emotional_impact_level === "severe",
   ).length;
-  const significantImpactRate = pct(significantImpact, totalEmotionalRecords);
+  const significantImpactRate = rate(significantImpact, totalEmotionalRecords);
 
   const peerRelationshipImpact = emotional_wellbeing_records.filter(
     (e) => e.peer_relationship_impact === "significant" || e.peer_relationship_impact === "moderate",
   ).length;
-  const peerImpactRate = pct(peerRelationshipImpact, totalEmotionalRecords);
+  const peerImpactRate = rate(peerRelationshipImpact, totalEmotionalRecords);
 
   const schoolImpact = emotional_wellbeing_records.filter(
     (e) => e.school_impact === "significant" || e.school_impact === "moderate",
   ).length;
-  const schoolImpactRate = pct(schoolImpact, totalEmotionalRecords);
+  const schoolImpactRate = rate(schoolImpact, totalEmotionalRecords);
 
   // Emotional wellbeing rate: composite of feels supported, voice captured, coping strategies, confidence
   const emotionalQualityChecks = [
@@ -504,7 +500,7 @@ export function computeBedwettingEnuresisSupport(
       if (check(rec)) totalEmotionalChecksPassed++;
     }
   }
-  const emotionalWellbeingRate = pct(totalEmotionalChecksPassed, totalEmotionalChecksPossible);
+  const emotionalWellbeingRate = rate(totalEmotionalChecksPassed, totalEmotionalChecksPossible);
 
   // Total support interactions for result
   const totalSupportInteractions = totalDiscreetSupport;
@@ -1289,7 +1285,7 @@ export function computeBedwettingEnuresisSupport(
   }
 
   if (declinedProgress > 0 && assessmentsWithProgress > 0) {
-    const declinedRate = pct(declinedProgress, assessmentsWithProgress);
+    const declinedRate = rate(declinedProgress, assessmentsWithProgress);
     if (above(declinedRate, 20)) {
       insights.push({
         text: `${declinedRate}% of emotional wellbeing assessments show declining progress — some children's emotional state around bedwetting is worsening, which requires immediate review of support strategies and possible therapeutic referral.`,
@@ -1305,7 +1301,7 @@ export function computeBedwettingEnuresisSupport(
   }
   const highFrequency = (frequencyDistribution["nightly"] ?? 0) + (frequencyDistribution["several_per_week"] ?? 0);
   if (highFrequency > 0 && totalManagementPlans > 0) {
-    const highFreqRate = pct(highFrequency, totalManagementPlans);
+    const highFreqRate = rate(highFrequency, totalManagementPlans);
     if (above(highFreqRate, 30)) {
       insights.push({
         text: `${highFreqRate}% of children experience bedwetting nightly or several times per week — high-frequency enuresis often indicates underlying medical, developmental, or emotional factors that require specialist assessment and targeted intervention beyond standard management plans.`,

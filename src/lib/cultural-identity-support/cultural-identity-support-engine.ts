@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara Cultural Identity Support Intelligence Engine
 //
@@ -114,42 +115,61 @@ export interface StaffCulturalTraining {
 export interface NeedsAssessmentResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  fullyMetRate: number;
-  reviewCurrentRate: number;
-  childConsultedRate: number;
-  familyConsultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyConsultedRate: number | null;
   needTypeCoverage: number;
 }
 
 export interface CulturalActivitiesResult {
   overallScore: number; // 0-25
   totalActivities: number;
-  engagementRate: number;
-  resourcesRate: number;
-  positiveFeedbackRate: number;
-  childrenReachedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resourcesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveFeedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenReachedRate: number | null;
   activityVariety: number;
 }
 
 export interface IdentityPlanningResult {
   overallScore: number; // 0-25
   totalPlans: number;
-  planInPlaceRate: number;
-  identityDocumentedRate: number;
-  lifeStoryRate: number;
-  mentorRate: number;
-  communityLinksRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planInPlaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityDocumentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifeStoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityLinksRate: number | null;
 }
 
 export interface StaffCulturalReadinessResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  awarenessRate: number;
-  antiRacismRate: number;
-  religiousLiteracyRate: number;
-  identitySupportRate: number;
-  lgbtqAwarenessRate: number;
-  communicationDiversityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  awarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  antiRacismRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  religiousLiteracyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identitySupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lgbtqAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communicationDiversityRate: number | null;
 }
 
 export interface CulturalIdentitySupportIntelligence {
@@ -241,11 +261,6 @@ export function getRatingLabel(r: Rating): string {
 
 // -- Utility ------------------------------------------------------------------
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -268,10 +283,10 @@ export function evaluateNeedsAssessment(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      fullyMetRate: 0,
-      reviewCurrentRate: 0,
-      childConsultedRate: 0,
-      familyConsultedRate: 0,
+      fullyMetRate: null,
+      reviewCurrentRate: null,
+      childConsultedRate: null,
+      familyConsultedRate: null,
       needTypeCoverage: 0,
     };
   }
@@ -282,32 +297,32 @@ export function evaluateNeedsAssessment(
   const fullyMet = assessments.filter(
     (a) => a.supportStatus === "fully_met",
   ).length;
-  const fullyMetRate = pct(fullyMet, assessments.length);
-  if (fullyMetRate >= 80) score += 7;
-  else if (fullyMetRate >= 60) score += 5;
-  else if (fullyMetRate >= 40) score += 3;
-  else if (fullyMetRate >= 20) score += 1;
+  const fullyMetRate = rate(fullyMet, assessments.length);
+  if (meets(fullyMetRate, 80)) score += 7;
+  else if (meets(fullyMetRate, 60)) score += 5;
+  else if (meets(fullyMetRate, 40)) score += 3;
+  else if (meets(fullyMetRate, 20)) score += 1;
 
   // Review current rate
   const reviewCurrent = assessments.filter((a) => a.reviewCurrent).length;
-  const reviewCurrentRate = pct(reviewCurrent, assessments.length);
-  if (reviewCurrentRate >= 90) score += 6;
-  else if (reviewCurrentRate >= 70) score += 4;
-  else if (reviewCurrentRate >= 50) score += 2;
+  const reviewCurrentRate = rate(reviewCurrent, assessments.length);
+  if (meets(reviewCurrentRate, 90)) score += 6;
+  else if (meets(reviewCurrentRate, 70)) score += 4;
+  else if (meets(reviewCurrentRate, 50)) score += 2;
 
   // Child consulted rate
   const childConsulted = assessments.filter((a) => a.childConsulted).length;
-  const childConsultedRate = pct(childConsulted, assessments.length);
-  if (childConsultedRate >= 90) score += 6;
-  else if (childConsultedRate >= 70) score += 4;
-  else if (childConsultedRate >= 50) score += 2;
+  const childConsultedRate = rate(childConsulted, assessments.length);
+  if (meets(childConsultedRate, 90)) score += 6;
+  else if (meets(childConsultedRate, 70)) score += 4;
+  else if (meets(childConsultedRate, 50)) score += 2;
 
   // Family consulted rate
   const familyConsulted = assessments.filter((a) => a.familyConsulted).length;
-  const familyConsultedRate = pct(familyConsulted, assessments.length);
-  if (familyConsultedRate >= 80) score += 6;
-  else if (familyConsultedRate >= 60) score += 4;
-  else if (familyConsultedRate >= 40) score += 2;
+  const familyConsultedRate = rate(familyConsulted, assessments.length);
+  if (meets(familyConsultedRate, 80)) score += 6;
+  else if (meets(familyConsultedRate, 60)) score += 4;
+  else if (meets(familyConsultedRate, 40)) score += 2;
 
   // Need type coverage (unique types assessed)
   const uniqueTypes = new Set(assessments.map((a) => a.needType));
@@ -340,10 +355,10 @@ export function evaluateCulturalActivities(
     return {
       overallScore: 0,
       totalActivities: 0,
-      engagementRate: 0,
-      resourcesRate: 0,
-      positiveFeedbackRate: 0,
-      childrenReachedRate: 0,
+      engagementRate: null,
+      resourcesRate: null,
+      positiveFeedbackRate: null,
+      childrenReachedRate: null,
       activityVariety: 0,
     };
   }
@@ -354,32 +369,32 @@ export function evaluateCulturalActivities(
   const engaged = activities.filter(
     (a) => a.engagement === "high" || a.engagement === "medium",
   ).length;
-  const engagementRate = pct(engaged, activities.length);
-  if (engagementRate >= 85) score += 6;
-  else if (engagementRate >= 65) score += 4;
-  else if (engagementRate >= 45) score += 2;
+  const engagementRate = rate(engaged, activities.length);
+  if (meets(engagementRate, 85)) score += 6;
+  else if (meets(engagementRate, 65)) score += 4;
+  else if (meets(engagementRate, 45)) score += 2;
 
   // Resources provided rate
   const resourced = activities.filter((a) => a.resourcesProvided).length;
-  const resourcesRate = pct(resourced, activities.length);
-  if (resourcesRate >= 90) score += 5;
-  else if (resourcesRate >= 70) score += 3;
-  else if (resourcesRate >= 50) score += 1;
+  const resourcesRate = rate(resourced, activities.length);
+  if (meets(resourcesRate, 90)) score += 5;
+  else if (meets(resourcesRate, 70)) score += 3;
+  else if (meets(resourcesRate, 50)) score += 1;
 
   // Positive feedback rate
   const positive = activities.filter((a) => a.childFeedbackPositive).length;
-  const positiveFeedbackRate = pct(positive, activities.length);
-  if (positiveFeedbackRate >= 85) score += 5;
-  else if (positiveFeedbackRate >= 65) score += 3;
-  else if (positiveFeedbackRate >= 45) score += 1;
+  const positiveFeedbackRate = rate(positive, activities.length);
+  if (meets(positiveFeedbackRate, 85)) score += 5;
+  else if (meets(positiveFeedbackRate, 65)) score += 3;
+  else if (meets(positiveFeedbackRate, 45)) score += 1;
 
   // Children reached rate (unique children across all activities / totalChildren)
   const uniqueChildren = new Set(activities.flatMap((a) => a.childrenParticipated));
   const childrenReachedRate =
-    totalChildren > 0 ? pct(uniqueChildren.size, totalChildren) : 0;
-  if (childrenReachedRate >= 90) score += 5;
-  else if (childrenReachedRate >= 70) score += 3;
-  else if (childrenReachedRate >= 50) score += 1;
+    totalChildren > 0 ? rate(uniqueChildren.size, totalChildren) : 0;
+  if (meets(childrenReachedRate, 90)) score += 5;
+  else if (meets(childrenReachedRate, 70)) score += 3;
+  else if (meets(childrenReachedRate, 50)) score += 1;
 
   // Activity variety (unique types)
   const uniqueTypes = new Set(activities.map((a) => a.activityType));
@@ -414,11 +429,11 @@ export function evaluateIdentityPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      planInPlaceRate: 0,
-      identityDocumentedRate: 0,
-      lifeStoryRate: 0,
-      mentorRate: 0,
-      communityLinksRate: 0,
+      planInPlaceRate: null,
+      identityDocumentedRate: null,
+      lifeStoryRate: null,
+      mentorRate: null,
+      communityLinksRate: null,
     };
   }
 
@@ -427,38 +442,38 @@ export function evaluateIdentityPlanning(
 
   // Plan in place rate
   const hasPlans = plans.filter((p) => p.planInPlace).length;
-  const planInPlaceRate = pct(hasPlans, total);
-  if (planInPlaceRate >= 90) score += 6;
-  else if (planInPlaceRate >= 70) score += 4;
-  else if (planInPlaceRate >= 50) score += 2;
+  const planInPlaceRate = rate(hasPlans, total);
+  if (meets(planInPlaceRate, 90)) score += 6;
+  else if (meets(planInPlaceRate, 70)) score += 4;
+  else if (meets(planInPlaceRate, 50)) score += 2;
 
   // Identity needs documented rate
   const documented = plans.filter((p) => p.identityNeedsDocumented).length;
-  const identityDocumentedRate = pct(documented, total);
-  if (identityDocumentedRate >= 90) score += 6;
-  else if (identityDocumentedRate >= 70) score += 4;
-  else if (identityDocumentedRate >= 50) score += 2;
+  const identityDocumentedRate = rate(documented, total);
+  if (meets(identityDocumentedRate, 90)) score += 6;
+  else if (meets(identityDocumentedRate, 70)) score += 4;
+  else if (meets(identityDocumentedRate, 50)) score += 2;
 
   // Life story work active rate
   const lifeStory = plans.filter((p) => p.lifeStoryWorkActive).length;
-  const lifeStoryRate = pct(lifeStory, total);
-  if (lifeStoryRate >= 80) score += 5;
-  else if (lifeStoryRate >= 60) score += 3;
-  else if (lifeStoryRate >= 40) score += 1;
+  const lifeStoryRate = rate(lifeStory, total);
+  if (meets(lifeStoryRate, 80)) score += 5;
+  else if (meets(lifeStoryRate, 60)) score += 3;
+  else if (meets(lifeStoryRate, 40)) score += 1;
 
   // Cultural mentor assigned rate
   const mentors = plans.filter((p) => p.culturalMentorAssigned).length;
-  const mentorRate = pct(mentors, total);
-  if (mentorRate >= 80) score += 4;
-  else if (mentorRate >= 50) score += 2;
-  else if (mentorRate >= 30) score += 1;
+  const mentorRate = rate(mentors, total);
+  if (meets(mentorRate, 80)) score += 4;
+  else if (meets(mentorRate, 50)) score += 2;
+  else if (meets(mentorRate, 30)) score += 1;
 
   // Community links established rate
   const communityLinks = plans.filter((p) => p.communityLinksEstablished).length;
-  const communityLinksRate = pct(communityLinks, total);
-  if (communityLinksRate >= 80) score += 4;
-  else if (communityLinksRate >= 50) score += 2;
-  else if (communityLinksRate >= 30) score += 1;
+  const communityLinksRate = rate(communityLinks, total);
+  if (meets(communityLinksRate, 80)) score += 4;
+  else if (meets(communityLinksRate, 50)) score += 2;
+  else if (meets(communityLinksRate, 30)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -486,12 +501,12 @@ export function evaluateStaffCulturalReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      awarenessRate: 0,
-      antiRacismRate: 0,
-      religiousLiteracyRate: 0,
-      identitySupportRate: 0,
-      lgbtqAwarenessRate: 0,
-      communicationDiversityRate: 0,
+      awarenessRate: null,
+      antiRacismRate: null,
+      religiousLiteracyRate: null,
+      identitySupportRate: null,
+      lgbtqAwarenessRate: null,
+      communicationDiversityRate: null,
     };
   }
 
@@ -500,47 +515,47 @@ export function evaluateStaffCulturalReadiness(
 
   // Cultural awareness rate
   const awareness = training.filter((t) => t.culturalAwareness).length;
-  const awarenessRate = pct(awareness, total);
-  if (awarenessRate >= 90) score += 5;
-  else if (awarenessRate >= 70) score += 3;
-  else if (awarenessRate >= 50) score += 1;
+  const awarenessRate = rate(awareness, total);
+  if (meets(awarenessRate, 90)) score += 5;
+  else if (meets(awarenessRate, 70)) score += 3;
+  else if (meets(awarenessRate, 50)) score += 1;
 
   // Anti-racism rate
   const antiRacism = training.filter((t) => t.antiRacism).length;
-  const antiRacismRate = pct(antiRacism, total);
-  if (antiRacismRate >= 90) score += 5;
-  else if (antiRacismRate >= 70) score += 3;
-  else if (antiRacismRate >= 50) score += 1;
+  const antiRacismRate = rate(antiRacism, total);
+  if (meets(antiRacismRate, 90)) score += 5;
+  else if (meets(antiRacismRate, 70)) score += 3;
+  else if (meets(antiRacismRate, 50)) score += 1;
 
   // Religious literacy rate
   const religious = training.filter((t) => t.religiousLiteracy).length;
-  const religiousLiteracyRate = pct(religious, total);
-  if (religiousLiteracyRate >= 80) score += 4;
-  else if (religiousLiteracyRate >= 60) score += 3;
-  else if (religiousLiteracyRate >= 40) score += 1;
+  const religiousLiteracyRate = rate(religious, total);
+  if (meets(religiousLiteracyRate, 80)) score += 4;
+  else if (meets(religiousLiteracyRate, 60)) score += 3;
+  else if (meets(religiousLiteracyRate, 40)) score += 1;
 
   // Identity support rate
   const identitySupport = training.filter((t) => t.identitySupport).length;
-  const identitySupportRate = pct(identitySupport, total);
-  if (identitySupportRate >= 80) score += 4;
-  else if (identitySupportRate >= 60) score += 3;
-  else if (identitySupportRate >= 40) score += 1;
+  const identitySupportRate = rate(identitySupport, total);
+  if (meets(identitySupportRate, 80)) score += 4;
+  else if (meets(identitySupportRate, 60)) score += 3;
+  else if (meets(identitySupportRate, 40)) score += 1;
 
   // LGBTQ awareness rate
   const lgbtq = training.filter((t) => t.lgbtqAwareness).length;
-  const lgbtqAwarenessRate = pct(lgbtq, total);
-  if (lgbtqAwarenessRate >= 80) score += 4;
-  else if (lgbtqAwarenessRate >= 60) score += 3;
-  else if (lgbtqAwarenessRate >= 40) score += 1;
+  const lgbtqAwarenessRate = rate(lgbtq, total);
+  if (meets(lgbtqAwarenessRate, 80)) score += 4;
+  else if (meets(lgbtqAwarenessRate, 60)) score += 3;
+  else if (meets(lgbtqAwarenessRate, 40)) score += 1;
 
   // Communication diversity rate
   const commDiversity = training.filter(
     (t) => t.communicationDiversity,
   ).length;
-  const communicationDiversityRate = pct(commDiversity, total);
-  if (communicationDiversityRate >= 80) score += 3;
-  else if (communicationDiversityRate >= 60) score += 2;
-  else if (communicationDiversityRate >= 40) score += 1;
+  const communicationDiversityRate = rate(commDiversity, total);
+  if (meets(communicationDiversityRate, 80)) score += 3;
+  else if (meets(communicationDiversityRate, 60)) score += 2;
+  else if (meets(communicationDiversityRate, 40)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -564,43 +579,43 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (needs.fullyMetRate >= 80) {
+  if (meets(needs.fullyMetRate, 80)) {
     strengths.push(
       "Strong cultural needs provision — the majority of children's cultural needs are fully met",
     );
   }
 
-  if (needs.childConsultedRate >= 90) {
+  if (meets(needs.childConsultedRate, 90)) {
     strengths.push(
       "Excellent practice in consulting children about their cultural identity and needs",
     );
   }
 
-  if (needs.familyConsultedRate >= 80) {
+  if (meets(needs.familyConsultedRate, 80)) {
     strengths.push(
       "Families are consistently consulted when assessing children's cultural needs",
     );
   }
 
-  if (needs.reviewCurrentRate >= 90) {
+  if (meets(needs.reviewCurrentRate, 90)) {
     strengths.push(
       "Cultural needs assessments are kept up to date through regular review",
     );
   }
 
-  if (activities.engagementRate >= 85) {
+  if (meets(activities.engagementRate, 85)) {
     strengths.push(
       "High engagement levels in cultural activities — children are actively participating",
     );
   }
 
-  if (activities.positiveFeedbackRate >= 85) {
+  if (meets(activities.positiveFeedbackRate, 85)) {
     strengths.push(
       "Children consistently report positive experiences from cultural activities",
     );
   }
 
-  if (activities.childrenReachedRate >= 90) {
+  if (meets(activities.childrenReachedRate, 90)) {
     strengths.push(
       "Cultural activities reach all or nearly all children in the home",
     );
@@ -612,49 +627,49 @@ function generateStrengths(
     );
   }
 
-  if (activities.resourcesRate >= 90) {
+  if (meets(activities.resourcesRate, 90)) {
     strengths.push(
       "Resources are consistently provided to support cultural activities",
     );
   }
 
-  if (planning.planInPlaceRate >= 90) {
+  if (meets(planning.planInPlaceRate, 90)) {
     strengths.push(
       "Identity plans are in place for all or nearly all children",
     );
   }
 
-  if (planning.lifeStoryRate >= 80) {
+  if (meets(planning.lifeStoryRate, 80)) {
     strengths.push(
       "Life story work is actively maintained for the majority of children",
     );
   }
 
-  if (planning.mentorRate >= 80) {
+  if (meets(planning.mentorRate, 80)) {
     strengths.push(
       "Cultural mentors are assigned to the majority of children — providing consistent identity support",
     );
   }
 
-  if (planning.communityLinksRate >= 80) {
+  if (meets(planning.communityLinksRate, 80)) {
     strengths.push(
       "Strong community links established — children are connected to their wider cultural communities",
     );
   }
 
-  if (staff.awarenessRate >= 90) {
+  if (meets(staff.awarenessRate, 90)) {
     strengths.push(
       "All staff have completed cultural awareness training",
     );
   }
 
-  if (staff.antiRacismRate >= 90) {
+  if (meets(staff.antiRacismRate, 90)) {
     strengths.push(
       "Excellent anti-racism training coverage across the staff team",
     );
   }
 
-  if (staff.lgbtqAwarenessRate >= 80) {
+  if (meets(staff.lgbtqAwarenessRate, 80)) {
     strengths.push(
       "Strong LGBTQ+ awareness across the staff team — supporting inclusive identity work",
     );
@@ -679,25 +694,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (needs.fullyMetRate < 60 && needs.totalAssessments > 0) {
+  if (below(needs.fullyMetRate, 60) && needs.totalAssessments > 0) {
     areas.push(
       `Only ${needs.fullyMetRate}% of cultural needs are fully met — more proactive provision is required`,
     );
   }
 
-  if (needs.childConsultedRate < 70 && needs.totalAssessments > 0) {
+  if (below(needs.childConsultedRate, 70) && needs.totalAssessments > 0) {
     areas.push(
       `Children consulted in only ${needs.childConsultedRate}% of assessments — their voice must be central to cultural identity work`,
     );
   }
 
-  if (needs.familyConsultedRate < 60 && needs.totalAssessments > 0) {
+  if (below(needs.familyConsultedRate, 60) && needs.totalAssessments > 0) {
     areas.push(
       `Family consulted in only ${needs.familyConsultedRate}% of assessments — families are a key source of cultural knowledge`,
     );
   }
 
-  if (needs.reviewCurrentRate < 70 && needs.totalAssessments > 0) {
+  if (below(needs.reviewCurrentRate, 70) && needs.totalAssessments > 0) {
     areas.push(
       `Only ${needs.reviewCurrentRate}% of cultural needs assessments are current — regular reviews are essential`,
     );
@@ -709,19 +724,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (activities.engagementRate < 65 && activities.totalActivities > 0) {
+  if (below(activities.engagementRate, 65) && activities.totalActivities > 0) {
     areas.push(
       `Engagement rate at ${activities.engagementRate}% — activities should better reflect children's interests and preferences`,
     );
   }
 
-  if (activities.childrenReachedRate < 70 && activities.totalActivities > 0) {
+  if (below(activities.childrenReachedRate, 70) && activities.totalActivities > 0) {
     areas.push(
       `Only ${activities.childrenReachedRate}% of children reached through cultural activities — all children should be included`,
     );
   }
 
-  if (activities.positiveFeedbackRate < 65 && activities.totalActivities > 0) {
+  if (below(activities.positiveFeedbackRate, 65) && activities.totalActivities > 0) {
     areas.push(
       `Positive feedback rate at ${activities.positiveFeedbackRate}% — activities should be tailored to children's genuine interests`,
     );
@@ -733,25 +748,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (planning.planInPlaceRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.planInPlaceRate, 70) && planning.totalPlans > 0) {
     areas.push(
       `Only ${planning.planInPlaceRate}% of children have identity plans in place — all children need a plan`,
     );
   }
 
-  if (planning.lifeStoryRate < 60 && planning.totalPlans > 0) {
+  if (below(planning.lifeStoryRate, 60) && planning.totalPlans > 0) {
     areas.push(
       `Life story work active for only ${planning.lifeStoryRate}% of children — this is a key component of identity development`,
     );
   }
 
-  if (planning.mentorRate < 50 && planning.totalPlans > 0) {
+  if (below(planning.mentorRate, 50) && planning.totalPlans > 0) {
     areas.push(
       `Cultural mentors assigned to only ${planning.mentorRate}% of children — mentorship supports identity development`,
     );
   }
 
-  if (planning.communityLinksRate < 50 && planning.totalPlans > 0) {
+  if (below(planning.communityLinksRate, 50) && planning.totalPlans > 0) {
     areas.push(
       `Community links established for only ${planning.communityLinksRate}% of children — connections to cultural communities are essential`,
     );
@@ -763,25 +778,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (staff.awarenessRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.awarenessRate, 70) && staff.totalStaff > 0) {
     areas.push(
       `Only ${staff.awarenessRate}% of staff have cultural awareness training — this should be universal`,
     );
   }
 
-  if (staff.antiRacismRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.antiRacismRate, 70) && staff.totalStaff > 0) {
     areas.push(
       `Anti-racism training at ${staff.antiRacismRate}% — all staff should complete anti-racism training`,
     );
   }
 
-  if (staff.religiousLiteracyRate < 60 && staff.totalStaff > 0) {
+  if (below(staff.religiousLiteracyRate, 60) && staff.totalStaff > 0) {
     areas.push(
       `Religious literacy at ${staff.religiousLiteracyRate}% — staff need better understanding of children's faith needs`,
     );
   }
 
-  if (staff.lgbtqAwarenessRate < 60 && staff.totalStaff > 0) {
+  if (below(staff.lgbtqAwarenessRate, 60) && staff.totalStaff > 0) {
     areas.push(
       `LGBTQ+ awareness at ${staff.lgbtqAwarenessRate}% — training on gender identity and sexual orientation is needed`,
     );
@@ -824,31 +839,31 @@ function generateActions(
     );
   }
 
-  if (needs.childConsultedRate < 70 && needs.totalAssessments > 0) {
+  if (below(needs.childConsultedRate, 70) && needs.totalAssessments > 0) {
     actions.push(
       "Consult children in all cultural needs assessments — use age-appropriate methods to understand their wishes and feelings",
     );
   }
 
-  if (needs.familyConsultedRate < 60 && needs.totalAssessments > 0) {
+  if (below(needs.familyConsultedRate, 60) && needs.totalAssessments > 0) {
     actions.push(
       "Increase family consultation — families hold essential cultural knowledge that should inform assessments",
     );
   }
 
-  if (needs.reviewCurrentRate < 70 && needs.totalAssessments > 0) {
+  if (below(needs.reviewCurrentRate, 70) && needs.totalAssessments > 0) {
     actions.push(
       "Schedule regular reviews of cultural needs assessments — ensure all assessments are current and reflect changing needs",
     );
   }
 
-  if (needs.fullyMetRate < 60 && needs.totalAssessments > 0) {
+  if (below(needs.fullyMetRate, 60) && needs.totalAssessments > 0) {
     actions.push(
       "Develop action plans to fully meet all identified cultural needs — partially met or unmet needs require immediate attention",
     );
   }
 
-  if (activities.childrenReachedRate < 70 && activities.totalActivities > 0) {
+  if (below(activities.childrenReachedRate, 70) && activities.totalActivities > 0) {
     actions.push(
       "Ensure cultural activities include all children — tailor activities to each child's specific cultural background",
     );
@@ -860,61 +875,61 @@ function generateActions(
     );
   }
 
-  if (activities.resourcesRate < 70 && activities.totalActivities > 0) {
+  if (below(activities.resourcesRate, 70) && activities.totalActivities > 0) {
     actions.push(
       "Ensure adequate resources are provided for all cultural activities — budget allocation should reflect cultural provision needs",
     );
   }
 
-  if (planning.planInPlaceRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.planInPlaceRate, 70) && planning.totalPlans > 0) {
     actions.push(
       "Complete identity plans for all children — plans should document needs, goals, and support strategies",
     );
   }
 
-  if (planning.lifeStoryRate < 60 && planning.totalPlans > 0) {
+  if (below(planning.lifeStoryRate, 60) && planning.totalPlans > 0) {
     actions.push(
       "Prioritise life story work — this is essential for children's identity development and understanding of their heritage",
     );
   }
 
-  if (planning.mentorRate < 50 && planning.totalPlans > 0) {
+  if (below(planning.mentorRate, 50) && planning.totalPlans > 0) {
     actions.push(
       "Assign cultural mentors to children — connect them with adults who share their cultural background",
     );
   }
 
-  if (planning.communityLinksRate < 50 && planning.totalPlans > 0) {
+  if (below(planning.communityLinksRate, 50) && planning.totalPlans > 0) {
     actions.push(
       "Establish community links for children — connect with local cultural groups, faith communities, and heritage organisations",
     );
   }
 
-  if (staff.awarenessRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.awarenessRate, 70) && staff.totalStaff > 0) {
     actions.push(
       "Deliver cultural awareness training to all staff — Equality Act 2010 requires proactive commitment to equality",
     );
   }
 
-  if (staff.antiRacismRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.antiRacismRate, 70) && staff.totalStaff > 0) {
     actions.push(
       "Implement anti-racism training for all staff — this is a fundamental requirement for safe, inclusive care",
     );
   }
 
-  if (staff.religiousLiteracyRate < 60 && staff.totalStaff > 0) {
+  if (below(staff.religiousLiteracyRate, 60) && staff.totalStaff > 0) {
     actions.push(
       "Deliver religious literacy training — staff must understand and respect children's faith and spiritual needs",
     );
   }
 
-  if (staff.lgbtqAwarenessRate < 60 && staff.totalStaff > 0) {
+  if (below(staff.lgbtqAwarenessRate, 60) && staff.totalStaff > 0) {
     actions.push(
       "Provide LGBTQ+ awareness training — staff must be able to support children exploring gender identity and sexual orientation",
     );
   }
 
-  if (staff.communicationDiversityRate < 60 && staff.totalStaff > 0) {
+  if (below(staff.communicationDiversityRate, 60) && staff.totalStaff > 0) {
     actions.push(
       "Train staff in communication diversity — including supporting children with different languages and communication needs",
     );

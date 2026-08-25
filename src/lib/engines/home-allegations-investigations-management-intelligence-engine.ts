@@ -197,10 +197,6 @@ export interface AllegationsInvestigationsResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -229,11 +225,11 @@ function emptyResult(
     allegations_rating: rating,
     allegations_score: score,
     headline,
-    allegation_recording_rate: 0,
-    lado_referral_rate: 0,
-    investigation_completion_rate: 0,
-    outcome_documentation_rate: 0,
-    safeguarding_response_rate: 0,
+    allegation_recording_rate: null,
+    lado_referral_rate: null,
+    investigation_completion_rate: null,
+    outcome_documentation_rate: null,
+    safeguarding_response_rate: null,
     timeliness_rate: null,
     total_allegations: 0,
     total_lado_referrals: 0,
@@ -330,31 +326,31 @@ export function computeAllegationsInvestigationsManagement(
   const recordedWithin24h = allegation_records.filter(
     (a) => a.recorded_within_24h,
   ).length;
-  const allegationRecordingRate = pct(recordedWithin24h, totalAllegations);
+  const allegationRecordingRate = rate(recordedWithin24h, totalAllegations);
 
   // Initial risk assessments completed
   const riskAssessmentsCompleted = allegation_records.filter(
     (a) => a.initial_risk_assessment_completed,
   ).length;
-  const riskAssessmentRate = pct(riskAssessmentsCompleted, totalAllegations);
+  const riskAssessmentRate = rate(riskAssessmentsCompleted, totalAllegations);
 
   // Children safeguarded immediately
   const childrenSafeguarded = allegation_records.filter(
     (a) => a.child_safeguarded_immediately,
   ).length;
-  const immediateSafeguardingRate = pct(childrenSafeguarded, totalAllegations);
+  const immediateSafeguardingRate = rate(childrenSafeguarded, totalAllegations);
 
   // Evidence preservation
   const evidencePreserved = allegation_records.filter(
     (a) => a.evidence_preserved,
   ).length;
-  const evidencePreservationRate = pct(evidencePreserved, totalAllegations);
+  const evidencePreservationRate = rate(evidencePreserved, totalAllegations);
 
   // Chronology maintained
   const chronologyMaintained = allegation_records.filter(
     (a) => a.chronology_maintained,
   ).length;
-  const chronologyRate = pct(chronologyMaintained, totalAllegations);
+  const chronologyRate = rate(chronologyMaintained, totalAllegations);
 
   // Allegation type distribution
   const highSeverityAllegations = allegation_records.filter(
@@ -392,37 +388,37 @@ export function computeAllegationsInvestigationsManagement(
   const referredWithin1Day = lado_referral_records.filter(
     (r) => r.referred_within_1_working_day,
   ).length;
-  const ladoReferralRate = pct(referredWithin1Day, totalLadoReferrals);
+  const ladoReferralRate = rate(referredWithin1Day, totalLadoReferrals);
 
   // Strategy meetings held
   const strategyMeetingsHeld = lado_referral_records.filter(
     (r) => r.strategy_meeting_held,
   ).length;
-  const strategyMeetingRate = pct(strategyMeetingsHeld, totalLadoReferrals);
+  const strategyMeetingRate = rate(strategyMeetingsHeld, totalLadoReferrals);
 
   // Ofsted notified
   const ofstedNotified = lado_referral_records.filter(
     (r) => r.ofsted_notified,
   ).length;
-  const ofstedNotificationRate = pct(ofstedNotified, totalLadoReferrals);
+  const ofstedNotificationRate = rate(ofstedNotified, totalLadoReferrals);
 
   // Multi-agency approach
   const multiAgencyApproach = lado_referral_records.filter(
     (r) => r.multi_agency_approach,
   ).length;
-  const multiAgencyRate = pct(multiAgencyApproach, totalLadoReferrals);
+  const multiAgencyRate = rate(multiAgencyApproach, totalLadoReferrals);
 
   // Referral quality adequate
   const referralQualityAdequate = lado_referral_records.filter(
     (r) => r.referral_quality_adequate,
   ).length;
-  const referralQualityRate = pct(referralQualityAdequate, totalLadoReferrals);
+  const referralQualityRate = rate(referralQualityAdequate, totalLadoReferrals);
 
   // DBS referrals made where needed
   const dbsReferralsMade = lado_referral_records.filter(
     (r) => r.dbs_referral_made,
   ).length;
-  const dbsReferralRate = pct(dbsReferralsMade, totalLadoReferrals);
+  const dbsReferralRate = rate(dbsReferralsMade, totalLadoReferrals);
 
   // --- Investigation metrics ---
 
@@ -435,7 +431,7 @@ export function computeAllegationsInvestigationsManagement(
   const completedInvestigations = investigation_records.filter(
     (i) => !i.is_open,
   ).length;
-  const investigationCompletionRate = pct(
+  const investigationCompletionRate = rate(
     completedInvestigations,
     totalInvestigations,
   );
@@ -444,7 +440,7 @@ export function computeAllegationsInvestigationsManagement(
   const completedWithinTarget = investigation_records.filter(
     (i) => !i.is_open && i.completed_within_target,
   ).length;
-  const completionWithinTargetRate = pct(
+  const completionWithinTargetRate = rate(
     completedWithinTarget,
     completedInvestigations > 0 ? completedInvestigations : totalInvestigations,
   );
@@ -453,7 +449,7 @@ export function computeAllegationsInvestigationsManagement(
   const investigationPlansInPlace = investigation_records.filter(
     (i) => i.investigation_plan_in_place,
   ).length;
-  const investigationPlanRate = pct(
+  const investigationPlanRate = rate(
     investigationPlansInPlace,
     totalInvestigations,
   );
@@ -462,31 +458,31 @@ export function computeAllegationsInvestigationsManagement(
   const independentInvestigators = investigation_records.filter(
     (i) => i.investigator_independent,
   ).length;
-  const independenceRate = pct(independentInvestigators, totalInvestigations);
+  const independenceRate = rate(independentInvestigators, totalInvestigations);
 
   // Child supported throughout
   const childSupported = investigation_records.filter(
     (i) => i.child_supported_throughout,
   ).length;
-  const childSupportRate = pct(childSupported, totalInvestigations);
+  const childSupportRate = rate(childSupported, totalInvestigations);
 
   // Staff member supported
   const staffSupported = investigation_records.filter(
     (i) => i.staff_member_supported,
   ).length;
-  const staffSupportRate = pct(staffSupported, totalInvestigations);
+  const staffSupportRate = rate(staffSupported, totalInvestigations);
 
   // Management oversight
   const managementOversight = investigation_records.filter(
     (i) => i.management_oversight,
   ).length;
-  const managementOversightRate = pct(managementOversight, totalInvestigations);
+  const managementOversightRate = rate(managementOversight, totalInvestigations);
 
   // Quality assured
   const qualityAssured = investigation_records.filter(
     (i) => i.quality_assured,
   ).length;
-  const qualityAssuredRate = pct(qualityAssured, totalInvestigations);
+  const qualityAssuredRate = rate(qualityAssured, totalInvestigations);
 
   // Overdue open investigations (open longer than target). An open investigation
   // with a missing/invalid date_opened yields NaN — treat that as overdue too,
@@ -503,7 +499,7 @@ export function computeAllegationsInvestigationsManagement(
   const outcomesDocumented = outcome_records.filter(
     (o) => o.outcome_documented,
   ).length;
-  const outcomeDocumentationRate = pct(outcomesDocumented, totalOutcomes);
+  const outcomeDocumentationRate = rate(outcomesDocumented, totalOutcomes);
 
   // Substantiated outcomes
   const substantiatedOutcomes = outcome_records.filter(
@@ -514,13 +510,13 @@ export function computeAllegationsInvestigationsManagement(
   const actionPlansCreated = outcome_records.filter(
     (o) => o.action_plan_created,
   ).length;
-  const actionPlanRate = pct(actionPlansCreated, totalOutcomes);
+  const actionPlanRate = rate(actionPlansCreated, totalOutcomes);
 
   // Action plans implemented
   const actionPlansImplemented = outcome_records.filter(
     (o) => o.action_plan_created && o.action_plan_implemented,
   ).length;
-  const actionPlanImplementationRate = pct(
+  const actionPlanImplementationRate = rate(
     actionPlansImplemented,
     actionPlansCreated > 0 ? actionPlansCreated : totalOutcomes,
   );
@@ -529,13 +525,13 @@ export function computeAllegationsInvestigationsManagement(
   const lessonsRecorded = outcome_records.filter(
     (o) => o.lessons_learned_recorded,
   ).length;
-  const lessonsRecordedRate = pct(lessonsRecorded, totalOutcomes);
+  const lessonsRecordedRate = rate(lessonsRecorded, totalOutcomes);
 
   // Lessons shared with team
   const lessonsShared = outcome_records.filter(
     (o) => o.lessons_shared_with_team,
   ).length;
-  const lessonsSharedRate = pct(lessonsShared, totalOutcomes);
+  const lessonsSharedRate = rate(lessonsShared, totalOutcomes);
 
   // Training needs identified
   const trainingNeedsIdentified = outcome_records.filter(
@@ -546,7 +542,7 @@ export function computeAllegationsInvestigationsManagement(
   const trainingDelivered = outcome_records.filter(
     (o) => o.training_needs_identified && o.training_delivered,
   ).length;
-  const trainingDeliveryRate = pct(
+  const trainingDeliveryRate = rate(
     trainingDelivered,
     trainingNeedsIdentified > 0 ? trainingNeedsIdentified : totalOutcomes,
   );
@@ -555,43 +551,43 @@ export function computeAllegationsInvestigationsManagement(
   const sharedWithChild = outcome_records.filter(
     (o) => o.outcome_shared_with_child,
   ).length;
-  const sharedWithChildRate = pct(sharedWithChild, totalOutcomes);
+  const sharedWithChildRate = rate(sharedWithChild, totalOutcomes);
 
   // Single central record updated
   const scrUpdated = outcome_records.filter(
     (o) => o.single_central_record_updated,
   ).length;
-  const scrUpdateRate = pct(scrUpdated, totalOutcomes);
+  const scrUpdateRate = rate(scrUpdated, totalOutcomes);
 
   // Regulatory notifications completed
   const regNotifications = outcome_records.filter(
     (o) => o.regulatory_notifications_completed,
   ).length;
-  const regNotificationRate = pct(regNotifications, totalOutcomes);
+  const regNotificationRate = rate(regNotifications, totalOutcomes);
 
   // Appeal process offered
   const appealOffered = outcome_records.filter(
     (o) => o.appeal_process_offered,
   ).length;
-  const appealOfferedRate = pct(appealOffered, totalOutcomes);
+  const appealOfferedRate = rate(appealOffered, totalOutcomes);
 
   // Support plan for child
   const supportPlanChild = outcome_records.filter(
     (o) => o.support_plan_for_child,
   ).length;
-  const supportPlanChildRate = pct(supportPlanChild, totalOutcomes);
+  const supportPlanChildRate = rate(supportPlanChild, totalOutcomes);
 
   // Support plan for staff
   const supportPlanStaff = outcome_records.filter(
     (o) => o.support_plan_for_staff,
   ).length;
-  const supportPlanStaffRate = pct(supportPlanStaff, totalOutcomes);
+  const supportPlanStaffRate = rate(supportPlanStaff, totalOutcomes);
 
   // Policy review triggered
   const policyReview = outcome_records.filter(
     (o) => o.policy_review_triggered,
   ).length;
-  const policyReviewRate = pct(policyReview, totalOutcomes);
+  const policyReviewRate = rate(policyReview, totalOutcomes);
 
   // --- Safeguarding response metrics ---
 
@@ -599,7 +595,7 @@ export function computeAllegationsInvestigationsManagement(
   const responsesWithin1h = safeguarding_response_records.filter(
     (s) => s.response_within_1_hour,
   ).length;
-  const safeguardingResponseRate = pct(
+  const safeguardingResponseRate = rate(
     responsesWithin1h,
     totalSafeguardingResponses,
   );
@@ -608,25 +604,25 @@ export function computeAllegationsInvestigationsManagement(
   const childSafetyPlan = safeguarding_response_records.filter(
     (s) => s.child_safety_plan_in_place,
   ).length;
-  const childSafetyPlanRate = pct(childSafetyPlan, totalSafeguardingResponses);
+  const childSafetyPlanRate = rate(childSafetyPlan, totalSafeguardingResponses);
 
   // Child wishes captured
   const childWishesCaptured = safeguarding_response_records.filter(
     (s) => s.child_wishes_captured,
   ).length;
-  const childWishesRate = pct(childWishesCaptured, totalSafeguardingResponses);
+  const childWishesRate = rate(childWishesCaptured, totalSafeguardingResponses);
 
   // Independent advocate offered
   const advocateOffered = safeguarding_response_records.filter(
     (s) => s.independent_advocate_offered,
   ).length;
-  const advocateOfferedRate = pct(advocateOffered, totalSafeguardingResponses);
+  const advocateOfferedRate = rate(advocateOffered, totalSafeguardingResponses);
 
   // Other children risk assessed
   const otherChildrenAssessed = safeguarding_response_records.filter(
     (s) => s.other_children_risk_assessed,
   ).length;
-  const otherChildrenAssessedRate = pct(
+  const otherChildrenAssessedRate = rate(
     otherChildrenAssessed,
     totalSafeguardingResponses,
   );
@@ -635,7 +631,7 @@ export function computeAllegationsInvestigationsManagement(
   const noUnsupervisedContact = safeguarding_response_records.filter(
     (s) => s.no_unsupervised_contact,
   ).length;
-  const noUnsupervisedContactRate = pct(
+  const noUnsupervisedContactRate = rate(
     noUnsupervisedContact,
     totalSafeguardingResponses,
   );
@@ -644,7 +640,7 @@ export function computeAllegationsInvestigationsManagement(
   const safeguardingLeadInformed = safeguarding_response_records.filter(
     (s) => s.safeguarding_lead_informed,
   ).length;
-  const safeguardingLeadRate = pct(
+  const safeguardingLeadRate = rate(
     safeguardingLeadInformed,
     totalSafeguardingResponses,
   );
@@ -656,7 +652,7 @@ export function computeAllegationsInvestigationsManagement(
   const followUpCompleted = safeguarding_response_records.filter(
     (s) => s.follow_up_actions_set && s.follow_up_actions_completed,
   ).length;
-  const followUpCompletionRate = pct(
+  const followUpCompletionRate = rate(
     followUpCompleted,
     followUpActionsSet > 0 ? followUpActionsSet : totalSafeguardingResponses,
   );
@@ -1010,7 +1006,7 @@ export function computeAllegationsInvestigationsManagement(
   }
 
   if (highSeverityAllegations > 0 && totalAllegations > 0) {
-    const highSevPct = pct(highSeverityAllegations, totalAllegations);
+    const highSevPct = rate(highSeverityAllegations, totalAllegations);
     if (meets(highSevPct, 50)) {
       concerns.push(
         `${highSevPct}% of allegations are high or critical severity — a significant proportion of allegations involve serious concerns about staff conduct, requiring robust investigation and management oversight.`,
@@ -1025,7 +1021,7 @@ export function computeAllegationsInvestigationsManagement(
   }
 
   if (agencyStaffAllegations > 0 && totalAllegations > 0) {
-    const agencyPct = pct(agencyStaffAllegations, totalAllegations);
+    const agencyPct = rate(agencyStaffAllegations, totalAllegations);
     if (meets(agencyPct, 40)) {
       concerns.push(
         `${agencyPct}% of allegations involve agency staff — a disproportionate number of allegations against agency workers may indicate inadequate induction, supervision, or vetting of temporary staff.`,
@@ -1717,10 +1713,10 @@ export function computeAllegationsInvestigationsManagement(
 
   if (
     agencyStaffAllegations > 0 &&
-    meets(pct(agencyStaffAllegations, totalAllegations), 30)
+    meets(rate(agencyStaffAllegations, totalAllegations), 30)
   ) {
     insights.push({
-      text: `${pct(agencyStaffAllegations, totalAllegations)}% of allegations involve agency staff. This pattern may indicate that agency workers are not receiving adequate induction, supervision, or oversight. The home should review its agency staff management practices under Reg 34.`,
+      text: `${rate(agencyStaffAllegations, totalAllegations)}% of allegations involve agency staff. This pattern may indicate that agency workers are not receiving adequate induction, supervision, or oversight. The home should review its agency staff management practices under Reg 34.`,
       severity: "warning",
     });
   }

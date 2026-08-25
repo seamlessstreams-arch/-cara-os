@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Leaf } from "luci
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { AromatherapyWellbeingRating } from "@/lib/engines/home-aromatherapy-wellbeing-therapies-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeAromatherapyWellbeingTherapiesIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomeAromatherapyWellbeingTherapiesIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.wellbeing_therapy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.aromatherapy_access_rate >= 90 ? "bg-green-50" : d.aromatherapy_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.aromatherapy_access_rate >= 90 ? "text-[--cs-success]" : d.aromatherapy_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.aromatherapy_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.aromatherapy_access_rate, 90) ? "bg-green-50" : meets(d.aromatherapy_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.aromatherapy_access_rate, 90) ? "text-[--cs-success]" : meets(d.aromatherapy_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.aromatherapy_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.therapy_quality_rate >= 90 ? "bg-green-50" : d.therapy_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.therapy_quality_rate >= 90 ? "text-[--cs-success]" : d.therapy_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.therapy_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.therapy_quality_rate, 90) ? "bg-green-50" : meets(d.therapy_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.therapy_quality_rate, 90) ? "text-[--cs-success]" : meets(d.therapy_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.therapy_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Quality</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.relaxation_effectiveness_rate >= 90 ? "bg-green-50" : d.relaxation_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.relaxation_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.relaxation_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.relaxation_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.relaxation_effectiveness_rate, 90) ? "bg-green-50" : meets(d.relaxation_effectiveness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.relaxation_effectiveness_rate, 90) ? "text-[--cs-success]" : meets(d.relaxation_effectiveness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.relaxation_effectiveness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Relaxation</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.calming_technique_rate >= 90 ? "bg-green-50" : d.calming_technique_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.calming_technique_rate >= 90 ? "text-[--cs-success]" : d.calming_technique_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.calming_technique_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.calming_technique_rate, 90) ? "bg-green-50" : meets(d.calming_technique_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.calming_technique_rate, 90) ? "text-[--cs-success]" : meets(d.calming_technique_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.calming_technique_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Calming</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_benefit_rate >= 90 ? "bg-green-50" : d.child_benefit_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_benefit_rate >= 90 ? "text-[--cs-success]" : d.child_benefit_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_benefit_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_benefit_rate, 90) ? "bg-green-50" : meets(d.child_benefit_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_benefit_rate, 90) ? "text-[--cs-success]" : meets(d.child_benefit_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_benefit_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Benefit</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage.</p>
             </div>
           </div>

@@ -197,13 +197,13 @@ describe("insufficient_data", () => {
     expect(r.insights).toHaveLength(0);
   });
 
-  it("all six rates are 0 for insufficient_data", () => {
+  it("all six rates are null for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.visitor_allocation_rate).toBe(0);
-    expect(r.advocacy_access_rate).toBe(0);
-    expect(r.representation_quality_rate).toBe(0);
-    expect(r.visit_compliance_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.visitor_allocation_rate).toBeNull();
+    expect(r.advocacy_access_rate).toBeNull();
+    expect(r.representation_quality_rate).toBeNull();
+    expect(r.visit_compliance_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
     expect(r.child_satisfaction_rate).toBeNull();
   });
 });
@@ -243,13 +243,13 @@ describe("inadequate floor -- all empty with children on placement", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("all six rates are 0", () => {
+  it("all six rates are null", () => {
     const r = run({ total_children: 3 });
-    expect(r.visitor_allocation_rate).toBe(0);
-    expect(r.advocacy_access_rate).toBe(0);
-    expect(r.representation_quality_rate).toBe(0);
-    expect(r.visit_compliance_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
+    expect(r.visitor_allocation_rate).toBeNull();
+    expect(r.advocacy_access_rate).toBeNull();
+    expect(r.representation_quality_rate).toBeNull();
+    expect(r.visit_compliance_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
     expect(r.child_satisfaction_rate).toBeNull();
   });
 
@@ -1179,9 +1179,9 @@ describe("rate computations", () => {
       expect(r.visitor_allocation_rate).toBe(60);
     });
 
-    it("0% when array is empty (pct(0,0) = 0)", () => {
+    it("null when array is empty (rate(0,0) = null)", () => {
       const r = run({ independent_visitor_records: [] });
-      expect(r.visitor_allocation_rate).toBe(0);
+      expect(r.visitor_allocation_rate).toBeNull();
     });
   });
 
@@ -1271,13 +1271,13 @@ describe("rate computations", () => {
       expect(r.child_voice_rate).toBe(0);
     });
 
-    it("pct(0,0) = 0 when all arrays empty", () => {
+    it("rate(0,0) = null when all arrays empty", () => {
       const r = run({
         independent_visitor_records: [],
         representation_records: [],
         visit_compliance_records: [],
       });
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.child_voice_rate).toBeNull();
     });
 
     it("partial: 5/10 = 50%", () => {
@@ -1316,7 +1316,7 @@ describe("rate computations", () => {
       expect(r.child_satisfaction_rate).toBe(0);
     });
 
-    it("0% when no sat records", () => {
+    it("null when no sat records", () => {
       const r = run({ child_satisfaction_records: [] });
       expect(r.child_satisfaction_rate).toBeNull();
     });
@@ -2342,7 +2342,7 @@ describe("headlines", () => {
 // =============================================================================
 
 describe("edge cases", () => {
-  it("pct(0,0) = 0 -- division by zero handled", () => {
+  it("rate(0,0) = null -- division by zero means unmeasured", () => {
     expect(pct(0, 0)).toBe(0);
   });
 

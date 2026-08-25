@@ -323,16 +323,16 @@ describe("Admissions Matching Engine — Insufficient Data", () => {
     expect(r.headline).toContain("insufficient data");
   });
 
-  it("all rates are 0 when insufficient data", () => {
+  it("all rates are null when insufficient data", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({ total_children: 0 }),
     );
-    expect(r.referral_assessment_rate).toBe(0);
+    expect(r.referral_assessment_rate).toBeNull();
     expect(r.impact_assessment_rate).toBeNull();
     expect(r.matching_quality_rate).toBeNull();
     expect(r.suitability_review_rate).toBeNull();
     expect(r.admission_planning_rate).toBeNull();
-    expect(r.child_consultation_rate).toBe(0);
+    expect(r.child_consultation_rate).toBeNull();
   });
 });
 
@@ -383,16 +383,16 @@ describe("Admissions Matching Engine — Inadequate Floor (children, no records)
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({ total_children: 5 }),
     );
-    expect(r.referral_assessment_rate).toBe(0);
+    expect(r.referral_assessment_rate).toBeNull();
     expect(r.impact_assessment_rate).toBeNull();
     expect(r.matching_quality_rate).toBeNull();
     expect(r.suitability_review_rate).toBeNull();
     expect(r.admission_planning_rate).toBeNull();
-    expect(r.child_consultation_rate).toBe(0);
+    expect(r.child_consultation_rate).toBeNull();
   });
 
   it("all totals are 0", () => {
@@ -412,7 +412,7 @@ describe("Admissions Matching Engine — Inadequate Floor (children, no records)
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
-  it("referral_assessment_rate is 0 when no referral records but other records exist", () => {
+  it("referral_assessment_rate is null when no referral records but other records exist", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
@@ -424,7 +424,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
     expect(r.referral_assessment_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("impact_assessment_rate is 0 when no impact records but other records exist", () => {
+  it("impact_assessment_rate is null when no impact records but other records exist", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
@@ -434,7 +434,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
     expect(r.impact_assessment_rate).toBeNull();
   });
 
-  it("matching_quality_rate is 0 when no matching records", () => {
+  it("matching_quality_rate is null when no matching records", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
@@ -444,7 +444,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
     expect(r.matching_quality_rate).toBeNull();
   });
 
-  it("suitability_review_rate is 0 when no suitability records", () => {
+  it("suitability_review_rate is null when no suitability records", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
@@ -454,7 +454,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
     expect(r.suitability_review_rate).toBeNull();
   });
 
-  it("admission_planning_rate is 0 when no admission plan records", () => {
+  it("admission_planning_rate is null when no admission plan records", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
@@ -464,7 +464,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
     expect(r.admission_planning_rate).toBeNull();
   });
 
-  it("child_consultation_rate is 0 when no relevant consultation data exists", () => {
+  it("child_consultation_rate is null when no relevant consultation data exists", () => {
     const r = computeAdmissionsMatchingAssessment(
       baseInput({
         total_children: 3,
