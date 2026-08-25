@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF DISCIPLINARY & CONDUCT INTELLIGENCE ENGINE
 // Home-level: analyses disciplinary cases, investigation quality, LADO
@@ -95,10 +96,6 @@ function toRating(score: number): StaffDisciplinaryRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   const da = new Date(a + "T00:00:00Z");
   const db = new Date(b + "T00:00:00Z");
@@ -191,7 +188,7 @@ export function computeStaffDisciplinaryConductIntelligence(
         (c) => c.severity === "serious",
       ).length,
       suspended_count: cases.filter((c) => c.suspended).length,
-      lado_referral_rate: pct(
+      lado_referral_rate: rate(
         cases.filter(
           (c) =>
             (c.severity === "serious" || c.severity === "gross") &&
@@ -201,7 +198,7 @@ export function computeStaffDisciplinaryConductIntelligence(
           (c) => c.severity === "serious" || c.severity === "gross",
         ).length,
       ),
-      investigation_completion_rate: pct(
+      investigation_completion_rate: rate(
         cases.filter((c) => c.investigation_completed).length,
         cases.length,
       ),
@@ -218,7 +215,7 @@ export function computeStaffDisciplinaryConductIntelligence(
             )
           : null;
       })(),
-      outcome_recording_rate: pct(
+      outcome_recording_rate: rate(
         cases.filter(
           (c) =>
             (c.stage === "resolved" || c.stage === "no_case") &&
@@ -228,7 +225,7 @@ export function computeStaffDisciplinaryConductIntelligence(
           (c) => c.stage === "resolved" || c.stage === "no_case",
         ).length,
       ),
-      lessons_learned_rate: pct(
+      lessons_learned_rate: rate(
         cases.filter((c) => c.has_lessons_learned).length,
         cases.length,
       ),
@@ -278,9 +275,9 @@ export function computeStaffDisciplinaryConductIntelligence(
   const ladoReferralsMade = seriousOrGross.filter(
     (c) => c.lado_referral_made,
   ).length;
-  const ladoReferralRate = pct(ladoReferralsMade, seriousOrGross.length);
+  const ladoReferralRate = rate(ladoReferralsMade, seriousOrGross.length);
 
-  const investigationCompletionRate = pct(
+  const investigationCompletionRate = rate(
     cases.filter((c) => c.investigation_completed).length,
     totalCases,
   );
@@ -298,12 +295,12 @@ export function computeStaffDisciplinaryConductIntelligence(
         )
       : null;
 
-  const outcomeRecordingRate = pct(
+  const outcomeRecordingRate = rate(
     resolvedCases.filter((c) => c.outcome_recorded).length,
     resolvedCases.length,
   );
 
-  const lessonsLearnedRate = pct(
+  const lessonsLearnedRate = rate(
     cases.filter((c) => c.has_lessons_learned).length,
     totalCases,
   );
@@ -316,12 +313,12 @@ export function computeStaffDisciplinaryConductIntelligence(
     (c) =>
       c.has_allegation_detail && c.has_investigator && c.investigation_started,
   ).length;
-  const investigationQualityRate = pct(investigationQualityCount, totalCases);
+  const investigationQualityRate = rate(investigationQualityCount, totalCases);
 
-  if (investigationQualityRate >= 98) score += 6;
-  else if (investigationQualityRate >= 85) score += 3;
-  else if (investigationQualityRate < 50) score -= 3;
-  else if (investigationQualityRate < 70) score -= 5;
+  if (meets(investigationQualityRate, 98)) score += 6;
+  else if (meets(investigationQualityRate, 85)) score += 3;
+  else if (below(investigationQualityRate, 50)) score -= 3;
+  else if (below(investigationQualityRate, 70)) score -= 5;
 
   // 2. Timeliness (investigation_duration_days <= 30 for completed cases)
   const completedCases = cases.filter((c) => c.investigation_completed);
@@ -331,20 +328,20 @@ export function computeStaffDisciplinaryConductIntelligence(
     const timelyCount = completedCases.filter(
       (c) => c.investigation_duration_days <= 30,
     ).length;
-    const timelyRate = pct(timelyCount, completedCases.length);
-    if (timelyRate >= 90) score += 5;
-    else if (timelyRate >= 70) score += 2;
-    else if (timelyRate < 50) score -= 5;
+    const timelyRate = rate(timelyCount, completedCases.length);
+    if (meets(timelyRate, 90)) score += 5;
+    else if (meets(timelyRate, 70)) score += 2;
+    else if (below(timelyRate, 50)) score -= 5;
   }
 
   // 3. LADO compliance (lado_referral_made for all serious/gross severity cases)
   if (seriousOrGross.length === 0) {
     score += 1;
   } else {
-    const ladoCompliance = pct(ladoReferralsMade, seriousOrGross.length);
+    const ladoCompliance = rate(ladoReferralsMade, seriousOrGross.length);
     if (ladoCompliance === 100) score += 5;
-    else if (ladoCompliance >= 80) score += 2;
-    else if (ladoCompliance < 60) score -= 4;
+    else if (meets(ladoCompliance, 80)) score += 2;
+    else if (below(ladoCompliance, 60)) score -= 4;
   }
 
   // 4. Suspension management (suspension_reviewed for all suspended cases)
@@ -355,10 +352,10 @@ export function computeStaffDisciplinaryConductIntelligence(
     const reviewedCount = suspendedCases.filter(
       (c) => c.suspension_reviewed,
     ).length;
-    const suspensionReviewRate = pct(reviewedCount, suspendedCases.length);
+    const suspensionReviewRate = rate(reviewedCount, suspendedCases.length);
     if (suspensionReviewRate === 100) score += 5;
-    else if (suspensionReviewRate >= 80) score += 2;
-    else if (suspensionReviewRate < 50) score -= 4;
+    else if (meets(suspensionReviewRate, 80)) score += 2;
+    else if (below(suspensionReviewRate, 50)) score -= 4;
   }
 
   // 5. Outcome & resolution (outcome_recorded for completed/resolved stages)
@@ -368,20 +365,20 @@ export function computeStaffDisciplinaryConductIntelligence(
     const outcomeCount = resolvedCases.filter(
       (c) => c.outcome_recorded,
     ).length;
-    const outcomeRate = pct(outcomeCount, resolvedCases.length);
-    if (outcomeRate >= 95) score += 4;
-    else if (outcomeRate >= 80) score += 2;
-    else if (outcomeRate < 60) score -= 4;
+    const outcomeRate = rate(outcomeCount, resolvedCases.length);
+    if (meets(outcomeRate, 95)) score += 4;
+    else if (meets(outcomeRate, 80)) score += 2;
+    else if (below(outcomeRate, 60)) score -= 4;
   }
 
   // 6. Learning & improvement (has_lessons_learned AND policy_reviewed)
   const learningCount = cases.filter(
     (c) => c.has_lessons_learned && c.policy_reviewed,
   ).length;
-  const learningRate = pct(learningCount, totalCases);
-  if (learningRate >= 80) score += 5;
-  else if (learningRate >= 60) score += 2;
-  else if (learningRate < 40) score -= 3;
+  const learningRate = rate(learningCount, totalCases);
+  if (meets(learningRate, 80)) score += 5;
+  else if (meets(learningRate, 60)) score += 2;
+  else if (below(learningRate, 40)) score -= 3;
 
   // ── Additional penalties ──────────────────────────────────────────
 
@@ -419,7 +416,7 @@ export function computeStaffDisciplinaryConductIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (investigationQualityRate >= 98) {
+  if (meets(investigationQualityRate, 98)) {
     strengths.push(
       `Investigation quality at ${investigationQualityRate}% — all cases have detailed allegations, assigned investigators, and timely starts.`,
     );
@@ -429,8 +426,8 @@ export function computeStaffDisciplinaryConductIntelligence(
     const timelyCount = completedCases.filter(
       (c) => c.investigation_duration_days <= 30,
     ).length;
-    const timelyRate = pct(timelyCount, completedCases.length);
-    if (timelyRate >= 90) {
+    const timelyRate = rate(timelyCount, completedCases.length);
+    if (meets(timelyRate, 90)) {
       strengths.push(
         `${timelyRate}% of investigations completed within 30 days — timely case management.`,
       );
@@ -447,20 +444,20 @@ export function computeStaffDisciplinaryConductIntelligence(
     const reviewedCount = suspendedCases.filter(
       (c) => c.suspension_reviewed,
     ).length;
-    if (pct(reviewedCount, suspendedCases.length) === 100) {
+    if (rate(reviewedCount, suspendedCases.length) === 100) {
       strengths.push(
         "All suspended staff have had suspension reviews — robust suspension management.",
       );
     }
   }
 
-  if (resolvedCases.length > 0 && outcomeRecordingRate >= 95) {
+  if (resolvedCases.length > 0 && meets(outcomeRecordingRate, 95)) {
     strengths.push(
       `${outcomeRecordingRate}% of resolved cases have outcomes recorded — thorough case closure.`,
     );
   }
 
-  if (learningRate >= 80) {
+  if (meets(learningRate, 80)) {
     strengths.push(
       `${learningRate}% of cases have lessons learned and policy review completed — embedded reflective practice.`,
     );
@@ -475,7 +472,7 @@ export function computeStaffDisciplinaryConductIntelligence(
   // ── Concerns ──────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (investigationQualityRate < 70) {
+  if (below(investigationQualityRate, 70)) {
     concerns.push(
       `Investigation quality at ${investigationQualityRate}% — cases lack proper allegation details, investigators, or timely starts.`,
     );
@@ -485,15 +482,15 @@ export function computeStaffDisciplinaryConductIntelligence(
     const timelyCount = completedCases.filter(
       (c) => c.investigation_duration_days <= 30,
     ).length;
-    const timelyRate = pct(timelyCount, completedCases.length);
-    if (timelyRate < 50) {
+    const timelyRate = rate(timelyCount, completedCases.length);
+    if (below(timelyRate, 50)) {
       concerns.push(
         `Only ${timelyRate}% of investigations completed within 30 days — significant delays in case progression.`,
       );
     }
   }
 
-  if (seriousOrGross.length > 0 && ladoReferralRate < 60) {
+  if (seriousOrGross.length > 0 && below(ladoReferralRate, 60)) {
     concerns.push(
       `LADO referral rate at ${ladoReferralRate}% for serious/gross cases — below 60% compliance threshold.`,
     );
@@ -518,8 +515,8 @@ export function computeStaffDisciplinaryConductIntelligence(
     const reviewedCount = suspendedCases.filter(
       (c) => c.suspension_reviewed,
     ).length;
-    const suspReviewRate = pct(reviewedCount, suspendedCases.length);
-    if (suspReviewRate < 50) {
+    const suspReviewRate = rate(reviewedCount, suspendedCases.length);
+    if (below(suspReviewRate, 50)) {
       concerns.push(
         `Only ${suspReviewRate}% of suspended staff have had suspension reviews — duty of care risk.`,
       );
@@ -532,13 +529,13 @@ export function computeStaffDisciplinaryConductIntelligence(
     );
   }
 
-  if (resolvedCases.length > 0 && outcomeRecordingRate < 60) {
+  if (resolvedCases.length > 0 && below(outcomeRecordingRate, 60)) {
     concerns.push(
       `Only ${outcomeRecordingRate}% of resolved cases have outcomes recorded — poor case closure practice.`,
     );
   }
 
-  if (learningRate < 40) {
+  if (below(learningRate, 40)) {
     concerns.push(
       `Only ${learningRate}% of cases have lessons learned and policy review — the home is not learning from disciplinary matters.`,
     );
@@ -578,7 +575,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     });
   }
 
-  if (investigationQualityRate < 70 && rank <= 5) {
+  if (below(investigationQualityRate, 70) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -588,7 +585,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     });
   }
 
-  if (seriousOrGross.length > 0 && ladoReferralRate < 80 && rank <= 5) {
+  if (seriousOrGross.length > 0 && below(ladoReferralRate, 80) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -598,7 +595,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     });
   }
 
-  if (learningRate < 40 && rank <= 5) {
+  if (below(learningRate, 40) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -608,7 +605,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     });
   }
 
-  if (resolvedCases.length > 0 && outcomeRecordingRate < 60 && rank <= 5) {
+  if (resolvedCases.length > 0 && below(outcomeRecordingRate, 60) && rank <= 5) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -645,9 +642,9 @@ export function computeStaffDisciplinaryConductIntelligence(
   }
 
   if (
-    investigationQualityRate >= 98 &&
+    meets(investigationQualityRate, 98) &&
     completedCases.length > 0 &&
-    learningRate >= 80
+    meets(learningRate, 80)
   ) {
     insights.push({
       text: `Investigation quality at ${investigationQualityRate}% with ${learningRate}% learning and policy review — the home demonstrates robust disciplinary governance and reflective practice.`,
@@ -666,7 +663,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     seriousOrGross.length > 0 &&
     ladoReferralRate === 100 &&
     resolvedCases.length > 0 &&
-    outcomeRecordingRate >= 95
+    meets(outcomeRecordingRate, 95)
   ) {
     insights.push({
       text: `100% LADO compliance with ${outcomeRecordingRate}% outcome recording — disciplinary processes are thorough and well-documented.`,
@@ -674,7 +671,7 @@ export function computeStaffDisciplinaryConductIntelligence(
     });
   }
 
-  if (openCases.length === 0 && resolvedCases.length > 0 && learningRate >= 80) {
+  if (openCases.length === 0 && resolvedCases.length > 0 && meets(learningRate, 80)) {
     insights.push({
       text: "All cases resolved with strong lessons-learned culture — demonstrates effective case management and organisational learning.",
       severity: "positive",
@@ -686,7 +683,7 @@ export function computeStaffDisciplinaryConductIntelligence(
   // ── Headline ──────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding disciplinary and conduct management — ${investigationQualityRate}% investigation quality with robust LADO compliance.`;
+    headline = `Outstanding disciplinary and conduct management — ${formatRate(investigationQualityRate)} investigation quality with robust LADO compliance.`;
   } else if (rating === "good") {
     headline =
       "Good disciplinary and conduct management — minor gaps in timeliness, learning, or compliance to address.";

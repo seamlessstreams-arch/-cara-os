@@ -1,3 +1,4 @@
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF LONE WORKING SAFETY INTELLIGENCE ENGINE
 // Pure deterministic engine: risk assessment completion, check-in compliance,
@@ -164,10 +165,6 @@ export interface StaffLoneWorkingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -259,12 +256,12 @@ export function computeStaffLoneWorkingSafety(
       lone_working_score: 15,
       headline:
         "Inadequate — staff exist but no lone working safety records found. Regulatory requirements under Reg 16 and Reg 25 are unmet.",
-      risk_assessment_rate: 0,
-      check_in_compliance_rate: 0,
-      safety_protocol_rate: 0,
-      communication_device_rate: 0,
-      incident_reporting_rate: 0,
-      staff_confidence_rate: 0,
+      risk_assessment_rate: null,
+      check_in_compliance_rate: null,
+      safety_protocol_rate: null,
+      communication_device_rate: null,
+      incident_reporting_rate: null,
+      staff_confidence_rate: null,
       total_risk_assessments: 0,
       current_assessments: 0,
       expired_assessments: 0,
@@ -368,7 +365,7 @@ export function computeStaffLoneWorkingSafety(
       .filter((r) => r.status === "current" || r.status === "completed")
       .map((r) => r.staff_id),
   );
-  const riskAssessmentRate = pct(staffWithCurrentAssessments.size, total_staff);
+  const riskAssessmentRate = rate(staffWithCurrentAssessments.size, total_staff);
 
   // Shift type coverage in risk assessments
   const assessmentShiftTypes = new Set(
@@ -378,8 +375,8 @@ export function computeStaffLoneWorkingSafety(
     risk_assessment_records.map((r) => r.location),
   );
 
-  const approvalRate = pct(approvedAssessments, totalRiskAssessments);
-  const emergencyDocumentedRate = pct(emergencyDocumented, totalRiskAssessments);
+  const approvalRate = rate(approvedAssessments, totalRiskAssessments);
+  const emergencyDocumentedRate = rate(emergencyDocumented, totalRiskAssessments);
 
   // ════════════════════════════════════════════════════════════════════════
   // METRIC 2: Check-In Compliance Rate
@@ -402,12 +399,12 @@ export function computeStaffLoneWorkingSafety(
     (sum, c) => sum + c.late_check_ins,
     0,
   );
-  const checkInComplianceRate = pct(totalCompletedCheckIns, totalScheduledCheckIns);
+  const checkInComplianceRate = rate(totalCompletedCheckIns, totalScheduledCheckIns);
 
   const timelyResponses = check_in_records.filter(
     (c) => c.response_timely,
   ).length;
-  const timelyResponseRate = pct(timelyResponses, totalCheckIns);
+  const timelyResponseRate = rate(timelyResponses, totalCheckIns);
 
   const escalationsTriggered = check_in_records.filter(
     (c) => c.escalation_triggered,
@@ -416,7 +413,7 @@ export function computeStaffLoneWorkingSafety(
   const welfareConfirmed = check_in_records.filter(
     (c) => c.welfare_confirmed,
   ).length;
-  const welfareConfirmRate = pct(welfareConfirmed, totalCheckIns);
+  const welfareConfirmRate = rate(welfareConfirmed, totalCheckIns);
 
   // Unique staff with check-in records
   const staffWithCheckIns = new Set(check_in_records.map((c) => c.staff_id));
@@ -442,9 +439,9 @@ export function computeStaffLoneWorkingSafety(
     (p) => p.competency_assessed && p.competency_passed,
   ).length;
 
-  const safetyProtocolRate = pct(protocolsSigned, totalProtocols);
-  const trainingCompletionRate = pct(trainingCompleted, totalProtocols);
-  const competencyRate = pct(competencyPassed, competencyAssessed);
+  const safetyProtocolRate = rate(protocolsSigned, totalProtocols);
+  const trainingCompletionRate = rate(trainingCompleted, totalProtocols);
+  const competencyRate = rate(competencyPassed, competencyAssessed);
 
   // Unique staff with protocol records
   const staffWithProtocols = new Set(
@@ -463,7 +460,7 @@ export function computeStaffLoneWorkingSafety(
     "device_usage",
     "reporting_procedure",
   ];
-  const protocolTypeCoverage = pct(
+  const protocolTypeCoverage = rate(
     expectedProtocolTypes.filter((t) => protocolTypes.has(t)).length,
     expectedProtocolTypes.length,
   );
@@ -495,12 +492,12 @@ export function computeStaffLoneWorkingSafety(
       .filter((d) => d.issued)
       .map((d) => d.staff_id),
   );
-  const communicationDeviceRate = pct(staffWithDevices.size, total_staff);
+  const communicationDeviceRate = rate(staffWithDevices.size, total_staff);
 
-  const deviceTestRate = pct(devicesTested, totalDevices);
-  const deviceTestPassRate = pct(devicesTestPassed, devicesTested);
-  const batteryCheckRate = pct(batteryChecked, totalDevices);
-  const signalConfirmRate = pct(signalConfirmed, totalDevices);
+  const deviceTestRate = rate(devicesTested, totalDevices);
+  const deviceTestPassRate = rate(devicesTestPassed, devicesTested);
+  const batteryCheckRate = rate(batteryChecked, totalDevices);
+  const signalConfirmRate = rate(signalConfirmed, totalDevices);
 
   // ════════════════════════════════════════════════════════════════════════
   // METRIC 5: Incident Reporting Rate
@@ -526,11 +523,11 @@ export function computeStaffLoneWorkingSafety(
     (i) => i.debrief_completed,
   ).length;
 
-  const incidentReportingRate = pct(incidentsReportedTimely, totalIncidents);
-  const investigationRate = pct(investigationsCompleted, totalIncidents);
-  const lessonsLearnedRate = pct(lessonsDocumented, totalIncidents);
-  const debriefOfferRate = pct(debriefsOffered, totalIncidents);
-  const debriefCompletionRate = pct(debriefsCompleted, debriefsOffered);
+  const incidentReportingRate = rate(incidentsReportedTimely, totalIncidents);
+  const investigationRate = rate(investigationsCompleted, totalIncidents);
+  const lessonsLearnedRate = rate(lessonsDocumented, totalIncidents);
+  const debriefOfferRate = rate(debriefsOffered, totalIncidents);
+  const debriefCompletionRate = rate(debriefsCompleted, debriefsOffered);
 
   // Follow-up completion
   const totalFollowUpActions = incident_reporting_records.reduce(
@@ -541,7 +538,7 @@ export function computeStaffLoneWorkingSafety(
     (sum, i) => sum + i.follow_up_completed,
     0,
   );
-  const followUpCompletionRate = pct(totalFollowUpCompleted, totalFollowUpActions);
+  const followUpCompletionRate = rate(totalFollowUpCompleted, totalFollowUpActions);
 
   // Incident severity breakdown
   const criticalIncidents = incident_reporting_records.filter(
@@ -564,20 +561,15 @@ export function computeStaffLoneWorkingSafety(
   // - Staff with protocol signed
   // - Staff with device issued
   // - Staff with check-in records
-  const confidenceFactors: number[] = [];
+  const confidenceFactors: (number | null)[] = [];
   if (total_staff > 0) {
-    confidenceFactors.push(pct(staffWithCurrentAssessments.size, total_staff));
-    confidenceFactors.push(pct(staffWithProtocols.size, total_staff));
-    confidenceFactors.push(pct(staffWithDevices.size, total_staff));
-    confidenceFactors.push(pct(staffWithCheckIns.size, total_staff));
+    confidenceFactors.push(rate(staffWithCurrentAssessments.size, total_staff));
+    confidenceFactors.push(rate(staffWithProtocols.size, total_staff));
+    confidenceFactors.push(rate(staffWithDevices.size, total_staff));
+    confidenceFactors.push(rate(staffWithCheckIns.size, total_staff));
   }
   const staffConfidenceRate =
-    confidenceFactors.length > 0
-      ? Math.round(
-          confidenceFactors.reduce((s, v) => s + v, 0) /
-            confidenceFactors.length,
-        )
-      : null;
+    meanOf(confidenceFactors);
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING — base 52, max bonuses +28
@@ -586,45 +578,45 @@ export function computeStaffLoneWorkingSafety(
   let score = 52;
 
   // Bonus 1: Risk assessment coverage (+4 / +2)
-  if (riskAssessmentRate >= 100) score += 4;
-  else if (riskAssessmentRate >= 85) score += 2;
+  if (meets(riskAssessmentRate, 100)) score += 4;
+  else if (meets(riskAssessmentRate, 85)) score += 2;
 
   // Bonus 2: Check-in compliance (+4 / +2)
-  if (checkInComplianceRate >= 100) score += 4;
-  else if (checkInComplianceRate >= 85) score += 2;
+  if (meets(checkInComplianceRate, 100)) score += 4;
+  else if (meets(checkInComplianceRate, 85)) score += 2;
 
   // Bonus 3: Safety protocol adherence (+4 / +2)
-  if (safetyProtocolRate >= 100) score += 4;
-  else if (safetyProtocolRate >= 85) score += 2;
+  if (meets(safetyProtocolRate, 100)) score += 4;
+  else if (meets(safetyProtocolRate, 85)) score += 2;
 
   // Bonus 4: Communication device coverage (+4 / +2)
-  if (communicationDeviceRate >= 100) score += 4;
-  else if (communicationDeviceRate >= 85) score += 2;
+  if (meets(communicationDeviceRate, 100)) score += 4;
+  else if (meets(communicationDeviceRate, 85)) score += 2;
 
   // Bonus 5: Incident reporting timeliness (+3 / +1)
-  if (incidentReportingRate >= 100) score += 3;
-  else if (incidentReportingRate >= 85) score += 1;
+  if (meets(incidentReportingRate, 100)) score += 3;
+  else if (meets(incidentReportingRate, 85)) score += 1;
 
   // Bonus 6: Training completion rate (+3 / +1)
-  if (trainingCompletionRate >= 100) score += 3;
-  else if (trainingCompletionRate >= 85) score += 1;
+  if (meets(trainingCompletionRate, 100)) score += 3;
+  else if (meets(trainingCompletionRate, 85)) score += 1;
 
   // Bonus 7: Emergency procedures documented (+3 / +1)
-  if (emergencyDocumentedRate >= 100) score += 3;
-  else if (emergencyDocumentedRate >= 85) score += 1;
+  if (meets(emergencyDocumentedRate, 100)) score += 3;
+  else if (meets(emergencyDocumentedRate, 85)) score += 1;
 
   // Bonus 8: Investigation completion (+3 / +1)
-  if (investigationRate >= 100) score += 3;
-  else if (investigationRate >= 85) score += 1;
+  if (meets(investigationRate, 100)) score += 3;
+  else if (meets(investigationRate, 85)) score += 1;
 
   // Penalty 1: Risk assessment coverage < 50%
-  if (risk_assessment_records.length > 0 && riskAssessmentRate < 50) score -= 6;
+  if (risk_assessment_records.length > 0 && below(riskAssessmentRate, 50)) score -= 6;
 
   // Penalty 2: Check-in compliance < 50%
-  if (check_in_records.length > 0 && checkInComplianceRate < 50) score -= 5;
+  if (check_in_records.length > 0 && below(checkInComplianceRate, 50)) score -= 5;
 
   // Penalty 3: Communication device coverage < 50%
-  if (communication_device_records.length > 0 && communicationDeviceRate < 50) score -= 5;
+  if (communication_device_records.length > 0 && below(communicationDeviceRate, 50)) score -= 5;
 
   // Penalty 4: Critical/high incidents without investigation
   if (incident_reporting_records.length > 0) {
@@ -645,93 +637,93 @@ export function computeStaffLoneWorkingSafety(
 
   const strengths: string[] = [];
 
-  if (riskAssessmentRate >= 100 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 100) && totalRiskAssessments > 0) {
     strengths.push(
       `All ${total_staff} staff have current lone working risk assessments — 100% coverage demonstrates comprehensive risk management.`,
     );
-  } else if (riskAssessmentRate >= 85 && totalRiskAssessments > 0) {
+  } else if (meets(riskAssessmentRate, 85) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentRate}% of staff have current lone working risk assessments — strong risk assessment coverage across the team.`,
     );
   }
 
-  if (checkInComplianceRate >= 100 && totalCheckIns > 0) {
+  if (meets(checkInComplianceRate, 100) && totalCheckIns > 0) {
     strengths.push(
       `100% check-in compliance across ${totalScheduledCheckIns} scheduled check-ins — every welfare check was completed during lone working shifts.`,
     );
-  } else if (checkInComplianceRate >= 90 && totalCheckIns > 0) {
+  } else if (meets(checkInComplianceRate, 90) && totalCheckIns > 0) {
     strengths.push(
       `${checkInComplianceRate}% check-in compliance rate — the vast majority of scheduled welfare checks are being completed.`,
     );
   }
 
-  if (safetyProtocolRate >= 100 && totalProtocols > 0) {
+  if (meets(safetyProtocolRate, 100) && totalProtocols > 0) {
     strengths.push(
       `All ${totalProtocols} safety protocol acknowledgements signed — every staff member has confirmed understanding of lone working procedures.`,
     );
-  } else if (safetyProtocolRate >= 85 && totalProtocols > 0) {
+  } else if (meets(safetyProtocolRate, 85) && totalProtocols > 0) {
     strengths.push(
       `${safetyProtocolRate}% safety protocol sign-off rate — most staff have acknowledged and signed lone working safety protocols.`,
     );
   }
 
-  if (communicationDeviceRate >= 100 && totalDevices > 0) {
+  if (meets(communicationDeviceRate, 100) && totalDevices > 0) {
     strengths.push(
       `All staff have communication devices issued — 100% coverage ensures every lone worker can summon help in an emergency.`,
     );
-  } else if (communicationDeviceRate >= 85 && totalDevices > 0) {
+  } else if (meets(communicationDeviceRate, 85) && totalDevices > 0) {
     strengths.push(
       `${communicationDeviceRate}% communication device coverage — the majority of staff have devices for emergency communication during lone working.`,
     );
   }
 
-  if (incidentReportingRate >= 100 && totalIncidents > 0) {
+  if (meets(incidentReportingRate, 100) && totalIncidents > 0) {
     strengths.push(
       `All ${totalIncidents} lone working incidents reported within the required timescale — timely reporting enables rapid response and learning.`,
     );
-  } else if (incidentReportingRate >= 85 && totalIncidents > 0) {
+  } else if (meets(incidentReportingRate, 85) && totalIncidents > 0) {
     strengths.push(
       `${incidentReportingRate}% of lone working incidents reported timely — strong reporting culture supports continuous safety improvement.`,
     );
   }
 
-  if (trainingCompletionRate >= 100 && totalProtocols > 0) {
+  if (meets(trainingCompletionRate, 100) && totalProtocols > 0) {
     strengths.push(
       "All staff have completed lone working safety training — the team is equipped with the knowledge and skills to work safely alone.",
     );
-  } else if (trainingCompletionRate >= 90 && totalProtocols > 0) {
+  } else if (meets(trainingCompletionRate, 90) && totalProtocols > 0) {
     strengths.push(
       `${trainingCompletionRate}% lone working training completion — nearly all staff have received appropriate safety training.`,
     );
   }
 
-  if (emergencyDocumentedRate >= 100 && totalRiskAssessments > 0) {
+  if (meets(emergencyDocumentedRate, 100) && totalRiskAssessments > 0) {
     strengths.push(
       "Emergency procedures documented in all risk assessments — every lone working scenario has a documented emergency response plan.",
     );
   }
 
-  if (approvalRate >= 100 && totalRiskAssessments > 0) {
+  if (meets(approvalRate, 100) && totalRiskAssessments > 0) {
     strengths.push(
       `All ${totalRiskAssessments} risk assessments have management approval — evidencing robust management oversight of lone working safety.`,
     );
   }
 
-  if (investigationRate >= 100 && totalIncidents > 0) {
+  if (meets(investigationRate, 100) && totalIncidents > 0) {
     strengths.push(
       `All ${totalIncidents} lone working incidents have completed investigations — the home thoroughly investigates every incident to prevent recurrence.`,
     );
   }
 
-  if (welfareConfirmRate >= 100 && totalCheckIns > 0) {
+  if (meets(welfareConfirmRate, 100) && totalCheckIns > 0) {
     strengths.push(
       "Welfare confirmed in 100% of check-ins — consistent evidence of staff wellbeing being actively monitored during lone shifts.",
     );
   }
 
   if (
-    deviceTestRate >= 100 &&
-    deviceTestPassRate >= 100 &&
+    meets(deviceTestRate, 100) &&
+    meets(deviceTestPassRate, 100) &&
     totalDevices > 0
   ) {
     strengths.push(
@@ -739,15 +731,15 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (lessonsLearnedRate >= 100 && totalIncidents > 0) {
+  if (meets(lessonsLearnedRate, 100) && totalIncidents > 0) {
     strengths.push(
       "Lessons learned documented for all incidents — a learning culture that continuously improves lone working safety.",
     );
   }
 
   if (
-    debriefOfferRate >= 100 &&
-    debriefCompletionRate >= 100 &&
+    meets(debriefOfferRate, 100) &&
+    meets(debriefCompletionRate, 100) &&
     totalIncidents > 0 &&
     debriefsOffered > 0
   ) {
@@ -762,15 +754,15 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (protocolTypeCoverage >= 100) {
+  if (meets(protocolTypeCoverage, 100)) {
     strengths.push(
       "All 6 lone working protocol types covered — policy, risk assessment, emergency, check-in, device usage, and reporting procedures are all addressed.",
     );
   }
 
   if (nearMisses > 0 && totalIncidents > 0) {
-    const nearMissRate = pct(nearMisses, totalIncidents);
-    if (nearMissRate >= 30) {
+    const nearMissRate = rate(nearMisses, totalIncidents);
+    if (meets(nearMissRate, 30)) {
       strengths.push(
         `${nearMissRate}% of incidents are near misses — a healthy near-miss reporting rate indicates a proactive safety culture rather than reactive incident management.`,
       );
@@ -795,13 +787,13 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${riskAssessmentRate}% of staff have a current lone working risk assessment — more than half the team lacks documented risk controls for working alone.`,
     );
   } else if (
-    riskAssessmentRate < 80 &&
-    riskAssessmentRate >= 50 &&
+    below(riskAssessmentRate, 80) &&
+    meets(riskAssessmentRate, 50) &&
     totalRiskAssessments > 0
   ) {
     concerns.push(
@@ -827,7 +819,7 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (checkInComplianceRate < 50 && totalCheckIns > 0) {
+  if (below(checkInComplianceRate, 50) && totalCheckIns > 0) {
     concerns.push(
       `Check-in compliance at only ${checkInComplianceRate}% — fewer than half of scheduled check-ins were completed, creating significant gaps in staff welfare monitoring.`,
     );
@@ -839,13 +831,13 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (safetyProtocolRate < 50 && totalProtocols > 0) {
+  if (below(safetyProtocolRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Only ${safetyProtocolRate}% of safety protocols signed — more than half of staff may not have formally acknowledged lone working procedures.`,
     );
   } else if (
-    safetyProtocolRate < 80 &&
-    safetyProtocolRate >= 50 &&
+    below(safetyProtocolRate, 80) &&
+    meets(safetyProtocolRate, 50) &&
     totalProtocols > 0
   ) {
     concerns.push(
@@ -859,19 +851,19 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (trainingCompletionRate < 50 && totalProtocols > 0) {
+  if (below(trainingCompletionRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Only ${trainingCompletionRate}% of staff have completed lone working safety training — the majority lack formal training in lone working procedures.`,
     );
   }
 
-  if (communicationDeviceRate < 50 && totalDevices > 0) {
+  if (below(communicationDeviceRate, 50) && totalDevices > 0) {
     concerns.push(
       `Only ${communicationDeviceRate}% of staff have communication devices — more than half the team may be working alone without the means to summon help in an emergency.`,
     );
   } else if (
-    communicationDeviceRate < 80 &&
-    communicationDeviceRate >= 50 &&
+    below(communicationDeviceRate, 80) &&
+    meets(communicationDeviceRate, 50) &&
     totalDevices > 0
   ) {
     concerns.push(
@@ -885,13 +877,13 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (deviceTestRate < 50 && totalDevices > 0) {
+  if (below(deviceTestRate, 50) && totalDevices > 0) {
     concerns.push(
       `Only ${deviceTestRate}% of devices have been tested — untested equipment may fail when needed most.`,
     );
   }
 
-  if (incidentReportingRate < 50 && totalIncidents > 0) {
+  if (below(incidentReportingRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Only ${incidentReportingRate}% of incidents reported within the required timescale — delayed reporting prevents timely investigation and remedial action.`,
     );
@@ -909,19 +901,19 @@ export function computeStaffLoneWorkingSafety(
     );
   }
 
-  if (investigationRate < 50 && totalIncidents > 0) {
+  if (below(investigationRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Only ${investigationRate}% of incidents have completed investigations — uninvestigated incidents prevent learning and leave root causes unaddressed.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && totalFollowUpActions > 0) {
+  if (below(followUpCompletionRate, 50) && totalFollowUpActions > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of follow-up actions completed — outstanding actions from incident investigations remain unresolved.`,
     );
   }
 
-  if (debriefOfferRate < 50 && totalIncidents > 0) {
+  if (below(debriefOfferRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Debriefs offered for only ${debriefOfferRate}% of incidents — staff involved in lone working incidents may not be receiving adequate emotional and practical support.`,
     );
@@ -943,7 +935,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (riskAssessmentRate < 80 && total_staff > 0) {
+  if (below(riskAssessmentRate, 80) && total_staff > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase risk assessment coverage from ${riskAssessmentRate}% to 100% — every staff member who works alone must have an individual, current risk assessment. Reg 16 requires the home to ensure staff are safe and properly supported.`,
@@ -952,7 +944,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (checkInComplianceRate < 85 && totalCheckIns > 0) {
+  if (below(checkInComplianceRate, 85) && totalCheckIns > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve check-in compliance from ${checkInComplianceRate}% — ensure all scheduled welfare checks are completed on time during lone working shifts. Consider automated reminders and escalation protocols for missed check-ins.`,
@@ -961,7 +953,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (communicationDeviceRate < 85 && total_staff > 0) {
+  if (below(communicationDeviceRate, 85) && total_staff > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase communication device coverage from ${communicationDeviceRate}% — all lone workers must have access to a functioning device (mobile phone, radio, personal alarm, or lone worker device) to summon help.`,
@@ -996,7 +988,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (safetyProtocolRate < 85 && totalProtocols > 0) {
+  if (below(safetyProtocolRate, 85) && totalProtocols > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase safety protocol sign-off from ${safetyProtocolRate}% — all staff must formally acknowledge understanding of the lone working policy, check-in protocols, emergency procedures, and device usage before working alone.`,
@@ -1005,7 +997,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (trainingCompletionRate < 85 && totalProtocols > 0) {
+  if (below(trainingCompletionRate, 85) && totalProtocols > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve lone working safety training completion from ${trainingCompletionRate}% — allocate protected time for all staff to complete mandatory training covering risk awareness, emergency response, and communication procedures.`,
@@ -1023,7 +1015,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (emergencyDocumentedRate < 85 && totalRiskAssessments > 0) {
+  if (below(emergencyDocumentedRate, 85) && totalRiskAssessments > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Document emergency procedures in all risk assessments — currently ${emergencyDocumentedRate}%. Each lone working scenario must have a clear, documented emergency response plan.`,
@@ -1032,7 +1024,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (incidentReportingRate < 85 && totalIncidents > 0) {
+  if (below(incidentReportingRate, 85) && totalIncidents > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve incident reporting timeliness from ${incidentReportingRate}% — establish clear timescales for reporting lone working incidents and ensure staff understand the reporting process.`,
@@ -1041,7 +1033,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (investigationRate < 85 && totalIncidents > 0) {
+  if (below(investigationRate, 85) && totalIncidents > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Complete investigations for all lone working incidents — currently ${investigationRate}%. Every incident requires investigation to identify root causes and prevent recurrence.`,
@@ -1050,7 +1042,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (debriefOfferRate < 85 && totalIncidents > 0) {
+  if (below(debriefOfferRate, 85) && totalIncidents > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Offer debriefs for all lone working incidents — currently ${debriefOfferRate}%. Staff need structured support after incidents to process the event and maintain wellbeing.`,
@@ -1059,7 +1051,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (followUpCompletionRate < 80 && totalFollowUpActions > 0) {
+  if (below(followUpCompletionRate, 80) && totalFollowUpActions > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Complete outstanding follow-up actions from incident investigations — currently ${followUpCompletionRate}% completed. Unresolved actions undermine the learning from incidents.`,
@@ -1068,7 +1060,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (deviceTestRate < 85 && totalDevices > 0) {
+  if (below(deviceTestRate, 85) && totalDevices > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase device testing from ${deviceTestRate}% — implement a regular testing schedule for all communication devices to ensure they function reliably when needed.`,
@@ -1077,7 +1069,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (lessonsLearnedRate < 80 && totalIncidents > 0) {
+  if (below(lessonsLearnedRate, 80) && totalIncidents > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve lessons learned documentation from ${lessonsLearnedRate}% — documenting and sharing learning from incidents drives continuous improvement in lone working safety.`,
@@ -1086,7 +1078,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (protocolTypeCoverage < 100) {
+  if (below(protocolTypeCoverage, 100)) {
     const missingTypes = expectedProtocolTypes.filter(
       (t) => !protocolTypes.has(t),
     );
@@ -1098,7 +1090,7 @@ export function computeStaffLoneWorkingSafety(
     });
   }
 
-  if (approvalRate < 85 && totalRiskAssessments > 0) {
+  if (below(approvalRate, 85) && totalRiskAssessments > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Ensure management approval for all risk assessments — currently ${approvalRate}%. Unsigned assessments lack the management oversight required to evidence compliance.`,
@@ -1124,21 +1116,21 @@ export function computeStaffLoneWorkingSafety(
 
   // ── Critical insights ────────────────────────────────────────────────
 
-  if (riskAssessmentRate < 50 && total_staff > 0) {
+  if (below(riskAssessmentRate, 50) && total_staff > 0) {
     insights.push({
       text: `Fewer than half of staff have a current lone working risk assessment (${riskAssessmentRate}%). This is a serious deficiency. Under Regulation 16, the registered person must ensure staff are deployed safely with appropriate skills and experience. Without individual risk assessments, the home cannot demonstrate it has identified and mitigated the specific hazards associated with lone working for each member of staff. Ofsted will view this as a significant leadership and management failure.`,
       severity: "critical",
     });
   }
 
-  if (checkInComplianceRate < 50 && totalCheckIns > 0) {
+  if (below(checkInComplianceRate, 50) && totalCheckIns > 0) {
     insights.push({
       text: `Check-in compliance is critically low at ${checkInComplianceRate}%. When staff work alone, scheduled welfare checks are the primary mechanism for confirming their safety. Fewer than half of scheduled check-ins were completed, meaning staff welfare was unconfirmed for significant periods during lone working shifts. This creates an unacceptable safety gap that must be addressed immediately.`,
       severity: "critical",
     });
   }
 
-  if (communicationDeviceRate < 50 && total_staff > 0) {
+  if (below(communicationDeviceRate, 50) && total_staff > 0) {
     insights.push({
       text: `Fewer than half of staff have a communication device issued (${communicationDeviceRate}%). Staff working alone without the ability to summon help are at serious risk. The Health and Safety Executive guidance on lone working is clear that employers must ensure lone workers can communicate with someone who can provide assistance. This represents a fundamental failure in the home's duty of care to its staff.`,
       severity: "critical",
@@ -1159,7 +1151,7 @@ export function computeStaffLoneWorkingSafety(
 
   if (
     totalIncidents > 0 &&
-    investigationRate < 50
+    below(investigationRate, 50)
   ) {
     insights.push({
       text: `Fewer than half of lone working incidents have completed investigations (${investigationRate}%). Without thorough investigation, root causes remain unidentified and the same hazards continue to put staff at risk. The SCCIF expects homes to learn from incidents and adapt their practice accordingly.`,
@@ -1182,8 +1174,8 @@ export function computeStaffLoneWorkingSafety(
     totalMissedCheckIns > 0 &&
     totalMissedCheckIns < totalScheduledCheckIns
   ) {
-    const missedPct = pct(totalMissedCheckIns, totalScheduledCheckIns);
-    if (missedPct >= 10 && missedPct < 50) {
+    const missedPct = rate(totalMissedCheckIns, totalScheduledCheckIns);
+    if (meets(missedPct, 10) && below(missedPct, 50)) {
       insights.push({
         text: `${totalMissedCheckIns} check-ins were missed (${missedPct}% of total). While the majority of check-ins are being completed, missed welfare checks represent periods where staff safety was not confirmed. Review the reasons for missed check-ins and whether the check-in schedule is realistic and well-understood.`,
         severity: "warning",
@@ -1223,8 +1215,8 @@ export function computeStaffLoneWorkingSafety(
     highRiskAssessments > 0 &&
     totalRiskAssessments > 0
   ) {
-    const highRiskPct = pct(highRiskAssessments, totalRiskAssessments);
-    if (highRiskPct >= 30) {
+    const highRiskPct = rate(highRiskAssessments, totalRiskAssessments);
+    if (meets(highRiskPct, 30)) {
       insights.push({
         text: `${highRiskPct}% of risk assessments identify high risk lone working scenarios. A high proportion of high-risk assessments suggests the home's lone working arrangements may be inherently challenging. Consider whether some high-risk scenarios can be eliminated through additional staffing or whether enhanced control measures are needed.`,
         severity: "warning",
@@ -1233,7 +1225,7 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    debriefOfferRate < 50 &&
+    below(debriefOfferRate, 50) &&
     totalIncidents > 0
   ) {
     insights.push({
@@ -1243,7 +1235,7 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    followUpCompletionRate < 50 &&
+    below(followUpCompletionRate, 50) &&
     totalFollowUpActions > 0
   ) {
     insights.push({
@@ -1253,8 +1245,8 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    safetyProtocolRate < 70 &&
-    safetyProtocolRate >= 50 &&
+    below(safetyProtocolRate, 70) &&
+    meets(safetyProtocolRate, 50) &&
     totalProtocols > 0
   ) {
     insights.push({
@@ -1264,7 +1256,7 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    competencyRate < 80 &&
+    below(competencyRate, 80) &&
     competencyAssessed > 0
   ) {
     insights.push({
@@ -1277,8 +1269,8 @@ export function computeStaffLoneWorkingSafety(
     riskAssessmentUpdated < totalIncidents &&
     totalIncidents > 0
   ) {
-    const updateRate = pct(riskAssessmentUpdated, totalIncidents);
-    if (updateRate < 50) {
+    const updateRate = rate(riskAssessmentUpdated, totalIncidents);
+    if (below(updateRate, 50)) {
       insights.push({
         text: `Risk assessments were updated after only ${updateRate}% of incidents. Incidents should trigger a review of the relevant risk assessment to determine whether additional control measures are needed. Failing to update risk assessments after incidents means the same hazards may continue unchecked.`,
         severity: "warning",
@@ -1289,10 +1281,10 @@ export function computeStaffLoneWorkingSafety(
   // ── Positive insights ────────────────────────────────────────────────
 
   if (
-    riskAssessmentRate >= 100 &&
-    checkInComplianceRate >= 95 &&
-    safetyProtocolRate >= 100 &&
-    communicationDeviceRate >= 100 &&
+    meets(riskAssessmentRate, 100) &&
+    meets(checkInComplianceRate, 95) &&
+    meets(safetyProtocolRate, 100) &&
+    meets(communicationDeviceRate, 100) &&
     totalRiskAssessments > 0
   ) {
     insights.push({
@@ -1300,10 +1292,10 @@ export function computeStaffLoneWorkingSafety(
       severity: "positive",
     });
   } else if (
-    riskAssessmentRate >= 85 &&
-    checkInComplianceRate >= 85 &&
-    safetyProtocolRate >= 85 &&
-    communicationDeviceRate >= 85 &&
+    meets(riskAssessmentRate, 85) &&
+    meets(checkInComplianceRate, 85) &&
+    meets(safetyProtocolRate, 85) &&
+    meets(communicationDeviceRate, 85) &&
     totalRiskAssessments > 0
   ) {
     insights.push({
@@ -1313,9 +1305,9 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    incidentReportingRate >= 100 &&
-    investigationRate >= 100 &&
-    lessonsLearnedRate >= 100 &&
+    meets(incidentReportingRate, 100) &&
+    meets(investigationRate, 100) &&
+    meets(lessonsLearnedRate, 100) &&
     totalIncidents > 0
   ) {
     insights.push({
@@ -1323,8 +1315,8 @@ export function computeStaffLoneWorkingSafety(
       severity: "positive",
     });
   } else if (
-    incidentReportingRate >= 85 &&
-    investigationRate >= 85 &&
+    meets(incidentReportingRate, 85) &&
+    meets(investigationRate, 85) &&
     totalIncidents > 0
   ) {
     insights.push({
@@ -1334,8 +1326,8 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    trainingCompletionRate >= 100 &&
-    competencyRate >= 100 &&
+    meets(trainingCompletionRate, 100) &&
+    meets(competencyRate, 100) &&
     competencyAssessed > 0
   ) {
     insights.push({
@@ -1345,8 +1337,8 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    welfareConfirmRate >= 100 &&
-    timelyResponseRate >= 100 &&
+    meets(welfareConfirmRate, 100) &&
+    meets(timelyResponseRate, 100) &&
     totalCheckIns > 0
   ) {
     insights.push({
@@ -1368,9 +1360,9 @@ export function computeStaffLoneWorkingSafety(
 
   if (
     totalDevices > 0 &&
-    deviceTestRate >= 100 &&
-    batteryCheckRate >= 100 &&
-    signalConfirmRate >= 100
+    meets(deviceTestRate, 100) &&
+    meets(batteryCheckRate, 100) &&
+    meets(signalConfirmRate, 100)
   ) {
     insights.push({
       text: "All communication devices have been tested, batteries checked, and signal confirmed — a thorough approach to equipment reliability that ensures devices will function when staff need them most.",
@@ -1379,8 +1371,8 @@ export function computeStaffLoneWorkingSafety(
   }
 
   if (
-    debriefOfferRate >= 100 &&
-    debriefCompletionRate >= 80 &&
+    meets(debriefOfferRate, 100) &&
+    meets(debriefCompletionRate, 80) &&
     totalIncidents > 0 &&
     debriefsOffered > 0
   ) {
@@ -1396,14 +1388,14 @@ export function computeStaffLoneWorkingSafety(
 
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding lone working safety — ${riskAssessmentRate}% risk assessment coverage, ${checkInComplianceRate}% check-in compliance, ${communicationDeviceRate}% device coverage across ${total_staff} staff.`;
+    headline = `Outstanding lone working safety — ${formatRate(riskAssessmentRate)} risk assessment coverage, ${formatRate(checkInComplianceRate)} check-in compliance, ${formatRate(communicationDeviceRate)} device coverage across ${total_staff} staff.`;
   } else if (rating === "good") {
     const issues: string[] = [];
     if (expiredAssessments > 0)
       issues.push(`${expiredAssessments} expired assessment${expiredAssessments > 1 ? "s" : ""}`);
-    if (checkInComplianceRate < 100 && totalCheckIns > 0)
+    if (below(checkInComplianceRate, 100) && totalCheckIns > 0)
       issues.push(`check-in compliance at ${checkInComplianceRate}%`);
-    if (communicationDeviceRate < 100 && totalDevices > 0)
+    if (below(communicationDeviceRate, 100) && totalDevices > 0)
       issues.push(`device coverage at ${communicationDeviceRate}%`);
     if (refresherOverdue > 0)
       issues.push(`${refresherOverdue} overdue refresher${refresherOverdue > 1 ? "s" : ""}`);

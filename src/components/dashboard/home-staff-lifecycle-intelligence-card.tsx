@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { StaffLifecycleRating, HomeStaffLifecycleResult } from "@/lib/engines/home-staff-lifecycle-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeStaffLifecycleResponse {
   data: HomeStaffLifecycleResult;
@@ -104,7 +105,7 @@ export function HomeStaffLifecycleIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.lifecycle_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.lifecycle_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.lifecycle_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -138,7 +139,7 @@ export function HomeStaffLifecycleIntelligenceCard() {
                   (d.sickness.absence_rate ?? 0) <= 2 ? "text-[--cs-success]" :
                   (d.sickness.absence_rate ?? 0) <= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.sickness.absence_rate}%
+                  {formatRate(d.sickness.absence_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Absence Rate</p>
@@ -184,7 +185,7 @@ export function HomeStaffLifecycleIntelligenceCard() {
                 <p>Overdue: <span className={cn("font-medium",
                   d.induction.overdue_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.induction.overdue_count}</span></p>
-                <p>Task depth: <span className="font-medium text-slate-600">{d.induction.avg_task_completion}%</span></p>
+                <p>Task depth: <span className="font-medium text-slate-600">{formatRate(d.induction.avg_task_completion)}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">

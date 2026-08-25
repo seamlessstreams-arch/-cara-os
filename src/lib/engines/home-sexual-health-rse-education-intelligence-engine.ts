@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SEXUAL HEALTH & RSE EDUCATION INTELLIGENCE ENGINE
 // Monitors how effectively the home delivers relationships and sex education,
@@ -170,10 +171,6 @@ export interface SexualHealthRseResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -197,12 +194,12 @@ function emptyResult(
     rse_score: score,
     headline,
     total_rse_sessions: 0,
-    rse_delivery_rate: 0,
-    health_screening_rate: 0,
-    age_appropriate_rate: 0,
-    consent_education_rate: 0,
-    safeguarding_awareness_rate: 0,
-    child_confidence_rate: 0,
+    rse_delivery_rate: null,
+    health_screening_rate: null,
+    age_appropriate_rate: null,
+    consent_education_rate: null,
+    safeguarding_awareness_rate: null,
+    child_confidence_rate: null,
     screening_compliance_avg: 0,
     consent_understanding_avg: 0,
     strengths: [],
@@ -286,33 +283,33 @@ export function computeSexualHealthRseEducation(
     rse_education_records.map((r) => r.child_id),
   ).size;
   const rseDeliveryRate =
-    total_children > 0 ? pct(uniqueChildrenWithRse, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithRse, total_children) : 0;
 
   // --- RSE quality metrics ---
   const rseObjectivesMet = rse_education_records.filter(
     (r) => r.learning_objectives_met,
   ).length;
-  const rseObjectivesMetRate = pct(rseObjectivesMet, totalRseSessions);
+  const rseObjectivesMetRate = rate(rseObjectivesMet, totalRseSessions);
 
   const rseChildEngaged = rse_education_records.filter(
     (r) => r.child_engaged,
   ).length;
-  const rseEngagementRate = pct(rseChildEngaged, totalRseSessions);
+  const rseEngagementRate = rate(rseChildEngaged, totalRseSessions);
 
   const rseChildFeedbackPositive = rse_education_records.filter(
     (r) => r.child_feedback_positive,
   ).length;
-  const rseFeedbackPositiveRate = pct(rseChildFeedbackPositive, totalRseSessions);
+  const rseFeedbackPositiveRate = rate(rseChildFeedbackPositive, totalRseSessions);
 
   const rseFacilitatorQualified = rse_education_records.filter(
     (r) => r.facilitator_qualified,
   ).length;
-  const rseFacilitatorQualifiedRate = pct(rseFacilitatorQualified, totalRseSessions);
+  const rseFacilitatorQualifiedRate = rate(rseFacilitatorQualified, totalRseSessions);
 
   const rseNotesRecorded = rse_education_records.filter(
     (r) => r.notes_recorded,
   ).length;
-  const rseDocumentationRate = pct(rseNotesRecorded, totalRseSessions);
+  const rseDocumentationRate = rate(rseNotesRecorded, totalRseSessions);
 
   const rseFollowUpNeeded = rse_education_records.filter(
     (r) => r.follow_up_needed,
@@ -320,14 +317,14 @@ export function computeSexualHealthRseEducation(
   const rseFollowUpCompleted = rse_education_records.filter(
     (r) => r.follow_up_needed && r.follow_up_completed,
   ).length;
-  const rseFollowUpCompletionRate = pct(rseFollowUpCompleted, rseFollowUpNeeded);
+  const rseFollowUpCompletionRate = rate(rseFollowUpCompleted, rseFollowUpNeeded);
 
   // --- RSE topic coverage ---
   const rseTopicsCovered = new Set(
     rse_education_records.map((r) => r.topic),
   ).size;
   const totalRseTopics = 10; // total possible topics
-  const rseTopicCoverageRate = pct(rseTopicsCovered, totalRseTopics);
+  const rseTopicCoverageRate = rate(rseTopicsCovered, totalRseTopics);
 
   // --- Sexual health screening ---
   const totalScreenings = sexual_health_screening_records.length;
@@ -335,12 +332,12 @@ export function computeSexualHealthRseEducation(
     sexual_health_screening_records.map((s) => s.child_id),
   ).size;
   const healthScreeningRate =
-    total_children > 0 ? pct(uniqueChildrenScreened, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenScreened, total_children) : 0;
 
   const completedScreenings = sexual_health_screening_records.filter(
     (s) => s.completed,
   ).length;
-  const screeningCompletionRate = pct(completedScreenings, totalScreenings);
+  const screeningCompletionRate = rate(completedScreenings, totalScreenings);
 
   const overdueScreenings = sexual_health_screening_records.filter(
     (s) => s.overdue,
@@ -350,12 +347,12 @@ export function computeSexualHealthRseEducation(
   const screeningConsented = sexual_health_screening_records.filter(
     (s) => s.child_consented,
   ).length;
-  const screeningConsentRate = pct(screeningConsented, totalScreenings);
+  const screeningConsentRate = rate(screeningConsented, totalScreenings);
 
   const screeningConfidentialityExplained = sexual_health_screening_records.filter(
     (s) => s.confidentiality_explained,
   ).length;
-  const confidentialityExplainedRate = pct(screeningConfidentialityExplained, totalScreenings);
+  const confidentialityExplainedRate = rate(screeningConfidentialityExplained, totalScreenings);
 
   const screeningFollowUpNeeded = sexual_health_screening_records.filter(
     (s) => s.follow_up_needed,
@@ -363,15 +360,12 @@ export function computeSexualHealthRseEducation(
   const screeningFollowUpCompleted = sexual_health_screening_records.filter(
     (s) => s.follow_up_needed && s.follow_up_completed,
   ).length;
-  const screeningFollowUpRate = pct(screeningFollowUpCompleted, screeningFollowUpNeeded);
+  const screeningFollowUpRate = rate(screeningFollowUpCompleted, screeningFollowUpNeeded);
 
   // Screening compliance average (composite of completion + consent + confidentiality)
   const screeningComplianceAvg =
-    totalScreenings > 0
-      ? Math.round(
-          (screeningCompletionRate + screeningConsentRate + confidentialityExplainedRate) / 3,
-        )
-      : null;
+    totalScreenings > 0 ? Math.round(
+          (screeningCompletionRate! + screeningConsentRate! + confidentialityExplainedRate!) / 3) : null;
 
   // --- Age-appropriate guidance ---
   const totalGuidance = age_guidance_records.length;
@@ -379,17 +373,17 @@ export function computeSexualHealthRseEducation(
   const guidanceAgeAppropriate = age_guidance_records.filter(
     (g) => g.age_appropriate,
   ).length;
-  const ageAppropriateRate = pct(guidanceAgeAppropriate, totalGuidance);
+  const ageAppropriateRate = rate(guidanceAgeAppropriate, totalGuidance);
 
   const guidanceDevelopmentalConsidered = age_guidance_records.filter(
     (g) => g.developmental_stage_considered,
   ).length;
-  const developmentalConsiderationRate = pct(guidanceDevelopmentalConsidered, totalGuidance);
+  const developmentalConsiderationRate = rate(guidanceDevelopmentalConsidered, totalGuidance);
 
   const guidanceCulturalSensitivity = age_guidance_records.filter(
     (g) => g.cultural_sensitivity_considered,
   ).length;
-  const culturalSensitivityRate = pct(guidanceCulturalSensitivity, totalGuidance);
+  const culturalSensitivityRate = rate(guidanceCulturalSensitivity, totalGuidance);
 
   // --- Consent education ---
   const totalConsentSessions = consent_education_records.length;
@@ -397,32 +391,32 @@ export function computeSexualHealthRseEducation(
     consent_education_records.map((c) => c.child_id),
   ).size;
   const consentEducationRate =
-    total_children > 0 ? pct(uniqueChildrenConsentEd, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenConsentEd, total_children) : 0;
 
   const consentDemonstratedUnderstanding = consent_education_records.filter(
     (c) => c.child_demonstrated_understanding,
   ).length;
-  const consentUnderstandingRate = pct(consentDemonstratedUnderstanding, totalConsentSessions);
+  const consentUnderstandingRate = rate(consentDemonstratedUnderstanding, totalConsentSessions);
 
   const consentCanArticulate = consent_education_records.filter(
     (c) => c.child_can_articulate_consent,
   ).length;
-  const consentArticulationRate = pct(consentCanArticulate, totalConsentSessions);
+  const consentArticulationRate = rate(consentCanArticulate, totalConsentSessions);
 
   const consentIdentifiesPressure = consent_education_records.filter(
     (c) => c.child_identifies_pressure,
   ).length;
-  const pressureIdentificationRate = pct(consentIdentifiesPressure, totalConsentSessions);
+  const pressureIdentificationRate = rate(consentIdentifiesPressure, totalConsentSessions);
 
   const consentKnowsWhoToTell = consent_education_records.filter(
     (c) => c.child_knows_who_to_tell,
   ).length;
-  const knowsWhoToTellRate = pct(consentKnowsWhoToTell, totalConsentSessions);
+  const knowsWhoToTellRate = rate(consentKnowsWhoToTell, totalConsentSessions);
 
   const consentScenarioPractice = consent_education_records.filter(
     (c) => c.scenario_practice_included,
   ).length;
-  const scenarioPracticeRate = pct(consentScenarioPractice, totalConsentSessions);
+  const scenarioPracticeRate = rate(consentScenarioPractice, totalConsentSessions);
 
   const overdueConsentReviews = consent_education_records.filter(
     (c) => c.review_overdue,
@@ -430,11 +424,8 @@ export function computeSexualHealthRseEducation(
 
   // Consent understanding average (composite of understanding + articulation + pressure + knows who to tell)
   const consentUnderstandingAvg =
-    totalConsentSessions > 0
-      ? Math.round(
-          (consentUnderstandingRate + consentArticulationRate + pressureIdentificationRate + knowsWhoToTellRate) / 4,
-        )
-      : null;
+    totalConsentSessions > 0 ? Math.round(
+          (consentUnderstandingRate! + consentArticulationRate! + pressureIdentificationRate! + knowsWhoToTellRate!) / 4) : null;
 
   // --- Safeguarding awareness ---
   const totalSafeguardingAssessments = safeguarding_awareness_records.length;
@@ -442,27 +433,27 @@ export function computeSexualHealthRseEducation(
     safeguarding_awareness_records.map((s) => s.child_id),
   ).size;
   const safeguardingAwarenessRate =
-    total_children > 0 ? pct(uniqueChildrenSafeguarding, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenSafeguarding, total_children) : 0;
 
   const sgKnowsHowToReport = safeguarding_awareness_records.filter(
     (s) => s.child_knows_how_to_report,
   ).length;
-  const knowsHowToReportRate = pct(sgKnowsHowToReport, totalSafeguardingAssessments);
+  const knowsHowToReportRate = rate(sgKnowsHowToReport, totalSafeguardingAssessments);
 
   const sgUnderstandsExploitation = safeguarding_awareness_records.filter(
     (s) => s.child_understands_exploitation,
   ).length;
-  const understandsExploitationRate = pct(sgUnderstandsExploitation, totalSafeguardingAssessments);
+  const understandsExploitationRate = rate(sgUnderstandsExploitation, totalSafeguardingAssessments);
 
   const sgUnderstandsGrooming = safeguarding_awareness_records.filter(
     (s) => s.child_understands_grooming,
   ).length;
-  const understandsGroomingRate = pct(sgUnderstandsGrooming, totalSafeguardingAssessments);
+  const understandsGroomingRate = rate(sgUnderstandsGrooming, totalSafeguardingAssessments);
 
   const sgWillingToDisclose = safeguarding_awareness_records.filter(
     (s) => s.child_willingness_to_disclose,
   ).length;
-  const willingnessToDiscloseRate = pct(sgWillingToDisclose, totalSafeguardingAssessments);
+  const willingnessToDiscloseRate = rate(sgWillingToDisclose, totalSafeguardingAssessments);
 
   const overdueSafeguardingReviews = safeguarding_awareness_records.filter(
     (s) => s.review_overdue,
@@ -495,43 +486,43 @@ export function computeSexualHealthRseEducation(
   ).length;
   const totalConfidenceOpportunities = totalSafeguardingAssessments + totalConsentSessions;
   const totalConfidencePositive = childrenConfidentSafeguarding + consentDemonstratedUnderstanding;
-  const childConfidenceRate = pct(totalConfidencePositive, totalConfidenceOpportunities);
+  const childConfidenceRate = rate(totalConfidencePositive, totalConfidenceOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: rseDeliveryRate (>=100: +4, >=80: +2) ---
-  if (rseDeliveryRate >= 100) score += 4;
-  else if (rseDeliveryRate >= 80) score += 2;
+  if (meets(rseDeliveryRate, 100)) score += 4;
+  else if (meets(rseDeliveryRate, 80)) score += 2;
 
   // --- Bonus 2: healthScreeningRate (>=100: +4, >=80: +2) ---
-  if (healthScreeningRate >= 100) score += 4;
-  else if (healthScreeningRate >= 80) score += 2;
+  if (meets(healthScreeningRate, 100)) score += 4;
+  else if (meets(healthScreeningRate, 80)) score += 2;
 
   // --- Bonus 3: ageAppropriateRate (>=95: +3, >=80: +1) ---
-  if (ageAppropriateRate >= 95) score += 3;
-  else if (ageAppropriateRate >= 80) score += 1;
+  if (meets(ageAppropriateRate, 95)) score += 3;
+  else if (meets(ageAppropriateRate, 80)) score += 1;
 
   // --- Bonus 4: consentEducationRate (>=100: +4, >=80: +2) ---
-  if (consentEducationRate >= 100) score += 4;
-  else if (consentEducationRate >= 80) score += 2;
+  if (meets(consentEducationRate, 100)) score += 4;
+  else if (meets(consentEducationRate, 80)) score += 2;
 
   // --- Bonus 5: safeguardingAwarenessRate (>=100: +4, >=80: +2) ---
-  if (safeguardingAwarenessRate >= 100) score += 4;
-  else if (safeguardingAwarenessRate >= 80) score += 2;
+  if (meets(safeguardingAwarenessRate, 100)) score += 4;
+  else if (meets(safeguardingAwarenessRate, 80)) score += 2;
 
   // --- Bonus 6: childConfidenceRate (>=90: +3, >=70: +1) ---
-  if (childConfidenceRate >= 90) score += 3;
-  else if (childConfidenceRate >= 70) score += 1;
+  if (meets(childConfidenceRate, 90)) score += 3;
+  else if (meets(childConfidenceRate, 70)) score += 1;
 
   // --- Bonus 7: consentUnderstandingAvg (>=80: +3, >=60: +1) ---
   if ((consentUnderstandingAvg ?? 0) >= 80) score += 3;
   else if ((consentUnderstandingAvg ?? 0) >= 60) score += 1;
 
   // --- Bonus 8: rseObjectivesMetRate (>=90: +2, >=70: +1) ---
-  if (rseObjectivesMetRate >= 90) score += 2;
-  else if (rseObjectivesMetRate >= 70) score += 1;
+  if (meets(rseObjectivesMetRate, 90)) score += 2;
+  else if (meets(rseObjectivesMetRate, 70)) score += 1;
 
   // --- Bonus 9: screeningComplianceAvg (>=90: +1) ---
   if ((screeningComplianceAvg ?? 0) >= 90) score += 1;
@@ -539,16 +530,16 @@ export function computeSexualHealthRseEducation(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // rseDeliveryRate < 50 → -5
-  if (rseDeliveryRate < 50 && total_children > 0) score -= 5;
+  if (below(rseDeliveryRate, 50) && total_children > 0) score -= 5;
 
   // consentEducationRate < 50 → -5
-  if (consentEducationRate < 50 && total_children > 0) score -= 5;
+  if (below(consentEducationRate, 50) && total_children > 0) score -= 5;
 
   // safeguardingAwarenessRate < 50 → -4
-  if (safeguardingAwarenessRate < 50 && total_children > 0) score -= 4;
+  if (below(safeguardingAwarenessRate, 50) && total_children > 0) score -= 4;
 
   // healthScreeningRate < 40 with overdue screenings → -4
-  if (healthScreeningRate < 40 && sexual_health_screening_records.length > 0) score -= 4;
+  if (below(healthScreeningRate, 40) && sexual_health_screening_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -558,61 +549,61 @@ export function computeSexualHealthRseEducation(
 
   const strengths: string[] = [];
 
-  if (rseDeliveryRate >= 100 && total_children > 0) {
+  if (meets(rseDeliveryRate, 100) && total_children > 0) {
     strengths.push(
       "Every child is receiving relationships and sex education — the home demonstrates comprehensive RSE delivery, ensuring all children are prepared with age-appropriate knowledge about relationships, consent, and sexual health.",
     );
-  } else if (rseDeliveryRate >= 80 && total_children > 0) {
+  } else if (meets(rseDeliveryRate, 80) && total_children > 0) {
     strengths.push(
       `${rseDeliveryRate}% of children receiving RSE education — strong coverage in delivering relationships and sex education across the home.`,
     );
   }
 
-  if (healthScreeningRate >= 100 && total_children > 0) {
+  if (meets(healthScreeningRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has been supported to access sexual health screening — the home ensures comprehensive health screening coverage with full confidentiality and consent.",
     );
-  } else if (healthScreeningRate >= 80 && total_children > 0) {
+  } else if (meets(healthScreeningRate, 80) && total_children > 0) {
     strengths.push(
       `${healthScreeningRate}% of children supported with sexual health screening — strong compliance with health screening responsibilities.`,
     );
   }
 
-  if (ageAppropriateRate >= 95 && totalGuidance > 0) {
+  if (meets(ageAppropriateRate, 95) && totalGuidance > 0) {
     strengths.push(
       `${ageAppropriateRate}% of guidance confirmed as age-appropriate — the home consistently tailors sexual health and RSE content to each child's developmental stage and understanding.`,
     );
-  } else if (ageAppropriateRate >= 80 && totalGuidance > 0) {
+  } else if (meets(ageAppropriateRate, 80) && totalGuidance > 0) {
     strengths.push(
       `${ageAppropriateRate}% age-appropriate guidance delivery — the home generally ensures that information is matched to children's developmental readiness.`,
     );
   }
 
-  if (consentEducationRate >= 100 && total_children > 0) {
+  if (meets(consentEducationRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has received consent education — the home provides comprehensive teaching on consent, boundaries, and recognising coercive behaviour.",
     );
-  } else if (consentEducationRate >= 80 && total_children > 0) {
+  } else if (meets(consentEducationRate, 80) && total_children > 0) {
     strengths.push(
       `${consentEducationRate}% of children receiving consent education — strong coverage in teaching children about consent, healthy boundaries, and their right to say no.`,
     );
   }
 
-  if (safeguardingAwarenessRate >= 100 && total_children > 0) {
+  if (meets(safeguardingAwarenessRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has had their safeguarding awareness assessed — the home comprehensively evaluates whether children can recognise and respond to unsafe situations including exploitation and grooming.",
     );
-  } else if (safeguardingAwarenessRate >= 80 && total_children > 0) {
+  } else if (meets(safeguardingAwarenessRate, 80) && total_children > 0) {
     strengths.push(
       `${safeguardingAwarenessRate}% of children assessed for safeguarding awareness — strong coverage in ensuring children understand how to keep themselves safe.`,
     );
   }
 
-  if (childConfidenceRate >= 90 && totalConfidenceOpportunities > 0) {
+  if (meets(childConfidenceRate, 90) && totalConfidenceOpportunities > 0) {
     strengths.push(
       `${childConfidenceRate}% child confidence rate — children overwhelmingly demonstrate confidence in their understanding of consent, relationships, and safeguarding, indicating effective education.`,
     );
-  } else if (childConfidenceRate >= 70 && totalConfidenceOpportunities > 0) {
+  } else if (meets(childConfidenceRate, 70) && totalConfidenceOpportunities > 0) {
     strengths.push(
       `${childConfidenceRate}% child confidence — the majority of children feel confident in their understanding of consent and safeguarding.`,
     );
@@ -628,81 +619,81 @@ export function computeSexualHealthRseEducation(
     );
   }
 
-  if (rseObjectivesMetRate >= 90 && totalRseSessions > 0) {
+  if (meets(rseObjectivesMetRate, 90) && totalRseSessions > 0) {
     strengths.push(
       `${rseObjectivesMetRate}% of RSE sessions meeting learning objectives — education sessions are well-planned, purposeful, and achieving their intended outcomes.`,
     );
-  } else if (rseObjectivesMetRate >= 70 && totalRseSessions > 0) {
+  } else if (meets(rseObjectivesMetRate, 70) && totalRseSessions > 0) {
     strengths.push(
       `${rseObjectivesMetRate}% RSE learning objectives met — the majority of education sessions achieve their planned outcomes.`,
     );
   }
 
-  if (rseFacilitatorQualifiedRate >= 90 && totalRseSessions > 0) {
+  if (meets(rseFacilitatorQualifiedRate, 90) && totalRseSessions > 0) {
     strengths.push(
       `${rseFacilitatorQualifiedRate}% of RSE sessions delivered by qualified facilitators — the home ensures that sensitive topics are delivered by appropriately trained staff.`,
     );
-  } else if (rseFacilitatorQualifiedRate >= 70 && totalRseSessions > 0) {
+  } else if (meets(rseFacilitatorQualifiedRate, 70) && totalRseSessions > 0) {
     strengths.push(
       `${rseFacilitatorQualifiedRate}% of RSE sessions have qualified facilitators — the home generally ensures facilitator competence for sensitive education topics.`,
     );
   }
 
-  if (screeningConsentRate >= 95 && totalScreenings > 0) {
+  if (meets(screeningConsentRate, 95) && totalScreenings > 0) {
     strengths.push(
       "Children's consent is obtained for the vast majority of sexual health screenings — the home respects children's bodily autonomy and right to make informed decisions about their health care.",
     );
   }
 
-  if (confidentialityExplainedRate >= 95 && totalScreenings > 0) {
+  if (meets(confidentialityExplainedRate, 95) && totalScreenings > 0) {
     strengths.push(
       "Confidentiality is explained in virtually all screening encounters — children are supported to understand that their sexual health information is private and protected.",
     );
   }
 
-  if (culturalSensitivityRate >= 90 && totalGuidance > 0) {
+  if (meets(culturalSensitivityRate, 90) && totalGuidance > 0) {
     strengths.push(
       `${culturalSensitivityRate}% of guidance considers cultural sensitivity — the home respects and accommodates children's cultural, religious, and personal values in RSE delivery.`,
     );
   }
 
-  if (scenarioPracticeRate >= 80 && totalConsentSessions > 0) {
+  if (meets(scenarioPracticeRate, 80) && totalConsentSessions > 0) {
     strengths.push(
       `${scenarioPracticeRate}% of consent sessions include scenario practice — children are given practical opportunities to rehearse saying no, setting boundaries, and responding to pressure.`,
     );
   }
 
-  if (rseTopicCoverageRate >= 80) {
+  if (meets(rseTopicCoverageRate, 80)) {
     strengths.push(
       `RSE topic coverage at ${rseTopicCoverageRate}% — the home delivers a broad curriculum covering the full range of relationships, consent, online safety, and exploitation awareness topics.`,
     );
   }
 
-  if (willingnessToDiscloseRate >= 80 && totalSafeguardingAssessments > 0) {
+  if (meets(willingnessToDiscloseRate, 80) && totalSafeguardingAssessments > 0) {
     strengths.push(
       `${willingnessToDiscloseRate}% of children willing to disclose concerns — children feel safe and trusting enough to tell adults when something is wrong.`,
     );
   }
 
-  if (understandsGroomingRate >= 80 && totalSafeguardingAssessments > 0) {
+  if (meets(understandsGroomingRate, 80) && totalSafeguardingAssessments > 0) {
     strengths.push(
       `${understandsGroomingRate}% of children understand grooming behaviours — strong safeguarding awareness that helps protect children from exploitation.`,
     );
   }
 
-  if (rseDocumentationRate >= 90 && totalRseSessions > 0) {
+  if (meets(rseDocumentationRate, 90) && totalRseSessions > 0) {
     strengths.push(
       `${rseDocumentationRate}% of RSE sessions have recorded notes — strong documentation practice supporting evidence of education delivery.`,
     );
   }
 
-  if (rseFollowUpCompletionRate >= 90 && rseFollowUpNeeded > 0) {
+  if (meets(rseFollowUpCompletionRate, 90) && rseFollowUpNeeded > 0) {
     strengths.push(
       `${rseFollowUpCompletionRate}% of RSE follow-ups completed — the home reliably follows through when children need additional support or information.`,
     );
   }
 
-  if (screeningFollowUpRate >= 90 && screeningFollowUpNeeded > 0) {
+  if (meets(screeningFollowUpRate, 90) && screeningFollowUpNeeded > 0) {
     strengths.push(
       `${screeningFollowUpRate}% of screening follow-ups completed — the home ensures continuity of care when screening identifies further needs.`,
     );
@@ -712,61 +703,61 @@ export function computeSexualHealthRseEducation(
 
   const concerns: string[] = [];
 
-  if (rseDeliveryRate < 50 && total_children > 0) {
+  if (below(rseDeliveryRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${rseDeliveryRate}% of children receiving RSE education — the majority of children are not receiving relationships and sex education, leaving them without essential knowledge about relationships, consent, and sexual health that they need to stay safe.`,
     );
-  } else if (rseDeliveryRate < 80 && rseDeliveryRate >= 50 && total_children > 0) {
+  } else if (below(rseDeliveryRate, 80) && meets(rseDeliveryRate, 50) && total_children > 0) {
     concerns.push(
       `RSE delivery rate at ${rseDeliveryRate}% — some children are not receiving relationships and sex education, which may leave gaps in their understanding of consent, healthy relationships, and exploitation.`,
     );
   }
 
-  if (healthScreeningRate < 40 && totalScreenings > 0) {
+  if (below(healthScreeningRate, 40) && totalScreenings > 0) {
     concerns.push(
       `Only ${healthScreeningRate}% of children supported with sexual health screening — the majority of children are not being supported to access appropriate health screening, and the home cannot evidence compliance with its health care duties.`,
     );
-  } else if (healthScreeningRate < 80 && healthScreeningRate >= 40 && totalScreenings > 0) {
+  } else if (below(healthScreeningRate, 80) && meets(healthScreeningRate, 40) && totalScreenings > 0) {
     concerns.push(
       `Health screening rate at ${healthScreeningRate}% — some children have not been supported to access sexual health screening where appropriate.`,
     );
   }
 
-  if (ageAppropriateRate < 70 && totalGuidance > 0) {
+  if (below(ageAppropriateRate, 70) && totalGuidance > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of guidance confirmed as age-appropriate — a significant proportion of sexual health and RSE guidance may not be matched to children's developmental stage, risking harm through inappropriate content or insufficient information.`,
     );
-  } else if (ageAppropriateRate < 80 && ageAppropriateRate >= 70 && totalGuidance > 0) {
+  } else if (below(ageAppropriateRate, 80) && meets(ageAppropriateRate, 70) && totalGuidance > 0) {
     concerns.push(
       `Age-appropriate guidance rate at ${ageAppropriateRate}% — some guidance sessions have not been confirmed as age-appropriate, which requires review.`,
     );
   }
 
-  if (consentEducationRate < 50 && total_children > 0) {
+  if (below(consentEducationRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${consentEducationRate}% of children receiving consent education — the majority of children have not been taught about consent, boundaries, and their right to say no. This is a serious safeguarding concern as children without consent education are more vulnerable to exploitation.`,
     );
-  } else if (consentEducationRate < 80 && consentEducationRate >= 50 && total_children > 0) {
+  } else if (below(consentEducationRate, 80) && meets(consentEducationRate, 50) && total_children > 0) {
     concerns.push(
       `Consent education coverage at ${consentEducationRate}% — some children have not received education on consent and boundaries, leaving potential gaps in their ability to protect themselves.`,
     );
   }
 
-  if (safeguardingAwarenessRate < 50 && total_children > 0) {
+  if (below(safeguardingAwarenessRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${safeguardingAwarenessRate}% of children assessed for safeguarding awareness — the majority of children have not had their understanding of exploitation, grooming, and unsafe situations evaluated. Without assessment, the home cannot identify and address gaps in children's protective knowledge.`,
     );
-  } else if (safeguardingAwarenessRate < 80 && safeguardingAwarenessRate >= 50 && total_children > 0) {
+  } else if (below(safeguardingAwarenessRate, 80) && meets(safeguardingAwarenessRate, 50) && total_children > 0) {
     concerns.push(
       `Safeguarding awareness assessment at ${safeguardingAwarenessRate}% — some children's understanding of safeguarding has not been assessed, potentially leaving vulnerabilities unidentified.`,
     );
   }
 
-  if (childConfidenceRate < 50 && totalConfidenceOpportunities > 0) {
+  if (below(childConfidenceRate, 50) && totalConfidenceOpportunities > 0) {
     concerns.push(
       `Only ${childConfidenceRate}% child confidence rate — most children do not demonstrate confidence in their understanding of consent and safeguarding, suggesting that education is not translating into protective capability.`,
     );
-  } else if (childConfidenceRate < 70 && childConfidenceRate >= 50 && totalConfidenceOpportunities > 0) {
+  } else if (below(childConfidenceRate, 70) && meets(childConfidenceRate, 50) && totalConfidenceOpportunities > 0) {
     concerns.push(
       `Child confidence rate at ${childConfidenceRate}% — a significant proportion of children lack confidence in consent and safeguarding understanding.`,
     );
@@ -800,49 +791,49 @@ export function computeSexualHealthRseEducation(
     );
   }
 
-  if (rseFacilitatorQualifiedRate < 50 && totalRseSessions > 0) {
+  if (below(rseFacilitatorQualifiedRate, 50) && totalRseSessions > 0) {
     concerns.push(
       `Only ${rseFacilitatorQualifiedRate}% of RSE sessions delivered by qualified facilitators — delivering sensitive sexual health and relationships content without adequate training risks inappropriate delivery, misinformation, or causing distress.`,
     );
   }
 
-  if (screeningConsentRate < 70 && totalScreenings > 0) {
+  if (below(screeningConsentRate, 70) && totalScreenings > 0) {
     concerns.push(
       `Consent obtained for only ${screeningConsentRate}% of screenings — children's right to informed consent for health interventions must be respected. Screenings without documented consent raise ethical and safeguarding concerns.`,
     );
   }
 
-  if (confidentialityExplainedRate < 70 && totalScreenings > 0) {
+  if (below(confidentialityExplainedRate, 70) && totalScreenings > 0) {
     concerns.push(
       `Confidentiality explained in only ${confidentialityExplainedRate}% of screenings — children must understand that their sexual health information is treated confidentially to feel safe accessing services.`,
     );
   }
 
-  if (understandsExploitationRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(understandsExploitationRate, 50) && totalSafeguardingAssessments > 0) {
     concerns.push(
       `Only ${understandsExploitationRate}% of children understand exploitation — the majority of children cannot recognise exploitative situations, representing a significant safeguarding vulnerability.`,
     );
   }
 
-  if (understandsGroomingRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(understandsGroomingRate, 50) && totalSafeguardingAssessments > 0) {
     concerns.push(
       `Only ${understandsGroomingRate}% of children understand grooming — most children cannot identify grooming behaviours, leaving them significantly more vulnerable to sexual exploitation.`,
     );
   }
 
-  if (willingnessToDiscloseRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(willingnessToDiscloseRate, 50) && totalSafeguardingAssessments > 0) {
     concerns.push(
       `Only ${willingnessToDiscloseRate}% of children willing to disclose concerns — most children would not tell a trusted adult if something was wrong. This is a critical safeguarding barrier that must be addressed.`,
     );
   }
 
-  if (rseDocumentationRate < 70 && totalRseSessions > 0) {
+  if (below(rseDocumentationRate, 70) && totalRseSessions > 0) {
     concerns.push(
       `RSE session documentation at only ${rseDocumentationRate}% — poor recording makes it difficult to evidence that the home is delivering its RSE education responsibilities.`,
     );
   }
 
-  if (rseFollowUpCompletionRate < 50 && rseFollowUpNeeded > 0) {
+  if (below(rseFollowUpCompletionRate, 50) && rseFollowUpNeeded > 0) {
     concerns.push(
       `Only ${rseFollowUpCompletionRate}% of RSE follow-ups completed — when children need further support or information, the home is not reliably following through.`,
     );
@@ -853,7 +844,7 @@ export function computeSexualHealthRseEducation(
   const recommendations: SexualHealthRseRecommendation[] = [];
   let rank = 0;
 
-  if (rseDeliveryRate < 50 && total_children > 0) {
+  if (below(rseDeliveryRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -863,7 +854,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (consentEducationRate < 50 && total_children > 0) {
+  if (below(consentEducationRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -873,7 +864,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (safeguardingAwarenessRate < 50 && total_children > 0) {
+  if (below(safeguardingAwarenessRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -883,7 +874,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (healthScreeningRate < 40 && totalScreenings > 0) {
+  if (below(healthScreeningRate, 40) && totalScreenings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -893,7 +884,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (understandsExploitationRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(understandsExploitationRate, 50) && totalSafeguardingAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -903,7 +894,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (understandsGroomingRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(understandsGroomingRate, 50) && totalSafeguardingAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -913,7 +904,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (willingnessToDiscloseRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(willingnessToDiscloseRate, 50) && totalSafeguardingAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -923,7 +914,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (rseFacilitatorQualifiedRate < 50 && totalRseSessions > 0) {
+  if (below(rseFacilitatorQualifiedRate, 50) && totalRseSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -933,7 +924,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (screeningConsentRate < 70 && totalScreenings > 0) {
+  if (below(screeningConsentRate, 70) && totalScreenings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,8 +965,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseDeliveryRate >= 50 &&
-    rseDeliveryRate < 80 &&
+    meets(rseDeliveryRate, 50) &&
+    below(rseDeliveryRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -988,8 +979,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    consentEducationRate >= 50 &&
-    consentEducationRate < 80 &&
+    meets(consentEducationRate, 50) &&
+    below(consentEducationRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1002,8 +993,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    safeguardingAwarenessRate >= 50 &&
-    safeguardingAwarenessRate < 80 &&
+    meets(safeguardingAwarenessRate, 50) &&
+    below(safeguardingAwarenessRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1016,8 +1007,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    ageAppropriateRate >= 70 &&
-    ageAppropriateRate < 95 &&
+    meets(ageAppropriateRate, 70) &&
+    below(ageAppropriateRate, 95) &&
     totalGuidance > 0
   ) {
     recommendations.push({
@@ -1043,7 +1034,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (rseFollowUpCompletionRate < 70 && rseFollowUpNeeded > 0) {
+  if (below(rseFollowUpCompletionRate, 70) && rseFollowUpNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1053,7 +1044,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (screeningFollowUpRate < 70 && screeningFollowUpNeeded > 0) {
+  if (below(screeningFollowUpRate, 70) && screeningFollowUpNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1063,7 +1054,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (rseDocumentationRate < 70 && totalRseSessions > 0) {
+  if (below(rseDocumentationRate, 70) && totalRseSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1073,7 +1064,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (culturalSensitivityRate < 70 && totalGuidance > 0) {
+  if (below(culturalSensitivityRate, 70) && totalGuidance > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1083,7 +1074,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (scenarioPracticeRate < 60 && totalConsentSessions > 0) {
+  if (below(scenarioPracticeRate, 60) && totalConsentSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1093,7 +1084,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (rseTopicCoverageRate < 60) {
+  if (below(rseTopicCoverageRate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,8 +1095,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseFacilitatorQualifiedRate >= 50 &&
-    rseFacilitatorQualifiedRate < 80 &&
+    meets(rseFacilitatorQualifiedRate, 50) &&
+    below(rseFacilitatorQualifiedRate, 80) &&
     totalRseSessions > 0
   ) {
     recommendations.push({
@@ -1118,8 +1109,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    confidentialityExplainedRate >= 70 &&
-    confidentialityExplainedRate < 95 &&
+    meets(confidentialityExplainedRate, 70) &&
+    below(confidentialityExplainedRate, 95) &&
     totalScreenings > 0
   ) {
     recommendations.push({
@@ -1137,35 +1128,35 @@ export function computeSexualHealthRseEducation(
 
   // -- Critical insights --
 
-  if (rseDeliveryRate < 50 && total_children > 0) {
+  if (below(rseDeliveryRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${rseDeliveryRate}% of children receiving RSE education. Without relationships and sex education, children in care are denied essential knowledge about consent, healthy relationships, and sexual health. Ofsted expects evidence that the home delivers age-appropriate RSE as part of its education duties under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (consentEducationRate < 50 && total_children > 0) {
+  if (below(consentEducationRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${consentEducationRate}% of children receiving consent education. Children in care are disproportionately vulnerable to exploitation, and consent education is a critical protective factor. Without understanding consent, boundaries, and coercive behaviour, children cannot protect themselves effectively. This directly undermines Reg 34 safeguarding duties.`,
       severity: "critical",
     });
   }
 
-  if (safeguardingAwarenessRate < 50 && total_children > 0) {
+  if (below(safeguardingAwarenessRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${safeguardingAwarenessRate}% of children assessed for safeguarding awareness. Without assessing what children understand about exploitation, grooming, and unsafe situations, the home cannot target protective education effectively. The absence of assessment means the home is operating blind to children's actual safeguarding knowledge gaps.`,
       severity: "critical",
     });
   }
 
-  if (healthScreeningRate < 40 && totalScreenings > 0) {
+  if (below(healthScreeningRate, 40) && totalScreenings > 0) {
     insights.push({
       text: `Only ${healthScreeningRate}% of children supported with sexual health screening. Looked-after children have the same right to sexual health care as all young people, and the home has a duty under Reg 14 to support access to health services. Low screening rates may mean health needs go unidentified and untreated.`,
       severity: "critical",
     });
   }
 
-  if (willingnessToDiscloseRate < 50 && totalSafeguardingAssessments > 0) {
+  if (below(willingnessToDiscloseRate, 50) && totalSafeguardingAssessments > 0) {
     insights.push({
       text: `Only ${willingnessToDiscloseRate}% of children willing to disclose concerns to a trusted adult. This is perhaps the most critical safeguarding indicator — when children do not feel safe to tell someone, abuse and exploitation can continue unchecked. The home must urgently build a culture of trust and openness.`,
       severity: "critical",
@@ -1173,8 +1164,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    understandsExploitationRate < 50 &&
-    understandsGroomingRate < 50 &&
+    below(understandsExploitationRate, 50) &&
+    below(understandsGroomingRate, 50) &&
     totalSafeguardingAssessments > 0
   ) {
     insights.push({
@@ -1193,8 +1184,8 @@ export function computeSexualHealthRseEducation(
   // -- Warning insights --
 
   if (
-    rseDeliveryRate >= 50 &&
-    rseDeliveryRate < 80 &&
+    meets(rseDeliveryRate, 50) &&
+    below(rseDeliveryRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1204,8 +1195,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    consentEducationRate >= 50 &&
-    consentEducationRate < 80 &&
+    meets(consentEducationRate, 50) &&
+    below(consentEducationRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1215,8 +1206,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    safeguardingAwarenessRate >= 50 &&
-    safeguardingAwarenessRate < 80 &&
+    meets(safeguardingAwarenessRate, 50) &&
+    below(safeguardingAwarenessRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1226,8 +1217,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    healthScreeningRate >= 40 &&
-    healthScreeningRate < 80 &&
+    meets(healthScreeningRate, 40) &&
+    below(healthScreeningRate, 80) &&
     totalScreenings > 0
   ) {
     insights.push({
@@ -1237,8 +1228,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    childConfidenceRate >= 50 &&
-    childConfidenceRate < 70 &&
+    meets(childConfidenceRate, 50) &&
+    below(childConfidenceRate, 70) &&
     totalConfidenceOpportunities > 0
   ) {
     insights.push({
@@ -1259,8 +1250,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    ageAppropriateRate >= 70 &&
-    ageAppropriateRate < 95 &&
+    meets(ageAppropriateRate, 70) &&
+    below(ageAppropriateRate, 95) &&
     totalGuidance > 0
   ) {
     insights.push({
@@ -1291,8 +1282,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseFacilitatorQualifiedRate >= 50 &&
-    rseFacilitatorQualifiedRate < 80 &&
+    meets(rseFacilitatorQualifiedRate, 50) &&
+    below(rseFacilitatorQualifiedRate, 80) &&
     totalRseSessions > 0
   ) {
     insights.push({
@@ -1302,8 +1293,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseTopicCoverageRate >= 40 &&
-    rseTopicCoverageRate < 80
+    meets(rseTopicCoverageRate, 40) &&
+    below(rseTopicCoverageRate, 80)
   ) {
     insights.push({
       text: `RSE topic coverage at ${rseTopicCoverageRate}% — some important RSE topics are not being covered. A comprehensive programme should address relationships, consent, online safety, exploitation, identity, and health across the full curriculum.`,
@@ -1357,8 +1348,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseDeliveryRate >= 100 &&
-    rseObjectivesMetRate >= 90 &&
+    meets(rseDeliveryRate, 100) &&
+    meets(rseObjectivesMetRate, 90) &&
     total_children > 0 &&
     totalRseSessions > 0
   ) {
@@ -1369,7 +1360,7 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    consentEducationRate >= 100 &&
+    meets(consentEducationRate, 100) &&
     (consentUnderstandingAvg ?? 0) >= 80 &&
     total_children > 0 &&
     totalConsentSessions > 0
@@ -1381,9 +1372,9 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    safeguardingAwarenessRate >= 100 &&
-    understandsExploitationRate >= 80 &&
-    understandsGroomingRate >= 80 &&
+    meets(safeguardingAwarenessRate, 100) &&
+    meets(understandsExploitationRate, 80) &&
+    meets(understandsGroomingRate, 80) &&
     total_children > 0 &&
     totalSafeguardingAssessments > 0
   ) {
@@ -1394,9 +1385,9 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    healthScreeningRate >= 100 &&
-    screeningConsentRate >= 95 &&
-    confidentialityExplainedRate >= 95 &&
+    meets(healthScreeningRate, 100) &&
+    meets(screeningConsentRate, 95) &&
+    meets(confidentialityExplainedRate, 95) &&
     total_children > 0 &&
     totalScreenings > 0
   ) {
@@ -1407,8 +1398,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    willingnessToDiscloseRate >= 80 &&
-    knowsHowToReportRate >= 80 &&
+    meets(willingnessToDiscloseRate, 80) &&
+    meets(knowsHowToReportRate, 80) &&
     totalSafeguardingAssessments > 0
   ) {
     insights.push({
@@ -1418,7 +1409,7 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    childConfidenceRate >= 90 &&
+    meets(childConfidenceRate, 90) &&
     totalConfidenceOpportunities > 0
   ) {
     insights.push({
@@ -1428,8 +1419,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    rseEngagementRate >= 90 &&
-    rseFeedbackPositiveRate >= 90 &&
+    meets(rseEngagementRate, 90) &&
+    meets(rseFeedbackPositiveRate, 90) &&
     totalRseSessions > 0
   ) {
     insights.push({
@@ -1439,8 +1430,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    culturalSensitivityRate >= 90 &&
-    developmentalConsiderationRate >= 90 &&
+    meets(culturalSensitivityRate, 90) &&
+    meets(developmentalConsiderationRate, 90) &&
     totalGuidance > 0
   ) {
     insights.push({

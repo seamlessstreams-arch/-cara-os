@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF LIFECYCLE INTELLIGENCE ENGINE
 // Pure deterministic engine: staff inductions, sickness/absence patterns,
@@ -118,10 +119,6 @@ export interface HomeStaffLifecycleResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -237,7 +234,7 @@ export function computeHomeStaffLifecycle(
   const wouldRecommendCount = completedExits.filter(
     (r) => r.would_recommend === true,
   ).length;
-  const wouldRecommendRate = pct(wouldRecommendCount, completedExits.length);
+  const wouldRecommendRate = rate(wouldRecommendCount, completedExits.length);
 
   const exit_interviews: ExitInterviewProfile = {
     total_exits: exit_interview_records.length,
@@ -265,8 +262,8 @@ export function computeHomeStaffLifecycle(
   const recognition: RecognitionProfile = {
     total_events_90d: recognition90d.length,
     events_per_staff: eventsPerStaff,
-    child_nomination_rate: pct(childNominations, recognition90d.length),
-    public_celebration_rate: pct(publicCelebrations, recognition90d.length),
+    child_nomination_rate: rate(childNominations, recognition90d.length),
+    public_celebration_rate: rate(publicCelebrations, recognition90d.length),
   };
 
   // ── Scoring ───────────────────────────────────────────────────────────
@@ -275,13 +272,13 @@ export function computeHomeStaffLifecycle(
 
   // mod1: Induction completion rate (±5)
   if (induction_records.length > 0) {
-    const inductionCompletionRate = pct(
+    const inductionCompletionRate = rate(
       completedInductions.length,
       induction_records.length,
     );
-    if (inductionCompletionRate >= 95) score += 5;
-    else if (inductionCompletionRate >= 80) score += 3;
-    else if (inductionCompletionRate >= 60) score += 0;
+    if (meets(inductionCompletionRate, 95)) score += 5;
+    else if (meets(inductionCompletionRate, 80)) score += 3;
+    else if (meets(inductionCompletionRate, 60)) score += 0;
     else score -= 5;
   }
   // No inductions → +0
@@ -301,10 +298,10 @@ export function computeHomeStaffLifecycle(
     const rtwCompleted = needingRTW.filter(
       (r) => r.rtw_status === "completed",
     );
-    const rtwRate = pct(rtwCompleted.length, needingRTW.length);
-    if (rtwRate >= 90) score += 4;
-    else if (rtwRate >= 70) score += 2;
-    else if (rtwRate >= 50) score += 0;
+    const rtwRate = rate(rtwCompleted.length, needingRTW.length);
+    if (meets(rtwRate, 90)) score += 4;
+    else if (meets(rtwRate, 70)) score += 2;
+    else if (meets(rtwRate, 50)) score += 0;
     else score -= 4;
   } else {
     // None needed → +2
@@ -313,13 +310,13 @@ export function computeHomeStaffLifecycle(
 
   // mod4: Exit interview completion (±3)
   if (exit_interview_records.length > 0) {
-    const exitCompletionRate = pct(
+    const exitCompletionRate = rate(
       completedExits.length,
       exit_interview_records.length,
     );
-    if (exitCompletionRate >= 90) score += 3;
-    else if (exitCompletionRate >= 70) score += 1;
-    else if (exitCompletionRate >= 50) score += 0;
+    if (meets(exitCompletionRate, 90)) score += 3;
+    else if (meets(exitCompletionRate, 70)) score += 1;
+    else if (meets(exitCompletionRate, 50)) score += 0;
     else score -= 3;
   } else {
     // No exits → +1
@@ -362,10 +359,10 @@ export function computeHomeStaffLifecycle(
     const ohReferred = withTriggers.filter(
       (r) => r.occupational_health_referral,
     );
-    const ohRate = pct(ohReferred.length, withTriggers.length);
-    if (ohRate >= 80) score += 3;
-    else if (ohRate >= 60) score += 1;
-    else if (ohRate >= 40) score += 0;
+    const ohRate = rate(ohReferred.length, withTriggers.length);
+    if (meets(ohRate, 80)) score += 3;
+    else if (meets(ohRate, 60)) score += 1;
+    else if (meets(ohRate, 40)) score += 0;
     else score -= 3;
   } else {
     // None with triggers → +1
@@ -382,10 +379,10 @@ export function computeHomeStaffLifecycle(
 
   if (
     induction_records.length > 0 &&
-    pct(completedInductions.length, induction_records.length) >= 95
+    meets(rate(completedInductions.length, induction_records.length), 95)
   ) {
     strengths.push(
-      `${pct(completedInductions.length, induction_records.length)}% induction completion rate — new staff are being onboarded effectively.`,
+      `${rate(completedInductions.length, induction_records.length)}% induction completion rate — new staff are being onboarded effectively.`,
     );
   }
   if (total_staff > 0 && (absenceRate ?? 0) <= 2) {
@@ -394,11 +391,11 @@ export function computeHomeStaffLifecycle(
     );
   }
   if (needingRTW.length > 0) {
-    const rtwRate = pct(
+    const rtwRate = rate(
       needingRTW.filter((r) => r.rtw_status === "completed").length,
       needingRTW.length,
     );
-    if (rtwRate >= 90) {
+    if (meets(rtwRate, 90)) {
       strengths.push(
         `${rtwRate}% return-to-work interview compliance — strong absence management.`,
       );
@@ -406,7 +403,7 @@ export function computeHomeStaffLifecycle(
   }
   if (
     exit_interview_records.length > 0 &&
-    pct(completedExits.length, exit_interview_records.length) >= 90
+    meets(rate(completedExits.length, exit_interview_records.length), 90)
   ) {
     strengths.push(
       "Exit interview completion rate exceeds 90% — the home captures departing staff feedback consistently.",
@@ -429,10 +426,10 @@ export function computeHomeStaffLifecycle(
   }
   if (
     withTriggers.length > 0 &&
-    pct(
+    meets(rate(
       withTriggers.filter((r) => r.occupational_health_referral).length,
       withTriggers.length,
-    ) >= 80
+    ), 80)
   ) {
     strengths.push(
       "Occupational health referrals are made consistently when trigger points are reached.",
@@ -444,10 +441,10 @@ export function computeHomeStaffLifecycle(
 
   if (
     induction_records.length > 0 &&
-    pct(completedInductions.length, induction_records.length) < 60
+    below(rate(completedInductions.length, induction_records.length), 60)
   ) {
     concerns.push(
-      `Induction completion rate is only ${pct(completedInductions.length, induction_records.length)}% — new staff may not be adequately prepared.`,
+      `Induction completion rate is only ${rate(completedInductions.length, induction_records.length)}% — new staff may not be adequately prepared.`,
     );
   }
   if (overdueInductions.length > 0) {
@@ -466,11 +463,11 @@ export function computeHomeStaffLifecycle(
     );
   }
   if (needingRTW.length > 0) {
-    const rtwRate = pct(
+    const rtwRate = rate(
       needingRTW.filter((r) => r.rtw_status === "completed").length,
       needingRTW.length,
     );
-    if (rtwRate < 50) {
+    if (below(rtwRate, 50)) {
       concerns.push(
         `Return-to-work compliance is only ${rtwRate}% — absence management processes need urgent improvement.`,
       );
@@ -478,7 +475,7 @@ export function computeHomeStaffLifecycle(
   }
   if (
     exit_interview_records.length > 0 &&
-    pct(completedExits.length, exit_interview_records.length) < 50
+    below(rate(completedExits.length, exit_interview_records.length), 50)
   ) {
     concerns.push(
       "Fewer than half of exit interviews are completed — valuable feedback from departing staff is being lost.",
@@ -496,10 +493,10 @@ export function computeHomeStaffLifecycle(
   }
   if (
     withTriggers.length > 0 &&
-    pct(
+    below(rate(
       withTriggers.filter((r) => r.occupational_health_referral).length,
       withTriggers.length,
-    ) < 40
+    ), 40)
   ) {
     concerns.push(
       "Occupational health referrals are not being made when trigger points are reached.",
@@ -542,7 +539,7 @@ export function computeHomeStaffLifecycle(
   }
   if (
     exit_interview_records.length > 0 &&
-    pct(completedExits.length, exit_interview_records.length) < 70
+    below(rate(completedExits.length, exit_interview_records.length), 70)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -575,10 +572,10 @@ export function computeHomeStaffLifecycle(
   }
   if (
     withTriggers.length > 0 &&
-    pct(
+    below(rate(
       withTriggers.filter((r) => r.occupational_health_referral).length,
       withTriggers.length,
-    ) < 60
+    ), 60)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -618,7 +615,7 @@ export function computeHomeStaffLifecycle(
   if (
     completedExits.length >= 3 &&
     (avgRating ?? 0) >= 4 &&
-    wouldRecommendRate >= 80
+    meets(wouldRecommendRate, 80)
   ) {
     insights.push({
       text: `Departing staff rate the home ${avgRating}/5 and ${wouldRecommendRate}% would recommend — strong employer reputation.`,
@@ -642,10 +639,10 @@ export function computeHomeStaffLifecycle(
 
   if (
     recognition90d.length > 0 &&
-    pct(childNominations, recognition90d.length) >= 30
+    meets(rate(childNominations, recognition90d.length), 30)
   ) {
     insights.push({
-      text: `${pct(childNominations, recognition90d.length)}% of recognition events involved child nominations — children's voices are shaping staff feedback.`,
+      text: `${rate(childNominations, recognition90d.length)}% of recognition events involved child nominations — children's voices are shaping staff feedback.`,
       severity: "positive",
     });
   }

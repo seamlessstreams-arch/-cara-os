@@ -188,8 +188,8 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ...baseInput,
         total_children: 0,
       });
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.flooring_condition_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.flooring_condition_rate).toBeNull();
       expect(r.wet_floor_protocol_rate).toBeNull();
       expect(r.stairway_safety_rate).toBeNull();
       expect(r.incident_learning_rate).toBeNull();
@@ -693,9 +693,9 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.risk_assessment_rate).toBe(25);
     });
 
-    it("returns 0 when no risk assessment records", () => {
+    it("returns null when no risk assessment records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("returns 100 when all assessments have adequate controls", () => {
@@ -737,9 +737,9 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.flooring_condition_rate).toBe(50);
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
-      expect(r.flooring_condition_rate).toBe(0);
+      expect(r.flooring_condition_rate).toBeNull();
     });
 
     it("returns 100 when all good", () => {
@@ -779,7 +779,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.wet_floor_protocol_rate).toBe(50);
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
       expect(r.wet_floor_protocol_rate).toBeNull();
     });
@@ -824,7 +824,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.stairway_safety_rate).toBe(50);
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
       expect(r.stairway_safety_rate).toBeNull();
     });
@@ -873,7 +873,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.incident_learning_rate).toBe(50);
     });
 
-    it("returns 0 with no incidents", () => {
+    it("returns null with no incidents", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
       expect(r.incident_learning_rate).toBeNull();
     });
@@ -925,7 +925,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
       expect(r.staff_awareness_rate).toBe(100);
     });
 
-    it("returns 0 when no relevant records exist", () => {
+    it("returns null when no relevant records exist", () => {
       const r = computeSlipsTripsFallsPrevention({
         ...baseInput,
         flooring_condition_records: [makeFlooringCondition()],
@@ -2617,7 +2617,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ),
       });
       expect(r.risk_assessment_rate).toBe(100);
-      expect(r.flooring_condition_rate).toBe(0);
+      expect(r.flooring_condition_rate).toBeNull();
       expect(r.wet_floor_protocol_rate).toBeNull();
       expect(r.stairway_safety_rate).toBeNull();
       expect(r.incident_learning_rate).toBeNull();
@@ -2631,7 +2631,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ),
       });
       expect(r.flooring_condition_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("only wet floor records populated", () => {
@@ -2642,7 +2642,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ),
       });
       expect(r.wet_floor_protocol_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("only stairway records populated", () => {
@@ -2653,7 +2653,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ),
       });
       expect(r.stairway_safety_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("only incident records populated", () => {
@@ -2664,7 +2664,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ),
       });
       expect(r.incident_learning_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("large dataset performance", () => {

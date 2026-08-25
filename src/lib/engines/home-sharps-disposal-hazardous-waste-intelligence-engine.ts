@@ -10,7 +10,7 @@
 //             clinicalWasteRecords, childSafetyRecords
 // ==============================================================================
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -158,14 +158,15 @@ export interface SharpsDisposalHazardousWasteResult {
   sharps_rating: SharpsDisposalRating;
   sharps_score: number;
   headline: string;
-  // staff_training_rate uses pct() directly. The 5 composite rates below
+  // staff_training_rate uses rate() directly. The 5 composite rates below
   // are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
   sharps_bin_rate: number | null;
   hazardous_waste_rate: number | null;
   coshh_compliance_rate: number | null;
   clinical_waste_rate: number | null;
   child_safety_rate: number | null;
-  staff_training_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_training_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SharpsDisposalRecommendation[];
@@ -173,10 +174,6 @@ export interface SharpsDisposalHazardousWasteResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -205,7 +202,7 @@ function emptyResult(
     coshh_compliance_rate: null,
     clinical_waste_rate: null,
     child_safety_rate: null,
-    staff_training_rate: 0,
+    staff_training_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -284,210 +281,195 @@ export function computeSharpsDisposalHazardousWaste(
   // === SHARPS BIN COMPLIANCE ===
   const totalSharpsRecords = sharps_bin_records.length;
   const sharpsInspectionsPassed = sharps_bin_records.filter((r) => r.inspection_passed).length;
-  const sharpsInspectionPassRate = pct(sharpsInspectionsPassed, totalSharpsRecords);
+  const sharpsInspectionPassRate = rate(sharpsInspectionsPassed, totalSharpsRecords);
 
   const sharpsLocked = sharps_bin_records.filter((r) => r.is_locked).length;
-  const sharpsLockedRate = pct(sharpsLocked, totalSharpsRecords);
+  const sharpsLockedRate = rate(sharpsLocked, totalSharpsRecords);
 
   const sharpsLabelled = sharps_bin_records.filter((r) => r.is_labelled).length;
-  const sharpsLabelledRate = pct(sharpsLabelled, totalSharpsRecords);
+  const sharpsLabelledRate = rate(sharpsLabelled, totalSharpsRecords);
 
   const sharpsTamperEvident = sharps_bin_records.filter((r) => r.tamper_evident_seal).length;
-  const sharpsTamperRate = pct(sharpsTamperEvident, totalSharpsRecords);
+  const sharpsTamperRate = rate(sharpsTamperEvident, totalSharpsRecords);
 
   const sharpsDisposalDocumented = sharps_bin_records.filter((r) => r.disposal_documented).length;
-  const sharpsDisposalDocRate = pct(sharpsDisposalDocumented, totalSharpsRecords);
+  const sharpsDisposalDocRate = rate(sharpsDisposalDocumented, totalSharpsRecords);
 
   const sharpsAccessibleToChildren = sharps_bin_records.filter((r) => r.accessible_to_children).length;
-  const sharpsAccessibleRate = pct(sharpsAccessibleToChildren, totalSharpsRecords);
+  const sharpsAccessibleRate = rate(sharpsAccessibleToChildren, totalSharpsRecords);
 
   const sharpsOverfull = sharps_bin_records.filter((r) => r.fill_level === "overfull" || r.fill_level === "full").length;
-  const sharpsOverfullRate = pct(sharpsOverfull, totalSharpsRecords);
+  const sharpsOverfullRate = rate(sharpsOverfull, totalSharpsRecords);
 
   const sharpsCorrectiveAction = sharps_bin_records.filter((r) => r.issues_found.length > 0 && r.corrective_action_taken).length;
   const sharpsIssuesTotal = sharps_bin_records.filter((r) => r.issues_found.length > 0).length;
-  const sharpsCorrectiveRate = pct(sharpsCorrectiveAction, sharpsIssuesTotal);
+  const sharpsCorrectiveRate = rate(sharpsCorrectiveAction, sharpsIssuesTotal);
 
   const sharpsLicensedDisposal = sharps_bin_records.filter(
     (r) => r.disposal_method === "licensed_contractor" || r.disposal_method === "nhs_collection" || r.disposal_method === "pharmacy_return",
   ).length;
-  const sharpsLicensedRate = pct(sharpsLicensedDisposal, totalSharpsRecords);
+  const sharpsLicensedRate = rate(sharpsLicensedDisposal, totalSharpsRecords);
 
   // Composite sharps bin rate
   const sharpsBinRate: number | null =
-    totalSharpsRecords > 0
-      ? Math.round(
-          (sharpsInspectionPassRate + sharpsLockedRate + sharpsLabelledRate + sharpsTamperRate + sharpsDisposalDocRate) / 5,
-        )
-      : null;
+    totalSharpsRecords > 0 ? Math.round(
+          (sharpsInspectionPassRate! + sharpsLockedRate! + sharpsLabelledRate! + sharpsTamperRate! + sharpsDisposalDocRate!) / 5) : null;
 
   // === HAZARDOUS WASTE DISPOSAL ===
   const totalHazardousRecords = hazardous_waste_records.length;
   const hazStorageCompliant = hazardous_waste_records.filter((r) => r.storage_compliant).length;
-  const hazStorageRate = pct(hazStorageCompliant, totalHazardousRecords);
+  const hazStorageRate = rate(hazStorageCompliant, totalHazardousRecords);
 
   const hazLabellingCorrect = hazardous_waste_records.filter((r) => r.labelling_correct).length;
-  const hazLabellingRate = pct(hazLabellingCorrect, totalHazardousRecords);
+  const hazLabellingRate = rate(hazLabellingCorrect, totalHazardousRecords);
 
   const hazContainmentIntact = hazardous_waste_records.filter((r) => r.containment_intact).length;
-  const hazContainmentRate = pct(hazContainmentIntact, totalHazardousRecords);
+  const hazContainmentRate = rate(hazContainmentIntact, totalHazardousRecords);
 
   const hazDisposalDocumented = hazardous_waste_records.filter((r) => r.disposal_documented).length;
-  const hazDisposalDocRate = pct(hazDisposalDocumented, totalHazardousRecords);
+  const hazDisposalDocRate = rate(hazDisposalDocumented, totalHazardousRecords);
 
   const hazConsignmentPresent = hazardous_waste_records.filter((r) => r.consignment_note_present).length;
-  const hazConsignmentRate = pct(hazConsignmentPresent, totalHazardousRecords);
+  const hazConsignmentRate = rate(hazConsignmentPresent, totalHazardousRecords);
 
   const hazRiskAssessed = hazardous_waste_records.filter((r) => r.risk_assessment_completed).length;
-  const hazRiskAssessRate = pct(hazRiskAssessed, totalHazardousRecords);
+  const hazRiskAssessRate = rate(hazRiskAssessed, totalHazardousRecords);
 
   const hazStaffTrained = hazardous_waste_records.filter((r) => r.staff_handling_trained).length;
 
   const hazSpillKit = hazardous_waste_records.filter((r) => r.spill_kit_available).length;
-  const hazSpillKitRate = pct(hazSpillKit, totalHazardousRecords);
+  const hazSpillKitRate = rate(hazSpillKit, totalHazardousRecords);
 
   const hazPPE = hazardous_waste_records.filter((r) => r.ppe_available).length;
-  const hazPPERate = pct(hazPPE, totalHazardousRecords);
+  const hazPPERate = rate(hazPPE, totalHazardousRecords);
 
   const hazTotalIncidents = hazardous_waste_records.reduce((sum, r) => sum + r.incidents_reported, 0);
   const hazTotalResolved = hazardous_waste_records.reduce((sum, r) => sum + r.incidents_resolved, 0);
-  const hazIncidentResolutionRate = pct(hazTotalResolved, hazTotalIncidents);
+  const hazIncidentResolutionRate = rate(hazTotalResolved, hazTotalIncidents);
 
   // Composite hazardous waste rate
   const hazardousWasteRate: number | null =
-    totalHazardousRecords > 0
-      ? Math.round(
-          (hazStorageRate + hazLabellingRate + hazContainmentRate + hazDisposalDocRate + hazRiskAssessRate) / 5,
-        )
-      : null;
+    totalHazardousRecords > 0 ? Math.round(
+          (hazStorageRate! + hazLabellingRate! + hazContainmentRate! + hazDisposalDocRate! + hazRiskAssessRate!) / 5) : null;
 
   // === COSHH COMPLIANCE ===
   const totalCoshhRecords = coshh_records.length;
   const coshhAssessed = coshh_records.filter((r) => r.coshh_assessment_completed).length;
-  const coshhAssessedRate = pct(coshhAssessed, totalCoshhRecords);
+  const coshhAssessedRate = rate(coshhAssessed, totalCoshhRecords);
 
   const coshhDataSheets = coshh_records.filter((r) => r.data_sheet_available).length;
-  const coshhDataSheetRate = pct(coshhDataSheets, totalCoshhRecords);
+  const coshhDataSheetRate = rate(coshhDataSheets, totalCoshhRecords);
 
   const coshhStorageLocked = coshh_records.filter((r) => r.storage_locked).length;
-  const coshhLockedRate = pct(coshhStorageLocked, totalCoshhRecords);
+  const coshhLockedRate = rate(coshhStorageLocked, totalCoshhRecords);
 
   const coshhStorageAppropriate = coshh_records.filter((r) => r.storage_location_appropriate).length;
-  const coshhStorageRate = pct(coshhStorageAppropriate, totalCoshhRecords);
+  const coshhStorageRate = rate(coshhStorageAppropriate, totalCoshhRecords);
 
   const coshhLabellingCompliant = coshh_records.filter((r) => r.labelling_compliant).length;
-  const coshhLabelRate = pct(coshhLabellingCompliant, totalCoshhRecords);
+  const coshhLabelRate = rate(coshhLabellingCompliant, totalCoshhRecords);
 
   const coshhFirstAid = coshh_records.filter((r) => r.first_aid_measures_documented).length;
-  const coshhFirstAidRate = pct(coshhFirstAid, totalCoshhRecords);
+  const coshhFirstAidRate = rate(coshhFirstAid, totalCoshhRecords);
 
   const coshhStaffTrained = coshh_records.filter((r) => r.staff_trained).length;
 
   const coshhAccessibleToChildren = coshh_records.filter((r) => r.accessible_to_children).length;
-  const coshhChildAccessRate = pct(coshhAccessibleToChildren, totalCoshhRecords);
+  const coshhChildAccessRate = rate(coshhAccessibleToChildren, totalCoshhRecords);
 
   const coshhHighRisk = coshh_records.filter((r) => r.risk_level === "high" || r.risk_level === "very_high").length;
 
   const coshhHighRiskLocked = coshh_records.filter(
     (r) => (r.risk_level === "high" || r.risk_level === "very_high") && r.storage_locked,
   ).length;
-  const coshhHighRiskLockedRate = pct(coshhHighRiskLocked, coshhHighRisk);
+  const coshhHighRiskLockedRate = rate(coshhHighRiskLocked, coshhHighRisk);
 
   const coshhTotalIncidents = coshh_records.reduce((sum, r) => sum + r.incidents_reported, 0);
   const coshhTotalResolved = coshh_records.reduce((sum, r) => sum + r.incidents_resolved, 0);
-  const coshhIncidentResolutionRate = pct(coshhTotalResolved, coshhTotalIncidents);
+  const coshhIncidentResolutionRate = rate(coshhTotalResolved, coshhTotalIncidents);
 
   // Composite COSHH compliance rate
   const coshhComplianceRate: number | null =
-    totalCoshhRecords > 0
-      ? Math.round(
-          (coshhAssessedRate + coshhLockedRate + coshhStorageRate + coshhLabelRate + coshhDataSheetRate) / 5,
-        )
-      : null;
+    totalCoshhRecords > 0 ? Math.round(
+          (coshhAssessedRate! + coshhLockedRate! + coshhStorageRate! + coshhLabelRate! + coshhDataSheetRate!) / 5) : null;
 
   // === CLINICAL WASTE MANAGEMENT ===
   const totalClinicalRecords = clinical_waste_records.length;
   const clinicalSegCorrect = clinical_waste_records.filter((r) => r.segregation_correct).length;
-  const clinicalSegRate = pct(clinicalSegCorrect, totalClinicalRecords);
+  const clinicalSegRate = rate(clinicalSegCorrect, totalClinicalRecords);
 
   const clinicalContainerCorrect = clinical_waste_records.filter((r) => r.container_type_correct).length;
-  const clinicalContainerRate = pct(clinicalContainerCorrect, totalClinicalRecords);
+  const clinicalContainerRate = rate(clinicalContainerCorrect, totalClinicalRecords);
 
   const clinicalSealed = clinical_waste_records.filter((r) => r.container_sealed).length;
-  const clinicalSealedRate = pct(clinicalSealed, totalClinicalRecords);
+  const clinicalSealedRate = rate(clinicalSealed, totalClinicalRecords);
 
   const clinicalLabelled = clinical_waste_records.filter((r) => r.labelling_correct).length;
-  const clinicalLabelRate = pct(clinicalLabelled, totalClinicalRecords);
+  const clinicalLabelRate = rate(clinicalLabelled, totalClinicalRecords);
 
   const clinicalStorageSecure = clinical_waste_records.filter((r) => r.storage_location_secure).length;
-  const clinicalStorageRate = pct(clinicalStorageSecure, totalClinicalRecords);
+  const clinicalStorageRate = rate(clinicalStorageSecure, totalClinicalRecords);
 
   const clinicalOnSchedule = clinical_waste_records.filter((r) => r.collection_on_schedule).length;
-  const clinicalScheduleRate = pct(clinicalOnSchedule, totalClinicalRecords);
+  const clinicalScheduleRate = rate(clinicalOnSchedule, totalClinicalRecords);
 
   const clinicalContractorLicensed = clinical_waste_records.filter((r) => r.contractor_licensed).length;
-  const clinicalLicensedRate = pct(clinicalContractorLicensed, totalClinicalRecords);
+  const clinicalLicensedRate = rate(clinicalContractorLicensed, totalClinicalRecords);
 
   const clinicalDutyOfCare = clinical_waste_records.filter((r) => r.duty_of_care_transfer_note).length;
-  const clinicalDutyRate = pct(clinicalDutyOfCare, totalClinicalRecords);
+  const clinicalDutyRate = rate(clinicalDutyOfCare, totalClinicalRecords);
 
   const clinicalStaffTrained = clinical_waste_records.filter((r) => r.staff_handling_trained).length;
 
   const clinicalPPEWorn = clinical_waste_records.filter((r) => r.ppe_worn).length;
-  const clinicalPPERate = pct(clinicalPPEWorn, totalClinicalRecords);
+  const clinicalPPERate = rate(clinicalPPEWorn, totalClinicalRecords);
 
   const clinicalSpillages = clinical_waste_records.reduce((sum, r) => sum + r.spillage_incidents, 0);
   const clinicalSpillagesManaged = clinical_waste_records.reduce((sum, r) => sum + r.spillage_incidents_managed, 0);
-  const clinicalSpillageManagementRate = pct(clinicalSpillagesManaged, clinicalSpillages);
+  const clinicalSpillageManagementRate = rate(clinicalSpillagesManaged, clinicalSpillages);
 
   // Composite clinical waste rate
   const clinicalWasteRate: number | null =
-    totalClinicalRecords > 0
-      ? Math.round(
-          (clinicalSegRate + clinicalContainerRate + clinicalSealedRate + clinicalLabelRate + clinicalStorageRate) / 5,
-        )
-      : null;
+    totalClinicalRecords > 0 ? Math.round(
+          (clinicalSegRate! + clinicalContainerRate! + clinicalSealedRate! + clinicalLabelRate! + clinicalStorageRate!) / 5) : null;
 
   // === CHILD SAFETY AWARENESS ===
   const totalChildSafetyRecords = child_safety_records.length;
   const safetySessionsCompleted = child_safety_records.filter((r) => r.session_completed).length;
-  const safetyCompletionRate = pct(safetySessionsCompleted, totalChildSafetyRecords);
+  const safetyCompletionRate = rate(safetySessionsCompleted, totalChildSafetyRecords);
 
   const childUnderstood = child_safety_records.filter((r) => r.child_understood).length;
-  const childUnderstandingRate = pct(childUnderstood, totalChildSafetyRecords);
+  const childUnderstandingRate = rate(childUnderstood, totalChildSafetyRecords);
 
   const ageAppropriateMaterials = child_safety_records.filter((r) => r.age_appropriate_materials).length;
-  const ageAppropriateRate = pct(ageAppropriateMaterials, totalChildSafetyRecords);
+  const ageAppropriateRate = rate(ageAppropriateMaterials, totalChildSafetyRecords);
 
   const followUpPlanned = child_safety_records.filter((r) => r.follow_up_planned).length;
   const followUpCompleted = child_safety_records.filter((r) => r.follow_up_completed).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
+  const followUpCompletionRate = rate(followUpCompleted, followUpPlanned);
 
   const childKnowsReporting = child_safety_records.filter((r) => r.child_knows_reporting_process).length;
-  const childReportingKnowledgeRate = pct(childKnowsReporting, totalChildSafetyRecords);
+  const childReportingKnowledgeRate = rate(childKnowsReporting, totalChildSafetyRecords);
 
   const childIncidentsTotal = child_safety_records.reduce((sum, r) => sum + r.incidents_involving_child, 0);
   const childIncidentsResolved = child_safety_records.reduce((sum, r) => sum + r.incidents_resolved, 0);
-  const childIncidentResolutionRate = pct(childIncidentsResolved, childIncidentsTotal);
+  const childIncidentResolutionRate = rate(childIncidentsResolved, childIncidentsTotal);
 
   const nearMissesTotal = child_safety_records.reduce((sum, r) => sum + r.near_misses_reported, 0);
   const safeguardingConcernsTotal = child_safety_records.reduce((sum, r) => sum + r.safeguarding_concerns_raised, 0);
 
   const uniqueChildrenWithSafety = new Set(child_safety_records.map((r) => r.child_id)).size;
-  const childSafetyCoverageRate = pct(uniqueChildrenWithSafety, total_children);
+  const childSafetyCoverageRate = rate(uniqueChildrenWithSafety, total_children);
 
   // Composite child safety rate
   const childSafetyRate: number | null =
-    totalChildSafetyRecords > 0
-      ? Math.round(
-          (safetyCompletionRate + childUnderstandingRate + ageAppropriateRate + childReportingKnowledgeRate) / 4,
-        )
-      : null;
+    totalChildSafetyRecords > 0 ? Math.round(
+          (safetyCompletionRate! + childUnderstandingRate! + ageAppropriateRate! + childReportingKnowledgeRate!) / 4) : null;
 
   // === STAFF TRAINING COMPOSITE ===
   const trainingDenominator = totalHazardousRecords + totalCoshhRecords + totalClinicalRecords;
   const trainingNumerator = hazStaffTrained + coshhStaffTrained + clinicalStaffTrained;
-  const staffTrainingRate = pct(trainingNumerator, trainingDenominator);
+  const staffTrainingRate = rate(trainingNumerator, trainingDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -514,30 +496,30 @@ export function computeSharpsDisposalHazardousWaste(
   else if (meets(childSafetyRate, 70)) score += 1;
 
   // --- Bonus 6: staffTrainingRate (>=90: +3, >=60: +1) ---
-  if (staffTrainingRate >= 90) score += 3;
-  else if (staffTrainingRate >= 60) score += 1;
+  if (meets(staffTrainingRate, 90)) score += 3;
+  else if (meets(staffTrainingRate, 60)) score += 1;
 
   // --- Bonus 7: sharpsLockedRate (>=100: +2, >=80: +1) ---
-  if (sharpsLockedRate >= 100) score += 2;
-  else if (sharpsLockedRate >= 80) score += 1;
+  if (meets(sharpsLockedRate, 100)) score += 2;
+  else if (meets(sharpsLockedRate, 80)) score += 1;
 
   // --- Bonus 8: coshhLockedRate (>=95: +2, >=80: +1) ---
-  if (coshhLockedRate >= 95) score += 2;
-  else if (coshhLockedRate >= 80) score += 1;
+  if (meets(coshhLockedRate, 95)) score += 2;
+  else if (meets(coshhLockedRate, 80)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // sharpsAccessibleRate > 0 (any sharps accessible to children) -> -6
-  if (sharpsAccessibleRate > 0 && totalSharpsRecords > 0) score -= 6;
+  if (above(sharpsAccessibleRate, 0) && totalSharpsRecords > 0) score -= 6;
 
   // coshhChildAccessRate > 0 (any COSHH substances accessible to children) -> -5
-  if (coshhChildAccessRate > 0 && totalCoshhRecords > 0) score -= 5;
+  if (above(coshhChildAccessRate, 0) && totalCoshhRecords > 0) score -= 5;
 
   // hazRiskAssessRate < 50 -> -5
-  if (hazRiskAssessRate < 50 && totalHazardousRecords > 0) score -= 5;
+  if (below(hazRiskAssessRate, 50) && totalHazardousRecords > 0) score -= 5;
 
   // clinicalSegRate < 50 -> -4
-  if (clinicalSegRate < 50 && totalClinicalRecords > 0) score -= 4;
+  if (below(clinicalSegRate, 50) && totalClinicalRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -547,21 +529,21 @@ export function computeSharpsDisposalHazardousWaste(
 
   const strengths: string[] = [];
 
-  if (sharpsInspectionPassRate >= 90 && totalSharpsRecords > 0) {
+  if (meets(sharpsInspectionPassRate, 90) && totalSharpsRecords > 0) {
     strengths.push(
       `${sharpsInspectionPassRate}% of sharps bin inspections passed -- the home demonstrates consistent sharps bin compliance with regular inspections maintaining safety standards.`,
     );
-  } else if (sharpsInspectionPassRate >= 70 && totalSharpsRecords > 0) {
+  } else if (meets(sharpsInspectionPassRate, 70) && totalSharpsRecords > 0) {
     strengths.push(
       `${sharpsInspectionPassRate}% sharps bin inspection pass rate -- most sharps bins meet safety and compliance standards.`,
     );
   }
 
-  if (sharpsLockedRate >= 100 && totalSharpsRecords > 0) {
+  if (meets(sharpsLockedRate, 100) && totalSharpsRecords > 0) {
     strengths.push(
       "Every sharps bin is locked and secured -- children cannot access sharps containers, demonstrating exemplary child safety practice.",
     );
-  } else if (sharpsLockedRate >= 90 && totalSharpsRecords > 0) {
+  } else if (meets(sharpsLockedRate, 90) && totalSharpsRecords > 0) {
     strengths.push(
       `${sharpsLockedRate}% of sharps bins are locked and secured -- strong compliance with sharps containment requirements.`,
     );
@@ -573,75 +555,75 @@ export function computeSharpsDisposalHazardousWaste(
     );
   }
 
-  if (sharpsLicensedRate >= 90 && totalSharpsRecords > 0) {
+  if (meets(sharpsLicensedRate, 90) && totalSharpsRecords > 0) {
     strengths.push(
       `${sharpsLicensedRate}% of sharps disposed via licensed contractor, NHS collection, or pharmacy return -- disposal chain is compliant and auditable.`,
     );
   }
 
-  if (sharpsTamperRate >= 90 && totalSharpsRecords > 0) {
+  if (meets(sharpsTamperRate, 90) && totalSharpsRecords > 0) {
     strengths.push(
       `${sharpsTamperRate}% of sharps bins have tamper-evident seals -- excellent containment integrity reducing risk of accidental exposure.`,
     );
   }
 
-  if (sharpsCorrectiveRate >= 90 && sharpsIssuesTotal > 0) {
+  if (meets(sharpsCorrectiveRate, 90) && sharpsIssuesTotal > 0) {
     strengths.push(
       `${sharpsCorrectiveRate}% of sharps bin issues addressed with corrective action -- the home responds promptly to identified sharps safety concerns.`,
     );
   }
 
-  if (hazStorageRate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazStorageRate, 90) && totalHazardousRecords > 0) {
     strengths.push(
       `${hazStorageRate}% of hazardous waste stored compliantly -- storage arrangements meet regulatory requirements for safe containment.`,
     );
-  } else if (hazStorageRate >= 70 && totalHazardousRecords > 0) {
+  } else if (meets(hazStorageRate, 70) && totalHazardousRecords > 0) {
     strengths.push(
       `${hazStorageRate}% hazardous waste storage compliance -- most hazardous materials are stored safely and appropriately.`,
     );
   }
 
-  if (hazConsignmentRate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazConsignmentRate, 90) && totalHazardousRecords > 0) {
     strengths.push(
       `${hazConsignmentRate}% of hazardous waste disposals have consignment notes -- disposal documentation is thorough and auditable.`,
     );
   }
 
-  if (hazRiskAssessRate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazRiskAssessRate, 90) && totalHazardousRecords > 0) {
     strengths.push(
       `${hazRiskAssessRate}% of hazardous waste items have completed risk assessments -- hazards are systematically identified and mitigated.`,
     );
   }
 
-  if (hazSpillKitRate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazSpillKitRate, 90) && totalHazardousRecords > 0) {
     strengths.push(
       `Spill kits available for ${hazSpillKitRate}% of hazardous waste locations -- the home is prepared for emergency containment.`,
     );
   }
 
-  if (hazPPERate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazPPERate, 90) && totalHazardousRecords > 0) {
     strengths.push(
       `PPE available for ${hazPPERate}% of hazardous waste handling situations -- staff are properly equipped for safe handling.`,
     );
   }
 
-  if (hazIncidentResolutionRate >= 90 && hazTotalIncidents > 0) {
+  if (meets(hazIncidentResolutionRate, 90) && hazTotalIncidents > 0) {
     strengths.push(
       `${hazIncidentResolutionRate}% of hazardous waste incidents resolved -- the home responds effectively to hazardous material incidents.`,
     );
   }
 
-  if (coshhAssessedRate >= 90 && totalCoshhRecords > 0) {
+  if (meets(coshhAssessedRate, 90) && totalCoshhRecords > 0) {
     strengths.push(
       `${coshhAssessedRate}% of COSHH substances have completed assessments -- comprehensive hazard identification and control measures are in place.`,
     );
-  } else if (coshhAssessedRate >= 70 && totalCoshhRecords > 0) {
+  } else if (meets(coshhAssessedRate, 70) && totalCoshhRecords > 0) {
     strengths.push(
       `${coshhAssessedRate}% COSHH assessment completion rate -- most hazardous substances have been assessed and controlled.`,
     );
   }
 
-  if (coshhLockedRate >= 95 && totalCoshhRecords > 0) {
+  if (meets(coshhLockedRate, 95) && totalCoshhRecords > 0) {
     strengths.push(
       `${coshhLockedRate}% of COSHH substances stored in locked locations -- hazardous chemicals are secured against unauthorised access.`,
     );
@@ -653,119 +635,119 @@ export function computeSharpsDisposalHazardousWaste(
     );
   }
 
-  if (coshhDataSheetRate >= 90 && totalCoshhRecords > 0) {
+  if (meets(coshhDataSheetRate, 90) && totalCoshhRecords > 0) {
     strengths.push(
       `Safety data sheets available for ${coshhDataSheetRate}% of COSHH substances -- staff have access to critical safety information for all hazardous materials.`,
     );
   }
 
-  if (coshhFirstAidRate >= 90 && totalCoshhRecords > 0) {
+  if (meets(coshhFirstAidRate, 90) && totalCoshhRecords > 0) {
     strengths.push(
       `First aid measures documented for ${coshhFirstAidRate}% of COSHH substances -- emergency response information is readily available.`,
     );
   }
 
-  if (coshhHighRiskLockedRate >= 100 && coshhHighRisk > 0) {
+  if (meets(coshhHighRiskLockedRate, 100) && coshhHighRisk > 0) {
     strengths.push(
       "Every high-risk COSHH substance is stored in a locked location -- the most dangerous chemicals are fully secured against unauthorised access.",
     );
   }
 
-  if (coshhIncidentResolutionRate >= 90 && coshhTotalIncidents > 0) {
+  if (meets(coshhIncidentResolutionRate, 90) && coshhTotalIncidents > 0) {
     strengths.push(
       `${coshhIncidentResolutionRate}% of COSHH incidents resolved -- the home manages chemical safety incidents effectively.`,
     );
   }
 
-  if (clinicalSegRate >= 90 && totalClinicalRecords > 0) {
+  if (meets(clinicalSegRate, 90) && totalClinicalRecords > 0) {
     strengths.push(
       `${clinicalSegRate}% clinical waste correctly segregated -- waste streams are properly separated reducing cross-contamination and infection risk.`,
     );
-  } else if (clinicalSegRate >= 70 && totalClinicalRecords > 0) {
+  } else if (meets(clinicalSegRate, 70) && totalClinicalRecords > 0) {
     strengths.push(
       `${clinicalSegRate}% clinical waste segregation rate -- most clinical waste is correctly categorised and separated.`,
     );
   }
 
-  if (clinicalLicensedRate >= 100 && totalClinicalRecords > 0) {
+  if (meets(clinicalLicensedRate, 100) && totalClinicalRecords > 0) {
     strengths.push(
       "All clinical waste collected by licensed contractors -- disposal chain is fully compliant with regulatory requirements.",
     );
-  } else if (clinicalLicensedRate >= 90 && totalClinicalRecords > 0) {
+  } else if (meets(clinicalLicensedRate, 90) && totalClinicalRecords > 0) {
     strengths.push(
       `${clinicalLicensedRate}% of clinical waste collected by licensed contractors -- strong compliance with duty of care requirements.`,
     );
   }
 
-  if (clinicalDutyRate >= 90 && totalClinicalRecords > 0) {
+  if (meets(clinicalDutyRate, 90) && totalClinicalRecords > 0) {
     strengths.push(
       `Duty of care transfer notes present for ${clinicalDutyRate}% of clinical waste disposals -- robust audit trail for waste tracking.`,
     );
   }
 
-  if (clinicalScheduleRate >= 90 && totalClinicalRecords > 0) {
+  if (meets(clinicalScheduleRate, 90) && totalClinicalRecords > 0) {
     strengths.push(
       `${clinicalScheduleRate}% of clinical waste collections on schedule -- waste is not accumulating beyond safe storage periods.`,
     );
   }
 
-  if (clinicalPPERate >= 90 && totalClinicalRecords > 0) {
+  if (meets(clinicalPPERate, 90) && totalClinicalRecords > 0) {
     strengths.push(
       `PPE worn during ${clinicalPPERate}% of clinical waste handling -- staff consistently protect themselves during waste management.`,
     );
   }
 
-  if (clinicalSpillageManagementRate >= 90 && clinicalSpillages > 0) {
+  if (meets(clinicalSpillageManagementRate, 90) && clinicalSpillages > 0) {
     strengths.push(
       `${clinicalSpillageManagementRate}% of clinical waste spillages correctly managed -- the home responds effectively to waste containment failures.`,
     );
   }
 
-  if (safetyCompletionRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(safetyCompletionRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${safetyCompletionRate}% of child safety awareness sessions completed -- children are being educated about hazard awareness in an age-appropriate way.`,
     );
-  } else if (safetyCompletionRate >= 70 && totalChildSafetyRecords > 0) {
+  } else if (meets(safetyCompletionRate, 70) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${safetyCompletionRate}% child safety session completion rate -- most children are receiving hazard awareness education.`,
     );
   }
 
-  if (childUnderstandingRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(childUnderstandingRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${childUnderstandingRate}% of children demonstrated understanding of hazard safety -- education is effective and age-appropriate.`,
     );
   }
 
-  if (childReportingKnowledgeRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(childReportingKnowledgeRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${childReportingKnowledgeRate}% of children know how to report hazards -- children are empowered to contribute to the home's safety culture.`,
     );
   }
 
-  if (childSafetyCoverageRate >= 90 && total_children > 0) {
+  if (meets(childSafetyCoverageRate, 90) && total_children > 0) {
     strengths.push(
       `Child safety awareness covers ${childSafetyCoverageRate}% of children on placement -- comprehensive safety education across the home.`,
     );
   }
 
-  if (ageAppropriateRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${ageAppropriateRate}% of safety sessions used age-appropriate materials -- education is tailored to children's developmental needs.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpPlanned > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpPlanned > 0) {
     strengths.push(
       `${followUpCompletionRate}% of planned safety follow-ups completed -- the home ensures safety messages are reinforced.`,
     );
   }
 
-  if (staffTrainingRate >= 90 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 90) && trainingDenominator > 0) {
     strengths.push(
       `Staff training rate at ${staffTrainingRate}% across hazardous waste, COSHH, and clinical waste handling -- the workforce is well equipped to manage hazardous materials safely.`,
     );
-  } else if (staffTrainingRate >= 70 && trainingDenominator > 0) {
+  } else if (meets(staffTrainingRate, 70) && trainingDenominator > 0) {
     strengths.push(
       `Staff training rate at ${staffTrainingRate}% -- most staff are trained in hazardous materials handling.`,
     );
@@ -775,169 +757,169 @@ export function computeSharpsDisposalHazardousWaste(
 
   const concerns: string[] = [];
 
-  if (sharpsAccessibleRate > 0 && totalSharpsRecords > 0) {
+  if (above(sharpsAccessibleRate, 0) && totalSharpsRecords > 0) {
     concerns.push(
       `${sharpsAccessibleRate}% of sharps bins are accessible to children -- this is a critical safeguarding failure. Every sharps container must be stored in a location that children cannot access to prevent needlestick injuries and exposure to contaminated materials.`,
     );
   }
 
-  if (sharpsInspectionPassRate < 50 && totalSharpsRecords > 0) {
+  if (below(sharpsInspectionPassRate, 50) && totalSharpsRecords > 0) {
     concerns.push(
       `Only ${sharpsInspectionPassRate}% of sharps bin inspections passed -- the majority of sharps containers do not meet safety standards, creating unacceptable risk of needlestick injury.`,
     );
-  } else if (sharpsInspectionPassRate < 70 && sharpsInspectionPassRate >= 50 && totalSharpsRecords > 0) {
+  } else if (below(sharpsInspectionPassRate, 70) && meets(sharpsInspectionPassRate, 50) && totalSharpsRecords > 0) {
     concerns.push(
       `Sharps bin inspection pass rate at ${sharpsInspectionPassRate}% -- a significant proportion of sharps containers are not meeting compliance standards.`,
     );
   }
 
-  if (sharpsLockedRate < 80 && totalSharpsRecords > 0) {
+  if (below(sharpsLockedRate, 80) && totalSharpsRecords > 0) {
     concerns.push(
       `Only ${sharpsLockedRate}% of sharps bins are locked -- unsecured sharps containers present a direct risk to children and staff.`,
     );
   }
 
-  if (sharpsOverfullRate > 10 && totalSharpsRecords > 0) {
+  if (above(sharpsOverfullRate, 10) && totalSharpsRecords > 0) {
     concerns.push(
       `${sharpsOverfullRate}% of sharps bins are full or overfull -- overfilled sharps containers increase the risk of needlestick injuries and must be replaced or collected immediately.`,
     );
   }
 
-  if (sharpsDisposalDocRate < 70 && totalSharpsRecords > 0) {
+  if (below(sharpsDisposalDocRate, 70) && totalSharpsRecords > 0) {
     concerns.push(
       `Only ${sharpsDisposalDocRate}% of sharps disposals are documented -- the home cannot evidence a safe disposal chain for sharps waste.`,
     );
   }
 
-  if (sharpsLicensedRate < 70 && totalSharpsRecords > 0) {
+  if (below(sharpsLicensedRate, 70) && totalSharpsRecords > 0) {
     concerns.push(
       `Only ${sharpsLicensedRate}% of sharps disposed via licensed routes -- unregulated disposal methods create legal liability and environmental risk.`,
     );
   }
 
-  if (hazStorageRate < 50 && totalHazardousRecords > 0) {
+  if (below(hazStorageRate, 50) && totalHazardousRecords > 0) {
     concerns.push(
       `Only ${hazStorageRate}% of hazardous waste stored compliantly -- the majority of hazardous materials are not being stored safely, creating direct risk of exposure, spill, or contamination.`,
     );
-  } else if (hazStorageRate < 70 && hazStorageRate >= 50 && totalHazardousRecords > 0) {
+  } else if (below(hazStorageRate, 70) && meets(hazStorageRate, 50) && totalHazardousRecords > 0) {
     concerns.push(
       `Hazardous waste storage compliance at ${hazStorageRate}% -- a significant proportion of hazardous materials are not stored to required standards.`,
     );
   }
 
-  if (hazRiskAssessRate < 50 && totalHazardousRecords > 0) {
+  if (below(hazRiskAssessRate, 50) && totalHazardousRecords > 0) {
     concerns.push(
       `Only ${hazRiskAssessRate}% of hazardous waste items have completed risk assessments -- the home has not systematically identified and mitigated hazardous material risks, which is a fundamental failure of risk management.`,
     );
-  } else if (hazRiskAssessRate < 70 && hazRiskAssessRate >= 50 && totalHazardousRecords > 0) {
+  } else if (below(hazRiskAssessRate, 70) && meets(hazRiskAssessRate, 50) && totalHazardousRecords > 0) {
     concerns.push(
       `Hazardous waste risk assessment rate at ${hazRiskAssessRate}% -- not all hazardous materials have been properly risk assessed.`,
     );
   }
 
-  if (hazConsignmentRate < 70 && totalHazardousRecords > 0) {
+  if (below(hazConsignmentRate, 70) && totalHazardousRecords > 0) {
     concerns.push(
       `Only ${hazConsignmentRate}% of hazardous waste disposals have consignment notes -- incomplete documentation prevents verification of safe disposal and creates regulatory non-compliance.`,
     );
   }
 
-  if (hazSpillKitRate < 70 && totalHazardousRecords > 0) {
+  if (below(hazSpillKitRate, 70) && totalHazardousRecords > 0) {
     concerns.push(
       `Spill kits available for only ${hazSpillKitRate}% of hazardous waste locations -- the home is not adequately prepared for emergency containment of hazardous material spills.`,
     );
   }
 
-  if (hazPPERate < 70 && totalHazardousRecords > 0) {
+  if (below(hazPPERate, 70) && totalHazardousRecords > 0) {
     concerns.push(
       `PPE available for only ${hazPPERate}% of hazardous waste handling situations -- staff are handling dangerous materials without adequate personal protection.`,
     );
   }
 
-  if (coshhChildAccessRate > 0 && totalCoshhRecords > 0) {
+  if (above(coshhChildAccessRate, 0) && totalCoshhRecords > 0) {
     concerns.push(
       `${coshhChildAccessRate}% of COSHH substances are accessible to children -- this is a critical safeguarding failure. Every hazardous chemical must be stored in a locked location that children cannot access to prevent poisoning, burns, or inhalation injuries.`,
     );
   }
 
-  if (coshhAssessedRate < 50 && totalCoshhRecords > 0) {
+  if (below(coshhAssessedRate, 50) && totalCoshhRecords > 0) {
     concerns.push(
       `Only ${coshhAssessedRate}% of COSHH substances have completed assessments -- the majority of hazardous chemicals in the home have not been properly assessed for risk, failing legal COSHH requirements.`,
     );
-  } else if (coshhAssessedRate < 70 && coshhAssessedRate >= 50 && totalCoshhRecords > 0) {
+  } else if (below(coshhAssessedRate, 70) && meets(coshhAssessedRate, 50) && totalCoshhRecords > 0) {
     concerns.push(
       `COSHH assessment completion rate at ${coshhAssessedRate}% -- a significant number of hazardous substances lack formal risk assessments.`,
     );
   }
 
-  if (coshhLockedRate < 80 && totalCoshhRecords > 0) {
+  if (below(coshhLockedRate, 80) && totalCoshhRecords > 0) {
     concerns.push(
       `Only ${coshhLockedRate}% of COSHH substances stored in locked locations -- unsecured chemicals present a direct risk to children and vulnerable individuals in the home.`,
     );
   }
 
-  if (coshhHighRiskLockedRate < 100 && coshhHighRisk > 0) {
+  if (below(coshhHighRiskLockedRate, 100) && coshhHighRisk > 0) {
     concerns.push(
       `Only ${coshhHighRiskLockedRate}% of high-risk COSHH substances are locked -- high-risk chemicals that are not secured pose an immediate and serious danger to children.`,
     );
   }
 
-  if (coshhDataSheetRate < 70 && totalCoshhRecords > 0) {
+  if (below(coshhDataSheetRate, 70) && totalCoshhRecords > 0) {
     concerns.push(
       `Safety data sheets available for only ${coshhDataSheetRate}% of COSHH substances -- staff lack critical safety information for handling hazardous chemicals.`,
     );
   }
 
-  if (clinicalSegRate < 50 && totalClinicalRecords > 0) {
+  if (below(clinicalSegRate, 50) && totalClinicalRecords > 0) {
     concerns.push(
       `Only ${clinicalSegRate}% of clinical waste correctly segregated -- incorrect waste stream separation creates cross-contamination risk and potential infection hazard.`,
     );
-  } else if (clinicalSegRate < 70 && clinicalSegRate >= 50 && totalClinicalRecords > 0) {
+  } else if (below(clinicalSegRate, 70) && meets(clinicalSegRate, 50) && totalClinicalRecords > 0) {
     concerns.push(
       `Clinical waste segregation rate at ${clinicalSegRate}% -- waste streams are not consistently separated, increasing contamination risk.`,
     );
   }
 
-  if (clinicalStorageRate < 70 && totalClinicalRecords > 0) {
+  if (below(clinicalStorageRate, 70) && totalClinicalRecords > 0) {
     concerns.push(
       `Only ${clinicalStorageRate}% of clinical waste stored in secure locations -- unsecured clinical waste presents infection and contamination risks to children and staff.`,
     );
   }
 
-  if (clinicalLicensedRate < 80 && totalClinicalRecords > 0) {
+  if (below(clinicalLicensedRate, 80) && totalClinicalRecords > 0) {
     concerns.push(
       `Only ${clinicalLicensedRate}% of clinical waste collected by licensed contractors -- the home may be in breach of duty of care requirements for clinical waste disposal.`,
     );
   }
 
-  if (clinicalScheduleRate < 70 && totalClinicalRecords > 0) {
+  if (below(clinicalScheduleRate, 70) && totalClinicalRecords > 0) {
     concerns.push(
       `Only ${clinicalScheduleRate}% of clinical waste collections on schedule -- delayed collections mean clinical waste accumulates beyond safe storage periods.`,
     );
   }
 
-  if (clinicalPPERate < 70 && totalClinicalRecords > 0) {
+  if (below(clinicalPPERate, 70) && totalClinicalRecords > 0) {
     concerns.push(
       `PPE worn during only ${clinicalPPERate}% of clinical waste handling -- staff are exposed to infection risk when handling clinical waste without proper protection.`,
     );
   }
 
-  if (safetyCompletionRate < 50 && totalChildSafetyRecords > 0) {
+  if (below(safetyCompletionRate, 50) && totalChildSafetyRecords > 0) {
     concerns.push(
       `Only ${safetyCompletionRate}% of child safety awareness sessions completed -- the majority of children have not received education about hazard awareness, leaving them vulnerable to accidental exposure.`,
     );
-  } else if (safetyCompletionRate < 70 && safetyCompletionRate >= 50 && totalChildSafetyRecords > 0) {
+  } else if (below(safetyCompletionRate, 70) && meets(safetyCompletionRate, 50) && totalChildSafetyRecords > 0) {
     concerns.push(
       `Child safety session completion at ${safetyCompletionRate}% -- not all children are receiving hazard awareness education.`,
     );
   }
 
-  if (childReportingKnowledgeRate < 50 && totalChildSafetyRecords > 0) {
+  if (below(childReportingKnowledgeRate, 50) && totalChildSafetyRecords > 0) {
     concerns.push(
       `Only ${childReportingKnowledgeRate}% of children know how to report hazards -- children are not empowered to contribute to their own safety.`,
     );
   }
 
-  if (childSafetyCoverageRate < 50 && total_children > 0 && totalChildSafetyRecords > 0) {
+  if (below(childSafetyCoverageRate, 50) && total_children > 0 && totalChildSafetyRecords > 0) {
     concerns.push(
       `Child safety awareness covers only ${childSafetyCoverageRate}% of children on placement -- many children have not received any hazard safety education.`,
     );
@@ -949,11 +931,11 @@ export function computeSharpsDisposalHazardousWaste(
     );
   }
 
-  if (staffTrainingRate < 50 && trainingDenominator > 0) {
+  if (below(staffTrainingRate, 50) && trainingDenominator > 0) {
     concerns.push(
       `Staff training rate at only ${staffTrainingRate}% across hazardous waste, COSHH, and clinical waste handling -- the majority of staff lack training in safe handling of hazardous materials, creating direct risk to children and staff.`,
     );
-  } else if (staffTrainingRate < 70 && staffTrainingRate >= 50 && trainingDenominator > 0) {
+  } else if (below(staffTrainingRate, 70) && meets(staffTrainingRate, 50) && trainingDenominator > 0) {
     concerns.push(
       `Staff training rate at ${staffTrainingRate}% -- a significant proportion of staff are not trained in hazardous materials handling.`,
     );
@@ -982,7 +964,7 @@ export function computeSharpsDisposalHazardousWaste(
   const recommendations: SharpsDisposalRecommendation[] = [];
   let rank = 0;
 
-  if (sharpsAccessibleRate > 0 && totalSharpsRecords > 0) {
+  if (above(sharpsAccessibleRate, 0) && totalSharpsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -992,7 +974,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (coshhChildAccessRate > 0 && totalCoshhRecords > 0) {
+  if (above(coshhChildAccessRate, 0) && totalCoshhRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1002,7 +984,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (hazRiskAssessRate < 50 && totalHazardousRecords > 0) {
+  if (below(hazRiskAssessRate, 50) && totalHazardousRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1012,7 +994,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (clinicalSegRate < 50 && totalClinicalRecords > 0) {
+  if (below(clinicalSegRate, 50) && totalClinicalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,7 +1004,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (sharpsInspectionPassRate < 50 && totalSharpsRecords > 0) {
+  if (below(sharpsInspectionPassRate, 50) && totalSharpsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1032,7 +1014,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (coshhAssessedRate < 50 && totalCoshhRecords > 0) {
+  if (below(coshhAssessedRate, 50) && totalCoshhRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1042,7 +1024,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (staffTrainingRate < 50 && trainingDenominator > 0) {
+  if (below(staffTrainingRate, 50) && trainingDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,7 +1034,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (safetyCompletionRate < 50 && totalChildSafetyRecords > 0) {
+  if (below(safetyCompletionRate, 50) && totalChildSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1062,7 +1044,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (coshhHighRiskLockedRate < 100 && coshhHighRisk > 0) {
+  if (below(coshhHighRiskLockedRate, 100) && coshhHighRisk > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1072,7 +1054,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (sharpsLockedRate < 80 && totalSharpsRecords > 0) {
+  if (below(sharpsLockedRate, 80) && totalSharpsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1082,7 +1064,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (hazStorageRate < 70 && hazStorageRate >= 50 && totalHazardousRecords > 0) {
+  if (below(hazStorageRate, 70) && meets(hazStorageRate, 50) && totalHazardousRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1092,7 +1074,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (hazConsignmentRate < 70 && totalHazardousRecords > 0) {
+  if (below(hazConsignmentRate, 70) && totalHazardousRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1102,7 +1084,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (hazSpillKitRate < 70 && totalHazardousRecords > 0) {
+  if (below(hazSpillKitRate, 70) && totalHazardousRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1112,7 +1094,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (clinicalStorageRate < 70 && totalClinicalRecords > 0) {
+  if (below(clinicalStorageRate, 70) && totalClinicalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1122,7 +1104,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (clinicalLicensedRate < 80 && totalClinicalRecords > 0) {
+  if (below(clinicalLicensedRate, 80) && totalClinicalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1132,7 +1114,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (clinicalScheduleRate < 70 && totalClinicalRecords > 0) {
+  if (below(clinicalScheduleRate, 70) && totalClinicalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1142,7 +1124,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (childReportingKnowledgeRate < 50 && totalChildSafetyRecords > 0) {
+  if (below(childReportingKnowledgeRate, 50) && totalChildSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1152,7 +1134,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (sharpsInspectionPassRate >= 50 && sharpsInspectionPassRate < 70 && totalSharpsRecords > 0) {
+  if (meets(sharpsInspectionPassRate, 50) && below(sharpsInspectionPassRate, 70) && totalSharpsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1162,7 +1144,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (coshhAssessedRate >= 50 && coshhAssessedRate < 70 && totalCoshhRecords > 0) {
+  if (meets(coshhAssessedRate, 50) && below(coshhAssessedRate, 70) && totalCoshhRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1172,7 +1154,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (coshhDataSheetRate < 70 && totalCoshhRecords > 0) {
+  if (below(coshhDataSheetRate, 70) && totalCoshhRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1182,7 +1164,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (staffTrainingRate >= 50 && staffTrainingRate < 70 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 50) && below(staffTrainingRate, 70) && trainingDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1192,7 +1174,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (safetyCompletionRate >= 50 && safetyCompletionRate < 70 && totalChildSafetyRecords > 0) {
+  if (meets(safetyCompletionRate, 50) && below(safetyCompletionRate, 70) && totalChildSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1202,7 +1184,7 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (sharpsOverfullRate > 10 && totalSharpsRecords > 0) {
+  if (above(sharpsOverfullRate, 10) && totalSharpsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1248,28 +1230,28 @@ export function computeSharpsDisposalHazardousWaste(
 
   // --- Critical insights ---
 
-  if (sharpsAccessibleRate > 0 && totalSharpsRecords > 0) {
+  if (above(sharpsAccessibleRate, 0) && totalSharpsRecords > 0) {
     insights.push({
       text: `${sharpsAccessibleRate}% of sharps bins are accessible to children. Ofsted will view any child's ability to access sharps as a serious safeguarding failure under Reg 25 -- needlestick injuries can transmit blood-borne infections and this must be resolved immediately.`,
       severity: "critical",
     });
   }
 
-  if (coshhChildAccessRate > 0 && totalCoshhRecords > 0) {
+  if (above(coshhChildAccessRate, 0) && totalCoshhRecords > 0) {
     insights.push({
       text: `${coshhChildAccessRate}% of COSHH substances are accessible to children. Unsecured chemicals in a children's home represent an immediate danger -- ingestion, skin contact, or inhalation of hazardous substances can cause serious injury. Ofsted will treat this as a Reg 14 and Reg 25 breach.`,
       severity: "critical",
     });
   }
 
-  if (hazRiskAssessRate < 50 && totalHazardousRecords > 0) {
+  if (below(hazRiskAssessRate, 50) && totalHazardousRecords > 0) {
     insights.push({
       text: `Only ${hazRiskAssessRate}% of hazardous waste has completed risk assessments. Without systematic risk assessment, the home cannot demonstrate it understands or controls the hazards present. Ofsted will view this as evidence of poor risk management under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (clinicalSegRate < 50 && totalClinicalRecords > 0) {
+  if (below(clinicalSegRate, 50) && totalClinicalRecords > 0) {
     insights.push({
       text: `Only ${clinicalSegRate}% of clinical waste correctly segregated. Incorrect waste stream separation creates cross-contamination hazards and potential infection transmission. Ofsted will view poor waste segregation as evidence the home does not maintain safe premises.`,
       severity: "critical",
@@ -1283,72 +1265,72 @@ export function computeSharpsDisposalHazardousWaste(
     });
   }
 
-  if (staffTrainingRate < 50 && trainingDenominator > 0) {
+  if (below(staffTrainingRate, 50) && trainingDenominator > 0) {
     insights.push({
       text: `Staff training rate at only ${staffTrainingRate}% for hazardous materials handling. Untrained staff handling sharps, chemicals, or clinical waste creates direct risk of injury, contamination, and infection. Ofsted will question whether the home has adequate staffing competence under Reg 25 and SCCIF Safety.`,
       severity: "critical",
     });
   }
 
-  if (coshhHighRiskLockedRate < 100 && coshhHighRisk > 0) {
+  if (below(coshhHighRiskLockedRate, 100) && coshhHighRisk > 0) {
     insights.push({
-      text: `${100 - coshhHighRiskLockedRate}% of high-risk COSHH substances are not in locked storage. High-risk chemicals that are unsecured in a children's home represent an immediate danger. Ofsted inspectors will check chemical storage as part of premises safety assessment.`,
+      text: `${100 - coshhHighRiskLockedRate!}% of high-risk COSHH substances are not in locked storage. High-risk chemicals that are unsecured in a children's home represent an immediate danger. Ofsted inspectors will check chemical storage as part of premises safety assessment.`,
       severity: "critical",
     });
   }
 
   // --- Warning insights ---
 
-  if (sharpsInspectionPassRate >= 50 && sharpsInspectionPassRate < 70 && totalSharpsRecords > 0) {
+  if (meets(sharpsInspectionPassRate, 50) && below(sharpsInspectionPassRate, 70) && totalSharpsRecords > 0) {
     insights.push({
       text: `Sharps bin inspection pass rate at ${sharpsInspectionPassRate}% -- improving but not yet at the standard expected. Regular inspections with documented corrective action demonstrate the home's commitment to ongoing safety.`,
       severity: "warning",
     });
   }
 
-  if (hazStorageRate >= 50 && hazStorageRate < 70 && totalHazardousRecords > 0) {
+  if (meets(hazStorageRate, 50) && below(hazStorageRate, 70) && totalHazardousRecords > 0) {
     insights.push({
       text: `Hazardous waste storage compliance at ${hazStorageRate}%. While some materials are properly stored, gaps in compliance create uneven protection. Ofsted will expect all hazardous waste to meet storage standards without exception.`,
       severity: "warning",
     });
   }
 
-  if (coshhAssessedRate >= 50 && coshhAssessedRate < 70 && totalCoshhRecords > 0) {
+  if (meets(coshhAssessedRate, 50) && below(coshhAssessedRate, 70) && totalCoshhRecords > 0) {
     insights.push({
       text: `COSHH assessment completion at ${coshhAssessedRate}%. COSHH assessments are a legal requirement for all hazardous substances -- partial compliance still leaves the home exposed to regulatory action and, more importantly, leaves staff and children at risk from unassessed hazards.`,
       severity: "warning",
     });
   }
 
-  if (clinicalSegRate >= 50 && clinicalSegRate < 70 && totalClinicalRecords > 0) {
+  if (meets(clinicalSegRate, 50) && below(clinicalSegRate, 70) && totalClinicalRecords > 0) {
     insights.push({
       text: `Clinical waste segregation at ${clinicalSegRate}%. Waste stream errors can lead to infectious waste entering general waste channels or incorrect treatment at disposal facilities. Consistent segregation is essential for infection prevention.`,
       severity: "warning",
     });
   }
 
-  if (clinicalScheduleRate >= 50 && clinicalScheduleRate < 70 && totalClinicalRecords > 0) {
+  if (meets(clinicalScheduleRate, 50) && below(clinicalScheduleRate, 70) && totalClinicalRecords > 0) {
     insights.push({
       text: `Only ${clinicalScheduleRate}% of clinical waste collections are on schedule. Delayed collections mean clinical waste accumulates beyond recommended storage periods, increasing infection risk and storage capacity concerns.`,
       severity: "warning",
     });
   }
 
-  if (safetyCompletionRate >= 50 && safetyCompletionRate < 70 && totalChildSafetyRecords > 0) {
+  if (meets(safetyCompletionRate, 50) && below(safetyCompletionRate, 70) && totalChildSafetyRecords > 0) {
     insights.push({
       text: `Child safety awareness completion at ${safetyCompletionRate}%. While some children have received hazard education, gaps in coverage mean some children may not understand the risks of sharps, chemicals, or clinical waste in their living environment.`,
       severity: "warning",
     });
   }
 
-  if (staffTrainingRate >= 50 && staffTrainingRate < 70 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 50) && below(staffTrainingRate, 70) && trainingDenominator > 0) {
     insights.push({
       text: `Staff training rate at ${staffTrainingRate}% for hazardous materials handling. While the majority of staff have been trained, any untrained staff member handling hazardous materials creates a risk. The SCCIF expects all staff to be competent in their roles.`,
       severity: "warning",
     });
   }
 
-  if (sharpsOverfullRate > 10 && totalSharpsRecords > 0) {
+  if (above(sharpsOverfullRate, 10) && totalSharpsRecords > 0) {
     insights.push({
       text: `${sharpsOverfullRate}% of sharps bins are full or overfull. Overfilled sharps containers are one of the most common causes of needlestick injuries -- when bins are overfull, sharps protrude and the risk of accidental contact increases significantly.`,
       severity: "warning",
@@ -1364,7 +1346,7 @@ export function computeSharpsDisposalHazardousWaste(
 
   if (childIncidentsTotal > 0 && totalChildSafetyRecords > 0) {
     insights.push({
-      text: `${childIncidentsTotal} incident${childIncidentsTotal !== 1 ? "s" : ""} involving children and hazardous materials recorded. Every incident involving a child and hazardous material must be thoroughly investigated with lessons learned applied across the home. ${childIncidentResolutionRate}% have been resolved.`,
+      text: `${childIncidentsTotal} incident${childIncidentsTotal !== 1 ? "s" : ""} involving children and hazardous materials recorded. Every incident involving a child and hazardous material must be thoroughly investigated with lessons learned applied across the home. ${formatRate(childIncidentResolutionRate)} have been resolved.`,
       severity: "warning",
     });
   }
@@ -1373,40 +1355,40 @@ export function computeSharpsDisposalHazardousWaste(
 
   if (meets(sharpsBinRate, 90) && totalSharpsRecords > 0) {
     insights.push({
-      text: `Sharps bin compliance at ${sharpsBinRate}%. The home demonstrates exemplary sharps management with consistent inspections, secure storage, proper labelling, and documented disposal. This level of compliance provides strong evidence of safe premises for Ofsted.`,
+      text: `Sharps bin compliance at ${formatRate(sharpsBinRate)}. The home demonstrates exemplary sharps management with consistent inspections, secure storage, proper labelling, and documented disposal. This level of compliance provides strong evidence of safe premises for Ofsted.`,
       severity: "positive",
     });
   }
 
   if (meets(hazardousWasteRate, 90) && totalHazardousRecords > 0) {
     insights.push({
-      text: `Hazardous waste management at ${hazardousWasteRate}%. The home has robust systems for storing, labelling, risk-assessing, and disposing of hazardous waste. This demonstrates compliance with environmental and health and safety regulations.`,
+      text: `Hazardous waste management at ${formatRate(hazardousWasteRate)}. The home has robust systems for storing, labelling, risk-assessing, and disposing of hazardous waste. This demonstrates compliance with environmental and health and safety regulations.`,
       severity: "positive",
     });
   }
 
   if (meets(coshhComplianceRate, 90) && totalCoshhRecords > 0) {
     insights.push({
-      text: `COSHH compliance at ${coshhComplianceRate}%. All hazardous substances are assessed, securely stored, properly labelled, and supported by safety data sheets. This is strong evidence of Reg 25 compliance and a well-managed premises.`,
+      text: `COSHH compliance at ${formatRate(coshhComplianceRate)}. All hazardous substances are assessed, securely stored, properly labelled, and supported by safety data sheets. This is strong evidence of Reg 25 compliance and a well-managed premises.`,
       severity: "positive",
     });
   }
 
   if (meets(clinicalWasteRate, 90) && totalClinicalRecords > 0) {
     insights.push({
-      text: `Clinical waste management at ${clinicalWasteRate}%. Waste is correctly segregated, contained, labelled, and securely stored. This demonstrates the home's commitment to infection prevention and safe waste management.`,
+      text: `Clinical waste management at ${formatRate(clinicalWasteRate)}. Waste is correctly segregated, contained, labelled, and securely stored. This demonstrates the home's commitment to infection prevention and safe waste management.`,
       severity: "positive",
     });
   }
 
   if (meets(childSafetyRate, 90) && totalChildSafetyRecords > 0) {
     insights.push({
-      text: `Child safety awareness at ${childSafetyRate}%. Children are educated about hazard risks, understand how to report dangers, and are actively involved in the home's safety culture. This demonstrates the home nurtures safety-conscious young people.`,
+      text: `Child safety awareness at ${formatRate(childSafetyRate)}. Children are educated about hazard risks, understand how to report dangers, and are actively involved in the home's safety culture. This demonstrates the home nurtures safety-conscious young people.`,
       severity: "positive",
     });
   }
 
-  if (staffTrainingRate >= 90 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 90) && trainingDenominator > 0) {
     insights.push({
       text: `Staff training rate at ${staffTrainingRate}% for hazardous materials handling. The workforce is comprehensively trained in sharps safety, COSHH management, and clinical waste handling. This underpins safe practice across the home.`,
       severity: "positive",
@@ -1424,13 +1406,13 @@ export function computeSharpsDisposalHazardousWaste(
 
   let headline = "";
   if (sharps_rating === "outstanding") {
-    headline = `Outstanding sharps disposal and hazardous waste management -- sharps bin compliance at ${sharpsBinRate}%, hazardous waste at ${hazardousWasteRate}%, COSHH at ${coshhComplianceRate}%, clinical waste at ${clinicalWasteRate}%, and child safety awareness at ${childSafetyRate}%. The home demonstrates exemplary hazardous materials management protecting children from harm.`;
+    headline = `Outstanding sharps disposal and hazardous waste management -- sharps bin compliance at ${formatRate(sharpsBinRate)}, hazardous waste at ${formatRate(hazardousWasteRate)}, COSHH at ${formatRate(coshhComplianceRate)}, clinical waste at ${formatRate(clinicalWasteRate)}, and child safety awareness at ${formatRate(childSafetyRate)}. The home demonstrates exemplary hazardous materials management protecting children from harm.`;
   } else if (sharps_rating === "good") {
-    headline = `Good sharps disposal and hazardous waste management -- sharps bin compliance at ${sharpsBinRate}%, hazardous waste at ${hazardousWasteRate}%, COSHH at ${coshhComplianceRate}%, clinical waste at ${clinicalWasteRate}%. Some areas for improvement identified but overall the home manages hazardous materials safely.`;
+    headline = `Good sharps disposal and hazardous waste management -- sharps bin compliance at ${formatRate(sharpsBinRate)}, hazardous waste at ${formatRate(hazardousWasteRate)}, COSHH at ${formatRate(coshhComplianceRate)}, clinical waste at ${formatRate(clinicalWasteRate)}. Some areas for improvement identified but overall the home manages hazardous materials safely.`;
   } else if (sharps_rating === "adequate") {
-    headline = `Adequate sharps disposal and hazardous waste management -- sharps bin compliance at ${sharpsBinRate}%, hazardous waste at ${hazardousWasteRate}%, COSHH at ${coshhComplianceRate}%, clinical waste at ${clinicalWasteRate}%. Significant improvements needed in hazardous materials management to ensure children's safety.`;
+    headline = `Adequate sharps disposal and hazardous waste management -- sharps bin compliance at ${formatRate(sharpsBinRate)}, hazardous waste at ${formatRate(hazardousWasteRate)}, COSHH at ${formatRate(coshhComplianceRate)}, clinical waste at ${formatRate(clinicalWasteRate)}. Significant improvements needed in hazardous materials management to ensure children's safety.`;
   } else {
-    headline = `Inadequate sharps disposal and hazardous waste management -- sharps bin compliance at ${sharpsBinRate}%, hazardous waste at ${hazardousWasteRate}%, COSHH at ${coshhComplianceRate}%, clinical waste at ${clinicalWasteRate}%. Urgent action required to protect children from hazardous materials exposure.`;
+    headline = `Inadequate sharps disposal and hazardous waste management -- sharps bin compliance at ${formatRate(sharpsBinRate)}, hazardous waste at ${formatRate(hazardousWasteRate)}, COSHH at ${formatRate(coshhComplianceRate)}, clinical waste at ${formatRate(clinicalWasteRate)}. Urgent action required to protect children from hazardous materials exposure.`;
   }
 
   // -- Return -----------------------------------------------------------------

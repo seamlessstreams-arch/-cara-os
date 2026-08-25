@@ -297,12 +297,12 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         learning_extraction_records: [],
         support_access_records: [],
       });
-      expect(r.debriefing_completion_rate).toBe(0);
-      expect(r.incident_support_rate).toBe(0);
-      expect(r.wellbeing_followup_rate).toBe(0);
-      expect(r.learning_extraction_rate).toBe(0);
-      expect(r.support_access_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.debriefing_completion_rate).toBeNull();
+      expect(r.incident_support_rate).toBeNull();
+      expect(r.wellbeing_followup_rate).toBeNull();
+      expect(r.learning_extraction_rate).toBeNull();
+      expect(r.support_access_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
 
     it("returns empty strengths/concerns/recommendations/insights for insufficient data", () => {
@@ -1588,12 +1588,12 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         expect(r.debriefing_completion_rate).toBe(0);
       });
 
-      it("0 when no debriefing records (pct(0,0)=0)", () => {
+      it("0 when no debriefing records (rate(0,0)=null)", () => {
         const r = run(baseInput({
           debriefing_records: [],
           critical_incident_records: [makeCriticalIncident()],
         }));
-        expect(r.debriefing_completion_rate).toBe(0);
+        expect(r.debriefing_completion_rate).toBeNull();
       });
     });
 
@@ -1609,9 +1609,9 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         expect(r.incident_support_rate).toBe(0);
       });
 
-      it("0 when no critical incidents (pct(0,0)=0)", () => {
+      it("0 when no critical incidents (rate(0,0)=null)", () => {
         const r = run(baseInput({ critical_incident_records: [] }));
-        expect(r.incident_support_rate).toBe(0);
+        expect(r.incident_support_rate).toBeNull();
       });
     });
 
@@ -1627,9 +1627,9 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         expect(r.wellbeing_followup_rate).toBe(0);
       });
 
-      it("0 when no followup records (pct(0,0)=0)", () => {
+      it("0 when no followup records (rate(0,0)=null)", () => {
         const r = run(baseInput({ wellbeing_followup_records: [] }));
-        expect(r.wellbeing_followup_rate).toBe(0);
+        expect(r.wellbeing_followup_rate).toBeNull();
       });
     });
 
@@ -1649,7 +1649,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         expect(r.learning_extraction_rate).toBe(0);
       });
 
-      it("0 when no learning records (pct(0,0)=0)", () => {
+      it("0 when no learning records (rate(0,0)=null)", () => {
         const r = run(baseInput({ learning_extraction_records: [] }));
         expect(r.learning_extraction_rate).toBeNull();;
       });
@@ -1681,9 +1681,9 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         expect(r.support_access_rate).toBe(0);
       });
 
-      it("0 when no support access records (pct(0,0)=0)", () => {
+      it("0 when no support access records (rate(0,0)=null)", () => {
         const r = run(baseInput({ support_access_records: [] }));
-        expect(r.support_access_rate).toBe(0);
+        expect(r.support_access_rate).toBeNull();
       });
     });
 
@@ -2519,7 +2519,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
   // ══════════════════════════════════════════════════════════════════════════
 
   describe("Edge cases", () => {
-    it("pct(0,0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       // Tested via no records
       const r = run({
         today: "2026-05-29",
@@ -2530,12 +2530,12 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         learning_extraction_records: [],
         support_access_records: [],
       });
-      expect(r.debriefing_completion_rate).toBe(0);
-      expect(r.incident_support_rate).toBe(0);
-      expect(r.wellbeing_followup_rate).toBe(0);
-      expect(r.learning_extraction_rate).toBe(0);
-      expect(r.support_access_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.debriefing_completion_rate).toBeNull();
+      expect(r.incident_support_rate).toBeNull();
+      expect(r.wellbeing_followup_rate).toBeNull();
+      expect(r.learning_extraction_rate).toBeNull();
+      expect(r.support_access_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
 
     it("score is clamped to min 0", () => {
@@ -2734,7 +2734,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
       expect(r.debriefing_completion_rate).toBe(100);
     });
 
-    it("completed_within_48h_rate is 0 when no completed debriefings (pct(0,0)=0)", () => {
+    it("completed_within_48h_rate is null when no completed debriefings (rate(0,0)=null)", () => {
       const debriefs = [makeDebriefing({ status: "scheduled" })];
       const r = run(baseInput({
         debriefing_records: debriefs,
@@ -2743,10 +2743,10 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         learning_extraction_records: [],
         support_access_records: [],
       }));
-      expect(r.completed_within_48h_rate).toBe(0);
+      expect(r.completed_within_48h_rate).toBeNull();
     });
 
-    it("followup_on_time_rate is 0 when no completed followups (pct(0,0)=0)", () => {
+    it("followup_on_time_rate is null when no completed followups (rate(0,0)=null)", () => {
       const followups = [makeWellbeingFollowup({ status: "scheduled" })];
       const r = run(baseInput({
         debriefing_records: [],
@@ -2755,7 +2755,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
         learning_extraction_records: [],
         support_access_records: [],
       }));
-      expect(r.followup_on_time_rate).toBe(0);
+      expect(r.followup_on_time_rate).toBeNull();
     });
 
     it("bonus 4 uses only learning when support is empty", () => {

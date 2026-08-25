@@ -1,4 +1,4 @@
-import { below, formatRate, meets } from "@/lib/metrics/rate";
+import { rate, below, formatRate, meets } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SPECIALIZED HEALTH PLANS INTELLIGENCE ENGINE
 // Home-level: aggregates ADHD plans, allergy plans, asthma plans, autism plans,
@@ -151,7 +151,8 @@ export type SpecializedHealthRating =
 export interface PlanCoverageProfile {
   total_plans: number;
   unique_children_covered: number;
-  child_coverage: number;            // pct of total_children with >=1 plan
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;            // pct of total_children with >=1 plan
   plan_types_active: number;         // how many distinct plan categories have data
 }
 
@@ -211,10 +212,6 @@ export interface HomeSpecializedHealthPlansResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -246,7 +243,7 @@ export function computeHomeSpecializedHealthPlans(
       health_plans_rating: "insufficient_data",
       health_plans_score: 0,
       headline: "No specialized health plan data available for analysis.",
-      plan_coverage: { total_plans: 0, unique_children_covered: 0, child_coverage: 0, plan_types_active: 0 },
+      plan_coverage: { total_plans: 0, unique_children_covered: 0, child_coverage: null, plan_types_active: 0 },
       review_compliance: { total_reviewable: 0, overdue_reviews: 0, on_time_rate: null, oldest_overdue_days: 0 },
       safety_preparedness: { allergy_staff_trained_rate: null, allergy_school_plan_rate: null, epilepsy_staff_trained_rate: null, epilepsy_school_plan_rate: null, diabetic_school_plan_rate: null, asthma_school_inhaler_rate: null },
       child_voice: { total_with_voice: 0, total_applicable: 0, voice_rate: null },
@@ -271,7 +268,7 @@ export function computeHomeSpecializedHealthPlans(
   for (const p of menstrual_health_plans) uniqueChildIds.add(p.child_id);
   for (const p of occupational_therapy_records) uniqueChildIds.add(p.child_id);
 
-  const childCoverage = pct(uniqueChildIds.size, total_children);
+  const childCoverage = rate(uniqueChildIds.size, total_children);
 
   let planTypesActive = 0;
   if (adhd_plans.length > 0) planTypesActive++;
@@ -309,7 +306,7 @@ export function computeHomeSpecializedHealthPlans(
   for (const p of occupational_therapy_records) reviewables.push({ review_date: p.next_review_date });
 
   const overdueReviews = reviewables.filter(r => daysBetween(r.review_date, today) > 0);
-  const onTimeRate = pct(reviewables.length - overdueReviews.length, reviewables.length);
+  const onTimeRate = rate(reviewables.length - overdueReviews.length, reviewables.length);
   let oldestOverdueDays = 0;
   for (const r of overdueReviews) {
     const days = daysBetween(r.review_date, today);
@@ -324,27 +321,27 @@ export function computeHomeSpecializedHealthPlans(
   };
 
   // ── Safety Preparedness ──────────────────────────────────────────────
-  const allergyStaffTrainedRate = pct(
+  const allergyStaffTrainedRate = rate(
     allergy_plans.filter(p => p.staff_trained_count > 0).length,
     allergy_plans.length,
   );
-  const allergySchoolPlanRate = pct(
+  const allergySchoolPlanRate = rate(
     allergy_plans.filter(p => p.school_has_plan).length,
     allergy_plans.length,
   );
-  const epilepsyStaffTrainedRate = pct(
+  const epilepsyStaffTrainedRate = rate(
     epilepsy_plans.filter(p => p.staff_trained_count > 0).length,
     epilepsy_plans.length,
   );
-  const epilepsySchoolPlanRate = pct(
+  const epilepsySchoolPlanRate = rate(
     epilepsy_plans.filter(p => p.school_plan_in_place).length,
     epilepsy_plans.length,
   );
-  const diabeticSchoolPlanRate = pct(
+  const diabeticSchoolPlanRate = rate(
     diabetic_care_plans.filter(p => p.school_plan_in_place).length,
     diabetic_care_plans.length,
   );
-  const asthmaSchoolInhalerRate = pct(
+  const asthmaSchoolInhalerRate = rate(
     asthma_plans.filter(p => p.school_has_inhaler).length,
     asthma_plans.length,
   );
@@ -373,13 +370,13 @@ export function computeHomeSpecializedHealthPlans(
   const childVoiceProfile: ChildVoiceProfile = {
     total_with_voice: totalWithVoice,
     total_applicable: voiceApplicable.length,
-    voice_rate: pct(totalWithVoice, voiceApplicable.length),
+    voice_rate: rate(totalWithVoice, voiceApplicable.length),
   };
 
   // ── Therapy ──────────────────────────────────────────────────────────
   const totalGoals = physio_ot_plans.reduce((s, p) => s + p.goals_count, 0);
   const totalExercises = physio_ot_plans.reduce((s, p) => s + p.exercises_count, 0);
-  const otReportRate = pct(
+  const otReportRate = rate(
     occupational_therapy_records.filter(r => r.report_provided).length,
     occupational_therapy_records.length,
   );
@@ -401,9 +398,9 @@ export function computeHomeSpecializedHealthPlans(
     // Plans exist but no children — use plan count signal
     score += (allPlans.length >= 3 ? 3 : allPlans.length >= 1 ? 1 : 0);
   } else {
-    if (childCoverage >= 80) score += 5;
-    else if (childCoverage >= 60) score += 3;
-    else if (childCoverage >= 40) score += 0;
+    if (meets(childCoverage, 80)) score += 5;
+    else if (meets(childCoverage, 60)) score += 3;
+    else if (meets(childCoverage, 40)) score += 0;
     else score -= 5;
   }
 
@@ -411,9 +408,9 @@ export function computeHomeSpecializedHealthPlans(
   if (reviewables.length === 0) {
     score += 0;
   } else {
-    if (onTimeRate >= 95) score += 4;
-    else if (onTimeRate >= 80) score += 2;
-    else if (onTimeRate >= 60) score += 0;
+    if (meets(onTimeRate, 95)) score += 4;
+    else if (meets(onTimeRate, 80)) score += 2;
+    else if (meets(onTimeRate, 60)) score += 0;
     else score -= 4;
   }
 
@@ -425,13 +422,13 @@ export function computeHomeSpecializedHealthPlans(
   } else {
     const allergyReady = allergy_plans.filter(p => p.staff_trained_count > 0 && p.school_has_plan);
     const epilepsyReady = epilepsy_plans.filter(p => p.staff_trained_count > 0 && p.school_plan_in_place);
-    const readyRate = pct(
+    const readyRate = rate(
       allergyReady.length + epilepsyReady.length,
       safetyCriticalPlans.length,
     );
-    if (readyRate >= 100) score += 4;
-    else if (readyRate >= 80) score += 2;
-    else if (readyRate >= 50) score += 0;
+    if (meets(readyRate, 100)) score += 4;
+    else if (meets(readyRate, 80)) score += 2;
+    else if (meets(readyRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -470,10 +467,10 @@ export function computeHomeSpecializedHealthPlans(
   if (totalSchoolApplicable === 0) {
     score += 0;
   } else {
-    const schoolRate = pct(schoolLinkedPlans.length, totalSchoolApplicable);
-    if (schoolRate >= 100) score += 3;
-    else if (schoolRate >= 80) score += 1;
-    else if (schoolRate >= 50) score += 0;
+    const schoolRate = rate(schoolLinkedPlans.length, totalSchoolApplicable);
+    if (meets(schoolRate, 100)) score += 3;
+    else if (meets(schoolRate, 80)) score += 1;
+    else if (meets(schoolRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -484,10 +481,10 @@ export function computeHomeSpecializedHealthPlans(
   } else {
     const appointmentSet = physio_ot_plans.filter(p => p.next_appointment_set).length;
     const reportsProvided = occupational_therapy_records.filter(r => r.report_provided).length;
-    const engagementRate = pct(appointmentSet + reportsProvided, therapyTotal);
-    if (engagementRate >= 90) score += 3;
-    else if (engagementRate >= 70) score += 1;
-    else if (engagementRate >= 50) score += 0;
+    const engagementRate = rate(appointmentSet + reportsProvided, therapyTotal);
+    if (meets(engagementRate, 90)) score += 3;
+    else if (meets(engagementRate, 70)) score += 1;
+    else if (meets(engagementRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -500,10 +497,10 @@ export function computeHomeSpecializedHealthPlans(
   if (emergencyPlans.length === 0) {
     score += 0;
   } else {
-    const emergencyRate = pct(emergencyPlans.filter(Boolean).length, emergencyPlans.length);
-    if (emergencyRate >= 100) score += 3;
-    else if (emergencyRate >= 80) score += 1;
-    else if (emergencyRate >= 50) score += 0;
+    const emergencyRate = rate(emergencyPlans.filter(Boolean).length, emergencyPlans.length);
+    if (meets(emergencyRate, 100)) score += 3;
+    else if (meets(emergencyRate, 80)) score += 1;
+    else if (meets(emergencyRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -530,19 +527,19 @@ export function computeHomeSpecializedHealthPlans(
   // ── Strengths ────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (childCoverage >= 90 && total_children > 0)
+  if (meets(childCoverage, 90) && total_children > 0)
     strengths.push(`Excellent health plan coverage — ${childCoverage}% of children have individualized plans.`);
-  if (onTimeRate >= 95 && reviewables.length > 0)
+  if (meets(onTimeRate, 95) && reviewables.length > 0)
     strengths.push(`Outstanding review compliance — ${onTimeRate}% of plans reviewed on time.`);
-  if (allergyStaffTrainedRate >= 100 && allergy_plans.length > 0)
+  if (meets(allergyStaffTrainedRate, 100) && allergy_plans.length > 0)
     strengths.push("All allergy plans have trained staff in place — children protected against anaphylaxis.");
-  if (epilepsyStaffTrainedRate >= 100 && epilepsy_plans.length > 0)
+  if (meets(epilepsyStaffTrainedRate, 100) && epilepsy_plans.length > 0)
     strengths.push("100% of epilepsy plans have trained staff — excellent seizure management readiness.");
   if (meets(childVoiceProfile.voice_rate, 90) && voiceApplicable.length > 0)
     strengths.push(`Strong child voice — ${formatRate(childVoiceProfile.voice_rate)} of plans reflect children's views.`);
   if (planTypesActive >= 5)
     strengths.push(`Comprehensive condition coverage across ${planTypesActive} different plan types.`);
-  if (otReportRate >= 100 && occupational_therapy_records.length > 0)
+  if (meets(otReportRate, 100) && occupational_therapy_records.length > 0)
     strengths.push("All occupational therapy assessments have reports provided — excellent clinical governance.");
 
   // ── Concerns ─────────────────────────────────────────────────────────
@@ -550,11 +547,11 @@ export function computeHomeSpecializedHealthPlans(
 
   if (overdueReviews.length > 0)
     concerns.push(`${overdueReviews.length} health plan review${overdueReviews.length > 1 ? "s" : ""} overdue — oldest by ${oldestOverdueDays} days.`);
-  if (childCoverage < 50 && total_children > 0 && allPlans.length > 0)
+  if (below(childCoverage, 50) && total_children > 0 && allPlans.length > 0)
     concerns.push(`Only ${childCoverage}% of children have specialized health plans — coverage gap.`);
-  if (allergyStaffTrainedRate < 100 && allergy_plans.length > 0)
+  if (below(allergyStaffTrainedRate, 100) && allergy_plans.length > 0)
     concerns.push("Not all allergy plans have trained staff — anaphylaxis risk.");
-  if (epilepsyStaffTrainedRate < 100 && epilepsy_plans.length > 0)
+  if (below(epilepsyStaffTrainedRate, 100) && epilepsy_plans.length > 0)
     concerns.push("Not all epilepsy plans have trained staff — seizure management risk.");
   if (below(childVoiceProfile.voice_rate, 50) && voiceApplicable.length > 0)
     concerns.push(`Child voice rate of only ${formatRate(childVoiceProfile.voice_rate)} across plans — children's views underrepresented.`);
@@ -580,7 +577,7 @@ export function computeHomeSpecializedHealthPlans(
     });
   }
 
-  if (allergyStaffTrainedRate < 100 && allergy_plans.length > 0) {
+  if (below(allergyStaffTrainedRate, 100) && allergy_plans.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Ensure all staff are trained in allergy/anaphylaxis management for every child with an allergy plan.",
@@ -589,7 +586,7 @@ export function computeHomeSpecializedHealthPlans(
     });
   }
 
-  if (epilepsyStaffTrainedRate < 100 && epilepsy_plans.length > 0) {
+  if (below(epilepsyStaffTrainedRate, 100) && epilepsy_plans.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Complete epilepsy/rescue medication training for all relevant staff.",
@@ -598,7 +595,7 @@ export function computeHomeSpecializedHealthPlans(
     });
   }
 
-  if (childCoverage < 50 && total_children > 0 && allPlans.length > 0) {
+  if (below(childCoverage, 50) && total_children > 0 && allPlans.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Audit all children for unmet health conditions requiring specialized plans.",
@@ -628,10 +625,10 @@ export function computeHomeSpecializedHealthPlans(
   if (oldestOverdueDays > 180)
     insights.push({ text: `Cara detects health plans overdue by ${oldestOverdueDays} days — regulatory non-compliance risk.`, severity: "critical" });
 
-  if (planTypesActive >= 5 && onTimeRate >= 90 && childCoverage >= 80)
+  if (planTypesActive >= 5 && meets(onTimeRate, 90) && meets(childCoverage, 80))
     insights.push({ text: "Cara recognises exemplary multi-condition management — evidence of proactive health culture.", severity: "positive" });
 
-  if (therapyTotal > 0 && otReportRate < 50)
+  if (therapyTotal > 0 && below(otReportRate, 50))
     insights.push({ text: "Cara notes low OT report provision rate — clinical governance improvement opportunity.", severity: "warning" });
 
   if (allergy_plans.length > 0 && allergy_plans.every(p => p.child_wears_medical_alert))

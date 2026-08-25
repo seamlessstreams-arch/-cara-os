@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME THERAPEUTIC INTERVENTION EFFECTIVENESS INTELLIGENCE ENGINE
 // Evaluates the effectiveness of therapeutic interventions for children in care:
@@ -180,10 +181,6 @@ export interface TherapeuticInterventionEffectivenessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -211,21 +208,21 @@ function emptyResult(
     total_progress_assessments: 0,
     total_treatment_plans: 0,
     total_relationships: 0,
-    therapy_attendance_rate: 0,
-    intervention_effectiveness_rate: 0,
-    progress_assessment_coverage_rate: 0,
-    treatment_adherence_rate: 0,
-    therapeutic_relationship_quality_rate: 0,
-    child_engagement_rate: 0,
+    therapy_attendance_rate: null,
+    intervention_effectiveness_rate: null,
+    progress_assessment_coverage_rate: null,
+    treatment_adherence_rate: null,
+    therapeutic_relationship_quality_rate: null,
+    child_engagement_rate: null,
     session_quality_avg: 0,
-    goals_achievement_rate: 0,
-    follow_up_completion_rate: 0,
-    progress_improvement_rate: 0,
-    plan_review_compliance_rate: 0,
+    goals_achievement_rate: null,
+    follow_up_completion_rate: null,
+    progress_improvement_rate: null,
+    plan_review_compliance_rate: null,
     therapeutic_alliance_avg: 0,
-    therapist_continuity_rate: 0,
-    child_involvement_rate: 0,
-    evidence_documentation_rate: 0,
+    therapist_continuity_rate: null,
+    child_involvement_rate: null,
+    evidence_documentation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -305,7 +302,7 @@ export function computeTherapeuticInterventionEffectiveness(
   const totalSessions = therapy_sessions.length;
   const scheduledSessions = therapy_sessions.filter((s) => s.scheduled).length;
   const attendedSessions = therapy_sessions.filter((s) => s.attended).length;
-  const therapyAttendanceRate = pct(attendedSessions, scheduledSessions);
+  const therapyAttendanceRate = rate(attendedSessions, scheduledSessions);
 
   const sessionQualitySum = therapy_sessions.reduce(
     (sum, s) => sum + s.session_quality_rating,
@@ -335,7 +332,7 @@ export function computeTherapeuticInterventionEffectiveness(
     (sum, s) => sum + s.goals_total,
     0,
   );
-  const goalsAchievementRate = pct(totalGoalsAddressed, totalGoalsInSessions);
+  const goalsAchievementRate = rate(totalGoalsAddressed, totalGoalsInSessions);
 
   const totalFollowUpIdentified = therapy_sessions.reduce(
     (sum, s) => sum + s.follow_up_actions_identified,
@@ -345,10 +342,10 @@ export function computeTherapeuticInterventionEffectiveness(
     (sum, s) => sum + s.follow_up_actions_completed,
     0,
   );
-  const followUpCompletionRate = pct(totalFollowUpCompleted, totalFollowUpIdentified);
+  const followUpCompletionRate = rate(totalFollowUpCompleted, totalFollowUpIdentified);
 
   const sessionsWithNotesCompleted = therapy_sessions.filter((s) => s.notes_completed).length;
-  const notesCompletionRate = pct(sessionsWithNotesCompleted, totalSessions);
+  const notesCompletionRate = rate(sessionsWithNotesCompleted, totalSessions);
 
   // --- Cancellation analysis ---
   const cancelledSessions = therapy_sessions.filter((s) => s.scheduled && !s.attended).length;
@@ -368,10 +365,10 @@ export function computeTherapeuticInterventionEffectiveness(
     (i) => i.outcome_measured && i.positive_outcome,
   ).length;
   const measuredOutcomes = intervention_outcomes.filter((i) => i.outcome_measured).length;
-  const interventionEffectivenessRate = pct(positiveOutcomes, measuredOutcomes);
+  const interventionEffectivenessRate = rate(positiveOutcomes, measuredOutcomes);
 
   const evidenceDocumented = intervention_outcomes.filter((i) => i.evidence_documented).length;
-  const evidenceDocumentationRate = pct(evidenceDocumented, totalInterventions);
+  const evidenceDocumentationRate = rate(evidenceDocumented, totalInterventions);
 
   // --- Therapeutic progress metrics ---
   const totalProgressAssessments = therapeutic_progress_records.length;
@@ -380,7 +377,7 @@ export function computeTherapeuticInterventionEffectiveness(
     therapeutic_progress_records.map((p) => p.child_id),
   ).size;
   const progressAssessmentCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithProgress, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithProgress, total_children) : 0;
 
   const domainsAssessedTotal = therapeutic_progress_records.reduce(
     (sum, p) => sum + p.domains_assessed,
@@ -394,7 +391,7 @@ export function computeTherapeuticInterventionEffectiveness(
     (sum, p) => sum + p.domains_declining,
     0,
   );
-  const progressImprovementRate = pct(domainsImprovingTotal, domainsAssessedTotal);
+  const progressImprovementRate = rate(domainsImprovingTotal, domainsAssessedTotal);
 
   const childInvolvedInAssessment = therapeutic_progress_records.filter(
     (p) => p.child_involved_in_assessment,
@@ -418,18 +415,18 @@ export function computeTherapeuticInterventionEffectiveness(
   const goalsAchieved = treatment_plans.reduce((sum, p) => sum + p.goals_achieved, 0);
   const goalsBehind = treatment_plans.reduce((sum, p) => sum + p.goals_behind, 0);
   const goalsNotStarted = treatment_plans.reduce((sum, p) => sum + p.goals_not_started, 0);
-  const treatmentAdherenceRate = pct(goalsOnTrack + goalsAchieved, totalPlanGoals);
+  const treatmentAdherenceRate = rate(goalsOnTrack + goalsAchieved, totalPlanGoals);
 
   const childInvolvedInPlanning = treatment_plans.filter(
     (p) => p.child_involved_in_planning,
   ).length;
   const multiAgencyInput = treatment_plans.filter((p) => p.multi_agency_input).length;
 
-  const multiAgencyRate = pct(multiAgencyInput, totalTreatmentPlans);
+  const multiAgencyRate = rate(multiAgencyInput, totalTreatmentPlans);
 
   const reviewOverduePlans = treatment_plans.filter((p) => p.active && p.review_overdue).length;
   const activeReviewedPlans = activePlans > 0 ? activePlans - reviewOverduePlans : 0;
-  const planReviewComplianceRate = pct(activeReviewedPlans, activePlans);
+  const planReviewComplianceRate = rate(activeReviewedPlans, activePlans);
 
   // --- Therapeutic relationship metrics ---
   const totalRelationships = therapeutic_relationship_records.length;
@@ -488,7 +485,7 @@ export function computeTherapeuticInterventionEffectiveness(
   const continuityMaintained = therapeutic_relationship_records.filter(
     (r) => r.continuity_maintained,
   ).length;
-  const therapistContinuityRate = pct(continuityMaintained, totalRelationships);
+  const therapistContinuityRate = rate(continuityMaintained, totalRelationships);
 
   const totalTherapistChanges = therapeutic_relationship_records.reduce(
     (sum, r) => sum + r.therapist_changes,
@@ -502,8 +499,8 @@ export function computeTherapeuticInterventionEffectiveness(
     (r) => r.child_feels_safe,
   ).length;
 
-  const childFeelsHeardRate = pct(childFeelsHeard, totalRelationships);
-  const childFeelsSafeRate = pct(childFeelsSafe, totalRelationships);
+  const childFeelsHeardRate = rate(childFeelsHeard, totalRelationships);
+  const childFeelsSafeRate = rate(childFeelsSafe, totalRelationships);
 
   // --- Child involvement composite ---
   // Combine child involvement in assessments and planning
@@ -511,27 +508,27 @@ export function computeTherapeuticInterventionEffectiveness(
     childInvolvedInAssessment + childInvolvedInPlanning;
   const childInvolvementDenom =
     totalProgressAssessments + totalTreatmentPlans;
-  const childInvolvementRate = pct(childInvolvementTotal, childInvolvementDenom);
+  const childInvolvementRate = rate(childInvolvementTotal, childInvolvementDenom);
 
   // ── Scoring: base 52, 9 bonus categories summing to 28 (max 80) ──────
 
   let score = 52;
 
   // --- Bonus 1: therapyAttendanceRate (>=90: +4, >=70: +2) ---
-  if (therapyAttendanceRate >= 90) score += 4;
-  else if (therapyAttendanceRate >= 70) score += 2;
+  if (meets(therapyAttendanceRate, 90)) score += 4;
+  else if (meets(therapyAttendanceRate, 70)) score += 2;
 
   // --- Bonus 2: interventionEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (interventionEffectivenessRate >= 90) score += 4;
-  else if (interventionEffectivenessRate >= 70) score += 2;
+  if (meets(interventionEffectivenessRate, 90)) score += 4;
+  else if (meets(interventionEffectivenessRate, 70)) score += 2;
 
   // --- Bonus 3: progressAssessmentCoverageRate (>=100: +3, >=80: +1) ---
-  if (progressAssessmentCoverageRate >= 100) score += 3;
-  else if (progressAssessmentCoverageRate >= 80) score += 1;
+  if (meets(progressAssessmentCoverageRate, 100)) score += 3;
+  else if (meets(progressAssessmentCoverageRate, 80)) score += 1;
 
   // --- Bonus 4: treatmentAdherenceRate (>=90: +3, >=70: +1) ---
-  if (treatmentAdherenceRate >= 90) score += 3;
-  else if (treatmentAdherenceRate >= 70) score += 1;
+  if (meets(treatmentAdherenceRate, 90)) score += 3;
+  else if (meets(treatmentAdherenceRate, 70)) score += 1;
 
   // --- Bonus 5: therapeuticRelationshipQualityRate (>=80: +3, >=60: +1) ---
   if ((therapeuticRelationshipQualityRate ?? 0) >= 80) score += 3;
@@ -542,29 +539,29 @@ export function computeTherapeuticInterventionEffectiveness(
   else if ((childEngagementRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: followUpCompletionRate (>=90: +3, >=70: +1) ---
-  if (followUpCompletionRate >= 90) score += 3;
-  else if (followUpCompletionRate >= 70) score += 1;
+  if (meets(followUpCompletionRate, 90)) score += 3;
+  else if (meets(followUpCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: planReviewComplianceRate (>=100: +2, >=80: +1) ---
-  if (planReviewComplianceRate >= 100) score += 2;
-  else if (planReviewComplianceRate >= 80) score += 1;
+  if (meets(planReviewComplianceRate, 100)) score += 2;
+  else if (meets(planReviewComplianceRate, 80)) score += 1;
 
   // --- Bonus 9: therapistContinuityRate (>=90: +3, >=70: +1) ---
-  if (therapistContinuityRate >= 90) score += 3;
-  else if (therapistContinuityRate >= 70) score += 1;
+  if (meets(therapistContinuityRate, 90)) score += 3;
+  else if (meets(therapistContinuityRate, 70)) score += 1;
 
   // Total max bonus: 4+4+3+3+3+3+3+2+3 = 28 → base 52 + 28 = 80 (outstanding)
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: therapyAttendanceRate < 50 → -5 (guard: scheduledSessions > 0)
-  if (therapyAttendanceRate < 50 && scheduledSessions > 0) score -= 5;
+  if (below(therapyAttendanceRate, 50) && scheduledSessions > 0) score -= 5;
 
   // Penalty 2: interventionEffectivenessRate < 50 → -5 (guard: measuredOutcomes > 0)
-  if (interventionEffectivenessRate < 50 && measuredOutcomes > 0) score -= 5;
+  if (below(interventionEffectivenessRate, 50) && measuredOutcomes > 0) score -= 5;
 
   // Penalty 3: treatmentAdherenceRate < 40 → -5 (guard: totalPlanGoals > 0)
-  if (treatmentAdherenceRate < 40 && totalPlanGoals > 0) score -= 5;
+  if (below(treatmentAdherenceRate, 40) && totalPlanGoals > 0) score -= 5;
 
   // Penalty 4: therapeuticRelationshipQualityRate < 40 → -3 (guard: totalRelationships > 0)
   if ((therapeuticRelationshipQualityRate ?? 0) < 40 && totalRelationships > 0) score -= 3;
@@ -578,44 +575,44 @@ export function computeTherapeuticInterventionEffectiveness(
   const strengths: string[] = [];
 
   // Therapy attendance strengths
-  if (therapyAttendanceRate >= 90 && scheduledSessions > 0) {
+  if (meets(therapyAttendanceRate, 90) && scheduledSessions > 0) {
     strengths.push(
       `${therapyAttendanceRate}% therapy session attendance — children are consistently attending their therapeutic sessions, demonstrating strong engagement with therapeutic support.`,
     );
-  } else if (therapyAttendanceRate >= 70 && scheduledSessions > 0) {
+  } else if (meets(therapyAttendanceRate, 70) && scheduledSessions > 0) {
     strengths.push(
       `${therapyAttendanceRate}% therapy attendance rate — the majority of scheduled sessions are attended, indicating good engagement with therapeutic provision.`,
     );
   }
 
   // Intervention effectiveness strengths
-  if (interventionEffectivenessRate >= 90 && measuredOutcomes > 0) {
+  if (meets(interventionEffectivenessRate, 90) && measuredOutcomes > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of measured interventions showing positive outcomes — therapeutic interventions are highly effective and delivering meaningful improvements for children.`,
     );
-  } else if (interventionEffectivenessRate >= 70 && measuredOutcomes > 0) {
+  } else if (meets(interventionEffectivenessRate, 70) && measuredOutcomes > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% intervention effectiveness — the majority of therapeutic interventions are producing positive outcomes for children.`,
     );
   }
 
   // Progress assessment coverage strengths
-  if (progressAssessmentCoverageRate >= 100 && total_children > 0) {
+  if (meets(progressAssessmentCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has therapeutic progress assessments — comprehensive coverage ensures no child's therapeutic needs go unmonitored.",
     );
-  } else if (progressAssessmentCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(progressAssessmentCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${progressAssessmentCoverageRate}% progress assessment coverage — the majority of children have documented therapeutic progress assessments.`,
     );
   }
 
   // Treatment adherence strengths
-  if (treatmentAdherenceRate >= 90 && totalPlanGoals > 0) {
+  if (meets(treatmentAdherenceRate, 90) && totalPlanGoals > 0) {
     strengths.push(
       `${treatmentAdherenceRate}% treatment plan adherence — goals are on track or achieved across the vast majority of treatment plans, demonstrating strong delivery of planned interventions.`,
     );
-  } else if (treatmentAdherenceRate >= 70 && totalPlanGoals > 0) {
+  } else if (meets(treatmentAdherenceRate, 70) && totalPlanGoals > 0) {
     strengths.push(
       `${treatmentAdherenceRate}% treatment adherence rate — the majority of treatment plan goals are on track or achieved.`,
     );
@@ -644,33 +641,33 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Follow-up completion strengths
-  if (followUpCompletionRate >= 90 && totalFollowUpIdentified > 0) {
+  if (meets(followUpCompletionRate, 90) && totalFollowUpIdentified > 0) {
     strengths.push(
       `${followUpCompletionRate}% of therapy follow-up actions completed — the home ensures therapeutic recommendations are acted upon between sessions.`,
     );
-  } else if (followUpCompletionRate >= 70 && totalFollowUpIdentified > 0) {
+  } else if (meets(followUpCompletionRate, 70) && totalFollowUpIdentified > 0) {
     strengths.push(
       `${followUpCompletionRate}% follow-up completion rate — most therapeutic actions identified in sessions are being carried through.`,
     );
   }
 
   // Plan review compliance strengths
-  if (planReviewComplianceRate >= 100 && activePlans > 0) {
+  if (meets(planReviewComplianceRate, 100) && activePlans > 0) {
     strengths.push(
       "All active treatment plans are reviewed on schedule — consistent review ensures plans remain responsive to children's changing needs.",
     );
-  } else if (planReviewComplianceRate >= 80 && activePlans > 0) {
+  } else if (meets(planReviewComplianceRate, 80) && activePlans > 0) {
     strengths.push(
       `${planReviewComplianceRate}% of treatment plans reviewed on time — strong compliance with review schedules ensures plans remain current.`,
     );
   }
 
   // Therapist continuity strengths
-  if (therapistContinuityRate >= 90 && totalRelationships > 0) {
+  if (meets(therapistContinuityRate, 90) && totalRelationships > 0) {
     strengths.push(
       `${therapistContinuityRate}% therapist continuity maintained — children benefit from consistent therapeutic relationships without disruption.`,
     );
-  } else if (therapistContinuityRate >= 70 && totalRelationships > 0) {
+  } else if (meets(therapistContinuityRate, 70) && totalRelationships > 0) {
     strengths.push(
       `${therapistContinuityRate}% therapist continuity rate — most children experience stability in their therapeutic relationships.`,
     );
@@ -699,56 +696,56 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Evidence documentation strengths
-  if (evidenceDocumentationRate >= 90 && totalInterventions > 0) {
+  if (meets(evidenceDocumentationRate, 90) && totalInterventions > 0) {
     strengths.push(
       `${evidenceDocumentationRate}% of interventions have documented evidence — the home can demonstrate the impact of therapeutic work to external stakeholders and Ofsted.`,
     );
-  } else if (evidenceDocumentationRate >= 70 && totalInterventions > 0) {
+  } else if (meets(evidenceDocumentationRate, 70) && totalInterventions > 0) {
     strengths.push(
       `${evidenceDocumentationRate}% evidence documentation rate — the majority of interventions have documented evidence of effectiveness.`,
     );
   }
 
   // Child involvement strengths
-  if (childInvolvementRate >= 90 && childInvolvementDenom > 0) {
+  if (meets(childInvolvementRate, 90) && childInvolvementDenom > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in assessments and planning — children are active participants in their therapeutic journey, not passive recipients.`,
     );
-  } else if (childInvolvementRate >= 70 && childInvolvementDenom > 0) {
+  } else if (meets(childInvolvementRate, 70) && childInvolvementDenom > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement rate — most children are involved in their therapeutic assessments and treatment planning.`,
     );
   }
 
   // Multi-agency working strengths
-  if (multiAgencyRate >= 80 && totalTreatmentPlans > 0) {
+  if (meets(multiAgencyRate, 80) && totalTreatmentPlans > 0) {
     strengths.push(
       `${multiAgencyRate}% of treatment plans incorporate multi-agency input — therapeutic provision is well-integrated with wider professional support.`,
     );
   }
 
   // Child feels heard and safe strengths
-  if (childFeelsHeardRate >= 90 && totalRelationships > 0) {
+  if (meets(childFeelsHeardRate, 90) && totalRelationships > 0) {
     strengths.push(
       `${childFeelsHeardRate}% of children report feeling heard by their therapist — children's voices are genuinely valued within the therapeutic relationship.`,
     );
   }
 
-  if (childFeelsSafeRate >= 90 && totalRelationships > 0) {
+  if (meets(childFeelsSafeRate, 90) && totalRelationships > 0) {
     strengths.push(
       `${childFeelsSafeRate}% of children report feeling safe with their therapist — a safe therapeutic environment underpins effective therapy.`,
     );
   }
 
   // Progress improvement strengths
-  if (progressImprovementRate >= 70 && domainsAssessedTotal > 0) {
+  if (meets(progressImprovementRate, 70) && domainsAssessedTotal > 0) {
     strengths.push(
       `${progressImprovementRate}% of assessed domains showing improvement — therapeutic interventions are driving meaningful progress across children's assessed needs.`,
     );
   }
 
   // Notes completion strengths
-  if (notesCompletionRate >= 90 && totalSessions > 0) {
+  if (meets(notesCompletionRate, 90) && totalSessions > 0) {
     strengths.push(
       `${notesCompletionRate}% session notes completion — comprehensive recording supports continuity of care and evidences therapeutic work.`,
     );
@@ -759,11 +756,11 @@ export function computeTherapeuticInterventionEffectiveness(
   const concerns: string[] = [];
 
   // Therapy attendance concerns
-  if (therapyAttendanceRate < 50 && scheduledSessions > 0) {
+  if (below(therapyAttendanceRate, 50) && scheduledSessions > 0) {
     concerns.push(
       `Only ${therapyAttendanceRate}% therapy session attendance — the majority of scheduled therapeutic sessions are not being attended, severely limiting the effectiveness of therapeutic provision and undermining children's access to support.`,
     );
-  } else if (therapyAttendanceRate < 70 && therapyAttendanceRate >= 50 && scheduledSessions > 0) {
+  } else if (below(therapyAttendanceRate, 70) && meets(therapyAttendanceRate, 50) && scheduledSessions > 0) {
     concerns.push(
       `Therapy attendance at ${therapyAttendanceRate}% — a significant proportion of scheduled sessions are missed, reducing the continuity and effectiveness of therapeutic work.`,
     );
@@ -771,8 +768,8 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // Cancellation analysis concerns
   if (cancelledSessions > 0 && scheduledSessions > 0) {
-    const cancelRate = pct(cancelledSessions, scheduledSessions);
-    if (cancelRate >= 30) {
+    const cancelRate = rate(cancelledSessions, scheduledSessions);
+    if (meets(cancelRate, 30)) {
       const parts: string[] = [];
       if (cancelledByChild > 0) parts.push(`${cancelledByChild} by child`);
       if (cancelledByTherapist > 0) parts.push(`${cancelledByTherapist} by therapist`);
@@ -784,13 +781,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Intervention effectiveness concerns
-  if (interventionEffectivenessRate < 50 && measuredOutcomes > 0) {
+  if (below(interventionEffectivenessRate, 50) && measuredOutcomes > 0) {
     concerns.push(
       `Only ${interventionEffectivenessRate}% intervention effectiveness — the majority of therapeutic interventions are not producing positive outcomes, suggesting the approach may need fundamental review.`,
     );
   } else if (
-    interventionEffectivenessRate < 70 &&
-    interventionEffectivenessRate >= 50 &&
+    below(interventionEffectivenessRate, 70) &&
+    meets(interventionEffectivenessRate, 50) &&
     measuredOutcomes > 0
   ) {
     concerns.push(
@@ -799,13 +796,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Progress assessment coverage concerns
-  if (progressAssessmentCoverageRate < 50 && total_children > 0) {
+  if (below(progressAssessmentCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${progressAssessmentCoverageRate}% of children have therapeutic progress assessments — the majority of children's therapeutic progress is not being formally monitored or assessed.`,
     );
   } else if (
-    progressAssessmentCoverageRate < 80 &&
-    progressAssessmentCoverageRate >= 50 &&
+    below(progressAssessmentCoverageRate, 80) &&
+    meets(progressAssessmentCoverageRate, 50) &&
     total_children > 0
   ) {
     concerns.push(
@@ -814,13 +811,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Treatment adherence concerns
-  if (treatmentAdherenceRate < 40 && totalPlanGoals > 0) {
+  if (below(treatmentAdherenceRate, 40) && totalPlanGoals > 0) {
     concerns.push(
       `Only ${treatmentAdherenceRate}% treatment plan adherence — the majority of treatment plan goals are not on track or achieved, indicating significant gaps between planned and actual therapeutic delivery.`,
     );
   } else if (
-    treatmentAdherenceRate < 70 &&
-    treatmentAdherenceRate >= 40 &&
+    below(treatmentAdherenceRate, 70) &&
+    meets(treatmentAdherenceRate, 40) &&
     totalPlanGoals > 0
   ) {
     concerns.push(
@@ -855,13 +852,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Follow-up completion concerns
-  if (followUpCompletionRate < 50 && totalFollowUpIdentified > 0) {
+  if (below(followUpCompletionRate, 50) && totalFollowUpIdentified > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of therapy follow-up actions completed — without follow-through between sessions, therapeutic gains are unlikely to be sustained in daily life.`,
     );
   } else if (
-    followUpCompletionRate < 70 &&
-    followUpCompletionRate >= 50 &&
+    below(followUpCompletionRate, 70) &&
+    meets(followUpCompletionRate, 50) &&
     totalFollowUpIdentified > 0
   ) {
     concerns.push(
@@ -871,8 +868,8 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // Plan review concerns
   if (reviewOverduePlans > 0 && activePlans > 0) {
-    const overdueRate = pct(reviewOverduePlans, activePlans);
-    if (overdueRate >= 30) {
+    const overdueRate = rate(reviewOverduePlans, activePlans);
+    if (meets(overdueRate, 30)) {
       concerns.push(
         `${reviewOverduePlans} active treatment plan${reviewOverduePlans !== 1 ? "s" : ""} overdue for review (${overdueRate}%) — overdue reviews mean plans may no longer reflect children's current therapeutic needs.`,
       );
@@ -880,13 +877,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Therapist continuity concerns
-  if (therapistContinuityRate < 50 && totalRelationships > 0) {
+  if (below(therapistContinuityRate, 50) && totalRelationships > 0) {
     concerns.push(
       `Therapist continuity at only ${therapistContinuityRate}% — frequent therapist changes disrupt therapeutic relationships and can cause regression in children who have experienced multiple placement breakdowns.`,
     );
   } else if (
-    therapistContinuityRate < 70 &&
-    therapistContinuityRate >= 50 &&
+    below(therapistContinuityRate, 70) &&
+    meets(therapistContinuityRate, 50) &&
     totalRelationships > 0
   ) {
     concerns.push(
@@ -902,20 +899,20 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Child involvement concerns
-  if (childInvolvementRate < 50 && childInvolvementDenom > 0) {
+  if (below(childInvolvementRate, 50) && childInvolvementDenom > 0) {
     concerns.push(
       `Only ${childInvolvementRate}% child involvement in therapeutic assessments and planning — children are not being adequately included as active participants in decisions about their therapeutic journey.`,
     );
   }
 
   // Child feels heard/safe concerns
-  if (childFeelsHeardRate < 50 && totalRelationships > 0) {
+  if (below(childFeelsHeardRate, 50) && totalRelationships > 0) {
     concerns.push(
       `Only ${childFeelsHeardRate}% of children report feeling heard by their therapist — if children do not feel listened to, the therapeutic relationship cannot function effectively.`,
     );
   }
 
-  if (childFeelsSafeRate < 50 && totalRelationships > 0) {
+  if (below(childFeelsSafeRate, 50) && totalRelationships > 0) {
     concerns.push(
       `Only ${childFeelsSafeRate}% of children report feeling safe with their therapist — without a sense of safety, children cannot engage authentically in therapeutic work.`,
     );
@@ -923,8 +920,8 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // Declining domains concern
   if (domainsDecliningTotal > 0 && domainsAssessedTotal > 0) {
-    const declineRate = pct(domainsDecliningTotal, domainsAssessedTotal);
-    if (declineRate >= 20) {
+    const declineRate = rate(domainsDecliningTotal, domainsAssessedTotal);
+    if (meets(declineRate, 20)) {
       concerns.push(
         `${declineRate}% of assessed therapeutic domains are declining — a significant proportion of children's assessed areas are worsening despite intervention, requiring urgent review of therapeutic approaches.`,
       );
@@ -933,8 +930,8 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // High risk concerns
   if (highRiskCount > 0 && totalProgressAssessments > 0) {
-    const highRiskRate = pct(highRiskCount, totalProgressAssessments);
-    if (highRiskRate >= 20) {
+    const highRiskRate = rate(highRiskCount, totalProgressAssessments);
+    if (meets(highRiskRate, 20)) {
       concerns.push(
         `${highRiskCount} progress assessment${highRiskCount !== 1 ? "s" : ""} rated high/critical risk (${highRiskRate}%) — children at elevated therapeutic risk require intensified support and more frequent monitoring.`,
       );
@@ -942,14 +939,14 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Evidence documentation concerns
-  if (evidenceDocumentationRate < 50 && totalInterventions > 0) {
+  if (below(evidenceDocumentationRate, 50) && totalInterventions > 0) {
     concerns.push(
       `Only ${evidenceDocumentationRate}% of interventions have documented evidence — without evidence documentation, the home cannot demonstrate the impact of therapeutic work to Ofsted or placing authorities.`,
     );
   }
 
   // Notes completion concerns
-  if (notesCompletionRate < 70 && totalSessions > 0) {
+  if (below(notesCompletionRate, 70) && totalSessions > 0) {
     concerns.push(
       `Session notes completion at only ${notesCompletionRate}% — incomplete session records undermine continuity of care and the home's ability to evidence therapeutic work.`,
     );
@@ -968,7 +965,7 @@ export function computeTherapeuticInterventionEffectiveness(
   let rank = 0;
 
   // Immediate recommendations
-  if (therapyAttendanceRate < 50 && scheduledSessions > 0) {
+  if (below(therapyAttendanceRate, 50) && scheduledSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -978,7 +975,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (interventionEffectivenessRate < 50 && measuredOutcomes > 0) {
+  if (below(interventionEffectivenessRate, 50) && measuredOutcomes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -988,7 +985,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (treatmentAdherenceRate < 40 && totalPlanGoals > 0) {
+  if (below(treatmentAdherenceRate, 40) && totalPlanGoals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1008,7 +1005,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (progressAssessmentCoverageRate < 50 && total_children > 0) {
+  if (below(progressAssessmentCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1018,7 +1015,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (childFeelsSafeRate < 50 && totalRelationships > 0) {
+  if (below(childFeelsSafeRate, 50) && totalRelationships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1028,7 +1025,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (childFeelsHeardRate < 50 && totalRelationships > 0) {
+  if (below(childFeelsHeardRate, 50) && totalRelationships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1039,7 +1036,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Soon recommendations
-  if (followUpCompletionRate < 50 && totalFollowUpIdentified > 0) {
+  if (below(followUpCompletionRate, 50) && totalFollowUpIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1049,7 +1046,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (therapistContinuityRate < 70 && totalRelationships > 0) {
+  if (below(therapistContinuityRate, 70) && totalRelationships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1069,7 +1066,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (childInvolvementRate < 50 && childInvolvementDenom > 0) {
+  if (below(childInvolvementRate, 50) && childInvolvementDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1079,7 +1076,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (evidenceDocumentationRate < 50 && totalInterventions > 0) {
+  if (below(evidenceDocumentationRate, 50) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1089,7 +1086,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (notesCompletionRate < 70 && totalSessions > 0) {
+  if (below(notesCompletionRate, 70) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1101,8 +1098,8 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // Planned recommendations
   if (
-    therapyAttendanceRate >= 50 &&
-    therapyAttendanceRate < 70 &&
+    meets(therapyAttendanceRate, 50) &&
+    below(therapyAttendanceRate, 70) &&
     scheduledSessions > 0
   ) {
     recommendations.push({
@@ -1115,8 +1112,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    interventionEffectivenessRate >= 50 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 50) &&
+    below(interventionEffectivenessRate, 70) &&
     measuredOutcomes > 0
   ) {
     recommendations.push({
@@ -1129,8 +1126,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    progressAssessmentCoverageRate >= 50 &&
-    progressAssessmentCoverageRate < 80 &&
+    meets(progressAssessmentCoverageRate, 50) &&
+    below(progressAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1143,8 +1140,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    treatmentAdherenceRate >= 40 &&
-    treatmentAdherenceRate < 70 &&
+    meets(treatmentAdherenceRate, 40) &&
+    below(treatmentAdherenceRate, 70) &&
     totalPlanGoals > 0
   ) {
     recommendations.push({
@@ -1170,7 +1167,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (multiAgencyRate < 50 && totalTreatmentPlans > 0) {
+  if (below(multiAgencyRate, 50) && totalTreatmentPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1191,8 +1188,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 70 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 70) &&
     totalFollowUpIdentified > 0
   ) {
     recommendations.push({
@@ -1224,21 +1221,21 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // -- Critical insights --
 
-  if (therapyAttendanceRate < 50 && scheduledSessions > 0) {
+  if (below(therapyAttendanceRate, 50) && scheduledSessions > 0) {
     insights.push({
       text: `Only ${therapyAttendanceRate}% therapy attendance. Ofsted will view poor therapy attendance as evidence that children's emotional and psychological needs are not being prioritised, directly undermining Reg 12 compliance. The home must demonstrate that it actively supports children to attend and engage with therapeutic provision.`,
       severity: "critical",
     });
   }
 
-  if (interventionEffectivenessRate < 50 && measuredOutcomes > 0) {
+  if (below(interventionEffectivenessRate, 50) && measuredOutcomes > 0) {
     insights.push({
       text: `Only ${interventionEffectivenessRate}% of interventions showing positive outcomes. When the majority of therapeutic interventions fail to produce improvement, it raises fundamental questions about whether the right interventions are being used, whether therapists are adequately matched to children, and whether the home environment supports therapeutic progress.`,
       severity: "critical",
     });
   }
 
-  if (treatmentAdherenceRate < 40 && totalPlanGoals > 0) {
+  if (below(treatmentAdherenceRate, 40) && totalPlanGoals > 0) {
     insights.push({
       text: `Treatment plan adherence at only ${treatmentAdherenceRate}%. Ofsted expects treatment plans to be living documents that drive delivery — when the majority of goals are not on track, it suggests plans exist on paper but are not being meaningfully implemented in children's daily care.`,
       severity: "critical",
@@ -1252,7 +1249,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (childFeelsSafeRate < 50 && totalRelationships > 0) {
+  if (below(childFeelsSafeRate, 50) && totalRelationships > 0) {
     insights.push({
       text: `Only ${childFeelsSafeRate}% of children feel safe with their therapist. For children who have experienced trauma, abuse, or neglect, feeling unsafe in a therapeutic relationship may cause re-traumatisation rather than healing. This requires immediate attention.`,
       severity: "critical",
@@ -1267,8 +1264,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (significantDecline > 0 && totalProgressAssessments > 0) {
-    const sigDeclineRate = pct(significantDecline, totalProgressAssessments);
-    if (sigDeclineRate >= 10) {
+    const sigDeclineRate = rate(significantDecline, totalProgressAssessments);
+    if (meets(sigDeclineRate, 10)) {
       insights.push({
         text: `${significantDecline} progress assessment${significantDecline !== 1 ? "s" : ""} show significant decline (${sigDeclineRate}%). Children whose therapeutic progress is significantly declining require urgent multi-disciplinary review to understand why current approaches are failing and what alternative support is needed.`,
         severity: "critical",
@@ -1279,8 +1276,8 @@ export function computeTherapeuticInterventionEffectiveness(
   // -- Warning insights --
 
   if (
-    therapyAttendanceRate >= 50 &&
-    therapyAttendanceRate < 70 &&
+    meets(therapyAttendanceRate, 50) &&
+    below(therapyAttendanceRate, 70) &&
     scheduledSessions > 0
   ) {
     insights.push({
@@ -1290,8 +1287,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    interventionEffectivenessRate >= 50 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 50) &&
+    below(interventionEffectivenessRate, 70) &&
     measuredOutcomes > 0
   ) {
     insights.push({
@@ -1301,8 +1298,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    progressAssessmentCoverageRate >= 50 &&
-    progressAssessmentCoverageRate < 80 &&
+    meets(progressAssessmentCoverageRate, 50) &&
+    below(progressAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1312,8 +1309,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    treatmentAdherenceRate >= 40 &&
-    treatmentAdherenceRate < 70 &&
+    meets(treatmentAdherenceRate, 40) &&
+    below(treatmentAdherenceRate, 70) &&
     totalPlanGoals > 0
   ) {
     insights.push({
@@ -1345,8 +1342,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 70 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 70) &&
     totalFollowUpIdentified > 0
   ) {
     insights.push({
@@ -1356,8 +1353,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapistContinuityRate >= 50 &&
-    therapistContinuityRate < 70 &&
+    meets(therapistContinuityRate, 50) &&
+    below(therapistContinuityRate, 70) &&
     totalRelationships > 0
   ) {
     insights.push({
@@ -1367,8 +1364,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (goalsBehind > 0 && totalPlanGoals > 0) {
-    const behindRate = pct(goalsBehind, totalPlanGoals);
-    if (behindRate >= 20 && behindRate < 50) {
+    const behindRate = rate(goalsBehind, totalPlanGoals);
+    if (meets(behindRate, 20) && below(behindRate, 50)) {
       insights.push({
         text: `${behindRate}% of treatment plan goals are behind schedule — these goals need targeted attention and may require resource reallocation or revised timelines to prevent further drift from the treatment plan.`,
         severity: "warning",
@@ -1377,8 +1374,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (goalsNotStarted > 0 && totalPlanGoals > 0) {
-    const notStartedRate = pct(goalsNotStarted, totalPlanGoals);
-    if (notStartedRate >= 20) {
+    const notStartedRate = rate(goalsNotStarted, totalPlanGoals);
+    if (meets(notStartedRate, 20)) {
       insights.push({
         text: `${notStartedRate}% of treatment plan goals have not been started — unstarted goals indicate that aspects of children's treatment plans are not being activated, potentially leaving therapeutic needs unaddressed.`,
         severity: "warning",
@@ -1403,8 +1400,8 @@ export function computeTherapeuticInterventionEffectiveness(
   if (totalInterventions > 0) {
     const unmeasured = totalInterventions - measuredOutcomes;
     if (unmeasured > 0) {
-      const unmeasuredRate = pct(unmeasured, totalInterventions);
-      if (unmeasuredRate >= 30) {
+      const unmeasuredRate = rate(unmeasured, totalInterventions);
+      if (meets(unmeasuredRate, 30)) {
         insights.push({
           text: `${unmeasuredRate}% of interventions have not had their outcomes measured — without measurement, the home cannot determine whether therapeutic investment is producing results or whether alternative approaches are needed.`,
           severity: "warning",
@@ -1423,7 +1420,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapyAttendanceRate >= 90 &&
+    meets(therapyAttendanceRate, 90) &&
     (childEngagementRate ?? 0) >= 80 &&
     scheduledSessions > 0 &&
     totalSessions > 0
@@ -1435,8 +1432,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    interventionEffectivenessRate >= 90 &&
-    evidenceDocumentationRate >= 90 &&
+    meets(interventionEffectivenessRate, 90) &&
+    meets(evidenceDocumentationRate, 90) &&
     measuredOutcomes > 0 &&
     totalInterventions > 0
   ) {
@@ -1447,8 +1444,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    treatmentAdherenceRate >= 90 &&
-    planReviewComplianceRate >= 100 &&
+    meets(treatmentAdherenceRate, 90) &&
+    meets(planReviewComplianceRate, 100) &&
     totalPlanGoals > 0 &&
     activePlans > 0
   ) {
@@ -1470,8 +1467,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    childFeelsHeardRate >= 90 &&
-    childFeelsSafeRate >= 90 &&
+    meets(childFeelsHeardRate, 90) &&
+    meets(childFeelsSafeRate, 90) &&
     totalRelationships > 0
   ) {
     insights.push({
@@ -1481,7 +1478,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapistContinuityRate >= 90 &&
+    meets(therapistContinuityRate, 90) &&
     totalRelationships > 0
   ) {
     insights.push({
@@ -1491,7 +1488,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    progressImprovementRate >= 70 &&
+    meets(progressImprovementRate, 70) &&
     domainsAssessedTotal > 0
   ) {
     insights.push({
@@ -1501,7 +1498,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    childInvolvementRate >= 90 &&
+    meets(childInvolvementRate, 90) &&
     childInvolvementDenom > 0
   ) {
     insights.push({
@@ -1511,7 +1508,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    multiAgencyRate >= 80 &&
+    meets(multiAgencyRate, 80) &&
     totalTreatmentPlans > 0
   ) {
     insights.push({
@@ -1521,7 +1518,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    followUpCompletionRate >= 90 &&
+    meets(followUpCompletionRate, 90) &&
     totalFollowUpIdentified > 0
   ) {
     insights.push({
@@ -1531,7 +1528,7 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    notesCompletionRate >= 90 &&
+    meets(notesCompletionRate, 90) &&
     totalSessions > 0
   ) {
     insights.push({

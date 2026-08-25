@@ -13,7 +13,7 @@
 //             harmReductionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets, below } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -163,7 +163,8 @@ export interface SubstanceMisuseResult {
   total_early_intervention_records: number;
   total_referral_records: number;
   total_harm_reduction_records: number;
-  education_coverage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  education_coverage_rate: number | null;
   // fab-0: null when no records.
   risk_assessment_rate: number | null;
   // fab-0: null when no records.
@@ -172,7 +173,8 @@ export interface SubstanceMisuseResult {
   referral_compliance_rate: number | null;
   // fab-0: null when no records.
   harm_reduction_rate: number | null;
-  child_awareness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SubstanceMisuseRecommendation[];
@@ -180,10 +182,6 @@ export interface SubstanceMisuseResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -212,12 +210,12 @@ function emptyResult(
     total_early_intervention_records: 0,
     total_referral_records: 0,
     total_harm_reduction_records: 0,
-    education_coverage_rate: 0,
+    education_coverage_rate: null,
     risk_assessment_rate: null,
     intervention_effectiveness_rate: null,
     referral_compliance_rate: null,
     harm_reduction_rate: null,
-    child_awareness_rate: 0,
+    child_awareness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -297,19 +295,19 @@ export function computeSubstanceMisusePrevention(
   const totalEducationRecords = substance_education_records.length;
 
   const engagedEducation = substance_education_records.filter((e) => e.attended && e.engaged).length;
-  const educationEngagementRate = pct(engagedEducation, totalEducationRecords);
+  const educationEngagementRate = rate(engagedEducation, totalEducationRecords);
 
   const understandingDemonstrated = substance_education_records.filter(
     (e) => e.attended && e.understanding_demonstrated,
   ).length;
 
   const ageAppropriate = substance_education_records.filter((e) => e.age_appropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalEducationRecords);
+  const ageAppropriateRate = rate(ageAppropriate, totalEducationRecords);
 
   const uniqueChildrenInEducation = new Set(
     substance_education_records.filter((e) => e.attended).map((e) => e.child_id),
   ).size;
-  const educationCoverageRate = total_children > 0 ? pct(uniqueChildrenInEducation, total_children) : 0;
+  const educationCoverageRate = total_children > 0 ? rate(uniqueChildrenInEducation, total_children) : 0;
 
   // Distinct topics covered
   const topicsCovered = new Set(substance_education_records.map((e) => e.topic)).size;
@@ -317,61 +315,61 @@ export function computeSubstanceMisusePrevention(
   // --- Risk assessment metrics ---
   const totalRiskAssessmentRecords = risk_assessment_records.length;
   const completedAssessments = risk_assessment_records.filter((r) => r.completed).length;
-  const riskAssessmentCompletionRate = pct(completedAssessments, totalRiskAssessmentRecords);
+  const riskAssessmentCompletionRate = rate(completedAssessments, totalRiskAssessmentRecords);
 
   const actionPlanCreated = risk_assessment_records.filter(
     (r) => r.completed && r.action_plan_created,
   ).length;
-  const actionPlanRate = pct(actionPlanCreated, completedAssessments);
+  const actionPlanRate = rate(actionPlanCreated, completedAssessments);
 
   const reviewOverdue = risk_assessment_records.filter((r) => r.review_overdue).length;
-  const reviewOverdueRate = pct(reviewOverdue, totalRiskAssessmentRecords);
+  const reviewOverdueRate = rate(reviewOverdue, totalRiskAssessmentRecords);
 
   const sharedWithSocialWorker = risk_assessment_records.filter(
     (r) => r.completed && r.shared_with_social_worker,
   ).length;
-  const socialWorkerSharingRate = pct(sharedWithSocialWorker, completedAssessments);
+  const socialWorkerSharingRate = rate(sharedWithSocialWorker, completedAssessments);
 
   const sharedWithHealth = risk_assessment_records.filter(
     (r) => r.completed && r.shared_with_health,
   ).length;
-  const healthSharingRate = pct(sharedWithHealth, completedAssessments);
+  const healthSharingRate = rate(sharedWithHealth, completedAssessments);
 
   const childInvolvedInAssessment = risk_assessment_records.filter(
     (r) => r.completed && r.child_involved_in_assessment,
   ).length;
-  const childInvolvementRate = pct(childInvolvedInAssessment, completedAssessments);
+  const childInvolvementRate = rate(childInvolvedInAssessment, completedAssessments);
 
   const uniqueChildrenAssessed = new Set(
     risk_assessment_records.filter((r) => r.completed).map((r) => r.child_id),
   ).size;
-  const riskAssessmentCoverageRate = total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
+  const riskAssessmentCoverageRate = total_children > 0 ? rate(uniqueChildrenAssessed, total_children) : 0;
 
   const highRiskCount = risk_assessment_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "very_high",
   ).length;
-  const highRiskRate = pct(highRiskCount, totalRiskAssessmentRecords);
+  const highRiskRate = rate(highRiskCount, totalRiskAssessmentRecords);
 
   // Composite risk assessment rate: average of completion rate and coverage
   // fab-0: null when no risk assessment records.
   const riskAssessmentRate: number | null =
     totalRiskAssessmentRecords > 0
-      ? Math.round((riskAssessmentCompletionRate + riskAssessmentCoverageRate) / 2)
+      ? meanOf([riskAssessmentCompletionRate, riskAssessmentCoverageRate])
       : null;
 
   // --- Early intervention metrics ---
   const totalInterventionRecords = early_intervention_records.length;
 
   const engagedInterventions = early_intervention_records.filter((i) => i.child_engaged).length;
-  const interventionEngagementRate = pct(engagedInterventions, totalInterventionRecords);
+  const interventionEngagementRate = rate(engagedInterventions, totalInterventionRecords);
 
   const measurableImprovement = early_intervention_records.filter(
     (i) => i.measurable_improvement,
   ).length;
-  const measurableImprovementRate = pct(measurableImprovement, totalInterventionRecords);
+  const measurableImprovementRate = rate(measurableImprovement, totalInterventionRecords);
 
   const riskReduced = early_intervention_records.filter((i) => i.risk_level_reduced).length;
-  const riskReductionRate = pct(riskReduced, totalInterventionRecords);
+  const riskReductionRate = rate(riskReduced, totalInterventionRecords);
 
   const totalSessionsPlanned = early_intervention_records.reduce(
     (sum, i) => sum + i.sessions_planned,
@@ -381,32 +379,29 @@ export function computeSubstanceMisusePrevention(
     (sum, i) => sum + i.sessions_completed,
     0,
   );
-  const sessionCompletionRate = pct(totalSessionsCompleted, totalSessionsPlanned);
+  const sessionCompletionRate = rate(totalSessionsCompleted, totalSessionsPlanned);
 
   // Composite intervention effectiveness: engagement + measurable improvement + risk reduction
   // fab-0: null when no intervention records.
   const interventionEffectivenessRate: number | null =
-    totalInterventionRecords > 0
-      ? Math.round(
-          (interventionEngagementRate + measurableImprovementRate + riskReductionRate) / 3,
-        )
-      : null;
+    totalInterventionRecords > 0 ? Math.round(
+          (interventionEngagementRate! + measurableImprovementRate! + riskReductionRate!) / 3) : null;
 
   // --- Referral metrics ---
   const totalReferralRecords = referral_records.length;
   const referralsMadeWithinTarget = referral_records.filter(
     (r) => r.referral_made_within_target,
   ).length;
-  const referralTimelinessRate = pct(referralsMadeWithinTarget, totalReferralRecords);
+  const referralTimelinessRate = rate(referralsMadeWithinTarget, totalReferralRecords);
 
   const outcomesRecorded = referral_records.filter((r) => r.outcome_recorded).length;
-  const outcomeRecordingRate = pct(outcomesRecorded, totalReferralRecords);
+  const outcomeRecordingRate = rate(outcomesRecorded, totalReferralRecords);
 
   const followUpRequired = referral_records.filter((r) => r.follow_up_required).length;
   const followUpDone = referral_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const referralFollowUpRate = pct(followUpDone, followUpRequired);
+  const referralFollowUpRate = rate(followUpDone, followUpRequired);
 
   const childConsented = referral_records.filter((r) => r.child_consented).length;
 
@@ -415,19 +410,19 @@ export function computeSubstanceMisusePrevention(
   const referralComplianceRate: number | null =
     totalReferralRecords > 0
       ? Math.round(
-          (referralTimelinessRate + outcomeRecordingRate + (followUpRequired > 0 ? referralFollowUpRate : 100)) / 3,
+          meanOf([referralTimelinessRate, outcomeRecordingRate, followUpRequired > 0 ? referralFollowUpRate : 100])!,
         )
       : null;
 
   // --- Harm reduction metrics ---
   const totalHarmReductionRecords = harm_reduction_records.length;
   const implementedHarmReduction = harm_reduction_records.filter((h) => h.implemented).length;
-  const harmReductionImplementationRate = pct(implementedHarmReduction, totalHarmReductionRecords);
+  const harmReductionImplementationRate = rate(implementedHarmReduction, totalHarmReductionRecords);
 
   const childEngagedHarmReduction = harm_reduction_records.filter(
     (h) => h.implemented && h.child_engaged,
   ).length;
-  const harmReductionEngagementRate = pct(childEngagedHarmReduction, totalHarmReductionRecords);
+  const harmReductionEngagementRate = rate(childEngagedHarmReduction, totalHarmReductionRecords);
 
   const childUnderstandsStrategy = harm_reduction_records.filter(
     (h) => h.implemented && h.child_understands_strategy,
@@ -436,22 +431,22 @@ export function computeSubstanceMisusePrevention(
   const documentedHarmReduction = harm_reduction_records.filter(
     (h) => h.implemented && h.documented,
   ).length;
-  const harmReductionDocumentationRate = pct(documentedHarmReduction, totalHarmReductionRecords);
+  const harmReductionDocumentationRate = rate(documentedHarmReduction, totalHarmReductionRecords);
 
   const linkedToCarePlan = harm_reduction_records.filter(
     (h) => h.implemented && h.linked_to_care_plan,
   ).length;
-  const carePlanLinkageRate = pct(linkedToCarePlan, totalHarmReductionRecords);
+  const carePlanLinkageRate = rate(linkedToCarePlan, totalHarmReductionRecords);
 
   const sharedWithTeam = harm_reduction_records.filter(
     (h) => h.implemented && h.shared_with_team,
   ).length;
-  const teamSharingRate = pct(sharedWithTeam, totalHarmReductionRecords);
+  const teamSharingRate = rate(sharedWithTeam, totalHarmReductionRecords);
 
   const harmReductionReviewOverdue = harm_reduction_records.filter(
     (h) => h.review_overdue,
   ).length;
-  const harmReductionOverdueRate = pct(harmReductionReviewOverdue, totalHarmReductionRecords);
+  const harmReductionOverdueRate = rate(harmReductionReviewOverdue, totalHarmReductionRecords);
 
   const effectivenessSum = harm_reduction_records
     .filter((h) => h.implemented)
@@ -465,11 +460,8 @@ export function computeSubstanceMisusePrevention(
   // Composite harm reduction rate: implementation + engagement + documentation
   // fab-0: null when no harm-reduction records.
   const harmReductionRate: number | null =
-    totalHarmReductionRecords > 0
-      ? Math.round(
-          (harmReductionImplementationRate + harmReductionEngagementRate + harmReductionDocumentationRate) / 3,
-        )
-      : null;
+    totalHarmReductionRecords > 0 ? Math.round(
+          (harmReductionImplementationRate! + harmReductionEngagementRate! + harmReductionDocumentationRate!) / 3) : null;
 
   // --- Child awareness composite ---
   // Composite across education understanding, risk assessment child involvement,
@@ -500,15 +492,15 @@ export function computeSubstanceMisusePrevention(
 
   const totalAwarenessNum = awarenessNumerators.reduce((a, b) => a + b, 0);
   const totalAwarenessDenom = awarenessDenominators.reduce((a, b) => a + b, 0);
-  const childAwarenessRate = pct(totalAwarenessNum, totalAwarenessDenom);
+  const childAwarenessRate = rate(totalAwarenessNum, totalAwarenessDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: educationCoverageRate (>=90: +4, >=70: +2) ---
-  if (educationCoverageRate >= 90) score += 4;
-  else if (educationCoverageRate >= 70) score += 2;
+  if (meets(educationCoverageRate, 90)) score += 4;
+  else if (meets(educationCoverageRate, 70)) score += 2;
 
   // --- Bonus 2: riskAssessmentRate (>=90: +4, >=70: +2) ---
   if (meets(riskAssessmentRate, 90)) score += 4;
@@ -527,16 +519,16 @@ export function computeSubstanceMisusePrevention(
   else if (meets(harmReductionRate, 70)) score += 1;
 
   // --- Bonus 6: childAwarenessRate (>=90: +3, >=70: +1) ---
-  if (childAwarenessRate >= 90) score += 3;
-  else if (childAwarenessRate >= 70) score += 1;
+  if (meets(childAwarenessRate, 90)) score += 3;
+  else if (meets(childAwarenessRate, 70)) score += 1;
 
   // --- Bonus 7: educationEngagementRate (>=90: +3, >=70: +1) ---
-  if (educationEngagementRate >= 90) score += 3;
-  else if (educationEngagementRate >= 70) score += 1;
+  if (meets(educationEngagementRate, 90)) score += 3;
+  else if (meets(educationEngagementRate, 70)) score += 1;
 
   // --- Bonus 8: sessionCompletionRate (>=90: +3, >=70: +1) ---
-  if (sessionCompletionRate >= 90) score += 3;
-  else if (sessionCompletionRate >= 70) score += 1;
+  if (meets(sessionCompletionRate, 90)) score += 3;
+  else if (meets(sessionCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: avgEffectiveness (>=4.0: +2, >=3.0: +1) ---
   if (meets(avgEffectiveness, 4.0)) score += 2;
@@ -545,7 +537,7 @@ export function computeSubstanceMisusePrevention(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // educationCoverageRate < 30 → -5 (guarded)
-  if (educationCoverageRate < 30 && substance_education_records.length > 0) score -= 5;
+  if (below(educationCoverageRate, 30) && substance_education_records.length > 0) score -= 5;
 
   // riskAssessmentRate < 40 → -5 (guarded)
   if (below(riskAssessmentRate, 40) && risk_assessment_records.length > 0) score -= 5;
@@ -564,11 +556,11 @@ export function computeSubstanceMisusePrevention(
 
   const strengths: string[] = [];
 
-  if (educationCoverageRate >= 90 && total_children > 0) {
+  if (meets(educationCoverageRate, 90) && total_children > 0) {
     strengths.push(
       `${educationCoverageRate}% of children have received substance awareness education — the home demonstrates comprehensive coverage ensuring all children are informed about substance misuse risks.`,
     );
-  } else if (educationCoverageRate >= 70 && total_children > 0) {
+  } else if (meets(educationCoverageRate, 70) && total_children > 0) {
     strengths.push(
       `${educationCoverageRate}% substance education coverage — good reach across children for substance awareness education.`,
     );
@@ -614,31 +606,31 @@ export function computeSubstanceMisusePrevention(
     );
   }
 
-  if (childAwarenessRate >= 90 && totalAwarenessDenom > 0) {
+  if (meets(childAwarenessRate, 90) && totalAwarenessDenom > 0) {
     strengths.push(
       `${childAwarenessRate}% child awareness rate across substance misuse prevention activities — children demonstrate strong understanding, engagement, and involvement in their own safety.`,
     );
-  } else if (childAwarenessRate >= 70 && totalAwarenessDenom > 0) {
+  } else if (meets(childAwarenessRate, 70) && totalAwarenessDenom > 0) {
     strengths.push(
       `${childAwarenessRate}% child awareness — good levels of children's understanding and participation across substance misuse prevention.`,
     );
   }
 
-  if (educationEngagementRate >= 90 && totalEducationRecords > 0) {
+  if (meets(educationEngagementRate, 90) && totalEducationRecords > 0) {
     strengths.push(
       `${educationEngagementRate}% engagement in substance education sessions — children are actively participating in and benefiting from substance awareness programmes.`,
     );
-  } else if (educationEngagementRate >= 70 && totalEducationRecords > 0) {
+  } else if (meets(educationEngagementRate, 70) && totalEducationRecords > 0) {
     strengths.push(
       `${educationEngagementRate}% education engagement rate — good levels of children's active participation in substance awareness sessions.`,
     );
   }
 
-  if (sessionCompletionRate >= 90 && totalSessionsPlanned > 0) {
+  if (meets(sessionCompletionRate, 90) && totalSessionsPlanned > 0) {
     strengths.push(
       `${sessionCompletionRate}% of planned intervention sessions completed — the home follows through on early intervention programmes consistently.`,
     );
-  } else if (sessionCompletionRate >= 70 && totalSessionsPlanned > 0) {
+  } else if (meets(sessionCompletionRate, 70) && totalSessionsPlanned > 0) {
     strengths.push(
       `${sessionCompletionRate}% of planned intervention sessions completed — good adherence to planned early intervention programmes.`,
     );
@@ -654,37 +646,37 @@ export function computeSubstanceMisusePrevention(
     );
   }
 
-  if (actionPlanRate >= 90 && completedAssessments > 0) {
+  if (meets(actionPlanRate, 90) && completedAssessments > 0) {
     strengths.push(
       `${actionPlanRate}% of completed risk assessments have action plans — risk identification is consistently followed by structured support planning.`,
     );
   }
 
-  if (socialWorkerSharingRate >= 90 && completedAssessments > 0) {
+  if (meets(socialWorkerSharingRate, 90) && completedAssessments > 0) {
     strengths.push(
       `${socialWorkerSharingRate}% of assessments shared with social workers — excellent multi-agency communication supporting children's substance misuse prevention.`,
     );
   }
 
-  if (carePlanLinkageRate >= 90 && totalHarmReductionRecords > 0) {
+  if (meets(carePlanLinkageRate, 90) && totalHarmReductionRecords > 0) {
     strengths.push(
       `${carePlanLinkageRate}% of harm reduction strategies linked to care plans — substance misuse prevention is embedded within children's broader care planning.`,
     );
   }
 
-  if (childInvolvementRate >= 90 && completedAssessments > 0) {
+  if (meets(childInvolvementRate, 90) && completedAssessments > 0) {
     strengths.push(
       `${childInvolvementRate}% of risk assessments involved the child — children's voice is central to understanding and addressing substance misuse risk.`,
     );
   }
 
-  if (ageAppropriateRate >= 95 && totalEducationRecords > 0) {
+  if (meets(ageAppropriateRate, 95) && totalEducationRecords > 0) {
     strengths.push(
       "Substance education is age-appropriate in virtually all sessions — the home ensures materials and delivery are tailored to each child's developmental stage.",
     );
   }
 
-  if (referralTimelinessRate >= 95 && totalReferralRecords > 0) {
+  if (meets(referralTimelinessRate, 95) && totalReferralRecords > 0) {
     strengths.push(
       `${referralTimelinessRate}% of referrals made within target timescales — the home responds promptly when children need specialist substance misuse support.`,
     );
@@ -696,7 +688,7 @@ export function computeSubstanceMisusePrevention(
     );
   }
 
-  if (riskReductionRate >= 90 && totalInterventionRecords > 0) {
+  if (meets(riskReductionRate, 90) && totalInterventionRecords > 0) {
     strengths.push(
       `${riskReductionRate}% of interventions resulted in reduced risk levels — early intervention is effectively lowering children's vulnerability to substance misuse.`,
     );
@@ -706,11 +698,11 @@ export function computeSubstanceMisusePrevention(
 
   const concerns: string[] = [];
 
-  if (educationCoverageRate < 30 && total_children > 0 && totalEducationRecords > 0) {
+  if (below(educationCoverageRate, 30) && total_children > 0 && totalEducationRecords > 0) {
     concerns.push(
       `Only ${educationCoverageRate}% of children have received substance awareness education — the majority of children have not been provided with age-appropriate information about substance misuse risks, representing a significant gap in safeguarding.`,
     );
-  } else if (educationCoverageRate >= 30 && educationCoverageRate < 70 && total_children > 0) {
+  } else if (meets(educationCoverageRate, 30) && below(educationCoverageRate, 70) && total_children > 0) {
     concerns.push(
       `Substance education coverage at ${educationCoverageRate}% — not all children have received substance awareness education, leaving some without essential safety information.`,
     );
@@ -756,51 +748,51 @@ export function computeSubstanceMisusePrevention(
     );
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     concerns.push(
       `Child awareness at only ${childAwarenessRate}% — children are not demonstrating understanding, engagement, or involvement in substance misuse prevention activities, undermining the effectiveness of the home's approach.`,
     );
-  } else if (childAwarenessRate >= 30 && childAwarenessRate < 70 && totalAwarenessDenom > 0) {
+  } else if (meets(childAwarenessRate, 30) && below(childAwarenessRate, 70) && totalAwarenessDenom > 0) {
     concerns.push(
       `Child awareness at ${childAwarenessRate}% — not all children are demonstrating understanding or active involvement in substance misuse prevention.`,
     );
   }
 
-  if (reviewOverdueRate >= 30 && totalRiskAssessmentRecords > 0) {
+  if (meets(reviewOverdueRate, 30) && totalRiskAssessmentRecords > 0) {
     concerns.push(
       `${reviewOverdueRate}% of risk assessments are overdue for review — overdue reviews mean risk levels may have changed without the home being aware, creating a safeguarding gap.`,
     );
-  } else if (reviewOverdueRate >= 15 && reviewOverdueRate < 30 && totalRiskAssessmentRecords > 0) {
+  } else if (meets(reviewOverdueRate, 15) && below(reviewOverdueRate, 30) && totalRiskAssessmentRecords > 0) {
     concerns.push(
       `${reviewOverdueRate}% of risk assessments are overdue for review — some assessments need timely review to ensure risk levels remain current and actions are appropriate.`,
     );
   }
 
-  if (harmReductionOverdueRate >= 30 && totalHarmReductionRecords > 0) {
+  if (meets(harmReductionOverdueRate, 30) && totalHarmReductionRecords > 0) {
     concerns.push(
       `${harmReductionOverdueRate}% of harm reduction strategies are overdue for review — strategies may no longer be effective or appropriate without timely review.`,
     );
   }
 
-  if (educationEngagementRate < 40 && totalEducationRecords > 0) {
+  if (below(educationEngagementRate, 40) && totalEducationRecords > 0) {
     concerns.push(
       `Only ${educationEngagementRate}% engagement in substance education — children are not actively participating in education sessions, suggesting the approach needs to be more engaging and relevant.`,
     );
   }
 
-  if (sessionCompletionRate < 50 && totalSessionsPlanned > 0) {
+  if (below(sessionCompletionRate, 50) && totalSessionsPlanned > 0) {
     concerns.push(
       `Only ${sessionCompletionRate}% of planned intervention sessions completed — incomplete interventions mean children are not receiving the full programme of support.`,
     );
   }
 
-  if (ageAppropriateRate < 70 && totalEducationRecords > 0) {
+  if (below(ageAppropriateRate, 70) && totalEducationRecords > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of substance education sessions rated as age-appropriate — education that is not developmentally suitable may be ineffective or inappropriate for some children.`,
     );
   }
 
-  if (highRiskRate >= 40 && totalRiskAssessmentRecords > 0) {
+  if (meets(highRiskRate, 40) && totalRiskAssessmentRecords > 0) {
     concerns.push(
       `${highRiskRate}% of assessments indicate high or very high risk — a significant proportion of children are assessed as highly vulnerable to substance misuse, requiring intensive support and monitoring.`,
     );
@@ -818,7 +810,7 @@ export function computeSubstanceMisusePrevention(
     );
   }
 
-  if (teamSharingRate < 50 && totalHarmReductionRecords > 0) {
+  if (below(teamSharingRate, 50) && totalHarmReductionRecords > 0) {
     concerns.push(
       `Only ${teamSharingRate}% of harm reduction strategies shared with the team — staff may not be aware of children's harm reduction plans, undermining consistent and safe practice.`,
     );
@@ -829,7 +821,7 @@ export function computeSubstanceMisusePrevention(
   const recommendations: SubstanceMisuseRecommendation[] = [];
   let rank = 0;
 
-  if (educationCoverageRate < 30 && total_children > 0 && totalEducationRecords > 0) {
+  if (below(educationCoverageRate, 30) && total_children > 0 && totalEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +861,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +891,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (reviewOverdueRate >= 30 && totalRiskAssessmentRecords > 0) {
+  if (meets(reviewOverdueRate, 30) && totalRiskAssessmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +911,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (educationEngagementRate < 40 && totalEducationRecords > 0) {
+  if (below(educationEngagementRate, 40) && totalEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +921,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (sessionCompletionRate < 50 && totalSessionsPlanned > 0) {
+  if (below(sessionCompletionRate, 50) && totalSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +931,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (teamSharingRate < 50 && totalHarmReductionRecords > 0) {
+  if (below(teamSharingRate, 50) && totalHarmReductionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +941,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (harmReductionOverdueRate >= 30 && totalHarmReductionRecords > 0) {
+  if (meets(harmReductionOverdueRate, 30) && totalHarmReductionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -959,7 +951,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (ageAppropriateRate < 70 && totalEducationRecords > 0) {
+  if (below(ageAppropriateRate, 70) && totalEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -970,8 +962,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    educationCoverageRate >= 30 &&
-    educationCoverageRate < 70 &&
+    meets(educationCoverageRate, 30) &&
+    below(educationCoverageRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1044,8 +1036,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    childAwarenessRate >= 30 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 30) &&
+    below(childAwarenessRate, 70) &&
     totalAwarenessDenom > 0
   ) {
     recommendations.push({
@@ -1057,7 +1049,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (carePlanLinkageRate < 70 && totalHarmReductionRecords > 0) {
+  if (below(carePlanLinkageRate, 70) && totalHarmReductionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1068,7 +1060,7 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    socialWorkerSharingRate < 70 &&
+    below(socialWorkerSharingRate, 70) &&
     completedAssessments > 0
   ) {
     recommendations.push({
@@ -1086,7 +1078,7 @@ export function computeSubstanceMisusePrevention(
 
   // -- Critical insights --
 
-  if (educationCoverageRate < 30 && total_children > 0 && totalEducationRecords > 0) {
+  if (below(educationCoverageRate, 30) && total_children > 0 && totalEducationRecords > 0) {
     insights.push({
       text: `Only ${educationCoverageRate}% of children have received substance awareness education. Without preventive education, children lack the knowledge and skills to recognise and resist substance misuse pressures. Under Reg 14 (health care) and Reg 34 (safeguarding), the home has a duty to equip children with this essential awareness.`,
       severity: "critical",
@@ -1114,7 +1106,7 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     insights.push({
       text: `Child awareness at only ${childAwarenessRate}%. Children are not demonstrating understanding of substance misuse risks, not involved in their own risk assessments, and not engaged in prevention activities. The child's voice and participation are central to effective substance misuse prevention — without them, interventions are unlikely to succeed.`,
       severity: "critical",
@@ -1135,14 +1127,14 @@ export function computeSubstanceMisusePrevention(
     });
   }
 
-  if (highRiskRate >= 50 && totalRiskAssessmentRecords > 0) {
+  if (meets(highRiskRate, 50) && totalRiskAssessmentRecords > 0) {
     insights.push({
       text: `${highRiskRate}% of assessments indicate high or very high risk. A majority of assessed children are significantly vulnerable to substance misuse, requiring intensive, specialist-informed prevention, robust harm reduction, and close multi-agency working to safeguard them effectively.`,
       severity: "critical",
     });
   }
 
-  if (reviewOverdueRate >= 40 && totalRiskAssessmentRecords > 0) {
+  if (meets(reviewOverdueRate, 40) && totalRiskAssessmentRecords > 0) {
     insights.push({
       text: `${reviewOverdueRate}% of risk assessments are overdue for review. Children's circumstances and risk levels can change rapidly — overdue reviews create gaps in the home's understanding of current risk and may result in outdated or inappropriate support plans.`,
       severity: "critical",
@@ -1152,8 +1144,8 @@ export function computeSubstanceMisusePrevention(
   // -- Warning insights --
 
   if (
-    educationCoverageRate >= 30 &&
-    educationCoverageRate < 70 &&
+    meets(educationCoverageRate, 30) &&
+    below(educationCoverageRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -1211,8 +1203,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    childAwarenessRate >= 30 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 30) &&
+    below(childAwarenessRate, 70) &&
     totalAwarenessDenom > 0
   ) {
     insights.push({
@@ -1222,8 +1214,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    reviewOverdueRate >= 15 &&
-    reviewOverdueRate < 40 &&
+    meets(reviewOverdueRate, 15) &&
+    below(reviewOverdueRate, 40) &&
     totalRiskAssessmentRecords > 0
   ) {
     insights.push({
@@ -1233,8 +1225,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    educationEngagementRate >= 40 &&
-    educationEngagementRate < 70 &&
+    meets(educationEngagementRate, 40) &&
+    below(educationEngagementRate, 70) &&
     totalEducationRecords > 0
   ) {
     insights.push({
@@ -1244,8 +1236,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    sessionCompletionRate >= 50 &&
-    sessionCompletionRate < 70 &&
+    meets(sessionCompletionRate, 50) &&
+    below(sessionCompletionRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     insights.push({
@@ -1267,8 +1259,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    harmReductionOverdueRate >= 15 &&
-    harmReductionOverdueRate < 30 &&
+    meets(harmReductionOverdueRate, 15) &&
+    below(harmReductionOverdueRate, 30) &&
     totalHarmReductionRecords > 0
   ) {
     insights.push({
@@ -1287,8 +1279,8 @@ export function computeSubstanceMisusePrevention(
     .slice(0, 2);
   if (topReferralTypes.length > 0 && totalReferralRecords >= 5) {
     const topTypeCount = topReferralTypes[0][1];
-    const topTypeRate = pct(topTypeCount, totalReferralRecords);
-    if (topTypeRate >= 70) {
+    const topTypeRate = rate(topTypeCount, totalReferralRecords);
+    if (meets(topTypeRate, 70)) {
       insights.push({
         text: `${topTypeRate}% of referrals are to ${topReferralTypes[0][0].replace(/_/g, " ")} — while this may reflect appropriate referral practice, consider whether children could benefit from a wider range of specialist services.`,
         severity: "warning",
@@ -1302,9 +1294,9 @@ export function computeSubstanceMisusePrevention(
     triggerCounts[i.trigger] = (triggerCounts[i.trigger] ?? 0) + 1;
   }
   const incidentTriggers = triggerCounts["incident"] ?? 0;
-  if (totalInterventionRecords >= 3 && pct(incidentTriggers, totalInterventionRecords) >= 60) {
+  if (totalInterventionRecords >= 3 && meets(rate(incidentTriggers, totalInterventionRecords), 60)) {
     insights.push({
-      text: `${pct(incidentTriggers, totalInterventionRecords)}% of early interventions are triggered by incidents rather than proactive identification — the home should strengthen routine monitoring and risk assessment to identify vulnerability before incidents occur.`,
+      text: `${rate(incidentTriggers, totalInterventionRecords)}% of early interventions are triggered by incidents rather than proactive identification — the home should strengthen routine monitoring and risk assessment to identify vulnerability before incidents occur.`,
       severity: "warning",
     });
   }
@@ -1319,8 +1311,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    educationCoverageRate >= 90 &&
-    educationEngagementRate >= 90 &&
+    meets(educationCoverageRate, 90) &&
+    meets(educationEngagementRate, 90) &&
     total_children > 0 &&
     totalEducationRecords > 0
   ) {
@@ -1332,9 +1324,9 @@ export function computeSubstanceMisusePrevention(
 
   if (
     totalRiskAssessmentRecords > 0 &&
-    completedAssessments > 0 &&
+    above(completedAssessments, 0) &&
     meets(riskAssessmentRate, 90) &&
-    actionPlanRate >= 90
+    meets(actionPlanRate, 90)
   ) {
     insights.push({
       text: `${riskAssessmentRate}% risk assessment rate with ${actionPlanRate}% action plan creation — risk identification is systematic and consistently followed by structured support planning. The home can evidence a robust approach to identifying and responding to substance misuse vulnerability.`,
@@ -1343,9 +1335,9 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    totalInterventionRecords > 0 &&
+    above(totalInterventionRecords, 0) &&
     meets(interventionEffectivenessRate, 90) &&
-    riskReductionRate >= 90
+    meets(riskReductionRate, 90)
   ) {
     insights.push({
       text: `${interventionEffectivenessRate}% intervention effectiveness with ${riskReductionRate}% risk reduction — early interventions are genuinely effective, with children engaging, improving, and having their risk levels reduced. This demonstrates excellent practice in responding early to substance misuse concerns.`,
@@ -1375,7 +1367,7 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    childAwarenessRate >= 90 &&
+    meets(childAwarenessRate, 90) &&
     totalAwarenessDenom > 0
   ) {
     insights.push({
@@ -1385,7 +1377,7 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    childInvolvementRate >= 90 &&
+    meets(childInvolvementRate, 90) &&
     completedAssessments > 0
   ) {
     insights.push({
@@ -1395,8 +1387,8 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    socialWorkerSharingRate >= 90 &&
-    healthSharingRate >= 90 &&
+    meets(socialWorkerSharingRate, 90) &&
+    meets(healthSharingRate, 90) &&
     completedAssessments > 0
   ) {
     insights.push({
@@ -1406,7 +1398,7 @@ export function computeSubstanceMisusePrevention(
   }
 
   if (
-    carePlanLinkageRate >= 90 &&
+    meets(carePlanLinkageRate, 90) &&
     totalHarmReductionRecords > 0
   ) {
     insights.push({
@@ -1417,7 +1409,7 @@ export function computeSubstanceMisusePrevention(
 
   if (
     topicsCovered >= 5 &&
-    ageAppropriateRate >= 90 &&
+    meets(ageAppropriateRate, 90) &&
     totalEducationRecords > 0
   ) {
     insights.push({

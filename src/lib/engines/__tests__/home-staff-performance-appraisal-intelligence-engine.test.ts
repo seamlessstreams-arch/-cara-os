@@ -152,11 +152,11 @@ describe("insufficient_data — no staff, no records", () => {
     expect(r.headline.toLowerCase()).toContain("insufficient data");
   });
   it("all six rates are 0", () => {
-    expect(r.appraisal_completion_rate).toBe(0);
-    expect(r.target_achievement_rate).toBe(0);
-    expect(r.competency_rate).toBe(0);
-    expect(r.development_progress_rate).toBe(0);
-    expect(r.feedback_quality_rate).toBe(0);
+    expect(r.appraisal_completion_rate).toBeNull();
+    expect(r.target_achievement_rate).toBeNull();
+    expect(r.competency_rate).toBeNull();
+    expect(r.development_progress_rate).toBeNull();
+    expect(r.feedback_quality_rate).toBeNull();
     expect(r.staff_satisfaction_rate).toBeNull();
   });
   it("strengths, concerns empty", () => {
@@ -204,11 +204,11 @@ describe("inadequate floor — staff exist but no records", () => {
     expect(r.insights.some(i => i.severity === "critical")).toBe(true);
   });
   it("all six rates are 0", () => {
-    expect(r.appraisal_completion_rate).toBe(0);
-    expect(r.target_achievement_rate).toBe(0);
-    expect(r.competency_rate).toBe(0);
-    expect(r.development_progress_rate).toBe(0);
-    expect(r.feedback_quality_rate).toBe(0);
+    expect(r.appraisal_completion_rate).toBeNull();
+    expect(r.target_achievement_rate).toBeNull();
+    expect(r.competency_rate).toBeNull();
+    expect(r.development_progress_rate).toBeNull();
+    expect(r.feedback_quality_rate).toBeNull();
     expect(r.staff_satisfaction_rate).toBeNull();
   });
 });
@@ -1025,7 +1025,7 @@ describe("development_progress_rate", () => {
 describe("feedback_quality_rate", () => {
   it("0 when no feedback", () => {
     const r = run({ appraisal_records: [makeAppraisal()] });
-    expect(r.feedback_quality_rate).toBe(0);
+    expect(r.feedback_quality_rate).toBeNull();
   });
 
   it("blends actionable rate (60%) with quality pct (40%)", () => {

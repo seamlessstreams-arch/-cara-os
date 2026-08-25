@@ -141,12 +141,12 @@ describe("computeStaffSupervisionReflectivePractice", () => {
     it("returns all zero metrics", () => {
       const r = computeStaffSupervisionReflectivePractice(baseInput());
       expect(r.total_supervisions).toBe(0);
-      expect(r.supervision_timeliness_rate).toBe(0);
+      expect(r.supervision_timeliness_rate).toBeNull();
       expect(r.supervision_quality_avg).toBe(0);
-      expect(r.safeguarding_supervision_coverage_rate).toBe(0);
-      expect(r.reflective_practice_engagement_rate).toBe(0);
+      expect(r.safeguarding_supervision_coverage_rate).toBeNull();
+      expect(r.reflective_practice_engagement_rate).toBeNull();
       expect(r.theme_coverage_breadth).toBe(0);
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
     });
 
     it("returns empty strengths, concerns, recommendations, insights", () => {
@@ -206,7 +206,7 @@ describe("computeStaffSupervisionReflectivePractice", () => {
         baseInput({ total_staff: 10 }),
       );
       expect(r.total_supervisions).toBe(0);
-      expect(r.supervision_timeliness_rate).toBe(0);
+      expect(r.supervision_timeliness_rate).toBeNull();
     });
 
     it("works with total_staff = 1", () => {
@@ -1143,7 +1143,7 @@ describe("computeStaffSupervisionReflectivePractice", () => {
       expect(r.action_completion_rate).toBe(90);
     });
 
-    it("returns 0 when no actions identified (pct(0,0)=0)", () => {
+    it("returns null when no actions identified (rate(0,0)=null)", () => {
       const r = computeStaffSupervisionReflectivePractice(
         baseInput({
           total_staff: 2,
@@ -1166,7 +1166,7 @@ describe("computeStaffSupervisionReflectivePractice", () => {
           supervision_matrix: [],
         }),
       );
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
     });
   });
 
@@ -3801,7 +3801,7 @@ describe("computeStaffSupervisionReflectivePractice", () => {
       expect(r.supervision_quality_avg).toBe(4);
     });
 
-    it("pct(0,0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       const r = computeStaffSupervisionReflectivePractice(
         baseInput({
           total_staff: 0,
@@ -3813,8 +3813,8 @@ describe("computeStaffSupervisionReflectivePractice", () => {
         }),
       );
       // sg coverage: pct(0,0) = 0, reflective: pct(0,0) = 0
-      expect(r.safeguarding_supervision_coverage_rate).toBe(0);
-      expect(r.reflective_practice_engagement_rate).toBe(0);
+      expect(r.safeguarding_supervision_coverage_rate).toBeNull();
+      expect(r.reflective_practice_engagement_rate).toBeNull();
     });
 
     it("multiple matrix entries for same staff count as one unique", () => {

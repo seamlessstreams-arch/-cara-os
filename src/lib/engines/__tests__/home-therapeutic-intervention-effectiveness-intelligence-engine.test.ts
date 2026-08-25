@@ -190,8 +190,8 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
       expect(r.total_progress_assessments).toBe(0);
       expect(r.total_treatment_plans).toBe(0);
       expect(r.total_relationships).toBe(0);
-      expect(r.therapy_attendance_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
+      expect(r.therapy_attendance_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
       expect(r.strengths).toHaveLength(0);
       expect(r.concerns).toHaveLength(0);
       expect(r.recommendations).toHaveLength(0);
@@ -1140,7 +1140,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
         }),
       );
       // pct(0,0) = 0 < 50 but scheduledSessions=0 so no penalty
-      expect(r.therapy_attendance_rate).toBe(0);
+      expect(r.therapy_attendance_rate).toBeNull();
       expect(r.therapeutic_score).toBe(52);
     });
 
@@ -1163,7 +1163,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
           ],
         }),
       );
-      expect(r.intervention_effectiveness_rate).toBe(0);
+      expect(r.intervention_effectiveness_rate).toBeNull();
       expect(r.therapeutic_score).toBe(52);
     });
 
@@ -1190,7 +1190,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
           ],
         }),
       );
-      expect(r.treatment_adherence_rate).toBe(0);
+      expect(r.treatment_adherence_rate).toBeNull();
       expect(r.therapeutic_score).toBe(52);
     });
 
@@ -1943,7 +1943,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
       expect(r.total_relationships).toBe(2);
     });
 
-    it("pct(0,0) = 0 for all rate calculations", () => {
+    it("rate(0,0)=null for all rate calculations", () => {
       // Create a single non-session record to avoid allEmpty special case
       const r = computeTherapeuticInterventionEffectiveness(
         baseInput({
@@ -1967,11 +1967,11 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
           ],
         }),
       );
-      expect(r.therapy_attendance_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.goals_achievement_rate).toBe(0);
-      expect(r.follow_up_completion_rate).toBe(0);
-      expect(r.treatment_adherence_rate).toBe(0);
+      expect(r.therapy_attendance_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.goals_achievement_rate).toBeNull();
+      expect(r.follow_up_completion_rate).toBeNull();
+      expect(r.treatment_adherence_rate).toBeNull();
     });
   });
 
@@ -3495,7 +3495,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
         }),
       );
       // activePlans=0, so pct(0, 0) = 0
-      expect(r.plan_review_compliance_rate).toBe(0);
+      expect(r.plan_review_compliance_rate).toBeNull();
     });
 
     it("unmeasured outcomes do not affect effectiveness rate denominator", () => {

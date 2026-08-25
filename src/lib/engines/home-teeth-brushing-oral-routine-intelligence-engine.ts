@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME TEETH BRUSHING & ORAL ROUTINE INTELLIGENCE ENGINE
 // Monitors oral hygiene routine quality — brushing schedule adherence, fluoride
@@ -165,12 +166,18 @@ export interface TeethBrushingResult {
   total_supervision_records: number;
   total_replacement_records: number;
   total_independence_records: number;
-  brushing_adherence_rate: number;
-  fluoride_use_rate: number;
-  supervision_rate: number;
-  toothbrush_replacement_rate: number;
-  independence_rate: number;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  brushing_adherence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fluoride_use_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervision_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  toothbrush_replacement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: TeethBrushingRecommendation[];
@@ -178,10 +185,6 @@ export interface TeethBrushingResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -210,12 +213,12 @@ function emptyResult(
     total_supervision_records: 0,
     total_replacement_records: 0,
     total_independence_records: 0,
-    brushing_adherence_rate: 0,
-    fluoride_use_rate: 0,
-    supervision_rate: 0,
-    toothbrush_replacement_rate: 0,
-    independence_rate: 0,
-    child_engagement_rate: 0,
+    brushing_adherence_rate: null,
+    fluoride_use_rate: null,
+    supervision_rate: null,
+    toothbrush_replacement_rate: null,
+    independence_rate: null,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -299,7 +302,7 @@ export function computeTeethBrushingOralRoutine(
   const bothBrushingsDone = brushing_schedule_records.filter(
     (r) => r.morning_brushing_completed && r.evening_brushing_completed,
   ).length;
-  const bothBrushingRate = pct(bothBrushingsDone, totalBrushingRecords);
+  const bothBrushingRate = rate(bothBrushingsDone, totalBrushingRecords);
 
   // Duration: adequate = >= 120 seconds (2 minutes)
   const morningDurationAdequate = brushing_schedule_records.filter(
@@ -310,20 +313,20 @@ export function computeTeethBrushingOralRoutine(
   ).length;
   const totalDurationAdequate = morningDurationAdequate + eveningDurationAdequate;
   const totalBrushingsDone = morningBrushingDone + eveningBrushingDone;
-  const overallDurationRate = pct(totalDurationAdequate, totalBrushingsDone);
+  const overallDurationRate = rate(totalDurationAdequate, totalBrushingsDone);
 
   const techniqueCorrect = brushing_schedule_records.filter((r) => r.brushing_technique_correct).length;
 
   const allAreasCovered = brushing_schedule_records.filter((r) => r.teeth_areas_covered === "all").length;
-  const areaCoverageRate = pct(allAreasCovered, totalBrushingRecords);
+  const areaCoverageRate = rate(allAreasCovered, totalBrushingRecords);
 
   const childRefused = brushing_schedule_records.filter((r) => r.child_refused).length;
-  const refusalRate = pct(childRefused, totalBrushingRecords);
+  const refusalRate = rate(childRefused, totalBrushingRecords);
 
   const alternativeOffered = brushing_schedule_records.filter(
     (r) => r.child_refused && r.alternative_offered,
   ).length;
-  const alternativeOfferedRate = pct(alternativeOffered, childRefused);
+  const alternativeOfferedRate = rate(alternativeOffered, childRefused);
 
   const childEngagedBrushing = brushing_schedule_records.filter((r) => r.child_engaged).length;
 
@@ -331,7 +334,7 @@ export function computeTeethBrushingOralRoutine(
   // weighted: bothBrushings (35%) + durationAdequate (25%) + technique (20%) + engagement (20%)
   const adherenceNumerator = bothBrushingsDone + totalDurationAdequate + techniqueCorrect + childEngagedBrushing;
   const adherenceDenominator = totalBrushingRecords + totalBrushingsDone + totalBrushingRecords + totalBrushingRecords;
-  const brushingAdherenceRate = pct(adherenceNumerator, adherenceDenominator);
+  const brushingAdherenceRate = rate(adherenceNumerator, adherenceDenominator);
 
   // --- Fluoride use metrics ---
   const totalFluorideRecords = fluoride_use_records.length;
@@ -345,12 +348,12 @@ export function computeTeethBrushingOralRoutine(
   const ageAppropriateProduct = fluoride_use_records.filter((r) => r.child_age_appropriate_product).length;
 
   const productInDate = fluoride_use_records.filter((r) => r.product_in_date).length;
-  const productInDateRate = pct(productInDate, totalFluorideRecords);
+  const productInDateRate = rate(productInDate, totalFluorideRecords);
 
   // Composite fluoride use: paste + concentration appropriate + age appropriate + in date
   const fluorideNumerator = fluoridePasteUsed + fluorideConcentrationAppropriate + ageAppropriateProduct + productInDate;
   const fluorideDenominator = totalFluorideRecords * 4;
-  const fluorideUseRate = pct(fluorideNumerator, fluorideDenominator);
+  const fluorideUseRate = rate(fluorideNumerator, fluorideDenominator);
 
   // --- Supervision metrics ---
   const totalSupervisionRecords = supervision_records.length;
@@ -364,10 +367,10 @@ export function computeTeethBrushingOralRoutine(
   ).length;
 
   const positiveReinforcement = supervision_records.filter((r) => r.positive_reinforcement_given).length;
-  const reinforcementRate = pct(positiveReinforcement, totalSupervisionRecords);
+  const reinforcementRate = rate(positiveReinforcement, totalSupervisionRecords);
 
   const oralHealthDiscussion = supervision_records.filter((r) => r.oral_health_discussion).length;
-  const oralDiscussionRate = pct(oralHealthDiscussion, totalSupervisionRecords);
+  const oralDiscussionRate = rate(oralHealthDiscussion, totalSupervisionRecords);
 
   // Supervision level analysis
   const fullSupervision = supervision_records.filter((r) => r.supervision_level === "full").length;
@@ -379,7 +382,7 @@ export function computeTeethBrushingOralRoutine(
   // Composite supervision: present + appropriate + reinforcement + guided
   const supervisionNumerator = staffPresent + supervisionAppropriate + positiveReinforcement + staffGuided;
   const supervisionDenominator = totalSupervisionRecords * 4;
-  const supervisionRate = pct(supervisionNumerator, supervisionDenominator);
+  const supervisionRate = rate(supervisionNumerator, supervisionDenominator);
 
   // --- Toothbrush replacement metrics ---
   const totalReplacementRecords = toothbrush_replacement_records.length;
@@ -388,12 +391,12 @@ export function computeTeethBrushingOralRoutine(
   const replacedOnTime = toothbrush_replacement_records.filter(
     (r) => r.days_since_last_replacement <= 90,
   ).length;
-  const replacedOnTimeRate = pct(replacedOnTime, totalReplacementRecords);
+  const replacedOnTimeRate = rate(replacedOnTime, totalReplacementRecords);
 
   const replacedOverdue = toothbrush_replacement_records.filter(
     (r) => r.days_since_last_replacement > 90,
   ).length;
-  const overdueRate = pct(replacedOverdue, totalReplacementRecords);
+  const overdueRate = rate(replacedOverdue, totalReplacementRecords);
 
   const brushAgeAppropriate = toothbrush_replacement_records.filter(
     (r) => r.brush_age_appropriate,
@@ -402,7 +405,7 @@ export function computeTeethBrushingOralRoutine(
   const childChoseBrush = toothbrush_replacement_records.filter(
     (r) => r.child_chose_own_brush,
   ).length;
-  const childChoseRate = pct(childChoseBrush, totalReplacementRecords);
+  const childChoseRate = rate(childChoseBrush, totalReplacementRecords);
 
   const storageCorrect = toothbrush_replacement_records.filter(
     (r) => r.personal_brush_storage_correct,
@@ -415,7 +418,7 @@ export function computeTeethBrushingOralRoutine(
   const frayedOrWorse = toothbrush_replacement_records.filter(
     (r) => r.brush_condition_at_replacement === "frayed" || r.brush_condition_at_replacement === "heavily_worn" || r.brush_condition_at_replacement === "damaged",
   ).length;
-  const poorConditionRate = pct(frayedOrWorse, totalReplacementRecords);
+  const poorConditionRate = rate(frayedOrWorse, totalReplacementRecords);
 
   // Brush type distribution
   const manualBrushes = toothbrush_replacement_records.filter((r) => r.brush_type === "manual").length;
@@ -425,7 +428,7 @@ export function computeTeethBrushingOralRoutine(
   // Composite toothbrush replacement: on time + age appropriate + storage + labelled
   const replacementNumerator = replacedOnTime + brushAgeAppropriate + storageCorrect + brushLabelled;
   const replacementDenominator = totalReplacementRecords * 4;
-  const toothbrushReplacementRate = pct(replacementNumerator, replacementDenominator);
+  const toothbrushReplacementRate = rate(replacementNumerator, replacementDenominator);
 
   // --- Independence metrics ---
   const totalIndependenceRecords = independence_records.length;
@@ -451,10 +454,10 @@ export function computeTeethBrushingOralRoutine(
   const goalMet = independence_records.filter(
     (r) => r.independence_goal_set && r.independence_goal_met,
   ).length;
-  const goalMetRate = pct(goalMet, goalSet);
+  const goalMetRate = rate(goalMet, goalSet);
 
   const planInPlace = independence_records.filter((r) => r.independence_plan_in_place).length;
-  const planRate = pct(planInPlace, totalIndependenceRecords);
+  const planRate = rate(planInPlace, totalIndependenceRecords);
 
   const improved = independence_records.filter(
     (r) => r.progress_since_last_assessment === "improved",
@@ -462,12 +465,12 @@ export function computeTeethBrushingOralRoutine(
   const declined = independence_records.filter(
     (r) => r.progress_since_last_assessment === "declined",
   ).length;
-  const improvementRate = pct(improved, totalIndependenceRecords);
+  const improvementRate = rate(improved, totalIndependenceRecords);
 
   // Composite independence: brushes independently + initiates without prompt + completes full routine + understands importance
   const independenceNumerator = brushesIndependently + initiatesWithoutPrompt + completesFullRoutine + understandsImportance;
   const independenceDenominator = totalIndependenceRecords * 4;
-  const independenceRate = pct(independenceNumerator, independenceDenominator);
+  const independenceRate = rate(independenceNumerator, independenceDenominator);
 
   // --- Child engagement composite ---
   // Across: brushing engagement + child chose brush + child understands importance
@@ -491,61 +494,61 @@ export function computeTeethBrushingOralRoutine(
     engagementDenominator += totalSupervisionRecords;
   }
 
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: brushingAdherenceRate (>=90: +4, >=70: +2) ---
-  if (brushingAdherenceRate >= 90) score += 4;
-  else if (brushingAdherenceRate >= 70) score += 2;
+  if (meets(brushingAdherenceRate, 90)) score += 4;
+  else if (meets(brushingAdherenceRate, 70)) score += 2;
 
   // --- Bonus 2: fluorideUseRate (>=90: +4, >=70: +2) ---
-  if (fluorideUseRate >= 90) score += 4;
-  else if (fluorideUseRate >= 70) score += 2;
+  if (meets(fluorideUseRate, 90)) score += 4;
+  else if (meets(fluorideUseRate, 70)) score += 2;
 
   // --- Bonus 3: supervisionRate (>=90: +3, >=70: +1) ---
-  if (supervisionRate >= 90) score += 3;
-  else if (supervisionRate >= 70) score += 1;
+  if (meets(supervisionRate, 90)) score += 3;
+  else if (meets(supervisionRate, 70)) score += 1;
 
   // --- Bonus 4: toothbrushReplacementRate (>=85: +3, >=65: +1) ---
-  if (toothbrushReplacementRate >= 85) score += 3;
-  else if (toothbrushReplacementRate >= 65) score += 1;
+  if (meets(toothbrushReplacementRate, 85)) score += 3;
+  else if (meets(toothbrushReplacementRate, 65)) score += 1;
 
   // --- Bonus 5: independenceRate (>=85: +3, >=65: +1) ---
-  if (independenceRate >= 85) score += 3;
-  else if (independenceRate >= 65) score += 1;
+  if (meets(independenceRate, 85)) score += 3;
+  else if (meets(independenceRate, 65)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: overallDurationRate (>=90: +3, >=70: +1) ---
-  if (overallDurationRate >= 90) score += 3;
-  else if (overallDurationRate >= 70) score += 1;
+  if (meets(overallDurationRate, 90)) score += 3;
+  else if (meets(overallDurationRate, 70)) score += 1;
 
   // --- Bonus 8: replacedOnTimeRate (>=90: +2, >=70: +1) ---
-  if (replacedOnTimeRate >= 90) score += 2;
-  else if (replacedOnTimeRate >= 70) score += 1;
+  if (meets(replacedOnTimeRate, 90)) score += 2;
+  else if (meets(replacedOnTimeRate, 70)) score += 1;
 
   // --- Bonus 9: reinforcementRate (>=90: +3, >=70: +1) ---
-  if (reinforcementRate >= 90) score += 3;
-  else if (reinforcementRate >= 70) score += 1;
+  if (meets(reinforcementRate, 90)) score += 3;
+  else if (meets(reinforcementRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // brushingAdherenceRate < 50 → -5
-  if (brushingAdherenceRate < 50 && brushing_schedule_records.length > 0) score -= 5;
+  if (below(brushingAdherenceRate, 50) && brushing_schedule_records.length > 0) score -= 5;
 
   // fluorideUseRate < 40 → -5
-  if (fluorideUseRate < 40 && fluoride_use_records.length > 0) score -= 5;
+  if (below(fluorideUseRate, 40) && fluoride_use_records.length > 0) score -= 5;
 
   // supervisionRate < 40 → -4
-  if (supervisionRate < 40 && supervision_records.length > 0) score -= 4;
+  if (below(supervisionRate, 40) && supervision_records.length > 0) score -= 4;
 
   // independenceRate < 40 → -4
-  if (independenceRate < 40 && independence_records.length > 0) score -= 4;
+  if (below(independenceRate, 40) && independence_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -555,99 +558,99 @@ export function computeTeethBrushingOralRoutine(
 
   const strengths: string[] = [];
 
-  if (brushingAdherenceRate >= 90 && totalBrushingRecords > 0) {
+  if (meets(brushingAdherenceRate, 90) && totalBrushingRecords > 0) {
     strengths.push(
       `${brushingAdherenceRate}% brushing adherence — children consistently complete their brushing routines with adequate duration, correct technique, and positive engagement, demonstrating well-embedded oral hygiene habits.`,
     );
-  } else if (brushingAdherenceRate >= 70 && totalBrushingRecords > 0) {
+  } else if (meets(brushingAdherenceRate, 70) && totalBrushingRecords > 0) {
     strengths.push(
       `${brushingAdherenceRate}% brushing adherence — the home generally maintains good brushing routines for children across schedule, technique, and engagement.`,
     );
   }
 
-  if (fluorideUseRate >= 90 && totalFluorideRecords > 0) {
+  if (meets(fluorideUseRate, 90) && totalFluorideRecords > 0) {
     strengths.push(
       `${fluorideUseRate}% fluoride use compliance — children consistently use age-appropriate fluoride toothpaste at the correct concentration, with products kept in date, maximising protection against tooth decay.`,
     );
-  } else if (fluorideUseRate >= 70 && totalFluorideRecords > 0) {
+  } else if (meets(fluorideUseRate, 70) && totalFluorideRecords > 0) {
     strengths.push(
       `${fluorideUseRate}% fluoride use compliance — fluoride products are generally used appropriately across the home.`,
     );
   }
 
-  if (supervisionRate >= 90 && totalSupervisionRecords > 0) {
+  if (meets(supervisionRate, 90) && totalSupervisionRecords > 0) {
     strengths.push(
       `${supervisionRate}% supervision quality — staff consistently supervise brushing appropriately for each child's age and needs, provide technique guidance, and deliver positive reinforcement.`,
     );
-  } else if (supervisionRate >= 70 && totalSupervisionRecords > 0) {
+  } else if (meets(supervisionRate, 70) && totalSupervisionRecords > 0) {
     strengths.push(
       `${supervisionRate}% supervision quality — staff generally provide appropriate supervision and support during children's brushing routines.`,
     );
   }
 
-  if (toothbrushReplacementRate >= 85 && totalReplacementRecords > 0) {
+  if (meets(toothbrushReplacementRate, 85) && totalReplacementRecords > 0) {
     strengths.push(
       `${toothbrushReplacementRate}% toothbrush replacement compliance — toothbrushes are replaced on schedule with age-appropriate options, stored correctly, and labelled, ensuring effective oral hygiene equipment.`,
     );
-  } else if (toothbrushReplacementRate >= 65 && totalReplacementRecords > 0) {
+  } else if (meets(toothbrushReplacementRate, 65) && totalReplacementRecords > 0) {
     strengths.push(
       `${toothbrushReplacementRate}% toothbrush replacement compliance — the home generally maintains toothbrush replacement cycles and appropriate equipment.`,
     );
   }
 
-  if (independenceRate >= 85 && totalIndependenceRecords > 0) {
+  if (meets(independenceRate, 85) && totalIndependenceRecords > 0) {
     strengths.push(
       `${independenceRate}% oral care independence — children demonstrate strong independent oral care skills, initiating brushing without prompts, completing full routines independently, and understanding the importance of oral health.`,
     );
-  } else if (independenceRate >= 65 && totalIndependenceRecords > 0) {
+  } else if (meets(independenceRate, 65) && totalIndependenceRecords > 0) {
     strengths.push(
       `${independenceRate}% oral care independence — children are developing good independent oral care skills with appropriate staff support.`,
     );
   }
 
-  if (childEngagementRate >= 90) {
+  if (meets(childEngagementRate, 90)) {
     strengths.push(
       `${childEngagementRate}% child engagement across oral care — children actively participate in brushing routines, choose their own products, understand dental health, and respond positively to staff support.`,
     );
-  } else if (childEngagementRate >= 70) {
+  } else if (meets(childEngagementRate, 70)) {
     strengths.push(
       `${childEngagementRate}% child engagement — most children are positively engaged with their oral care routines.`,
     );
   }
 
-  if (bothBrushingRate >= 90 && totalBrushingRecords > 0) {
+  if (meets(bothBrushingRate, 90) && totalBrushingRecords > 0) {
     strengths.push(
       `${bothBrushingRate}% twice-daily brushing completion — children consistently complete both morning and evening brushing.`,
     );
   }
 
-  if (overallDurationRate >= 90 && totalBrushingsDone > 0) {
+  if (meets(overallDurationRate, 90) && totalBrushingsDone > 0) {
     strengths.push(`${overallDurationRate}% brushing duration compliance — sessions consistently meet the recommended 2-minute minimum.`);
-  } else if (overallDurationRate >= 70 && totalBrushingsDone > 0) {
+  } else if (meets(overallDurationRate, 70) && totalBrushingsDone > 0) {
     strengths.push(`${overallDurationRate}% brushing duration compliance — most sessions meet the recommended 2-minute minimum.`);
   }
 
-  if (reinforcementRate >= 90 && totalSupervisionRecords > 0) {
+  if (meets(reinforcementRate, 90) && totalSupervisionRecords > 0) {
     strengths.push(`${reinforcementRate}% positive reinforcement — staff consistently encourage children during oral care.`);
   }
 
-  if (replacedOnTimeRate >= 90 && totalReplacementRecords > 0) {
+  if (meets(replacedOnTimeRate, 90) && totalReplacementRecords > 0) {
     strengths.push(`${replacedOnTimeRate}% of toothbrushes replaced within the recommended 3-month cycle.`);
   }
 
-  if (childChoseRate >= 80 && totalReplacementRecords > 0) {
+  if (meets(childChoseRate, 80) && totalReplacementRecords > 0) {
     strengths.push(`${childChoseRate}% of children chose their own toothbrush — autonomy and personal preference are actively supported.`);
   }
 
-  if (goalMetRate >= 80 && goalSet > 0) {
+  if (meets(goalMetRate, 80) && goalSet > 0) {
     strengths.push(`${goalMetRate}% independence goals met — children are meeting their oral care independence targets.`);
   }
 
-  if (alternativeOfferedRate >= 90 && childRefused > 0) {
+  if (meets(alternativeOfferedRate, 90) && childRefused > 0) {
     strengths.push(`${alternativeOfferedRate}% of brushing refusals met with alternative approaches — flexible, child-centred care.`);
   }
 
-  if (areaCoverageRate >= 90 && totalBrushingRecords > 0) {
+  if (meets(areaCoverageRate, 90) && totalBrushingRecords > 0) {
     strengths.push(`${areaCoverageRate}% of brushing sessions achieve full teeth area coverage.`);
   }
 
@@ -655,111 +658,111 @@ export function computeTeethBrushingOralRoutine(
 
   const concerns: string[] = [];
 
-  if (brushingAdherenceRate < 50 && totalBrushingRecords > 0) {
+  if (below(brushingAdherenceRate, 50) && totalBrushingRecords > 0) {
     concerns.push(
       `Only ${brushingAdherenceRate}% brushing adherence — children's brushing routines are poorly maintained, with low completion rates, inadequate duration, poor technique, or disengagement. This directly compromises children's oral health and represents a failure to promote basic health care habits.`,
     );
-  } else if (brushingAdherenceRate < 70 && brushingAdherenceRate >= 50 && totalBrushingRecords > 0) {
+  } else if (below(brushingAdherenceRate, 70) && meets(brushingAdherenceRate, 50) && totalBrushingRecords > 0) {
     concerns.push(
       `Brushing adherence at ${brushingAdherenceRate}% — brushing routine quality needs improvement across completion, duration, technique, or engagement to ensure children's oral health is properly supported.`,
     );
   }
 
-  if (fluorideUseRate < 40 && totalFluorideRecords > 0) {
+  if (below(fluorideUseRate, 40) && totalFluorideRecords > 0) {
     concerns.push(
       `Fluoride use compliance at only ${fluorideUseRate}% — children are not consistently using fluoride toothpaste, products are at incorrect concentrations, or products are not age-appropriate. This significantly reduces protection against tooth decay.`,
     );
-  } else if (fluorideUseRate < 70 && fluorideUseRate >= 40 && totalFluorideRecords > 0) {
+  } else if (below(fluorideUseRate, 70) && meets(fluorideUseRate, 40) && totalFluorideRecords > 0) {
     concerns.push(
       `Fluoride use compliance at ${fluorideUseRate}% — fluoride product selection, concentration, or management needs improvement to optimise children's dental protection.`,
     );
   }
 
-  if (supervisionRate < 40 && totalSupervisionRecords > 0) {
+  if (below(supervisionRate, 40) && totalSupervisionRecords > 0) {
     concerns.push(
       `Supervision quality at only ${supervisionRate}% — staff are not consistently present during brushing, supervision is not age-appropriate, and reinforcement is lacking. Young children require active supervision to ensure effective brushing.`,
     );
-  } else if (supervisionRate < 70 && supervisionRate >= 40 && totalSupervisionRecords > 0) {
+  } else if (below(supervisionRate, 70) && meets(supervisionRate, 40) && totalSupervisionRecords > 0) {
     concerns.push(
       `Supervision quality at ${supervisionRate}% — the consistency and quality of staff supervision during brushing routines needs strengthening.`,
     );
   }
 
-  if (toothbrushReplacementRate < 50 && totalReplacementRecords > 0) {
+  if (below(toothbrushReplacementRate, 50) && totalReplacementRecords > 0) {
     concerns.push(
       `Toothbrush replacement compliance at only ${toothbrushReplacementRate}% — toothbrushes are not being replaced on schedule, may not be age-appropriate, or are not stored correctly. Worn toothbrushes are ineffective at removing plaque and harbour bacteria.`,
     );
-  } else if (toothbrushReplacementRate < 65 && toothbrushReplacementRate >= 50 && totalReplacementRecords > 0) {
+  } else if (below(toothbrushReplacementRate, 65) && meets(toothbrushReplacementRate, 50) && totalReplacementRecords > 0) {
     concerns.push(
       `Toothbrush replacement compliance at ${toothbrushReplacementRate}% — equipment maintenance and replacement cycles need attention.`,
     );
   }
 
-  if (independenceRate < 40 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 40) && totalIndependenceRecords > 0) {
     concerns.push(
       `Oral care independence at only ${independenceRate}% — children are not developing adequate independent oral care skills. Without structured support to build independence, children will be unable to manage their own oral health when they leave care.`,
     );
-  } else if (independenceRate < 65 && independenceRate >= 40 && totalIndependenceRecords > 0) {
+  } else if (below(independenceRate, 65) && meets(independenceRate, 40) && totalIndependenceRecords > 0) {
     concerns.push(
       `Oral care independence at ${independenceRate}% — children's development of independent oral care skills needs more structured support and planning.`,
     );
   }
 
-  if (childEngagementRate < 50) {
+  if (below(childEngagementRate, 50)) {
     concerns.push(
       `Child engagement with oral care at only ${childEngagementRate}% — children are not actively participating in or engaging with their oral hygiene routines, which undermines habit formation and may indicate the approach is not child-centred.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50)) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — a notable proportion of children are not positively engaged with their oral care.`,
     );
   }
 
-  if (bothBrushingRate < 50 && totalBrushingRecords > 0) {
+  if (below(bothBrushingRate, 50) && totalBrushingRecords > 0) {
     concerns.push(
       `Only ${bothBrushingRate}% twice-daily brushing completion — the majority of children are not completing both morning and evening brushing, the fundamental basis of oral health protection.`,
     );
-  } else if (bothBrushingRate < 70 && bothBrushingRate >= 50 && totalBrushingRecords > 0) {
+  } else if (below(bothBrushingRate, 70) && meets(bothBrushingRate, 50) && totalBrushingRecords > 0) {
     concerns.push(
       `Twice-daily brushing at ${bothBrushingRate}% — a significant number of children are not completing both morning and evening brushing sessions.`,
     );
   }
 
-  if (overallDurationRate < 50 && totalBrushingsDone > 0) {
+  if (below(overallDurationRate, 50) && totalBrushingsDone > 0) {
     concerns.push(
       `Only ${overallDurationRate}% of brushing sessions meet the recommended 2-minute minimum — inadequate brushing duration reduces plaque removal effectiveness and increases the risk of cavities and gum disease.`,
     );
-  } else if (overallDurationRate < 70 && overallDurationRate >= 50 && totalBrushingsDone > 0) {
+  } else if (below(overallDurationRate, 70) && meets(overallDurationRate, 50) && totalBrushingsDone > 0) {
     concerns.push(
       `Brushing duration compliance at ${overallDurationRate}% — not all brushing sessions are reaching the recommended 2-minute duration for effective cleaning.`,
     );
   }
 
-  if (refusalRate > 30 && totalBrushingRecords > 0) {
+  if (above(refusalRate, 30) && totalBrushingRecords > 0) {
     concerns.push(
       `${refusalRate}% brushing refusal rate — a significant proportion of brushing sessions involve child refusal, which may indicate underlying anxiety, sensory issues, or a need for alternative approaches to oral care.`,
     );
-  } else if (refusalRate > 15 && refusalRate <= 30 && totalBrushingRecords > 0) {
+  } else if (above(refusalRate, 15) && refusalRate! <= 30 && totalBrushingRecords > 0) {
     concerns.push(
       `Brushing refusal rate at ${refusalRate}% — some children are refusing to brush, requiring investigation into individual barriers and support needs.`,
     );
   }
 
-  if (poorConditionRate > 40 && totalReplacementRecords > 0) {
+  if (above(poorConditionRate, 40) && totalReplacementRecords > 0) {
     concerns.push(
       `${poorConditionRate}% of toothbrushes found frayed, heavily worn, or damaged at replacement — brushes are not being replaced frequently enough, meaning children are using ineffective equipment for oral hygiene.`,
     );
   }
 
-  if (overdueRate > 40 && totalReplacementRecords > 0) {
+  if (above(overdueRate, 40) && totalReplacementRecords > 0) {
     concerns.push(
       `${overdueRate}% of toothbrush replacements overdue beyond 90 days — the home is not maintaining the recommended 3-month replacement cycle, compromising brushing effectiveness.`,
     );
   }
 
   if (noSupervision > 0 && totalSupervisionRecords > 0) {
-    const noSupRate = pct(noSupervision, totalSupervisionRecords);
-    if (noSupRate > 20) {
+    const noSupRate = rate(noSupervision, totalSupervisionRecords);
+    if (above(noSupRate, 20)) {
       concerns.push(`${noSupRate}% of supervision records show no supervision at all — particularly concerning for younger children.`);
     }
   }
@@ -781,13 +784,13 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (declined > 0 && totalIndependenceRecords > 0) {
-    const declineRate = pct(declined, totalIndependenceRecords);
-    if (declineRate > 20) {
+    const declineRate = rate(declined, totalIndependenceRecords);
+    if (above(declineRate, 20)) {
       concerns.push(`${declineRate}% of independence assessments show declining oral care skills — requires immediate review.`);
     }
   }
 
-  if (productInDateRate < 70 && totalFluorideRecords > 0) {
+  if (below(productInDateRate, 70) && totalFluorideRecords > 0) {
     concerns.push(`Only ${productInDateRate}% of fluoride products in date — expired products may be ineffective.`);
   }
 
@@ -796,7 +799,7 @@ export function computeTeethBrushingOralRoutine(
   const recommendations: TeethBrushingRecommendation[] = [];
   let rank = 0;
 
-  if (brushingAdherenceRate < 50 && totalBrushingRecords > 0) {
+  if (below(brushingAdherenceRate, 50) && totalBrushingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -806,7 +809,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (fluorideUseRate < 40 && totalFluorideRecords > 0) {
+  if (below(fluorideUseRate, 40) && totalFluorideRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -816,7 +819,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (supervisionRate < 40 && totalSupervisionRecords > 0) {
+  if (below(supervisionRate, 40) && totalSupervisionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -826,7 +829,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (independenceRate < 40 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 40) && totalIndependenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -866,7 +869,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (childEngagementRate < 50) {
+  if (below(childEngagementRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -876,7 +879,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (bothBrushingRate < 50 && totalBrushingRecords > 0) {
+  if (below(bothBrushingRate, 50) && totalBrushingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -886,51 +889,51 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (refusalRate > 30 && totalBrushingRecords > 0) {
+  if (above(refusalRate, 30) && totalBrushingRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Address high brushing refusal rates — investigate individual reasons (sensory issues, anxiety, trauma, taste preferences) and develop personalised strategies with alternatives.", urgency: "soon", regulatory_ref: "SCCIF — Health and wellbeing" });
   }
 
-  if (toothbrushReplacementRate < 50 && totalReplacementRecords > 0) {
+  if (below(toothbrushReplacementRate, 50) && totalReplacementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve toothbrush replacement management — implement a 3-monthly replacement calendar, ensure age-appropriate brushes, hygienic storage, and individual labelling.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 14 — Health care" });
   }
 
-  if (brushingAdherenceRate >= 50 && brushingAdherenceRate < 70 && totalBrushingRecords > 0) {
+  if (meets(brushingAdherenceRate, 50) && below(brushingAdherenceRate, 70) && totalBrushingRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen brushing routine quality — focus on consistent 2-minute duration, correct technique, and increased child engagement.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5 — Quality of care standard" });
   }
 
-  if (fluorideUseRate >= 40 && fluorideUseRate < 70 && totalFluorideRecords > 0) {
+  if (meets(fluorideUseRate, 40) && below(fluorideUseRate, 70) && totalFluorideRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Review fluoride product management — ensure products match each child's age group, check concentrations, and implement expiry checks.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 14 — Health care" });
   }
 
-  if (supervisionRate >= 40 && supervisionRate < 70 && totalSupervisionRecords > 0) {
+  if (meets(supervisionRate, 40) && below(supervisionRate, 70) && totalSupervisionRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve brushing supervision consistency — match staff presence to each child's needs, provide technique guidance, and embed positive reinforcement.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5 — Quality of care standard" });
   }
 
-  if (independenceRate >= 40 && independenceRate < 65 && totalIndependenceRecords > 0) {
+  if (meets(independenceRate, 40) && below(independenceRate, 65) && totalIndependenceRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen oral care independence programmes — set clear, age-appropriate goals and provide step-by-step skill-building.", urgency: "planned", regulatory_ref: "SCCIF — Preparing for adulthood" });
   }
 
-  if (childEngagementRate >= 50 && childEngagementRate < 70) {
+  if (meets(childEngagementRate, 50) && below(childEngagementRate, 70)) {
     recommendations.push({ rank: ++rank, recommendation: "Increase children's active participation in oral care — involve children in choosing products, setting goals, and using timers or apps.", urgency: "planned", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (overallDurationRate < 70 && totalBrushingsDone > 0) {
+  if (below(overallDurationRate, 70) && totalBrushingsDone > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve brushing duration to meet the 2-minute recommendation — provide timers or brushing apps and staff should time supervised sessions.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 5 — Quality of care standard" });
   }
 
-  if (oralDiscussionRate < 50 && totalSupervisionRecords > 0) {
+  if (below(oralDiscussionRate, 50) && totalSupervisionRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Increase oral health education during brushing routines — use brushing time for age-appropriate conversations about dental health.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 5 — Quality of care standard" });
   }
 
-  if (poorConditionRate > 40 && totalReplacementRecords > 0) {
+  if (above(poorConditionRate, 40) && totalReplacementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Increase toothbrush replacement frequency — high proportion found in poor condition indicates the 3-month cycle may need shortening.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 14 — Health care" });
   }
 
-  if (planRate < 50 && totalIndependenceRecords > 0) {
+  if (below(planRate, 50) && totalIndependenceRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure all children have an oral care independence plan with documented goals and clear pathways for developing skills.", urgency: "planned", regulatory_ref: "SCCIF — Preparing for adulthood" });
   }
 
-  if (toothbrushReplacementRate >= 50 && toothbrushReplacementRate < 65 && totalReplacementRecords > 0) {
+  if (meets(toothbrushReplacementRate, 50) && below(toothbrushReplacementRate, 65) && totalReplacementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve toothbrush management — track replacement schedules, ensure hygienic labelled storage, and let children choose age-appropriate products.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 14 — Health care" });
   }
 
@@ -940,28 +943,28 @@ export function computeTeethBrushingOralRoutine(
 
   // -- Critical insights --
 
-  if (brushingAdherenceRate < 50 && totalBrushingRecords > 0) {
+  if (below(brushingAdherenceRate, 50) && totalBrushingRecords > 0) {
     insights.push({
       text: `Only ${brushingAdherenceRate}% brushing adherence. Ofsted expects looked-after children's basic health care needs to be met as part of daily care. When brushing routines are poorly maintained — low completion, inadequate duration, or poor technique — the home is failing in its fundamental duty to promote children's oral health under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (fluorideUseRate < 40 && totalFluorideRecords > 0) {
+  if (below(fluorideUseRate, 40) && totalFluorideRecords > 0) {
     insights.push({
       text: `Fluoride use compliance at only ${fluorideUseRate}%. Fluoride is the single most effective preventive measure against tooth decay. When children are not using appropriate fluoride products, they lose the key protective benefit of brushing. The home must ensure every child uses age-appropriate fluoride toothpaste at the correct concentration.`,
       severity: "critical",
     });
   }
 
-  if (supervisionRate < 40 && totalSupervisionRecords > 0) {
+  if (below(supervisionRate, 40) && totalSupervisionRecords > 0) {
     insights.push({
       text: `Supervision quality at only ${supervisionRate}%. NHS guidance recommends supervised brushing for children under 7 and oversight for older children who need it. Without consistent, appropriate supervision, children may develop poor brushing habits, use incorrect technique, or skip brushing entirely.`,
       severity: "critical",
     });
   }
 
-  if (independenceRate < 40 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 40) && totalIndependenceRecords > 0) {
     insights.push({
       text: `Oral care independence at only ${independenceRate}%. A core purpose of residential care is preparing children for adult life. When children leave care unable to manage their own oral hygiene independently, the home has failed in its preparation for adulthood obligations. This directly impacts SCCIF outcomes.`,
       severity: "critical",
@@ -989,7 +992,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (refusalRate > 40 && totalBrushingRecords > 0) {
+  if (above(refusalRate, 40) && totalBrushingRecords > 0) {
     insights.push({
       text: `${refusalRate}% brushing refusal rate. High refusal rates may indicate sensory processing difficulties, previous trauma related to oral care, taste or texture aversions, or a power dynamic that requires a therapeutic approach. Each child who refuses needs an individual assessment and adapted oral care plan.`,
       severity: "critical",
@@ -999,8 +1002,8 @@ export function computeTeethBrushingOralRoutine(
   // -- Warning insights --
 
   if (
-    brushingAdherenceRate >= 50 &&
-    brushingAdherenceRate < 70 &&
+    meets(brushingAdherenceRate, 50) &&
+    below(brushingAdherenceRate, 70) &&
     totalBrushingRecords > 0
   ) {
     insights.push({
@@ -1010,8 +1013,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    fluorideUseRate >= 40 &&
-    fluorideUseRate < 70 &&
+    meets(fluorideUseRate, 40) &&
+    below(fluorideUseRate, 70) &&
     totalFluorideRecords > 0
   ) {
     insights.push({
@@ -1021,8 +1024,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    supervisionRate >= 40 &&
-    supervisionRate < 70 &&
+    meets(supervisionRate, 40) &&
+    below(supervisionRate, 70) &&
     totalSupervisionRecords > 0
   ) {
     insights.push({
@@ -1032,8 +1035,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    independenceRate >= 40 &&
-    independenceRate < 65 &&
+    meets(independenceRate, 40) &&
+    below(independenceRate, 65) &&
     totalIndependenceRecords > 0
   ) {
     insights.push({
@@ -1043,8 +1046,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70)
   ) {
     insights.push({
       text: `Child engagement with oral care at ${childEngagementRate}% — some children are not positively participating in their oral hygiene routines. Low engagement often predicts poor long-term oral health habits. Consider personalising the approach for individual children.`,
@@ -1053,8 +1056,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    bothBrushingRate >= 50 &&
-    bothBrushingRate < 70 &&
+    meets(bothBrushingRate, 50) &&
+    below(bothBrushingRate, 70) &&
     totalBrushingRecords > 0
   ) {
     insights.push({
@@ -1064,8 +1067,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    overallDurationRate >= 50 &&
-    overallDurationRate < 70 &&
+    meets(overallDurationRate, 50) &&
+    below(overallDurationRate, 70) &&
     totalBrushingsDone > 0
   ) {
     insights.push({
@@ -1075,8 +1078,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    toothbrushReplacementRate >= 50 &&
-    toothbrushReplacementRate < 65 &&
+    meets(toothbrushReplacementRate, 50) &&
+    below(toothbrushReplacementRate, 65) &&
     totalReplacementRecords > 0
   ) {
     insights.push({
@@ -1086,8 +1089,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    refusalRate > 15 &&
-    refusalRate <= 30 &&
+    above(refusalRate, 15) &&
+    refusalRate! <= 30 &&
     totalBrushingRecords > 0
   ) {
     insights.push({
@@ -1097,8 +1100,8 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    overdueRate > 20 &&
-    overdueRate <= 40 &&
+    above(overdueRate, 20) &&
+    overdueRate! <= 40 &&
     totalReplacementRecords > 0
   ) {
     insights.push({
@@ -1107,7 +1110,7 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (oralDiscussionRate < 50 && totalSupervisionRecords > 0) {
+  if (below(oralDiscussionRate, 50) && totalSupervisionRecords > 0) {
     insights.push({
       text: `Oral health discussion at only ${oralDiscussionRate}% of supervision sessions — daily brushing time is an underused opportunity for informal oral health education. Regular, age-appropriate conversations about dental care build understanding and motivation.`,
       severity: "warning",
@@ -1115,7 +1118,7 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    areaCoverageRate < 70 &&
+    below(areaCoverageRate, 70) &&
     totalBrushingRecords > 0
   ) {
     insights.push({
@@ -1125,7 +1128,7 @@ export function computeTeethBrushingOralRoutine(
   }
 
   if (
-    goalMetRate < 50 &&
+    below(goalMetRate, 50) &&
     goalSet > 0
   ) {
     insights.push({
@@ -1191,42 +1194,42 @@ export function computeTeethBrushingOralRoutine(
     });
   }
 
-  if (brushingAdherenceRate >= 90 && fluorideUseRate >= 90 && totalBrushingRecords > 0 && totalFluorideRecords > 0) {
+  if (meets(brushingAdherenceRate, 90) && meets(fluorideUseRate, 90) && totalBrushingRecords > 0 && totalFluorideRecords > 0) {
     insights.push({
       text: `${brushingAdherenceRate}% brushing adherence with ${fluorideUseRate}% fluoride compliance — consistent, high-quality brushing with appropriate fluoride use provides optimal protection against tooth decay and gum disease.`,
       severity: "positive",
     });
   }
 
-  if (supervisionRate >= 90 && reinforcementRate >= 80 && totalSupervisionRecords > 0) {
+  if (meets(supervisionRate, 90) && meets(reinforcementRate, 80) && totalSupervisionRecords > 0) {
     insights.push({
       text: `${supervisionRate}% supervision quality with ${reinforcementRate}% positive reinforcement — staff provide consistent, appropriate supervision that encourages children's ownership of their oral care.`,
       severity: "positive",
     });
   }
 
-  if (independenceRate >= 85 && improvementRate >= 60 && totalIndependenceRecords > 0) {
+  if (meets(independenceRate, 85) && meets(improvementRate, 60) && totalIndependenceRecords > 0) {
     insights.push({
       text: `${independenceRate}% oral care independence with ${improvementRate}% showing improvement — children are developing strong independent oral hygiene skills for life after care.`,
       severity: "positive",
     });
   }
 
-  if (childEngagementRate >= 90) {
+  if (meets(childEngagementRate, 90)) {
     insights.push({
       text: `${childEngagementRate}% child engagement across oral care — children actively participate in brushing, choose products, and understand oral health importance.`,
       severity: "positive",
     });
   }
 
-  if (bothBrushingRate >= 90 && overallDurationRate >= 85 && totalBrushingRecords > 0) {
+  if (meets(bothBrushingRate, 90) && meets(overallDurationRate, 85) && totalBrushingRecords > 0) {
     insights.push({
       text: `${bothBrushingRate}% twice-daily brushing with ${overallDurationRate}% meeting 2-minute duration — children consistently complete the full recommended routine.`,
       severity: "positive",
     });
   }
 
-  if (goalMetRate >= 80 && planRate >= 80 && goalSet > 0 && totalIndependenceRecords > 0) {
+  if (meets(goalMetRate, 80) && meets(planRate, 80) && goalSet > 0 && totalIndependenceRecords > 0) {
     insights.push({
       text: `${goalMetRate}% independence goals met with ${planRate}% having plans in place — structured approach to building children's oral care independence demonstrates preparation for adulthood.`,
       severity: "positive",

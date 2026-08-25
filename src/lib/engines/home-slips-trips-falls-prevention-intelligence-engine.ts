@@ -10,7 +10,7 @@
 //             slipTripFallIncidentRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -156,8 +156,10 @@ export interface SlipsTripsFallsPreventionResult {
   falls_prevention_rating: SlipsTripsFallsRating;
   falls_prevention_score: number;
   headline: string;
-  risk_assessment_rate: number;
-  flooring_condition_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_assessment_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  flooring_condition_rate: number | null;
   // fab-0: null when no records.
   wet_floor_protocol_rate: number | null;
   // fab-0: null when no records.
@@ -173,10 +175,6 @@ export interface SlipsTripsFallsPreventionResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -200,8 +198,8 @@ function emptyResult(
     falls_prevention_rating: rating,
     falls_prevention_score: score,
     headline,
-    risk_assessment_rate: 0,
-    flooring_condition_rate: 0,
+    risk_assessment_rate: null,
+    flooring_condition_rate: null,
     wet_floor_protocol_rate: null,
     stairway_safety_rate: null,
     incident_learning_rate: null,
@@ -284,181 +282,173 @@ export function computeSlipsTripsFallsPrevention(
   // --- Risk assessment compliance ---
   const totalRiskAssessments = risk_assessment_records.length;
   const controlsAdequate = risk_assessment_records.filter((r) => r.controls_in_place && r.controls_adequate).length;
-  const riskAssessmentRate = pct(controlsAdequate, totalRiskAssessments);
+  const riskAssessmentRate = rate(controlsAdequate, totalRiskAssessments);
 
   const signedOff = risk_assessment_records.filter((r) => r.signed_off).length;
-  const signedOffRate = pct(signedOff, totalRiskAssessments);
+  const signedOffRate = rate(signedOff, totalRiskAssessments);
 
   const reviewOverdue = risk_assessment_records.filter((r) => r.review_overdue).length;
-  const reviewOverdueRate = pct(reviewOverdue, totalRiskAssessments);
+  const reviewOverdueRate = rate(reviewOverdue, totalRiskAssessments);
 
   const totalRiskActions = risk_assessment_records.reduce((sum, r) => sum + r.actions_required, 0);
   const completedRiskActions = risk_assessment_records.reduce((sum, r) => sum + r.actions_completed, 0);
-  const riskActionCompletionRate = pct(completedRiskActions, totalRiskActions);
+  const riskActionCompletionRate = rate(completedRiskActions, totalRiskActions);
 
   const highCriticalRisks = risk_assessment_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
   ).length;
-  const highCriticalRate = pct(highCriticalRisks, totalRiskAssessments);
+  const highCriticalRate = rate(highCriticalRisks, totalRiskAssessments);
 
   const childrenConsulted = risk_assessment_records.filter((r) => r.children_consulted).length;
-  const childrenConsultedRate = pct(childrenConsulted, totalRiskAssessments);
+  const childrenConsultedRate = rate(childrenConsulted, totalRiskAssessments);
 
   // --- Flooring condition ---
   const totalFlooringRecords = flooring_condition_records.length;
   const flooringGoodFair = flooring_condition_records.filter(
     (r) => r.condition === "good" || r.condition === "fair",
   ).length;
-  const flooringConditionRate = pct(flooringGoodFair, totalFlooringRecords);
+  const flooringConditionRate = rate(flooringGoodFair, totalFlooringRecords);
 
   const slipResistanceAdequate = flooring_condition_records.filter((r) => r.slip_resistance_adequate).length;
-  const slipResistanceRate = pct(slipResistanceAdequate, totalFlooringRecords);
+  const slipResistanceRate = rate(slipResistanceAdequate, totalFlooringRecords);
 
   const tripHazardsPresent = flooring_condition_records.filter((r) => r.trip_hazards_present).length;
-  const tripHazardRate = pct(tripHazardsPresent, totalFlooringRecords);
+  const tripHazardRate = rate(tripHazardsPresent, totalFlooringRecords);
 
   const hazardousFlooring = flooring_condition_records.filter((r) => r.condition === "hazardous").length;
-  const hazardousFlooringRate = pct(hazardousFlooring, totalFlooringRecords);
+  const hazardousFlooringRate = rate(hazardousFlooring, totalFlooringRecords);
 
   const repairsNeeded = flooring_condition_records.filter((r) => r.repair_needed).length;
   const repairsCompleted = flooring_condition_records.filter((r) => r.repair_needed && r.repair_completed).length;
-  const repairCompletionRate = pct(repairsCompleted, repairsNeeded);
+  const repairCompletionRate = rate(repairsCompleted, repairsNeeded);
 
   const thresholdsSafe = flooring_condition_records.filter((r) => r.threshold_safe).length;
-  const thresholdSafeRate = pct(thresholdsSafe, totalFlooringRecords);
+  const thresholdSafeRate = rate(thresholdsSafe, totalFlooringRecords);
 
   // --- Wet floor protocol compliance ---
   const totalWetFloorRecords = wet_floor_records.length;
   const signageDeployed = wet_floor_records.filter((r) => r.signage_deployed && r.signage_timely).length;
-  const signageRate = pct(signageDeployed, totalWetFloorRecords);
+  const signageRate = rate(signageDeployed, totalWetFloorRecords);
 
   const cleaningFollowed = wet_floor_records.filter((r) => r.cleaning_schedule_followed).length;
-  const cleaningRate = pct(cleaningFollowed, totalWetFloorRecords);
+  const cleaningRate = rate(cleaningFollowed, totalWetFloorRecords);
 
   const spillResponseOnTarget = wet_floor_records.filter((r) => r.spill_response_within_target).length;
-  const spillResponseRate = pct(spillResponseOnTarget, totalWetFloorRecords);
+  const spillResponseRate = rate(spillResponseOnTarget, totalWetFloorRecords);
 
   const wetFloorStaffTrained = wet_floor_records.filter((r) => r.staff_trained).length;
-  const wetFloorTrainedRate = pct(wetFloorStaffTrained, totalWetFloorRecords);
+  const wetFloorTrainedRate = rate(wetFloorStaffTrained, totalWetFloorRecords);
 
   const protocolDocumented = wet_floor_records.filter((r) => r.protocol_documented).length;
-  const protocolDocRate = pct(protocolDocumented, totalWetFloorRecords);
+  const protocolDocRate = rate(protocolDocumented, totalWetFloorRecords);
 
   const entranceMattingAdequate = wet_floor_records.filter((r) => r.entrance_matting_adequate).length;
-  const entranceMattingRate = pct(entranceMattingAdequate, totalWetFloorRecords);
+  const entranceMattingRate = rate(entranceMattingAdequate, totalWetFloorRecords);
 
   const incidentsFromWetFloor = wet_floor_records.filter((r) => r.incident_resulted).length;
-  const wetFloorIncidentRate = pct(incidentsFromWetFloor, totalWetFloorRecords);
+  const wetFloorIncidentRate = rate(incidentsFromWetFloor, totalWetFloorRecords);
 
   const childrenWarned = wet_floor_records.filter((r) => r.children_warned).length;
-  const childrenWarnedRate = pct(childrenWarned, totalWetFloorRecords);
+  const childrenWarnedRate = rate(childrenWarned, totalWetFloorRecords);
 
   // fab-0: null when no records.
   const wetFloorProtocolRate: number | null =
-    totalWetFloorRecords > 0
-      ? Math.round((signageRate + cleaningRate + spillResponseRate + protocolDocRate) / 4)
-      : null;
+    totalWetFloorRecords > 0 ? Math.round((signageRate! + cleaningRate! + spillResponseRate! + protocolDocRate!) / 4) : null;
 
   // --- Stairway safety ---
   const totalStairwayRecords = stairway_safety_records.length;
   const handrailSecure = stairway_safety_records.filter((r) => r.handrail_secure).length;
-  const handrailRate = pct(handrailSecure, totalStairwayRecords);
+  const handrailRate = rate(handrailSecure, totalStairwayRecords);
 
   const treadsNonSlip = stairway_safety_records.filter((r) => r.treads_non_slip).length;
-  const treadsRate = pct(treadsNonSlip, totalStairwayRecords);
+  const treadsRate = rate(treadsNonSlip, totalStairwayRecords);
 
   const stairLightingAdequate = stairway_safety_records.filter((r) => r.lighting_adequate).length;
-  const stairLightingRate = pct(stairLightingAdequate, totalStairwayRecords);
+  const stairLightingRate = rate(stairLightingAdequate, totalStairwayRecords);
 
   const clutterFree = stairway_safety_records.filter((r) => r.clutter_free).length;
-  const clutterFreeRate = pct(clutterFree, totalStairwayRecords);
+  const clutterFreeRate = rate(clutterFree, totalStairwayRecords);
 
   const carpetSecure = stairway_safety_records.filter((r) => r.carpet_secure).length;
-  const carpetSecureRate = pct(carpetSecure, totalStairwayRecords);
+  const carpetSecureRate = rate(carpetSecure, totalStairwayRecords);
 
   const stairDefectsFound = stairway_safety_records.filter((r) => r.defects_found.length > 0).length;
   const stairDefectsRectified = stairway_safety_records.filter(
     (r) => r.defects_found.length > 0 && r.defects_rectified,
   ).length;
-  const stairDefectRectificationRate = pct(stairDefectsRectified, stairDefectsFound);
+  const stairDefectRectificationRate = rate(stairDefectsRectified, stairDefectsFound);
 
   const childSpecificRisksAssessed = stairway_safety_records.filter((r) => r.child_specific_risks_assessed).length;
-  const childSpecificRate = pct(childSpecificRisksAssessed, totalStairwayRecords);
+  const childSpecificRate = rate(childSpecificRisksAssessed, totalStairwayRecords);
 
   // fab-0: null when no records.
   const stairwaySafetyRate: number | null =
-    totalStairwayRecords > 0
-      ? Math.round((handrailRate + treadsRate + stairLightingRate + clutterFreeRate + carpetSecureRate) / 5)
-      : null;
+    totalStairwayRecords > 0 ? Math.round((handrailRate! + treadsRate! + stairLightingRate! + clutterFreeRate! + carpetSecureRate!) / 5) : null;
 
   // --- Incident tracking and learning ---
   const totalIncidents = incident_records.length;
   const investigationsCompleted = incident_records.filter((r) => r.investigation_completed).length;
-  const investigationRate = pct(investigationsCompleted, totalIncidents);
+  const investigationRate = rate(investigationsCompleted, totalIncidents);
 
   const rootCauseIdentified = incident_records.filter((r) => r.root_cause_identified).length;
-  const rootCauseRate = pct(rootCauseIdentified, totalIncidents);
+  const rootCauseRate = rate(rootCauseIdentified, totalIncidents);
 
   const lessonsDocumented = incident_records.filter((r) => r.lessons_learned_documented).length;
-  const lessonsDocRate = pct(lessonsDocumented, totalIncidents);
+  const lessonsDocRate = rate(lessonsDocumented, totalIncidents);
 
   const lessonsShared = incident_records.filter((r) => r.lessons_shared_with_staff).length;
-  const lessonsSharedRate = pct(lessonsShared, totalIncidents);
+  const lessonsSharedRate = rate(lessonsShared, totalIncidents);
 
   const riskAssessmentUpdated = incident_records.filter((r) => r.risk_assessment_updated).length;
-  const riskAssessmentUpdatedRate = pct(riskAssessmentUpdated, totalIncidents);
+  const riskAssessmentUpdatedRate = rate(riskAssessmentUpdated, totalIncidents);
 
   // fab-0: null when no incidents.
   const incidentLearningRate: number | null =
-    totalIncidents > 0
-      ? Math.round((investigationRate + rootCauseRate + lessonsDocRate + lessonsSharedRate + riskAssessmentUpdatedRate) / 5)
-      : null;
+    totalIncidents > 0 ? Math.round((investigationRate! + rootCauseRate! + lessonsDocRate! + lessonsSharedRate! + riskAssessmentUpdatedRate!) / 5) : null;
 
   const seriousMajorIncidents = incident_records.filter(
     (r) => r.severity === "serious" || r.severity === "major",
   ).length;
-  const seriousMajorRate = pct(seriousMajorIncidents, totalIncidents);
+  const seriousMajorRate = rate(seriousMajorIncidents, totalIncidents);
 
   const nearMisses = incident_records.filter((r) => r.incident_type === "near_miss").length;
-  const nearMissRate = pct(nearMisses, totalIncidents);
+  const nearMissRate = rate(nearMisses, totalIncidents);
 
   const recurrences = incident_records.filter((r) => r.recurrence).length;
-  const recurrenceRate = pct(recurrences, totalIncidents);
+  const recurrenceRate = rate(recurrences, totalIncidents);
 
   const injuriesSustained = incident_records.filter((r) => r.injury_sustained).length;
 
   const medicalRequired = incident_records.filter((r) => r.medical_attention_required).length;
-  const medicalRate = pct(medicalRequired, totalIncidents);
+  const medicalRate = rate(medicalRequired, totalIncidents);
 
   const parentNotified = incident_records.filter((r) => r.parent_carer_notified).length;
-  const parentNotificationRate = pct(parentNotified, totalIncidents);
+  const parentNotificationRate = rate(parentNotified, totalIncidents);
 
   const firstAidGiven = incident_records.filter((r) => r.injury_sustained && r.first_aid_given).length;
-  const firstAidRate = pct(firstAidGiven, injuriesSustained);
+  const firstAidRate = rate(firstAidGiven, injuriesSustained);
 
   // --- Staff awareness composite ---
-  const staffAwarenessNumerators: number[] = [];
+  const staffAwarenessNumerators: (number | null)[] = [];
   if (totalWetFloorRecords > 0) staffAwarenessNumerators.push(wetFloorTrainedRate);
   if (totalRiskAssessments > 0) staffAwarenessNumerators.push(signedOffRate);
   if (totalIncidents > 0) staffAwarenessNumerators.push(lessonsSharedRate);
   if (totalWetFloorRecords > 0) staffAwarenessNumerators.push(childrenWarnedRate);
   // fab-0: null when no signals feed into the composite.
   const staffAwarenessRate: number | null =
-    staffAwarenessNumerators.length > 0
-      ? Math.round(staffAwarenessNumerators.reduce((a, b) => a + b, 0) / staffAwarenessNumerators.length)
-      : null;
+    meanOf(staffAwarenessNumerators);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: riskAssessmentRate (>=90: +5, >=70: +3) ---
-  if (riskAssessmentRate >= 90) score += 5;
-  else if (riskAssessmentRate >= 70) score += 3;
+  if (meets(riskAssessmentRate, 90)) score += 5;
+  else if (meets(riskAssessmentRate, 70)) score += 3;
 
   // --- Bonus 2: flooringConditionRate (>=90: +5, >=70: +3) ---
-  if (flooringConditionRate >= 90) score += 5;
-  else if (flooringConditionRate >= 70) score += 3;
+  if (meets(flooringConditionRate, 90)) score += 5;
+  else if (meets(flooringConditionRate, 70)) score += 3;
 
   // --- Bonus 3: wetFloorProtocolRate (>=90: +5, >=70: +2) ---
   if (meets(wetFloorProtocolRate, 90)) score += 5;
@@ -479,16 +469,16 @@ export function computeSlipsTripsFallsPrevention(
   // -- Penalties (4 with guards) -------------------------------------------
 
   // riskAssessmentRate < 50 -> -6
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) score -= 6;
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) score -= 6;
 
   // hazardousFlooringRate >= 20 -> -6
-  if (hazardousFlooringRate >= 20 && totalFlooringRecords > 0) score -= 6;
+  if (meets(hazardousFlooringRate, 20) && totalFlooringRecords > 0) score -= 6;
 
   // seriousMajorRate >= 30 -> -5
-  if (seriousMajorRate >= 30 && totalIncidents > 0) score -= 5;
+  if (meets(seriousMajorRate, 30) && totalIncidents > 0) score -= 5;
 
   // recurrenceRate >= 25 -> -5
-  if (recurrenceRate >= 25 && totalIncidents > 0) score -= 5;
+  if (meets(recurrenceRate, 25) && totalIncidents > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -498,61 +488,61 @@ export function computeSlipsTripsFallsPrevention(
 
   const strengths: string[] = [];
 
-  if (riskAssessmentRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentRate}% of slip/trip risk assessments have adequate controls in place -- the home demonstrates robust hazard identification and control across all assessed areas.`,
     );
-  } else if (riskAssessmentRate >= 70 && totalRiskAssessments > 0) {
+  } else if (meets(riskAssessmentRate, 70) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentRate}% of risk assessments demonstrate adequate controls -- good risk management practice with most hazards controlled.`,
     );
   }
 
-  if (riskActionCompletionRate >= 90 && totalRiskActions > 0) {
+  if (meets(riskActionCompletionRate, 90) && totalRiskActions > 0) {
     strengths.push(
       `${riskActionCompletionRate}% of risk assessment actions completed -- the home acts promptly on identified hazards and follows through on corrective measures.`,
     );
-  } else if (riskActionCompletionRate >= 70 && totalRiskActions > 0) {
+  } else if (meets(riskActionCompletionRate, 70) && totalRiskActions > 0) {
     strengths.push(
       `${riskActionCompletionRate}% of risk assessment actions completed -- good follow-through on identified hazard controls.`,
     );
   }
 
-  if (signedOffRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(signedOffRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${signedOffRate}% of risk assessments signed off -- strong management oversight of premises safety.`,
     );
   }
 
-  if (childrenConsultedRate >= 80 && totalRiskAssessments > 0) {
+  if (meets(childrenConsultedRate, 80) && totalRiskAssessments > 0) {
     strengths.push(
       `Children consulted in ${childrenConsultedRate}% of risk assessments -- children's views actively shape premises safety decisions.`,
     );
   }
 
-  if (flooringConditionRate >= 90 && totalFlooringRecords > 0) {
+  if (meets(flooringConditionRate, 90) && totalFlooringRecords > 0) {
     strengths.push(
       `${flooringConditionRate}% of flooring areas in good or fair condition -- the home maintains floor surfaces to a high standard, minimising slip and trip risks.`,
     );
-  } else if (flooringConditionRate >= 70 && totalFlooringRecords > 0) {
+  } else if (meets(flooringConditionRate, 70) && totalFlooringRecords > 0) {
     strengths.push(
       `${flooringConditionRate}% of flooring areas in acceptable condition -- most floor surfaces are well maintained.`,
     );
   }
 
-  if (slipResistanceRate >= 90 && totalFlooringRecords > 0) {
+  if (meets(slipResistanceRate, 90) && totalFlooringRecords > 0) {
     strengths.push(
       `Slip resistance adequate in ${slipResistanceRate}% of flooring areas -- the home ensures floor surfaces provide appropriate traction.`,
     );
   }
 
-  if (repairCompletionRate >= 90 && repairsNeeded > 0) {
+  if (meets(repairCompletionRate, 90) && repairsNeeded > 0) {
     strengths.push(
       `${repairCompletionRate}% of flooring repairs completed -- the home responds promptly when floor defects are identified.`,
     );
   }
 
-  if (thresholdSafeRate >= 90 && totalFlooringRecords > 0) {
+  if (meets(thresholdSafeRate, 90) && totalFlooringRecords > 0) {
     strengths.push(
       `${thresholdSafeRate}% of thresholds assessed as safe -- doorway transitions managed effectively to prevent trips.`,
     );
@@ -568,13 +558,13 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (spillResponseRate >= 90 && totalWetFloorRecords > 0) {
+  if (meets(spillResponseRate, 90) && totalWetFloorRecords > 0) {
     strengths.push(
       `${spillResponseRate}% of spill responses within target time -- the home reacts swiftly to wet floor hazards.`,
     );
   }
 
-  if (entranceMattingRate >= 90 && totalWetFloorRecords > 0) {
+  if (meets(entranceMattingRate, 90) && totalWetFloorRecords > 0) {
     strengths.push(
       `Entrance matting adequate in ${entranceMattingRate}% of assessments -- effective first-line defence against wet floor ingress.`,
     );
@@ -590,19 +580,19 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (handrailRate >= 95 && totalStairwayRecords > 0) {
+  if (meets(handrailRate, 95) && totalStairwayRecords > 0) {
     strengths.push(
       `Handrails secure in ${handrailRate}% of stairways -- robust physical safeguarding on all staircases.`,
     );
   }
 
-  if (stairDefectRectificationRate >= 90 && stairDefectsFound > 0) {
+  if (meets(stairDefectRectificationRate, 90) && stairDefectsFound > 0) {
     strengths.push(
       `${stairDefectRectificationRate}% of stairway defects rectified -- prompt remediation of identified hazards.`,
     );
   }
 
-  if (childSpecificRate >= 80 && totalStairwayRecords > 0) {
+  if (meets(childSpecificRate, 80) && totalStairwayRecords > 0) {
     strengths.push(
       `Child-specific stairway risks assessed in ${childSpecificRate}% of inspections -- individual children's needs and vulnerabilities considered in stairway safety.`,
     );
@@ -618,31 +608,31 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (investigationRate >= 95 && totalIncidents > 0) {
+  if (meets(investigationRate, 95) && totalIncidents > 0) {
     strengths.push(
       `${investigationRate}% of incidents fully investigated -- the home takes every slip, trip, and fall seriously with thorough investigation.`,
     );
   }
 
-  if (rootCauseRate >= 90 && totalIncidents > 0) {
+  if (meets(rootCauseRate, 90) && totalIncidents > 0) {
     strengths.push(
       `Root causes identified in ${rootCauseRate}% of incidents -- effective analysis driving targeted prevention.`,
     );
   }
 
-  if (parentNotificationRate >= 95 && totalIncidents > 0) {
+  if (meets(parentNotificationRate, 95) && totalIncidents > 0) {
     strengths.push(
       `Parents/carers notified for ${parentNotificationRate}% of incidents -- transparent communication with families about safety events.`,
     );
   }
 
-  if (firstAidRate >= 95 && injuriesSustained > 0) {
+  if (meets(firstAidRate, 95) && injuriesSustained > 0) {
     strengths.push(
       `First aid administered in ${firstAidRate}% of injury-causing incidents -- strong immediate response capability.`,
     );
   }
 
-  if (nearMissRate >= 30 && totalIncidents > 0) {
+  if (meets(nearMissRate, 30) && totalIncidents > 0) {
     strengths.push(
       `Near misses represent ${nearMissRate}% of all reported events -- proactive near-miss reporting culture supports prevention before harm occurs.`,
     );
@@ -668,29 +658,29 @@ export function computeSlipsTripsFallsPrevention(
 
   const concerns: string[] = [];
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${riskAssessmentRate}% of slip/trip risk assessments have adequate controls -- the majority of assessed areas lack sufficient hazard controls, placing children at foreseeable risk of harm.`,
     );
-  } else if (riskAssessmentRate < 70 && riskAssessmentRate >= 50 && totalRiskAssessments > 0) {
+  } else if (below(riskAssessmentRate, 70) && meets(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Risk assessment adequacy at ${riskAssessmentRate}% -- some areas lack sufficient controls to manage slip and trip hazards.`,
     );
   }
 
-  if (reviewOverdueRate >= 30 && totalRiskAssessments > 0) {
+  if (meets(reviewOverdueRate, 30) && totalRiskAssessments > 0) {
     concerns.push(
       `${reviewOverdueRate}% of risk assessments are overdue for review -- outdated assessments may not reflect current hazards and changing needs.`,
     );
   }
 
-  if (riskActionCompletionRate < 60 && totalRiskActions > 0) {
+  if (below(riskActionCompletionRate, 60) && totalRiskActions > 0) {
     concerns.push(
       `Only ${riskActionCompletionRate}% of risk assessment actions completed -- identified hazards are not being addressed, leaving children exposed to preventable risks.`,
     );
   }
 
-  if (highCriticalRate >= 30 && totalRiskAssessments > 0) {
+  if (meets(highCriticalRate, 30) && totalRiskAssessments > 0) {
     concerns.push(
       `${highCriticalRate}% of risk assessments rated high or critical -- a significant proportion of the home's areas present elevated slip/trip risk.`,
     );
@@ -702,35 +692,35 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (hazardousFlooringRate >= 20 && totalFlooringRecords > 0) {
+  if (meets(hazardousFlooringRate, 20) && totalFlooringRecords > 0) {
     concerns.push(
       `${hazardousFlooringRate}% of flooring areas assessed as hazardous -- children are exposed to dangerous floor surfaces that pose an immediate safety risk.`,
     );
   }
 
-  if (flooringConditionRate < 50 && totalFlooringRecords > 0) {
+  if (below(flooringConditionRate, 50) && totalFlooringRecords > 0) {
     concerns.push(
       `Only ${flooringConditionRate}% of flooring in acceptable condition -- the majority of floor surfaces are in poor or hazardous state, creating widespread trip and slip risks.`,
     );
-  } else if (flooringConditionRate < 70 && flooringConditionRate >= 50 && totalFlooringRecords > 0) {
+  } else if (below(flooringConditionRate, 70) && meets(flooringConditionRate, 50) && totalFlooringRecords > 0) {
     concerns.push(
       `Flooring condition at ${flooringConditionRate}% -- some floor surfaces need repair or replacement to reduce slip and trip risks.`,
     );
   }
 
-  if (tripHazardRate >= 30 && totalFlooringRecords > 0) {
+  if (meets(tripHazardRate, 30) && totalFlooringRecords > 0) {
     concerns.push(
       `Trip hazards present in ${tripHazardRate}% of flooring areas -- loose edges, raised thresholds, or uneven surfaces need urgent attention.`,
     );
   }
 
-  if (slipResistanceRate < 70 && totalFlooringRecords > 0) {
+  if (below(slipResistanceRate, 70) && totalFlooringRecords > 0) {
     concerns.push(
       `Slip resistance adequate in only ${slipResistanceRate}% of areas -- insufficient traction on floor surfaces increases the risk of slips, particularly in wet conditions.`,
     );
   }
 
-  if (repairCompletionRate < 50 && repairsNeeded > 0) {
+  if (below(repairCompletionRate, 50) && repairsNeeded > 0) {
     concerns.push(
       `Only ${repairCompletionRate}% of identified flooring repairs completed -- known defects remain unaddressed, leaving hazards in place.`,
     );
@@ -752,19 +742,19 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (spillResponseRate < 50 && totalWetFloorRecords > 0) {
+  if (below(spillResponseRate, 50) && totalWetFloorRecords > 0) {
     concerns.push(
       `Only ${spillResponseRate}% of spill responses within target time -- slow responses to wet floor hazards increase the window of risk for children.`,
     );
   }
 
-  if (wetFloorIncidentRate >= 20 && totalWetFloorRecords > 0) {
+  if (meets(wetFloorIncidentRate, 20) && totalWetFloorRecords > 0) {
     concerns.push(
       `Incidents resulted from ${wetFloorIncidentRate}% of wet floor events -- wet floor protocols are not effectively preventing harm.`,
     );
   }
 
-  if (signageRate < 60 && totalWetFloorRecords > 0) {
+  if (below(signageRate, 60) && totalWetFloorRecords > 0) {
     concerns.push(
       `Wet floor signage deployed on time in only ${signageRate}% of events -- children may encounter wet surfaces without adequate warning.`,
     );
@@ -786,19 +776,19 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (handrailRate < 80 && totalStairwayRecords > 0) {
+  if (below(handrailRate, 80) && totalStairwayRecords > 0) {
     concerns.push(
       `Handrails secure in only ${handrailRate}% of stairways -- loose or missing handrails are a significant fall hazard, particularly for younger children.`,
     );
   }
 
-  if (stairLightingRate < 70 && totalStairwayRecords > 0) {
+  if (below(stairLightingRate, 70) && totalStairwayRecords > 0) {
     concerns.push(
       `Stairway lighting adequate in only ${stairLightingRate}% of inspections -- poor lighting on stairs significantly increases fall risk.`,
     );
   }
 
-  if (clutterFreeRate < 70 && totalStairwayRecords > 0) {
+  if (below(clutterFreeRate, 70) && totalStairwayRecords > 0) {
     concerns.push(
       `Only ${clutterFreeRate}% of stairways clutter-free -- objects on stairs are a direct trip hazard that must be managed consistently.`,
     );
@@ -810,13 +800,13 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (seriousMajorRate >= 30 && totalIncidents > 0) {
+  if (meets(seriousMajorRate, 30) && totalIncidents > 0) {
     concerns.push(
       `${seriousMajorRate}% of incidents classified as serious or major -- the home has a disproportionate number of high-severity slip, trip, and fall events.`,
     );
   }
 
-  if (recurrenceRate >= 25 && totalIncidents > 0) {
+  if (meets(recurrenceRate, 25) && totalIncidents > 0) {
     concerns.push(
       `${recurrenceRate}% of incidents are recurrences -- corrective actions from previous incidents are not effectively preventing repeat occurrences.`,
     );
@@ -832,19 +822,19 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (investigationRate < 70 && totalIncidents > 0) {
+  if (below(investigationRate, 70) && totalIncidents > 0) {
     concerns.push(
       `Only ${investigationRate}% of incidents fully investigated -- incomplete investigations leave the home unable to identify and address systemic causes.`,
     );
   }
 
-  if (riskAssessmentUpdatedRate < 50 && totalIncidents > 0) {
+  if (below(riskAssessmentUpdatedRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Risk assessments updated after only ${riskAssessmentUpdatedRate}% of incidents -- lessons from incidents are not being fed back into risk assessments, perpetuating hazards.`,
     );
   }
 
-  if (parentNotificationRate < 80 && totalIncidents > 0) {
+  if (below(parentNotificationRate, 80) && totalIncidents > 0) {
     concerns.push(
       `Parents/carers notified for only ${parentNotificationRate}% of incidents -- inconsistent communication with families about safety events undermines transparency and trust.`,
     );
@@ -856,7 +846,7 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (medicalRate >= 30 && totalIncidents > 0) {
+  if (meets(medicalRate, 30) && totalIncidents > 0) {
     concerns.push(
       `Medical attention required for ${medicalRate}% of incidents -- the severity of injuries from slips, trips, and falls is concerning and suggests inadequate prevention.`,
     );
@@ -867,7 +857,7 @@ export function computeSlipsTripsFallsPrevention(
   const recommendations: SlipsTripsFallsRecommendation[] = [];
   let rank = 0;
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -877,7 +867,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (hazardousFlooringRate >= 20 && totalFlooringRecords > 0) {
+  if (meets(hazardousFlooringRate, 20) && totalFlooringRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -887,7 +877,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (seriousMajorRate >= 30 && totalIncidents > 0) {
+  if (meets(seriousMajorRate, 30) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -897,7 +887,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (recurrenceRate >= 25 && totalIncidents > 0) {
+  if (meets(recurrenceRate, 25) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -927,7 +917,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (handrailRate < 80 && totalStairwayRecords > 0) {
+  if (below(handrailRate, 80) && totalStairwayRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -937,7 +927,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (stairLightingRate < 70 && totalStairwayRecords > 0) {
+  if (below(stairLightingRate, 70) && totalStairwayRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -947,7 +937,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (flooringConditionRate < 50 && totalFlooringRecords > 0) {
+  if (below(flooringConditionRate, 50) && totalFlooringRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -957,7 +947,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (spillResponseRate < 50 && totalWetFloorRecords > 0) {
+  if (below(spillResponseRate, 50) && totalWetFloorRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -987,7 +977,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (repairCompletionRate < 50 && repairsNeeded > 0) {
+  if (below(repairCompletionRate, 50) && repairsNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -997,7 +987,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (signageRate < 60 && totalWetFloorRecords > 0) {
+  if (below(signageRate, 60) && totalWetFloorRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1007,7 +997,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (clutterFreeRate < 70 && totalStairwayRecords > 0) {
+  if (below(clutterFreeRate, 70) && totalStairwayRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1027,7 +1017,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (riskAssessmentRate >= 50 && riskAssessmentRate < 70 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 50) && below(riskAssessmentRate, 70) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1037,7 +1027,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (flooringConditionRate >= 50 && flooringConditionRate < 70 && totalFlooringRecords > 0) {
+  if (meets(flooringConditionRate, 50) && below(flooringConditionRate, 70) && totalFlooringRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1067,7 +1057,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (childrenConsultedRate < 50 && totalRiskAssessments > 0) {
+  if (below(childrenConsultedRate, 50) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1097,7 +1087,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (parentNotificationRate < 80 && totalIncidents > 0) {
+  if (below(parentNotificationRate, 80) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1107,7 +1097,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (reviewOverdueRate >= 30 && totalRiskAssessments > 0) {
+  if (meets(reviewOverdueRate, 30) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1123,28 +1113,28 @@ export function computeSlipsTripsFallsPrevention(
 
   // --- Critical insights ---
 
-  if (riskAssessmentRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentRate, 50) && totalRiskAssessments > 0) {
     insights.push({
       text: `Only ${riskAssessmentRate}% of slip/trip risk assessments have adequate controls. Ofsted will view the failure to control identified premises hazards as evidence that the home does not meet the Reg 25 requirement to ensure premises are safe and suitable for children.`,
       severity: "critical",
     });
   }
 
-  if (hazardousFlooringRate >= 20 && totalFlooringRecords > 0) {
+  if (meets(hazardousFlooringRate, 20) && totalFlooringRecords > 0) {
     insights.push({
       text: `${hazardousFlooringRate}% of flooring areas assessed as hazardous. Dangerous floor surfaces present an immediate and foreseeable risk of injury to children. Ofsted will expect immediate remediation and may view this as a Reg 25 breach requiring urgent action.`,
       severity: "critical",
     });
   }
 
-  if (seriousMajorRate >= 30 && totalIncidents > 0) {
+  if (meets(seriousMajorRate, 30) && totalIncidents > 0) {
     insights.push({
       text: `${seriousMajorRate}% of slip, trip, and fall incidents classified as serious or major. The disproportionate severity of incidents suggests systemic failings in hazard prevention. Ofsted will expect a comprehensive improvement plan under Reg 5 and SCCIF safety requirements.`,
       severity: "critical",
     });
   }
 
-  if (recurrenceRate >= 25 && totalIncidents > 0) {
+  if (meets(recurrenceRate, 25) && totalIncidents > 0) {
     insights.push({
       text: `${recurrenceRate}% of incidents are recurrences of previously identified hazards. Repeat incidents demonstrate that corrective actions are not effectively preventing harm. Ofsted will view this as a failure to learn from incidents and protect children.`,
       severity: "critical",
@@ -1158,7 +1148,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (handrailRate < 60 && totalStairwayRecords > 0) {
+  if (below(handrailRate, 60) && totalStairwayRecords > 0) {
     insights.push({
       text: `Handrails secure in only ${handrailRate}% of stairways. Unsecured or missing handrails are among the most significant fall hazards in residential settings. Ofsted will expect immediate remediation of all handrail deficiencies.`,
       severity: "critical",
@@ -1167,14 +1157,14 @@ export function computeSlipsTripsFallsPrevention(
 
   // --- Warning insights ---
 
-  if (riskAssessmentRate >= 50 && riskAssessmentRate < 70 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 50) && below(riskAssessmentRate, 70) && totalRiskAssessments > 0) {
     insights.push({
       text: `Risk assessment adequacy at ${riskAssessmentRate}% -- improving but some areas still lack sufficient controls. Each uncontrolled hazard represents a foreseeable risk that the home has a duty to manage.`,
       severity: "warning",
     });
   }
 
-  if (flooringConditionRate >= 50 && flooringConditionRate < 70 && totalFlooringRecords > 0) {
+  if (meets(flooringConditionRate, 50) && below(flooringConditionRate, 70) && totalFlooringRecords > 0) {
     insights.push({
       text: `Flooring condition at ${flooringConditionRate}% -- while some surfaces meet standards, others need attention. A proactive maintenance programme would prevent deterioration and reduce risk.`,
       severity: "warning",
@@ -1202,21 +1192,21 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (reviewOverdueRate >= 30 && totalRiskAssessments > 0) {
+  if (meets(reviewOverdueRate, 30) && totalRiskAssessments > 0) {
     insights.push({
       text: `${reviewOverdueRate}% of risk assessments overdue for review. Outdated assessments may not reflect current premises conditions, seasonal changes, or new children's needs. Ofsted expects risk assessments to be live documents.`,
       severity: "warning",
     });
   }
 
-  if (tripHazardRate >= 30 && totalFlooringRecords > 0) {
+  if (meets(tripHazardRate, 30) && totalFlooringRecords > 0) {
     insights.push({
       text: `Trip hazards present in ${tripHazardRate}% of flooring areas. Loose mats, raised thresholds, uneven surfaces, and damaged flooring are the most common causes of trips in residential settings and need systematic attention.`,
       severity: "warning",
     });
   }
 
-  if (slipResistanceRate >= 50 && slipResistanceRate < 70 && totalFlooringRecords > 0) {
+  if (meets(slipResistanceRate, 50) && below(slipResistanceRate, 70) && totalFlooringRecords > 0) {
     insights.push({
       text: `Slip resistance adequate in only ${slipResistanceRate}% of areas. Floor surfaces should be assessed for appropriate slip resistance, particularly in wet areas such as bathrooms, kitchens, and entrances.`,
       severity: "warning",
@@ -1230,14 +1220,14 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (wetFloorIncidentRate >= 10 && wetFloorIncidentRate < 20 && totalWetFloorRecords > 0) {
+  if (meets(wetFloorIncidentRate, 10) && below(wetFloorIncidentRate, 20) && totalWetFloorRecords > 0) {
     insights.push({
       text: `Incidents resulted from ${wetFloorIncidentRate}% of wet floor events. While not at critical levels, any incident from a manageable hazard represents a prevention failure that should be investigated.`,
       severity: "warning",
     });
   }
 
-  if (medicalRate >= 15 && medicalRate < 30 && totalIncidents > 0) {
+  if (meets(medicalRate, 15) && below(medicalRate, 30) && totalIncidents > 0) {
     insights.push({
       text: `Medical attention required for ${medicalRate}% of incidents. While most injuries are minor, the proportion requiring medical treatment suggests scope for improved prevention.`,
       severity: "warning",
@@ -1253,28 +1243,28 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (riskAssessmentRate >= 90 && riskActionCompletionRate >= 90 && totalRiskAssessments > 0 && totalRiskActions > 0) {
+  if (meets(riskAssessmentRate, 90) && meets(riskActionCompletionRate, 90) && totalRiskAssessments > 0 && totalRiskActions > 0) {
     insights.push({
       text: `${riskAssessmentRate}% risk assessment adequacy with ${riskActionCompletionRate}% action completion -- the home identifies hazards and follows through on controls with excellent consistency. Ofsted will recognise this as evidence of a well-managed, proactive premises safety regime.`,
       severity: "positive",
     });
   }
 
-  if (flooringConditionRate >= 90 && slipResistanceRate >= 90 && totalFlooringRecords > 0) {
+  if (meets(flooringConditionRate, 90) && meets(slipResistanceRate, 90) && totalFlooringRecords > 0) {
     insights.push({
       text: `${flooringConditionRate}% flooring in good/fair condition with ${slipResistanceRate}% adequate slip resistance -- floor surfaces throughout the home provide a safe environment for children. This reflects ongoing investment in premises quality.`,
       severity: "positive",
     });
   }
 
-  if (totalWetFloorRecords > 0 && meets(wetFloorProtocolRate, 90) && spillResponseRate >= 90) {
+  if (totalWetFloorRecords > 0 && meets(wetFloorProtocolRate, 90) && meets(spillResponseRate, 90)) {
     insights.push({
       text: `Wet floor protocol compliance at ${wetFloorProtocolRate}% with ${spillResponseRate}% of spills responded to within target time -- the home has embedded effective wet floor management into daily practice. This proactive approach minimises a common and preventable hazard.`,
       severity: "positive",
     });
   }
 
-  if (totalStairwayRecords > 0 && meets(stairwaySafetyRate, 90) && handrailRate >= 95) {
+  if (totalStairwayRecords > 0 && meets(stairwaySafetyRate, 90) && meets(handrailRate, 95)) {
     insights.push({
       text: `Stairway safety at ${stairwaySafetyRate}% with ${handrailRate}% handrail security -- staircases throughout the home meet or exceed safety standards. This is particularly important for younger children and those with mobility considerations.`,
       severity: "positive",
@@ -1288,7 +1278,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (nearMissRate >= 30 && totalIncidents > 0) {
+  if (meets(nearMissRate, 30) && totalIncidents > 0) {
     insights.push({
       text: `Near misses represent ${nearMissRate}% of all reported events -- the home has cultivated a proactive reporting culture where potential hazards are identified before they cause harm. This is a hallmark of a safety-mature organisation.`,
       severity: "positive",
@@ -1302,14 +1292,14 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (childrenConsultedRate >= 80 && totalRiskAssessments > 0) {
+  if (meets(childrenConsultedRate, 80) && totalRiskAssessments > 0) {
     insights.push({
       text: `Children consulted in ${childrenConsultedRate}% of risk assessments -- involving children in premises safety reflects the home's commitment to participation and often identifies hazards that adults miss. Ofsted will view this positively under SCCIF.`,
       severity: "positive",
     });
   }
 
-  if (firstAidRate >= 95 && injuriesSustained > 0) {
+  if (meets(firstAidRate, 95) && injuriesSustained > 0) {
     insights.push({
       text: `First aid administered in ${firstAidRate}% of injury-causing incidents -- the home's immediate response capability ensures children receive prompt care when injuries occur. This demonstrates good first aid readiness and staff competence.`,
       severity: "positive",

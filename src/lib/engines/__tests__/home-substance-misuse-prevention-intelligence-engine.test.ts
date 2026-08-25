@@ -217,12 +217,12 @@ describe("computeSubstanceMisusePrevention", () => {
 
     it("returns zero for all metric rates when insufficient_data", () => {
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 0 }));
-      expect(r.education_coverage_rate).toBe(0);
+      expect(r.education_coverage_rate).toBeNull();
       expect(r.risk_assessment_rate).toBeNull();
       expect(r.intervention_effectiveness_rate).toBeNull();
       expect(r.referral_compliance_rate).toBeNull();
       expect(r.harm_reduction_rate).toBeNull();
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.child_awareness_rate).toBeNull();
     });
 
     it("returns zero for all record totals when insufficient_data", () => {
@@ -284,12 +284,12 @@ describe("computeSubstanceMisusePrevention", () => {
 
     it("returns zero for all rates", () => {
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 5 }));
-      expect(r.education_coverage_rate).toBe(0);
+      expect(r.education_coverage_rate).toBeNull();
       expect(r.risk_assessment_rate).toBeNull();
       expect(r.intervention_effectiveness_rate).toBeNull();
       expect(r.referral_compliance_rate).toBeNull();
       expect(r.harm_reduction_rate).toBeNull();
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.child_awareness_rate).toBeNull();
     });
   });
 
@@ -1195,11 +1195,11 @@ describe("computeSubstanceMisusePrevention", () => {
 
     // education_coverage_rate
     describe("education_coverage_rate", () => {
-      it("is 0 when total_children is 0", () => {
+      it("is null when total_children is null", () => {
         // Can't easily test this in isolation since total_children=0 → insufficient_data
         // But we can check via the result
         const r = computeSubstanceMisusePrevention(baseInput({ total_children: 0 }));
-        expect(r.education_coverage_rate).toBe(0);
+        expect(r.education_coverage_rate).toBeNull();
       });
 
       it("counts unique children who attended", () => {
@@ -1240,7 +1240,7 @@ describe("computeSubstanceMisusePrevention", () => {
         expect(r.risk_assessment_rate).toBe(60);
       });
 
-      it("is 0 when no risk assessment records", () => {
+      it("is null when no risk assessment records", () => {
         const r = computeSubstanceMisusePrevention(baseInput({
           total_children: 5,
           // provide some other record to avoid allEmpty
@@ -1265,7 +1265,7 @@ describe("computeSubstanceMisusePrevention", () => {
         expect(r.intervention_effectiveness_rate).toBe(50);
       });
 
-      it("is 0 when no intervention records", () => {
+      it("is null when no intervention records", () => {
         const r = computeSubstanceMisusePrevention(baseInput({
           total_children: 5,
           substance_education_records: [makeEducation()],
@@ -1313,7 +1313,7 @@ describe("computeSubstanceMisusePrevention", () => {
         expect(r.referral_compliance_rate).toBe(100);
       });
 
-      it("is 0 when no referral records", () => {
+      it("is null when no referral records", () => {
         const r = computeSubstanceMisusePrevention(baseInput({
           total_children: 5,
           substance_education_records: [makeEducation()],
@@ -1338,7 +1338,7 @@ describe("computeSubstanceMisusePrevention", () => {
         expect(r.harm_reduction_rate).toBe(44);
       });
 
-      it("is 0 when no harm reduction records", () => {
+      it("is null when no harm reduction records", () => {
         const r = computeSubstanceMisusePrevention(baseInput({
           total_children: 5,
           substance_education_records: [makeEducation()],
@@ -1379,7 +1379,7 @@ describe("computeSubstanceMisusePrevention", () => {
         expect(r.child_awareness_rate).toBe(50);
       });
 
-      it("is 0 when all denominators are 0", () => {
+      it("is null when all denominators are 0", () => {
         // Only possible with allEmpty which triggers special path
         // Use records where denominators are 0 for each awareness component
         const r = computeSubstanceMisusePrevention(baseInput({
@@ -1391,7 +1391,7 @@ describe("computeSubstanceMisusePrevention", () => {
           // Referral: 0 records → no denominator
           // Harm: 0 records → no denominator
         }));
-        expect(r.child_awareness_rate).toBe(0);
+        expect(r.child_awareness_rate).toBeNull();
       });
 
       it("excludes categories with 0 records from the composite", () => {
@@ -2478,10 +2478,10 @@ describe("computeSubstanceMisusePrevention", () => {
   // ═══════════════════════════════════════════════════════════════════════════
   describe("edge cases", () => {
 
-    it("pct(0,0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       // Tested implicitly: when no records exist, all rates are 0
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 0 }));
-      expect(r.education_coverage_rate).toBe(0);
+      expect(r.education_coverage_rate).toBeNull();
       expect(r.risk_assessment_rate).toBeNull();
     });
 

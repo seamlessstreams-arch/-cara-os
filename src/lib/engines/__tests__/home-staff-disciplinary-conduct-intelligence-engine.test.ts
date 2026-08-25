@@ -3100,13 +3100,13 @@ describe("Metric calculations", () => {
     expect(r.lado_referral_rate).toBe(50);
   });
 
-  it("returns 0 for lado_referral_rate when no serious/gross cases", () => {
+  it("returns null for lado_referral_rate when no serious/gross cases", () => {
     const r = computeStaffDisciplinaryConductIntelligence({
       today: TODAY,
       total_staff: 10,
       cases: [makeCase({ id: "m1", severity: "minor" })],
     });
-    expect(r.lado_referral_rate).toBe(0);
+    expect(r.lado_referral_rate).toBeNull();
   });
 
   it("calculates investigation_completion_rate correctly", () => {

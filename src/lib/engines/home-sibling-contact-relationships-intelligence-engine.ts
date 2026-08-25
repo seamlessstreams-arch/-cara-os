@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SIBLING CONTACT & RELATIONSHIPS INTELLIGENCE ENGINE
 // Measures sibling relationship quality — sibling placement considerations,
@@ -181,10 +182,6 @@ export interface SiblingContactResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -212,12 +209,12 @@ function emptyResult(
     total_assessment_records: 0,
     total_event_records: 0,
     total_wishes_records: 0,
-    placement_consideration_rate: 0,
-    contact_facilitation_rate: 0,
-    relationship_quality_rate: 0,
-    event_participation_rate: 0,
-    child_wishes_rate: 0,
-    child_satisfaction_rate: 0,
+    placement_consideration_rate: null,
+    contact_facilitation_rate: null,
+    relationship_quality_rate: null,
+    event_participation_rate: null,
+    child_wishes_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -296,40 +293,40 @@ export function computeSiblingContactRelationships(
   // --- Sibling placement consideration metrics ---
   const totalPlacementRecords = sibling_placement_records.length;
   const placementConsidered = sibling_placement_records.filter((p) => p.placement_considered).length;
-  const placementConsiderationRate = pct(placementConsidered, totalPlacementRecords);
+  const placementConsiderationRate = rate(placementConsidered, totalPlacementRecords);
 
   const considerationDocumented = sibling_placement_records.filter(
     (p) => p.placement_considered && p.consideration_documented,
   ).length;
-  const documentationRate = pct(considerationDocumented, totalPlacementRecords);
+  const documentationRate = rate(considerationDocumented, totalPlacementRecords);
 
   const separatedRecords = sibling_placement_records.filter((p) => !p.placement_together);
   const separationJustified = separatedRecords.filter((p) => p.separation_justified).length;
-  const separationJustifiedRate = pct(separationJustified, separatedRecords.length);
+  const separationJustifiedRate = rate(separationJustified, separatedRecords.length);
 
   const childViewsSought = sibling_placement_records.filter((p) => p.child_views_sought).length;
-  const childViewsRate = pct(childViewsSought, totalPlacementRecords);
+  const childViewsRate = rate(childViewsSought, totalPlacementRecords);
 
   // --- Contact facilitation metrics ---
   const totalContactRecords = contact_facilitation_records.length;
   const nonCancelled = contact_facilitation_records.filter((c) => !c.cancelled);
   const facilitatedContacts = nonCancelled.filter((c) => c.facilitated).length;
-  const contactFacilitationRate = pct(facilitatedContacts, nonCancelled.length);
+  const contactFacilitationRate = rate(facilitatedContacts, nonCancelled.length);
 
   const cancelledContacts = contact_facilitation_records.filter((c) => c.cancelled).length;
-  const cancellationRate = pct(cancelledContacts, totalContactRecords);
+  const cancellationRate = rate(cancelledContacts, totalContactRecords);
 
   const contactPlanFollowed = nonCancelled.filter((c) => c.contact_plan_followed).length;
-  const contactPlanRate = pct(contactPlanFollowed, nonCancelled.length);
+  const contactPlanRate = rate(contactPlanFollowed, nonCancelled.length);
 
   const childEnjoyedCount = nonCancelled.filter((c) => c.child_enjoyed).length;
-  const childEnjoyedRate = pct(childEnjoyedCount, nonCancelled.length);
+  const childEnjoyedRate = rate(childEnjoyedCount, nonCancelled.length);
 
   const siblingEnjoyedCount = nonCancelled.filter((c) => c.sibling_enjoyed).length;
-  const siblingEnjoyedRate = pct(siblingEnjoyedCount, nonCancelled.length);
+  const siblingEnjoyedRate = rate(siblingEnjoyedCount, nonCancelled.length);
 
   const contactConcernsCount = nonCancelled.filter((c) => c.any_concerns).length;
-  const contactConcernRate = pct(contactConcernsCount, nonCancelled.length);
+  const contactConcernRate = rate(contactConcernsCount, nonCancelled.length);
 
   const qualitySum = nonCancelled.reduce((sum, c) => sum + c.quality_rating, 0);
   const avgContactQuality =
@@ -347,17 +344,17 @@ export function computeSiblingContactRelationships(
   const excellentOrGoodRelationships = relationship_assessment_records.filter(
     (a) => a.relationship_quality === "excellent" || a.relationship_quality === "good",
   ).length;
-  const relationshipQualityRate = pct(excellentOrGoodRelationships, totalAssessmentRecords);
+  const relationshipQualityRate = rate(excellentOrGoodRelationships, totalAssessmentRecords);
 
   const poorOrEstrangedRelationships = relationship_assessment_records.filter(
     (a) => a.relationship_quality === "poor" || a.relationship_quality === "estranged",
   ).length;
-  const poorRelationshipRate = pct(poorOrEstrangedRelationships, totalAssessmentRecords);
+  const poorRelationshipRate = rate(poorOrEstrangedRelationships, totalAssessmentRecords);
 
   const positiveInteractions = relationship_assessment_records.filter(
     (a) => a.positive_interactions_observed,
   ).length;
-  const positiveInteractionRate = pct(positiveInteractions, totalAssessmentRecords);
+  const positiveInteractionRate = rate(positiveInteractions, totalAssessmentRecords);
 
   const therapeuticRecommended = relationship_assessment_records.filter(
     (a) => a.therapeutic_support_recommended,
@@ -365,12 +362,12 @@ export function computeSiblingContactRelationships(
   const therapeuticInPlace = relationship_assessment_records.filter(
     (a) => a.therapeutic_support_recommended && a.therapeutic_support_in_place,
   ).length;
-  const therapeuticFollowThroughRate = pct(therapeuticInPlace, therapeuticRecommended);
+  const therapeuticFollowThroughRate = rate(therapeuticInPlace, therapeuticRecommended);
 
   const frequentConflict = relationship_assessment_records.filter(
     (a) => a.conflict_frequency === "frequent" || a.conflict_frequency === "constant",
   ).length;
-  const frequentConflictRate = pct(frequentConflict, totalAssessmentRecords);
+  const frequentConflictRate = rate(frequentConflict, totalAssessmentRecords);
 
   // --- Sibling event metrics ---
   const totalEventRecords = sibling_event_records.length;
@@ -383,7 +380,7 @@ export function computeSiblingContactRelationships(
     (sum, e) => sum + e.children_attended.length,
     0,
   );
-  const eventParticipationRate = pct(totalChildrenAttended, totalChildrenInvited);
+  const eventParticipationRate = rate(totalChildrenAttended, totalChildrenInvited);
 
   const eventQualitySum = sibling_event_records.reduce(
     (sum, e) => sum + e.event_quality_rating,
@@ -395,13 +392,13 @@ export function computeSiblingContactRelationships(
       : null;
 
   const memoryBookUpdated = sibling_event_records.filter((e) => e.memory_book_updated).length;
-  const memoryBookRate = pct(memoryBookUpdated, totalEventRecords);
+  const memoryBookRate = rate(memoryBookUpdated, totalEventRecords);
 
   const photosTaken = sibling_event_records.filter((e) => e.photos_taken).length;
-  const photosRate = pct(photosTaken, totalEventRecords);
+  const photosRate = rate(photosTaken, totalEventRecords);
 
   const eventIncidents = sibling_event_records.filter((e) => e.any_incidents).length;
-  const eventIncidentRate = pct(eventIncidents, totalEventRecords);
+  const eventIncidentRate = rate(eventIncidents, totalEventRecords);
 
   // Event type diversity
   const eventTypes = new Set(sibling_event_records.map((e) => e.event_type));
@@ -411,41 +408,39 @@ export function computeSiblingContactRelationships(
   const totalWishesRecords = child_wishes_records.length;
 
   const voiceCaptured = child_wishes_records.filter((w) => w.child_voice_captured).length;
-  const voiceCapturedRate = pct(voiceCaptured, totalWishesRecords);
+  const voiceCapturedRate = rate(voiceCaptured, totalWishesRecords);
 
   const ageAppropriateMethod = child_wishes_records.filter(
     (w) => w.age_appropriate_method,
   ).length;
-  const ageAppropriateRate = pct(ageAppropriateMethod, totalWishesRecords);
+  const ageAppropriateRate = rate(ageAppropriateMethod, totalWishesRecords);
 
   const wishAcknowledged = child_wishes_records.filter((w) => w.wish_acknowledged).length;
-  const wishAcknowledgedRate = pct(wishAcknowledged, totalWishesRecords);
+  const wishAcknowledgedRate = rate(wishAcknowledged, totalWishesRecords);
 
   const wishActedUpon = child_wishes_records.filter((w) => w.wish_acted_upon).length;
-  const wishActedUponRate = pct(wishActedUpon, totalWishesRecords);
+  const wishActedUponRate = rate(wishActedUpon, totalWishesRecords);
   // childWishesRate = composite of acknowledged + acted upon
   const childWishesRate =
-    totalWishesRecords > 0
-      ? Math.round((wishAcknowledgedRate + wishActedUponRate) / 2)
-      : null;
+    totalWishesRecords > 0 ? Math.round((wishAcknowledgedRate! + wishActedUponRate!) / 2) : null;
 
   const outcomeShared = child_wishes_records.filter((w) => w.outcome_shared_with_child).length;
-  const outcomeSharedRate = pct(outcomeShared, totalWishesRecords);
+  const outcomeSharedRate = rate(outcomeShared, totalWishesRecords);
 
   const childSatisfied = child_wishes_records.filter(
     (w) => w.child_satisfied_with_outcome,
   ).length;
-  const childSatisfactionRate = pct(childSatisfied, totalWishesRecords);
+  const childSatisfactionRate = rate(childSatisfied, totalWishesRecords);
 
   const socialWorkerInformed = child_wishes_records.filter(
     (w) => w.social_worker_informed,
   ).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalWishesRecords);
+  const socialWorkerInformedRate = rate(socialWorkerInformed, totalWishesRecords);
 
   const recordedInCarePlan = child_wishes_records.filter(
     (w) => w.recorded_in_care_plan,
   ).length;
-  const carePlanRate = pct(recordedInCarePlan, totalWishesRecords);
+  const carePlanRate = rate(recordedInCarePlan, totalWishesRecords);
 
   // Wish category breakdown
   const wishCategories: Record<string, number> = {};
@@ -458,36 +453,36 @@ export function computeSiblingContactRelationships(
   let score = 52;
 
   // --- Bonus 1: placementConsiderationRate (>=95: +4, >=80: +2) ---
-  if (placementConsiderationRate >= 95) score += 4;
-  else if (placementConsiderationRate >= 80) score += 2;
+  if (meets(placementConsiderationRate, 95)) score += 4;
+  else if (meets(placementConsiderationRate, 80)) score += 2;
 
   // --- Bonus 2: contactFacilitationRate (>=90: +4, >=75: +2) ---
-  if (contactFacilitationRate >= 90) score += 4;
-  else if (contactFacilitationRate >= 75) score += 2;
+  if (meets(contactFacilitationRate, 90)) score += 4;
+  else if (meets(contactFacilitationRate, 75)) score += 2;
 
   // --- Bonus 3: relationshipQualityRate (>=80: +4, >=60: +2) ---
-  if (relationshipQualityRate >= 80) score += 4;
-  else if (relationshipQualityRate >= 60) score += 2;
+  if (meets(relationshipQualityRate, 80)) score += 4;
+  else if (meets(relationshipQualityRate, 60)) score += 2;
 
   // --- Bonus 4: eventParticipationRate (>=90: +3, >=70: +1) ---
-  if (eventParticipationRate >= 90) score += 3;
-  else if (eventParticipationRate >= 70) score += 1;
+  if (meets(eventParticipationRate, 90)) score += 3;
+  else if (meets(eventParticipationRate, 70)) score += 1;
 
   // --- Bonus 5: childWishesRate (>=90: +3, >=70: +1) ---
   if ((childWishesRate ?? 0) >= 90) score += 3;
   else if ((childWishesRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: contactPlanRate (>=90: +3, >=70: +1) ---
-  if (contactPlanRate >= 90) score += 3;
-  else if (contactPlanRate >= 70) score += 1;
+  if (meets(contactPlanRate, 90)) score += 3;
+  else if (meets(contactPlanRate, 70)) score += 1;
 
   // --- Bonus 8: childEnjoyedRate (>=90: +2, >=70: +1) ---
-  if (childEnjoyedRate >= 90) score += 2;
-  else if (childEnjoyedRate >= 70) score += 1;
+  if (meets(childEnjoyedRate, 90)) score += 2;
+  else if (meets(childEnjoyedRate, 70)) score += 1;
 
   // --- Bonus 9: avgContactQuality (>=4.0: +2, >=3.0: +1) ---
   if ((avgContactQuality ?? 0) >= 4.0) score += 2;
@@ -496,16 +491,16 @@ export function computeSiblingContactRelationships(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // placementConsiderationRate < 50 → -5 (guarded)
-  if (placementConsiderationRate < 50 && sibling_placement_records.length > 0) score -= 5;
+  if (below(placementConsiderationRate, 50) && sibling_placement_records.length > 0) score -= 5;
 
   // contactFacilitationRate < 50 → -5 (guarded)
-  if (contactFacilitationRate < 50 && contact_facilitation_records.length > 0) score -= 5;
+  if (below(contactFacilitationRate, 50) && contact_facilitation_records.length > 0) score -= 5;
 
   // childWishesRate < 40 → -4 (guarded)
   if ((childWishesRate ?? 0) < 40 && child_wishes_records.length > 0) score -= 4;
 
   // relationshipQualityRate < 30 → -4 (guarded)
-  if (relationshipQualityRate < 30 && relationship_assessment_records.length > 0) score -= 4;
+  if (below(relationshipQualityRate, 30) && relationship_assessment_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -515,41 +510,41 @@ export function computeSiblingContactRelationships(
 
   const strengths: string[] = [];
 
-  if (placementConsiderationRate >= 95 && totalPlacementRecords > 0) {
+  if (meets(placementConsiderationRate, 95) && totalPlacementRecords > 0) {
     strengths.push(
       `${placementConsiderationRate}% of sibling placements have documented consideration — the home demonstrates exemplary practice in evidencing sibling placement decisions and ensuring every sibling group is properly assessed.`,
     );
-  } else if (placementConsiderationRate >= 80 && totalPlacementRecords > 0) {
+  } else if (meets(placementConsiderationRate, 80) && totalPlacementRecords > 0) {
     strengths.push(
       `${placementConsiderationRate}% sibling placement consideration rate — strong evidence that the home actively considers co-placement for siblings and documents the rationale for placement decisions.`,
     );
   }
 
-  if (contactFacilitationRate >= 90 && nonCancelled.length > 0) {
+  if (meets(contactFacilitationRate, 90) && nonCancelled.length > 0) {
     strengths.push(
       `${contactFacilitationRate}% of sibling contacts actively facilitated — the home consistently supports and enables meaningful sibling contact, demonstrating commitment to maintaining family relationships.`,
     );
-  } else if (contactFacilitationRate >= 75 && nonCancelled.length > 0) {
+  } else if (meets(contactFacilitationRate, 75) && nonCancelled.length > 0) {
     strengths.push(
       `${contactFacilitationRate}% contact facilitation rate — good evidence that the home actively supports sibling contact arrangements and removes barriers to maintaining relationships.`,
     );
   }
 
-  if (relationshipQualityRate >= 80 && totalAssessmentRecords > 0) {
+  if (meets(relationshipQualityRate, 80) && totalAssessmentRecords > 0) {
     strengths.push(
       `${relationshipQualityRate}% of assessed sibling relationships rated as good or excellent — the home's approach to sibling contact is successfully maintaining and strengthening sibling bonds.`,
     );
-  } else if (relationshipQualityRate >= 60 && totalAssessmentRecords > 0) {
+  } else if (meets(relationshipQualityRate, 60) && totalAssessmentRecords > 0) {
     strengths.push(
       `${relationshipQualityRate}% of sibling relationships assessed as good or excellent — the majority of sibling relationships are being maintained at a positive level through the home's contact facilitation.`,
     );
   }
 
-  if (eventParticipationRate >= 90 && totalChildrenInvited > 0) {
+  if (meets(eventParticipationRate, 90) && totalChildrenInvited > 0) {
     strengths.push(
       `${eventParticipationRate}% attendance at sibling events — children and siblings are consistently attending and participating in planned events, demonstrating the effectiveness of the home's event coordination.`,
     );
-  } else if (eventParticipationRate >= 70 && totalChildrenInvited > 0) {
+  } else if (meets(eventParticipationRate, 70) && totalChildrenInvited > 0) {
     strengths.push(
       `${eventParticipationRate}% sibling event participation — good attendance at shared events indicates the home creates welcoming and accessible opportunities for siblings to spend time together.`,
     );
@@ -565,31 +560,31 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalWishesRecords > 0) {
+  if (meets(childSatisfactionRate, 90) && totalWishesRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with outcomes — children report high levels of satisfaction with how their wishes about sibling contact have been addressed, evidencing child-centred practice.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalWishesRecords > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalWishesRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — the majority of children are satisfied with the outcomes of their expressed wishes about sibling contact.`,
     );
   }
 
-  if (contactPlanRate >= 90 && nonCancelled.length > 0) {
+  if (meets(contactPlanRate, 90) && nonCancelled.length > 0) {
     strengths.push(
       `${contactPlanRate}% of contacts follow the agreed contact plan — the home consistently delivers sibling contact in line with agreed arrangements, providing stability and predictability for children.`,
     );
-  } else if (contactPlanRate >= 70 && nonCancelled.length > 0) {
+  } else if (meets(contactPlanRate, 70) && nonCancelled.length > 0) {
     strengths.push(
       `${contactPlanRate}% contact plan adherence — good compliance with agreed contact arrangements ensures children experience consistent and reliable sibling contact.`,
     );
   }
 
-  if (childEnjoyedRate >= 90 && nonCancelled.length > 0) {
+  if (meets(childEnjoyedRate, 90) && nonCancelled.length > 0) {
     strengths.push(
       `${childEnjoyedRate}% of sibling contacts reported as enjoyable by children — the quality of contact experiences is consistently high, indicating well-facilitated and child-centred arrangements.`,
     );
-  } else if (childEnjoyedRate >= 70 && nonCancelled.length > 0) {
+  } else if (meets(childEnjoyedRate, 70) && nonCancelled.length > 0) {
     strengths.push(
       `${childEnjoyedRate}% of children enjoyed their sibling contacts — the majority of contact sessions are positive experiences for the children involved.`,
     );
@@ -605,49 +600,49 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (documentationRate >= 90 && totalPlacementRecords > 0) {
+  if (meets(documentationRate, 90) && totalPlacementRecords > 0) {
     strengths.push(
       `${documentationRate}% of placement considerations documented — the home maintains thorough records of sibling placement decision-making, supporting regulatory compliance and evidence-based practice.`,
     );
   }
 
-  if (separationJustifiedRate >= 90 && separatedRecords.length > 0) {
+  if (meets(separationJustifiedRate, 90) && separatedRecords.length > 0) {
     strengths.push(
       `${separationJustifiedRate}% of sibling separations have documented justification — where siblings are not placed together, the reasons are clearly recorded and defensible.`,
     );
   }
 
-  if (childViewsRate >= 90 && totalPlacementRecords > 0) {
+  if (meets(childViewsRate, 90) && totalPlacementRecords > 0) {
     strengths.push(
       `${childViewsRate}% of placement decisions include the child's views — children's voices are central to sibling placement considerations.`,
     );
   }
 
-  if (therapeuticFollowThroughRate >= 90 && therapeuticRecommended > 0) {
+  if (meets(therapeuticFollowThroughRate, 90) && therapeuticRecommended > 0) {
     strengths.push(
       `${therapeuticFollowThroughRate}% of recommended therapeutic support in place — where professional support has been recommended for sibling relationships, the home has followed through effectively.`,
     );
   }
 
-  if (positiveInteractionRate >= 90 && totalAssessmentRecords > 0) {
+  if (meets(positiveInteractionRate, 90) && totalAssessmentRecords > 0) {
     strengths.push(
       `Positive interactions observed in ${positiveInteractionRate}% of assessments — sibling relationships are characterised by warm, positive interactions that are being actively nurtured by the home.`,
     );
   }
 
-  if (voiceCapturedRate >= 95 && totalWishesRecords > 0) {
+  if (meets(voiceCapturedRate, 95) && totalWishesRecords > 0) {
     strengths.push(
       `${voiceCapturedRate}% of wishes records capture the child's authentic voice — the home uses effective methods to hear and record what children genuinely want from their sibling relationships.`,
     );
   }
 
-  if (outcomeSharedRate >= 90 && totalWishesRecords > 0) {
+  if (meets(outcomeSharedRate, 90) && totalWishesRecords > 0) {
     strengths.push(
       `${outcomeSharedRate}% of outcomes shared with children — the home closes the loop by informing children about what has happened in response to their expressed wishes, demonstrating genuine respect for children's participation.`,
     );
   }
 
-  if (memoryBookRate >= 80 && totalEventRecords > 0) {
+  if (meets(memoryBookRate, 80) && totalEventRecords > 0) {
     strengths.push(
       `Memory books updated for ${memoryBookRate}% of sibling events — the home actively preserves memories of sibling time together, supporting children's identity and sense of belonging.`,
     );
@@ -675,31 +670,31 @@ export function computeSiblingContactRelationships(
 
   const concerns: string[] = [];
 
-  if (placementConsiderationRate < 50 && totalPlacementRecords > 0) {
+  if (below(placementConsiderationRate, 50) && totalPlacementRecords > 0) {
     concerns.push(
       `Only ${placementConsiderationRate}% of sibling placements have documented consideration — the home is failing to evidence that co-placement has been properly considered for the majority of sibling groups, representing a significant regulatory concern under Reg 7.`,
     );
-  } else if (placementConsiderationRate >= 50 && placementConsiderationRate < 80 && totalPlacementRecords > 0) {
+  } else if (meets(placementConsiderationRate, 50) && below(placementConsiderationRate, 80) && totalPlacementRecords > 0) {
     concerns.push(
       `Sibling placement consideration at ${placementConsiderationRate}% — not all sibling placement decisions are being properly considered and documented, creating gaps in the home's evidence base.`,
     );
   }
 
-  if (contactFacilitationRate < 50 && contact_facilitation_records.length > 0) {
+  if (below(contactFacilitationRate, 50) && contact_facilitation_records.length > 0) {
     concerns.push(
       `Only ${contactFacilitationRate}% of sibling contacts facilitated — the majority of sibling contact is not being actively supported, indicating a fundamental failure to promote family relationships as required by Reg 7.`,
     );
-  } else if (contactFacilitationRate >= 50 && contactFacilitationRate < 75 && contact_facilitation_records.length > 0) {
+  } else if (meets(contactFacilitationRate, 50) && below(contactFacilitationRate, 75) && contact_facilitation_records.length > 0) {
     concerns.push(
       `Contact facilitation at ${contactFacilitationRate}% — a significant proportion of sibling contacts are not being actively facilitated, suggesting barriers that the home needs to address.`,
     );
   }
 
-  if (relationshipQualityRate < 30 && totalAssessmentRecords > 0) {
+  if (below(relationshipQualityRate, 30) && totalAssessmentRecords > 0) {
     concerns.push(
       `Only ${relationshipQualityRate}% of sibling relationships assessed as good or excellent — the majority of sibling relationships show concerning quality levels, suggesting that contact arrangements are not effectively supporting relationship maintenance.`,
     );
-  } else if (relationshipQualityRate >= 30 && relationshipQualityRate < 60 && totalAssessmentRecords > 0) {
+  } else if (meets(relationshipQualityRate, 30) && below(relationshipQualityRate, 60) && totalAssessmentRecords > 0) {
     concerns.push(
       `Relationship quality rate at ${relationshipQualityRate}% — a significant number of sibling relationships are not assessed as good or excellent, indicating the need for enhanced relationship support and more effective contact arrangements.`,
     );
@@ -715,87 +710,87 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (childSatisfactionRate < 40 && totalWishesRecords > 0) {
+  if (below(childSatisfactionRate, 40) && totalWishesRecords > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with sibling contact outcomes — the majority of children are not satisfied with how their wishes about sibling contact have been addressed, raising serious concerns about the quality of child-centred practice.`,
     );
-  } else if (childSatisfactionRate >= 40 && childSatisfactionRate < 70 && totalWishesRecords > 0) {
+  } else if (meets(childSatisfactionRate, 40) && below(childSatisfactionRate, 70) && totalWishesRecords > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a notable proportion of children are dissatisfied with sibling contact outcomes, suggesting the home needs to better understand and respond to children's needs.`,
     );
   }
 
-  if (cancellationRate >= 30 && totalContactRecords > 0) {
+  if (meets(cancellationRate, 30) && totalContactRecords > 0) {
     concerns.push(
       `${cancellationRate}% of sibling contacts cancelled — high cancellation rates cause distress for children and erode trust in contact arrangements. This pattern of disruption undermines sibling relationship stability.`,
     );
-  } else if (cancellationRate >= 15 && cancellationRate < 30 && totalContactRecords > 0) {
+  } else if (meets(cancellationRate, 15) && below(cancellationRate, 30) && totalContactRecords > 0) {
     concerns.push(
       `${cancellationRate}% contact cancellation rate — some sibling contacts are being cancelled, causing disappointment and disruption to children who rely on these arrangements for maintaining family connections.`,
     );
   }
 
-  if (contactConcernRate >= 30 && nonCancelled.length > 0) {
+  if (meets(contactConcernRate, 30) && nonCancelled.length > 0) {
     concerns.push(
       `Concerns recorded in ${contactConcernRate}% of sibling contacts — a significant proportion of contacts are raising concerns, suggesting that contact arrangements may need review to ensure they are safe and beneficial.`,
     );
-  } else if (contactConcernRate >= 15 && contactConcernRate < 30 && nonCancelled.length > 0) {
+  } else if (meets(contactConcernRate, 15) && below(contactConcernRate, 30) && nonCancelled.length > 0) {
     concerns.push(
       `${contactConcernRate}% of contacts raising concerns — some sibling contacts are generating concerns that need to be monitored and addressed to ensure contact remains positive.`,
     );
   }
 
-  if (poorRelationshipRate >= 30 && totalAssessmentRecords > 0) {
+  if (meets(poorRelationshipRate, 30) && totalAssessmentRecords > 0) {
     concerns.push(
       `${poorRelationshipRate}% of sibling relationships rated poor or estranged — a significant proportion of sibling relationships are in difficulty, requiring urgent intervention and support to prevent further deterioration.`,
     );
-  } else if (poorRelationshipRate >= 15 && poorRelationshipRate < 30 && totalAssessmentRecords > 0) {
+  } else if (meets(poorRelationshipRate, 15) && below(poorRelationshipRate, 30) && totalAssessmentRecords > 0) {
     concerns.push(
       `${poorRelationshipRate}% of relationships assessed as poor or estranged — some sibling relationships are struggling and require targeted support and enhanced contact arrangements.`,
     );
   }
 
-  if (frequentConflictRate >= 25 && totalAssessmentRecords > 0) {
+  if (meets(frequentConflictRate, 25) && totalAssessmentRecords > 0) {
     concerns.push(
       `${frequentConflictRate}% of sibling relationships experiencing frequent or constant conflict — unresolved conflict between siblings risks causing emotional harm and may indicate the need for therapeutic intervention.`,
     );
   }
 
-  if (therapeuticFollowThroughRate < 50 && therapeuticRecommended > 0) {
+  if (below(therapeuticFollowThroughRate, 50) && therapeuticRecommended > 0) {
     concerns.push(
       `Only ${therapeuticFollowThroughRate}% of recommended therapeutic support in place — where professionals have recommended support for sibling relationships, the home has not followed through, leaving children without necessary help.`,
     );
   }
 
-  if (eventParticipationRate < 50 && totalChildrenInvited > 0) {
+  if (below(eventParticipationRate, 50) && totalChildrenInvited > 0) {
     concerns.push(
       `Only ${eventParticipationRate}% attendance at sibling events — poor attendance suggests that events may not be accessible, appealing, or properly facilitated for children and their siblings.`,
     );
-  } else if (eventParticipationRate >= 50 && eventParticipationRate < 70 && totalChildrenInvited > 0) {
+  } else if (meets(eventParticipationRate, 50) && below(eventParticipationRate, 70) && totalChildrenInvited > 0) {
     concerns.push(
       `Sibling event participation at ${eventParticipationRate}% — some children and siblings are not attending planned events, reducing opportunities for shared positive experiences.`,
     );
   }
 
-  if (voiceCapturedRate < 50 && totalWishesRecords > 0) {
+  if (below(voiceCapturedRate, 50) && totalWishesRecords > 0) {
     concerns.push(
       `Only ${voiceCapturedRate}% of wishes records capture the child's authentic voice — the home is not effectively hearing what children want from their sibling relationships, undermining the child-centred approach.`,
     );
   }
 
-  if (socialWorkerInformedRate < 50 && totalWishesRecords > 0) {
+  if (below(socialWorkerInformedRate, 50) && totalWishesRecords > 0) {
     concerns.push(
       `Only ${socialWorkerInformedRate}% of children's wishes shared with the social worker — the child's placing authority is not being kept informed about the child's views on sibling contact, weakening multi-agency working.`,
     );
   }
 
-  if (eventIncidentRate >= 20 && totalEventRecords > 0) {
+  if (meets(eventIncidentRate, 20) && totalEventRecords > 0) {
     concerns.push(
       `${eventIncidentRate}% of sibling events involved incidents — a concerning proportion of events are disrupted by incidents, potentially undermining the positive intent of sibling contact opportunities.`,
     );
   }
 
-  if (contactPlanRate < 50 && nonCancelled.length > 0) {
+  if (below(contactPlanRate, 50) && nonCancelled.length > 0) {
     concerns.push(
       `Only ${contactPlanRate}% of contacts follow the agreed plan — the majority of sibling contacts deviate from agreed arrangements, creating inconsistency and unpredictability for children.`,
     );
@@ -806,7 +801,7 @@ export function computeSiblingContactRelationships(
   const recommendations: SiblingContactRecommendation[] = [];
   let rank = 0;
 
-  if (placementConsiderationRate < 50 && totalPlacementRecords > 0) {
+  if (below(placementConsiderationRate, 50) && totalPlacementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -816,7 +811,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (contactFacilitationRate < 50 && contact_facilitation_records.length > 0) {
+  if (below(contactFacilitationRate, 50) && contact_facilitation_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -836,7 +831,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (relationshipQualityRate < 30 && totalAssessmentRecords > 0) {
+  if (below(relationshipQualityRate, 30) && totalAssessmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -846,7 +841,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (cancellationRate >= 30 && totalContactRecords > 0) {
+  if (meets(cancellationRate, 30) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -856,7 +851,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childSatisfactionRate < 40 && totalWishesRecords > 0) {
+  if (below(childSatisfactionRate, 40) && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -866,7 +861,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (therapeuticFollowThroughRate < 50 && therapeuticRecommended > 0) {
+  if (below(therapeuticFollowThroughRate, 50) && therapeuticRecommended > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -876,7 +871,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (frequentConflictRate >= 25 && totalAssessmentRecords > 0) {
+  if (meets(frequentConflictRate, 25) && totalAssessmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -886,7 +881,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (contactFacilitationRate >= 50 && contactFacilitationRate < 75 && contact_facilitation_records.length > 0) {
+  if (meets(contactFacilitationRate, 50) && below(contactFacilitationRate, 75) && contact_facilitation_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -896,7 +891,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (placementConsiderationRate >= 50 && placementConsiderationRate < 80 && totalPlacementRecords > 0) {
+  if (meets(placementConsiderationRate, 50) && below(placementConsiderationRate, 80) && totalPlacementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -916,7 +911,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (relationshipQualityRate >= 30 && relationshipQualityRate < 60 && totalAssessmentRecords > 0) {
+  if (meets(relationshipQualityRate, 30) && below(relationshipQualityRate, 60) && totalAssessmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -926,7 +921,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (eventParticipationRate < 50 && totalChildrenInvited > 0) {
+  if (below(eventParticipationRate, 50) && totalChildrenInvited > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -936,7 +931,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (voiceCapturedRate < 50 && totalWishesRecords > 0) {
+  if (below(voiceCapturedRate, 50) && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -946,7 +941,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (socialWorkerInformedRate < 50 && totalWishesRecords > 0) {
+  if (below(socialWorkerInformedRate, 50) && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -956,7 +951,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (cancellationRate >= 15 && cancellationRate < 30 && totalContactRecords > 0) {
+  if (meets(cancellationRate, 15) && below(cancellationRate, 30) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -966,7 +961,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (eventParticipationRate >= 50 && eventParticipationRate < 70 && totalChildrenInvited > 0) {
+  if (meets(eventParticipationRate, 50) && below(eventParticipationRate, 70) && totalChildrenInvited > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -976,7 +971,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childSatisfactionRate >= 40 && childSatisfactionRate < 70 && totalWishesRecords > 0) {
+  if (meets(childSatisfactionRate, 40) && below(childSatisfactionRate, 70) && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -986,7 +981,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (memoryBookRate < 50 && totalEventRecords > 0) {
+  if (below(memoryBookRate, 50) && totalEventRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1006,7 +1001,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (carePlanRate < 60 && totalWishesRecords > 0) {
+  if (below(carePlanRate, 60) && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,14 +1017,14 @@ export function computeSiblingContactRelationships(
 
   // -- Critical insights --
 
-  if (placementConsiderationRate < 50 && totalPlacementRecords > 0) {
+  if (below(placementConsiderationRate, 50) && totalPlacementRecords > 0) {
     insights.push({
       text: `Only ${placementConsiderationRate}% of sibling placements have documented consideration. The home cannot demonstrate that co-placement has been properly explored for most sibling groups. This represents a significant failure to comply with Reg 7 and places the home at risk of regulatory action regarding sibling placement practice.`,
       severity: "critical",
     });
   }
 
-  if (contactFacilitationRate < 50 && contact_facilitation_records.length > 0) {
+  if (below(contactFacilitationRate, 50) && contact_facilitation_records.length > 0) {
     insights.push({
       text: `Only ${contactFacilitationRate}% of sibling contacts facilitated. The home is not actively promoting and supporting sibling contact, meaning children are being denied meaningful opportunities to maintain family relationships. This undermines Reg 7 compliance and causes emotional harm to children who are separated from their siblings.`,
       severity: "critical",
@@ -1043,7 +1038,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (relationshipQualityRate < 30 && totalAssessmentRecords > 0) {
+  if (below(relationshipQualityRate, 30) && totalAssessmentRecords > 0) {
     insights.push({
       text: `Only ${relationshipQualityRate}% of sibling relationships rated good or excellent. The majority of sibling relationships assessed by the home are in difficulty, suggesting that current contact arrangements are insufficient to maintain and strengthen sibling bonds. Without intervention, these relationships risk further deterioration.`,
       severity: "critical",
@@ -1064,14 +1059,14 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (cancellationRate >= 30 && totalContactRecords > 0) {
+  if (meets(cancellationRate, 30) && totalContactRecords > 0) {
     insights.push({
       text: `${cancellationRate}% of sibling contacts cancelled. Repeated cancellations cause significant emotional distress for children who look forward to seeing their siblings. Each cancellation erodes children's trust in adults and their sense of security in contact arrangements.`,
       severity: "critical",
     });
   }
 
-  if (poorRelationshipRate >= 30 && totalAssessmentRecords > 0) {
+  if (meets(poorRelationshipRate, 30) && totalAssessmentRecords > 0) {
     insights.push({
       text: `${poorRelationshipRate}% of sibling relationships assessed as poor or estranged. A significant proportion of children are experiencing damaged or broken sibling relationships. Without targeted intervention, these children risk permanent loss of sibling connection, with lifelong consequences for their emotional wellbeing and identity.`,
       severity: "critical",
@@ -1080,21 +1075,21 @@ export function computeSiblingContactRelationships(
 
   // -- Warning insights --
 
-  if (placementConsiderationRate >= 50 && placementConsiderationRate < 80 && totalPlacementRecords > 0) {
+  if (meets(placementConsiderationRate, 50) && below(placementConsiderationRate, 80) && totalPlacementRecords > 0) {
     insights.push({
       text: `Sibling placement consideration at ${placementConsiderationRate}% — while improving, the home still has gaps in evidencing that co-placement has been explored for all sibling groups. Consistent documentation of placement decision-making strengthens regulatory compliance and ensures no sibling group is overlooked.`,
       severity: "warning",
     });
   }
 
-  if (contactFacilitationRate >= 50 && contactFacilitationRate < 75 && contact_facilitation_records.length > 0) {
+  if (meets(contactFacilitationRate, 50) && below(contactFacilitationRate, 75) && contact_facilitation_records.length > 0) {
     insights.push({
       text: `Contact facilitation at ${contactFacilitationRate}% — while some contacts are actively supported, a significant proportion are not being facilitated. Identifying and removing barriers to facilitation would improve the consistency and quality of sibling contact.`,
       severity: "warning",
     });
   }
 
-  if (relationshipQualityRate >= 30 && relationshipQualityRate < 60 && totalAssessmentRecords > 0) {
+  if (meets(relationshipQualityRate, 30) && below(relationshipQualityRate, 60) && totalAssessmentRecords > 0) {
     insights.push({
       text: `Sibling relationship quality at ${relationshipQualityRate}% — a notable number of relationships are assessed below good. Enhanced contact arrangements, therapeutic support, and relationship-building activities could help improve outcomes for these sibling groups.`,
       severity: "warning",
@@ -1108,56 +1103,56 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childSatisfactionRate >= 40 && childSatisfactionRate < 70 && totalWishesRecords > 0) {
+  if (meets(childSatisfactionRate, 40) && below(childSatisfactionRate, 70) && totalWishesRecords > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% — while some children are content with outcomes, a notable proportion are not. Understanding what drives dissatisfaction and adapting the home's response would improve children's experience of sibling contact.`,
       severity: "warning",
     });
   }
 
-  if (cancellationRate >= 15 && cancellationRate < 30 && totalContactRecords > 0) {
+  if (meets(cancellationRate, 15) && below(cancellationRate, 30) && totalContactRecords > 0) {
     insights.push({
       text: `Contact cancellation rate at ${cancellationRate}% — some contacts are being cancelled, causing disappointment for children. Implementing contingency plans and backup arrangements would reduce the impact of unavoidable cancellations.`,
       severity: "warning",
     });
   }
 
-  if (contactConcernRate >= 15 && contactConcernRate < 30 && nonCancelled.length > 0) {
+  if (meets(contactConcernRate, 15) && below(contactConcernRate, 30) && nonCancelled.length > 0) {
     insights.push({
       text: `Concerns raised in ${contactConcernRate}% of contacts — while not at critical levels, concerns during sibling contact require monitoring and action to ensure contact remains safe and positive for all children involved.`,
       severity: "warning",
     });
   }
 
-  if (frequentConflictRate >= 15 && frequentConflictRate < 25 && totalAssessmentRecords > 0) {
+  if (meets(frequentConflictRate, 15) && below(frequentConflictRate, 25) && totalAssessmentRecords > 0) {
     insights.push({
       text: `${frequentConflictRate}% of sibling relationships experiencing frequent conflict — emerging conflict patterns need to be addressed proactively before relationships deteriorate further.`,
       severity: "warning",
     });
   }
 
-  if (eventParticipationRate >= 50 && eventParticipationRate < 70 && totalChildrenInvited > 0) {
+  if (meets(eventParticipationRate, 50) && below(eventParticipationRate, 70) && totalChildrenInvited > 0) {
     insights.push({
       text: `Sibling event participation at ${eventParticipationRate}% — while many children attend, some are not participating. Exploring barriers and involving children in event planning could improve engagement.`,
       severity: "warning",
     });
   }
 
-  if (therapeuticFollowThroughRate >= 50 && therapeuticFollowThroughRate < 80 && therapeuticRecommended > 0) {
+  if (meets(therapeuticFollowThroughRate, 50) && below(therapeuticFollowThroughRate, 80) && therapeuticRecommended > 0) {
     insights.push({
       text: `Therapeutic follow-through at ${therapeuticFollowThroughRate}% — some recommended support for sibling relationships has not yet been secured. Prompt action is needed to prevent relationship deterioration.`,
       severity: "warning",
     });
   }
 
-  if (contactPlanRate >= 50 && contactPlanRate < 70 && nonCancelled.length > 0) {
+  if (meets(contactPlanRate, 50) && below(contactPlanRate, 70) && nonCancelled.length > 0) {
     insights.push({
       text: `Contact plan adherence at ${contactPlanRate}% — some contacts deviate from agreed arrangements. Consistent adherence to contact plans provides stability and predictability that children need.`,
       severity: "warning",
     });
   }
 
-  if (socialWorkerInformedRate >= 50 && socialWorkerInformedRate < 75 && totalWishesRecords > 0) {
+  if (meets(socialWorkerInformedRate, 50) && below(socialWorkerInformedRate, 75) && totalWishesRecords > 0) {
     insights.push({
       text: `Social worker informed of children's wishes in ${socialWorkerInformedRate}% of cases — sharing children's views with the placing authority strengthens multi-agency working and ensures sibling contact is considered in care planning.`,
       severity: "warning",
@@ -1168,8 +1163,8 @@ export function computeSiblingContactRelationships(
   const moreContactWishes = wishCategories["more_contact"] ?? 0;
   const lessContactWishes = wishCategories["less_contact"] ?? 0;
   if (moreContactWishes > 0 && totalWishesRecords > 0) {
-    const moreContactPct = pct(moreContactWishes, totalWishesRecords);
-    if (moreContactPct >= 40) {
+    const moreContactPct = rate(moreContactWishes, totalWishesRecords);
+    if (meets(moreContactPct, 40)) {
       insights.push({
         text: `${moreContactPct}% of children's wishes are for more sibling contact — this suggests current contact frequency may be insufficient. Children are clearly expressing a desire for more time with their siblings, and the home should respond by exploring ways to increase contact opportunities.`,
         severity: "warning",
@@ -1178,8 +1173,8 @@ export function computeSiblingContactRelationships(
   }
 
   if (lessContactWishes > 0 && totalWishesRecords > 0) {
-    const lessContactPct = pct(lessContactWishes, totalWishesRecords);
-    if (lessContactPct >= 20) {
+    const lessContactPct = rate(lessContactWishes, totalWishesRecords);
+    if (meets(lessContactPct, 20)) {
       insights.push({
         text: `${lessContactPct}% of children's wishes are for less sibling contact — some children may be finding contact stressful or unwanted. The home must respect these views and ensure contact arrangements are genuinely in each child's best interests, not imposed without regard to the child's feelings.`,
         severity: "warning",
@@ -1196,35 +1191,35 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (placementConsiderationRate >= 95 && documentationRate >= 90 && totalPlacementRecords > 0) {
+  if (meets(placementConsiderationRate, 95) && meets(documentationRate, 90) && totalPlacementRecords > 0) {
     insights.push({
       text: `${placementConsiderationRate}% placement consideration with ${documentationRate}% documentation — the home demonstrates exemplary practice in evidencing sibling placement decision-making, ensuring every sibling group receives proper consideration and that decisions are transparent and defensible.`,
       severity: "positive",
     });
   }
 
-  if (contactFacilitationRate >= 90 && contactPlanRate >= 90 && nonCancelled.length > 0) {
+  if (meets(contactFacilitationRate, 90) && meets(contactPlanRate, 90) && nonCancelled.length > 0) {
     insights.push({
       text: `${contactFacilitationRate}% contact facilitation with ${contactPlanRate}% plan adherence — the home consistently facilitates and delivers sibling contact in line with agreed arrangements, providing children with reliable and predictable opportunities to maintain family relationships.`,
       severity: "positive",
     });
   }
 
-  if (relationshipQualityRate >= 80 && positiveInteractionRate >= 80 && totalAssessmentRecords > 0) {
+  if (meets(relationshipQualityRate, 80) && meets(positiveInteractionRate, 80) && totalAssessmentRecords > 0) {
     insights.push({
       text: `${relationshipQualityRate}% relationship quality with ${positiveInteractionRate}% positive interactions observed — sibling relationships are thriving under the home's care, with warm and positive interactions characterising the majority of assessed sibling pairs.`,
       severity: "positive",
     });
   }
 
-  if ((childWishesRate ?? 0) >= 90 && childSatisfactionRate >= 90 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) >= 90 && meets(childSatisfactionRate, 90) && totalWishesRecords > 0) {
     insights.push({
       text: `${childWishesRate}% wishes response rate with ${childSatisfactionRate}% child satisfaction — children's voices are genuinely central to sibling contact decisions. The home demonstrates that listening to children leads to better outcomes and higher satisfaction.`,
       severity: "positive",
     });
   }
 
-  if (childEnjoyedRate >= 90 && siblingEnjoyedRate >= 90 && nonCancelled.length > 0) {
+  if (meets(childEnjoyedRate, 90) && meets(siblingEnjoyedRate, 90) && nonCancelled.length > 0) {
     insights.push({
       text: `${childEnjoyedRate}% of children and ${siblingEnjoyedRate}% of siblings enjoyed contact sessions — the overwhelmingly positive experience of contact demonstrates that arrangements are well-designed, properly facilitated, and genuinely beneficial for all children involved.`,
       severity: "positive",
@@ -1245,14 +1240,14 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (voiceCapturedRate >= 95 && ageAppropriateRate >= 90 && totalWishesRecords > 0) {
+  if (meets(voiceCapturedRate, 95) && meets(ageAppropriateRate, 90) && totalWishesRecords > 0) {
     insights.push({
       text: `${voiceCapturedRate}% voice capture with ${ageAppropriateRate}% using age-appropriate methods — the home excels at hearing children's authentic views using methods tailored to each child's developmental stage and communication needs.`,
       severity: "positive",
     });
   }
 
-  if (memoryBookRate >= 80 && photosRate >= 80 && totalEventRecords > 0) {
+  if (meets(memoryBookRate, 80) && meets(photosRate, 80) && totalEventRecords > 0) {
     insights.push({
       text: `Memory books updated for ${memoryBookRate}% and photos taken at ${photosRate}% of sibling events — the home actively preserves memories of sibling time together, supporting children's identity narrative and providing tangible evidence of valued family connections.`,
       severity: "positive",

@@ -74,24 +74,24 @@ export function HomeStaffPerformanceAppraisalIntelligenceCard() {
         {d.appraisal_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.appraisal_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.appraisal_completion_rate >= 90 ? "bg-green-50" : d.appraisal_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.appraisal_completion_rate >= 90 ? "text-[--cs-success]" : d.appraisal_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.appraisal_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.appraisal_completion_rate, 90) ? "bg-green-50" : meets(d.appraisal_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.appraisal_completion_rate, 90) ? "text-[--cs-success]" : meets(d.appraisal_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.appraisal_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Appraisal</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.target_achievement_rate >= 80 ? "bg-green-50" : d.target_achievement_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.target_achievement_rate >= 80 ? "text-[--cs-success]" : d.target_achievement_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.target_achievement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.target_achievement_rate, 80) ? "bg-green-50" : meets(d.target_achievement_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.target_achievement_rate, 80) ? "text-[--cs-success]" : meets(d.target_achievement_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.target_achievement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Targets</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.competency_rate >= 85 ? "bg-green-50" : d.competency_rate >= 65 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.competency_rate >= 85 ? "text-[--cs-success]" : d.competency_rate >= 65 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.competency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.competency_rate, 85) ? "bg-green-50" : meets(d.competency_rate, 65) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.competency_rate, 85) ? "text-[--cs-success]" : meets(d.competency_rate, 65) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.competency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Competency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.development_progress_rate >= 75 ? "bg-green-50" : d.development_progress_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.development_progress_rate >= 75 ? "text-[--cs-success]" : d.development_progress_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.development_progress_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.development_progress_rate, 75) ? "bg-green-50" : meets(d.development_progress_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.development_progress_rate, 75) ? "text-[--cs-success]" : meets(d.development_progress_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.development_progress_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dev. Goals</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.feedback_quality_rate >= 80 ? "bg-green-50" : d.feedback_quality_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.feedback_quality_rate >= 80 ? "text-[--cs-success]" : d.feedback_quality_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.feedback_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.feedback_quality_rate, 80) ? "bg-green-50" : meets(d.feedback_quality_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.feedback_quality_rate, 80) ? "text-[--cs-success]" : meets(d.feedback_quality_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.feedback_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_satisfaction_rate, 80) ? "bg-green-50" : meets(d.staff_satisfaction_rate, 60) ? "bg-amber-50" : d.staff_satisfaction_rate === null ? "bg-muted" : "bg-red-50")}>

@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF DEBRIEFING & CRITICAL INCIDENT SUPPORT INTELLIGENCE ENGINE
 // Pure deterministic engine: debriefing completion, critical incident support
@@ -143,10 +144,6 @@ export interface StaffDebriefingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -172,18 +169,18 @@ function emptyResult(
     total_wellbeing_followups: 0,
     total_learning_extractions: 0,
     total_support_accesses: 0,
-    debriefing_completion_rate: 0,
-    incident_support_rate: 0,
-    wellbeing_followup_rate: 0,
-    learning_extraction_rate: 0,
-    support_access_rate: 0,
-    staff_satisfaction_rate: 0,
-    offered_within_24h_rate: 0,
-    completed_within_48h_rate: 0,
-    management_response_rate: 0,
-    followup_on_time_rate: 0,
-    learning_implemented_rate: 0,
-    support_barriers_rate: 0,
+    debriefing_completion_rate: null,
+    incident_support_rate: null,
+    wellbeing_followup_rate: null,
+    learning_extraction_rate: null,
+    support_access_rate: null,
+    staff_satisfaction_rate: null,
+    offered_within_24h_rate: null,
+    completed_within_48h_rate: null,
+    management_response_rate: null,
+    followup_on_time_rate: null,
+    learning_implemented_rate: null,
+    support_barriers_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -269,19 +266,19 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const completedDebriefings = debriefing_records.filter(
     (r) => r.status === "completed",
   ).length;
-  const debriefingCompletionRate = pct(completedDebriefings, totalDebriefings);
+  const debriefingCompletionRate = rate(completedDebriefings, totalDebriefings);
 
   // Offered within 24h rate
   const offeredWithin24h = debriefing_records.filter(
     (r) => r.offered_within_24h,
   ).length;
-  const offeredWithin24hRate = pct(offeredWithin24h, totalDebriefings);
+  const offeredWithin24hRate = rate(offeredWithin24h, totalDebriefings);
 
   // Completed within 48h rate (of those completed)
   const completedWithin48h = debriefing_records.filter(
     (r) => r.status === "completed" && r.completed_within_48h,
   ).length;
-  const completedWithin48hRate = pct(completedWithin48h, completedDebriefings);
+  const completedWithin48hRate = rate(completedWithin48h, completedDebriefings);
 
   // Debrief quality (average staff rating out of 5 → normalised to 100)
   const completedWithRating = debriefing_records.filter(
@@ -298,19 +295,19 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const feltSupported = debriefing_records.filter(
     (r) => r.status === "completed" && r.staff_felt_supported,
   ).length;
-  const feltSupportedRate = pct(feltSupported, completedDebriefings);
+  const feltSupportedRate = rate(feltSupported, completedDebriefings);
 
   // Confidentiality maintained rate
   const confidentialityMaintained = debriefing_records.filter(
     (r) => r.status === "completed" && r.confidentiality_maintained,
   ).length;
-  const confidentialityRate = pct(confidentialityMaintained, completedDebriefings);
+  const confidentialityRate = rate(confidentialityMaintained, completedDebriefings);
 
   // Action plans created rate
   const actionPlans = debriefing_records.filter(
     (r) => r.status === "completed" && r.action_plan_created,
   ).length;
-  const actionPlanRate = pct(actionPlans, completedDebriefings);
+  const actionPlanRate = rate(actionPlans, completedDebriefings);
 
   // Overdue debriefings
   const overdueDebriefings = debriefing_records.filter(
@@ -343,7 +340,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const uniqueStaffDebriefed = new Set(
     debriefing_records.map((r) => r.staff_id),
   ).size;
-  const staffDebriefCoverageRate = pct(uniqueStaffDebriefed, total_staff);
+  const staffDebriefCoverageRate = rate(uniqueStaffDebriefed, total_staff);
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 2: CRITICAL INCIDENT SUPPORT METRICS
@@ -355,25 +352,25 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const immediateSupportOffered = critical_incident_records.filter(
     (r) => r.immediate_support_offered,
   ).length;
-  const incidentSupportRate = pct(immediateSupportOffered, totalCriticalIncidents);
+  const incidentSupportRate = rate(immediateSupportOffered, totalCriticalIncidents);
 
   // Management response within 1h rate
   const managementResponsed = critical_incident_records.filter(
     (r) => r.management_response_within_1h,
   ).length;
-  const managementResponseRate = pct(managementResponsed, totalCriticalIncidents);
+  const managementResponseRate = rate(managementResponsed, totalCriticalIncidents);
 
   // Debrief completed after critical incidents
   const incidentDebriefCompleted = critical_incident_records.filter(
     (r) => r.debrief_completed,
   ).length;
-  const incidentDebriefRate = pct(incidentDebriefCompleted, totalCriticalIncidents);
+  const incidentDebriefRate = rate(incidentDebriefCompleted, totalCriticalIncidents);
 
   // Staff welfare check completed rate
   const welfareCheckCompleted = critical_incident_records.filter(
     (r) => r.staff_welfare_check_completed,
   ).length;
-  const welfareCheckRate = pct(welfareCheckCompleted, totalCriticalIncidents);
+  const welfareCheckRate = rate(welfareCheckCompleted, totalCriticalIncidents);
 
   // Critical severity incidents
   const criticalSeverityIncidents = critical_incident_records.filter(
@@ -384,7 +381,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const supportAccepted = critical_incident_records.filter(
     (r) => r.immediate_support_offered && r.immediate_support_accepted,
   ).length;
-  const supportAcceptanceRate = pct(supportAccepted, immediateSupportOffered);
+  const supportAcceptanceRate = rate(supportAccepted, immediateSupportOffered);
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 3: WELLBEING FOLLOW-UP METRICS
@@ -396,25 +393,25 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const completedFollowups = wellbeing_followup_records.filter(
     (r) => r.status === "completed",
   ).length;
-  const wellbeingFollowupRate = pct(completedFollowups, totalWellbeingFollowups);
+  const wellbeingFollowupRate = rate(completedFollowups, totalWellbeingFollowups);
 
   // Follow-up on time rate (of completed)
   const followupsOnTime = wellbeing_followup_records.filter(
     (r) => r.status === "completed" && r.completed_on_time,
   ).length;
-  const followupOnTimeRate = pct(followupsOnTime, completedFollowups);
+  const followupOnTimeRate = rate(followupsOnTime, completedFollowups);
 
   // Staff satisfied with follow-up
   const followupSatisfied = wellbeing_followup_records.filter(
     (r) => r.status === "completed" && r.staff_satisfied,
   ).length;
-  const followupSatisfactionRate = pct(followupSatisfied, completedFollowups);
+  const followupSatisfactionRate = rate(followupSatisfied, completedFollowups);
 
   // Positive outcome rate
   const positiveOutcomes = wellbeing_followup_records.filter(
     (r) => r.status === "completed" && r.outcome_positive,
   ).length;
-  const positiveOutcomeRate = pct(positiveOutcomes, completedFollowups);
+  const positiveOutcomeRate = rate(positiveOutcomes, completedFollowups);
 
   // Overdue follow-ups
   const overdueFollowups = wellbeing_followup_records.filter(
@@ -428,7 +425,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const furtherScheduled = wellbeing_followup_records.filter(
     (r) => r.needs_further_followup && r.further_followup_scheduled,
   ).length;
-  const furtherFollowupRate = pct(furtherScheduled, furtherNeeded);
+  const furtherFollowupRate = rate(furtherScheduled, furtherNeeded);
 
   // Average days since incident for follow-ups
   const completedFollowupDays = wellbeing_followup_records
@@ -452,38 +449,36 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const learningShared = learning_extraction_records.filter(
     (r) => r.learning_shared_with_team,
   ).length;
-  const learningSharedRate = pct(learningShared, totalLearningExtractions);
+  const learningSharedRate = rate(learningShared, totalLearningExtractions);
 
   // Learning implemented rate
   const learningImplemented = learning_extraction_records.filter(
     (r) => r.implemented,
   ).length;
-  const learningImplementedRate = pct(learningImplemented, totalLearningExtractions);
+  const learningImplementedRate = rate(learningImplemented, totalLearningExtractions);
 
   // Impact assessed rate
   const impactAssessed = learning_extraction_records.filter(
     (r) => r.impact_assessed,
   ).length;
-  const impactAssessedRate = pct(impactAssessed, totalLearningExtractions);
+  const impactAssessedRate = rate(impactAssessed, totalLearningExtractions);
 
   // Linked to training plan rate
   const linkedToTraining = learning_extraction_records.filter(
     (r) => r.linked_to_training_plan,
   ).length;
-  const linkedToTrainingRate = pct(linkedToTraining, totalLearningExtractions);
+  const linkedToTrainingRate = rate(linkedToTraining, totalLearningExtractions);
 
   // Documented in learning log rate
   const documentedInLog = learning_extraction_records.filter(
     (r) => r.documented_in_learning_log,
   ).length;
-  const documentedInLogRate = pct(documentedInLog, totalLearningExtractions);
+  const documentedInLogRate = rate(documentedInLog, totalLearningExtractions);
 
   // Learning extraction rate (overall quality composite)
   // Combines: shared + implemented + documented
   const learningExtractionQuality =
-    totalLearningExtractions > 0
-      ? Math.round((learningSharedRate + learningImplementedRate + documentedInLogRate) / 3)
-      : null;
+    totalLearningExtractions > 0 ? Math.round((learningSharedRate! + learningImplementedRate! + documentedInLogRate!) / 3) : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 5: SUPPORT ACCESS METRICS
@@ -495,31 +490,31 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const supportAccessed = support_access_records.filter(
     (r) => r.accessed,
   ).length;
-  const supportAccessRate = pct(supportAccessed, totalSupportAccesses);
+  const supportAccessRate = rate(supportAccessed, totalSupportAccesses);
 
   // Staff found helpful rate (of those who accessed)
   const foundHelpful = support_access_records.filter(
     (r) => r.accessed && r.staff_found_helpful,
   ).length;
-  const foundHelpfulRate = pct(foundHelpful, supportAccessed);
+  const foundHelpfulRate = rate(foundHelpful, supportAccessed);
 
   // Barriers reported rate
   const barriersReported = support_access_records.filter(
     (r) => r.barriers_reported,
   ).length;
-  const barriersReportedRate = pct(barriersReported, totalSupportAccesses);
+  const barriersReportedRate = rate(barriersReported, totalSupportAccesses);
 
   // Confidential support rate
   const confidentialSupport = support_access_records.filter(
     (r) => r.confidential,
   ).length;
-  const confidentialSupportRate = pct(confidentialSupport, totalSupportAccesses);
+  const confidentialSupportRate = rate(confidentialSupport, totalSupportAccesses);
 
   // Repeat access rate (indicates ongoing support or unresolved need)
   const repeatAccess = support_access_records.filter(
     (r) => r.repeat_access,
   ).length;
-  const repeatAccessRate = pct(repeatAccess, totalSupportAccesses);
+  const repeatAccessRate = rate(repeatAccess, totalSupportAccesses);
 
   // Support type variety
   const uniqueSupportTypes = new Set(
@@ -530,7 +525,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const uniqueStaffAccessingSupport = new Set(
     support_access_records.map((r) => r.staff_id),
   ).size;
-  const staffSupportCoverageRate = pct(uniqueStaffAccessingSupport, total_staff);
+  const staffSupportCoverageRate = rate(uniqueStaffAccessingSupport, total_staff);
 
   // Barrier type breakdown
   const stigmaBarriers = support_access_records.filter(
@@ -551,18 +546,13 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   // - felt supported in debriefings
   // - satisfied with wellbeing follow-ups
   // - found support helpful
-  const satisfactionComponents: number[] = [];
+  const satisfactionComponents: (number | null)[] = [];
   if (completedDebriefings > 0) satisfactionComponents.push(feltSupportedRate);
   if (completedFollowups > 0) satisfactionComponents.push(followupSatisfactionRate);
   if (supportAccessed > 0) satisfactionComponents.push(foundHelpfulRate);
 
   const staffSatisfactionRate =
-    satisfactionComponents.length > 0
-      ? Math.round(
-          satisfactionComponents.reduce((s, v) => s + v, 0) /
-            satisfactionComponents.length,
-        )
-      : null;
+    meanOf(satisfactionComponents);
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — base=52, max bonuses=+28, 4 penalties guarded by .length>0
@@ -572,53 +562,51 @@ export function computeStaffDebriefingCriticalIncidentSupport(
 
   // ── Bonus 1: Debriefing completion quality (+0 to +7) ────────────────
   if (totalDebriefings > 0) {
-    if (debriefingCompletionRate >= 90 && offeredWithin24hRate >= 85) {
+    if (meets(debriefingCompletionRate, 90) && meets(offeredWithin24hRate, 85)) {
       score += 7;
-    } else if (debriefingCompletionRate >= 80 && offeredWithin24hRate >= 70) {
+    } else if (meets(debriefingCompletionRate, 80) && meets(offeredWithin24hRate, 70)) {
       score += 5;
-    } else if (debriefingCompletionRate >= 65) {
+    } else if (meets(debriefingCompletionRate, 65)) {
       score += 3;
-    } else if (debriefingCompletionRate >= 50) {
+    } else if (meets(debriefingCompletionRate, 50)) {
       score += 1;
     }
   }
 
   // ── Bonus 2: Critical incident support timeliness (+0 to +7) ────────
   if (totalCriticalIncidents > 0) {
-    if (incidentSupportRate >= 95 && managementResponseRate >= 90) {
+    if (meets(incidentSupportRate, 95) && meets(managementResponseRate, 90)) {
       score += 7;
-    } else if (incidentSupportRate >= 85 && managementResponseRate >= 75) {
+    } else if (meets(incidentSupportRate, 85) && meets(managementResponseRate, 75)) {
       score += 5;
-    } else if (incidentSupportRate >= 70) {
+    } else if (meets(incidentSupportRate, 70)) {
       score += 3;
-    } else if (incidentSupportRate >= 50) {
+    } else if (meets(incidentSupportRate, 50)) {
       score += 1;
     }
   }
 
   // ── Bonus 3: Wellbeing follow-up effectiveness (+0 to +7) ──────────
   if (totalWellbeingFollowups > 0) {
-    if (wellbeingFollowupRate >= 90 && followupOnTimeRate >= 85 && positiveOutcomeRate >= 80) {
+    if (meets(wellbeingFollowupRate, 90) && meets(followupOnTimeRate, 85) && meets(positiveOutcomeRate, 80)) {
       score += 7;
-    } else if (wellbeingFollowupRate >= 80 && followupOnTimeRate >= 70) {
+    } else if (meets(wellbeingFollowupRate, 80) && meets(followupOnTimeRate, 70)) {
       score += 5;
-    } else if (wellbeingFollowupRate >= 65) {
+    } else if (meets(wellbeingFollowupRate, 65)) {
       score += 3;
-    } else if (wellbeingFollowupRate >= 50) {
+    } else if (meets(wellbeingFollowupRate, 50)) {
       score += 1;
     }
   }
 
   // ── Bonus 4: Learning extraction & support access (+0 to +7) ───────
   if (totalLearningExtractions > 0 || totalSupportAccesses > 0) {
-    const learningScore = totalLearningExtractions > 0 ? learningExtractionQuality : 0;
-    const accessScore = totalSupportAccesses > 0 ? supportAccessRate : 0;
-    const combinedAccessLearning =
-      totalLearningExtractions > 0 && totalSupportAccesses > 0
-        ? Math.round(((learningScore ?? 0) + accessScore) / 2)
-        : totalLearningExtractions > 0
-          ? learningScore
-          : accessScore;
+    // meanOf averages the measured components; both unmeasured -> null
+    // instead of the old fabricated 0.
+    const combinedAccessLearning = meanOf([
+      totalLearningExtractions > 0 ? learningExtractionQuality : null,
+      totalSupportAccesses > 0 ? supportAccessRate : null,
+    ]);
 
     if ((combinedAccessLearning ?? 0) >= 85 && uniqueSupportTypes >= 4) {
       score += 7;
@@ -633,50 +621,50 @@ export function computeStaffDebriefingCriticalIncidentSupport(
 
   // ── Penalty 1: Overdue debriefings (guarded) ────────────────────────
   if (debriefing_records.length > 0) {
-    const overdueRate = pct(overdueDebriefings, totalDebriefings);
-    if (overdueRate > 30) {
+    const overdueRate = rate(overdueDebriefings, totalDebriefings);
+    if (above(overdueRate, 30)) {
       score -= 8;
-    } else if (overdueRate > 15) {
+    } else if (above(overdueRate, 15)) {
       score -= 5;
-    } else if (overdueRate > 5) {
+    } else if (above(overdueRate, 5)) {
       score -= 2;
     }
   }
 
   // ── Penalty 2: Critical incidents without debrief (guarded) ─────────
   if (critical_incident_records.length > 0) {
-    const noDebriefRate = pct(
+    const noDebriefRate = rate(
       totalCriticalIncidents - incidentDebriefCompleted,
       totalCriticalIncidents,
     );
-    if (noDebriefRate > 40) {
+    if (above(noDebriefRate, 40)) {
       score -= 8;
-    } else if (noDebriefRate > 20) {
+    } else if (above(noDebriefRate, 20)) {
       score -= 5;
-    } else if (noDebriefRate > 10) {
+    } else if (above(noDebriefRate, 10)) {
       score -= 2;
     }
   }
 
   // ── Penalty 3: Overdue wellbeing follow-ups (guarded) ──────────────
   if (wellbeing_followup_records.length > 0) {
-    const overdueFollowupRate = pct(overdueFollowups, totalWellbeingFollowups);
-    if (overdueFollowupRate > 30) {
+    const overdueFollowupRate = rate(overdueFollowups, totalWellbeingFollowups);
+    if (above(overdueFollowupRate, 30)) {
       score -= 6;
-    } else if (overdueFollowupRate > 15) {
+    } else if (above(overdueFollowupRate, 15)) {
       score -= 3;
-    } else if (overdueFollowupRate > 5) {
+    } else if (above(overdueFollowupRate, 5)) {
       score -= 1;
     }
   }
 
   // ── Penalty 4: Support access barriers (guarded) ───────────────────
   if (support_access_records.length > 0) {
-    if (barriersReportedRate > 40) {
+    if (above(barriersReportedRate, 40)) {
       score -= 6;
-    } else if (barriersReportedRate > 20) {
+    } else if (above(barriersReportedRate, 20)) {
       score -= 3;
-    } else if (barriersReportedRate > 10) {
+    } else if (above(barriersReportedRate, 10)) {
       score -= 1;
     }
   }
@@ -718,17 +706,17 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const strengths: string[] = [];
 
   // Debriefing strengths
-  if (debriefingCompletionRate >= 90 && totalDebriefings > 0) {
+  if (meets(debriefingCompletionRate, 90) && totalDebriefings > 0) {
     strengths.push(
       "Debriefing completion rate is outstanding — virtually all incidents receive structured debriefing, ensuring staff are consistently supported.",
     );
   }
-  if (offeredWithin24hRate >= 90 && totalDebriefings > 0) {
+  if (meets(offeredWithin24hRate, 90) && totalDebriefings > 0) {
     strengths.push(
       "Debriefings are almost always offered within 24 hours of an incident — timely support reduces the risk of long-term emotional impact on staff.",
     );
   }
-  if (feltSupportedRate >= 90 && completedDebriefings > 0) {
+  if (meets(feltSupportedRate, 90) && completedDebriefings > 0) {
     strengths.push(
       "Staff overwhelmingly report feeling supported during debriefings — this indicates a genuine culture of care and psychological safety.",
     );
@@ -738,80 +726,80 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "Staff rate debriefing quality highly — the process is meaningful, not just a tick-box exercise.",
     );
   }
-  if (confidentialityRate >= 95 && completedDebriefings > 0) {
+  if (meets(confidentialityRate, 95) && completedDebriefings > 0) {
     strengths.push(
       "Confidentiality is consistently maintained in debriefings — staff can be open about their emotional responses without fear.",
     );
   }
 
   // Critical incident strengths
-  if (incidentSupportRate >= 95 && totalCriticalIncidents > 0) {
+  if (meets(incidentSupportRate, 95) && totalCriticalIncidents > 0) {
     strengths.push(
       "Immediate support is offered in virtually all critical incidents — staff are not left unsupported after traumatic events.",
     );
   }
-  if (managementResponseRate >= 90 && totalCriticalIncidents > 0) {
+  if (meets(managementResponseRate, 90) && totalCriticalIncidents > 0) {
     strengths.push(
       "Management responds within one hour to critical incidents in the vast majority of cases — leadership presence during crises is strong.",
     );
   }
-  if (welfareCheckRate >= 90 && totalCriticalIncidents > 0) {
+  if (meets(welfareCheckRate, 90) && totalCriticalIncidents > 0) {
     strengths.push(
       "Staff welfare checks are completed after nearly all critical incidents — demonstrating systematic concern for staff wellbeing.",
     );
   }
 
   // Wellbeing follow-up strengths
-  if (wellbeingFollowupRate >= 90 && totalWellbeingFollowups > 0) {
+  if (meets(wellbeingFollowupRate, 90) && totalWellbeingFollowups > 0) {
     strengths.push(
       "Wellbeing follow-up completion rate is outstanding — staff receive sustained support, not just an initial response.",
     );
   }
-  if (followupOnTimeRate >= 90 && completedFollowups > 0) {
+  if (meets(followupOnTimeRate, 90) && completedFollowups > 0) {
     strengths.push(
       "Follow-ups are completed on time in the vast majority of cases — the home does not let post-incident support drift.",
     );
   }
-  if (positiveOutcomeRate >= 85 && completedFollowups > 0) {
+  if (meets(positiveOutcomeRate, 85) && completedFollowups > 0) {
     strengths.push(
       "Follow-up outcomes are overwhelmingly positive — staff are recovering well with the support provided.",
     );
   }
-  if (furtherFollowupRate >= 90 && furtherNeeded > 0) {
+  if (meets(furtherFollowupRate, 90) && furtherNeeded > 0) {
     strengths.push(
       "Where further follow-up is needed, it is reliably scheduled — ongoing support needs are not overlooked.",
     );
   }
 
   // Learning extraction strengths
-  if (learningImplementedRate >= 85 && totalLearningExtractions > 0) {
+  if (meets(learningImplementedRate, 85) && totalLearningExtractions > 0) {
     strengths.push(
       "Learning from incidents is implemented at a high rate — the home turns painful experiences into practice improvements.",
     );
   }
-  if (learningSharedRate >= 90 && totalLearningExtractions > 0) {
+  if (meets(learningSharedRate, 90) && totalLearningExtractions > 0) {
     strengths.push(
       "Learning is shared with the wider team — ensuring the whole workforce benefits from incident reflections.",
     );
   }
-  if (impactAssessedRate >= 80 && totalLearningExtractions > 0) {
+  if (meets(impactAssessedRate, 80) && totalLearningExtractions > 0) {
     strengths.push(
       "The impact of learning actions is systematically assessed — demonstrating a mature approach to continuous improvement.",
     );
   }
-  if (linkedToTrainingRate >= 75 && totalLearningExtractions > 0) {
+  if (meets(linkedToTrainingRate, 75) && totalLearningExtractions > 0) {
     strengths.push(
       "Incident learning is linked to training plans — closing the loop between experience and professional development.",
     );
   }
 
   // Support access strengths
-  if (supportAccessRate >= 90 && totalSupportAccesses > 0) {
+  if (meets(supportAccessRate, 90) && totalSupportAccesses > 0) {
     strengths.push(
       "Staff support access rate is outstanding — staff are actively using available support services.",
     );
   }
-  if (foundHelpfulRate >= 90 && supportAccessed > 0) {
+  if (meets(foundHelpfulRate, 90) && supportAccessed > 0) {
     strengths.push(
       "Staff overwhelmingly find support services helpful — indicating the right types of support are available.",
     );
@@ -821,12 +809,12 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "A wide variety of support types are available — staff can access the form of support that works best for them.",
     );
   }
-  if (barriersReportedRate <= 5 && totalSupportAccesses > 0) {
+  if (totalSupportAccesses > 0 && barriersReportedRate! <= 5) {
     strengths.push(
       "Very few barriers to accessing support are reported — the home has created an environment where seeking help is normalised.",
     );
   }
-  if (confidentialSupportRate >= 95 && totalSupportAccesses > 0) {
+  if (meets(confidentialSupportRate, 95) && totalSupportAccesses > 0) {
     strengths.push(
       "Confidentiality in support provision is consistently maintained — encouraging staff to engage openly.",
     );
@@ -842,8 +830,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     );
   }
   if (
-    staffDebriefCoverageRate >= 80 &&
-    staffSupportCoverageRate >= 60 &&
+    meets(staffDebriefCoverageRate, 80) &&
+    meets(staffSupportCoverageRate, 60) &&
     totalDebriefings > 0 &&
     totalSupportAccesses > 0
   ) {
@@ -866,27 +854,27 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "No debriefing records exist despite other incident data being present — staff may not be receiving structured debriefing after incidents.",
     );
   }
-  if (debriefingCompletionRate < 60 && totalDebriefings > 0) {
+  if (below(debriefingCompletionRate, 60) && totalDebriefings > 0) {
     concerns.push(
       "Debriefing completion rate is below 60% — a significant proportion of incidents do not result in completed debriefings, leaving staff unsupported.",
     );
   }
-  if (offeredWithin24hRate < 50 && totalDebriefings > 0) {
+  if (below(offeredWithin24hRate, 50) && totalDebriefings > 0) {
     concerns.push(
       "Debriefings are offered within 24 hours in fewer than half of cases — delayed support reduces its therapeutic effectiveness.",
     );
   }
-  if (overdueDebriefings > 0 && pct(overdueDebriefings, totalDebriefings) > 15) {
+  if (overdueDebriefings > 0 && above(rate(overdueDebriefings, totalDebriefings), 15)) {
     concerns.push(
       `${overdueDebriefings} debriefings are overdue — staff are waiting for support that has been promised but not delivered.`,
     );
   }
-  if (notOfferedDebriefings > 0 && pct(notOfferedDebriefings, totalDebriefings) > 10) {
+  if (notOfferedDebriefings > 0 && above(rate(notOfferedDebriefings, totalDebriefings), 10)) {
     concerns.push(
       `${notOfferedDebriefings} debriefings were not offered — some staff are not being given the opportunity for post-incident support.`,
     );
   }
-  if (feltSupportedRate < 60 && completedDebriefings > 0) {
+  if (below(feltSupportedRate, 60) && completedDebriefings > 0) {
     concerns.push(
       "Fewer than 60% of staff report feeling supported during debriefings — the process may lack depth, safety, or genuine engagement.",
     );
@@ -903,22 +891,22 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "No critical incident records exist despite other data being present — either incidents are not being classified or recording is incomplete.",
     );
   }
-  if (incidentSupportRate < 70 && totalCriticalIncidents > 0) {
+  if (below(incidentSupportRate, 70) && totalCriticalIncidents > 0) {
     concerns.push(
       "Immediate support is offered in fewer than 70% of critical incidents — staff involved in serious events may be left without timely help.",
     );
   }
-  if (managementResponseRate < 60 && totalCriticalIncidents > 0) {
+  if (below(managementResponseRate, 60) && totalCriticalIncidents > 0) {
     concerns.push(
       "Management response within one hour is below 60% — leadership is not consistently present during critical incidents.",
     );
   }
-  if (incidentDebriefRate < 60 && totalCriticalIncidents > 0) {
+  if (below(incidentDebriefRate, 60) && totalCriticalIncidents > 0) {
     concerns.push(
       "Debriefs are completed for fewer than 60% of critical incidents — many serious events lack structured reflection and support.",
     );
   }
-  if (welfareCheckRate < 70 && totalCriticalIncidents > 0) {
+  if (below(welfareCheckRate, 70) && totalCriticalIncidents > 0) {
     concerns.push(
       "Staff welfare checks are not completed after a significant proportion of critical incidents — ongoing welfare needs may go unidentified.",
     );
@@ -930,27 +918,27 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "No wellbeing follow-up records exist — staff may not be receiving sustained support after initial incident response.",
     );
   }
-  if (wellbeingFollowupRate < 60 && totalWellbeingFollowups > 0) {
+  if (below(wellbeingFollowupRate, 60) && totalWellbeingFollowups > 0) {
     concerns.push(
       "Wellbeing follow-up completion rate is below 60% — initial promises of ongoing support are not being fulfilled.",
     );
   }
-  if (overdueFollowups > 0 && pct(overdueFollowups, totalWellbeingFollowups) > 15) {
+  if (overdueFollowups > 0 && above(rate(overdueFollowups, totalWellbeingFollowups), 15)) {
     concerns.push(
       `${overdueFollowups} wellbeing follow-ups are overdue — staff with identified support needs are waiting for scheduled help.`,
     );
   }
-  if (followupSatisfactionRate < 50 && completedFollowups > 0) {
+  if (below(followupSatisfactionRate, 50) && completedFollowups > 0) {
     concerns.push(
       "Staff satisfaction with wellbeing follow-ups is below 50% — the support provided may not be meeting staff needs.",
     );
   }
-  if (positiveOutcomeRate < 50 && completedFollowups > 0) {
+  if (below(positiveOutcomeRate, 50) && completedFollowups > 0) {
     concerns.push(
       "Fewer than half of wellbeing follow-ups result in positive outcomes — the effectiveness of the support pathway needs review.",
     );
   }
-  if (furtherFollowupRate < 60 && furtherNeeded > 0) {
+  if (below(furtherFollowupRate, 60) && furtherNeeded > 0) {
     concerns.push(
       "Where further follow-up is identified as needed, it is not reliably scheduled — ongoing support needs are falling through gaps.",
     );
@@ -962,17 +950,17 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "No learning extraction records exist — the home is not systematically capturing lessons from incidents to improve practice.",
     );
   }
-  if (learningImplementedRate < 50 && totalLearningExtractions > 0) {
+  if (below(learningImplementedRate, 50) && totalLearningExtractions > 0) {
     concerns.push(
       "Fewer than half of identified learning points are implemented — incidents are repeated without practice change.",
     );
   }
-  if (learningSharedRate < 50 && totalLearningExtractions > 0) {
+  if (below(learningSharedRate, 50) && totalLearningExtractions > 0) {
     concerns.push(
       "Learning is shared with the team in fewer than half of cases — lessons are being lost rather than embedded in practice.",
     );
   }
-  if (documentedInLogRate < 50 && totalLearningExtractions > 0) {
+  if (below(documentedInLogRate, 50) && totalLearningExtractions > 0) {
     concerns.push(
       "Learning is not documented in a learning log in most cases — the home cannot evidence a systematic approach to incident learning.",
     );
@@ -984,27 +972,27 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       "No support access records exist — either staff are not being offered support or access is not being tracked.",
     );
   }
-  if (supportAccessRate < 60 && totalSupportAccesses > 0) {
+  if (below(supportAccessRate, 60) && totalSupportAccesses > 0) {
     concerns.push(
       "Support access rate is below 60% — staff may face barriers to accessing available support services.",
     );
   }
-  if (barriersReportedRate > 30 && totalSupportAccesses > 0) {
+  if (above(barriersReportedRate, 30) && totalSupportAccesses > 0) {
     concerns.push(
       "More than 30% of staff report barriers to accessing support — the home needs to address systemic obstacles to help-seeking.",
     );
   }
-  if (stigmaBarriers > 0 && pct(stigmaBarriers, totalSupportAccesses) > 10) {
+  if (stigmaBarriers > 0 && above(rate(stigmaBarriers, totalSupportAccesses), 10)) {
     concerns.push(
       "Stigma is reported as a barrier to accessing support — the home's culture may discourage staff from seeking help when they need it.",
     );
   }
-  if (awarenessBarriers > 0 && pct(awarenessBarriers, totalSupportAccesses) > 15) {
+  if (awarenessBarriers > 0 && above(rate(awarenessBarriers, totalSupportAccesses), 15)) {
     concerns.push(
       "Lack of awareness is a significant barrier to support access — staff may not know what support is available to them.",
     );
   }
-  if (foundHelpfulRate < 50 && supportAccessed > 0) {
+  if (below(foundHelpfulRate, 50) && supportAccessed > 0) {
     concerns.push(
       "Fewer than half of staff who access support find it helpful — the type or quality of support available needs review.",
     );
@@ -1029,7 +1017,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const recs: StaffDebriefingResult["recommendations"] = [];
 
   // Immediate urgency recommendations
-  if (debriefingCompletionRate < 50 && totalDebriefings > 0) {
+  if (below(debriefingCompletionRate, 50) && totalDebriefings > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1038,7 +1026,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (incidentSupportRate < 60 && totalCriticalIncidents > 0) {
+  if (below(incidentSupportRate, 60) && totalCriticalIncidents > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1047,7 +1035,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 34 — Safeguarding",
     });
   }
-  if (managementResponseRate < 50 && totalCriticalIncidents > 0) {
+  if (below(managementResponseRate, 50) && totalCriticalIncidents > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1065,7 +1053,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (wellbeingFollowupRate < 50 && totalWellbeingFollowups > 0) {
+  if (below(wellbeingFollowupRate, 50) && totalWellbeingFollowups > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1076,7 +1064,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
 
   // Soon urgency recommendations
-  if (offeredWithin24hRate < 70 && totalDebriefings > 0 && debriefingCompletionRate >= 50) {
+  if (below(offeredWithin24hRate, 70) && totalDebriefings > 0 && meets(debriefingCompletionRate, 50)) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1085,7 +1073,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (learningImplementedRate < 60 && totalLearningExtractions > 0) {
+  if (below(learningImplementedRate, 60) && totalLearningExtractions > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1094,7 +1082,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "SCCIF — Leadership and Management",
     });
   }
-  if (learningSharedRate < 60 && totalLearningExtractions > 0) {
+  if (below(learningSharedRate, 60) && totalLearningExtractions > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1103,7 +1091,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "SCCIF — Leadership and Management",
     });
   }
-  if (barriersReportedRate > 20 && totalSupportAccesses > 0) {
+  if (above(barriersReportedRate, 20) && totalSupportAccesses > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1112,7 +1100,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 33 — Employment of staff",
     });
   }
-  if (welfareCheckRate < 80 && totalCriticalIncidents > 0 && welfareCheckRate >= 50) {
+  if (below(welfareCheckRate, 80) && totalCriticalIncidents > 0 && meets(welfareCheckRate, 50)) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1150,7 +1138,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (actionPlanRate < 60 && completedDebriefings > 0) {
+  if (below(actionPlanRate, 60) && completedDebriefings > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1159,7 +1147,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "SCCIF — Leadership and Management",
     });
   }
-  if (linkedToTrainingRate < 50 && totalLearningExtractions > 0) {
+  if (below(linkedToTrainingRate, 50) && totalLearningExtractions > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1168,7 +1156,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 33 — Employment of staff",
     });
   }
-  if (impactAssessedRate < 50 && totalLearningExtractions > 0) {
+  if (below(impactAssessedRate, 50) && totalLearningExtractions > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1177,7 +1165,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "SCCIF — Leadership and Management",
     });
   }
-  if (staffDebriefCoverageRate < 50 && totalDebriefings > 0) {
+  if (below(staffDebriefCoverageRate, 50) && totalDebriefings > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1186,7 +1174,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (repeatAccessRate > 40 && totalSupportAccesses > 0) {
+  if (above(repeatAccessRate, 40) && totalSupportAccesses > 0) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1195,7 +1183,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
       regulatory_ref: "CHR 2015 Reg 16 — Workforce",
     });
   }
-  if (stigmaBarriers > 0 && pct(stigmaBarriers, totalSupportAccesses) > 5) {
+  if (stigmaBarriers > 0 && above(rate(stigmaBarriers, totalSupportAccesses), 5)) {
     recs.push({
       rank: recs.length + 1,
       recommendation:
@@ -1216,8 +1204,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   // Critical insights
   if (
     totalCriticalIncidents > 0 &&
-    incidentSupportRate < 50 &&
-    debriefingCompletionRate < 50
+    below(incidentSupportRate, 50) &&
+    below(debriefingCompletionRate, 50)
   ) {
     insights.push({
       text: "Both immediate incident support and debriefing completion are below 50% — the home's post-incident support system is failing staff. Ofsted will view this as a leadership and management weakness under the SCCIF framework, with implications for Reg 16 compliance.",
@@ -1226,12 +1214,12 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     criticalSeverityIncidents > 0 &&
-    pct(
+    above(rate(
       critical_incident_records.filter(
         (r) => r.severity === "critical" && !r.debrief_completed,
       ).length,
       criticalSeverityIncidents,
-    ) > 30
+    ), 30)
   ) {
     insights.push({
       text: "Critical-severity incidents are occurring without completed debriefs — staff involved in the most traumatic events are being left without structured support. This is a safeguarding concern under Reg 34 as unsupported staff cannot provide safe care.",
@@ -1240,7 +1228,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     totalWellbeingFollowups > 0 &&
-    wellbeingFollowupRate < 40 &&
+    below(wellbeingFollowupRate, 40) &&
     overdueFollowups > 3
   ) {
     insights.push({
@@ -1258,7 +1246,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    barriersReportedRate > 40 &&
+    above(barriersReportedRate, 40) &&
     stigmaBarriers > 0 &&
     totalSupportAccesses > 0
   ) {
@@ -1271,8 +1259,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   // Warning insights
   if (
     totalDebriefings > 0 &&
-    debriefingCompletionRate >= 50 &&
-    debriefingCompletionRate < 75
+    meets(debriefingCompletionRate, 50) &&
+    below(debriefingCompletionRate, 75)
   ) {
     insights.push({
       text: "Debriefing completion is adequate but not consistent — around a quarter to half of incidents do not receive completed debriefing. This inconsistency means some staff receive good support while others do not.",
@@ -1281,8 +1269,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     totalCriticalIncidents > 0 &&
-    incidentSupportRate >= 50 &&
-    incidentSupportRate < 80
+    meets(incidentSupportRate, 50) &&
+    below(incidentSupportRate, 80)
   ) {
     insights.push({
       text: "Immediate support is offered in most but not all critical incidents — the gaps are concerning because staff involved in untreated critical events are at higher risk of burnout and secondary trauma.",
@@ -1291,7 +1279,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     declinedDebriefings > 0 &&
-    pct(declinedDebriefings, totalDebriefings) > 20
+    above(rate(declinedDebriefings, totalDebriefings), 20)
   ) {
     insights.push({
       text: "A significant proportion of debriefings are declined by staff — this may indicate the process is not trusted, not helpful, or that staff fear consequences of emotional disclosure. Consider reviewing the debriefing approach.",
@@ -1300,9 +1288,9 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     totalLearningExtractions > 0 &&
-    learningImplementedRate >= 50 &&
-    learningImplementedRate < 75 &&
-    impactAssessedRate < 50
+    meets(learningImplementedRate, 50) &&
+    below(learningImplementedRate, 75) &&
+    below(impactAssessedRate, 50)
   ) {
     insights.push({
       text: "Learning is being extracted and partially implemented but impact is rarely assessed — the home cannot evidence whether changes actually improve practice. This closes the loop on paper but not in reality.",
@@ -1311,7 +1299,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     highImpactDebriefings > 0 &&
-    pct(highImpactDebriefings, totalDebriefings) > 40
+    above(rate(highImpactDebriefings, totalDebriefings), 40)
   ) {
     insights.push({
       text: "A high proportion of debriefings relate to high or severe emotional impact incidents — the staff team is regularly exposed to significant trauma. Consider proactive wellbeing interventions beyond reactive debriefing.",
@@ -1329,7 +1317,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   }
   if (
     availabilityBarriers > 0 &&
-    pct(availabilityBarriers, totalSupportAccesses) > 15
+    above(rate(availabilityBarriers, totalSupportAccesses), 15)
   ) {
     insights.push({
       text: "Availability is a significant barrier to support access — staff may know what is available but cannot access it due to scheduling, location, or capacity constraints.",
@@ -1337,7 +1325,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    supportAcceptanceRate < 60 &&
+    below(supportAcceptanceRate, 60) &&
     immediateSupportOffered > 0
   ) {
     insights.push({
@@ -1348,9 +1336,9 @@ export function computeStaffDebriefingCriticalIncidentSupport(
 
   // Positive insights
   if (
-    debriefingCompletionRate >= 90 &&
-    incidentSupportRate >= 90 &&
-    wellbeingFollowupRate >= 85 &&
+    meets(debriefingCompletionRate, 90) &&
+    meets(incidentSupportRate, 90) &&
+    meets(wellbeingFollowupRate, 85) &&
     totalDebriefings > 0 &&
     totalCriticalIncidents > 0 &&
     totalWellbeingFollowups > 0
@@ -1361,9 +1349,9 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    learningImplementedRate >= 85 &&
-    learningSharedRate >= 90 &&
-    impactAssessedRate >= 80 &&
+    meets(learningImplementedRate, 85) &&
+    meets(learningSharedRate, 90) &&
+    meets(impactAssessedRate, 80) &&
     totalLearningExtractions > 0
   ) {
     insights.push({
@@ -1381,9 +1369,9 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    barriersReportedRate <= 5 &&
-    supportAccessRate >= 90 &&
-    foundHelpfulRate >= 90 &&
+    barriersReportedRate! <= 5 &&
+    meets(supportAccessRate, 90) &&
+    meets(foundHelpfulRate, 90) &&
     totalSupportAccesses > 0
   ) {
     insights.push({
@@ -1403,8 +1391,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    welfareCheckRate >= 95 &&
-    managementResponseRate >= 95 &&
+    meets(welfareCheckRate, 95) &&
+    meets(managementResponseRate, 95) &&
     totalCriticalIncidents > 0
   ) {
     insights.push({
@@ -1413,8 +1401,8 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    furtherFollowupRate >= 95 &&
-    positiveOutcomeRate >= 90 &&
+    meets(furtherFollowupRate, 95) &&
+    meets(positiveOutcomeRate, 90) &&
     furtherNeeded > 0
   ) {
     insights.push({

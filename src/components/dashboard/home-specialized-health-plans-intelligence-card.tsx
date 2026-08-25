@@ -123,10 +123,10 @@ export function HomeSpecializedHealthPlansIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.plan_coverage.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.plan_coverage.child_coverage >= 60 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.plan_coverage.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.plan_coverage.child_coverage, 60) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.plan_coverage.total_plans > 0 ? `${d.plan_coverage.child_coverage}%` : "—"}
+                  {d.plan_coverage.total_plans > 0 ? `${formatRate(d.plan_coverage.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Coverage</p>

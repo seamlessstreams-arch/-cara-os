@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SupervisionRating } from "@/lib/engines/home-staff-supervision-reflective-practice-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeStaffSupervisionReflectivePracticeIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeStaffSupervisionReflectivePracticeIntelligenceCard() {
             <Users className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-violet-600")} />
             <span className="text-slate-900 font-bold">Staff Supervision & Reflective Practice</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.supervision_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.supervision_score}%</span>}
+            {d.supervision_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.supervision_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeStaffSupervisionReflectivePracticeIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.supervision_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.supervision_timeliness_rate >= 90 ? "bg-green-50" : d.supervision_timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.supervision_timeliness_rate >= 90 ? "text-[--cs-success]" : d.supervision_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.supervision_timeliness_rate, 90) ? "bg-green-50" : meets(d.supervision_timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.supervision_timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.supervision_timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.supervision_timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.supervision_quality_avg >= 4.0 ? "bg-green-50" : d.supervision_quality_avg >= 3.0 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.supervision_quality_avg >= 4.0 ? "text-[--cs-success]" : d.supervision_quality_avg >= 3.0 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_quality_avg}</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.supervision_quality_avg, 4.0) ? "bg-green-50" : meets(d.supervision_quality_avg, 3.0) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.supervision_quality_avg, 4.0) ? "text-[--cs-success]" : meets(d.supervision_quality_avg, 3.0) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_quality_avg}</p>
               <p className="text-[9px] text-muted-foreground">Quality</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_supervision_coverage_rate >= 90 ? "bg-green-50" : d.safeguarding_supervision_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_supervision_coverage_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_supervision_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_supervision_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safeguarding_supervision_coverage_rate, 90) ? "bg-green-50" : meets(d.safeguarding_supervision_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safeguarding_supervision_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.safeguarding_supervision_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_supervision_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safeguard</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reflective_practice_engagement_rate >= 90 ? "bg-green-50" : d.reflective_practice_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reflective_practice_engagement_rate >= 90 ? "text-[--cs-success]" : d.reflective_practice_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reflective_practice_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reflective_practice_engagement_rate, 90) ? "bg-green-50" : meets(d.reflective_practice_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reflective_practice_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.reflective_practice_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reflective_practice_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reflective</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.theme_coverage_breadth >= 6 ? "bg-green-50" : d.theme_coverage_breadth >= 4 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.theme_coverage_breadth >= 6 ? "text-[--cs-success]" : d.theme_coverage_breadth >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.theme_coverage_breadth}/8</p>
               <p className="text-[9px] text-muted-foreground">Themes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_completion_rate, 90) ? "bg-green-50" : meets(d.action_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_completion_rate, 90) ? "text-[--cs-success]" : meets(d.action_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
           </div>

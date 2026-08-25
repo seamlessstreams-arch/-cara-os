@@ -636,9 +636,9 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.risk_assessment_rate).toBe(100); // 2 unique staff, 2 total
     });
 
-    it("returns 0 when no records", () => {
+    it("returns null when no records", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput });
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
   });
 
@@ -656,9 +656,9 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.check_in_compliance_rate).toBe(70); // 7/10
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput });
-      expect(r.check_in_compliance_rate).toBe(0);
+      expect(r.check_in_compliance_rate).toBeNull();
     });
 
     it("returns 100 when all check-ins completed", () => {
@@ -687,9 +687,9 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.safety_protocol_rate).toBe(67); // 2/3
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput });
-      expect(r.safety_protocol_rate).toBe(0);
+      expect(r.safety_protocol_rate).toBeNull();
     });
   });
 
@@ -709,9 +709,9 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.communication_device_rate).toBe(50); // 2 of 4
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput });
-      expect(r.communication_device_rate).toBe(0);
+      expect(r.communication_device_rate).toBeNull();
     });
 
     it("counts unique staff only", () => {
@@ -743,9 +743,9 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.incident_reporting_rate).toBe(67); // 2/3
     });
 
-    it("returns 0 with no records", () => {
+    it("returns null with no records", () => {
       const r = computeStaffLoneWorkingSafety({ ...baseInput });
-      expect(r.incident_reporting_rate).toBe(0);
+      expect(r.incident_reporting_rate).toBeNull();
     });
   });
 
@@ -773,7 +773,7 @@ describe("computeStaffLoneWorkingSafety", () => {
       expect(r.staff_confidence_rate).toBe(100);
     });
 
-    it("staff_confidence_rate is unmeasured when total_staff is 0 but records exist", () => {
+    it("staff_confidence_rate is unmeasured when total_staff is null but records exist", () => {
       const r = computeStaffLoneWorkingSafety({
         ...baseInput,
         total_staff: 0,

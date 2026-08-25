@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { below, meets } from "@/lib/metrics/rate";
 import {
   computeTeethBrushingOralRoutine,
   type TeethBrushingInput,
@@ -227,12 +228,12 @@ describe("Empty and edge-case inputs", () => {
 
   it("10 — all rates 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.brushing_adherence_rate).toBe(0);
-    expect(r.fluoride_use_rate).toBe(0);
-    expect(r.supervision_rate).toBe(0);
-    expect(r.toothbrush_replacement_rate).toBe(0);
-    expect(r.independence_rate).toBe(0);
-    expect(r.child_engagement_rate).toBe(0);
+    expect(r.brushing_adherence_rate).toBeNull();
+    expect(r.fluoride_use_rate).toBeNull();
+    expect(r.supervision_rate).toBeNull();
+    expect(r.toothbrush_replacement_rate).toBeNull();
+    expect(r.independence_rate).toBeNull();
+    expect(r.child_engagement_rate).toBeNull();
   });
 });
 
@@ -552,7 +553,7 @@ describe("Fluoride use metrics", () => {
 
   it("51 — no fluoride records → rate 0", () => {
     const r = run({ fluoride_use_records: [] });
-    expect(r.fluoride_use_rate).toBe(0);
+    expect(r.fluoride_use_rate).toBeNull();
   });
 
   it("52 — product in date < 70 → concern", () => {
@@ -1475,7 +1476,7 @@ describe("Recommendations", () => {
         makeBrushing({ brushing_technique_correct: false, child_engaged: false }),
       ],
     });
-    if (r.brushing_adherence_rate >= 50 && r.brushing_adherence_rate < 70) {
+    if (meets(r.brushing_adherence_rate, 50) && below(r.brushing_adherence_rate, 70)) {
       expect(r.recommendations.some((rec) => rec.urgency === "soon")).toBe(true);
     }
   });
@@ -1743,15 +1744,15 @@ describe("Duration metrics", () => {
 describe("Mixed scenarios", () => {
   it("172 — brushing only → other rates 0", () => {
     const r = run({ brushing_schedule_records: [makeBrushing()] });
-    expect(r.fluoride_use_rate).toBe(0);
-    expect(r.supervision_rate).toBe(0);
-    expect(r.toothbrush_replacement_rate).toBe(0);
-    expect(r.independence_rate).toBe(0);
+    expect(r.fluoride_use_rate).toBeNull();
+    expect(r.supervision_rate).toBeNull();
+    expect(r.toothbrush_replacement_rate).toBeNull();
+    expect(r.independence_rate).toBeNull();
   });
 
   it("173 — fluoride only → brushing rate 0", () => {
     const r = run({ fluoride_use_records: [makeFluoride()] });
-    expect(r.brushing_adherence_rate).toBe(0);
+    expect(r.brushing_adherence_rate).toBeNull();
   });
 
   it("174 — multiple brushing records counted correctly", () => {

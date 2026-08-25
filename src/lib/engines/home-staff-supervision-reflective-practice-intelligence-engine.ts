@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF SUPERVISION & REFLECTIVE PRACTICE INTELLIGENCE ENGINE
 // Monitors the quality and compliance of staff supervision, reflective practice,
@@ -129,10 +130,6 @@ export interface StaffSupervisionReflectivePracticeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -156,12 +153,12 @@ function emptyResult(
     supervision_score: score,
     headline,
     total_supervisions: 0,
-    supervision_timeliness_rate: 0,
+    supervision_timeliness_rate: null,
     supervision_quality_avg: 0,
-    safeguarding_supervision_coverage_rate: 0,
-    reflective_practice_engagement_rate: 0,
+    safeguarding_supervision_coverage_rate: null,
+    reflective_practice_engagement_rate: null,
     theme_coverage_breadth: 0,
-    action_completion_rate: 0,
+    action_completion_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -242,7 +239,7 @@ export function computeStaffSupervisionReflectivePractice(
   const totalMatrixEntries = supervision_matrix.length;
   const overdueEntries = supervision_matrix.filter((m) => m.overdue).length;
   const onTimeEntries = totalMatrixEntries - overdueEntries;
-  const supervisionTimelinessRate = pct(onTimeEntries, totalMatrixEntries);
+  const supervisionTimelinessRate = rate(onTimeEntries, totalMatrixEntries);
 
   // --- Supervision quality ---
   const totalSupervisions = supervisions.length;
@@ -257,7 +254,7 @@ export function computeStaffSupervisionReflectivePractice(
   const staffWithSafeguardingSupervision = new Set(
     safeguarding_supervisions.map((s) => s.staff_id),
   ).size;
-  const safeguardingSupervisionCoverageRate = pct(
+  const safeguardingSupervisionCoverageRate = rate(
     staffWithSafeguardingSupervision,
     total_staff,
   );
@@ -267,7 +264,7 @@ export function computeStaffSupervisionReflectivePractice(
   const staffWithReflection = new Set(
     staff_reflections.map((r) => r.staff_id),
   ).size;
-  const reflectivePracticeEngagementRate = pct(staffWithReflection, total_staff);
+  const reflectivePracticeEngagementRate = rate(staffWithReflection, total_staff);
 
   // --- Theme coverage breadth ---
   // Count of unique themes discussed (out of 8 possible)
@@ -307,7 +304,7 @@ export function computeStaffSupervisionReflectivePractice(
     totalActionsIdentified + sgTotalActionsIdentified;
   const combinedActionsCompleted =
     totalActionsCompleted + sgTotalActionsCompleted;
-  const actionCompletionRate = pct(
+  const actionCompletionRate = rate(
     combinedActionsCompleted,
     combinedActionsIdentified,
   );
@@ -316,7 +313,7 @@ export function computeStaffSupervisionReflectivePractice(
   const supervisionsWithWellbeing = supervisions.filter(
     (s) => s.wellbeing_discussed,
   ).length;
-  const staffWellbeingDiscussionRate = pct(
+  const staffWellbeingDiscussionRate = rate(
     supervisionsWithWellbeing,
     totalSupervisions,
   );
@@ -325,7 +322,7 @@ export function computeStaffSupervisionReflectivePractice(
   const supervisionsWithPD = supervisions.filter(
     (s) => s.professional_development_discussed,
   ).length;
-  const professionalDevelopmentDiscussionRate = pct(
+  const professionalDevelopmentDiscussionRate = rate(
     supervisionsWithPD,
     totalSupervisions,
   );
@@ -333,13 +330,13 @@ export function computeStaffSupervisionReflectivePractice(
   // --- Matrix compliance rate ---
   // Percentage of staff who have a matrix entry and are not overdue
   const staffInMatrix = new Set(supervision_matrix.map((m) => m.staff_id)).size;
-  const matrixComplianceRate = pct(staffInMatrix, total_staff);
+  const matrixComplianceRate = rate(staffInMatrix, total_staff);
 
   // --- Reflective practice with learning identified ---
   const reflectionsWithLearning = staff_reflections.filter(
     (r) => r.learning_identified,
   ).length;
-  const reflectiveLearningRate = pct(
+  const reflectiveLearningRate = rate(
     reflectionsWithLearning,
     staff_reflections.length,
   );
@@ -348,13 +345,13 @@ export function computeStaffSupervisionReflectivePractice(
   const reflectionsShared = staff_reflections.filter(
     (r) => r.shared_with_team,
   ).length;
-  const reflectiveSharingRate = pct(reflectionsShared, staff_reflections.length);
+  const reflectiveSharingRate = rate(reflectionsShared, staff_reflections.length);
 
   // --- Safeguarding competence assessment rate ---
   const sgCompetenceAssessed = safeguarding_supervisions.filter(
     (s) => s.competence_assessed,
   ).length;
-  const sgCompetenceRate = pct(
+  const sgCompetenceRate = rate(
     sgCompetenceAssessed,
     safeguarding_supervisions.length,
   );
@@ -363,13 +360,13 @@ export function computeStaffSupervisionReflectivePractice(
   const supervisionsWithChildFocus = supervisions.filter(
     (s) => s.child_focused_topics_discussed,
   ).length;
-  const childFocusedRate = pct(supervisionsWithChildFocus, totalSupervisions);
+  const childFocusedRate = rate(supervisionsWithChildFocus, totalSupervisions);
 
   // --- Unique staff supervised ---
   const staffWithSupervision = new Set(
     supervisions.map((s) => s.staff_id),
   ).size;
-  const supervisionCoverageRate = pct(staffWithSupervision, total_staff);
+  const supervisionCoverageRate = rate(staffWithSupervision, total_staff);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // Bonuses sum to exactly 28: 4+3+3+3+3+3+3+3+3 = 28
@@ -377,54 +374,54 @@ export function computeStaffSupervisionReflectivePractice(
   let score = 52;
 
   // --- Bonus 1: supervisionTimelinessRate (>=90: +4, >=75: +2) ---
-  if (supervisionTimelinessRate >= 90) score += 4;
-  else if (supervisionTimelinessRate >= 75) score += 2;
+  if (meets(supervisionTimelinessRate, 90)) score += 4;
+  else if (meets(supervisionTimelinessRate, 75)) score += 2;
 
   // --- Bonus 2: supervisionQualityAvg (>=4.0: +3, >=3.0: +1) ---
   if ((supervisionQualityAvg ?? 0) >= 4.0) score += 3;
   else if ((supervisionQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 3: safeguardingSupervisionCoverageRate (>=100: +3, >=80: +1) ---
-  if (safeguardingSupervisionCoverageRate >= 100) score += 3;
-  else if (safeguardingSupervisionCoverageRate >= 80) score += 1;
+  if (meets(safeguardingSupervisionCoverageRate, 100)) score += 3;
+  else if (meets(safeguardingSupervisionCoverageRate, 80)) score += 1;
 
   // --- Bonus 4: reflectivePracticeEngagementRate (>=80: +3, >=60: +1) ---
-  if (reflectivePracticeEngagementRate >= 80) score += 3;
-  else if (reflectivePracticeEngagementRate >= 60) score += 1;
+  if (meets(reflectivePracticeEngagementRate, 80)) score += 3;
+  else if (meets(reflectivePracticeEngagementRate, 60)) score += 1;
 
   // --- Bonus 5: themeCoverageBreadth (>=6: +3, >=4: +1) ---
   if (themeCoverageBreadth >= 6) score += 3;
   else if (themeCoverageBreadth >= 4) score += 1;
 
   // --- Bonus 6: actionCompletionRate (>=90: +3, >=70: +1) ---
-  if (actionCompletionRate >= 90) score += 3;
-  else if (actionCompletionRate >= 70) score += 1;
+  if (meets(actionCompletionRate, 90)) score += 3;
+  else if (meets(actionCompletionRate, 70)) score += 1;
 
   // --- Bonus 7: staffWellbeingDiscussionRate (>=90: +3, >=70: +1) ---
-  if (staffWellbeingDiscussionRate >= 90) score += 3;
-  else if (staffWellbeingDiscussionRate >= 70) score += 1;
+  if (meets(staffWellbeingDiscussionRate, 90)) score += 3;
+  else if (meets(staffWellbeingDiscussionRate, 70)) score += 1;
 
   // --- Bonus 8: professionalDevelopmentDiscussionRate (>=80: +3, >=60: +1) ---
-  if (professionalDevelopmentDiscussionRate >= 80) score += 3;
-  else if (professionalDevelopmentDiscussionRate >= 60) score += 1;
+  if (meets(professionalDevelopmentDiscussionRate, 80)) score += 3;
+  else if (meets(professionalDevelopmentDiscussionRate, 60)) score += 1;
 
   // --- Bonus 9: matrixComplianceRate (>=90: +3, >=75: +1) ---
-  if (matrixComplianceRate >= 90) score += 3;
-  else if (matrixComplianceRate >= 75) score += 1;
+  if (meets(matrixComplianceRate, 90)) score += 3;
+  else if (meets(matrixComplianceRate, 75)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // supervisionCoverageRate < 50 → -5 (most staff unsupervised)
-  if (supervisionCoverageRate < 50 && total_staff > 0) score -= 5;
+  if (below(supervisionCoverageRate, 50) && total_staff > 0) score -= 5;
 
   // safeguardingSupervisionCoverageRate < 30 → -5 (safeguarding gap)
-  if (safeguardingSupervisionCoverageRate < 30 && total_staff > 0) score -= 5;
+  if (below(safeguardingSupervisionCoverageRate, 30) && total_staff > 0) score -= 5;
 
   // actionCompletionRate < 40 → -4 (actions not followed through)
-  if (actionCompletionRate < 40 && combinedActionsIdentified > 0) score -= 4;
+  if (below(actionCompletionRate, 40) && combinedActionsIdentified > 0) score -= 4;
 
   // overdueEntries > 50% of matrix → -4 (systemic scheduling failure)
-  if (totalMatrixEntries > 0 && pct(overdueEntries, totalMatrixEntries) > 50) score -= 4;
+  if (totalMatrixEntries > 0 && above(rate(overdueEntries, totalMatrixEntries), 50)) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -434,11 +431,11 @@ export function computeStaffSupervisionReflectivePractice(
 
   const strengths: string[] = [];
 
-  if (supervisionTimelinessRate >= 90 && totalMatrixEntries > 0) {
+  if (meets(supervisionTimelinessRate, 90) && totalMatrixEntries > 0) {
     strengths.push(
       `${supervisionTimelinessRate}% of supervisions delivered on schedule — the home demonstrates strong compliance with supervision timelines, ensuring staff receive regular, predictable oversight.`,
     );
-  } else if (supervisionTimelinessRate >= 75 && totalMatrixEntries > 0) {
+  } else if (meets(supervisionTimelinessRate, 75) && totalMatrixEntries > 0) {
     strengths.push(
       `${supervisionTimelinessRate}% supervision timeliness — most staff receive supervision within their scheduled window.`,
     );
@@ -454,21 +451,21 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (safeguardingSupervisionCoverageRate >= 100 && total_staff > 0) {
+  if (meets(safeguardingSupervisionCoverageRate, 100) && total_staff > 0) {
     strengths.push(
       "Every staff member has received safeguarding supervision — the home ensures all staff receive specialist oversight on safeguarding matters.",
     );
-  } else if (safeguardingSupervisionCoverageRate >= 80 && total_staff > 0) {
+  } else if (meets(safeguardingSupervisionCoverageRate, 80) && total_staff > 0) {
     strengths.push(
       `${safeguardingSupervisionCoverageRate}% of staff have received safeguarding supervision — strong coverage of safeguarding-specific oversight.`,
     );
   }
 
-  if (reflectivePracticeEngagementRate >= 80 && total_staff > 0) {
+  if (meets(reflectivePracticeEngagementRate, 80) && total_staff > 0) {
     strengths.push(
       `${reflectivePracticeEngagementRate}% of staff actively engaged in reflective practice — the home fosters a strong culture of professional reflection and continuous learning.`,
     );
-  } else if (reflectivePracticeEngagementRate >= 60 && total_staff > 0) {
+  } else if (meets(reflectivePracticeEngagementRate, 60) && total_staff > 0) {
     strengths.push(
       `${reflectivePracticeEngagementRate}% reflective practice engagement — a majority of staff are participating in reflective practice activities.`,
     );
@@ -484,75 +481,75 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (actionCompletionRate >= 90 && combinedActionsIdentified > 0) {
+  if (meets(actionCompletionRate, 90) && combinedActionsIdentified > 0) {
     strengths.push(
       `${actionCompletionRate}% of supervision actions completed — the home demonstrates excellent follow-through on agreed actions, ensuring supervision leads to meaningful practice change.`,
     );
-  } else if (actionCompletionRate >= 70 && combinedActionsIdentified > 0) {
+  } else if (meets(actionCompletionRate, 70) && combinedActionsIdentified > 0) {
     strengths.push(
       `${actionCompletionRate}% supervision action completion — most agreed actions are being followed through.`,
     );
   }
 
-  if (staffWellbeingDiscussionRate >= 90 && totalSupervisions > 0) {
+  if (meets(staffWellbeingDiscussionRate, 90) && totalSupervisions > 0) {
     strengths.push(
       `Staff wellbeing discussed in ${staffWellbeingDiscussionRate}% of supervisions — the home prioritises staff welfare as an integral part of supervision, recognising the emotional demands of residential care work.`,
     );
-  } else if (staffWellbeingDiscussionRate >= 70 && totalSupervisions > 0) {
+  } else if (meets(staffWellbeingDiscussionRate, 70) && totalSupervisions > 0) {
     strengths.push(
       `Staff wellbeing discussed in ${staffWellbeingDiscussionRate}% of supervisions — wellbeing is a regular feature of supervision discussions.`,
     );
   }
 
-  if (professionalDevelopmentDiscussionRate >= 80 && totalSupervisions > 0) {
+  if (meets(professionalDevelopmentDiscussionRate, 80) && totalSupervisions > 0) {
     strengths.push(
       `Professional development discussed in ${professionalDevelopmentDiscussionRate}% of supervisions — the home actively supports staff growth and career progression through supervision.`,
     );
-  } else if (professionalDevelopmentDiscussionRate >= 60 && totalSupervisions > 0) {
+  } else if (meets(professionalDevelopmentDiscussionRate, 60) && totalSupervisions > 0) {
     strengths.push(
       `Professional development discussed in ${professionalDevelopmentDiscussionRate}% of supervisions — development conversations are a regular part of supervision.`,
     );
   }
 
-  if (matrixComplianceRate >= 90 && total_staff > 0) {
+  if (meets(matrixComplianceRate, 90) && total_staff > 0) {
     strengths.push(
       `${matrixComplianceRate}% of staff included in the supervision matrix — the home has a comprehensive supervision scheduling system covering virtually all staff.`,
     );
-  } else if (matrixComplianceRate >= 75 && total_staff > 0) {
+  } else if (meets(matrixComplianceRate, 75) && total_staff > 0) {
     strengths.push(
       `${matrixComplianceRate}% supervision matrix coverage — most staff are assigned within the supervision scheduling framework.`,
     );
   }
 
-  if (supervisionCoverageRate >= 100 && total_staff > 0) {
+  if (meets(supervisionCoverageRate, 100) && total_staff > 0) {
     strengths.push(
       "Every staff member has received at least one supervision — full supervision coverage across the team.",
     );
-  } else if (supervisionCoverageRate >= 80 && total_staff > 0) {
+  } else if (meets(supervisionCoverageRate, 80) && total_staff > 0) {
     strengths.push(
       `${supervisionCoverageRate}% of staff have received supervision — strong coverage across the workforce.`,
     );
   }
 
-  if (sgCompetenceRate >= 90 && safeguarding_supervisions.length > 0) {
+  if (meets(sgCompetenceRate, 90) && safeguarding_supervisions.length > 0) {
     strengths.push(
       `Safeguarding competence assessed in ${sgCompetenceRate}% of safeguarding supervisions — the home systematically evaluates staff safeguarding capability.`,
     );
   }
 
-  if (reflectiveLearningRate >= 80 && staff_reflections.length > 0) {
+  if (meets(reflectiveLearningRate, 80) && staff_reflections.length > 0) {
     strengths.push(
       `${reflectiveLearningRate}% of reflective practice entries identify specific learning — staff are using reflection as a genuine tool for professional growth.`,
     );
   }
 
-  if (reflectiveSharingRate >= 70 && staff_reflections.length > 0) {
+  if (meets(reflectiveSharingRate, 70) && staff_reflections.length > 0) {
     strengths.push(
       `${reflectiveSharingRate}% of reflective practice entries shared with the team — the home encourages a culture of collective learning from individual reflections.`,
     );
   }
 
-  if (childFocusedRate >= 80 && totalSupervisions > 0) {
+  if (meets(childFocusedRate, 80) && totalSupervisions > 0) {
     strengths.push(
       `Child-focused topics discussed in ${childFocusedRate}% of supervisions — supervision consistently centres on children's needs, ensuring staff practice remains child-focused.`,
     );
@@ -562,21 +559,21 @@ export function computeStaffSupervisionReflectivePractice(
 
   const concerns: string[] = [];
 
-  if (supervisionCoverageRate < 50 && total_staff > 0) {
+  if (below(supervisionCoverageRate, 50) && total_staff > 0) {
     concerns.push(
       `Only ${supervisionCoverageRate}% of staff have received supervision — the majority of the workforce lacks formal supervision, representing a significant compliance failure under Reg 33 and Reg 32.`,
     );
-  } else if (supervisionCoverageRate < 80 && supervisionCoverageRate >= 50 && total_staff > 0) {
+  } else if (below(supervisionCoverageRate, 80) && meets(supervisionCoverageRate, 50) && total_staff > 0) {
     concerns.push(
       `Supervision coverage at ${supervisionCoverageRate}% — not all staff are receiving regular supervision, which may leave gaps in oversight and support.`,
     );
   }
 
-  if (supervisionTimelinessRate < 50 && totalMatrixEntries > 0) {
+  if (below(supervisionTimelinessRate, 50) && totalMatrixEntries > 0) {
     concerns.push(
       `Only ${supervisionTimelinessRate}% of supervisions delivered on time — the majority of scheduled supervisions are overdue, indicating a systemic scheduling or prioritisation problem.`,
     );
-  } else if (supervisionTimelinessRate < 75 && supervisionTimelinessRate >= 50 && totalMatrixEntries > 0) {
+  } else if (below(supervisionTimelinessRate, 75) && meets(supervisionTimelinessRate, 50) && totalMatrixEntries > 0) {
     concerns.push(
       `Supervision timeliness at ${supervisionTimelinessRate}% — a notable proportion of supervisions are being delivered late.`,
     );
@@ -592,51 +589,51 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (safeguardingSupervisionCoverageRate < 30 && total_staff > 0) {
+  if (below(safeguardingSupervisionCoverageRate, 30) && total_staff > 0) {
     concerns.push(
       `Only ${safeguardingSupervisionCoverageRate}% of staff have received safeguarding supervision — the vast majority of staff lack specialist safeguarding oversight, which is a serious gap in the home's safeguarding framework.`,
     );
-  } else if (safeguardingSupervisionCoverageRate < 80 && safeguardingSupervisionCoverageRate >= 30 && total_staff > 0) {
+  } else if (below(safeguardingSupervisionCoverageRate, 80) && meets(safeguardingSupervisionCoverageRate, 30) && total_staff > 0) {
     concerns.push(
       `Safeguarding supervision coverage at ${safeguardingSupervisionCoverageRate}% — not all staff are receiving specialist safeguarding oversight.`,
     );
   }
 
-  if (reflectivePracticeEngagementRate < 30 && total_staff > 0) {
+  if (below(reflectivePracticeEngagementRate, 30) && total_staff > 0) {
     concerns.push(
       `Only ${reflectivePracticeEngagementRate}% of staff engaged in reflective practice — the home is not fostering a culture of professional reflection, which limits learning from practice.`,
     );
-  } else if (reflectivePracticeEngagementRate < 60 && reflectivePracticeEngagementRate >= 30 && total_staff > 0) {
+  } else if (below(reflectivePracticeEngagementRate, 60) && meets(reflectivePracticeEngagementRate, 30) && total_staff > 0) {
     concerns.push(
       `Reflective practice engagement at ${reflectivePracticeEngagementRate}% — a significant proportion of staff are not participating in reflective practice activities.`,
     );
   }
 
-  if (actionCompletionRate < 40 && combinedActionsIdentified > 0) {
+  if (below(actionCompletionRate, 40) && combinedActionsIdentified > 0) {
     concerns.push(
       `Only ${actionCompletionRate}% of supervision actions completed — the majority of agreed actions remain outstanding, undermining the purpose of supervision entirely.`,
     );
-  } else if (actionCompletionRate < 70 && actionCompletionRate >= 40 && combinedActionsIdentified > 0) {
+  } else if (below(actionCompletionRate, 70) && meets(actionCompletionRate, 40) && combinedActionsIdentified > 0) {
     concerns.push(
       `Supervision action completion at ${actionCompletionRate}% — a notable proportion of agreed actions are not being followed through.`,
     );
   }
 
-  if (staffWellbeingDiscussionRate < 50 && totalSupervisions > 0) {
+  if (below(staffWellbeingDiscussionRate, 50) && totalSupervisions > 0) {
     concerns.push(
       `Staff wellbeing discussed in only ${staffWellbeingDiscussionRate}% of supervisions — the emotional needs of staff working in a demanding care environment are not being systematically addressed.`,
     );
-  } else if (staffWellbeingDiscussionRate < 70 && staffWellbeingDiscussionRate >= 50 && totalSupervisions > 0) {
+  } else if (below(staffWellbeingDiscussionRate, 70) && meets(staffWellbeingDiscussionRate, 50) && totalSupervisions > 0) {
     concerns.push(
       `Staff wellbeing discussed in ${staffWellbeingDiscussionRate}% of supervisions — wellbeing is not consistently addressed in supervision.`,
     );
   }
 
-  if (professionalDevelopmentDiscussionRate < 40 && totalSupervisions > 0) {
+  if (below(professionalDevelopmentDiscussionRate, 40) && totalSupervisions > 0) {
     concerns.push(
       `Professional development discussed in only ${professionalDevelopmentDiscussionRate}% of supervisions — staff development is not being prioritised within supervision, limiting professional growth.`,
     );
-  } else if (professionalDevelopmentDiscussionRate < 60 && professionalDevelopmentDiscussionRate >= 40 && totalSupervisions > 0) {
+  } else if (below(professionalDevelopmentDiscussionRate, 60) && meets(professionalDevelopmentDiscussionRate, 40) && totalSupervisions > 0) {
     concerns.push(
       `Professional development discussed in ${professionalDevelopmentDiscussionRate}% of supervisions — development conversations are not a consistent feature of supervision.`,
     );
@@ -652,11 +649,11 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (matrixComplianceRate < 50 && total_staff > 0) {
+  if (below(matrixComplianceRate, 50) && total_staff > 0) {
     concerns.push(
       `Only ${matrixComplianceRate}% of staff included in the supervision matrix — the home lacks a comprehensive supervision scheduling system, making it impossible to ensure all staff receive timely supervision.`,
     );
-  } else if (matrixComplianceRate < 75 && matrixComplianceRate >= 50 && total_staff > 0) {
+  } else if (below(matrixComplianceRate, 75) && meets(matrixComplianceRate, 50) && total_staff > 0) {
     concerns.push(
       `Supervision matrix coverage at ${matrixComplianceRate}% — some staff are not assigned within the supervision framework.`,
     );
@@ -668,7 +665,7 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (sgCompetenceRate < 50 && safeguarding_supervisions.length > 0) {
+  if (below(sgCompetenceRate, 50) && safeguarding_supervisions.length > 0) {
     concerns.push(
       `Safeguarding competence assessed in only ${sgCompetenceRate}% of safeguarding supervisions — the home is not systematically evaluating whether staff have the skills to keep children safe.`,
     );
@@ -685,7 +682,7 @@ export function computeStaffSupervisionReflectivePractice(
   const recommendations: SupervisionRecommendation[] = [];
   let rank = 0;
 
-  if (supervisionCoverageRate < 50 && total_staff > 0) {
+  if (below(supervisionCoverageRate, 50) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -705,7 +702,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (safeguardingSupervisionCoverageRate < 30 && total_staff > 0) {
+  if (below(safeguardingSupervisionCoverageRate, 30) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -715,7 +712,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (actionCompletionRate < 40 && combinedActionsIdentified > 0) {
+  if (below(actionCompletionRate, 40) && combinedActionsIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -725,7 +722,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (matrixComplianceRate < 50 && total_staff > 0) {
+  if (below(matrixComplianceRate, 50) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -735,7 +732,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (supervisionTimelinessRate < 50 && totalMatrixEntries > 0) {
+  if (below(supervisionTimelinessRate, 50) && totalMatrixEntries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -745,7 +742,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (supervisionCoverageRate >= 50 && supervisionCoverageRate < 80 && total_staff > 0) {
+  if (meets(supervisionCoverageRate, 50) && below(supervisionCoverageRate, 80) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -755,7 +752,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (safeguardingSupervisionCoverageRate >= 30 && safeguardingSupervisionCoverageRate < 80 && total_staff > 0) {
+  if (meets(safeguardingSupervisionCoverageRate, 30) && below(safeguardingSupervisionCoverageRate, 80) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -765,7 +762,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (reflectivePracticeEngagementRate < 30 && total_staff > 0) {
+  if (below(reflectivePracticeEngagementRate, 30) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -775,7 +772,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (reflectivePracticeEngagementRate >= 30 && reflectivePracticeEngagementRate < 60 && total_staff > 0) {
+  if (meets(reflectivePracticeEngagementRate, 30) && below(reflectivePracticeEngagementRate, 60) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -785,7 +782,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (staffWellbeingDiscussionRate < 50 && totalSupervisions > 0) {
+  if (below(staffWellbeingDiscussionRate, 50) && totalSupervisions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -795,7 +792,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (professionalDevelopmentDiscussionRate < 40 && totalSupervisions > 0) {
+  if (below(professionalDevelopmentDiscussionRate, 40) && totalSupervisions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -816,7 +813,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (actionCompletionRate >= 40 && actionCompletionRate < 70 && combinedActionsIdentified > 0) {
+  if (meets(actionCompletionRate, 40) && below(actionCompletionRate, 70) && combinedActionsIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,14 +839,14 @@ export function computeStaffSupervisionReflectivePractice(
 
   // -- Critical insights --
 
-  if (supervisionCoverageRate < 50 && total_staff > 0) {
+  if (below(supervisionCoverageRate, 50) && total_staff > 0) {
     insights.push({
       text: `Only ${supervisionCoverageRate}% of staff have received supervision. Ofsted will view this as a failure in leadership and management under Reg 33. Staff without supervision may lack the guidance, support, and accountability needed to deliver safe, effective care.`,
       severity: "critical",
     });
   }
 
-  if (safeguardingSupervisionCoverageRate < 30 && total_staff > 0) {
+  if (below(safeguardingSupervisionCoverageRate, 30) && total_staff > 0) {
     insights.push({
       text: `Only ${safeguardingSupervisionCoverageRate}% of staff have received safeguarding supervision. Without specialist safeguarding oversight, staff may not recognise or respond appropriately to child protection concerns. This is a significant gap in the home's safeguarding arrangements.`,
       severity: "critical",
@@ -863,14 +860,14 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (actionCompletionRate < 40 && combinedActionsIdentified > 0) {
+  if (below(actionCompletionRate, 40) && combinedActionsIdentified > 0) {
     insights.push({
       text: `Only ${actionCompletionRate}% of supervision actions completed. When supervision identifies areas for improvement but actions are not followed through, the purpose of supervision is fundamentally undermined. Ofsted will expect to see evidence that supervision drives practice change.`,
       severity: "critical",
     });
   }
 
-  if (matrixComplianceRate < 50 && total_staff > 0) {
+  if (below(matrixComplianceRate, 50) && total_staff > 0) {
     insights.push({
       text: `Only ${matrixComplianceRate}% of staff are included in the supervision matrix. Without a comprehensive scheduling framework, the home cannot ensure that all staff receive timely supervision. This represents a structural failure in supervision management.`,
       severity: "critical",
@@ -879,14 +876,14 @@ export function computeStaffSupervisionReflectivePractice(
 
   // -- Warning insights --
 
-  if (supervisionCoverageRate >= 50 && supervisionCoverageRate < 80 && total_staff > 0) {
+  if (meets(supervisionCoverageRate, 50) && below(supervisionCoverageRate, 80) && total_staff > 0) {
     insights.push({
       text: `Supervision coverage at ${supervisionCoverageRate}% — improving but not yet meeting the expected standard. Ofsted will want to see evidence that all staff receive regular, formal supervision.`,
       severity: "warning",
     });
   }
 
-  if (supervisionTimelinessRate >= 50 && supervisionTimelinessRate < 75 && totalMatrixEntries > 0) {
+  if (meets(supervisionTimelinessRate, 50) && below(supervisionTimelinessRate, 75) && totalMatrixEntries > 0) {
     insights.push({
       text: `Supervision timeliness at ${supervisionTimelinessRate}% — a notable proportion of supervisions are being delivered late. Consistent timeliness is important for demonstrating systematic oversight.`,
       severity: "warning",
@@ -900,28 +897,28 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (safeguardingSupervisionCoverageRate >= 30 && safeguardingSupervisionCoverageRate < 80 && total_staff > 0) {
+  if (meets(safeguardingSupervisionCoverageRate, 30) && below(safeguardingSupervisionCoverageRate, 80) && total_staff > 0) {
     insights.push({
       text: `Safeguarding supervision coverage at ${safeguardingSupervisionCoverageRate}% — gaps remain in specialist safeguarding oversight. All staff working with vulnerable children should receive regular safeguarding supervision.`,
       severity: "warning",
     });
   }
 
-  if (reflectivePracticeEngagementRate >= 30 && reflectivePracticeEngagementRate < 60 && total_staff > 0) {
+  if (meets(reflectivePracticeEngagementRate, 30) && below(reflectivePracticeEngagementRate, 60) && total_staff > 0) {
     insights.push({
       text: `Reflective practice engagement at ${reflectivePracticeEngagementRate}% — less than two-thirds of staff are actively engaged in reflection. Ofsted values reflective practice as evidence of a learning culture within the home.`,
       severity: "warning",
     });
   }
 
-  if (staffWellbeingDiscussionRate >= 50 && staffWellbeingDiscussionRate < 70 && totalSupervisions > 0) {
+  if (meets(staffWellbeingDiscussionRate, 50) && below(staffWellbeingDiscussionRate, 70) && totalSupervisions > 0) {
     insights.push({
       text: `Staff wellbeing discussed in ${staffWellbeingDiscussionRate}% of supervisions — not all supervision sessions include wellbeing discussions. Given the emotional demands of residential care, consistent wellbeing check-ins are important.`,
       severity: "warning",
     });
   }
 
-  if (professionalDevelopmentDiscussionRate >= 40 && professionalDevelopmentDiscussionRate < 60 && totalSupervisions > 0) {
+  if (meets(professionalDevelopmentDiscussionRate, 40) && below(professionalDevelopmentDiscussionRate, 60) && totalSupervisions > 0) {
     insights.push({
       text: `Professional development discussed in ${professionalDevelopmentDiscussionRate}% of supervisions — development conversations are not consistently embedded. Staff benefit from regular discussion of their training needs and career aspirations.`,
       severity: "warning",
@@ -942,14 +939,14 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (sgCompetenceRate >= 50 && sgCompetenceRate < 80 && safeguarding_supervisions.length > 0) {
+  if (meets(sgCompetenceRate, 50) && below(sgCompetenceRate, 80) && safeguarding_supervisions.length > 0) {
     insights.push({
       text: `Safeguarding competence assessed in ${sgCompetenceRate}% of safeguarding supervisions — competence assessment should be a standard element of every safeguarding supervision session.`,
       severity: "warning",
     });
   }
 
-  if (actionCompletionRate >= 40 && actionCompletionRate < 70 && combinedActionsIdentified > 0) {
+  if (meets(actionCompletionRate, 40) && below(actionCompletionRate, 70) && combinedActionsIdentified > 0) {
     insights.push({
       text: `Supervision action completion at ${actionCompletionRate}% — a significant proportion of agreed actions remain outstanding. Without consistent follow-through, supervision risks becoming a compliance exercise rather than a driver of practice improvement.`,
       severity: "warning",
@@ -965,28 +962,28 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (supervisionCoverageRate >= 100 && total_staff > 0) {
+  if (meets(supervisionCoverageRate, 100) && total_staff > 0) {
     insights.push({
       text: "Every staff member has received supervision — the home meets the core expectation that all staff receive formal oversight and support. This is a key indicator of effective management practice.",
       severity: "positive",
     });
   }
 
-  if (safeguardingSupervisionCoverageRate >= 100 && total_staff > 0) {
+  if (meets(safeguardingSupervisionCoverageRate, 100) && total_staff > 0) {
     insights.push({
       text: "All staff have received safeguarding supervision — the home's safeguarding framework ensures every team member receives specialist oversight on child protection matters.",
       severity: "positive",
     });
   }
 
-  if (reflectivePracticeEngagementRate >= 80 && total_staff > 0) {
+  if (meets(reflectivePracticeEngagementRate, 80) && total_staff > 0) {
     insights.push({
       text: `${reflectivePracticeEngagementRate}% reflective practice engagement demonstrates an embedded culture of professional learning. Ofsted values homes where staff routinely reflect on their practice and identify learning from experience.`,
       severity: "positive",
     });
   }
 
-  if (actionCompletionRate >= 90 && combinedActionsIdentified > 0) {
+  if (meets(actionCompletionRate, 90) && combinedActionsIdentified > 0) {
     insights.push({
       text: `${actionCompletionRate}% of supervision actions completed — supervision is clearly driving practice improvement. The home can evidence that agreed actions are followed through, leading to tangible changes in care quality.`,
       severity: "positive",
@@ -1000,7 +997,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (staffWellbeingDiscussionRate >= 90 && totalSupervisions > 0 && professionalDevelopmentDiscussionRate >= 80) {
+  if (meets(staffWellbeingDiscussionRate, 90) && totalSupervisions > 0 && meets(professionalDevelopmentDiscussionRate, 80)) {
     insights.push({
       text: "Supervision consistently addresses both staff wellbeing and professional development — the home recognises that supporting staff holistically leads to better outcomes for children.",
       severity: "positive",
@@ -1014,7 +1011,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (sgCompetenceRate >= 90 && safeguarding_supervisions.length > 0) {
+  if (meets(sgCompetenceRate, 90) && safeguarding_supervisions.length > 0) {
     insights.push({
       text: `Safeguarding competence assessed in ${sgCompetenceRate}% of safeguarding supervisions — the home systematically evaluates staff capability in safeguarding, ensuring confidence that staff can recognise and respond to child protection concerns.`,
       severity: "positive",

@@ -176,12 +176,12 @@ describe("insufficient data — no children, all arrays empty", () => {
   it("returns zero metrics", () => {
     const r = run();
     expect(r.total_profiles).toBe(0);
-    expect(r.sensory_profile_coverage_rate).toBe(0);
-    expect(r.accessibility_adaptation_rate).toBe(0);
-    expect(r.sensory_room_utilisation_rate).toBe(0);
-    expect(r.equipment_maintenance_rate).toBe(0);
-    expect(r.intervention_effectiveness_rate).toBe(0);
-    expect(r.child_feedback_rate).toBe(0);
+    expect(r.sensory_profile_coverage_rate).toBeNull();
+    expect(r.accessibility_adaptation_rate).toBeNull();
+    expect(r.sensory_room_utilisation_rate).toBeNull();
+    expect(r.equipment_maintenance_rate).toBeNull();
+    expect(r.intervention_effectiveness_rate).toBeNull();
+    expect(r.child_feedback_rate).toBeNull();
     expect(r.adaptation_effectiveness_avg).toBe(0);
     expect(r.intervention_progress_avg).toBe(0);
   });
@@ -237,8 +237,8 @@ describe("inadequate baseline — children present, no records", () => {
   it("produces zero metrics", () => {
     const r = run({ total_children: 3 });
     expect(r.total_profiles).toBe(0);
-    expect(r.sensory_profile_coverage_rate).toBe(0);
-    expect(r.accessibility_adaptation_rate).toBe(0);
+    expect(r.sensory_profile_coverage_rate).toBeNull();
+    expect(r.accessibility_adaptation_rate).toBeNull();
   });
 
   it("works with 1 child", () => {
@@ -1415,22 +1415,22 @@ describe("metric calculations", () => {
     expect(r.intervention_progress_avg).toBeNull();;
   });
 
-  it("pct(0,0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // When no children, no records, metrics should be 0
     const r = run({
       total_children: 1,
       sensory_profile_records: [makeProfile({ child_id: "c1" })],
     });
     // No adaptations → adaptationRate = pct(0,0) = 0
-    expect(r.accessibility_adaptation_rate).toBe(0);
+    expect(r.accessibility_adaptation_rate).toBeNull();
     // No sensory room → utilisationRate = pct(0, total_children) but total_children>0 so pct(0,1)=0
     expect(r.sensory_room_utilisation_rate).toBe(0);
     // No equipment → maintenanceRate = 0 (activeEquipment=0 guard)
     expect(r.equipment_maintenance_rate).toBeNull();;
     // No interventions → effectivenessRate = pct(0,0) = 0
-    expect(r.intervention_effectiveness_rate).toBe(0);
+    expect(r.intervention_effectiveness_rate).toBeNull();
     // childFeedback = pct(0, 0) = 0
-    expect(r.child_feedback_rate).toBe(0);
+    expect(r.child_feedback_rate).toBeNull();
     // adaptationEffAvg = 0 (no implemented)
     expect(r.adaptation_effectiveness_avg).toBeNull();;
     // interventionProgressAvg = 0 (no interventions)
@@ -3393,7 +3393,7 @@ describe("edge cases", () => {
     expect(r.accessibility_adaptation_rate).toBe(0);
     expect(r.adaptation_effectiveness_avg).toBeNull();;
     // childFeedback: implementedAdaptations=0, totalInterventions=0, opportunities=0, pct(0,0)=0
-    expect(r.child_feedback_rate).toBe(0);
+    expect(r.child_feedback_rate).toBeNull();
   });
 
   it("interventions with no improvement", () => {
@@ -3503,7 +3503,7 @@ describe("edge cases", () => {
     expect(r.sensory_room_utilisation_rate).toBe(0);
   });
 
-  it("adaptation effectiveness from only non-implemented is 0", () => {
+  it("adaptation effectiveness from only non-implemented is null", () => {
     const r = run({
       total_children: 1,
       sensory_profile_records: [makeProfile({ child_id: "c1" })],

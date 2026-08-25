@@ -201,12 +201,12 @@ describe("computeSiblingContactRelationships", () => {
 
     it("returns zero for all rates", () => {
       const r = computeSiblingContactRelationships(baseInput({ total_children: 0 }));
-      expect(r.placement_consideration_rate).toBe(0);
-      expect(r.contact_facilitation_rate).toBe(0);
-      expect(r.relationship_quality_rate).toBe(0);
-      expect(r.event_participation_rate).toBe(0);
-      expect(r.child_wishes_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.placement_consideration_rate).toBeNull();
+      expect(r.contact_facilitation_rate).toBeNull();
+      expect(r.relationship_quality_rate).toBeNull();
+      expect(r.event_participation_rate).toBeNull();
+      expect(r.child_wishes_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -266,8 +266,8 @@ describe("computeSiblingContactRelationships", () => {
 
   // ── 3. pct(0,0) = 0 ────────────────────────────────────────────────────
 
-  describe("pct(0,0) = 0", () => {
-    it("event_participation_rate is 0 when no children invited", () => {
+  describe("rate(0,0)=null", () => {
+    it("event_participation_rate is null when no children invited", () => {
       const r = computeSiblingContactRelationships(
         baseInput({
           sibling_event_records: [
@@ -275,26 +275,26 @@ describe("computeSiblingContactRelationships", () => {
           ],
         }),
       );
-      expect(r.event_participation_rate).toBe(0);
+      expect(r.event_participation_rate).toBeNull();
     });
 
-    it("child_wishes_rate is 0 with no wishes records but data in other areas", () => {
+    it("child_wishes_rate is null with no wishes records but data in other areas", () => {
       const r = computeSiblingContactRelationships(
         baseInput({
           sibling_placement_records: [makePlacement()],
         }),
       );
       expect(r.child_wishes_rate).toBeNull();;
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
-    it("contact_facilitation_rate is 0 with no contact records but data in other areas", () => {
+    it("contact_facilitation_rate is null with no contact records but data in other areas", () => {
       const r = computeSiblingContactRelationships(
         baseInput({
           sibling_placement_records: [makePlacement()],
         }),
       );
-      expect(r.contact_facilitation_rate).toBe(0);
+      expect(r.contact_facilitation_rate).toBeNull();
     });
   });
 
@@ -2754,7 +2754,7 @@ describe("computeSiblingContactRelationships", () => {
   // ── 15. Edge cases ─────────────────────────────────────────────────────
 
   describe("edge cases", () => {
-    it("all records cancelled → facilitation rate is 0 (0 non-cancelled)", () => {
+    it("all records cancelled → facilitation rate is null (0 non-cancelled)", () => {
       const r = computeSiblingContactRelationships(
         baseInput({
           sibling_placement_records: [makePlacement()],
@@ -2765,7 +2765,7 @@ describe("computeSiblingContactRelationships", () => {
         }),
       );
       // nonCancelled.length = 0 → pct(0, 0) = 0
-      expect(r.contact_facilitation_rate).toBe(0);
+      expect(r.contact_facilitation_rate).toBeNull();
     });
 
     it("cancelled contacts excluded from quality average", () => {
@@ -2890,7 +2890,7 @@ describe("computeSiblingContactRelationships", () => {
           ],
         }),
       );
-      expect(r.event_participation_rate).toBe(0);
+      expect(r.event_participation_rate).toBeNull();
     });
 
     it("placement records all placed together → no separated records for separation metrics", () => {

@@ -70,12 +70,12 @@ export function HomeSlipsTripsFallsPreventionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.falls_prevention_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.risk_assessment_rate >= 90 ? "bg-green-50" : d.risk_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_assessment_rate, 90) ? "bg-green-50" : meets(d.risk_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.risk_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.risk_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.risk_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk Asmnt</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.flooring_condition_rate >= 90 ? "bg-green-50" : d.flooring_condition_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.flooring_condition_rate >= 90 ? "text-[--cs-success]" : d.flooring_condition_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.flooring_condition_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.flooring_condition_rate, 90) ? "bg-green-50" : meets(d.flooring_condition_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.flooring_condition_rate, 90) ? "text-[--cs-success]" : meets(d.flooring_condition_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.flooring_condition_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Flooring</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.wet_floor_protocol_rate, 90) ? "bg-green-50" : meets(d.wet_floor_protocol_rate, 70) ? "bg-amber-50" : d.wet_floor_protocol_rate === null ? "bg-muted" : "bg-red-50")}>
